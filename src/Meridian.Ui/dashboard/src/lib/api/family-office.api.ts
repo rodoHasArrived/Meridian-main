@@ -12,7 +12,10 @@ import { apiGetJson, type ApiRequestOptions } from "@/lib/api";
 import { FAMILY_OFFICE_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import type { FamilyOfficeOverview } from "@/types/family-office.types";
 
-export function getFamilyOfficeOverview(options: ApiRequestOptions = {}, asOf?: string): Promise<FamilyOfficeOverview> {
-  const endpoint = asOf ? `${FAMILY_OFFICE_API_ENDPOINTS.overview}?asOf=${encodeURIComponent(asOf)}` : FAMILY_OFFICE_API_ENDPOINTS.overview;
-  return apiGetJson<FamilyOfficeOverview>(endpoint, options);
+export function getFamilyOfficeOverview(options: ApiRequestOptions = {}, familyOfficeId?: string, asOf?: string): Promise<FamilyOfficeOverview> {
+  const query = new URLSearchParams();
+  if (familyOfficeId) query.set("familyOfficeId", familyOfficeId);
+  if (asOf) query.set("asOf", asOf);
+  const suffix = query.size ? `?${query}` : "";
+  return apiGetJson<FamilyOfficeOverview>(`${FAMILY_OFFICE_API_ENDPOINTS.overview}${suffix}`, { ...options, allowDevelopmentFallback: false });
 }

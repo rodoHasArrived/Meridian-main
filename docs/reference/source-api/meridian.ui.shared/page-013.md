@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingPrimaryDocumentRenderer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRenderer</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:108](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L108).
+
+Renders the primary PDF/XLSX artifact of a governed reporting run. This is the seam that lets the certified artifact producer stay the single orchestrator (declarations, hashing, retained manifest, provenance) while the client-grade document bytes are produced by Meridian.Documents. Implementations must be deterministic: identical manifests must yield identical bytes, because artifacts are hash-verified on read-back.
+
+```csharp
+public interface IReportingPrimaryDocumentRenderer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>byte[] RenderPdf(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L110) |  |
+| <code>byte[] RenderWorkbook(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:112](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L112) |  |
+
+## IReportingPrimaryDocumentRendererWithLedgerReportPack
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRendererWithLedgerReportPack</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:120](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L120).
+
+Extended primary-document contract for renderers that can consume the exact checkpoint-bound ledger report pack supplied by the certified artifact producer. The complete PDF/XLSX pair is returned from one call so callers cannot produce format-dependent accounting presentations.
+
+```csharp
+public interface IReportingPrimaryDocumentRendererWithLedgerReportPack : IReportingPrimaryDocumentRenderer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:123](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L123) |  |
+
+## IReportingProviderReceiptAuthenticator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingProviderReceiptAuthenticator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L20).
+
+Authenticates provider callbacks before reporting delivery receipts are retained.
+
+```csharp
+public interface IReportingProviderReceiptAuthenticator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L22) |  |
+
 ## IReportingRecipientDestinationResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRecipientDestinationResolver</code>. Kind: `interface`.
@@ -980,54 +1035,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddOperatorTriageStorage(this IServiceCollection services, CompositionConfiguration configuration, bool isProduction);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L12) |  |
-
-## OwnedProviderConnection
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:676](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L676).
-
-Identity of a retained connection one tenant owns; carries no credential material.
-
-```csharp
-public sealed record OwnedProviderConnection(string ConnectionId, string CredentialEnvironment);
-```
-
-## PaperFuturesSettlementOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:15](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L15).
-
-Options for the paper futures end-of-day variation-margin settlement job.
-
-```csharp
-public sealed class PaperFuturesSettlementOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionKey = &quot;PaperTrading:FuturesSettlement&quot;;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:18](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L18) | Configuration section bound to these options. |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:21](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L21) | Whether the job runs. Off by default, so hosts opt in. |
-| <code>public TimeSpan PollInterval { get; set; } = TimeSpan.FromMinutes(15);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:24](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L24) | How often the job looks for closed, unsettled trading days. |
-| <code>public int MaxCatchUpTradingDays { get; set; } = 5;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:31](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L31) | The most recent closed trading days one pass settles per position, oldest first. A longer outage settles from its last days only; the total cash is the same, because each settlement moves the change since the previous one. |
-
-## PaperFuturesSettlementService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:44](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L44).
-
-Settles the daily variation margin of every open paper futures position once per trading day, after the regular close. Each pass walks the active paper sessions; for every variation-margin position it settles each closed trading day after its last settlement (and after the position opened), oldest first, at that day&#x27;s mark from IMarkPriceSource. The close stands in for the exchange settlement price, which is not modelled yet. A day with no price is skipped with a warning and never settled on a stale price. Settlements go through PaperSessionPersistenceService.RecordSettlementAsync, which persists before applying and ignores a day already settled, so overlapping or repeated passes are safe.
-
-```csharp
-public sealed class PaperFuturesSettlementService(IServiceProvider serviceProvider, IOptions<PaperFuturesSettlementOptions> options, ILogger<PaperFuturesSettlementService> logger, TimeProvider? timeProvider = null) : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:98](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L98) | Runs one settlement pass at the current time and returns how many settlements it applied. Does nothing when the job is disabled or paper sessions or a mark price source are not registered. |

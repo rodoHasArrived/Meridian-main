@@ -1,7 +1,8 @@
 import { exportTableQuery } from "@/lib/table-workbench";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { RefreshCcw, Search, ShieldAlert } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { CorporateActionCalendarPanel } from "@/screens/corporate-action-calendar";
 import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { LocalDateText } from "@/components/ui/local-date-text";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { CorporateActionCalendar } from "@/screens/corporate-action-calendar";
 import { CashDividendAttestationPanel } from "@/components/meridian/cash-dividend-attestation-panel";
 import type {
   CorporateActionAcceptanceReceipt,
@@ -28,6 +28,7 @@ import type {
 } from "@/types";
 
 export const CORPORATE_ACTION_CASE_WORKSPACE_ID = "corporate-action-case-workspace";
+const EMPTY_CORPORATE_ACTION_ROWS: CorporateActionInboxRowModel[] = [];
 
 const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
   {
@@ -518,10 +519,16 @@ function AcceptCanonicalFactDialog({ panel }: { panel: CorporateActionInboxViewM
 }
 
 export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionInboxViewModel }) {
-  const allRows = panel.model?.rows ?? [];
+  const allRows = panel.model?.rows ?? EMPTY_CORPORATE_ACTION_ROWS;
   const conflictCount = allRows.filter((row) => row.conflictLabel !== "None" && row.conflictLabel !== "Not supplied").length;
   const unassignedCount = allRows.filter((row) => row.assignmentLabel === "Unassigned").length;
   const durableCaseCount = allRows.filter((row) => row.durableCase !== null || row.compactCase !== null).length;
+  const calendarScope = [...new Set(allRows.map((row) => `${row.acceptanceScope?.tenantId ?? "unknown"}:${row.acceptanceScope?.companyId ?? "unknown"}`))].sort().join("|");
+  const selectQueueRow = panel.selectRow;
+  const selectCalendarCase = useCallback((caseId: string, proposalId: string) => {
+    const row = allRows.find((candidate) => candidate.compactCase?.caseId === caseId || candidate.durableCase?.caseId === caseId || candidate.proposalIdLabel === proposalId);
+    if (row) selectQueueRow(row.rowId);
+  }, [allRows, selectQueueRow]);
 
   return (
     <section aria-labelledby="corporate-action-inbox-title" className="workspace-region corporate-action-inbox-region">
@@ -564,6 +571,7 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
           />
         </CardHeader>
         <CardContent className="space-y-4">
+          <CorporateActionCalendarPanel scopeKey={calendarScope} selectedCaseId={panel.selectedRow?.compactCase?.caseId ?? panel.selectedRow?.durableCase?.caseId} onCaseSelected={selectCalendarCase} onChanged={() => void panel.refresh()} />
           {panel.acceptanceReceipt ? <AcceptanceReceipt receipt={panel.acceptanceReceipt} onClose={panel.clearAcceptanceReceipt} /> : null}
           {panel.error && !panel.model ? (
             <StatusBanner role="alert" tone="danger" title="Corporate action case queue unavailable" detail={panel.error} />
@@ -583,7 +591,6 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
           ) : panel.model ? (
             <>
               <QueueFilters filters={panel.filters} rows={allRows} onChange={panel.setFilters} />
-              <CorporateActionCalendar rows={panel.rows} selectedRowId={panel.selectedRowKey} onSelect={panel.selectRow} stale={Boolean(panel.error)} caseWorkspaceId={CORPORATE_ACTION_CASE_WORKSPACE_ID} />
               <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(24rem,0.85fr)]">
                 <TableWorkbench workbenchId="data-corporate-action-queue" sourceKey={allRows.map((row) => `${row.acceptanceScope?.tenantId ?? "unknown"}:${row.acceptanceScope?.companyId ?? "unknown"}`).sort().join("|")}
                   sourceDescription="CSV includes all authorized shared economic reference proposals and exact tenant/company cases, with per-row evidence namespaces."

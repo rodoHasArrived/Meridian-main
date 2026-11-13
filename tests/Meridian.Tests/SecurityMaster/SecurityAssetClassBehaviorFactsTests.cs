@@ -35,6 +35,16 @@ public sealed class SecurityAssetClassBehaviorFactsTests
     }
 
     [Fact]
+    public void SupportsPrivateCapitalRecords_AdmitsPrivateFundInterestOnly()
+    {
+        Classes(static d => d.SupportsPrivateCapitalRecords).Should().Equal("PrivateFundInterest");
+        SecurityAssetClassCatalog.GetOrDefault("CommitmentGuarantee").SupportsPrivateCapitalRecords.Should().BeFalse();
+        SecurityAssetClassCatalog.GetOrDefault("Equity").SupportsPrivateCapitalRecords.Should().BeFalse();
+        SecurityAssetClassCatalog.GetOrDefault("Unknown").SupportsPrivateCapitalRecords.Should().BeFalse();
+        SecurityAssetClassCatalog.GetOrDefault("NotAClass").SupportsPrivateCapitalRecords.Should().BeFalse();
+    }
+
+    [Fact]
     public void UsesOccOptionSymbols_IsOptionAndWarrant()
         => Classes(static d => d.UsesOccOptionSymbols).Should().BeEquivalentTo(["Option", "Warrant"]);
 

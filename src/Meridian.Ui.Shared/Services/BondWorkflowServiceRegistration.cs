@@ -59,7 +59,10 @@ internal static class BondWorkflowServiceRegistration
         services.TryAddSingleton<BondWorkspaceSnapshotStore>(sp => new(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<BondWorkflowConnectionReadinessService>();
         services.TryAddSingleton<BondCollectionCaseworkProjection>();
-        if (services.Any(descriptor => descriptor.ServiceType == typeof(ILedgerJournalStore)))
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(ILedgerJournalStore))
+            && services.Any(descriptor => descriptor.ServiceType == typeof(ISecurityMasterStore))
+            && services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore))
+            && services.Any(descriptor => descriptor.ServiceType == typeof(IAccountingPolicyService)))
         {
             services.TryAddSingleton<IBondIncomeService, BondIncomeService>();
             services.TryAddSingleton<BondIncomePreparationService>(sp =>
@@ -70,7 +73,8 @@ internal static class BondWorkflowServiceRegistration
                         sp.GetRequiredService<IAccountingPolicyService>(), spine,
                         sp.GetRequiredService<IBondIncomePreparationEvidenceStore>()) : null!);
         }
-        if (services.Any(descriptor => descriptor.ServiceType == typeof(IBondCouponRecognitionStore)))
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(IBondCouponRecognitionStore))
+            && services.Any(descriptor => descriptor.ServiceType == typeof(IBondIncomeService)))
             services.TryAddSingleton<IBondCouponRecognitionService, BondCouponRecognitionService>();
     }
 }

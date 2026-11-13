@@ -137,13 +137,14 @@ public sealed class AuditTrailExplorerService
             matched.Length,
             returned.Length,
             returned,
-            [new("ExecutionAuditTrail", _auditTrail is null ? "Unavailable" : "RetainedRecordsOnly"),
+            SourceAvailability: new AuditTrailSourceAvailabilityDto(_auditTrail is not null, _operationsContinuity is not null),
+            Sources: [new("ExecutionAuditTrail", _auditTrail is null ? "Unavailable" : "RetainedRecordsOnly"),
              new("OperationsContinuityTimeline", _operationsContinuity is null ? "Unavailable" : "RetainedRecordsOnly"),
              new("PaperSessionFillHistory", _paperSessions is null ? "Unavailable" : string.IsNullOrWhiteSpace(query.OrderId) ? "SelectOrderToRead" : "SessionRecordsOnly")],
-            "Retained evidence only. Missing events or passed checks are not proof that a stage did not occur. Recording timestamps may differ from broker event times. " +
+            CoverageNote: "Retained evidence only. Missing events or passed checks are not proof that a stage did not occur. Recording timestamps may differ from broker event times. " +
             (complete ? "Every matching record from available sources is included; source retention limits historical coverage." : "Browse results are capped at 1000; narrow the time range if truncated.") +
             (orderSelection.Status == "Ambiguous" ? " Order identity is ambiguous across canonical orders or known source contexts; no events are returned. Use the canonical client/order ID and resolve conflicting evidence." : ""),
-            orderSelection.Status);
+            OrderIdentityStatus: orderSelection.Status);
     }
 
     private static bool Matches(AuditTrailTimelineEntryDto entry, AuditTrailExplorerQueryDto query)

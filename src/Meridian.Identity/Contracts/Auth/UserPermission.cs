@@ -156,4 +156,16 @@ public enum UserPermission : long
 
     /// <summary>Read scoped preparer-assertion receipts, declaration history and audit evidence.</summary>
     ViewPreparerAttestations = 1L << 42,
+
+    /// <summary>Read source-reported private-capital commitments and valuation observations.</summary>
+    ViewPrivateCapitalRecords = 1L << 43,
+
+    /// <summary>Register private-capital commitments and accept evidence-backed observation imports.</summary>
+    ManagePrivateCapitalRecords = 1L << 44,
+
+    /// <summary>Read account-scoped retained broker option assessments.</summary>
+    ViewOptionAssessments = 1L << 45,
+
+    /// <summary>Import and correct evidence-backed broker option assessments.</summary>
+    ManageOptionAssessments = 1L << 46,
 }

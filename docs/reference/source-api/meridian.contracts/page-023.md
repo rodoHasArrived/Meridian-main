@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondPerformanceAccountingBridgeDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceAccountingBridgeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L24).
+
+```csharp
+public sealed record BondPerformanceAccountingBridgeDto(Guid SecurityId, IReadOnlyList<Guid> TaxLotRecordIds, decimal OpeningCarryingBasis, decimal ClosingCarryingBasis, decimal CouponIncome, decimal PremiumDiscountIncome, decimal IndexationIncome, decimal ExpensedFees, decimal CashGrossCoupons, decimal AccrualVersusCashDifference, string Currency, IReadOnlyList<string> InstructionFingerprints)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AccountingIncome =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:30](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L30) |  |
+
+## BondPerformanceAttributionDto
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceAttributionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondPerformanceDtos.cs#L14).
+
+Order-dependent model explanation. Accounting amortization is never a market-return component.
+
+```csharp
+public sealed record BondPerformanceAttributionDto(decimal? CarryAndRoll, decimal? RateEffect, decimal? SpreadEffect, decimal? InflationEffect, decimal? CollectionAndCosts, decimal? FxEffect, decimal? Residual, string Currency);
+```
+
 ## BondPerformanceJsonContext
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondPerformanceJsonContext</code>. Kind: `class`.
@@ -657,24 +685,4 @@ Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:11](../../
 
 ```csharp
 public sealed record BondWorkflowFixing(decimal Value, bool IsObserved, string Source);
-```
-
-## BondWorkflowInflationConvention
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowInflationConvention</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs:9](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowProjection.cs#L9).
-
-```csharp
-public sealed record BondWorkflowInflationConvention(string IndexName, decimal BaseIndex, int LagMonths, bool InterpolateMonthly, decimal? CouponFloorRatio = null, decimal? RedemptionFloorRatio = null);
-```
-
-## BondWorkflowIssue
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L27).
-
-```csharp
-public sealed record BondWorkflowIssue(string Operation, string Code, string Reason, bool BlocksCalculation = false);
 ```

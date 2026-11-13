@@ -577,7 +577,7 @@ public sealed record ActivateLoanRequest(DateOnly ActivationDate);
 
 Qualified name: <code>Meridian.Contracts.DirectLending.AddCollateralRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:525](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L525).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:538](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L538).
 
 ```csharp
 public sealed record AddCollateralRequest(CollateralType CollateralType, string Description, decimal EstimatedValue, CurrencyCode Currency, DateOnly AppraisalDate);
@@ -616,7 +616,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.DirectLending.AmortizeDiscountPremiumRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:558](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L558).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:571](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L571).
 
 ```csharp
 public sealed record AmortizeDiscountPremiumRequest(DateOnly AccrualDate);

@@ -1,91 +1,66 @@
-import { useId, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { useMemo, useState, type KeyboardEvent } from "react";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { formatTaxAmount, isTaxDecimalText } from "@/lib/ledger-tax-results-format";
-import type { LedgerDisposalTaxParcel, LedgerDisposalTaxResult, LedgerJournalTaxResults } from "@/types/ledger-tax-results";
+import type { LedgerDisposalTaxParcel, LedgerDisposalTaxResult } from "@/types/ledger-tax-results";
 
-interface ParcelPoint { id: string; index: number; parcel: LedgerDisposalTaxParcel; disposal: LedgerDisposalTaxResult; x: number; y: number }
-
-export function taxParcelPoints(result: LedgerJournalTaxResults): { points: ParcelPoint[]; omitted: number } {
-  const points: ParcelPoint[] = [];
-  let omitted = 0;
-  let index = 0;
-  result.disposals.forEach((disposal, disposalIndex) => disposal.parcels.forEach((parcel, parcelIndex) => {
-    index++;
-    const x = parcel.holdingPeriodDays;
-    const y = isTaxDecimalText(parcel.economicGainOrLoss) ? Number(parcel.economicGainOrLoss) : Number.NaN;
-    if (!Number.isFinite(x) || x < 0 || !Number.isFinite(y)) { omitted++; return; }
-    points.push({ id: `${disposal.mutationBatchId}:${disposalIndex}:${parcel.lotId}:${parcelIndex}`, index, parcel, disposal, x, y });
-  }));
-  return { points, omitted };
+/** Exact decimal evidence is reduced to bounded ratios only for screen coordinates. */
+export function taxParcelCoordinates(parcels: LedgerDisposalTaxParcel[]) {
+  const validAmounts = parcels.map((parcel) => isTaxDecimalText(parcel.economicGainOrLoss));
+  const scale = Math.max(0, ...parcels.map((parcel, index) => validAmounts[index] ? parcel.economicGainOrLoss.split(".")[1]?.length ?? 0 : 0));
+  const scaled = (value: string) => {
+    const negative = value.startsWith("-");
+    const [integer, fraction = ""] = (negative ? value.slice(1) : value).split(".");
+    return BigInt(`${integer}${fraction.padEnd(scale, "0")}`) * (negative ? -1n : 1n);
+  };
+  const values = parcels.map((parcel, index) => validAmounts[index] ? scaled(parcel.economicGainOrLoss) : 0n);
+  let minimum = 0n; let maximum = 0n;
+  for (const value of values) { if (value < minimum) minimum = value; if (value > maximum) maximum = value; }
+  if (minimum === maximum) { minimum = -1n; maximum = 1n; }
+  const span = maximum - minimum;
+  const ratio = (value: bigint) => Number(((value - minimum) * 1_000_000n) / span) / 1_000_000;
+  const minimumText = minimum < 0n ? parcels[values.findIndex(value => value === minimum)]?.economicGainOrLoss ?? "0" : "0";
+  const maximumText = maximum > 0n ? parcels[values.findIndex(value => value === maximum)]?.economicGainOrLoss ?? "0" : "0";
+  const validDays = parcels.map((parcel) => Number.isFinite(parcel.holdingPeriodDays) && parcel.holdingPeriodDays >= 0);
+  const maxDays = Math.max(1, ...parcels.filter((_, index) => validDays[index]).map((parcel) => parcel.holdingPeriodDays));
+  return { minimumText, maximumText, zeroY: 235 - ratio(0n) * 195, maxDays,
+    omitted: parcels.filter((_, index) => !validAmounts[index] || !validDays[index]).length,
+    points: parcels.map((parcel, index) => ({ available: validAmounts[index] && validDays[index], x: validDays[index] ? 90 + parcel.holdingPeriodDays / maxDays * 555 : 90, y: 235 - ratio(values[index]) * 195 })) };
 }
 
-const character = { ShortTerm: "Short term", LongTerm: "Long term" };
-
-export function TaxParcelComposition({ result }: { result: LedgerJournalTaxResults }) {
-  const id = useId();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { points, omitted } = taxParcelPoints(result);
-  const selected = points.find((point) => point.id === selectedId);
-  const maxX = Math.max(1, ...points.map((point) => point.x));
-  const rawMin = Math.min(0, ...points.map((point) => point.y));
-  const rawMax = Math.max(0, ...points.map((point) => point.y));
-  const minY = rawMin === rawMax ? -1 : rawMin;
-  const maxY = rawMin === rawMax ? 1 : rawMax;
-  const x = (value: number) => 88 + (value / maxX) * 640;
-  const y = (value: number) => 250 - ((value - minY) / (maxY - minY)) * 210;
-  const approximate = (value: number) => result.functionalCurrency.trim()
-    ? formatCurrency(value, { currency: result.functionalCurrency, maximumFractionDigits: 2, notation: Math.abs(value) >= 1_000_000 ? "compact" : "standard" })
-    : formatNumber(value, { maximumFractionDigits: 2 });
-  return (
-    <section aria-labelledby={`${id}-title`} className="space-y-3 rounded-sm border border-border p-3">
-      <h3 id={`${id}-title`} className="text-sm font-semibold">Tax-parcel composition</h3>
-      <p className="text-xs text-muted-foreground">Retained holding-period days versus economic gain / loss ({result.functionalCurrency || "currency unavailable"}). Circles: short term; squares: long term. Dashed outlines: provisional or missing evidence. Tax character is supplied by the retained policy. Plot coordinates are approximate; selected amounts retain every decimal.</p>
-      {points.length ? (
-        <>
-          <svg viewBox="0 0 780 310" className="max-h-80 w-full min-w-0" role="group" aria-label="Disposed parcels by retained holding-period days and economic gain or loss">
-            <line x1="88" x2="728" y1={y(0)} y2={y(0)} stroke="currentColor" strokeDasharray="4 3" opacity="0.65" />
-            <line x1="88" x2="88" y1="40" y2="250" stroke="currentColor" />
-            <line x1="88" x2="728" y1="250" y2="250" stroke="currentColor" />
-            {[minY, (minY + maxY) / 2, maxY].map((value, index) => <text key={index} x="80" y={y(value) + 4} textAnchor="end" fill="currentColor" className="text-xs">{approximate(value)}</text>)}
-            {[...new Set([0, Math.floor(maxX / 2), maxX])].map((value) => <text key={value} x={x(value)} y="272" textAnchor="middle" fill="currentColor" className="text-xs">{value}</text>)}
-            <text x="408" y="300" textAnchor="middle" fill="currentColor" className="text-xs">Retained holding-period days</text>
-            <text x="88" y="22" fill="currentColor" className="text-xs">Economic gain / loss ({result.functionalCurrency || "unavailable currency"})</text>
-            {points.map((point) => {
-              const label = `Inspect parcel ${point.index}, ${point.parcel.lotId}, ${point.x} holding days, ${character[point.parcel.character]}, ${point.disposal.state}, economic gain or loss ${formatTaxAmount(point.parcel.economicGainOrLoss, result.functionalCurrency)}`;
-              return <g key={point.id} role="button" tabIndex={0} aria-label={label} aria-pressed={point.id === selectedId}
-                onClick={() => setSelectedId(point.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedId(point.id); } }}
-                className="cursor-pointer text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                stroke="currentColor" fill={point.id === selectedId ? "currentColor" : "hsl(var(--background))"}
-                strokeWidth={point.id === selectedId ? 3 : 2} strokeDasharray={point.disposal.state === "Settled" ? undefined : "3 2"}>
-                <rect x={x(point.x) - 13} y={y(point.y) - 13} width="26" height="26" fill="transparent" stroke="none" />
-                {point.parcel.character === "LongTerm" ? <rect x={x(point.x) - 6} y={y(point.y) - 6} width="12" height="12" /> : <circle cx={x(point.x)} cy={y(point.y)} r="6" />}
-              </g>;
-            })}
-          </svg>
-          <DenseDataTable rows={points} getRowId={(point) => point.id} selectedRowId={selectedId}
-            emptyText="No retained parcels to inspect."
-            ariaLabel="Parcel plot data and keyboard selection" caption="Full lot identities and exact tax evidence open on selection."
-            columns={[
-              { id: "parcel", label: "Parcel", render: (point) => <Button size="sm" variant="outline" aria-label={`Select parcel ${point.index}: ${point.parcel.lotId}`} aria-pressed={point.id === selectedId} onClick={() => setSelectedId(point.id)}>Parcel {point.index}</Button> },
-              { id: "security", label: "Security", render: (point) => point.disposal.symbol ?? point.disposal.accountName },
-              { id: "days", label: "Holding days", numeric: true, render: (point) => point.x },
-              { id: "character", label: "Supplied character", render: (point) => point.parcel.character },
-              { id: "state", label: "State", render: (point) => `${point.disposal.state} result` },
-              { id: "gain", label: "Economic gain / loss", render: (point) => formatTaxAmount(point.parcel.economicGainOrLoss, result.functionalCurrency) }
-            ]} />
-        </>
-      ) : <p role="status" className="text-sm text-muted-foreground">No plottable retained parcel evidence for this journal entry.</p>}
-      {omitted ? <p role="status" className="text-xs text-warning">{omitted} parcels have unavailable plot coordinates. Original evidence remains in the disposal details.</p> : null}
-      {selected ? <section aria-label="Selected tax parcel evidence" className="space-y-2 rounded-sm border border-border p-3 text-xs">
-        <h4 className="font-semibold">Parcel {selected.index} · {selected.parcel.lotId}</h4>
-        <p>{character[selected.parcel.character]} · {selected.disposal.state} · {selected.disposal.stateReason}</p>
-        <dl className="grid gap-3 md:grid-cols-3">
-          {[["Economic gain / loss", formatTaxAmount(selected.parcel.economicGainOrLoss, result.functionalCurrency)], ["Recognized gain / loss", formatTaxAmount(selected.parcel.recognizedGainOrLoss, result.functionalCurrency)], ["Deferred loss", formatTaxAmount(selected.parcel.deferredLoss, result.functionalCurrency)], ["Holding-period start", selected.parcel.holdingPeriodStart], ["Retained holding days", String(selected.parcel.holdingPeriodDays)], ["Holding-period treatment", selected.parcel.holdingPeriodCarried ? "Carried from prior parcel" : "Original parcel"], ["Policy revision", selected.disposal.policyRevision ?? "Missing evidence"], ["Disposal identity", selected.disposal.mutationBatchId], ["Sale date", selected.disposal.saleDate]].map(([label, value]) => <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="break-words font-mono">{value}</dd></div>)}
-        </dl>
-        <p>{selected.disposal.canChange ? "This retained result can change." : "No change indicated by retained result."} {selected.disposal.reEvaluationRequired ? "Re-evaluation required; this plot does not re-evaluate tax treatment." : ""}</p>
-      </section> : points.length ? <p className="text-xs text-muted-foreground">Select a point or parcel row to compare economic gain, recognized gain and deferred loss.</p> : null}
-    </section>
-  );
+export function TaxParcelComposition({ parcels, currency, state, disposal }: { parcels: LedgerDisposalTaxParcel[]; currency: string; state: string; disposal?: LedgerDisposalTaxResult }) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const parcelKey = (item: LedgerDisposalTaxParcel, index: number) => `${disposal?.mutationBatchId ?? ""}:${item.lotId}:${index}`;
+  const plot = useMemo(() => taxParcelCoordinates(parcels), [parcels]);
+  const parcel = parcels.find((item, index) => parcelKey(item, index) === selected) ?? null;
+  const rows = parcels.map((item, index) => ({ ...item, selectionId: parcelKey(item, index) }));
+  const columns: DenseDataTableColumn<(typeof rows)[number]>[] = [
+    { id: "parcel", label: "Parcel", render: item => <button className="underline" aria-pressed={selected === item.selectionId} onClick={() => setSelected(item.selectionId)}>{item.lotId}</button> },
+    { id: "days", label: "Holding days", numeric: true, render: item => Number.isFinite(item.holdingPeriodDays) && item.holdingPeriodDays >= 0 ? item.holdingPeriodDays : "Unavailable" },
+    { id: "character", label: "Tax character", render: item => `${item.character === "LongTerm" ? "Long term" : "Short term"}${item.holdingPeriodCarried ? " · Carried" : ""}` },
+    { id: "economic", label: "Economic gain / loss", numeric: true, render: item => formatTaxAmount(item.economicGainOrLoss, currency) }
+  ];
+  return <section aria-label="Tax parcel composition" className="space-y-3 rounded border border-border p-3">
+    <h4 className="text-sm font-semibold">Tax parcel composition · {state}</h4>
+    <p className="text-xs text-muted-foreground">Retained holding-period days versus economic gain / loss ({currency}). Circles: short term; diamonds: long term. Character comes from the retained policy. Select a parcel for recognized gain and deferred loss.</p>
+    <svg viewBox="0 0 720 290" role="group" aria-label="Disposed parcels by retained holding days and economic gain or loss" className="w-full" style={{ minHeight: 180 }}>
+      <line x1="90" x2="655" y1={plot.zeroY} y2={plot.zeroY} stroke="currentColor" strokeDasharray="4 3" />
+      <line x1="90" x2="90" y1="30" y2="235" stroke="currentColor" />
+      <line x1="90" x2="655" y1="235" y2="235" stroke="currentColor" />
+      <text x="78" y={plot.zeroY + 4} textAnchor="end" fill="currentColor" fontSize="12">0</text>
+      <text x="90" y="256" fill="currentColor" fontSize="12">0 days</text>
+      <text x="645" y="256" textAnchor="end" fill="currentColor" fontSize="12">{plot.maxDays} days</text>
+      <text x="365" y="280" textAnchor="middle" fill="currentColor" fontSize="12">Retained holding-period days</text>
+      {parcels.map((item, index) => {
+        const point = plot.points[index];
+        if (!point.available) return null;
+        const props = { tabIndex: 0, role: "button", "aria-label": `Inspect parcel ${item.lotId}: ${item.holdingPeriodDays} days, ${item.character === "LongTerm" ? "long term" : "short term"}, economic gain or loss ${formatTaxAmount(item.economicGainOrLoss, currency)}`, "aria-pressed": selected === parcelKey(item, index), onClick: () => setSelected(parcelKey(item, index)), onKeyDown: (event: KeyboardEvent<SVGElement>) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelected(parcelKey(item, index)); } }, fill: selected === parcelKey(item, index) ? "currentColor" : "hsl(var(--background, 0 0% 100%))", stroke: "currentColor", strokeWidth: selected === parcelKey(item, index) ? 3 : 2, className: "cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" };
+        return item.character === "LongTerm" ? <path key={`${item.lotId}:${index}`} {...props} d={`M${point.x},${point.y - 7} l7,7 -7,7 -7,-7 Z`} /> : <circle key={`${item.lotId}:${index}`} {...props} cx={point.x} cy={point.y} r="6" />;
+      })}
+    </svg>
+    {plot.omitted ? <p role="status" className="text-xs text-warning">{plot.omitted} parcels have unavailable plot coordinates. Their retained evidence remains in the table and disposal details.</p> : null}
+    <p className="text-xs text-muted-foreground">{plot.omitted < parcels.length ? <>Economic range {formatTaxAmount(plot.minimumText, currency)} to {formatTaxAmount(plot.maximumText, currency)}. </> : "No retained parcels have available plot coordinates. "}Plot positions are approximate; exact retained amounts appear below. Overlapping marks remain separately selectable in the table.</p>
+    <DenseDataTable columns={columns} rows={rows} getRowId={item => item.selectionId}
+      ariaLabel="Disposed parcel composition table" emptyText="No retained parcel composition is available." />
+    {parcel ? <section aria-label="Selected parcel composition" className="rounded border border-border p-3 text-sm"><h5 className="font-semibold">{parcel.lotId} · {state}</h5><p className="text-xs">Retained tax character: {parcel.character === "LongTerm" ? "Long term" : "Short term"}. {disposal?.stateReason}</p><dl className="mt-2 grid gap-2 md:grid-cols-3">{[["Economic gain / loss", parcel.economicGainOrLoss], ["Recognized gain / loss", parcel.recognizedGainOrLoss], ["Deferred loss", parcel.deferredLoss]].map(([label, value]) => <div key={label}><dt className="text-xs text-muted-foreground">{label}</dt><dd className="break-all font-mono">{formatTaxAmount(value, currency)}</dd></div>)}</dl><p className="mt-2 text-xs">Holding start {parcel.holdingPeriodStart} · Acquired {parcel.acquiredDate} · {parcel.holdingPeriodCarried ? "Carried holding period" : "No carried holding period"}. Selection does not change retained tax treatment.</p>{disposal ? <p className="mt-2 break-words text-xs">Policy revision {disposal.policyRevision ?? "Missing evidence"} · disposal {disposal.mutationBatchId} · sale {disposal.saleDate}. {disposal.canChange ? "This retained result can change." : "No change indicated by retained result."} {disposal.reEvaluationRequired ? "Re-evaluation required; this plot does not re-evaluate treatment." : ""}</p> : null}</section> : null}
+  </section>;
 }

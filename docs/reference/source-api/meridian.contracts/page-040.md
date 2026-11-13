@@ -6,6 +6,322 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidPublicTokenExchangeResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidPublicTokenExchangeResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:138](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L138).
+
+```csharp
+public sealed record PlaidPublicTokenExchangeResult(PlaidItemDto Item, IReadOnlyList<PlaidAccountDto> Accounts, string? RequestId);
+```
+
+## PlaidSyncRequest
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidSyncRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:235](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L235).
+
+```csharp
+public sealed record PlaidSyncRequest(string ItemId, bool SyncBalances = true, bool SyncTransactions = true, bool SyncInvestments = true, bool SyncIdentity = true, string RequestedBy = "plaid-sync");
+```
+
+## PlaidSyncResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidSyncResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:243](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L243).
+
+```csharp
+public sealed record PlaidSyncResult(string ItemId, int BalanceSnapshotsRecorded, int BankStatementLinesIngested, int InvestmentHoldingsRecorded, int InvestmentTransactionsRecorded, int IdentityRecordsUpdated, DateTimeOffset SyncedAt, IReadOnlyList<string> Warnings);
+```
+
+## PlaidTransactionDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransactionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:179](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L179).
+
+```csharp
+public sealed record PlaidTransactionDto(string TransactionId, string PlaidAccountId, DateOnly Date, DateOnly? AuthorizedDate, decimal Amount, string Currency, string Name, string? MerchantName, string? Category, string? PaymentChannel, bool Pending, string? TransactionType);
+```
+
+## PlaidTransactionsSyncResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransactionsSyncResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:193](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L193).
+
+```csharp
+public sealed record PlaidTransactionsSyncResult(string? NextCursor, bool HasMore, IReadOnlyList<PlaidTransactionDto> Added, IReadOnlyList<PlaidTransactionDto> Modified, IReadOnlyList<string> RemovedTransactionIds, string? RequestId);
+```
+
+## PlaidTransferRequest
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:262](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L262).
+
+```csharp
+public sealed record PlaidTransferRequest(string ItemId, string PlaidAccountId, Guid PendingPaymentId, Guid EntityId, decimal Amount, string Currency, string Direction, string SecCode, string RequestedBy);
+```
+
+## PlaidTransferResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:273](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L273).
+
+```csharp
+public sealed record PlaidTransferResult(PlaidTransferStatusDto Status, string Message, string? AuthorizationId = null, string? TransferId = null, string? PlaidAccountId = null, Guid? PendingPaymentId = null, DateTimeOffset? CreatedAt = null);
+```
+
+## PlaidTransferStatusDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:32](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L32).
+
+```csharp
+public enum PlaidTransferStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Disabled</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:34](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L34) |  |
+| <code>PendingAuthorization</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:35](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L35) |  |
+| <code>Authorized</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:36](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L36) |  |
+| <code>Created</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:37](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L37) |  |
+| <code>Rejected</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:38](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L38) |  |
+| <code>Blocked</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:39](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L39) |  |
+
+## PlaidWebhookEventDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidWebhookEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:253](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L253).
+
+```csharp
+public sealed record PlaidWebhookEventDto(string EventId, string ItemId, string WebhookType, string WebhookCode, DateTimeOffset ReceivedAt, string? PayloadHash = null, bool Duplicate = false);
+```
+
+## AcceptPrivateCapitalImport
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.AcceptPrivateCapitalImport</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:42](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L42).
+
+```csharp
+public sealed record AcceptPrivateCapitalImport(Guid BatchId, string Fingerprint, Guid CommandId);
+```
+
+## CreatePrivateCapitalCommitment
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.CreatePrivateCapitalCommitment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:16](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L16).
+
+```csharp
+public sealed record CreatePrivateCapitalCommitment(Guid CommandId, Guid HolderEntityId, Guid VehicleSecurityId, string Currency, string SourceReference, PrivateCapitalEvidence Evidence);
+```
+
+## PreviewPrivateCapitalImport
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:34](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L34).
+
+```csharp
+public sealed record PreviewPrivateCapitalImport(IReadOnlyList<PrivateCapitalSnapshotInput>? Rows, string? Csv, PrivateCapitalEvidence Evidence, string Rationale);
+```
+
+## PrivateCapitalChoice
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalChoice</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:7](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L7).
+
+```csharp
+public sealed record PrivateCapitalChoice(Guid Id, string Label);
+```
+
+## PrivateCapitalChoices
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalChoices</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:8](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L8).
+
+```csharp
+public sealed record PrivateCapitalChoices(IReadOnlyList<PrivateCapitalChoice> Entities, IReadOnlyList<PrivateCapitalChoice> Vehicles);
+```
+
+## PrivateCapitalCommitment
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:11](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L11).
+
+```csharp
+public sealed record PrivateCapitalCommitment(Guid CommitmentId, Guid HolderEntityId, Guid VehicleSecurityId, string VehicleName, string Strategy, int? VintageYear, string Currency, string SourceReference, PrivateCapitalEvidence Evidence, DateTimeOffset CreatedAt, string CreatedBy, long VehicleVersion);
+```
+
+## PrivateCapitalEvidence
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:6](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L6).
+
+```csharp
+public sealed record PrivateCapitalEvidence(string VaultId, string DocumentId, string ContentHash);
+```
+
+## PrivateCapitalImportInspection
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalImportInspection</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:44](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L44).
+
+```csharp
+public sealed record PrivateCapitalImportInspection(PrivateCapitalImportPreview Preview, PreviewPrivateCapitalImport SourceInput, PrivateCapitalImportReceipt? Receipt);
+```
+
+## PrivateCapitalImportPreview
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalImportPreview</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:38](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L38).
+
+```csharp
+public sealed record PrivateCapitalImportPreview(Guid BatchId, string Fingerprint, IReadOnlyList<PrivateCapitalSnapshotInput> Rows, PrivateCapitalEvidence Evidence, string Rationale, DateTimeOffset CreatedAt, string CreatedBy);
+```
+
+## PrivateCapitalImportReceipt
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalImportReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:43](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L43).
+
+```csharp
+public sealed record PrivateCapitalImportReceipt(Guid CommandId, Guid BatchId, IReadOnlyList<Guid> SnapshotIds, DateTimeOffset AcceptedAt);
+```
+
+## PrivateCapitalRecords
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalRecords</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:46](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L46).
+
+```csharp
+public sealed record PrivateCapitalRecords(IReadOnlyList<PrivateCapitalCommitment> Commitments, IReadOnlyList<PrivateCapitalSnapshot> Snapshots, DateTimeOffset GeneratedAt);
+```
+
+## PrivateCapitalScope
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:4](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L4).
+
+Authenticated storage partition. Never accepted from a browser request.
+
+```csharp
+public sealed record PrivateCapitalScope(string TenantId, string CompanyId);
+```
+
+## PrivateCapitalSnapshot
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:27](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L27).
+
+```csharp
+public sealed record PrivateCapitalSnapshot(Guid SnapshotId, Guid CommitmentId, string AsOfDate, string? NavValuationDate, string? CommitmentAmount, string? CalledAmount, string? UnfundedAmount, string? CumulativeDistributions, string? NavAmount, string SourceReference, PrivateCapitalEvidence Evidence, Guid? SupersedesSnapshotId, DateTimeOffset RecordedAt, string RecordedBy, string Rationale, Guid BatchId);
+```
+
+## PrivateCapitalSnapshotInput
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalSnapshotInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:21](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L21).
+
+Source observations; exact decimal text and missing values survive the browser boundary.
+
+```csharp
+public sealed record PrivateCapitalSnapshotInput(Guid CommitmentId, string AsOfDate, string? NavValuationDate, string? CommitmentAmount, string? CalledAmount, string? UnfundedAmount, string? CumulativeDistributions, string? NavAmount, string SourceReference, Guid? SupersedesSnapshotId = null);
+```
+
+## PrivateCapitalVehicle
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalVehicle</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:9](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L9).
+
+```csharp
+public sealed record PrivateCapitalVehicle(string Name, string Strategy, int? VintageYear, long Version);
+```
+
+## IReconciliationApiService
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.IReconciliationApiService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:22](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L22).
+
+Defines scope-authorized statement import, reconciliation-run, and casework API operations.
+
+```csharp
+public interface IReconciliationApiService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;StatementImportSummaryDto&gt;&gt; ListImportsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:24](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L24) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementRunSummaryDto&gt;&gt; ListStatementRunsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:28](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L28) |  |
+| <code>Task&lt;StatementRunDto?&gt; CreateStatementRunAsync(StatementRunCreateDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:32](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L32) |  |
+| <code>Task&lt;bool&gt; OwnsStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:37](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L37) |  |
+| <code>Task&lt;ReconciliationFundAccountAuthorization?&gt; GetAuthorizedFundAccountAsync(Guid fundAccountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:47](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L47) | Resolves an exact fund-account owner for a tenant/company-scoped mutation. The default is deliberately unavailable so compatibility implementations cannot authorize a workflow by accident. |
+| <code>Task&lt;StatementReconciliationRunAuthorization?&gt; GetStatementRunAuthorizationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:57](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L57) | Resolves the immutable fund, ledger-book, accounting-period, and as-of authority retained on a statement run. The default is deliberately unavailable. |
+| <code>Task&lt;StatementRunDto?&gt; GetStatementRunAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:63](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L63) |  |
+| <code>Task&lt;StatementRunValidationDto?&gt; GetStatementRunValidationAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:68](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L68) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementRunBreakDto&gt;?&gt; ListStatementRunBreaksAsync(string runId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:73](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L73) |  |
+| <code>Task&lt;StatementRunDto?&gt; ReconcileStatementRunAsync(string runId, StatementRunReconcileRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:78](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L78) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementRunExceptionDto&gt;&gt; ListOpenExceptionsAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:84](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L84) |  |
+| <code>Task&lt;IReadOnlyList&lt;StatementBreakDto&gt;&gt; ListOpenStatementBreaksAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:88](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L88) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationCaseSummaryDto&gt;&gt; ListOpenCasesAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:93](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L93) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationQueueAccountStatusDto&gt;&gt; ListQueueStatusAsync(ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:97](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L97) |  |
+
+## ReconciliationCaseSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:11](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L11).
+
+```csharp
+public sealed record ReconciliationCaseSummaryDto(string CaseId, string ImportId, string Status, string Reason, decimal Confidence, string Rationale, string CreatedAtUtc, string? Assignee = null, string Priority = "Normal", string? SlaPolicyId = null, string? SlaDueAtUtc = null, string? SlaWarningAtUtc = null, string? SlaBreachedAtUtc = null, string SlaState = "OnTrack", string? AgeBand = null, double BusinessAgeHours = 0, string? RootCauseCode = null, string? ResolutionCode = null, string? ResolutionNote = null, string? SignedOffBy = null, string? SignedOffAtUtc = null, string? ReopenedBy = null, string? ReopenedAtUtc = null, string? ReopenReason = null, long Version = 0);
+```
+
+## ReconciliationFundAccountAuthorization
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs:5](../../../../src/Meridian.Contracts/Reconciliation/IReconciliationApiService.cs#L5).
+
+```csharp
+public sealed record ReconciliationFundAccountAuthorization(Guid FundAccountId, string FundProfileId);
+```
+
+## ReconciliationQueueAccountStatusDto
+
+Qualified name: <code>Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs:38](../../../../src/Meridian.Contracts/Reconciliation/StatementImportContracts.cs#L38).
+
+```csharp
+public sealed record ReconciliationQueueAccountStatusDto(Guid AccountId, string AccountCode, string QueueState, int UnresolvedBreakCount, bool SignOffReady, string NextBestAction, string BlockerReason, IReadOnlyList<string> EvidenceLinks);
+```
+
 ## StatementImportSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Reconciliation.StatementImportSummaryDto</code>. Kind: `record`.
@@ -244,409 +560,4 @@ Human rationale for opening a governed restatement. Changed-line evidence and re
 
 ```csharp
 public sealed record ReportingGovernanceRestatementRequestDto(long ExpectedVersion, string Reason);
-```
-
-## ReportingGovernanceRetainedArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:106](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L106).
-
-Discoverable immutable artifact retained for a successfully executed governed run. Preview access is available before release; final distribution remains release-gated.
-
-```csharp
-public sealed record ReportingGovernanceRetainedArtifactDto(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string Kind, bool IsPreview, string DownloadRoute);
-```
-
-## ReportingGovernanceSeriesHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceSeriesHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:202](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L202).
-
-```csharp
-public sealed record ReportingGovernanceSeriesHistoryDto(string SeriesId, IReadOnlyList<GovernedReportingRunDto> Runs, IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);
-```
-
-## ReportingGovernanceVersionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceVersionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:10](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L10).
-
-Optimistic concurrency token for a governed reporting transition. Actor, tenant, company, permissions, command origin, readiness, artifact hashes, and evidence are intentionally absent; the server resolves those values from the authenticated request and retained state.
-
-```csharp
-public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
-```
-
-## DecisionInput
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:6](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L6).
-
-Identifies a kernel input subject and supporting context.
-
-```csharp
-public sealed record DecisionInput(string SubjectId, string? SubjectType = null, string? Context = null, IReadOnlyDictionary<string, string?>? Attributes = null);
-```
-
-## DecisionReason
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionReason</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:26](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L26).
-
-Explains a single weighted rule contribution to a kernel decision.
-
-```csharp
-public sealed record DecisionReason(string RuleId, double Weight, string ReasonCode, string HumanExplanation, DecisionSeverity Severity = DecisionSeverity.Info, IReadOnlyList<string>? EvidenceRefs = null);
-```
-
-## DecisionResult (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:47](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L47).
-
-Standardized output envelope for all rule-evaluation kernels.
-
-```csharp
-public sealed record DecisionResult<TScore>(TScore Score, IReadOnlyList<DecisionReason> Reasons, DecisionTrace Trace);
-```
-
-## DecisionSeverity
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:15](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L15).
-
-Indicates how severe a specific rule reason is for downstream automation and UI.
-
-```csharp
-public enum DecisionSeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:17](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L17) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:18](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L18) |  |
-| <code>Error = 2</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:19](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L19) |  |
-| <code>Critical = 3</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:20](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L20) |  |
-
-## DecisionTrace
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionTrace</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:37](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L37).
-
-Versioned and traceable metadata for decision kernel outputs.
-
-```csharp
-public sealed record DecisionTrace(string SchemaVersion, string KernelVersion, DateTimeOffset EvaluatedAt, string? CorrelationId = null, IReadOnlyDictionary<string, string?>? Metadata = null);
-```
-
-## IDecisionKernel (generic arity 2)
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.IDecisionKernel</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:55](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L55).
-
-Contract for rule kernels that evaluate a decision subject into a standardized envelope.
-
-```csharp
-public interface IDecisionKernel<in TInput, TScore>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DecisionResult&lt;TScore&gt; Evaluate(TInput input, CancellationToken ct = default);</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:57](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L57) |  |
-
-## DataDictionary
-
-Qualified name: <code>Meridian.Contracts.Schema.DataDictionary</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:170](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L170).
-
-Data dictionary containing all schemas.
-
-```csharp
-public sealed class DataDictionary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;version&quot;)] public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:176](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L176) | Gets or sets the data dictionary version. |
-| <code>[JsonPropertyName(&quot;generatedAt&quot;)] public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:182](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L182) | Gets or sets the timestamp when the dictionary was generated. |
-| <code>[JsonPropertyName(&quot;schemas&quot;)] public Dictionary&lt;string, EventSchema&gt; Schemas { get; set; } = new ();</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:188](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L188) | Gets or sets the schema definitions keyed by schema name. |
-| <code>[JsonPropertyName(&quot;exchangeCodes&quot;)] public Dictionary&lt;string, string&gt;? ExchangeCodes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:194](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L194) | Gets or sets the exchange code mappings (code to name). |
-| <code>[JsonPropertyName(&quot;tradeConditions&quot;)] public Dictionary&lt;string, string&gt;? TradeConditions { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:200](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L200) | Gets or sets the trade condition code mappings (code to description). |
-| <code>[JsonPropertyName(&quot;quoteConditions&quot;)] public Dictionary&lt;string, string&gt;? QuoteConditions { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:206](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L206) | Gets or sets the quote condition code mappings (code to description). |
-
-## EventSchema
-
-Qualified name: <code>Meridian.Contracts.Schema.EventSchema</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:8](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L8).
-
-Schema definition for a data event type.
-
-```csharp
-public sealed class EventSchema
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:14](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L14) | Gets or sets the schema name. |
-| <code>[JsonPropertyName(&quot;version&quot;)] public string Version { get; set; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:20](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L20) | Gets or sets the schema version (semantic versioning). |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:26](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L26) | Gets or sets the schema description. |
-| <code>[JsonPropertyName(&quot;introducedAt&quot;)] public DateTime IntroducedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:32](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L32) | Gets or sets the date when this schema was introduced. |
-| <code>[JsonPropertyName(&quot;deprecatedAt&quot;)] public DateTime? DeprecatedAt { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:38](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L38) | Gets or sets the date when this schema was deprecated. |
-| <code>[JsonPropertyName(&quot;fields&quot;)] public SchemaField[] Fields { get; set; } = Array.Empty&lt;SchemaField&gt;();</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:44](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L44) | Gets or sets the array of field definitions. |
-| <code>[JsonPropertyName(&quot;primaryKey&quot;)] public string[]? PrimaryKey { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:50](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L50) | Gets or sets the primary key field names. |
-| <code>[JsonPropertyName(&quot;indexes&quot;)] public string[][]? Indexes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:56](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L56) | Gets or sets the index definitions (array of field name arrays). |
-| <code>[JsonPropertyName(&quot;migrationFromVersion&quot;)] public string? MigrationFromVersion { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:62](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L62) | Gets or sets the previous version this schema migrates from. |
-| <code>[JsonPropertyName(&quot;sampleRecord&quot;)] public Dictionary&lt;string, object&gt;? SampleRecord { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:68](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L68) | Gets or sets a sample record for documentation purposes. |
-
-## FieldValidRange
-
-Qualified name: <code>Meridian.Contracts.Schema.FieldValidRange</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:146](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L146).
-
-Valid range for a field.
-
-```csharp
-public sealed class FieldValidRange
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;min&quot;)] public object? Min { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:152](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L152) | Gets or sets the minimum allowed value. |
-| <code>[JsonPropertyName(&quot;max&quot;)] public object? Max { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:158](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L158) | Gets or sets the maximum allowed value. |
-| <code>[JsonPropertyName(&quot;pattern&quot;)] public string? Pattern { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:164](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L164) | Gets or sets the regex pattern for string validation. |
-
-## ISchemaUpcaster (generic arity 1)
-
-Qualified name: <code>Meridian.Contracts.Schema.ISchemaUpcaster</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Schema/ISchemaUpcaster.cs:20](../../../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs#L20).
-
-Contract for upgrading a stored record from an older schema version to the current one.
-
-```csharp
-public interface ISchemaUpcaster<out T>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>int FromSchemaVersion { get; }</code> | [src/Meridian.Contracts/Schema/ISchemaUpcaster.cs:25](../../../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs#L25) | The schema version this upcaster reads from (e.g., &quot;1&quot;, &quot;1.0.0&quot;). |
-| <code>int ToSchemaVersion { get; }</code> | [src/Meridian.Contracts/Schema/ISchemaUpcaster.cs:30](../../../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs#L30) | The schema version this upcaster writes to (the current version of T). |
-| <code>T? Upcast(string json);</code> | [src/Meridian.Contracts/Schema/ISchemaUpcaster.cs:38](../../../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs#L38) | Converts a raw JSON element that was serialised under FromSchemaVersion into an instance of the current domain type T. |
-
-## SchemaField
-
-Qualified name: <code>Meridian.Contracts.Schema.SchemaField</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:74](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L74).
-
-Schema field definition.
-
-```csharp
-public sealed class SchemaField
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:80](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L80) | Gets or sets the field name. |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = &quot;string&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:86](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L86) | Gets or sets the field data type. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:92](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L92) | Gets or sets the field description. |
-| <code>[JsonPropertyName(&quot;nullable&quot;)] public bool Nullable { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:98](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L98) | Gets or sets a value indicating whether the field can be null. |
-| <code>[JsonPropertyName(&quot;defaultValue&quot;)] public object? DefaultValue { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:104](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L104) | Gets or sets the default value for the field. |
-| <code>[JsonPropertyName(&quot;validRange&quot;)] public FieldValidRange? ValidRange { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:110](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L110) | Gets or sets the valid range constraints for the field. |
-| <code>[JsonPropertyName(&quot;enumValues&quot;)] public string[]? EnumValues { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:116](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L116) | Gets or sets the allowed enum values for the field. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public string? Format { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:122](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L122) | Gets or sets the format specification (e.g., &quot;date-time&quot;, &quot;uuid&quot;). |
-| <code>[JsonPropertyName(&quot;example&quot;)] public object? Example { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:128](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L128) | Gets or sets an example value for documentation. |
-| <code>[JsonPropertyName(&quot;exchangeSpecific&quot;)] public bool ExchangeSpecific { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:134](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L134) | Gets or sets a value indicating whether this field is exchange-specific. |
-| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:140](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L140) | Gets or sets additional notes about the field. |
-
-## AcceptCorporateActionSourceProposalRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AcceptCorporateActionSourceProposalRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:601](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L601).
-
-```csharp
-public sealed record AcceptCorporateActionSourceProposalRequestDto(Guid ProposalId, long ExpectedVersion, string IdempotencyKey, CorporateActionCaseScopeDto Scope, string Actor = "", Guid? CorporateActionId = null, Guid? CaseId = null, string? MethodologyProfileId = null, string? Reason = null, string? CorrelationId = null);
-```
-
-## AddCorporateActionEvidenceRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AddCorporateActionEvidenceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:621](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L621).
-
-```csharp
-public sealed record AddCorporateActionEvidenceRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string EvidenceKind, string EvidenceReference, string Actor, Guid? EvidenceId = null, string? EvidenceHash = null, string? Description = null, JsonElement? Metadata = null, string? CorrelationId = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
-```
-
-## AmendConvertibleEquityTermsRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L30).
-
-```csharp
-public sealed record AmendConvertibleEquityTermsRequest(long ExpectedVersion, Guid UnderlyingSecurityId, decimal ConversionRatio, decimal? ConversionPrice, DateOnly? ConversionStartDate, DateOnly? ConversionEndDate, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AmendPreferredEquityTermsRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendPreferredEquityTermsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L74).
-
-Request to amend the preferred-equity-specific terms for an existing security.
-
-```csharp
-public sealed record AmendPreferredEquityTermsRequest(long ExpectedVersion, decimal? DividendRate, string? DividendType, decimal? RedemptionPrice, DateOnly? RedemptionDate, DateOnly? CallableDate, bool? ParticipatesInCommonDividends, decimal? AdditionalDividendThreshold, string? LiquidationPreferenceKind, decimal? LiquidationPreferenceMultiple, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AmendSecurityTermBlockRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendSecurityTermBlockRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermBlocks.cs#L11).
-
-Request to replace one nested term block (an object or array term such as a preferred-terms object, a call schedule or swap legs) on any asset class.
-
-```csharp
-public sealed record AmendSecurityTermBlockRequest(long ExpectedVersion, JsonElement Block, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AmendSecurityTermsRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs#L17).
-
-```csharp
-public sealed record AmendSecurityTermsRequest(Guid SecurityId, long ExpectedVersion, JsonElement? CommonTerms, JsonElement? AssetSpecificTermsPatch, IReadOnlyList<SecurityIdentifierDto> IdentifiersToAdd, IReadOnlyList<SecurityIdentifierDto> IdentifiersToExpire, DateTimeOffset EffectiveFrom, string SourceSystem, string UpdatedBy, string? SourceRecordId, string? Reason);
-```
-
-## AppendOtcContractLifecycleRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AppendOtcContractLifecycleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L45).
-
-An idempotent lifecycle write fenced on the current contract version. Endpoints replace Actor with the session identity.
-
-```csharp
-public sealed record AppendOtcContractLifecycleRequest([property : JsonRequired] Guid EventId, [property : JsonRequired] Guid ContractId, [property : JsonRequired] long ExpectedVersion, [property : JsonRequired] DateOnly EffectiveDate, [property : JsonRequired] string SourceReference, [property : JsonRequired] OtcContractLifecycleData Data, string? Actor = null);
-```
-
-## ApproveCorporateActionCaseAccountingRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ApproveCorporateActionCaseAccountingRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L145).
-
-```csharp
-public sealed record ApproveCorporateActionCaseAccountingRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, Guid ProjectionId, string Reason, string EvidenceReference, string EvidenceHash, string Actor, CorporateActionCaseScopeDto? ScopeAssertion = null, Guid? ApprovalId = null, string? CorrelationId = null, CorporateActionAccountingDecisionAuthorityDto? Authority = null);
-```
-
-## ApproveSecurityClosePriceSetRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ApproveSecurityClosePriceSetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs#L19).
-
-```csharp
-public sealed record ApproveSecurityClosePriceSetRequest(string AccountId, string BookId, DateOnly ValuationDate, Guid SnapshotId, string Reviewer, string Rationale);
-```
-
-## AssetClassDepthRouteKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetClassDepthRouteKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:358](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L358).
-
-```csharp
-public enum AssetClassDepthRouteKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Provider</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:360](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L360) |  |
-| <code>Ledger</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:361](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L361) |  |
-| <code>Close</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:362](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L362) |  |
-| <code>AssetProfiles</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:363](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L363) |  |
-
-## AssetClassDepthTargetSpec
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetClassDepthTargetSpec</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs:366](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs#L366).
-
-```csharp
-public sealed record AssetClassDepthTargetSpec(string KeySuffix, string TargetType, string Label, AssetClassDepthRouteKind RouteKind, string EvidenceCategory, string RequirementCategory, string Source, bool FallbackEvidenceToProvider = false, bool UseCloseEvidenceStatus = false);
-```
-
-## AssetOperationsCapabilitySet
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetOperationsCapabilitySet</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1420](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1420).
-
-Groups the operational capabilities supported by different asset profiles.
-
-```csharp
-public static class AssetOperationsCapabilitySet
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;string&gt; IdentityOnly = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;Evidence&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1422](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1422) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; FixedIncome = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1430](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1430) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; DirectLending = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1444](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1444) |  |
-| <code>public static readonly IReadOnlyList&lt;string&gt; AlternativeAssetOperations = [&quot;Identity&quot;, &quot;TermsHistory&quot;, &quot;LifecycleState&quot;, &quot;ProjectedCashFlows&quot;, &quot;ActualActivity&quot;, &quot;Reconciliation&quot;, &quot;LedgerProjection&quot;, &quot;Evidence&quot;, &quot;WorkflowAudit&quot;, &quot;Readiness&quot;];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1458](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1458) |  |
-
-## AssetPackAccountingRules
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAccountingRules</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:889](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L889).
-
-```csharp
-public sealed record AssetPackAccountingRules(IReadOnlyList<string> JournalTemplateEvents, IReadOnlyList<AssetPackJournalTemplateRule> JournalTemplates, IReadOnlyList<string> AccountingBases, IReadOnlyList<string> Currencies, IReadOnlyList<string> EntityScopes);
-```
-
-## AssetPackAdmissionPolicy
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackAdmissionPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:855](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L855).
-
-```csharp
-public sealed record AssetPackAdmissionPolicy(bool AllowsWideCapture, bool RequiresJournalTemplateBeforeAutomatedPosting, string AccountingPostingPolicy, string EvidencePolicy, string CoreLedgerMutationPolicy, IReadOnlyList<string> AutomationEscalationTriggers);
 ```

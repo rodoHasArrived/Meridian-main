@@ -1432,6 +1432,15 @@
       "sha256": "45207b1ce0f3618d05aa953a1cf117fc8c60df055d549d06500143b973b329e0"
     },
     {
+      "filename": "010_private_capital_records.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/010_private_capital_records.sql",
+      "schema": "fund_accounts",
+      "sha256": "31a9d472b7e4764219971282da4437974db73cfa1dc72e412d5dcd765d945f6d"
+    },
+    {
       "filename": "001_banking.sql",
       "immutable": true,
       "migration_set_id": "banking",
@@ -1604,7 +1613,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "0df64ed4973368ba1ea390fbbe003435d4a6bcbb25691ca63adad1223d91c319",
+  "fingerprint": "a8a2323f05d8e08932e4fd57eb27d3d81ed31d962e53621d91e469c25b231dcf",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1866,7 +1875,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 178,
+    "files": 179,
     "migration_sets": 11,
     "waivers": 44,
     "warnings": 0

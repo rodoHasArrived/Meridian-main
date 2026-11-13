@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HistoricalPriceAccessSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:307](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L307).
+
+```csharp
+public sealed record HistoricalPriceAccessSummaryDto(bool IsAvailable, bool HasStoredData, int AvailableSymbolCount, IReadOnlyList<string> SampleSymbols, string AvailabilityDescription);
+```
+
+## IIntercompanyAccountingArrangementLegalAuthority
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:86](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L86).
+
+Native legal read/lease adapter. Mapping approval cannot manufacture legal approval.
+
+```csharp
+public interface IIntercompanyAccountingArrangementLegalAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:88](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L88) |  |
+| <code>Task&lt;IntercompanyAgreementRevisionDto&gt; GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:90](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L90) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:92](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L92) |  |
+| <code>Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:94](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L94) |  |
+
 ## IIntercompanyAccountingArrangementLegalLease
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalLease</code>. Kind: `interface`.
@@ -666,24 +697,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:473](../../..
 
 ```csharp
 public sealed record LedgerMappingAssignmentRequestDto(Guid AccountId, string LedgerGroupId, string RequestedBy, string Rationale, DateTimeOffset? EffectiveFrom = null, string? CorrelationId = null, Guid? AssignmentId = null);
-```
-
-## LedgerMappingAssignmentResultDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAssignmentResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:495](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L495).
-
-```csharp
-public sealed record LedgerMappingAssignmentResultDto(FundStructureAssignmentDto Assignment, LedgerMappingAccountDto Account, LedgerMappingAssignmentAuditEventDto AuditEvent, LedgerMappingWorkbenchDto Workbench);
-```
-
-## LedgerMappingResolutionDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingResolutionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:436](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L436).
-
-```csharp
-public sealed record LedgerMappingResolutionDto(LedgerGroupId LedgerGroupId, LedgerMappingSourceDto Source, Guid? SourceNodeId, FundStructureNodeKindDto? SourceNodeKind, string? SourceReference, bool RequiresUserMapping, IReadOnlyList<string> IssueCodes);
 ```

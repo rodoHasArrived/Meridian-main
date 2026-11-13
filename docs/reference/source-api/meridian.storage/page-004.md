@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureTenantBackfillRow
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L6).
+
+Maintenance-only snapshot; this is not an operator-session read API.
+
+```csharp
+public sealed record FundStructureTenantBackfillRow(string Table, Guid Id, string Kind, bool IsNode, string? TenantId, IReadOnlyList<Guid> Parents, IReadOnlyList<Guid> Children, JsonElement RetainedRow, bool IsInferred = false);
+```
+
+## FundStructureTenantBackfillSnapshot
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L14).
+
+```csharp
+public sealed record FundStructureTenantBackfillSnapshot(string SourceIdentity, string SchemaIdentity, IReadOnlyList<FundStructureTenantBackfillRow> Rows, IReadOnlyList<FundStructureTenantBackfillEvidence> Evidence, IReadOnlyList<JsonElement> RetainedQuarantine, bool SupportsAtomicApply = true);
+```
+
+## FundStructureTenantBackfillStamp
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillStamp</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:20](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L20).
+
+```csharp
+public sealed record FundStructureTenantBackfillStamp(string Table, Guid Id, string TenantId);
+```
+
+## FundStructureTenantMap
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantMap</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:129](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L129).
+
+Which fund-structure nodes a store attributes to a tenant.
+
+```csharp
+public sealed record FundStructureTenantMap(bool IsPartitioned, IReadOnlyDictionary<Guid, string> NodeTenants)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FundStructureTenantMap Unpartitioned { get; } = new (IsPartitioned : false, new Dictionary&lt;Guid, string&gt;());</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:134](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L134) | A store that does not model tenant ownership. |
+
+## FundStructureTenantQuarantineResolution
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantQuarantineResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:26](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L26).
+
+A reviewed release from quarantine whose owner is recomputed from retained evidence.
+
+```csharp
+public sealed record FundStructureTenantQuarantineResolution(Guid NodeId, string TenantId);
+```
+
 ## IEntityLifecycleStore
 
 Qualified name: <code>Meridian.Storage.FundStructure.IEntityLifecycleStore</code>. Kind: `interface`.
@@ -1054,103 +1116,3 @@ Enum declarations:
 | <code>CorporateAction = 4</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:469](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L469) |  |
 | <code>CapitalReturn = 5</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:470](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L470) |  |
 | <code>FactorPaydown = 6</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:473](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L473) |  |
-
-## CanonicalDisposalHistoryProjector
-
-Qualified name: <code>Meridian.Storage.Ledger.CanonicalDisposalHistoryProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs:8](../../../../src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs#L8).
-
-Certifies disposal economics against retained current basis while preserving acquisition evidence.
-
-```csharp
-public static class CanonicalDisposalHistoryProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerTaxLotReliefProjection Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency);</code> | [src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs:10](../../../../src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs#L10) |  |
-
-## CanonicalOpenLotDisposalGuard
-
-Qualified name: <code>Meridian.Storage.Ledger.CanonicalOpenLotDisposalGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs:7](../../../../src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs#L7).
-
-Production cutover guard over the locked lots of record, in durable storage units.
-
-```csharp
-public static class CanonicalOpenLotDisposalGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OpenLotReliefResultDto Validate(IReadOnlyList&lt;LedgerTaxLotRecord&gt; openLots, IReadOnlyList&lt;LedgerTaxLotDisposalSelection&gt; selections, LedgerTaxLotReliefMethod method, string functionalCurrency);</code> | [src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs:9](../../../../src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs#L9) |  |
-
-## ConsolidationFxCurrencyRules
-
-Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxCurrencyRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:7](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L7).
-
-Governed FX requires a recognized monetary currency with a defined minor-unit scale.
-
-```csharp
-public static class ConsolidationFxCurrencyRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsSupported(string? currency) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:9](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L9) |  |
-| <code>public static void RequireSupported(string currency);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:14](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L14) |  |
-| <code>public static void Validate(ConsolidationFxRateSetDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:20](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L20) |  |
-| <code>public static void Validate(ConsolidationFxPolicyDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:30](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L30) |  |
-| <code>public static void Validate(ConsolidationFxBookConfigurationDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:36](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L36) |  |
-
-## ConsolidationFxFileStore
-
-Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxFileStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:186](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L186).
-
-Atomic single-process development persistence. Production uses PostgreSQL.
-
-```csharp
-public sealed class ConsolidationFxFileStore : ConsolidationFxInMemoryStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConsolidationFxFileStore(string path);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:189](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L189) |  |
-
-## ConsolidationFxInMemoryStore
-
-Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxInMemoryStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:10](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L10).
-
-Single-process local/demo store with the same immutable revision contract as PostgreSQL.
-
-```csharp
-public class ConsolidationFxInMemoryStore : IConsolidationFxStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task RetainRateSetAsync(ConsolidationFxRateSetDto rateSet, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:16](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L16) |  |
-| <code>public Task&lt;ConsolidationFxRateSetDto?&gt; GetRateSetAsync(string tenantId, string companyId, Guid rateSetId, int revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:45](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L45) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ConsolidationFxRateSetDto&gt;&gt; ListRateSetsAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:55](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L55) |  |
-| <code>public async Task RetainConfigurationAsync(ConsolidationFxBookConfigurationDto configuration, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:64](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L64) |  |
-| <code>public Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:98](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L98) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:109](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L109) |  |
-| <code>public Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationRevisionAsync(Guid ledgerBookId, int revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:115](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L115) |  |

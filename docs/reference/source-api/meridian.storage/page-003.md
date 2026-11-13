@@ -534,6 +534,25 @@ Declared public members:
 | <code>public async Task&lt;BondPerformanceTransactionPopulationDto&gt; AppendAsync(BondPerformanceTransactionPopulationDto population, CancellationToken ct = default);</code> | [src/Meridian.Storage/FixedIncome/FileBondPerformanceTransactionStore.cs:15](../../../../src/Meridian.Storage/FixedIncome/FileBondPerformanceTransactionStore.cs#L15) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;BondPerformanceTransactionPopulationDto&gt;&gt; ReadAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/FixedIncome/FileBondPerformanceTransactionStore.cs:44](../../../../src/Meridian.Storage/FixedIncome/FileBondPerformanceTransactionStore.cs#L44) |  |
 
+## FilePrivateCapitalRecordStore
+
+Qualified name: <code>Meridian.Storage.FundAccounts.FilePrivateCapitalRecordStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs:10](../../../../src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs#L10).
+
+Durable local authority with a cross-process writer lock and atomic publication.
+
+```csharp
+public sealed class FilePrivateCapitalRecordStore(string rootDirectory) : IPrivateCapitalRecordStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs:23](../../../../src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs#L23) |  |
+| <code>public async Task AppendAsync(PrivateCapitalScope scope, Func&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;, IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; prepare, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs:35](../../../../src/Meridian.Storage/FundAccounts/FilePrivateCapitalRecordStore.cs#L35) |  |
+
 ## FundAccountLegacyBankStatement
 
 Qualified name: <code>Meridian.Storage.FundAccounts.FundAccountLegacyBankStatement</code>. Kind: `record`.
@@ -681,6 +700,23 @@ Declared public members:
 | <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:84](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L84) |  |
 | <code>Task&lt;FundAccountLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundAccountLegacyImportRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:91](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L91) | Imports one legacy JSON snapshot as a single database transaction when the store is empty. The source hash is committed in the same transaction so startup can safely recover a process failure between database commit and source-file archival. |
 
+## IPrivateCapitalRecordStore
+
+Qualified name: <code>Meridian.Storage.FundAccounts.IPrivateCapitalRecordStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs:8](../../../../src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs#L8).
+
+```csharp
+public interface IPrivateCapitalRecordStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs:10](../../../../src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs#L10) |  |
+| <code>Task AppendAsync(PrivateCapitalScope scope, Func&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;, IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; prepare, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs:13](../../../../src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs#L13) | Serializes a partition mutation. Returned rows are appended, never replaced or deleted. |
+
 ## PostgresFundAccountStore
 
 Qualified name: <code>Meridian.Storage.FundAccounts.PostgresFundAccountStore</code>. Kind: `class`.
@@ -722,6 +758,54 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1496](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1496) |  |
 | <code>public async Task&lt;FundAccountLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundAccountLegacyImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1571](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1571) |  |
 | <code>public async Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1708](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1708) |  |
+
+## PostgresPrivateCapitalRecordStore
+
+Qualified name: <code>Meridian.Storage.FundAccounts.PostgresPrivateCapitalRecordStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs:11](../../../../src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs#L11).
+
+Append-only PostgreSQL records with per-partition locking and transactional receipts.
+
+```csharp
+public sealed class PostgresPrivateCapitalRecordStore : IPrivateCapitalRecordStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresPrivateCapitalRecordStore(FundAccountStoreOptions options);</code> | [src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs:17](../../../../src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs#L17) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs:37](../../../../src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs#L37) |  |
+| <code>public async Task AppendAsync(PrivateCapitalScope scope, Func&lt;IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;, IReadOnlyList&lt;PrivateCapitalStoredRecord&gt;&gt; prepare, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs:46](../../../../src/Meridian.Storage/FundAccounts/PostgresPrivateCapitalRecordStore.cs#L46) |  |
+
+## PrivateCapitalScopeValidation
+
+Qualified name: <code>Meridian.Storage.FundAccounts.PrivateCapitalScopeValidation</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs:18](../../../../src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs#L18).
+
+```csharp
+public static class PrivateCapitalScopeValidation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void Require(PrivateCapitalScope scope);</code> | [src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs:20](../../../../src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs#L20) |  |
+
+## PrivateCapitalStoredRecord
+
+Qualified name: <code>Meridian.Storage.FundAccounts.PrivateCapitalStoredRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs:6](../../../../src/Meridian.Storage/FundAccounts/IPrivateCapitalRecordStore.cs#L6).
+
+An immutable retained record; command receipts share the financial transaction.
+
+```csharp
+public sealed record PrivateCapitalStoredRecord(string Kind, Guid Id, string Payload);
+```
 
 ## FileEntityLifecycleStore
 
@@ -861,66 +945,4 @@ Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs
 
 ```csharp
 public sealed record FundStructureTenantBackfillReceipt(Guid RunId, string PlanHash, string OperatorId, string ReviewReference, DateTimeOffset AppliedAt, int StampedRows, int QuarantinedRows, JsonElement Plan);
-```
-
-## FundStructureTenantBackfillRow
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L6).
-
-Maintenance-only snapshot; this is not an operator-session read API.
-
-```csharp
-public sealed record FundStructureTenantBackfillRow(string Table, Guid Id, string Kind, bool IsNode, string? TenantId, IReadOnlyList<Guid> Parents, IReadOnlyList<Guid> Children, JsonElement RetainedRow, bool IsInferred = false);
-```
-
-## FundStructureTenantBackfillSnapshot
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L14).
-
-```csharp
-public sealed record FundStructureTenantBackfillSnapshot(string SourceIdentity, string SchemaIdentity, IReadOnlyList<FundStructureTenantBackfillRow> Rows, IReadOnlyList<FundStructureTenantBackfillEvidence> Evidence, IReadOnlyList<JsonElement> RetainedQuarantine, bool SupportsAtomicApply = true);
-```
-
-## FundStructureTenantBackfillStamp
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillStamp</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:20](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L20).
-
-```csharp
-public sealed record FundStructureTenantBackfillStamp(string Table, Guid Id, string TenantId);
-```
-
-## FundStructureTenantMap
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantMap</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:129](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L129).
-
-Which fund-structure nodes a store attributes to a tenant.
-
-```csharp
-public sealed record FundStructureTenantMap(bool IsPartitioned, IReadOnlyDictionary<Guid, string> NodeTenants)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FundStructureTenantMap Unpartitioned { get; } = new (IsPartitioned : false, new Dictionary&lt;Guid, string&gt;());</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:134](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L134) | A store that does not model tenant ownership. |
-
-## FundStructureTenantQuarantineResolution
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantQuarantineResolution</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:26](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L26).
-
-A reviewed release from quarantine whose owner is recomputed from retained evidence.
-
-```csharp
-public sealed record FundStructureTenantQuarantineResolution(Guid NodeId, string TenantId);
 ```

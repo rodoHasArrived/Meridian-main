@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FieldMappingDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.FieldMappingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:204](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L204).
+
+```csharp
+public sealed record FieldMappingDto(ProviderCapabilityKindDto Capability, string SourcePath, string TargetField, TransformRuleDto? Transform, bool Required, ProviderMappingConfidenceDto Confidence, string? DefaultValue, string? ConstantValue);
+```
+
+## IntegrationStagingRecordDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.IntegrationStagingRecordDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:411](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L411).
+
+```csharp
+public sealed record IntegrationStagingRecordDto(string StagingRecordId, string SyncRunId, string ConnectionId, ProviderCapabilityKindDto Capability, string RawPayloadId, string? SourceRecordId, string DedupeKey, JsonElement MappedRecord, IReadOnlyList<ValidationIssueDto> ValidationWarnings, ProviderIntegrationProcessingStatusDto Status, DateTimeOffset CreatedAt);
+```
+
 ## IntegrationTypeDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.IntegrationTypeDto</code>. Kind: `enum`.
@@ -724,31 +744,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:528
 
 ```csharp
 public sealed record ProviderIntegrationReconciliationHandoffResultDto(bool Accepted, string? HandoffId, string ConnectionId, string PromotionTarget, IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto> Records, int AcceptedRecordCount, int RejectedRecordCount, int DuplicateRecordCount, IReadOnlyList<ValidationIssueDto> Issues, string? Message);
-```
-
-## ProviderIntegrationReplayModeDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationReplayModeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:15](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L15).
-
-```csharp
-public enum ProviderIntegrationReplayModeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Original</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:17](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L17) |  |
-| <code>Remediation</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:18](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L18) |  |
-
-## ProviderIntegrationRestDryRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationRestDryRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:688](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L688).
-
-```csharp
-public sealed record ProviderIntegrationRestDryRunRequestDto(string SyncRunId, string ManifestId, string ConnectionId, ProviderCapabilityKindDto Capability, string EndpointKey, IReadOnlyDictionary<string, string> PathParameters, IReadOnlyDictionary<string, string> QueryParameters, string RequestedBy, DateTimeOffset RequestedAt, int MaxPages);
 ```

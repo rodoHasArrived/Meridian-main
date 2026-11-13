@@ -53,6 +53,10 @@ export interface BondAnalyticsResult {
   /** Dirty-price change per 100 face for +1 bp coupon spread at unchanged projected-flow yield. */
   spreadDv01?: BondDecimal | null;
   yieldToWorst: BondDecimal | null;
+  maturityDate?: string | null;
+  governingYieldScenarios?: Array<{ kind: string; date: string; yield: BondDecimal }> | null;
+  redemptionScenarios?: BondExerciseScenario[];
+  yieldToWorstScenarios?: BondExerciseScenario[];
   cashFlows: Array<{
     flowId: string;
     paymentDate: string;
@@ -72,9 +76,14 @@ export interface BondAnalyticsResult {
       source: string;
     } | null;
   }>;
-  exerciseYields: BondExerciseScenario[];
-  redemptionScenarios?: BondExerciseScenario[];
-  yieldToWorstScenarios?: BondExerciseScenario[];
+  exerciseYields: Array<{
+    kind: string;
+    exerciseDate: string;
+    redemptionPrice: BondDecimal;
+    yield: BondDecimal;
+    latestNoticeDate?: string | null;
+    earliestNoticeDate?: string | null;
+  }>;
   inputs: BondCalculationInput[];
   blockers: Array<{ code: string; reason: string }>;
   capabilities: Array<{

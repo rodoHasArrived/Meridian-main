@@ -1779,6 +1779,7 @@ Meridian-main
 │   │   ├── intercompany-consolidation.md
 │   │   ├── market-curve.md
 │   │   ├── operational-evidence-graph.md
+│   │   ├── options-screening-and-assessments.md
 │   │   ├── otc-contract-lifecycle.md
 │   │   ├── README.md
 │   │   ├── recurring-journal.md
@@ -1892,6 +1893,7 @@ Meridian-main
 │   │   │   │   ├── security-master-contracts-page-05.md
 │   │   │   │   ├── security-master-contracts-page-06.md
 │   │   │   │   ├── security-master-contracts-page-07.md
+│   │   │   │   ├── security-master-contracts-page-08.md
 │   │   │   │   └── security-master-contracts.md
 │   │   │   ├── diagrams
 │   │   │   │   ├── asset_operations.mmd
@@ -1920,6 +1922,7 @@ Meridian-main
 │   │   │   │   ├── contracts-security-master-contracts-page-05.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-06.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-07.mmd
+│   │   │   │   ├── contracts-security-master-contracts-page-08.mmd
 │   │   │   │   ├── fund_accounts.mmd
 │   │   │   │   ├── fund_structure.mmd
 │   │   │   │   ├── identity_access.mmd
@@ -1983,6 +1986,7 @@ Meridian-main
 │   │   ├── distributed-tracing.md
 │   │   ├── external-gl-providers.md
 │   │   ├── failover-and-recovery.md
+│   │   ├── financial-visualizations.md
 │   │   ├── fund-ops-persistence-cutover.md
 │   │   ├── fund-structure-tenant-backfill.md
 │   │   ├── governed-reporting-operations.md
@@ -5333,6 +5337,7 @@ Meridian-main
 │   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
 │   │   │   ├── CorporateActions
+│   │   │   │   ├── CorporateActionCalendarService.cs
 │   │   │   │   ├── CorporateActionCaseAccountingService.CashDividend.cs
 │   │   │   │   ├── CorporateActionCaseAccountingService.cs
 │   │   │   │   ├── CorporateActionCashDividendEligibilityResolver.cs
@@ -5988,7 +5993,9 @@ Meridian-main
 │   │   │   ├── PreparerAttestationApprovalBoundary.cs
 │   │   │   └── VerifiedOperationOutcome.cs
 │   │   ├── Options
-│   │   │   └── OptionReferenceDtos.cs
+│   │   │   ├── OptionAssessmentValidation.cs
+│   │   │   ├── OptionReferenceDtos.cs
+│   │   │   └── OptionVisualizationDtos.cs
 │   │   ├── Pipeline
 │   │   │   ├── IngestionJob.cs
 │   │   │   ├── PipelinePolicyConstants.cs
@@ -5996,6 +6003,8 @@ Meridian-main
 │   │   │   └── UflOutboxMessage.cs
 │   │   ├── Plaid
 │   │   │   └── PlaidModels.cs
+│   │   ├── PrivateCapital
+│   │   │   └── PrivateCapitalRecordDtos.cs
 │   │   ├── Reconciliation
 │   │   │   ├── IReconciliationApiService.cs
 │   │   │   └── StatementImportContracts.cs
@@ -6026,6 +6035,7 @@ Meridian-main
 │   │   │   ├── CashDividendReconciliationSupport.cs
 │   │   │   ├── ClassificationLabelReader.cs
 │   │   │   ├── CommitmentLot.cs
+│   │   │   ├── CorporateActionCalendarContracts.cs
 │   │   │   ├── CorporateActionCaseAccountingContracts.cs
 │   │   │   ├── CorporateActionCashDividendAttestationContracts.cs
 │   │   │   ├── CorporateActionCashDividendAttestationValidation.cs
@@ -7663,6 +7673,9 @@ Meridian-main
 │   │   │   ├── InMemoryFundAccountService.cs
 │   │   │   ├── LegacyPlaidTransactionFeedBackfill.cs
 │   │   │   └── PostgresFundAccountService.cs
+│   │   ├── PrivateCapital
+│   │   │   ├── PrivateCapitalCsv.cs
+│   │   │   └── PrivateCapitalRecordService.cs
 │   │   ├── DesignModule.cs
 │   │   ├── Meridian.PortfolioRecords.csproj
 │   │   └── README.md
@@ -7975,11 +7988,15 @@ Meridian-main
 │   │   │   │   ├── 006_sync_history_correlation.sql
 │   │   │   │   ├── 007_bank_statement_authority.sql
 │   │   │   │   ├── 008_plaid_transaction_feed_backfill.sql
-│   │   │   │   └── 009_custodian_snapshot_authority.sql
+│   │   │   │   ├── 009_custodian_snapshot_authority.sql
+│   │   │   │   └── 010_private_capital_records.sql
+│   │   │   ├── FilePrivateCapitalRecordStore.cs
 │   │   │   ├── FundAccountMigrationRunner.cs
 │   │   │   ├── FundAccountStoreOptions.cs
 │   │   │   ├── IFundAccountStore.cs
-│   │   │   └── PostgresFundAccountStore.cs
+│   │   │   ├── IPrivateCapitalRecordStore.cs
+│   │   │   ├── PostgresFundAccountStore.cs
+│   │   │   └── PostgresPrivateCapitalRecordStore.cs
 │   │   ├── FundStructure
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_fund_structure.sql
@@ -8367,6 +8384,7 @@ Meridian-main
 │   │   │   ├── PostgresCommodityReferenceProjectionStore.cs
 │   │   │   ├── PostgresCorporateActionCanonicalStore.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.Accounting.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.Calendar.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.Cases.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.CashDividendAttestations.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.CashDividendCaseFacts.cs
@@ -8832,6 +8850,7 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-analytics-panel.tsx
 │   │   │   │   │   │   ├── bond-coupon-recognition-panel.test.tsx
 │   │   │   │   │   │   ├── bond-coupon-recognition-panel.tsx
+│   │   │   │   │   │   ├── bond-economics-horizon.retained-scenarios.test.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.test.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.tsx
 │   │   │   │   │   │   ├── bond-income-panel.test.tsx
@@ -8929,6 +8948,8 @@ Meridian-main
 │   │   │   │   │   │   ├── preparer-draft-check-panel.tsx
 │   │   │   │   │   │   ├── principal-id-input.test.tsx
 │   │   │   │   │   │   ├── principal-id-input.tsx
+│   │   │   │   │   │   ├── private-capital-lifecycle-panel.test.tsx
+│   │   │   │   │   │   ├── private-capital-lifecycle-panel.tsx
 │   │   │   │   │   │   ├── private-capital-lifecycle.test.tsx
 │   │   │   │   │   │   ├── private-capital-lifecycle.tsx
 │   │   │   │   │   │   ├── private-capital-lifecycle.view-model.ts
@@ -9223,6 +9244,8 @@ Meridian-main
 │   │   │   │   │   │   ├── close-preparation.api.test.ts
 │   │   │   │   │   │   ├── close-preparation.api.ts
 │   │   │   │   │   │   ├── contractual-cash-flow.api.ts
+│   │   │   │   │   │   ├── corporate-action-calendar.api.test.ts
+│   │   │   │   │   │   ├── corporate-action-calendar.api.ts
 │   │   │   │   │   │   ├── corporate-actions.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
@@ -9232,6 +9255,7 @@ Meridian-main
 │   │   │   │   │   │   ├── entity-operations.api.ts
 │   │   │   │   │   │   ├── execution-audit.api.ts
 │   │   │   │   │   │   ├── execution-blotter.api.ts
+│   │   │   │   │   │   ├── execution-evidence.api.ts
 │   │   │   │   │   │   ├── execution-workflows.api.ts
 │   │   │   │   │   │   ├── factor-paydown.api.test.ts
 │   │   │   │   │   │   ├── factor-paydown.api.ts
@@ -9241,7 +9265,11 @@ Meridian-main
 │   │   │   │   │   │   ├── intercompany-agreements.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
 │   │   │   │   │   │   ├── operator-workstation.api.ts
+│   │   │   │   │   │   ├── option-visualization.api.test.ts
+│   │   │   │   │   │   ├── option-visualization.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
+│   │   │   │   │   │   ├── private-capital-records.api.test.ts
+│   │   │   │   │   │   ├── private-capital-records.api.ts
 │   │   │   │   │   │   ├── private-capital.api.test.ts
 │   │   │   │   │   │   ├── private-capital.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
@@ -9677,8 +9705,11 @@ Meridian-main
 │   │   │   │   │   ├── cash-ladder-screen.tsx
 │   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
 │   │   │   │   │   ├── cash-ladder-screen.view-model.ts
+│   │   │   │   │   ├── corporate-action-calendar.queue-projection.test.tsx
 │   │   │   │   │   ├── corporate-action-calendar.test.tsx
 │   │   │   │   │   ├── corporate-action-calendar.tsx
+│   │   │   │   │   ├── corporate-action-calendar.view-state.ts
+│   │   │   │   │   ├── corporate-action-deadline-panel.tsx
 │   │   │   │   │   ├── covered-call-screen.formatters.ts
 │   │   │   │   │   ├── covered-call-screen.test.tsx
 │   │   │   │   │   ├── covered-call-screen.tsx
@@ -9742,15 +9773,19 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.workbook-review.ts
 │   │   │   │   │   ├── data-screen.workflow-continuity.ts
 │   │   │   │   │   ├── data-screen.workstreams.tsx
+│   │   │   │   │   ├── depth-quantity-illustration.snapshot.test.tsx
 │   │   │   │   │   ├── depth-quantity-illustration.test.tsx
 │   │   │   │   │   ├── depth-quantity-illustration.tsx
+│   │   │   │   │   ├── depth-quantity.view-model.ts
 │   │   │   │   │   ├── evidence-workbench-assurance-lists.tsx
 │   │   │   │   │   ├── evidence-workbench-formatters.ts
 │   │   │   │   │   ├── evidence-workbench-screen.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.test.tsx
 │   │   │   │   │   ├── evidence-workbench-screen.view-model.ts
+│   │   │   │   │   ├── execution-journey.standalone.test.tsx
 │   │   │   │   │   ├── execution-journey.test.tsx
 │   │   │   │   │   ├── execution-journey.tsx
+│   │   │   │   │   ├── execution-journey.view-model.ts
 │   │   │   │   │   ├── family-office-ownership-map.tsx
 │   │   │   │   │   ├── family-office-ownership.test.tsx
 │   │   │   │   │   ├── family-office-ownership.ts
@@ -9761,6 +9796,8 @@ Meridian-main
 │   │   │   │   │   ├── family-office-screen.tsx
 │   │   │   │   │   ├── family-office-screen.view-model.test.ts
 │   │   │   │   │   ├── family-office-screen.view-model.ts
+│   │   │   │   │   ├── family-ownership-graph.test.tsx
+│   │   │   │   │   ├── family-ownership-graph.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.test.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
@@ -9777,9 +9814,12 @@ Meridian-main
 │   │   │   │   │   ├── loan-book-screen.tsx
 │   │   │   │   │   ├── loan-book-screen.view-model.test.ts
 │   │   │   │   │   ├── loan-book-screen.view-model.ts
+│   │   │   │   │   ├── loan-maturity-view.test.tsx
 │   │   │   │   │   ├── loan-maturity-view.tsx
 │   │   │   │   │   ├── loan-maturity.test.tsx
 │   │   │   │   │   ├── loan-maturity.ts
+│   │   │   │   │   ├── margin-comparison-overview.test.tsx
+│   │   │   │   │   ├── margin-comparison-overview.tsx
 │   │   │   │   │   ├── margin-control-center-screen.test.tsx
 │   │   │   │   │   ├── margin-control-center-screen.tsx
 │   │   │   │   │   ├── margin-disagreement-view.test.tsx
@@ -9806,6 +9846,14 @@ Meridian-main
 │   │   │   │   │   ├── operator-readiness-console.tsx
 │   │   │   │   │   ├── operator-readiness-console.view-model.test.ts
 │   │   │   │   │   ├── operator-readiness-console.view-model.ts
+│   │   │   │   │   ├── options-screen.assessments.test.tsx
+│   │   │   │   │   ├── options-screen.assessments.tsx
+│   │   │   │   │   ├── options-screen.test.tsx
+│   │   │   │   │   ├── options-screen.tsx
+│   │   │   │   │   ├── options-screen.view-model.test.ts
+│   │   │   │   │   ├── options-screen.view-model.ts
+│   │   │   │   │   ├── ownership-graph-layout.test.ts
+│   │   │   │   │   ├── ownership-graph-layout.ts
 │   │   │   │   │   ├── portfolio-positions-toolbar.tsx
 │   │   │   │   │   ├── portfolio-screen.a11y.test.tsx
 │   │   │   │   │   ├── portfolio-screen.evidence-timeline.test.ts
@@ -9968,6 +10016,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.cancel-preview.test.tsx
 │   │   │   │   │   ├── trading-screen.cancel-preview.ts
 │   │   │   │   │   ├── trading-screen.evidence-timeline.ts
+│   │   │   │   │   ├── trading-screen.execution-audit-rows.ts
 │   │   │   │   │   ├── trading-screen.execution-blotter.test.tsx
 │   │   │   │   │   ├── trading-screen.execution-blotter.tsx
 │   │   │   │   │   ├── trading-screen.execution-blotter.view-model.test.ts
@@ -10058,6 +10107,7 @@ Meridian-main
 │   │   │   │   │   ├── close-preparation.ts
 │   │   │   │   │   ├── consolidation.ts
 │   │   │   │   │   ├── contractual-cash-flow.types.ts
+│   │   │   │   │   ├── corporate-action-calendar.types.ts
 │   │   │   │   │   ├── corporate-action-inbox.ts
 │   │   │   │   │   ├── covered-call.types.ts
 │   │   │   │   │   ├── cross-screen-counts.ts
@@ -10081,9 +10131,11 @@ Meridian-main
 │   │   │   │   │   ├── number-passport-reference.ts
 │   │   │   │   │   ├── operator-scope-preference.ts
 │   │   │   │   │   ├── operator-surface-visit.ts
+│   │   │   │   │   ├── option-visualization.types.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
 │   │   │   │   │   ├── preparer-attestation-evidence.ts
 │   │   │   │   │   ├── private-capital.ts
+│   │   │   │   │   ├── private-capital.types.ts
 │   │   │   │   │   ├── provider-accounting.ts
 │   │   │   │   │   ├── provider-integration-identity.ts
 │   │   │   │   │   ├── provider-integration-provenance.ts
@@ -10354,6 +10406,7 @@ Meridian-main
 │   │   │   ├── EquityReferenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.SinglePrincipalAttestation.cs
+│   │   │   ├── ExecutionEndpointDtos.cs
 │   │   │   ├── ExecutionEndpoints.Audit.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.Metadata.cs
@@ -10423,10 +10476,12 @@ Meridian-main
 │   │   │   ├── OptionChainEndpoints.cs
 │   │   │   ├── OptionReferenceEndpoints.cs
 │   │   │   ├── OptionsEndpoints.cs
+│   │   │   ├── OptionVisualizationEndpoints.cs
 │   │   │   ├── PackagingEndpoints.cs
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PlaidEndpoints.cs
 │   │   │   ├── PortfolioCashLadderEndpoints.cs
+│   │   │   ├── PrivateCapitalRecordEndpoints.cs
 │   │   │   ├── PromotionEndpoints.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
@@ -10447,6 +10502,7 @@ Meridian-main
 │   │   │   ├── SecureReportingDistributionEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.CashDividendAttestation.cs
 │   │   │   ├── SecurityMasterEndpoints.CashFlowPreview.cs
+│   │   │   ├── SecurityMasterEndpoints.CorporateActionCalendar.cs
 │   │   │   ├── SecurityMasterEndpoints.CorporateActionOperations.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.Curves.cs
@@ -10740,6 +10796,8 @@ Meridian-main
 │   │   │   ├── OperatorInboxPriorityScoringService.cs
 │   │   │   ├── OperatorTriagePolicy.cs
 │   │   │   ├── OperatorTriageServiceCollectionExtensions.cs
+│   │   │   ├── OptionAssessmentImportService.cs
+│   │   │   ├── OptionScreeningService.cs
 │   │   │   ├── PaperFuturesSettlementService.cs
 │   │   │   ├── PlaidWebhookVerifier.cs
 │   │   │   ├── PlaidWorkstationService.cs
@@ -10752,6 +10810,8 @@ Meridian-main
 │   │   │   ├── PrivateCapitalEventIntakes.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── PrivateCapitalLifecycleSource.cs
+│   │   │   ├── PrivateCapitalRecordAuthority.cs
+│   │   │   ├── PrivateCapitalRecordServiceCollectionExtensions.cs
 │   │   │   ├── PromotionTrustEvidenceServiceCollectionExtensions.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.Ownership.cs
@@ -12252,6 +12312,7 @@ Meridian-main
 │   │   │   │   └── ValuationFreshnessAcceptanceTests.cs
 │   │   │   ├── Auth
 │   │   │   │   ├── CorporateActionRolePermissionsTests.cs
+│   │   │   │   ├── ObservationImportRolePermissionsTests.cs
 │   │   │   │   ├── RolePermissionsTests.cs
 │   │   │   │   └── ScopedAccessServiceTests.cs
 │   │   │   ├── Backfill
@@ -12773,6 +12834,7 @@ Meridian-main
 │   │   │   ├── AccountingHandoffCoordinatorTests.cs
 │   │   │   ├── AlpacaReportChannelPolicyTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
+│   │   │   ├── BaseBrokerageGatewayLoggingTests.cs
 │   │   │   ├── BrokerAccountingReconciliationTests.cs
 │   │   │   ├── BrokerActivityImportServiceTests.cs
 │   │   │   ├── BrokerageExecutionAdmissionLimitTests.cs
@@ -13542,6 +13604,8 @@ Meridian-main
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.CashDividendImmutability.cs
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.CashDividendPosting.cs
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.cs
+│   │   │   ├── CorporateActionCalendarPostgresTests.cs
+│   │   │   ├── CorporateActionCalendarServiceTests.cs
 │   │   │   ├── CorporateActionCaseAccountingPolicyTests.cs
 │   │   │   ├── CorporateActionCaseAccountingServiceCashDividendTests.cs
 │   │   │   ├── CorporateActionCaseAccountingServiceTests.cs
@@ -13797,7 +13861,8 @@ Meridian-main
 │   │   │   │   ├── PostgresFundAccountStorePlaidMigrationTests.cs
 │   │   │   │   ├── PostgresFundAccountStoreTenantAdmissionTests.cs
 │   │   │   │   ├── PostgresFundAccountStoreTests.BondSnapshots.cs
-│   │   │   │   └── PostgresFundAccountStoreTests.cs
+│   │   │   │   ├── PostgresFundAccountStoreTests.cs
+│   │   │   │   └── PostgresPrivateCapitalRecordStoreTests.cs
 │   │   │   ├── FundStructure
 │   │   │   │   ├── EntityLifecyclePostgresTests.cs
 │   │   │   │   ├── IntercompanyAccountingArrangementPostgresTests.cs
@@ -14184,6 +14249,7 @@ Meridian-main
 │   │   │   ├── BondCouponRecognitionEvidenceVerifierTests.cs
 │   │   │   ├── BondExerciseNoticeEndpointsTests.cs
 │   │   │   ├── BondFamilyAcceptance.cs
+│   │   │   ├── BondIncomeAuthorityCompositionTests.cs
 │   │   │   ├── BondMigrationEndpointsTests.cs
 │   │   │   ├── BondObservedFixingEndpointsTests.cs
 │   │   │   ├── BondPerformanceSourceVerifierTests.cs
@@ -14277,6 +14343,7 @@ Meridian-main
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── LiveTradingEngineHostRegistrationTests.cs
+│   │   │   ├── LoanMaturityBucketTests.cs
 │   │   │   ├── LoanPortfolioWireContractTests.cs
 │   │   │   ├── ManualJournalAgreementReviewTests.Corrections.cs
 │   │   │   ├── ManualJournalAgreementReviewTests.cs
@@ -14295,7 +14362,9 @@ Meridian-main
 │   │   │   ├── OperatorTriageAssignmentRecoveryTests.cs
 │   │   │   ├── OperatorTriagePolicyTests.cs
 │   │   │   ├── OperatorTriagePostgresTests.cs
+│   │   │   ├── OptionAssessmentImportServiceTests.cs
 │   │   │   ├── OptionReferenceEndpointsRoundtripTests.cs
+│   │   │   ├── OptionScreeningServiceTests.cs
 │   │   │   ├── PackagingEndpointsPathContainmentTests.cs
 │   │   │   ├── PlaidWebhookVerifierTests.cs
 │   │   │   ├── PlaidWorkstationServiceTests.cs
@@ -14310,6 +14379,9 @@ Meridian-main
 │   │   │   ├── PrivateCapitalEventIntakeTests.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterServiceTests.cs
 │   │   │   ├── PrivateCapitalLifecycleSourceTests.cs
+│   │   │   ├── PrivateCapitalRecordAuthorityTests.cs
+│   │   │   ├── PrivateCapitalRecordEndpointTests.cs
+│   │   │   ├── PrivateCapitalRecordServiceTests.cs
 │   │   │   ├── ProductionStartupPolicySmokeTests.cs
 │   │   │   ├── PromotionDecisionChainScenarioTests.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjectionTests.cs

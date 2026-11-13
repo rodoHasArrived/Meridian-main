@@ -1,6 +1,6 @@
-import { formatCompactCurrency as formatCurrency, pluralizeCount } from "@/lib/format";
+import type { FamilyOwnershipGraph, FamilyAssetSummary, PrivateAssetSummary, CapitalCommitment, CapitalActivity } from "@/types/family-office.types";
+import { formatCompactCurrency as formatCurrency, formatNumber, pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
-import type { CapitalActivity, CapitalCommitment, FamilyAssetSummary, FamilyOwnershipGraph, PrivateAssetSummary } from "@/types/family-office.types";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
 /**
@@ -79,7 +79,9 @@ export interface FamilyOfficeEntityStructure {
   assetClassExposures: FamilyOfficeAssetClassExposure[];
   privateAssets: FamilyOfficePrivateAssetSummary[];
   commitments: FamilyOfficeCommitmentSummary[];
-  /** Retain authoritative graph relationships rather than reducing them to a parent tree. */
+  ownershipGraph?: FamilyOwnershipGraph;
+  publicAssets?: FamilyAssetSummary[];
+  warnings?: string[];
   ownershipSource?: { graph: FamilyOwnershipGraph; publicAssets: FamilyAssetSummary[]; privateAssets: PrivateAssetSummary[] };
   capitalLifecycle?: { commitments: CapitalCommitment[]; activities: CapitalActivity[]; asOfDate: string };
   sourceWarnings?: string[];
@@ -103,6 +105,12 @@ export interface FamilyOfficeOwnershipNode {
 }
 
 export interface FamilyOfficeOwnershipEdge {
+  relationshipType: string;
+  ownershipPercent: number | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  sourceDocumentId?: string | null;
+  notes?: string | null;
   id: string;
   fromId: string;
   toId: string;
@@ -261,9 +269,8 @@ export function buildFamilyOfficeScreenViewModel(
   }
 
   const baseNodes = buildOwnershipNodes(entityStructure);
-  const stableSelectedNodeId = baseNodes.some((node) => node.id === selectedNodeId)
-    ? selectedNodeId
-    : baseNodes[0]?.id ?? null;
+  const stableSelectedNodeId = selectedNodeId === null ? baseNodes[0]?.id ?? null
+    : baseNodes.some((node) => node.id === selectedNodeId) ? selectedNodeId : null;
   const detailPanelId = "family-office-ownership-detail";
   const nodes = baseNodes.map((node) => {
     const selected = node.id === stableSelectedNodeId;
@@ -274,7 +281,7 @@ export function buildFamilyOfficeScreenViewModel(
       expanded: selected,
       detailPanelId,
       selectAriaLabel: `Inspect ownership node ${node.label}`,
-      ariaLabel: `${node.label}, ${node.type}, value ${node.value}, ${node.percentage} of consolidated net worth. ${node.detail}`
+      ariaLabel: `${node.label}, ${node.type}, value ${node.value}, relationship percentage ${node.percentage}. ${node.detail}`
     };
   });
   const selectedNode = nodes.find((node) => node.id === stableSelectedNodeId) ?? null;
@@ -291,7 +298,7 @@ export function buildFamilyOfficeScreenViewModel(
     panels: buildFamilyOfficePanels(entityStructure),
     ownershipGraph: {
       title: "Ownership graph",
-      description: "Navigate the family-office entity structure and private-asset sleeves as a graph, or switch to the dense table fallback for assistive technology and audit review.",
+      description: `${entityStructure.ownershipGraph?.asOfDate ? `Ownership structure as of ${entityStructure.ownershipGraph.asOfDate}.` : "Retained relationships; the ownership structure date was not supplied."} Solid arrows indicate legal ownership; dashed arrows show other relationships and asset associations. Percentages describe individual links, not economic exposure.`,
       ariaLabel: "Family office ownership graph",
       keyboardInstructions: "Use Arrow keys, Home, and End to move between ownership nodes. Press Enter or Space to inspect the focused node. Use the table view for a dense accessible fallback.",
       tableFallbackLabel: "Family office ownership table fallback",
@@ -456,64 +463,59 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
 }
 
 function buildOwnershipNodes(entityStructure: FamilyOfficeEntityStructure): Array<Omit<FamilyOfficeOwnershipNode, "rowClassName" | "isSelected" | "expanded" | "detailPanelId" | "selectAriaLabel" | "ariaLabel">> {
-  const totalNetWorth = entityStructure.entities.find((entity) => entity.entityId === entityStructure.familyOfficeId)?.netWorth
-    ?? sum(entityStructure.entities.map((entity) => entity.netWorth));
-  const entityNodes = entityStructure.entities.map((entity) => ({
-    id: entity.entityId,
-    label: entity.displayName,
+  const source = entityStructure.ownershipGraph?.nodes;
+  const entities = source ? source.map((node) => ({
+    id: node.nodeId, label: node.displayName,
+    type: node.nodeId === entityStructure.familyOfficeId ? "family" as const : "entity" as const,
+    value: "See source evidence", percentage: "See relationships",
+    detail: `${node.nodeType}. Retained structure node; legal ownership is recorded on relationships.`,
+    parentId: null, tone: "default" as FamilyOfficeTone
+  })) : entityStructure.entities.map((entity) => ({
+    id: entity.entityId, label: entity.displayName,
     type: entity.parentEntityId === null ? "family" as const : "entity" as const,
-    value: formatCurrency(entity.netWorth),
-    percentage: formatPercent(entity.ownershipPercent),
-    detail: entity.detail,
-    parentId: entity.parentEntityId,
-    tone: entityTone(entity)
+    value: formatCurrency(entity.netWorth), percentage: "Unmapped",
+    detail: entity.detail, parentId: entity.parentEntityId, tone: entityTone(entity)
   }));
-  const assetNodes = entityStructure.privateAssets
-    .filter((asset) => asset.valuationStatus !== "current")
-    .map((asset) => ({
-      id: asset.assetId,
-      label: asset.displayName,
-      type: "asset" as const,
-      value: formatCurrency(asset.value),
-      percentage: formatPercent(totalNetWorth === 0 ? 0 : (asset.value / totalNetWorth) * 100),
-      detail: `${asset.assetType} held by ${entityDisplayName(entityStructure, asset.entityId)}. ${asset.valuationStatus === "stale" ? "Valuation is past the freshness policy." : "Independent valuation evidence is missing."}`,
-      parentId: asset.entityId,
-      tone: asset.valuationStatus === "missing-evidence" ? "danger" as const : "warning" as const
-    }));
-
-  return [...entityNodes, ...assetNodes];
+  const privateNodes = entityStructure.privateAssets.map((asset) => ({
+    id: asset.assetId, label: asset.displayName, type: "asset" as const,
+    value: asset.valuationStatus === "missing-evidence" ? "Value needs evidence" : formatCurrency(asset.value),
+    percentage: "Association only", detail: `${asset.assetType} associated with ${entityDisplayName(entityStructure, asset.entityId)}. This association does not establish legal title.`,
+    parentId: asset.entityId, tone: asset.valuationStatus === "current" ? "default" as const : "warning" as const
+  }));
+  const publicNodes = (entityStructure.publicAssets ?? []).map((asset) => ({
+    id: asset.assetId, label: asset.displayName, type: "asset" as const,
+    value: `${asset.currency} ${formatNumber(asset.marketValue)}`, percentage: "Association only",
+    detail: `Recorded account/entity association. ${asset.evidenceCompleteness} evidence; this does not establish legal title.`,
+    parentId: asset.entityId, tone: "default" as const
+  }));
+  const unique = new Map([...entities, ...privateNodes, ...publicNodes].map((node) => [node.id, node]));
+  return [...unique.values()];
 }
 
 function buildOwnershipEdges(entityStructure: FamilyOfficeEntityStructure): FamilyOfficeOwnershipEdge[] {
-  const entityEdges = entityStructure.entities
-    .filter((entity) => entity.parentEntityId !== null)
-    .map((entity) => ({
-      id: `${entity.parentEntityId}-${entity.entityId}`,
-      fromId: entity.parentEntityId ?? "",
-      toId: entity.entityId,
-      label: `${formatPercent(entity.ownershipPercent)} ownership from ${entityDisplayName(entityStructure, entity.parentEntityId)} to ${entity.displayName}`
-    }));
-  const assetEdges = entityStructure.privateAssets
-    .filter((asset) => asset.valuationStatus !== "current")
-    .map((asset) => ({
-      id: `${asset.entityId}-${asset.assetId}`,
-      fromId: asset.entityId,
-      toId: asset.assetId,
-      label: `${asset.displayName} is held by ${entityDisplayName(entityStructure, asset.entityId)}`
-    }));
-
-  return [...entityEdges, ...assetEdges];
+  const names = new Map(buildOwnershipNodes(entityStructure).map((node) => [node.id, node.label]));
+  const retained = entityStructure.ownershipGraph?.edges.map((edge) => ({
+    id: edge.edgeId, fromId: edge.sourceNodeId, toId: edge.targetNodeId,
+    relationshipType: edge.relationshipType, ownershipPercent: edge.ownershipPercent ?? null,
+    effectiveFrom: edge.effectiveFrom, effectiveTo: edge.effectiveTo, notes: edge.notes,
+    sourceDocumentId: edge.sourceDocumentId,
+    label: `${names.get(edge.sourceNodeId) ?? "Unavailable endpoint"} → ${names.get(edge.targetNodeId) ?? "Unavailable endpoint"}: ${edge.relationshipType}${edge.ownershipPercent == null ? " · percentage unrecorded" : ` · ${formatPercent(edge.ownershipPercent)}`}`
+  })) ?? entityStructure.entities.filter((entity) => entity.parentEntityId !== null).map((entity) => ({
+    id: `${entity.parentEntityId}-${entity.entityId}`, fromId: entity.parentEntityId!, toId: entity.entityId,
+    relationshipType: "Association", ownershipPercent: null,
+    label: `${entityDisplayName(entityStructure, entity.parentEntityId)} → ${entity.displayName}: hierarchy association; legal relationship unrecorded`
+  }));
+  const associations = [...entityStructure.privateAssets, ...(entityStructure.publicAssets ?? []).map((asset) => ({ ...asset, assetId: asset.assetId }))].map((asset) => ({
+    id: `association:${asset.entityId}:${asset.assetId}`, fromId: asset.entityId, toId: asset.assetId,
+    relationshipType: "AssetAssociation", ownershipPercent: null,
+    label: `${asset.displayName} is associated with ${entityDisplayName(entityStructure, asset.entityId)}; legal title unconfirmed`
+  }));
+  return [...retained, ...associations];
 }
 
 function entityTone(entity: FamilyOfficeEntityNode): FamilyOfficeTone {
-  if (entity.reconciliationBreakCount > 0 && entity.unfundedCommitments > 0) {
-    return "danger";
-  }
-
-  if (entity.staleValuationWarningCount > 0 || entity.liabilities > 0) {
-    return "warning";
-  }
-
+  if (entity.reconciliationBreakCount > 0 && entity.unfundedCommitments > 0) return "danger";
+  if (entity.staleValuationWarningCount > 0 || entity.liabilities > 0) return "warning";
   return entity.parentEntityId === null ? "success" : "default";
 }
 

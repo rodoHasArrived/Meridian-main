@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GeneratedPostingLineDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.GeneratedPostingLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:398](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L398).
+
+```csharp
+public sealed record GeneratedPostingLineDto(string LineId, string AccountPath, AccountingTemplateLineSideDto Side, string AmountFormulaId, decimal Amount, string Currency = "USD", LedgerDimensionSetDto? Dimensions = null, string? Description = null);
+```
+
+## GeneratePrivateCapitalNoticeRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:4](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L4).
+
+A stable generation intent; retry the same operation and use a new ID for deliberate regeneration.
+
+```csharp
+public sealed record GeneratePrivateCapitalNoticeRequest(Guid OperationId, string? CommitmentId = null);
+```
+
 ## IAccountingActionAuditStore
 
 Qualified name: <code>Meridian.Contracts.Ledger.IAccountingActionAuditStore</code>. Kind: `interface`.
@@ -796,36 +818,3 @@ Declared public members:
 | <code>public static string AppendSignature(string signature, Guid? agreementId, int? agreementVersion, string separator = &quot;&#124;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:9](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L9) | Preserves legacy signatures exactly when agreement provenance is absent. |
 | <code>public static Guid? ReadId(IReadOnlyDictionary&lt;string, string&gt;? tags, string prefix = &quot;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:18](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L18) |  |
 | <code>public static int? ReadVersion(IReadOnlyDictionary&lt;string, string&gt;? tags, string prefix = &quot;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:27](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L27) |  |
-
-## LedgerBookControlModeDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlModeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6).
-
-```csharp
-public enum LedgerBookControlModeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LegacyWarning</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6) |  |
-| <code>Enforced</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L6) |  |
-
-## LedgerBookControlPreflightDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerBookControlPreflightDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L25).
-
-```csharp
-public sealed record LedgerBookControlPreflightDto(Guid LedgerBookId, long ProfileVersion, string PolicyVersion, IReadOnlyList<LedgerControlDecisionDto> Decisions, string Digest, DateTimeOffset PreparedAtUtc)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool CanActivate =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L33) |  |

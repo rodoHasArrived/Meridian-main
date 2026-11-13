@@ -244,7 +244,7 @@ public static class CorporateActionEvidenceKinds
 
     public static bool IsKnown(string? kind) => kind is
         ProviderPayload or OfferingMemorandum or IssuerNotice or CustodianNotice or
-        PositionSnapshot or TaxLotSnapshot or ElectionInstruction or OperatorAnalysis;
+        PositionSnapshot or TaxLotSnapshot or ElectionInstruction or OperatorAnalysis or CorporateActionDeadlinePolicy.EvidenceKind;
 
     public static bool IsTrustedReference(string? reference)
     {

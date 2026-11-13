@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IAutomatedJournalDividendPositionResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IAutomatedJournalDividendPositionResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:23](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L23).
+
+Resolves authoritative positions used to prepare automated dividend journals.
+
+```csharp
+public interface IAutomatedJournalDividendPositionResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;AutomatedJournalDividendPositionResolution&gt; ResolveAsync(AutomatedJournalScheduleWorkItem workItem, DateTimeOffset evaluatedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:25](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L25) |  |
+
+## IAutomatedJournalScheduleStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IAutomatedJournalScheduleStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:121](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L121).
+
+Durable source for explicitly configured monthly automated-journal work.
+
+```csharp
+public interface IAutomatedJournalScheduleStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;AutomatedJournalScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:123](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L123) |  |
+| <code>Task&lt;AutomatedJournalScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:125](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L125) |  |
+| <code>Task&lt;AutomatedJournalScheduleWorkItem&gt; SaveAsync(AutomatedJournalScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:127](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L127) |  |
+
+## IBackfillProviderConfigAuditReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IBackfillProviderConfigAuditReader</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/IBackfillProviderConfigAuditReader.cs:8](../../../../src/Meridian.Ui.Shared/Services/IBackfillProviderConfigAuditReader.cs#L8).
+
+Reads recent historical-backfill provider configuration audit entries.
+
+```csharp
+public interface IBackfillProviderConfigAuditReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;ProviderConfigAuditEntryDto&gt; GetAuditLog(int maxEntries = 100);</code> | [src/Meridian.Ui.Shared/Services/IBackfillProviderConfigAuditReader.cs:10](../../../../src/Meridian.Ui.Shared/Services/IBackfillProviderConfigAuditReader.cs#L10) |  |
+
 ## IBResultQueryService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IBResultQueryService</code>. Kind: `class`.
@@ -904,7 +960,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1548](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1548).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1551](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1551).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -916,59 +972,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1550](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1550) |  |
-
-## IReportingPrimaryDocumentRenderer
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRenderer</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:108](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L108).
-
-Renders the primary PDF/XLSX artifact of a governed reporting run. This is the seam that lets the certified artifact producer stay the single orchestrator (declarations, hashing, retained manifest, provenance) while the client-grade document bytes are produced by Meridian.Documents. Implementations must be deterministic: identical manifests must yield identical bytes, because artifacts are hash-verified on read-back.
-
-```csharp
-public interface IReportingPrimaryDocumentRenderer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>byte[] RenderPdf(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L110) |  |
-| <code>byte[] RenderWorkbook(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:112](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L112) |  |
-
-## IReportingPrimaryDocumentRendererWithLedgerReportPack
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRendererWithLedgerReportPack</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:120](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L120).
-
-Extended primary-document contract for renderers that can consume the exact checkpoint-bound ledger report pack supplied by the certified artifact producer. The complete PDF/XLSX pair is returned from one call so callers cannot produce format-dependent accounting presentations.
-
-```csharp
-public interface IReportingPrimaryDocumentRendererWithLedgerReportPack : IReportingPrimaryDocumentRenderer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:123](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L123) |  |
-
-## IReportingProviderReceiptAuthenticator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportingProviderReceiptAuthenticator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L20).
-
-Authenticates provider callbacks before reporting delivery receipts are retained.
-
-```csharp
-public interface IReportingProviderReceiptAuthenticator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L22) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1553](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1553) |  |

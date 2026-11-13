@@ -40,6 +40,7 @@ export interface AuditTrailExplorerResult {
   totalMatched: number;
   returned: number;
   entries: AuditTrailTimelineEntry[];
+  sourceAvailability?: { executionAudit: boolean; operationsContinuity: boolean } | null;
   sources?: Array<{ source: string; state: string }> | null;
   coverageNote?: string | null;
   orderIdentityStatus?: string | null;

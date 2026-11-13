@@ -6,6 +6,127 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ThresholdBreach
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdBreach</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:33](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L33).
+
+```csharp
+public sealed record ThresholdBreach(string Counterparty, ThresholdSeverity Severity, decimal CoverageRatio, decimal EarlyWarningLevel, decimal HardBreachLevel, string Message);
+```
+
+## ThresholdSeverity
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:7](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L7).
+
+```csharp
+public enum ThresholdSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Normal</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:9](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L9) |  |
+| <code>EarlyWarning</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L10) |  |
+| <code>HardBreach</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:11](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L11) |  |
+
+## TradingOperatorLiveOrderReadinessGate
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorLiveOrderReadinessGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:21](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L21).
+
+Adapts the shared W7 operator-readiness projection into the execution-layer live order gate.
+
+```csharp
+public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessGate, ILiveOrderReadinessPreview
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingOperatorLiveOrderReadinessGate(ITradingOperatorReadinessProvider readinessProvider, ILogger&lt;TradingOperatorLiveOrderReadinessGate&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:26](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L26) |  |
+| <code>public async Task&lt;LiveOrderReadinessDecision&gt; EvaluateAsync(LiveOrderReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:34](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L34) |  |
+| <code>public LiveOrderReadinessDecision? Observe(LiveOrderReadinessRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:52](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L52) |  |
+
+## TradingOperatorReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.BrokerageRecovery.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.BrokerageRecovery.cs#L8).
+
+```csharp
+public sealed partial class TradingOperatorReadinessService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L19).
+
+Builds the shared operator-readiness model consumed by the Trading cockpit.
+
+```csharp
+public sealed partial class TradingOperatorReadinessService : ITradingOperatorReadinessProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22) |  |
+| <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:51](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L51) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:59](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L59) |  |
+| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:64](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L64) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs#L8).
+
+```csharp
+public sealed partial class TradingOperatorReadinessService
+```
+
+## UpsertProviderModuleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
+
+Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
+
+```csharp
+public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
+```
+
+## WorkstationIntercompanyAgreementEvidenceAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:51](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L51).
+
+Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
+
+```csharp
+public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:54](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L54) |  |
+
+## WorkstationPersonalTableViewRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:219](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L219).
+
+```csharp
+public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
+```
+
 ## WorkstationServiceCollectionExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
@@ -23,7 +144,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1492](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1492) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1495](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1495) |  |
 
 ## WorkstationWorkflowReadScope
 

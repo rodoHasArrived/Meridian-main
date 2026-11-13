@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreparerAttestationProofFile
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.PreparerAttestationProofFile</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L8).
+
+```csharp
+public sealed record PreparerAttestationProofFile(byte[] Content, string ContentHashSha256, DateTimeOffset RecordedAt, string FileName);
+```
+
+## PrivateCapitalFundEventEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.PrivateCapitalFundEventEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1509](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1509).
+
+Adds private-capital fund-event workflow and output evidence to an evidence graph.
+
+```csharp
+public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PrivateCapitalFundEventEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1513](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1513) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1518](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1518) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1520](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1520) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1523](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1523) |  |
+
+## ProviderTrustEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ProviderTrustEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:971](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L971).
+
+Adds provider trust and readiness observations to an evidence graph.
+
+```csharp
+public sealed class ProviderTrustEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderTrustEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:975](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L975) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:980](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L980) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:982](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L982) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:986](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L986) |  |
+
 ## ReconciliationEvidenceContributor
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.ReconciliationEvidenceContributor</code>. Kind: `class`.
@@ -984,58 +1036,3 @@ Declared public members:
 | <code>public AccountingMigrationRunExecutionService(IAccountingMigrationRunArtifactStore store) : this(store, null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs:26](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs#L26) |  |
 | <code>public AccountingMigrationRunExecutionService(IAccountingMigrationRunArtifactStore store, IAccountingMigrationRunWorkerPlanStore? workerPlanStore);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs:31](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs#L31) |  |
 | <code>public async Task&lt;AccountingMigrationRunExecutionResultDto&gt; ExecuteAsync(AccountingMigrationRunExecutionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs:39](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs#L39) |  |
-
-## AccountingMigrationRunWorkerPlanSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingMigrationRunWorkerPlanSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:231](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L231).
-
-```csharp
-public sealed record AccountingMigrationRunWorkerPlanSnapshot(IReadOnlyList<AccountingMigrationRunWorkerPlanDto>? Plans = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;AccountingMigrationRunWorkerPlanDto&gt; Plans { get; init; } = Plans??[];</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:234](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L234) |  |
-
-## AccountingPositionSnapshotCaptureService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingPositionSnapshotCaptureService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs:25](../../../../src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs#L25).
-
-Captures brokerage synchronization positions as scoped accounting position snapshots.
-
-```csharp
-public sealed class AccountingPositionSnapshotCaptureService : IAccountingPositionSnapshotCaptureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingPositionSnapshotCaptureService(IPositionSnapshotStore? snapshotStore, IDailyValuationPortfolioSource? dailyValuations, IAutomatedJournalScheduleStore? automatedJournals, IAccountQueryService? accounts, ILedgerJournalStore? ledger, IFundProfileTenancyRegistry? tenancy);</code> | [src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs:34](../../../../src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs#L34) |  |
-| <code>public async Task&lt;int&gt; CaptureBrokerageSyncAsync(FundAccountBrokerageSyncActivityDto projection, DateTimeOffset sourceAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs:50](../../../../src/Meridian.Ui.Shared/Services/AccountingPositionSnapshotCaptureService.cs#L50) |  |
-
-## AccountingProductionCertificationAuthoritySubjects
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingProductionCertificationAuthoritySubjects</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:16](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L16).
-
-Exact Evidence Vault subject used for evidence that a reviewer has accepted for one accounting production-certification scope. UI-provided URIs are locators only; they are never authority.
-
-```csharp
-public static class AccountingProductionCertificationAuthoritySubjects
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ScopeEvidence = &quot;AccountingProductionCertificationScope&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:18](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L18) |  |
-| <code>public const string EvidenceVaultSubjectKind = &quot;accounting-production-certification&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L19) |  |
-| <code>public static string BuildScopeSubjectId(string tenantId, string companyId, string fundProfileId, Guid ledgerBookId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:21](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L21) |  |

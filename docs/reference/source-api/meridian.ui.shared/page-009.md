@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokerageConnectionService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageConnectionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:41](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L41).
+
+Manages the read-only brokerage OAuth handoff used by workstation portfolio sync. Explicit host configurations own OAuth state and tokens; production hosts without one retain the existing environment-backed credential pattern. Tokens are never returned in endpoint payloads.
+
+```csharp
+public sealed class BrokerageConnectionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BrokerageConnectionService(BrokerageConnectionOptions options, ILogger&lt;BrokerageConnectionService&gt; logger, IHttpClientFactory? httpClientFactory = null, CompositionConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:54](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L54) |  |
+| <code>public Task&lt;BrokerageConnectionStatusDto&gt; GetStatusAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:66](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L66) |  |
+| <code>public Task&lt;BrokerageConnectionStatusDto&gt; StartConnectionAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:72](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L72) |  |
+| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; CompleteCallbackAsync(string? code, string? state, string? error, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:88](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L88) |  |
+| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; RevokeAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:154](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L154) |  |
+
+## BrokeragePortfolioState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BrokeragePortfolioState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:11](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L11).
+
+Read-only broker observations for the host&#x27;s legacy portfolio and position-tracker consumers. Trading authority belongs to LiveBrokeragePortfolioSyncService and the mandatory brokerage risk rule. Retaining an observation here does not certify it as fresh or reconciled.
+
+```csharp
+public sealed class BrokeragePortfolioState(LiveBrokeragePortfolioSyncService synchronization) : IPortfolioState, IPositionTracker
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid? FundAccountId =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:15](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L15) | The local account owning the single retained broker observation. |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:16](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L16) |  |
+| <code>public decimal Cash =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:18](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L18) |  |
+| <code>public decimal BuyingPower =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:19](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L19) |  |
+| <code>public decimal PortfolioValue =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:20](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L20) |  |
+| <code>public decimal UnrealisedPnl =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:21](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L21) |  |
+| <code>public decimal RealisedPnl =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:25](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L25) |  |
+| <code>public IReadOnlyDictionary&lt;string, IPosition&gt; Positions { get; }</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:27](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L27) |  |
+| <code>public PositionState GetPosition(string symbol);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:49](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L49) |  |
+| <code>public IReadOnlyDictionary&lt;string, PositionState&gt; GetAllPositions();</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:62](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L62) |  |
+| <code>public decimal GetPortfolioValue() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:71](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L71) |  |
+| <code>public decimal GetCash() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:72](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L72) |  |
+| <code>public decimal GetUnrealizedPnl() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:73](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L73) |  |
+| <code>public decimal GetRealizedPnl() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs:74](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioState.cs#L74) |  |
+
+## BrokeragePortfolioSyncOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BrokeragePortfolioSyncOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:20](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L20).
+
+Configures the durable brokerage read-side sync used by workstation fund ops.
+
+```csharp
+public sealed record BrokeragePortfolioSyncOptions(string RootDirectory, TimeSpan StaleAfter, string DefaultProviderId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BrokeragePortfolioSyncOptions Default { get; } = new (RootDirectory : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;brokerage-sync&quot;), StaleAfter : TimeSpan.FromMinutes(30), DefaultProviderId : &quot;alpaca&quot;);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:25](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L25) |  |
+
 ## BrokeragePortfolioSyncService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BrokeragePortfolioSyncService</code>. Kind: `class`.
@@ -877,49 +948,3 @@ One explicit durable run/account position-snapshot scope. Accounting ownership i
 ```csharp
 public sealed record DailyValuationPositionSnapshotScope(string RunId, string AccountId);
 ```
-
-## DailyValuationScheduledBatchResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduledBatchResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:264](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L264).
-
-```csharp
-public sealed record DailyValuationScheduledBatchResult(DateTimeOffset EvaluatedAtUtc, IReadOnlyList<DailyValuationScheduledRunResult> Runs);
-```
-
-## DailyValuationScheduledRunResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduledRunResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:251](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L251).
-
-```csharp
-public sealed record DailyValuationScheduledRunResult(string ScheduleId, DateTimeOffset ScheduledForUtc, DailyValuationScheduleStateDto State, string Summary, Guid? JournalEntryId, IReadOnlyList<string> Blockers, IReadOnlyList<Guid>? JournalEntryIds = null, string? BatchCorrelationId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:261](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L261) |  |
-
-## DailyValuationScheduledWorker
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduledWorker</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:272](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L272).
-
-Claims and executes due configured portfolios. Every due item advances exactly once per scheduled timestamp; the downstream deterministic draft id makes crash retries idempotent.
-
-```csharp
-public sealed class DailyValuationScheduledWorker
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DailyValuationScheduledWorker(IDailyValuationPortfolioSource portfolioSource, AutomatedJournalIntakeRunner intakeRunner, ILogger&lt;DailyValuationScheduledWorker&gt; logger, DailyValuationPositionService? positionService = null);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:280](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L280) |  |
-| <code>public async Task&lt;DailyValuationScheduledBatchResult&gt; RunDueAsync(DateTimeOffset nowUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:292](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L292) |  |
-| <code>public async Task&lt;DailyValuationScheduledBatchResult&gt; RunDueForScopeAsync(DateTimeOffset nowUtc, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:301](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L301) | Executes due schedules owned by exactly one tenant/company scope. This is the operator-route seam; the host loop intentionally uses RunDueAsync to process every scope. |

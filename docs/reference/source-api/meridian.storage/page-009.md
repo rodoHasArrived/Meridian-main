@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondAccrualConventionProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.BondAccrualConventionProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:74](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L74).
+
+```csharp
+public sealed record BondAccrualConventionProjectionRow(Guid SecurityId, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version);
+```
+
+## BondLifecycleProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.BondLifecycleProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:57](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L57).
+
+```csharp
+public sealed record BondLifecycleProjectionRow(Guid SecurityId, string LifecycleStat, DateOnly? IssueDate, DateOnly? CallDate, DateOnly MaturityDate, bool IsCallable, long Version, string? Subclass = null, decimal? Par = null, string? PaymentFrequency = null, DateOnly? LegalFinalMaturity = null, DateOnly? PreRefundDate = null, DateOnly? MandatoryPutDate = null, DateOnly? EffectiveTo = null);
+```
+
+## BondProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.BondProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L27).
+
+```csharp
+public sealed record BondProjectionRow(Guid SecurityId, string DisplayName, string Currency, string PrimaryIdentifierValue, string? IssuerName, string? Seniority, DateOnly? MaturityDate, string? LifecycleStat, DateOnly? IssueDate, DateOnly? CallDate, bool? IsCallable, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version, string? Subclass = null, decimal? Par = null, string? PaymentFrequency = null, DateOnly? LegalFinalMaturity = null, DateOnly? PreRefundDate = null, DateOnly? MandatoryPutDate = null, JsonElement? CanonicalTerms = null, DateOnly? EffectiveTo = null);
+```
+
+## CertificateOfDepositProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CertificateOfDepositProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record CertificateOfDepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string IssuerName, DateOnly Maturity, decimal? CouponRate, DateOnly? CallableDate, string? DayCount, string PrimaryIdentifierValue, long Version);
+```
+
+## CommodityProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CommodityProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L13).
+
+```csharp
+public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string CommodityType, string? Denomination, decimal? ContractSize, string? ExchangeCode, string? DeliveryCountry, string PrimaryIdentifierValue, long Version);
+```
+
 ## ConnectionLease
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
@@ -25,6 +75,16 @@ Declared public members:
 | <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
 | <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
+
+## CorporateActionCalendarReadSet
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCalendarReadSet</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs#L8).
+
+```csharp
+public sealed record CorporateActionCalendarReadSet(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases, IReadOnlyList<CorporateActionEvidenceDto> Evidence);
+```
 
 ## CorporateActionCashDividendPostingLease
 
@@ -358,29 +418,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;CorporateActionInboxExportSource&gt; ReadInboxExportSourceAsync(string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L13) | Complete export population, without the browse API&#x27;s 500-row window. |
-| <code>Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(CorporateActionSourceProposalDto proposal, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L17) |  |
-| <code>Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:21](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L21) |  |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L23) |  |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:33](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L33) | Lists only proposals that can still receive an accept/reject decision. Implementations must apply the state predicate before ordering and limiting the durable result set. |
-| <code>Task&lt;CorporateActionSourceProposalAcceptanceResultDto?&gt; GetAcceptanceReceiptAsync(Guid proposalId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:38](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L38) |  |
-| <code>Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, Guid corporateActionId, Guid caseId, Guid transitionId, SecurityMasterCorporateActionRestatementDto? restatement, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:44](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L44) |  |
-| <code>Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:53](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L53) |  |
-| <code>Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:58](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L58) |  |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:64](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L64) |  |
-| <code>Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:72](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L72) |  |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:79](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L79) |  |
-| <code>Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, Guid evidenceId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:87](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L87) |  |
-| <code>Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, Guid conflictId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:93](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L93) |  |
-| <code>Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:99](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L99) |  |
-| <code>Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, Guid optionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:104](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L104) |  |
-| <code>Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:110](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L110) |  |
-| <code>Task&lt;CorporateActionCaseAccountingProjectionDto?&gt; GetAccountingProjectionAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:117](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L117) | Reads the case&#x27;s current (non-superseded) accounting projection binding, if any. |
-| <code>Task&lt;CorporateActionCaseAccountingApprovalDto?&gt; GetAccountingApprovalAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:124](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L124) | Reads the case&#x27;s active (non-voided) maker-checker approval, if any. |
-| <code>Task&lt;CorporateActionAccountingPostingResultDto?&gt; GetAccountingPostingReceiptAsync(Guid caseId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:134](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L134) | Replays a committed posting receipt for the exact command identity, or returns null. The posting command must check this before re-running any preflight with side effects. |
-| <code>Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachAccountingProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CorporateActionCaseAccountingProjectionDto projection, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:145](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L145) | Atomically supersedes any current binding, retains the supplied exact-version projection binding, voids any unconsumed approval, and bumps the case version. Requires the case to be in AccountingReview under the caller&#x27;s full-scope assertion. |
-| <code>Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAccountingAsync(ApproveCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingApprovalDto approval, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:154](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L154) | Atomically records the maker-checker approval and transitions ReadyForApproval to Approved. |
-| <code>Task&lt;CorporateActionAccountingPostingResultDto&gt; RecordAccountingPostingAsync(PostCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingPostingDto posting, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:166](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L166) | Atomically retains the durable posting result and transitions Approved to Posted. The journal itself was already committed by the Asset Accounting Event Spine; this record binds the case to that immutable journal identity. |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionEvidenceDto&gt;&gt; ListDeadlineEvidenceAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:12](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L12) |  |
+| <code>Task&lt;CorporateActionCalendarReadSet&gt; ReadCalendarAsync(string tenantId, string companyId, DateOnly from, DateOnly to, string? financialAccountId, string? custodyAccountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L15) |  |
+| <code>Task&lt;CorporateActionInboxExportSource&gt; ReadInboxExportSourceAsync(string tenantId, string companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L20) | Complete export population, without the browse API&#x27;s 500-row window. |
+| <code>Task&lt;CorporateActionSourceProposalDto&gt; RecordSourceProposalAsync(CorporateActionSourceProposalDto proposal, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:24](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L24) |  |
+| <code>Task&lt;CorporateActionSourceProposalDto?&gt; GetSourceProposalAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:28](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L28) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListSourceProposalsAsync(Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:30](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L30) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionSourceProposalDto&gt;&gt; ListActionableSourceProposalsAsync(Guid? securityId, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:40](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L40) | Lists only proposals that can still receive an accept/reject decision. Implementations must apply the state predicate before ordering and limiting the durable result set. |
+| <code>Task&lt;CorporateActionSourceProposalAcceptanceResultDto?&gt; GetAcceptanceReceiptAsync(Guid proposalId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:45](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L45) |  |
+| <code>Task&lt;CorporateActionSourceProposalAcceptanceResultDto&gt; AcceptSourceProposalAsync(AcceptCorporateActionSourceProposalRequestDto request, Guid corporateActionId, Guid caseId, Guid transitionId, SecurityMasterCorporateActionRestatementDto? restatement, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L51) |  |
+| <code>Task&lt;CorporateActionSourceProposalDecisionResultDto&gt; RejectSourceProposalAsync(RejectCorporateActionSourceProposalRequestDto request, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L60) |  |
+| <code>Task&lt;CorporateActionProcessingCaseDto?&gt; GetCaseAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L65) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionProcessingCaseDto&gt;&gt; ListCasesAsync(string tenantId, string companyId, Guid? securityId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:71](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L71) |  |
+| <code>Task&lt;CorporateActionConflictDto?&gt; GetConflictAsync(Guid caseId, Guid conflictId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:79](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L79) |  |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionConflictDto&gt;&gt; ListConflictsAsync(Guid caseId, string tenantId, string companyId, string? state, int take, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:86](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L86) |  |
+| <code>Task&lt;CorporateActionEvidenceMutationResultDto&gt; AddEvidenceAsync(AddCorporateActionEvidenceRequestDto request, Guid evidenceId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L94) |  |
+| <code>Task&lt;CorporateActionConflictMutationResultDto&gt; RecordConflictAsync(RecordCorporateActionConflictRequestDto request, Guid conflictId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:100](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L100) |  |
+| <code>Task&lt;CorporateActionConflictResolutionResultDto&gt; ResolveConflictAsync(ResolveCorporateActionConflictRequestDto request, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:106](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L106) |  |
+| <code>Task&lt;CorporateActionProcessingOptionMutationResultDto&gt; UpsertOptionAsync(UpsertCorporateActionProcessingOptionRequestDto request, Guid optionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L111) |  |
+| <code>Task&lt;CorporateActionCaseTransitionResultDto&gt; TransitionCaseAsync(TransitionCorporateActionCaseRequestDto request, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:117](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L117) |  |
+| <code>Task&lt;CorporateActionCaseAccountingProjectionDto?&gt; GetAccountingProjectionAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:124](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L124) | Reads the case&#x27;s current (non-superseded) accounting projection binding, if any. |
+| <code>Task&lt;CorporateActionCaseAccountingApprovalDto?&gt; GetAccountingApprovalAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:131](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L131) | Reads the case&#x27;s active (non-voided) maker-checker approval, if any. |
+| <code>Task&lt;CorporateActionAccountingPostingResultDto?&gt; GetAccountingPostingReceiptAsync(Guid caseId, string idempotencyKey, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:141](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L141) | Replays a committed posting receipt for the exact command identity, or returns null. The posting command must check this before re-running any preflight with side effects. |
+| <code>Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachAccountingProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CorporateActionCaseAccountingProjectionDto projection, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:152](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L152) | Atomically supersedes any current binding, retains the supplied exact-version projection binding, voids any unconsumed approval, and bumps the case version. Requires the case to be in AccountingReview under the caller&#x27;s full-scope assertion. |
+| <code>Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAccountingAsync(ApproveCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingApprovalDto approval, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:161](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L161) | Atomically records the maker-checker approval and transitions ReadyForApproval to Approved. |
+| <code>Task&lt;CorporateActionAccountingPostingResultDto&gt; RecordAccountingPostingAsync(PostCorporateActionCaseAccountingRequestDto request, CorporateActionCaseAccountingPostingDto posting, Guid transitionId, string requestFingerprint, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs:173](../../../../src/Meridian.Storage/SecurityMaster/ICorporateActionOperationsStore.cs#L173) | Atomically retains the durable posting result and transitions Approved to Posted. The journal itself was already committed by the Asset Accounting Event Spine; this record binds the case to that immutable journal identity. |
 
 ## ICryptoReferenceProjectionStore
 
@@ -826,123 +888,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs#L10) |  |
 | <code>Task SaveAsync(SecurityMasterQualityReportDto report, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterQualityReportStore.cs#L11) |  |
-
-## ISecurityMasterSnapshotStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L8).
-
-Loads and saves versioned security snapshots used for event stream reconstruction.
-
-```csharp
-public interface ISecurityMasterSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecuritySnapshotRecord?&gt; LoadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L10) |  |
-| <code>Task SaveAsync(SecuritySnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs#L11) |  |
-
-## ISecurityMasterStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L8).
-
-Maintains Security Master projections and exposes persisted reference data for lookup.
-
-```csharp
-public interface ISecurityMasterStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task PersistProjectionBatchAsync(string projectionName, long lastGlobalSequence, IReadOnlyList&lt;SecurityProjectionRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L11) |  |
-| <code>Task&lt;SecurityAliasDto?&gt; UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:29](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L29) | Inserts or corrects an alias, returning the row as persisted. created_at/created_by are immutable recording facts: for an existing alias ID the stored values are retained, so the returned DTO can differ from alias in those two members. Callers must surface the returned value rather than the one they passed — as-of rebuilds filter on CreatedAt, so a caller that echoes a freshly stamped creation time would report an identifier as newer than it is. An identical replay records nothing; a material change appends an alias revision recorded by SecurityAliasDto.CreatedBy and then updates the current row without replacing earlier revisions. Timestamp-eligible views can change when an in-flight write commits. Re-pointing an alias ID at a different security throws SecurityAliasHistoryConflictException. Returns null only when the store cannot read the row back. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityAliasDto&gt;&gt; GetAliasesRecordedAsOfAsync(Guid securityId, DateTimeOffset recordedAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L43) | Returns each alias&#x27;s latest retained revision whose stored recording timestamp is at or before recordedAsOfUtc, omitting eligible retirement revisions. CreatedBy/CreatedAt carry the alias&#x27;s original creation facts. Valid-time filtering is left to the caller. Pre-existing aliases whose revision history began at migration 038 are omitted for earlier cutoffs: their prior values are unavailable, and an empty result cannot certify no aliases existed. Initial recording timestamps preserve caller creation stamps; subsequent timestamps use transaction-start time with monotonic revision ordering. Neither these timestamps nor the migration availability marker prove commit visibility. A later commit can change the result for the same cutoff; this query observes rows when it executes. |
-| <code>Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:47](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L47) |  |
-| <code>Task&lt;SecurityDetailDto?&gt; GetDetailAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:48](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L48) |  |
-| <code>Task&lt;SecurityProjectionRecord?&gt; GetProjectionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L49) |  |
-| <code>Task&lt;SecurityProjectionRecord?&gt; GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:50](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L50) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; FindIdentifierCandidatesAsync(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, IReadOnlyCollection&lt;Guid&gt; excludedSecurityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L56) | Returns projections outside excludedSecurityIds that claim at least one normalized kind/value pair in identifiers. The caller applies validity- window overlap because each returned projection carries the complete identifier history. |
-| <code>Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L65) | Returns an offset page in deterministic order, using the unique security ID to break equal relevance and display-name ties. Repeated pages over unchanged projections must neither omit nor repeat a security. Separate requests do not share a database snapshot. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:66](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L66) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:67](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L67) |  |
-| <code>Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:76](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L76) | The ADR-024 decision-5 retirement-gate count: stored securities rows, active and inactive, whose asset-specific terms declare no string termsFormat tag. A single aggregate — never a projection load — with the same semantics as SecurityTermsEnvelope.GetDeclaredFormat: a non-object payload or a missing or non-string tag counts as untagged. |
-| <code>Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:77](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L77) |  |
-| <code>Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:78](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L78) |  |
-
-## ISecurityMasterTermsCapabilityStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterTermsCapabilityStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs#L20).
-
-Reads the deployment floor. Applications never activate or lower it; activation belongs to the deployment change record after the all-node inventory and data gates have been reviewed.
-
-```csharp
-public interface ISecurityMasterTermsCapabilityStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterTermsCapabilityState&gt; ReadAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs:23](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterTermsCapabilityStore.cs#L23) | Reads the singleton floor, or its explicit pre-migration/unset state. |
-
-## IStructuredCreditReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.IStructuredCreditReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L9).
-
-Read access to the StructuredCredit relational terms projection. The asset-specific-terms JSONB blob stays the source of truth; this store answers the pool- and date-shaped questions the blob cannot — which tranches sit on a pool or collateral type, and what pool factor was effective on a date — without parsing every security&#x27;s document.
-
-```csharp
-public interface IStructuredCreditReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StructuredCreditProjectionRow?&gt; GetStructuredCreditAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L11) |  |
-| <code>Task&lt;IReadOnlyList&lt;StructuredCreditProjectionRow&gt;&gt; GetByPoolAsync(string poolId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L13) |  |
-| <code>Task&lt;IReadOnlyList&lt;StructuredCreditProjectionRow&gt;&gt; GetByCollateralTypeAsync(string collateralType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L15) |  |
-| <code>Task&lt;IReadOnlyList&lt;StructuredCreditFactorScheduleRow&gt;&gt; GetFactorScheduleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:18](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L18) | The tranche&#x27;s dated factor points in the order the terms document declares them. |
-| <code>Task&lt;StructuredCreditFactorScheduleRow?&gt; GetFactorAsOfAsync(Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L25) | The latest factor point effective on or before asOfDate, or null when the schedule starts after that date. The relational counterpart of the resolver&#x27;s in-memory FactorAsOf walk, resolved in one indexed read. |
-
-## ISwapReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISwapReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L6).
-
-Queries swap reference projections by security, swap type, and maturity.
-
-```csharp
-public interface ISwapReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SwapProjectionRow?&gt; GetSwapAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetBySwapTypeAsync(string swapType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L9) |  |
-| <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L10) |  |
-
-## MoneyMarketFundProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.MoneyMarketFundProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record MoneyMarketFundProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifierValue, long Version);
-```

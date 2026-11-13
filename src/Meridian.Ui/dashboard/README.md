@@ -21,6 +21,17 @@ account changes and unmounting retire older callbacks. The preference, journal a
 controls use the shared keyboard-focus and target-size contracts. The journal's **Before date**
 filter uses an exclusive UTC end boundary, matching the execution summary.
 
+Financial visualization panels extend the existing Loan Book, Bond Analytics, Margin Control,
+Trading order inspector, Market Data desk, Family Office, corporate-action inbox and disposal tax
+details. React owns SVG/HTML rendering and table/inspector selection; monetary aggregation and
+financial decisions remain shared-service responsibilities. The Options tab supports contract
+screening and arbitrary listed-option/equity baskets with dated imported broker assessments.
+Private-capital observations use the separate `private-capital-records.api.ts` consumer; the
+issuer-side `private-capital.api.ts` workflow retains its existing call/funding authority.
+Authoritative imports have explicit permissions, source evidence, preview/acceptance, correction
+history and replay identities. See `docs/operators/financial-visualizations.md` from the repo root
+for meaning, entry paths and recovery. Focused tests live beside the panels and API consumers.
+
 Bond details retain the existing analytics panel and add original-face purchase previews,
 all-model cash flows, retained quote selection, separate provider and Meridian yields,
 partial metric coverage, rate/spread shocks and account-owned saved comparisons. All amounts

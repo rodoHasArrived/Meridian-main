@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundAccountEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundAccountEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L20).
+
+Maps fund-account management and brokerage synchronization operations with account-specific authorization.
+
+```csharp
+public static class FundAccountEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L22) |  |
+
 ## FundProfileScopeEndpointFilters
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundProfileScopeEndpointFilters</code>. Kind: `class`.
@@ -949,6 +967,27 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapOptionsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/OptionsEndpoints.cs#L23) | Maps all options / derivatives API endpoints. |
 
+## OptionVisualizationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.OptionVisualizationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs#L16).
+
+General option screening and evidence-backed historical broker assessment imports.
+
+```csharp
+public static class OptionVisualizationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ScreenRoute = UiApiRoutes.OptionsScreen;</code> | [src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs#L18) |  |
+| <code>public const string AssessmentsRoute = UiApiRoutes.OptionAssessments;</code> | [src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs#L19) |  |
+| <code>public static IServiceCollection AddOptionVisualizationServices(this IServiceCollection services, string? dataRoot = null);</code> | [src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs#L21) |  |
+| <code>public static void MapOptionVisualizationEndpoints(this WebApplication app, JsonSerializerOptions json);</code> | [src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs:30](../../../../src/Meridian.Ui.Shared/Endpoints/OptionVisualizationEndpoints.cs#L30) |  |
+
 ## PackageRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.PackageRequest</code>. Kind: `record`.
@@ -1014,6 +1053,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapPortfolioCashLadderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/PortfolioCashLadderEndpoints.cs#L23) |  |
+
+## PrivateCapitalRecordEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.PrivateCapitalRecordEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L13).
+
+Explicit source-record capture; accepting records grants no accounting authority.
+
+```csharp
+public static class PrivateCapitalRecordEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapPrivateCapitalRecordEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/PrivateCapitalRecordEndpoints.cs#L15) |  |
 
 ## PromotionEndpoints
 
@@ -1086,59 +1143,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapProviderCredentialOwnershipEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs#L16) |  |
-
-## ProviderDataProjectionEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderDataProjectionEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L12).
-
-Exposes one provider-neutral projection for every workstation client.
-
-```csharp
-public static class ProviderDataProjectionEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderDataProjectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L14) |  |
-| <code>public static ProviderDataProjectionSnapshot CreateProjection(ProviderDataReadModelService service) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L34) |  |
-| <code>public static ProviderDataProjectionSnapshot CreateProjection(ProviderDataReadModelService service, string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L37) |  |
-
-## ProviderEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L23).
-
-Extension methods for registering provider-related API endpoints. Shared between web dashboard and desktop application hosts.
-
-```csharp
-public static class ProviderEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L78) | Maps all provider and data source API endpoints. |
-
-## ProviderExtendedEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L20).
-
-Extension methods for registering extended provider API endpoints (failover, rate limits, capabilities, switching).
-
-```csharp
-public static class ProviderExtendedEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22) |  |

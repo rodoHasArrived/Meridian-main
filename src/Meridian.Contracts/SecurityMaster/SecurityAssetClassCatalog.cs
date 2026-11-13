@@ -460,6 +460,7 @@ public static class SecurityAssetClassCatalog
             Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"])
         {
             AccountingOutsideSlice = true,
+            SupportsPrivateCapitalRecords = true,
             ClassificationLabels = ["PrivateFunds"],
             ReclassifyingProfileIds = ["private-fund-interest"]
         },
@@ -1307,6 +1308,12 @@ public sealed record SecurityAssetClassDescriptor(
     public bool SupportsRecurringFixedIncomeAccrual { get; init; }
 
     /// <summary>
+    /// Whether the class admits holder-side private-capital commitment records and reported
+    /// lifecycle observations. Commitment lot units alone do not grant this capability.
+    /// </summary>
+    public bool SupportsPrivateCapitalRecords { get; init; }
+
+    /// <summary>
     /// Declares the class intentionally outside the Security Master accounting slice. Every catalogued
     /// class states its accounting disposition, an <see cref="AccountingInstrumentClass"/> or this
     /// marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping.
@@ -1344,13 +1351,15 @@ public sealed record SecurityAssetClassDescriptor(
     /// carries <c>OtcContractDto</c> records rather than exchange-traded lots),
     /// <see cref="SettlesDailyVariationMargin"/> (positions settle the daily price change in cash
     /// rather than exchanging notional), <see cref="SupportsRecurringFixedIncomeAccrual"/>
-    /// (the class is admitted to governed recurring accrual journals) and a
+    /// (the class is admitted to governed recurring accrual journals),
+    /// <see cref="SupportsPrivateCapitalRecords"/> (holder-side private-capital records) and a
     /// <see cref="DefaultValuationModel"/> other than the quoted price (the class is valued from its
     /// projected cash flows and a stored discount curve unless a request names another model).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
         => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract || SupportsCreditLifecycle
-           || SettlesDailyVariationMargin || SupportsRecurringFixedIncomeAccrual || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
+           || SettlesDailyVariationMargin || SupportsRecurringFixedIncomeAccrual || SupportsPrivateCapitalRecords
+           || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
 
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from

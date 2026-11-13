@@ -1242,7 +1242,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             "Order {OrderId} for {Symbol} rejected by {RejectionSource}; retained reason {ReasonHash}",
             LogSanitizer.Sanitize(orderId),
             LogSanitizer.Sanitize(request.Symbol),
-            rejectionSource,
+            LogSanitizer.Sanitize(rejectionSource),
             Sha256Digest.ComputeUtf8(message ?? string.Empty));
 
         if (_auditTrail is null)

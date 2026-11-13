@@ -18,6 +18,7 @@ follow-up.
 Start with:
 
 - [Strategy, Orders, and Execution](strategy-order-execution.md)
+- [Options Screening and Imported Broker Assessments](options-screening-and-assessments.md)
 - [Brokerage Account Snapshot](brokerage-account-snapshot.md)
 - [Corporate Action Case](corporate-action-case.md)
 - [Fund Event](fund-event.md)

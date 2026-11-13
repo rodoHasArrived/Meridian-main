@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaymentAllocationDto
+
+Qualified name: <code>Meridian.Contracts.DirectLending.PaymentAllocationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:101](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L101).
+
+```csharp
+public sealed record PaymentAllocationDto(Guid AllocationId, Guid LoanId, Guid CashTransactionId, int AllocationSequenceNumber, string TargetType, string TargetReference, decimal AllocatedAmount, string AllocationRule, Guid SourceEventId, DateTimeOffset CreatedAt);
+```
+
 ## PaymentBreakdownDto
 
 Qualified name: <code>Meridian.Contracts.DirectLending.PaymentBreakdownDto</code>. Kind: `record`.
@@ -349,7 +359,7 @@ public sealed record RefundUnappliedCashRequest(decimal Amount, DateOnly Effecti
 
 Qualified name: <code>Meridian.Contracts.DirectLending.RemoveCollateralRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:532](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L532).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:545](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L545).
 
 ```csharp
 public sealed record RemoveCollateralRequest(Guid CollateralId, string Reason);
@@ -399,7 +409,7 @@ public sealed record ResolveReconciliationExceptionRequest(string ResolutionNote
 
 Qualified name: <code>Meridian.Contracts.DirectLending.RestructureLoanRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:551](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L551).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:564](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L564).
 
 ```csharp
 public sealed record RestructureLoanRequest(RestructuringType RestructuringType, string Reason, DateOnly EffectiveDate, DirectLendingTermsDto? NewTerms = null, decimal? HaircutAmount = null);
@@ -631,7 +641,7 @@ public sealed record ServicingRevisionDto(long RevisionNumber, string RevisionSo
 
 Qualified name: <code>Meridian.Contracts.DirectLending.TogglePikRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:546](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L546).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:559](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L559).
 
 ```csharp
 public sealed record TogglePikRequest(bool EnablePik, DateOnly EffectiveDate, string? Reason = null);
@@ -641,18 +651,8 @@ public sealed record TogglePikRequest(bool EnablePik, DateOnly EffectiveDate, st
 
 Qualified name: <code>Meridian.Contracts.DirectLending.TransitionLoanStatusRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:541](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L541).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:554](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L554).
 
 ```csharp
 public sealed record TransitionLoanStatusRequest(LoanStatus NewStatus, string Reason, DateOnly EffectiveDate);
-```
-
-## UpdateCollateralValueRequest
-
-Qualified name: <code>Meridian.Contracts.DirectLending.UpdateCollateralValueRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs:536](../../../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs#L536).
-
-```csharp
-public sealed record UpdateCollateralValueRequest(Guid CollateralId, decimal NewEstimatedValue, DateOnly NewAppraisalDate);
 ```

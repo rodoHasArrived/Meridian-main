@@ -3,9 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { axe } from "jest-axe";
 import { buildLoanMaturityBuckets, isCalendarDate, maturityPeriod } from "@/screens/loan-maturity";
-import { LoanMaturityView } from "@/screens/loan-maturity-view";
+import { LoanBookScreen } from "@/screens/loan-book-screen";
 import hostPortfolio from "@/test/fixtures/loan-portfolio.host.json";
-import type { LoanSummary } from "@/types/direct-lending.types";
+import type { LoanSummary, LoanPortfolioSummary } from "@/types/direct-lending.types";
 
 /** Deliberately emulate unchecked host JSON so missing balances exercise runtime safeguards. */
 function unsafeWireLoanFixture(payload: unknown): LoanSummary {
@@ -37,19 +37,27 @@ describe("loan maturity concentration", () => {
     expect(buckets.find(bucket => bucket.currency === "Unspecified currency")).toMatchObject({ amount: null, period: "Unknown maturity" });
   });
   it("opens only the chosen currency/quarter facilities with their retained amounts", async () => {
-    const { container } = render(<LoanMaturityView loans={[
+    window.history.replaceState(null, "", "/");
+    const loans = [
       { ...base, facilityName: "Dollar facility", borrowerName: "Borrower A", principalOutstanding: 125, baseCurrency: "USD", maturityDate: "2027-01-01" },
       { ...base, loanId: "eur", facilityName: "Euro facility", principalOutstanding: 900, baseCurrency: "EUR", maturityDate: "2027-01-01" },
       { ...base, loanId: "jpy", facilityName: "Yen facility", principalOutstanding: 125, baseCurrency: "JPY", maturityDate: "2027-01-01" }
-    ]} today="2026-11-12" />);
-    expect(screen.getByRole("button", { name: "2027 Q1 1 facility ¥125; Inspect JPY maturity bucket" })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: "2027 Q1 1 facility $125.00; Inspect USD maturity bucket" }));
-    const table = screen.getByRole("table", { name: "Facilities in selected maturity bucket" });
+    ];
+    const summary: LoanPortfolioSummary = { ...hostPortfolio, loans, maturityBuckets: [
+      { currency: "USD", year: 2027, quarter: 1, principalOutstanding: "125", loanIds: [loans[0].loanId] },
+      { currency: "EUR", year: 2027, quarter: 1, principalOutstanding: "900", loanIds: ["eur"] },
+      { currency: "JPY", year: 2027, quarter: 1, principalOutstanding: "125", loanIds: ["jpy"] }
+    ] };
+    const { container } = render(<LoanBookScreen summary={summary} />);
+    expect(screen.getByRole("button", { name: /2027 Q1 1 facility JPY 125/ })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /2027 Q1 1 facility USD 125/ }));
+    const table = screen.getByRole("table", { name: "Direct lending facilities" });
     expect(within(table).getByText("Dollar facility", { exact: false })).toBeInTheDocument();
     expect(within(table).getByText("$125.00")).toBeInTheDocument();
     expect(within(table).queryByText("Euro facility")).not.toBeInTheDocument();
     expect((await axe(container)).violations).toEqual([]);
-    await userEvent.click(screen.getByRole("button", { name: "Clear maturity selection" }));
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Clear maturity filter" }));
+    expect(within(table).getByText("Euro facility", { exact: false })).toBeInTheDocument();
+    window.history.replaceState(null, "", "/");
   });
 });

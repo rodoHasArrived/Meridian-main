@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetAccountingDraftCapabilitiesDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingDraftCapabilitiesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:68](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L68).
+
+Caller-specific capability. Missing or unknown protocol remains read-only.
+
+```csharp
+public sealed record AssetAccountingDraftCapabilitiesDto(int ProtocolVersion, Guid JournalEntryId, int DraftVersion, string FundProfileId, Guid LedgerBookId, Guid PeriodId, string CandidateFingerprint, bool CanApprove, bool CanPost, string? ApproveBlockedReason, string? PostBlockedReason, AssetAccountingApprovalReceiptDto? Approval, bool HasPendingPost, JournalEntryLifecycleActionRequestDto? PendingPostCommand, PostedLedgerJournalEntryResultDto? PostedJournal, string? AuthenticatedActor = null);
+```
+
+## AssetAccountingPostIntentDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AssetAccountingPostIntentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L60).
+
+An exact original posting command retained before any canonical financial side effect.
+
+```csharp
+public sealed record AssetAccountingPostIntentDto(string OriginalCommandHash, JournalEntryLifecycleActionRequestDto OriginalCommand, PostPostingRuleJournalCandidateRequestDto CanonicalRequest, string VaultId, string DocumentId);
+```
+
 ## AttachManualJournalEntryEvidenceRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.AttachManualJournalEntryEvidenceRequest</code>. Kind: `record`.
@@ -700,23 +724,3 @@ Enum declarations:
 | <code>ReadyForSignOff = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:130](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L130) |  |
 | <code>SignedOff = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:131](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L131) |  |
 | <code>Blocked = 5</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:132](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L132) |  |
-
-## ConsolidationBalanceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationBalanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:91](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L91).
-
-```csharp
-public sealed record ConsolidationBalanceDto(string AccountPath, string AccountType, decimal GrossBalance, decimal ProposedEliminations, decimal PostedEliminations, decimal ConsolidatedBalance, decimal PreviewBalance, IReadOnlyList<ConsolidationSourceDto> Sources);
-```
-
-## ConsolidationBookVersionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ConsolidationBookVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/ConsolidationDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/ConsolidationDtos.cs#L12).
-
-```csharp
-public sealed record ConsolidationBookVersionDto(Guid LedgerBookId, long MaxSequence, int JournalCount);
-```

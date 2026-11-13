@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InMemorySecurityMasterRevisionStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.InMemorySecurityMasterRevisionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:136](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L136).
+
+Process-local revision lifecycle store. Mirrors the in-memory posture of SecurityMasterConflictService; the durable Postgres-backed implementation is wired in the subsequent slice. State transitions are compare-and-set so concurrent lifecycle calls are safe.
+
+```csharp
+public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvider = null) : ISecurityMasterRevisionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:141](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L141) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId = null, SecurityMasterRevisionFieldValue? fieldValue = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:144](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L144) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; CreateDraftAsync(Guid securityId, string actor, string fieldPath, DateTimeOffset fieldEffectiveFrom, string fieldJustification, string? fundProfileId, SecurityMasterRevisionFieldValue? fieldValue, SecurityMasterRevisionFieldBase fieldBase, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:155](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L155) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:198](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L198) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:204](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L204) |  |
+| <code>public Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:208](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L208) |  |
+
 ## IPeriodAwareRestatementResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver</code>. Kind: `interface`.
@@ -1013,15 +1036,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static string? Capture(string assetClass, JsonElement assetSpecificTerms, string fieldPath);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs:34](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs#L34) | Snapshots the keys fieldPath governs in assetSpecificTerms, or returns null when the path is not one the merge writes (outside the asset-terms namespace, nested deeper than the merge models, or terms that are not a JSON object). |
-
-## SecurityMasterActiveImportStatus
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs#L13).
-
-Active Security Master ingest progress.
-
-```csharp
-public sealed record SecurityMasterActiveImportStatus(string FileExtension, int Total, int Processed, int Imported, int Skipped, int Failed, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc);
-```

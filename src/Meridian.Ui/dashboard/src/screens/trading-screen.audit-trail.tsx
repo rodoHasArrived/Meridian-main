@@ -78,6 +78,7 @@ export function ExecutionAuditTrailPanel() {
       <CardContent className="space-y-3">
         <ExecutionJourney recent={result} />
         {error ? <StatusBanner tone="danger" title="Audit trail unavailable" detail={error} /> : null}
+        {result?.sourceAvailability?.executionAudit === false ? <StatusBanner tone="warning" title="Execution audit source unavailable" detail="The execution audit service is not configured. Empty results do not establish that no actions occurred." /> : null}
         {vm.truncationNotice ? (
           <StatusBanner tone="warning" title="Results truncated" detail={vm.truncationNotice} />
         ) : null}

@@ -9,6 +9,13 @@ namespace Meridian.Storage.SecurityMaster;
 /// </summary>
 public interface ICorporateActionOperationsStore
 {
+    Task<IReadOnlyList<CorporateActionEvidenceDto>> ListDeadlineEvidenceAsync(
+        Guid caseId, string tenantId, string companyId, CancellationToken ct = default);
+
+    Task<CorporateActionCalendarReadSet> ReadCalendarAsync(
+        string tenantId, string companyId, DateOnly from, DateOnly to,
+        string? financialAccountId, string? custodyAccountId, CancellationToken ct = default);
+
     /// <summary>Complete export population, without the browse API's 500-row window.</summary>
     Task<CorporateActionInboxExportSource> ReadInboxExportSourceAsync(
         string tenantId, string companyId, CancellationToken ct = default)

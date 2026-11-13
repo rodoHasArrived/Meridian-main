@@ -11,6 +11,15 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+Visualization contracts retain server-calculated loan maturity buckets as exact decimal strings,
+bond contractual maturity and governing yield-scenario identities, and audit-source availability.
+`PrivateCapital` describes holder-side source observations and import receipts, separately from
+issuer-side `Ledger.PrivateCapitalLifecycleDtos`. `Options` screening and broker-assessment
+contracts distinguish neutral contract criteria from an exact basket/account assessment as of its
+source time. Typed corporate-action deadline evidence carries precision, original source text and
+correction identity outside economic payload fingerprints. Additive read fields preserve older
+payload compatibility; missing observations are not reported zeros or inferred approvals.
+
 `BondMarketDataContracts` distinguishes retained fixings, inflation levels, principal factors,
 agency ratings and categorized clean/dirty quotes with settlement basis and provider yields.
 Source revisions retain economic/publication/knowledge dates and content identities; importing a
@@ -40,6 +49,12 @@ maintained TypeScript route generator. The existing summary, trial-balance and j
 accept an optional inclusive `asOf` economic timestamp.
 
 Analytical read contracts add explicit election-cutoff evidence, exact order/source-coverage status, retained sweep parameter coordinates and server-authored bond redemption/YTW scenario identities. Election timestamps retain their supplied offsets; only maturity and eligible issuer calls determine callable yield to worst, with holder puts separately identified. Additive browser visualization metadata does not change legacy numerical analytics or posting authority.
+
+The exact top-level `electionCalendar` companion is operational source evidence, excluded from
+economic payload fingerprints and compared separately for immutable source replay. A companion-only
+envelope uses the absent economic-payload representation; legacy payloads without that companion,
+including explicit empty objects and JSON null, retain their existing hashes. Original retained
+payloads and fingerprints are not rewritten to attach or correct deadlines.
 
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;

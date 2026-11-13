@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerMappingAssignmentResultDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingAssignmentResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:495](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L495).
+
+```csharp
+public sealed record LedgerMappingAssignmentResultDto(FundStructureAssignmentDto Assignment, LedgerMappingAccountDto Account, LedgerMappingAssignmentAuditEventDto AuditEvent, LedgerMappingWorkbenchDto Workbench);
+```
+
+## LedgerMappingResolutionDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingResolutionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:436](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L436).
+
+```csharp
+public sealed record LedgerMappingResolutionDto(LedgerGroupId LedgerGroupId, LedgerMappingSourceDto Source, Guid? SourceNodeId, FundStructureNodeKindDto? SourceNodeKind, string? SourceReference, bool RequiresUserMapping, IReadOnlyList<string> IssueCodes);
+```
+
 ## LedgerMappingSourceDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.LedgerMappingSourceDto</code>. Kind: `enum`.
@@ -680,24 +700,4 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:183
 
 ```csharp
 public sealed record EndpointResponseShapeDto(string RecordsPath, string? SchemaFingerprint, IReadOnlyList<string> RequiredPaths);
-```
-
-## FieldMappingDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.FieldMappingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:204](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L204).
-
-```csharp
-public sealed record FieldMappingDto(ProviderCapabilityKindDto Capability, string SourcePath, string TargetField, TransformRuleDto? Transform, bool Required, ProviderMappingConfidenceDto Confidence, string? DefaultValue, string? ConstantValue);
-```
-
-## IntegrationStagingRecordDto
-
-Qualified name: <code>Meridian.Contracts.Integrations.IntegrationStagingRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:411](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L411).
-
-```csharp
-public sealed record IntegrationStagingRecordDto(string StagingRecordId, string SyncRunId, string ConnectionId, ProviderCapabilityKindDto Capability, string RawPayloadId, string? SourceRecordId, string DedupeKey, JsonElement MappedRecord, IReadOnlyList<ValidationIssueDto> ValidationWarnings, ProviderIntegrationProcessingStatusDto Status, DateTimeOffset CreatedAt);
 ```
