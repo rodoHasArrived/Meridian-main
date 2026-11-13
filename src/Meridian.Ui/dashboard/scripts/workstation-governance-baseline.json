@@ -20,7 +20,7 @@
   },
   "statementTables": [
     {
-      "file": "src/screens/accounting-screen.tsx",
+      "file": "src/screens/accounting-screen.manual-journal-panel.tsx",
       "attribute": "className",
       "value": "accounting-journal-table",
       "reason": "Editable journal source lines and financial balance-impact preview preserve debit/credit layout."

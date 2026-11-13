@@ -29,7 +29,7 @@ DATA_SOURCES = [
     "docs/status/FEATURE_INVENTORY.md",
     "src/Meridian.Execution/Services/PaperSessionPersistenceService.cs",
     "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
-    "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs",
+    "tests/Meridian.Tests/Ui/WorkstationEndpointsTests*.cs",
 ]
 
 CHECKS = [
@@ -85,7 +85,7 @@ CHECKS = [
         "id": "endpoint-tests",
         "category": "Validation",
         "label": "Workstation endpoint tests cover replay readiness and operator inbox routing",
-        "paths": ["tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs"],
+        "paths": ["tests/Meridian.Tests/Ui/WorkstationEndpointsTests*.cs"],
         "terms": ["Replay", "OperatorInbox", "TradingReadiness"],
         "weight": 2,
         "remediation": "Add or restore endpoint tests for replay readiness and queue projection.",

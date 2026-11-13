@@ -1074,8 +1074,9 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 Leaf reporting comparisons, access-policy evaluation, journal disposal-tax reads, partners-capital
 reads, retained ledger-population replay, and amount binding compile in
-[`Meridian.Reporting.ReadModels`](../Meridian.Reporting.ReadModels/README.md). Their existing
-source paths and public namespaces remain stable, and Ui.Shared forwards their public identities.
+[`Meridian.Reporting.ReadModels`](../Meridian.Reporting.ReadModels/README.md), whose project now
+owns their source files. Their public namespaces remain stable, and Ui.Shared forwards their public
+identities.
 That assembly depends only on Contracts, Ledger, Reporting, and Storage.Accounting; it can build
 without endpoint or workstation orchestration. The larger cross-domain workflows remain here.
 
