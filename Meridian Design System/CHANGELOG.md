@@ -10,7 +10,8 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 - **`ActionQueue` / `ActionEnvelopeProvider`** — a queue retry binds to the selected instruction, retaining its key, payload and next attempt. Action-only consumers keep their existing behavior; duplicate retries share one dispatch.
 - **`DatePicker` / `DateRangePicker`** — calendar navigation stays within day cells while Tab reaches month, preset and footer controls. Month changes preserve control focus and an enabled day at date bounds; Escape closes and restores trigger focus.
 - **`DataGrid`** — valid decimal strings, including committed edits, participate in proofs, totals and group subtotals. Missing, invalid and nonfinite evidence still withholds a proof or total.
-- Added source-based Chromium regressions for all three repairs and included them in `test:patches`.
+- **`EditableCell`** — a pending inline edit is canceled when the cell becomes disabled; a later blur cannot commit it. The existing table regression now also runs in `test:patches`.
+- Added source-based Chromium regressions for the three #3520 repairs and included them in `test:patches`; checked bound-control focus on the CI-pinned Chromium browser.
 
 ### Fixed — signal wash token and stale identity guidance
 - **`tokens/colors.css`** — `--brand-signal-a10` was a terracotta `rgba()` literal, so it followed neither a brand nor dark mode; it now aliases `--accent-a10` like the rest of the `--brand-signal-*` names.

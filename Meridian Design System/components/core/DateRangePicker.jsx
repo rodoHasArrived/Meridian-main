@@ -169,8 +169,10 @@ export function DateRangePicker({
 
   React.useEffect(() => {
     // Opening and day navigation focus the active day. Month controls retain
-    // focus while moving that day with the visible window, so Tab can enter it.
-    if (open && (!calRef.current?.contains(document.activeElement) || document.activeElement?.classList.contains("mds-dr-day"))) dayRef.current?.focus();
+    // focus while enabled and move the day with the visible window. At a bound,
+    // browsers may retain disabled-button focus, so explicitly enter the day.
+    const active = document.activeElement;
+    if (open && (!calRef.current?.contains(active) || active?.classList.contains("mds-dr-day") || active?.matches(":disabled"))) dayRef.current?.focus();
   }, [open, focusDay]);
 
   const moveMonth = (delta) => {

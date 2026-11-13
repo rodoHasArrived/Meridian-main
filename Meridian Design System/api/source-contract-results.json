@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "startedAt": "2026-11-13T22:12:16.279Z",
+  "startedAt": "2026-11-13T22:36:39.212Z",
   "sourceHashes": {
-    "_ds_bundle.js": "b7fde721bfac4dc151d08cf0b107efa428f4efa28588b54ba7bc493f27224e26",
+    "_ds_bundle.js": "8b58f1db88bf1dd204afddfb23a5ee57ba2031726dd0a35454e4fb7b8e653b12",
     "_ds_manifest.json": "d8a7c14a861c99374caca6f2e953ea7ba7592709dac83d28cea4df256cd18137",
     "_preview_jsx.js": "bca7e2ea5a2fcd5b7acb07e55b07d898fb4ea7ed0934d859c62c37437de12ead",
     "_preview_runtime.js": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",
@@ -288,10 +288,10 @@
     "components/core/ContinuityFrame.jsx": "fe0b61cee73fcbc9e2f3a2a8a784c9220142b080bab2779f495d88d341a2d08e",
     "components/core/ContinuityFrame.prompt.md": "41b3932ae79500d76e9beaa45bcc56f59552d37fcb4f54a411d0c6137a02d3a5",
     "components/core/DatePicker.d.ts": "90823931c03261cbd603949e8b5d2c11966ee928d3a7d2acd65befc337c39a83",
-    "components/core/DatePicker.jsx": "1be896727fae9bb13c382b132f44c720ceba19732ca5fc176654ecc8e8c84f3f",
+    "components/core/DatePicker.jsx": "70ba3720b18ddb6e14922b57d649a85da525a6b651936473c3b17933464b271b",
     "components/core/DatePicker.prompt.md": "20e982c09e723c80e122cdb28ae86eae3f5b7e282cb0c450ad50ec3877d4e913",
     "components/core/DateRangePicker.d.ts": "23d677670163593f6a5608726857b37b5ab98432dbc1fa77727760b8d1c8a714",
-    "components/core/DateRangePicker.jsx": "103c60929781dacb8957d823d7cdd1f26c438d3386b17519ccd2a14a5fa7724f",
+    "components/core/DateRangePicker.jsx": "6d8eafbb2a6765fe4f2fc77500b56eff2efe912bbf2888ae5667679745da4fe9",
     "components/core/DateRangePicker.prompt.md": "a92afa08944057809a7189a52abf7c66c30b6f12130500b6c6f9b51ea1d020c3",
     "components/core/Datum.d.ts": "3a433278ff6954bf57335fcbd5a9dffba6c1b86c296cae405394a211ac275b1b",
     "components/core/Datum.jsx": "e2fb9dded291421679a2c4f4dc410209ec96e4d582b5f580c2653d8d02f414b8",
@@ -515,8 +515,8 @@
     "components/data/DenseDataTable.jsx": "fe0a861f0183ecc963e7a596c3dcc180dba1292c7978c8311e0969690e230f87",
     "components/data/DenseDataTable.prompt.md": "c197ef10bdfc6fad5cba279fc04746a294c23b1616aa77539f83c314cb7c739c",
     "components/data/EditableCell.d.ts": "ea7a4e0c8d2b4b7ae72915aa45fa755f4a5e1d3a105ce34b598ed63df38a1234",
-    "components/data/EditableCell.jsx": "d199f4635684071e880d57178ceca1500f2bc16efd86e18813ad0c22904d6b3c",
-    "components/data/EditableCell.prompt.md": "f51a02882ad9ef7aa78a07fcb2361a66977987ec0ff9a82a61b77a871adbf5fe",
+    "components/data/EditableCell.jsx": "ba1751bfb348694d589134ec6bea2114606452f0593a97911633fdcc9e3facf4",
+    "components/data/EditableCell.prompt.md": "fe8e53cc7266f87d0affe1facf28e6642a786f0bad4f5ec9dcca1cfe53a839d2",
     "components/data/EmptyState.d.ts": "2ac360583b4b2f2d5c246ba443129a27d536146786349c809067e93a3c49d020",
     "components/data/EmptyState.jsx": "861bdde9494aeabb4dbb7e8082902ba8a4bd735be2329b364b3a091bcade1ed6",
     "components/data/EmptyState.prompt.md": "037496f8611a265b39fa05ec925d18f7a8fd6285e7df3aa883e357de69c99962",
@@ -779,8 +779,8 @@
     "components/trading/time-and-sales.card.html": "d082299804fef693ac508e17e5a928828de9c4b149e1746081ff940baffc9171",
     "components/trading/trading.card.html": "de0c8891292aafc142da7a5ade3597631f0ed8aa1fed1486474dc5eadb4f4147",
     "package-lock.json": "ed42649fd50bf901edd8d56a8ab13faf17e343c6b9b4f8a9609bbd84a3717dc7",
-    "package.json": "b7735367499a1c29f4de480bf078144a6db7d88b861f959eac11e1e3e24f3e67",
-    "release-build.json": "aa3f932819f215607264fd638f7d259374cf5bb59a235ff9b5c47eb10f7ea0b3",
+    "package.json": "bdef8f9c21756ed3ed91c8142b0bf706d262851e0846e70811da90655142e7f2",
+    "release-build.json": "1769b80103c96590ae10efa83a85c3687564429f75cbae26dd7afbeb399cc8a0",
     "release.json": "1b7d36ec5fe817382c067dbb06c0eff5f2852cabc1194d613a67e3c7dd7da064",
     "scripts/README.md": "3a9c45c99c9833f5737f1ef38c64f330e76cea6b0d9871c7c16bee0de01abaa9",
     "scripts/build_package.mjs": "fb7fbaa1a9d02c87fb0cfed24c3bb9ed843b832f3be449c450b5a413cbbeadff",
@@ -1020,7 +1020,7 @@
     "tests/brand-contrast-regression.mjs": "878572ce5aa1f1847665c927e92dcef44640f456a00a8465f88b5d2ecbb7d0f8",
     "tests/browser-audit-helpers.mjs": "e7d4e05d6a966fe1374dd97022cd15f1b57d910f379457a381a6743a41bbd23c",
     "tests/browser-audit-regression.mjs": "9cc7f8bf7cf04a1dd43e4889886d3b814346ba34f01a9341a30e11b721c802f4",
-    "tests/calendar-keyboard-regression.mjs": "dc456c5cd14c24800c5e02c17aa213b6d6929b5ef8ea1f2a7898dfe32b460581",
+    "tests/calendar-keyboard-regression.mjs": "c809768f111653adbacf9677edc979dc55c7a34ba6818dafab989512ea267488",
     "tests/chart-accessibility-regression.mjs": "5d8233b3d15de6d7e0847d5f0b1c199b47dad4db0e64e0886e72aa8d1c4be036",
     "tests/chart-trading-contract-regression.mjs": "d0457408ea786dc14811c9c1d6f4952a6dfe0bcaf3bad9430c8ac8fa5bafbf53",
     "tests/component-hook-regression.mjs": "b32783092adaa4bdd9bf0483bc8ccf6286aab732492543f16a510090d4e133e8",
@@ -1102,7 +1102,7 @@
       "path": "tests/accounting-interaction-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 7.26,
+      "seconds": 7.14,
       "stdout": "PASS 46/46 accounting interaction contracts across 15 exports\n",
       "stderr": ""
     },
@@ -1110,7 +1110,7 @@
       "path": "tests/action-queue-retry-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.94,
+      "seconds": 2,
       "stdout": "Selected instruction retry: passed (older row, exact key/payload/attempt, compatibility, unknown id, in-flight/landed guards, concurrent dedupe).\n",
       "stderr": ""
     },
@@ -1118,7 +1118,7 @@
       "path": "tests/agency-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.61,
+      "seconds": 2.31,
       "stdout": "PASS OrderTicket: strict decimals, invalid blur, draft identity, prefill, guards, clearing\nPASS Optimistic ledger: reverse-order compensation and newer-write protection\nPASS Annotations: persisted identity, object isolation, navigation retention, staleness\n",
       "stderr": ""
     },
@@ -1126,7 +1126,7 @@
       "path": "tests/books-loop-readiness-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 5.2,
+      "seconds": 4.13,
       "stdout": "PASS Books Loop delayed model: automatic readiness and cleanup\nPASS Books Loop delayed model: unmount before readiness\n",
       "stderr": ""
     },
@@ -1134,7 +1134,7 @@
       "path": "tests/brand-contrast-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.4,
+      "seconds": 1.51,
       "stdout": "PASS brand/appearance contrast: 28 browser states, 1932 text pairs, 6 brand identities preserved in forced light; retained table and source control hover remain readable\n",
       "stderr": ""
     },
@@ -1142,7 +1142,7 @@
       "path": "tests/browser-audit-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 5.53,
+      "seconds": 2.65,
       "stdout": "Browser audit negative fixtures: imported contrast, nested-frame contrast, missing CSS, and interrupted CSS/scripts passed.\n",
       "stderr": ""
     },
@@ -1150,7 +1150,7 @@
       "path": "tests/calendar-keyboard-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 6.01,
+      "seconds": 3.31,
       "stdout": "PASS calendar keyboard: Tab/Shift+Tab traversal; native month/preset/footer Enter/Space; day navigation/selection; Escape focus return; no runtime errors (Chromium 1366×768).\n",
       "stderr": ""
     },
@@ -1158,7 +1158,7 @@
       "path": "tests/chart-accessibility-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.87,
+      "seconds": 1.6,
       "stdout": "PASS ScenarioSelector: focus, wrapping arrows, Space/Enter, pointer and Tab behavior\nPASS ScenarioSelector: missing IDs remain reachable and controlled selection stays authoritative\nPASS ScenarioSelector: printed and empty records do not produce selection requests\nPASS ChartAnnotations/PeerComparisonStrip: full event explanations and individual peer values are accessible\n",
       "stderr": ""
     },
@@ -1166,7 +1166,7 @@
       "path": "tests/chart-trading-contract-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 4.46,
+      "seconds": 2.78,
       "stdout": "passed: ComparisonPlate — native Enter and Space activate once; selected remains controlled\npassed: PlateGrid/ComparisonPlate — callback preserves exact selected ID and shared domain geometry\npassed: ControlDependencyGraph — Enter and Space preserve exact node object; blocked meaning and selected rail persist\npassed: ControlDependencyGraph — uncontrolled view changes; controlled view emits without mutating\npassed: LineageGraph — native keyboard returns exact ID and waits for controlled selection\npassed: OwnershipGraph — native keyboard returns normalized exact ID and node fields; selection controlled\npassed: TraceChart — arrow, Home and End commit exact series and index without mutating controlled selection\npassed: TraceChart — pointer category selection defaults to actual series and preserves zero/missing table values\npassed: WatchlistStrip — native keyboard returns item ID or exact symbol fallback; selection controlled\npassed: DepthLadder — roving focus follows visual asks/bids; exact price and side callback\npassed: OptionChainTable — sorted keyboard and pointer return original row object; controlled strike does not mutate\npassed: OptionChainTable — uncontrolled selection and zero quote distinguish missing values\npassed: OptionChainTable — data shrink clamps focused strike before activation\npassed: Blotter — native row activation returns original order and source index; selected index stays controlled\npassed: Blotter — sort emits exact key without changing controlled row order; zero limit differs from missing\npassed: Blotter — controlled refresh preserves focused row DOM and updates active index\npassed: ComparisonPlate — empty input has no selectable data targets and recovers with data\npassed: ComparisonPlate — omitted callback exposes read-only data without active selection targets\npassed: PlateGrid — empty input has no selectable data targets and recovers with data\npassed: PlateGrid — omitted callback exposes read-only data without active selection targets\npassed: ControlDependencyGraph — empty input has no selectable data targets and recovers with data\npassed: ControlDependencyGraph — omitted callback exposes read-only data without active selection targets\npassed: LineageGraph — empty input has no selectable data targets and recovers with data\npassed: LineageGraph — omitted callback exposes read-only data without active selection targets\npassed: OwnershipGraph — empty input has no selectable data targets and recovers with data\npassed: OwnershipGraph — omitted callback exposes read-only data without active selection targets\npassed: TraceChart — empty input has no selectable data targets and recovers with data\npassed: TraceChart — omitted callback exposes read-only data without active selection targets\npassed: WatchlistStrip — empty input has no selectable data targets and recovers with data\npassed: WatchlistStrip — omitted callback exposes read-only data without active selection targets\npassed: DepthLadder — empty input has no selectable data targets and recovers with data\npassed: DepthLadder — omitted callback exposes read-only data without active selection targets\npassed: OptionChainTable — empty input has no selectable data targets and recovers with data\npassed: OptionChainTable — omitted callback exposes read-only data without active selection targets\npassed: Blotter — empty input has no selectable data targets and recovers with data\npassed: Blotter — omitted callback exposes read-only data without active selection targets\n{\"exports\":10,\"passed\":37,\"failed\":0,\"runtimeErrors\":0}\n",
       "stderr": ""
     },
@@ -1174,7 +1174,7 @@
       "path": "tests/component-hook-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.23,
+      "seconds": 1.38,
       "stdout": "PASS component hooks: original dimensions, live nested density and distinct Datum fallbacks\nPASS component hooks: inherited and direct overrides remain effective, including HTML and SVG Datum\n",
       "stderr": ""
     },
@@ -1182,7 +1182,7 @@
       "path": "tests/conformance-card-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.29,
+      "seconds": 1.96,
       "stdout": "PASS specimen mount assertion: small text and loaded named media count as rendered content\nPASS specimen mount assertion: blank, script-only, failed, decorative and hidden media remain failures\nPASS specimen transition assertion: only active all-property transitions fail, including repeated CSS lists\nPASS specimen token assertion: active local/inherited/imported scopes resolve; unrelated declarations and real typos still fail\nPASS specimen focus assertion: eligible controls and focus-dependent wrappers count; absent indicators remain failures\n",
       "stderr": ""
     },
@@ -1190,7 +1190,7 @@
       "path": "tests/conformance-settle-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 9.21,
+      "seconds": 8.38,
       "stdout": "PASS specimen settle: used font loads before assertions and iframe removal\nPASS specimen settle: assertion-triggered lazy fonts settle before iframe removal\nPASS specimen settle: failed font faces are reported\nPASS specimen settle: timeout remains active throughout font loading\n",
       "stderr": ""
     },
@@ -1198,7 +1198,7 @@
       "path": "tests/core-composition-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 5.25,
+      "seconds": 2.63,
       "stdout": "PASS core compositions: tooltip description, toast dismiss, search focus, empty NavRail, keyboard column chooser/multiselect/picker navigation/range preset, blocked-storage views, pagination updates, linked semantics, grid proof/missing-zero/edit once/expansion, worksheet zero/entry, split storage\n",
       "stderr": ""
     },
@@ -1206,7 +1206,7 @@
       "path": "tests/core-control-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.8,
+      "seconds": 1.32,
       "stdout": "PASS core controls: async keyboard/identity/Tab exit, stale-request refusal, disabled state, Tabs fallback/panel focus, RadioGroup stable hooks\n",
       "stderr": ""
     },
@@ -1214,7 +1214,7 @@
       "path": "tests/core-delegated-lifecycle-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.68,
+      "seconds": 1.33,
       "stdout": "PASS delegated/lifecycle: ObjectHeader exact Evidence/Exception actions +zero/readonly, DetailOnly own Show per screen/region, relative clocks/format change/locale fallback/invalid/epoch/unmount, WorkspaceLayout composite forwards layout/bar/actions/rest/onChange, DatumGroup measured resize/explicit width/observer cleanup\n",
       "stderr": ""
     },
@@ -1222,7 +1222,7 @@
       "path": "tests/core-form-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.1,
+      "seconds": 1.48,
       "stdout": "PASS core forms: associated labels/error descriptions, native checkbox props, named steppers, drawer ids, keyboard file picker, density radios/storage failure, stale async validation, strict monetary validation\n",
       "stderr": ""
     },
@@ -1230,7 +1230,7 @@
       "path": "tests/core-gap-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 4.09,
+      "seconds": 2.92,
       "stdout": "PASS core gap contracts: forms/actions/navigation/windowing/filter UI/datebounds/numberinitial/radios/native controlledfields/dirtywizard/gridgrouping/asynccontrolled/tooltipunmount\n",
       "stderr": ""
     },
@@ -1238,7 +1238,7 @@
       "path": "tests/core-integration-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.16,
+      "seconds": 2.4,
       "stdout": "PASS America/Los_Angeles: calendar civil dates retain exact four-digit years and month arithmetic\nPASS America/Los_Angeles: calendar field names and validation describe the actual controls\nPASS America/Los_Angeles: overlay starts at an available control and excludes unavailable Tab stops\nPASS America/Los_Angeles: intentional heading focus is initial only and empty panels remain focusable\nPASS Pacific/Auckland: calendar civil dates retain exact four-digit years and month arithmetic\nPASS Pacific/Auckland: calendar field names and validation describe the actual controls\nPASS Pacific/Auckland: overlay starts at an available control and excludes unavailable Tab stops\nPASS Pacific/Auckland: intentional heading focus is initial only and empty panels remain focusable\nCore integration: 8 source contracts passed.\n",
       "stderr": ""
     },
@@ -1246,7 +1246,7 @@
       "path": "tests/core-interaction-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 5.36,
+      "seconds": 4.28,
       "stdout": "PASS core interactions: 35 component-family recipes; keyboard/focus/controlled/disabled/validation/empty/loading/error/stale/recovery contracts where applicable\n",
       "stderr": ""
     },
@@ -1254,7 +1254,7 @@
       "path": "tests/core-logic-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 0.17,
+      "seconds": 0.14,
       "stdout": "PASS core logic: SHA/canonical snapshots, stale acknowledgments, finite formation gates, controlled vocabularies, local calendar boundaries, all nine time safeguards trigger/recovery/missing + closed suppression, normalized zero/missing object identity, archetypes, disclosure depth, numeric missing/zero\n",
       "stderr": ""
     },
@@ -1262,7 +1262,7 @@
       "path": "tests/core-selection-disclosure-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 6.7,
+      "seconds": 5.88,
       "stdout": "PASS Controlled selection delegates exact proposed objects and waits for external value\nPASS Controlled selection persists only accepted owner state through rejected proposals and clear requests\nPASS Selection limits preserve population order and max zero rejects new selections\nPASS Initial defaults and restored selections obey declared single and multi selection limits\nPASS Named nested selection scopes expose outer and nearest providers independently\nPASS Range and all selection use exact source order, with shift and additive target activation\nPASS Bounded history walks backward once without readding entries, and zero disables history\nPASS Forced same-identity updates preserve exact values and explicit history replacement\nPASS URL restoration takes precedence and persistence preserves unrelated query state and exact selected identities\nPASS Valid stored selection restores; malformed and inaccessible storage recover to defaults and keep actions usable\nPASS Escape clear can be disabled and its document listener is removed on unmount\nPASS Screen detail dial supports roving keyboard selection and URL mirroring without losing other query state\nPASS Region detail keyboard override stays independent until keyboard reset restores screen inheritance\nPASS Disclosure URL depth wins over stored/default depth and invalid URL falls back safely\nPASS Controlled disclosure keyboard requests preserve external depth and URL until owner updates\n{\"cases\":15,\"passed\":15,\"artifacts\":\"/tmp/meridian-core-selection-disclosure-regression\"}\n",
       "stderr": ""
     },
@@ -1270,7 +1270,7 @@
       "path": "tests/core-state-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 6.35,
+      "seconds": 3.81,
       "stdout": "PASS WorkspaceLayout filters data context, saves the exact Default arrangement, resets and restores\nPASS WorkspaceLayout separator keyboard, collapse focus and hidden-region recovery\nPASS WorkspaceLayout isolates changed screen IDs without remounting the consumer\nPASS WorkspaceLayout survives malformed and blocked persistence\nPASS WorkspaceContext controlled values, functional updates and reset preserve source ownership\nPASS WorkspaceContext overflow preserves priority, current values, Escape and outside dismissal\nPASS WorkspaceContext remeasures changed field lengths at fixed viewport width\nPASS ObjectTrail exact identity, branch history, moved versions, pinning and retained notices\nPASS ObjectTrail recent keyboard dismissal restores the trigger and clears unpinned history\nPASS ObjectTrail per-screen persistence is isolated on same-mounted scope changes\nPASS ObjectScope reports foreign figures, removes unmounted entries and preserves zero/missing distinction\nPASS TimeContext controlled updates, missing-role rendering and temporal error recovery\nPASS TimeContext reset restores the default role set without stale optional dates\nPASS Disclosure summary retains severity/zero/freshness, keyboard pins and reveals withheld evidence\nPASS Disclosure restores persisted depth and per-screen isolation without consumer remount\nPASS Disclosure controlled depth delegates updates and malformed/blocked storage recovers\nPASS SelectionCompare max, keyboard toggle, exact callback, overlay trap and focus recovery\nPASS SelectionCompare compact toggles retain a minimum 24 by 24 keyboard target\nPASS SelectionCompare zero max is enforced by the public hook as well as disabled UI\nPASS SelectionCompare clear closes the active comparison before a new candidate set\nPASS UserMenu keyboard entry, directional focus, exactly-once dispatch and Escape return\nPASS ReturnPath exact href/zero identity, ordinary callback and modified-link preservation\nPASS No page exceptions or external network are required by state fixtures\nState contracts: 23/23 passed; evidence /tmp/meridian-core-state-regression/results.json\n",
       "stderr": ""
     },
@@ -1278,7 +1278,7 @@
       "path": "tests/core-table-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.91,
+      "seconds": 1.68,
       "stdout": "PASS core table contracts: persisted restore, blocked storage, current-page identity, stale async/error/retry/empty, CSV escaping, column metadata, editable keyboard/validation/focus\n",
       "stderr": ""
     },
@@ -1286,7 +1286,7 @@
       "path": "tests/domain-action-state-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.39,
+      "seconds": 2.2,
       "stdout": "{\"passed\":8,\"failed\":0}\n",
       "stderr": ""
     },
@@ -1294,7 +1294,7 @@
       "path": "tests/domain-carrier-lifecycle-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.41,
+      "seconds": 1.47,
       "stdout": "{\"passed\":4,\"failed\":0}\n",
       "stderr": ""
     },
@@ -1302,7 +1302,7 @@
       "path": "tests/domain-chart-state-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.37,
+      "seconds": 2.7,
       "stdout": "passed: AnalyticalFigure — native disclosure toggles with Enter/Space and preserves exact fallback, provenance and zero\npassed: AnalyticalFigure — numeric zero alone is a selected readout\npassed: AnalyticalFigure — condition changes retain exact plot evidence and expose stale/partial/offline/delayed status\npassed: AnalyticalFigure — explicit error/recovering/live transitions preserve evidence and release inert busy state\npassed: AnalyticalFigure — caller empty/loading/error composition remains visible and recovers with provenance\npassed: AnalyticalFigure — print expands exact fallback; small multiples and absent fallback follow documented variants\npassed: AsOfControl — uncontrolled live ticks in UTC, native Freeze is exact, frozen time stops, and Return to live resumes\npassed: AsOfControl — controlled live/asof mode waits for parent and external timestamps replace the UTC input\npassed: AsOfControl — UTC edit emits an exact Date across non-UTC browser timezone; empty edit is ignored and recovers\npassed: AsOfControl — rejected edit emits proposed UTC instant while authoritative supplied timestamp stays displayed\npassed: DonutChart — controlled native view activation returns exact IDs without mutating active selection\npassed: DonutChart — unknown view falls back to first; optional callback preserves controlled readonly view\npassed: DonutChart — legend, accessible table and explicit total preserve source order and fraction units\npassed: DonutChart — empty, zero-total and empty-views remain finite and recover without stale segments\npassed: DotMatrix — native Enter/Space drilldown returns original row/column objects and distinct zero/null values\npassed: DotMatrix — normalized string-column IDs and pointer callback retain exact source row and note\npassed: DotMatrix — controlled square/diverging encoding retains source values, uses sign hues and keeps zero visible\npassed: DotMatrix — removing drilldown removes interactive targets while preserving exact accessible data\npassed: DotMatrix — empty rows/columns and recovery have no stale controls, stale values or invalid geometry\n{\"output\":\"/tmp/pr3501-full-audit/domain-chart-state-results.json\",\"cases\":19,\"failed\":0,\"browserErrors\":0}\n",
       "stderr": ""
     },
@@ -1310,7 +1310,7 @@
       "path": "tests/domain-decisionflow-async-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.18,
+      "seconds": 1.59,
       "stdout": "passed: pending validation blocks the actual primary action and recovers with exact scope\npassed: newer same-step blocking validation defeats old automatic and complete responses\npassed: completion awaiting next-step entry cannot land after identity version or unmount invalidation\npassed: rejected step entry reports blocking evidence and existing goTo retries recover exactly\n{\"groups\":4,\"exports\":5,\"passed\":20,\"failed\":0,\"pageErrors\":0,\"consoleErrors\":0,\"externalRequests\":0,\"sourceStable\":true}\n",
       "stderr": ""
     },
@@ -1318,7 +1318,7 @@
       "path": "tests/domain-empty-control-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.02,
+      "seconds": 3.54,
       "stdout": "{\"passed\":11,\"failed\":0}\n",
       "stderr": ""
     },
@@ -1326,7 +1326,7 @@
       "path": "tests/domain-evidence-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 4.53,
+      "seconds": 5.49,
       "stdout": "{\"passed\":40,\"failed\":0}\n",
       "stderr": ""
     },
@@ -1334,7 +1334,7 @@
       "path": "tests/domain-integrity-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 3.02,
+      "seconds": 3.24,
       "stdout": "PASS Domain integrity (29 source exports): absent/restricted values, nonfinite peers, reconciliation identity/boolean callbacks, labels/ids, annotation descriptions and cleanup\n",
       "stderr": ""
     },
@@ -1342,7 +1342,7 @@
       "path": "tests/domain-ladder-action-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 4.93,
+      "seconds": 5.06,
       "stdout": "passed: MaturityLadder — local native modes change numeric units, preserve the amount table, and return exact requested modes\npassed: MaturityLadder — controlled mode emits proposals and waits for parent acceptance\npassed: MaturityLadder — native row selection returns exact normalized bucket/index and retains controlled selection\npassed: MaturityLadder — empty inputs keep declared zero buckets and recover without stale unknown rows; readonly removes row actions\npassed: CashFlowLadder — native keyboard selection returns exact gross/net/cumulative bucket and caller index\npassed: CashFlowLadder — coverage/scenario toggles retain the same exact row contract\npassed: CashFlowLadder — empty/recovery removes stale action rows and readonly preserves exact table\npassed: DurationContribution — local native rank controls reorder plot and exact table and emit requested IDs\npassed: DurationContribution — controlled rank waits for parent acceptance and preserves authoritative order\npassed: DurationContribution — Arrow/Home/End move focus without selecting; Enter/Space return exact ranked normalized row once\npassed: DurationContribution — double-click invokes exact trace row after ranking and readonly removes callbacks\npassed: DurationContribution — empty/recovery clears ranked options and restores first-row tab entry\npassed: CorrelationHeatmap — real pointer hover returns exact numeric row/col/value including negative and zero\npassed: CorrelationHeatmap — hidden values retain exact hover payload and tooltips; absent handler remains inert\npassed: CorrelationHeatmap — empty/recovery clears stale matrix cells and axis headers\npassed: Treemap — native Enter/Space activate sorted positive tiles with exact retained item fields and measured area\npassed: Treemap — empty/recovery and removing selection callback remove stale keyboard targets\npassed: PlateGrid — native keyboard callbacks preserve exact ID and controlled selected plate\npassed: PlateGrid — reordering keeps shared axis geometry and exact ID mapping; empty/readonly recover\npassed: ComparisonPlate — native standalone activation fires callback and parent controls pressed state\npassed: DurationContribution — incomplete inputs keep explicit contribution and exact callback while residual is named; complete inputs recover\npassed: LineageGraph — cyclic lineage renders bounded exact topology and native selection; acyclic and empty inputs recover\npassed: LineageGraph — host resize retains natural cycle canvas, exact focused node and selection ID\npassed: OwnershipGraph — cyclic DTO topology keeps exact normalized selection and relationship titles and recovers\npassed: OwnershipGraph — cycle edge measurements follow resize while keyboard callback preserves exact normalized node\npassed: OwnershipGraph — semantic relationship list preserves exact labels/type and positive/zero/missing ownership through updates without changing Tab order or callbacks\npassed: TraceChart — real hover exposes exact native category title without committing controlled selection\npassed: TraceChart — distinct closed model bands resize with the plot while hover and selection retain exact category mapping\npassed: WatchlistStrip — missing change is neutral unavailable evidence and differs from explicit amount/percent zero\npassed: WatchlistStrip — missing to observed zero and back retains exact item selection and never invents a change\n{\"output\":\"/tmp/pr3501-full-audit/domain-ladder-action-results.json\",\"cases\":30,\"passed\":30,\"failed\":0,\"browserErrors\":0}\n",
       "stderr": ""
     },
@@ -1350,7 +1350,7 @@
       "path": "tests/domain-logic-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.5,
+      "seconds": 1.33,
       "stdout": "{\"passed\":36,\"failed\":0}\n",
       "stderr": ""
     },
@@ -1358,7 +1358,7 @@
       "path": "tests/domain-operations-state-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 4.21,
+      "seconds": 4.59,
       "stdout": "{\"passed\":19,\"failed\":0}\n",
       "stderr": ""
     },
@@ -1366,7 +1366,7 @@
       "path": "tests/domain-snapshot-react-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.51,
+      "seconds": 1.52,
       "stdout": "{\"passed\":1,\"failed\":0}\n",
       "stderr": ""
     },
@@ -1374,7 +1374,7 @@
       "path": "tests/domain-workflow-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 4.05,
+      "seconds": 3.7,
       "stdout": "PASS Domain workflows: exact callback IDs, controlled state, keyboard/focus, reason/validation gates, stale data, empty and recovery across eight families\n",
       "stderr": ""
     },
@@ -1382,7 +1382,7 @@
       "path": "tests/form-field-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.16,
+      "seconds": 1.98,
       "stdout": "PASS FormField: label focus, stable/provided IDs, merged descriptions, errors, consumer/native props and reconciliation checkbox callbacks\n",
       "stderr": ""
     },
@@ -1390,7 +1390,7 @@
       "path": "tests/global-search-focus-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.56,
+      "seconds": 1.39,
       "stdout": "PASS GlobalSearch: visible keyboard focus in light/dark without executing search actions\n",
       "stderr": ""
     },
@@ -1398,7 +1398,7 @@
       "path": "tests/grid-amount-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.96,
+      "seconds": 1.83,
       "stdout": "PASS grid amounts: decimal-string balance/imbalance, totals/subtotals, edit round trip, signed decimals, invalid/missing/nonfinite/overflow evidence\n",
       "stderr": ""
     },
@@ -1406,7 +1406,7 @@
       "path": "tests/integration-data-accessibility-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.22,
+      "seconds": 2.07,
       "stdout": "PASS 7/7 integrated data/finance accessibility contracts\n",
       "stderr": ""
     },
@@ -1414,7 +1414,7 @@
       "path": "tests/interaction-depth-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 5.45,
+      "seconds": 4.95,
       "stdout": "PASS Interaction Depth: query input identity and focus\nPASS Interaction Depth: keyboard movement and selection focus\nPASS Interaction Depth: virtualized selection keeps grid and scroll\nPASS Interaction Depth: retained host API tracks confirmed edits and restores the correct prior\nPASS Interaction Depth: query focus, keyboard selection, virtualized continuity, exact row context actions, header fail-closed\n",
       "stderr": ""
     },
@@ -1422,7 +1422,7 @@
       "path": "tests/local-patches-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.94,
+      "seconds": 2.35,
       "stdout": "PASS LP-07: books staging refuses invalid and out-of-period posting dates\nPASS LP-03: settings save key changes with any payload change and is stable across retries\nPASS LP-09: attribute-safe escaping; assertion and exception text never parsed as HTML\nPASS LP-06: impossible dates return null; valid ISO, slash and long dates still parse\nPASS LP-05: tick precision beats the surface default; per-call decimals beat both\nPASS LP-04: stale/offline/error bodies are inert to keyboard; retry stays reachable\nPASS LP-02: idempotency key reserved synchronously; retry resends the effective declaration\nPASS LP-01: no parent-render feedback loop; one stable API that tracks instruction changes\nLocal patch regressions passed: LP-07, LP-03, LP-09, LP-06, LP-05, LP-04, LP-02, LP-01\n",
       "stderr": ""
     },
@@ -1430,7 +1430,7 @@
       "path": "tests/modal-label-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.17,
+      "seconds": 0.87,
       "stdout": "PASS Modal: unique per-instance names, updated title and retained sibling reference\n",
       "stderr": ""
     },
@@ -1438,7 +1438,7 @@
       "path": "tests/optimistic-observer-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.23,
+      "seconds": 1.27,
       "stdout": "Optimistic observer regression passed: confirmed/rejected writes, newest-first batch compensation, failed revert, subscriber delivery, explicit diagnostics.\n",
       "stderr": ""
     },
@@ -1446,7 +1446,7 @@
       "path": "tests/optimistic-settlement-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 1.53,
+      "seconds": 1.18,
       "stdout": "PASS Optimistic settlement: confirmed receipt survives a throwing observer\nPASS Optimistic settlement: rejected write retains its transport reason\nPASS Optimistic settlement: batch compensation survives all observer failures\nPASS Optimistic settlement: transport compensation failure remains distinct\nPASS Optimistic settlement: console fallback reports callback faults\nPASS Optimistic settlement: rejected async observer is reported without rejecting the write\n",
       "stderr": ""
     },
@@ -1454,7 +1454,7 @@
       "path": "tests/public-contract-types.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.95,
+      "seconds": 2.23,
       "stdout": "{\"exports\":351,\"typescript\":\"5.7.2\",\"reactTypes\":\"19.3.0\",\"errors\":0}\n",
       "stderr": ""
     },
@@ -1462,7 +1462,7 @@
       "path": "tests/retained-reference-accessibility-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 5.8,
+      "seconds": 5.47,
       "stdout": "PASS retained formula suggestions: light\nPASS independent theme specimens: depth-surfaces (light)\nPASS independent theme specimens: dark-mode-validation (light)\nPASS retained formula suggestions: dark\nPASS independent theme specimens: depth-surfaces (dark)\nPASS independent theme specimens: dark-mode-validation (dark)\n",
       "stderr": ""
     },
@@ -1470,7 +1470,7 @@
       "path": "tests/retained-template-states-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 29.05,
+      "seconds": 24.39,
       "stdout": "PASS alm-review: actual DC ready/loading/empty/error and theme/density/environment\nPASS close-management: actual DC ready/loading/empty/error and theme/density/environment\nPASS books-loop: actual DC ready/loading/empty/error and theme/density/environment\nPASS position-detail: actual DC ready/loading/empty/error and theme/density/environment\nPASS backtest-compare: actual DC ready/loading/empty/error and theme/density/environment\nPASS amx-governance: actual DC ready/loading/empty/error and theme/density/environment\nPASS backtest-builder: actual DC ready/loading/empty/error and theme/density/environment\nPASS covered-call-lab: actual DC ready/loading/empty/error and theme/density/environment\nPASS family-office: actual DC ready/loading/empty/error and theme/density/environment\nPASS journaling-workstation: actual DC ready/loading/empty/error and theme/density/environment\nPASS reconciliation-workstation: actual DC ready/loading/empty/error and theme/density/environment\nPASS split-pane-reconciliation: actual DC ready/loading/empty/error and theme/density/environment\nPASS strategy-builder: actual DC ready/loading/empty/error and theme/density/environment\nPASS strategy-onboarding: actual DC ready/loading/empty/error and theme/density/environment\n",
       "stderr": ""
     },
@@ -1478,7 +1478,7 @@
       "path": "tests/scenario-selector-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.34,
+      "seconds": 1.64,
       "stdout": "PASS ScenarioSelector: controlled focus/selection, wrapping, Home/End, Space/Enter, stale selection, read-only, empty, form safety\n",
       "stderr": ""
     },
@@ -1486,7 +1486,7 @@
       "path": "tests/semantic-role-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2,
+      "seconds": 1.55,
       "stdout": "PASS source bindings: positive/negative controls and every replacement declared in the CSS closure\nPASS geometry: flat ownership nodes, 4px controls, dropdown layer, all four ledger densities\nPASS light: pending/info remain distinct, selected cell follows blue selection, primary/retry labels retain AA contrast\nPASS dark: pending/info remain distinct, selected cell follows blue selection, primary/retry labels retain AA contrast\nPASS consumer role overrides propagate without literal fallback locks; no runtime errors\n",
       "stderr": ""
     },
@@ -1494,7 +1494,7 @@
       "path": "tests/template-governance-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 2.97,
+      "seconds": 2.48,
       "stdout": "PASS governance sources: unique Modal names, compatibility query/hash, family evidence/review/tables, reconciliation keyboard/dialog, preference precedence\n",
       "stderr": ""
     },
@@ -1502,7 +1502,7 @@
       "path": "tests/template-preview-regression.mjs",
       "exitCode": 0,
       "status": "passed",
-      "seconds": 11.16,
+      "seconds": 9.77,
       "stdout": "PASS amx-governance: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS backtest-builder: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS covered-call-lab: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS family-office: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS journaling-workstation: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS reconciliation-workstation: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS split-pane-reconciliation: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS strategy-builder: ready/loading/empty/error, headings, environment, density and operator preference precedence\nPASS strategy-onboarding: ready/loading/empty/error, headings, environment, density and operator preference precedence\n",
       "stderr": ""
     }

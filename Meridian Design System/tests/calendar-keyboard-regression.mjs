@@ -98,6 +98,8 @@ try {
         if (direction === 'previous') await page.keyboard.press('Tab');
       }
       const day = page.locator(kind === 'date' ? '.mds-date-day[tabindex="0"]' : '.mds-dr-day[tabindex="0"]');
+      await page.waitForFunction(selector => document.querySelector(selector) === document.activeElement,
+        kind === 'date' ? '.mds-date-day[tabindex="0"]' : '.mds-dr-day[tabindex="0"]');
       assert(await focused(day), `${kind} ${direction}-month entry remains inside declared bounds`);
       assert.equal(await day.isEnabled(), true);
       assert.match(await day.getAttribute('aria-label'), /February 15, 2026/);

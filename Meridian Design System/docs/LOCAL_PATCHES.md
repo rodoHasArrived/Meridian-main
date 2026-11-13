@@ -41,6 +41,7 @@ regression that was run against the pre-patch file and failed on it.
 | LP-20 | `components/operations/ActionQueue.jsx`, `ActionEnvelope.jsx` | Retrying an older queue row could resend a newer instruction of the same action. Retry now accepts the row identity and preserves its key, payload and attempt; concurrent retries share one dispatch. | Follow-up to PR #3520 | `tests/action-queue-retry-regression.mjs` |
 | LP-21 | `components/core/DatePicker.jsx`, `DateRangePicker.jsx` | Tab from a calendar day closed the popup before operators could reach its footer or return to its month controls. Day navigation and dialog dismissal now have separate handlers. Tab traversal and a day-grid entry remain available after month changes, including date bounds. | Follow-up to PR #3520 | `tests/calendar-keyboard-regression.mjs` |
 | LP-22 | `components/data/DataGrid.jsx` | Valid decimal strings displayed as amounts but could not establish totals or proofs, including strings emitted by inline editing. The shared aggregate helper normalizes decimal strings while withholding missing, invalid and overflowing evidence. | Follow-up to PR #3520 | `tests/grid-amount-regression.mjs` |
+| LP-23 | `components/data/EditableCell.jsx` | An edit begun while enabled could commit on blur after the cell became disabled. Disabling now cancels the pending edit and commit checks the current disabled state. | Follow-up to PR #3520 | `tests/core-table-regression.mjs` |
 
 ## Other local changes
 
@@ -57,7 +58,7 @@ checks named here, not by `test:patches`.
 
 ## To carry upstream
 
-LP-01 to LP-22 are defects in the design source and should be fixed there, so the
+LP-01 to LP-23 are defects in the design source and should be fixed there, so the
 next export arrives with them. Until then this file is the re-apply list. When a
 patch lands upstream, keep its regression and remove its row.
 

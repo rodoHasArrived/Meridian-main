@@ -152,8 +152,10 @@ export function DatePicker({
 
   React.useEffect(() => {
     // Opening and day-grid navigation move focus to the active day. Month buttons
-    // retain focus so keyboard users can advance repeatedly before entering the grid.
-    if (open && (!calRef.current?.contains(document.activeElement) || document.activeElement?.classList.contains("mds-date-day"))) dayRef.current?.focus();
+    // retain focus while enabled so users can advance repeatedly. Browsers may
+    // retain a disabled month's focus at a bound; move it to the available day.
+    const active = document.activeElement;
+    if (open && (!calRef.current?.contains(active) || active?.classList.contains("mds-date-day") || active?.matches(":disabled"))) dayRef.current?.focus();
   }, [open, cursor]);
 
   const openCal = () => {
