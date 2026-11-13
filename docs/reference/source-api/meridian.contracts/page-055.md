@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IDailyValuationScheduleStatusSource
+
+Qualified name: <code>Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L88).
+
+Read-only scheduler projection consumed by close-cockpit surfaces without taking a dependency on the workstation scheduler implementation.
+
+```csharp
+public interface IDailyValuationScheduleStatusSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/DailyValuationScheduleDtos.cs#L90) |  |
+
+## IFinancialOperationsCommandCenterReadService
+
+Qualified name: <code>Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L87).
+
+Builds the scoped Financial Operations command center read model.
+
+```csharp
+public interface IFinancialOperationsCommandCenterReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L89) |  |
+
+## ImportBrokerData
+
+Qualified name: <code>Meridian.Contracts.Workstation.ImportBrokerData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:19](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L19).
+
+```csharp
+public sealed record ImportBrokerData(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
+## IngestionCheckpointDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.IngestionCheckpointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L45).
+
+```csharp
+public sealed record IngestionCheckpointDto(string? LastSymbol, DateTimeOffset? LastDate, long? LastOffset, DateTimeOffset? GapFillWindowStart, DateTimeOffset CapturedAt);
+```
+
 ## IngestionOperationActionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.IngestionOperationActionDto</code>. Kind: `record`.
@@ -596,60 +652,4 @@ Preview of accounting impact if current breaks are submitted/closed with draft l
 
 ```csharp
 public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebitEffect, decimal NetCreditEffect, decimal NetBalanceDelta, bool HasValidationWarnings, IReadOnlyList<string> ValidationFlags);
-```
-
-## LedgerJournalLine
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:633](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L633).
-
-Shared journal row for workstation audit surfaces.
-
-```csharp
-public sealed record LedgerJournalLine(Guid JournalEntryId, DateTimeOffset Timestamp, string Description, decimal TotalDebits, decimal TotalCredits, int LineCount, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
-```
-
-## LedgerReconciliationContractCompatibility
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerReconciliationContractCompatibility</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:6](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L6).
-
-Rejects ledger reconciliation and continuity payloads missing required contract fields.
-
-```csharp
-public static class LedgerReconciliationContractCompatibility
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void EnsureFundLedgerSummaryRequiredFields(FundLedgerSummary summary);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:8](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L8) |  |
-| <code>public static void EnsureReconciliationSummaryRequiredFields(ReconciliationRunSummary summary);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:25](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L25) |  |
-| <code>public static void EnsureContinuityRequiredFields(StrategyRunContinuityDto continuity);</code> | [src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs:38](../../../../src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs#L38) |  |
-
-## LedgerSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:584](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L584).
-
-Shared ledger rollup for workstation Accounting and audit surfaces.
-
-```csharp
-public sealed record LedgerSummary(string LedgerReference, string RunId, DateTimeOffset AsOf, int JournalEntryCount, int LedgerEntryCount, decimal AssetBalance, decimal LiabilityBalance, decimal EquityBalance, decimal RevenueBalance, decimal ExpenseBalance, IReadOnlyList<LedgerTrialBalanceLine> TrialBalance, IReadOnlyList<LedgerJournalLine> Journal, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
-```
-
-## LedgerTrialBalanceLine
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:612](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L612).
-
-Shared trial-balance row for workstation ledger views.
-
-```csharp
-public sealed record LedgerTrialBalanceLine(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Balance, int EntryCount, WorkstationSecurityReference? Security = null, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, LedgerDimensionSetDto? Dimensions = null);
 ```

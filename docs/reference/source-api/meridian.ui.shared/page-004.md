@@ -6,6 +6,151 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundProfileTenantDecision
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundProfileTenantDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs:35](../../../../src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs#L35).
+
+Outcome of an IFundProfileTenantGuard evaluation.
+
+```csharp
+public sealed record FundProfileTenantDecision(bool IsAllowed, string Reason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FundProfileTenantDecision Allow(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs#L37) |  |
+| <code>public static FundProfileTenantDecision Deny(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs:39](../../../../src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs#L39) |  |
+
+## FundScopedWriteTenantEndpointFilters
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundScopedWriteTenantEndpointFilters</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:225](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L225).
+
+SEC-005 slice 4c-iii: gates fund-scoped write/evaluate routes on a server-resolved tenant. Strict host composition refuses a tenantless caller with 403. Explicit compatibility composition may retain detection-only writes while operators complete migration. Resource-owner checks still decide whether a scoped caller may act on the requested fund artifact.
+
+```csharp
+public static class FundScopedWriteTenantEndpointFilters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RouteHandlerBuilder RequireFundScopedWriteTenant(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:230](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L230) |  |
+
+## FundScopedWriteTenantOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundScopedWriteTenantOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:214](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L214).
+
+SEC-005 slice 4c-iii deployment/startup switch for the fund-scoped write tenant gate — read once at startup during DI registration, so changing it requires a restart. Strict host composition enables this gate. Explicit deployment-boundary compatibility may retain detection-only writes; MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true tightens that compatibility posture.
+
+```csharp
+public sealed record FundScopedWriteTenantOptions(bool Enforce)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly FundScopedWriteTenantOptions Disabled = new (Enforce : false);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:216](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L216) |  |
+
+## FundStructureEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundStructureEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs#L20).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapFundStructureEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs#L22) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs:9](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingAmountProof.cs#L9).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingCompatibility.cs#L15).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs#L19).
+
+Canonical governed-reporting lifecycle API. This mapper is intentionally separate from the legacy report-pack routes so one integration call can activate the new surface without growing the already-large FundStructureEndpoints.cs file.
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapReportingGovernanceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingGovernance.cs#L21) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingIncomeComparison.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingIncomeComparison.cs#L12).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapReportingIncomeComparisonEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingIncomeComparison.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingIncomeComparison.cs#L14) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingRunStream.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingRunStream.cs#L16).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapReportingRunStreamEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingRunStream.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingRunStream.cs#L23) | Register the report-run status Server-Sent Events endpoint. Authorization is enforced here, where the HttpContext is available; the background broadcaster then rebuilds each run&#x27;s payload by its immutable tenant, company, and run identity. |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingScheduleAuthority.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingScheduleAuthority.cs#L10).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingTombstones.cs:9](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ReportingTombstones.cs#L9).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ScopeAuthorization.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.ScopeAuthorization.cs#L7).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.StructuredReportingExport.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.StructuredReportingExport.cs#L8).
+
+```csharp
+public static partial class FundStructureEndpoints
+```
+
 ## FutureReferenceEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.FutureReferenceEndpoints</code>. Kind: `class`.
@@ -985,63 +1130,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapProviderModuleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L18) |  |
-
-## ProviderRoutingEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderRoutingEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L14).
-
-Endpoint mapping for the relationship-aware provider routing layer.
-
-```csharp
-public static class ProviderRoutingEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L16) |  |
-
-## QuantDiagnosticDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantDiagnosticDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:359](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L359).
-
-JSON-friendly Roslyn diagnostic.
-
-```csharp
-public sealed record QuantDiagnosticDto(string Severity, string Message, int Line, int Column);
-```
-
-## QuantLabEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantLabEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L28).
-
-HTTP endpoints that expose the Meridian QuantScript engine (the &quot;Quant Lab&quot;) to the browser workstation. Endpoints are only meaningful when an IScriptRunner has been registered (gated by QuantLab:Enabled); when not registered, calls return 503 Service Unavailable.
-
-```csharp
-public static class QuantLabEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L34) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
-
-## QuantMetricDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantMetricDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L362).
-
-JSON-friendly metric entry (label/value).
-
-```csharp
-public sealed record QuantMetricDto(string Label, string Value);
-```

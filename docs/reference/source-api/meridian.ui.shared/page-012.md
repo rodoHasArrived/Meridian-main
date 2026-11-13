@@ -6,6 +6,103 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IMultiAssetCoverageReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IMultiAssetCoverageReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:11](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L11).
+
+Provides a multi-asset coverage summary for the requested scope.
+
+```csharp
+public interface IMultiAssetCoverageReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;MultiAssetCoverageSummaryDto&gt; GetCoverageAsync(string? fundAccountId, string? entity, string? assetClass, ReconciliationBreakQueueScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs:13](../../../../src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs#L13) |  |
+
+## IngestionOperationsService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IngestionOperationsService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs:14](../../../../src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs#L14).
+
+Applies workstation ingestion actions through the owning ingestion services.
+
+```csharp
+public sealed class IngestionOperationsService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IngestionOperationsService(IngestionJobService jobs, IEvidenceArtifactStore evidence);</code> | [src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs:21](../../../../src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs#L21) |  |
+| <code>public IngestionOperationsSnapshotDto GetSnapshot(string? state, string? workload, string? provider, bool resumableOnly);</code> | [src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs:27](../../../../src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs#L27) |  |
+| <code>public IngestionOperationDetailDto? GetDetail(string jobId);</code> | [src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs:53](../../../../src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs#L53) |  |
+| <code>public async Task&lt;IngestionOperationActionResultDto?&gt; ApplyActionAsync(string jobId, string action, IngestionOperationActionRequestDto request, string actor, string tenantId, string companyId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs:82](../../../../src/Meridian.Ui.Shared/Services/IngestionOperationsService.cs#L82) |  |
+
+## InitialAccountBootstrapService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InitialAccountBootstrapService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs:10](../../../../src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs#L10).
+
+Creates the first local administrator through a loopback-only, one-use launcher token.
+
+```csharp
+public sealed class InitialAccountBootstrapService(IUserAccountStore accountStore, LoginSessionService sessions, AuthenticationConfiguration? configuration = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string TokenEnvironmentVariable = &quot;MDC_BOOTSTRAP_TOKEN&quot;;</code> | [src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs:15](../../../../src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs#L15) |  |
+| <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs:19](../../../../src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs#L19) |  |
+| <code>public async Task&lt;string?&gt; CreateAsync(IPAddress? remoteAddress, string? suppliedToken, string username, string password, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs:21](../../../../src/Meridian.Ui.Shared/Services/InitialAccountBootstrapService.cs#L21) |  |
+
+## InMemoryAccountingActionAuditStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingActionAuditStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:58](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L58).
+
+Appends and queries accounting action audit events in process memory.
+
+```csharp
+public sealed class InMemoryAccountingActionAuditStore : IAccountingActionAuditStore, Meridian.Application.Composition.INonProductionOnlyService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:64](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L64) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:94](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L94) |  |
+
+## InMemoryAccountingConfigurationStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingConfigurationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L19).
+
+Stores accounting configuration workspaces in process memory.
+
+```csharp
+public sealed class InMemoryAccountingConfigurationStore : IAccountingConfigurationStore, Meridian.Application.Composition.INonProductionOnlyService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:25](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L25) |  |
+| <code>public Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs:37](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationStores.cs#L37) |  |
+
 ## InMemoryAccountingMigrationRunArtifactStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingMigrationRunArtifactStore</code>. Kind: `class`.
@@ -350,6 +447,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:16](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L16) |  |
 
+## IPrivateCapitalLifecycleSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IPrivateCapitalLifecycleSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L15).
+
+A source supplies retained balances; the workstation does not manufacture or approve them.
+
+```csharp
+public interface IPrivateCapitalLifecycleSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;PrivateCapitalLifecycleRead&gt; ReadAsync(string familyOfficeId, IReadOnlySet&lt;string&gt; entityIds, DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default, Func&lt;DateOnly, CancellationToken, Task&lt;IReadOnlySet&lt;string&gt;&gt;&gt;? historicalEntityScope = null);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:17](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L17) |  |
+
 ## IProviderModuleSetupService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IProviderModuleSetupService</code>. Kind: `interface`.
@@ -596,7 +711,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1541](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1541).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1544](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1544).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -608,7 +723,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1543](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1543) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1546](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1546) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -843,118 +958,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:30](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L30) |  |
 | <code>void Save(IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; attempts);</code> | [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:32](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L32) |  |
-
-## IReportPackSecurityLineIndex
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportPackSecurityLineIndex</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L25).
-
-Durable-by-derivation index from a security id to the report packs whose retained report-line provenance references it. It replaces the per-fund linear scan in ReportPackRestatementCandidateResolver with an O(matches) lookup, and exposes a cross-fund Lookup seam (consumed internally for now; a public cross-fund surface is a later slice). The index is a derived cache: it is always rebuildable from the report-pack workflow records (the source of truth), so it carries no independent persistence.
-
-```csharp
-public interface IReportPackSecurityLineIndex
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>void RemoveReport(Guid reportId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:31](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L31) | Removes all index entries contributed by reportId. |
-| <code>void Rebuild(IEnumerable&lt;ReportPackWorkflowRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L34) | Clears and rebuilds the index from records (startup backfill / self-heal). |
-| <code>IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; LookupByFund(Guid securityId, string fundProfileId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L37) | Entries for a security scoped to a single fund profile. |
-| <code>IReadOnlyList&lt;ReportPackSecurityLineIndexEntry&gt; Lookup(Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:40](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L40) | All entries for a security across every fund (cross-fund seam). |
-
-## IReportPackWorkflowRecordStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportPackWorkflowRecordStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L11).
-
-Compatibility-only snapshot seam. Production composition does not register this store; canonical report-pack workflow authority is reporting governance.
-
-```csharp
-public interface IReportPackWorkflowRecordStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L13) |  |
-| <code>void Save(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportPackWorkflowRecordStore.cs#L15) |  |
-
-## IReportTemplateGovernanceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IReportTemplateGovernanceStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:98](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L98).
-
-Loads and saves reporting template governance records.
-
-```csharp
-public interface IReportTemplateGovernanceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
-| <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
-
-## IStatementCaseworkCommitFaultInjector
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IStatementCaseworkCommitFaultInjector</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1285](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1285).
-
-Provides fault-injection callbacks at retained statement casework commit boundaries.
-
-```csharp
-public interface IStatementCaseworkCommitFaultInjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task OnPointAsync(StatementCaseworkCommitFaultPoint point, string commandId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1287](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1287) |  |
-
-## IStatementReconciliationCaseworkHandoffService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationCaseworkHandoffService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:16](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L16).
-
-Applies single or bulk casework changes and hands their results back to statement-owned workflows.
-
-```csharp
-public interface IStatementReconciliationCaseworkHandoffService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L18) |  |
-| <code>Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L23) |  |
-
-## IStatementReconciliationIntakeAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IStatementReconciliationIntakeAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L41).
-
-Resolves accounting scope and publishes retained statement intake to governed reconciliation workflows.
-
-```csharp
-public interface IStatementReconciliationIntakeAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementAccountingScope&gt; ResolveAccountingScopeAsync(StatementReconciliationIntakeScopeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:43](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L43) |  |
-| <code>Task&lt;StatementReconciliationIntakeReceipt&gt; PublishAsync(string statementWorkflowId, StatementImportCommitResultDto import, StatementAccountingScope accountingScope, string tenantId, string companyId, string actor, string sourceInstitution, IReadOnlyList&lt;string&gt; evidenceReferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs:47](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs#L47) |  |

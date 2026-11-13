@@ -46,6 +46,13 @@ public contracts. Gate criteria, retained evidence requirements and command tran
 Reference Data probe payload classification lives in `lib/reference-data-probe.ts`, while the API
 entrypoint keeps transport/probe orchestration and the established public type exports.
 
+Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts`; `lib/api.ts`
+retains their public type exports and the setup request functions. Pure order-ticket form,
+validation and control-state helpers live in `trading-screen.order-ticket-state.ts`.
+`trading-screen.view-model.ts` retains service and hook orchestration and re-exports the public
+helpers and types. The extracted declarations and function bodies preserve the existing request
+shapes, validation, acknowledgement and status behavior.
+
 The Evidence Workbench's retained-document panel reads shared single-principal declaration,
 source-snapshot and receipt endpoints without development fallback. Evidence acknowledgment is
 default-off and uses explicit grants, a current declaration, a reason and an exact confirmation.
@@ -881,6 +888,7 @@ instead of introducing one-off screen styling.
 - `src/design-system/assets.ts` - dashboard bridge for the checked-in `Meridian Design System/` package, centralizing brand and workspace icon imports before app-shell or navigation components consume them.
 - `src/assets/` - browser-bundled brand and icon copies from the `Meridian Design System/assets/` source package, including the app icon and PNG tile.
 - `src/types.ts` - compatibility barrel for browser DTO mirrors. Add new domain-specific DTO mirrors under `src/types/` and re-export them from this file instead of growing the barrel directly.
+- `src/types/corporate-action-inbox.ts` - corporate-action source proposals, durable case projections and retained election cutoffs; `workstation-7.ts` keeps compatible named type exports.
 - `src/lib/dev-fixtures.ts` - compatibility facade for no-host fixtures. Add new screen or domain fixture payloads under `src/lib/dev-fixtures/` and register them through the resolver map instead of adding another large block to the facade.
 - `src/scenarios/` - typed response scenarios shared by URL previews, Vitest, and Playwright screenshots. `accounting-payload.ts` owns the accounting payload; `accounting.ts` owns its normal, empty, delayed, forbidden, and failed variants.
 - `src/test/scenarios.ts` - strict scenario installation and request coverage assertions for Vitest.
@@ -2455,6 +2463,36 @@ previous scope's rows, while a changed query loads.
 ## Security Master declared exercise outcome
 
 `SecurityMasterScheduleSummary` and `SecurityMasterScheduleBook` (`types/workstation-6.ts`, `types/workstation-7.ts`) carry an optional `declaredExercise`: the typed outcome of a record's declared call and put schedule (`status` of `Resolved` or `Blocked`, `asOf`, `blockers` with a `code` and `reason`). It is absent for a record that declares no schedule. No screen reads it yet; the passport statuses the screens already render are what change when a schedule is blocked.
+
+## Analytical investigation views
+
+These views extend existing workspaces and retain their tables and inspectors. They are read-only
+investigation surfaces; chart selection does not grant trading, posting, election or approval authority.
+
+| Existing surface | View and interpretation |
+| --- | --- |
+| Trading / Risk | Execution journey joins exact order aliases to retained audit decisions and genuine session fill reports. Expand events for source, actor, event/recording-time basis and identity. Source availability, truncation, unknown stages and elapsed gaps remain explicit. Completed-order summaries are not individual fills. |
+| Data / Quotes | Market-depth quantity illustration freezes an identified snapshot and highlights the chosen side, partial final level and uncovered quantity. Beyond the returned ladder means **beyond displayed depth**, not exhausted market liquidity or predicted execution. This does not seed an order ticket. |
+| Strategy / Covered call | The screening map plots DTE and delta and synchronizes contract selection with the chain inspector. Boundaries describe captured preview filters; other requirements remain visible. Unknown measurements, partial expiry coverage and snapshot times remain inspectable. |
+| Accounting / Margin control | Currency-separated paired maintenance-margin dots and provider excess-liquidity bars retain broker/provider authority, diagnostic model names, evidence dates and missing values. Zero is the explicit deficit boundary. |
+| Portfolio / Loan book | Contractual maturity buckets show current principal outstanding separately by currency, with overdue/unknown buckets and exact facility drilldown. They are not scheduled repayments, undrawn commitments or a refinancing forecast. |
+| Portfolio / Family office | The directed ownership map consumes the supplied graph and effective dates, distinguishes Owns from advisory/custody/registered-holder links, and highlights legal paths for selected assets. Structure-date changes do not relabel current financial balances. Unknown percentages, cycles and missing endpoints remain visible; economic exposure is not inferred. |
+| Portfolio / Family office | Private-capital lifecycle rows keep commitment, called, unfunded, distributions and NAV separate, group by strategy/vintage and retain currency, availability, exact amounts and source/activity drilldown. Distributions and remaining NAV are never an additive commitment stack. |
+| Security instrument / Bond analytics | The callable-bond horizon uses server-authored maturity/exercise scenarios and governing yield-to-worst ties. Holder puts remain separate from issuer-call YTW. The payment strip separates interest/principal and links exact-value details. Rates are annual fractions and amounts are per 100 face. Notice deadlines do not establish an actual call. |
+| Data / Corporate-action inbox | The weekly security/date calendar distinguishes ex, record, payment and actual retained election cutoffs. Select an event to open its exact case. Election timestamps retain offsets/source evidence; ex-date and case SLA dates never become election deadlines. |
+| Accounting / Selected journal disposal tax results | The parcel scatterplot uses retained holding days and supplied tax character. Selection preserves exact economic/recognized gain, deferred loss and provisional/settled evidence. This is journal-scoped; it does not imply portfolio-wide tax aggregation. |
+| Strategy / Promotions | The robustness landscape compares retained sweep points across two numeric axes and a fixed remaining-parameter slice. Metric/threshold controls expose acceptable regions, missing/failed/repeated cells and selected-run evidence. It is in-sample sensitivity unless separate out-of-sample evidence exists; no new sweep-launch or promotion authority is introduced. |
+
+Each view provides keyboard operation and an inspectable table/detail alternative; color is
+supplementary to labels and symbols. Source failures, unsupported calculations and missing values
+remain visible instead of becoming zero. Existing tokens, SVG and semantic HTML are used without
+new chart dependencies. Scope changes invalidate in-flight reads and selected evidence where applicable.
+
+Explicit fixture-only demonstration routes live in `src/lib/dev-fixtures/analytical-fixtures.ts`.
+They demonstrate currency separation, historical relationship filtering, missing depth/evidence and
+parameter-grid gaps using synthetic records. They do not replace failed authoritative reads.
+The private-capital retained source and election-calendar companion formats are documented in
+[`Meridian.Ui.Shared`](../../Meridian.Ui.Shared/README.md#analytical-read-model-evidence).
 
 ## Diagrams
 

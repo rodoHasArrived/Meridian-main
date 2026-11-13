@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Backtesting.Sdk
 
+Options-overwrite candidates preserve delta, open-interest and volume availability separately from numeric values. Required missing measurements and nonfinite delta are refused by preview filters; an absent provider delta cannot become an eligible zero-delta contract. Spread and contract-multiplier facts remain inspectable.
+
 `CanonicalOpenLotAdapter` now compares explicit simulation and retained canonical direction.
 Matching positive-quantity short lots may bind after the same identity/date/basis checks;
 opposite directions cannot net. Existing governed successor-component checks remain mandatory.

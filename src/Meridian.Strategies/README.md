@@ -16,6 +16,8 @@ Scoped result reads reuse the tenant/company run-visibility guard for downstream
 exports. Historical journal rows, account balances and posting counts are rebuilt from the same
 validated posting population.
 
+Retained sweep reads expose each point's parameters and separate comparison groups by experiment fingerprint, strategy, mode, engine, dataset, feed and objective. Rankings honor supported named objectives and leave unsupported objectives unranked. Legacy comparability and bounded-history/expected-grid gaps remain explicit; sensitivity thresholds do not grant promotion authority.
+
 Reconciliation casework rejects reserved preparer-attestation references as ordinary approval.
 The optional scoped receipt classifier also recognizes retained legacy receipt IDs; client command
 and assertion IDs never become approval denials. Single and bulk commands validate this boundary

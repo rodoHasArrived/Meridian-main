@@ -6,6 +6,156 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StreamSubscription (generic arity 1)
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamSubscription</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L12).
+
+A live subscription to a stream topic produced by StreamBroadcaster{TPayload}. Read coalesced payloads from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
+
+```csharp
+public sealed class StreamSubscription<TPayload>: IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChannelReader&lt;TPayload&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L23) | Coalesced payload feed for this subscription&#x27;s topic. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L25) |  |
+
+## StreamTopic
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamTopic</code>. Kind: `struct`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:14](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L14).
+
+Identifies a stream fan-out topic — the unit of subscription and one-build-per-tick sharing. The Key encodes the topic kind and its argument: quotes:&lt;symbols&gt; for a canonical, order- and case-independent symbol set (or the &quot;all tracked symbols&quot; sentinel), and a length-prefixed tenant/company/run identity for a scoped reporting run. Topic equality is by Key, so equivalent requests share one topic (and therefore one snapshot build per fan-out tick).
+
+```csharp
+public readonly struct StreamTopic : IEquatable<StreamTopic>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AllQuotesKey = &quot;quotes:*&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L17) | Topic key for &quot;all tracked symbols&quot;. |
+| <code>public string Key =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:32](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L32) | Canonical, stable identifier for this topic. default(StreamTopic) resolves to AllQuotesKey so the default value behaves as AllQuotes. |
+| <code>public string Argument =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:38](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L38) | The argument passed to this topic&#x27;s snapshot builder: the comma-joined symbol filter for quote topics (empty string = &quot;all tracked symbols&quot;), or the run id for report-run topics. |
+| <code>public string SymbolFilter =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:41](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L41) | Back-compat alias for quote consumers: the symbol filter for a quotes topic. |
+| <code>public static StreamTopic AllQuotes { get; } = new (AllQuotesKey, string.Empty);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:44](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L44) | Topic covering every tracked symbol. |
+| <code>public static StreamTopic Quotes(string? symbolFilter);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L52) | Build a quotes topic from a raw or normalized symbol filter (comma-separated). Symbols are trimmed, upper-cased, de-duplicated, and sorted so equivalent requests collapse to the same topic. An empty/whitespace filter yields AllQuotes. |
+| <code>public static StreamTopic ReportRun(string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:79](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L79) | Build a legacy report-run topic keyed by the exact run id (trimmed). New tenant-bound subscriptions use the scoped overload below. |
+| <code>public static StreamTopic ReportRun(string tenantId, string companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L85) |  |
+| <code>public static bool TryParseScopedReportRun(string argument, out string tenantId, out string companyId, out string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:101](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L101) |  |
+| <code>public bool Equals(StreamTopic other) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:145](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L145) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:147](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L147) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:149](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L149) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:151](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L151) |  |
+| <code>public static bool operator == (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:153](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L153) |  |
+| <code>public static bool operator != (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:155](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L155) |  |
+
+## BuiltInWorkflowDefinitionProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.BuiltInWorkflowDefinitionProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L9).
+
+Built-in workflow library entries based on the current workstation surfaces.
+
+```csharp
+public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |
+
+## FileOperatorScopePreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorScopePreferenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L22).
+
+JSON-backed store under Meridian&#x27;s data root, keyed by tenant, company and user so one operator&#x27;s default never leaks to another. Writes go through the snapshot store&#x27;s atomic replace, like workflow presets.
+
+```csharp
+public sealed class FileOperatorScopePreferenceStore : JsonFileSnapshotStore<OperatorScopePreferenceSnapshot>, IOperatorScopePreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperatorScopePreferenceStore(string dataRoot, ILogger&lt;FileOperatorScopePreferenceStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorScopePreferenceJsonContext.Default.OperatorScopePreferenceSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L31) |  |
+| <code>public Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:41](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L41) |  |
+| <code>public async Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:53](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L53) |  |
+| <code>public static OperatingScopeValuesDto? Normalize(OperatingScopeValuesDto? scope);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:78](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L78) | Trims each value, drops blanks, and returns null for a scope with no values. |
+
+## FileOperatorSurfaceVisitStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorSurfaceVisitStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:24](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L24).
+
+JSON-backed store beside the operator scope preferences, keyed by tenant, company, user and surface. Writes go through the snapshot store&#x27;s atomic replace.
+
+```csharp
+public sealed partial class FileOperatorSurfaceVisitStore : JsonFileSnapshotStore<OperatorSurfaceVisitSnapshot>, IOperatorSurfaceVisitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperatorSurfaceVisitStore(string dataRoot, ILogger&lt;FileOperatorSurfaceVisitStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorSurfaceVisitJsonContext.Default.OperatorSurfaceVisitSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:32](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L32) |  |
+| <code>public Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:42](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L42) |  |
+| <code>public async Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:51](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L51) |  |
+| <code>public static string NormalizeSurface(string? surface);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:72](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L72) | Surface ids are short lowercase slugs, such as reconciliation-breaks. |
+
+## FileWorkflowPresetStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileWorkflowPresetStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L12).
+
+JSON-backed workflow preset store rooted under Meridian&#x27;s resolved data directory.
+
+```csharp
+public sealed class FileWorkflowPresetStore : JsonFileSnapshotStore<WorkflowPresetSnapshot>, IWorkflowPresetStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileWorkflowPresetStore(string dataRoot, ILogger&lt;FileWorkflowPresetStore&gt; logger) : base(ResolveSnapshotPath(dataRoot), WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L22) |  |
+| <code>public Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L28) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L31) |  |
+
+## IOperatorScopePreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorScopePreferenceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L10).
+
+Durable per-operator default operating scope (C1).
+
+```csharp
+public interface IOperatorScopePreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L12) |  |
+| <code>Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L14) |  |
+
 ## IOperatorSurfaceVisitStore
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorSurfaceVisitStore</code>. Kind: `interface`.

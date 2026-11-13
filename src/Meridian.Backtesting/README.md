@@ -236,6 +236,18 @@ accepted partial fills rather than charging each execution as a new order.
   set by a configurable objective, evaluates it once on the adjacent unseen test window, and stitches
   the test windows into aggregate OOS metrics with train-vs-test degradation reporting.
 
+### Retained sweep comparison identity
+
+Studio sweep records retain each run's parameter values while a versioned experiment fingerprint
+excludes point values and includes invariant window, universe, native request and cost configuration.
+The native request uses source-generated JSON with the existing `sweep-v2` serializer contract;
+property names, enum representation, decimal scale and dictionary order retain their hash semantics.
+Read models additionally separate strategy, engine, dataset, feed and mode. Legacy fingerprints remain
+exploratory and are not heuristically merged. Objective rankings honor the named supported metric;
+unknown objectives do not substitute final equity. Returned parameter coordinates support the browser
+sensitivity grid, with explicit history-limit and absent expected-grid warnings. This is retained-run
+analysis, not a new supported host sweep-launch workflow or promotion authorization.
+
 ## API / contract notes
 
 - Drawdown currency and percentage maxima are tracked independently, including the decline from

@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolAttributionEntry
+
+Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:917](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L917).
+
+Per-symbol P&amp;L attribution for one run.
+
+```csharp
+public sealed record SymbolAttributionEntry(string Symbol, decimal RealizedPnl, decimal UnrealizedPnl, decimal TotalPnl, int TradeCount, decimal Commissions, decimal MarginInterestAllocated);
+```
+
+## SyncCompletenessResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.SyncCompletenessResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L14).
+
+```csharp
+public sealed record SyncCompletenessResult(Guid AccountId, string Counterparty, int ExpectedRecords, int ReceivedRecords, bool IsComplete, string Detail);
+```
+
+## SyncValidationResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.SyncValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L16).
+
+```csharp
+public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncCompletenessResult> CompletenessChecks, IReadOnlyList<DeltaOutlierResult> OutlierChecks, IReadOnlyList<string> Warnings);
+```
+
+## ThresholdBreachDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThresholdBreachDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L36).
+
+```csharp
+public sealed record ThresholdBreachDto(string Counterparty, string ThresholdLevel, decimal ObservedExposure, decimal LimitExposure, DateTimeOffset DetectedAtUtc, string Message);
+```
+
 ## TradingAcceptanceGateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.TradingAcceptanceGateDto</code>. Kind: `record`.
@@ -554,46 +596,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:792](../
 
 ```csharp
 public sealed record WorkstationAccountingRunCashFlowPayload(decimal CashBalance, decimal LedgerCashBalance, decimal CashVariance, decimal Financing, decimal RealizedPnl, decimal UnrealizedPnl, int JournalEntryCount, string Tone, string Summary);
-```
-
-## WorkstationAccountingRunGovernancePayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunGovernancePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:774](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L774).
-
-Accounting run-card governance details linked to strategy evidence.
-
-```csharp
-public sealed record WorkstationAccountingRunGovernancePayload(bool HasAuditTrail, bool HasPortfolio, bool HasLedger, string? DatasetReference, string? FeedReference);
-```
-
-## WorkstationAccountingRunReconciliationPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunReconciliationPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:781](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L781).
-
-```csharp
-public sealed record WorkstationAccountingRunReconciliationPayload(string? ReconciliationRunId, int BreakCount, int OpenBreakCount, int MatchCount, bool HasTimingDrift, int SecurityIssueCount, bool HasSecurityCoverageIssues, string? LastUpdated, string Tone);
-```
-
-## WorkstationAccountingRunRecord
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:813](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L813).
-
-```csharp
-public sealed record WorkstationAccountingRunRecord(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, string? AuditReference, string? LedgerReference, string? PortfolioId, int BreakCount, int OpenBreakCount, string ReconciliationStatus, WorkstationAccountingRunGovernancePayload Governance, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationAccountingRunCashFlowPayload CashFlow, WorkstationAccountingRunReconciliationPayload? LatestReconciliation, WorkstationKernelObservabilityPayload? KernelObservability = null);
-```
-
-## WorkstationAccountingSeverityCountPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingSeverityCountPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:831](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L831).
-
-```csharp
-public sealed record WorkstationAccountingSeverityCountPayload(string Severity, int Count);
 ```

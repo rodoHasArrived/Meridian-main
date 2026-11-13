@@ -154,6 +154,96 @@ public sealed class FamilyOfficeReadServiceTests
         Assert.Contains(overview.Readiness.Blockers, warning => warning.Contains("balances, cash, liabilities, reconciliation", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public async Task GetOverviewAsync_UsesRetainedPrivateCapitalWithoutCombiningCurrenciesOrInventingMissingBalances()
+    {
+        var now = DateTimeOffset.Parse("2026-11-01T12:00:00Z");
+        var accounts = new InMemoryFundAccountService();
+        var structure = new InMemoryFundStructureService(accounts);
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        var fundId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
+        var missingCommitment = Guid.NewGuid();
+        await structure.CreateOrganizationAsync(new(organizationId, "ORG", "Family Office", "USD", now.AddYears(-1), "test"));
+        await structure.CreateBusinessAsync(new(businessId, organizationId, BusinessKindDto.Hybrid, "BUS", "Advisers", "USD", now.AddYears(-1), "test"));
+        await structure.CreateClientAsync(new(familyId, businessId, "FAM", "Household", "USD", now.AddYears(-1), "test", ClientSegmentKind: ClientSegmentKind.FamilyOffice));
+        await structure.CreateFundAsync(new(fundId, "FND", "Holdings", "USD", now.AddYears(-1), "test", BusinessId: businessId));
+        await structure.CreateLegalEntityAsync(new(entityId, LegalEntityTypeDto.LimitedPartner, "LP", "Trust", "US-DE", "USD", now.AddYears(-1), "test"));
+        await structure.LinkNodesAsync(new(Guid.NewGuid(), fundId, entityId, OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", OwnershipPercent: 100m));
+        await structure.AssignNodeAsync(new(missingCommitment, entityId, "CapitalCommitment", "Missing vehicle", now.AddYears(-1), "test"));
+        var retained = new RetainedPrivateSource(familyId.ToString("D"), entityId.ToString("D"));
+        var service = new FamilyOfficeReadService(structure, accounts, timeProvider: new FixedTimeProvider(now), privateCapitalSource: retained);
+        var overview = await service.GetOverviewAsync();
+        Assert.Equal(3, overview.CapitalCommitments.Count);
+        var missing = Assert.Single(overview.CapitalCommitments.Where(row => row.CommitmentId == missingCommitment.ToString("D")));
+        Assert.False(missing.BalancesAvailable);
+        Assert.Equal("Unavailable", missing.BalanceStatus);
+        Assert.Equal(90m, overview.BalanceSheet.PrivateAssets);
+        Assert.Equal(35m, overview.BalanceSheet.UnfundedCommitments);
+        Assert.Single(overview.RecentCapitalActivity);
+        Assert.Contains(overview.Readiness.Blockers, reason => reason.Contains("other currencies"));
+        Assert.Contains(overview.Readiness.Blockers, reason => reason.Contains("unavailable, not zero"));
+        var historical = await service.GetOverviewAsync(ownershipAsOf: DateOnly.FromDateTime(now.AddYears(-2).UtcDateTime));
+        Assert.Equal(familyId.ToString("D"), historical.FamilyOfficeId);
+        Assert.Equal(overview.AsOfDate, historical.AsOfDate);
+        Assert.Equal(overview.CapitalCommitments, historical.CapitalCommitments);
+        Assert.Equal(90m, historical.BalanceSheet.PrivateAssets);
+        Assert.Contains(historical.Entities, entity => entity.EntityId == entityId.ToString("D"));
+        Assert.Empty(historical.OwnershipGraph.Nodes);
+        Assert.Contains(historical.Readiness.Blockers, reason => reason.Contains("financial population remains current"));
+    }
+
+    [Theory]
+    [InlineData("Source absent.")]
+    [InlineData("Input malformed.")]
+    [InlineData("File unreadable.")]
+    public async Task GetOverviewAsync_UnavailablePrivateSourceCannotClaimCompleteEvidenceFromEmptyLists(string warning)
+    {
+        var now = DateTimeOffset.Parse("2026-11-01T12:00:00Z");
+        var accounts = new InMemoryFundAccountService();
+        var structure = new InMemoryFundStructureService(accounts);
+        var organizationId = Guid.NewGuid();
+        var businessId = Guid.NewGuid();
+        var familyId = Guid.NewGuid();
+        await structure.CreateOrganizationAsync(new(organizationId, "ORG", "Family Office", "USD", now.AddYears(-1), "test"));
+        await structure.CreateBusinessAsync(new(businessId, organizationId, BusinessKindDto.Hybrid, "BUS", "Advisers", "USD", now.AddYears(-1), "test"));
+        await structure.CreateClientAsync(new(familyId, businessId, "FAM", "Household", "USD", now.AddYears(-1), "test", ClientSegmentKind: ClientSegmentKind.FamilyOffice));
+        var service = new FamilyOfficeReadService(structure, accounts, timeProvider: new FixedTimeProvider(now),
+            privateCapitalSource: new UnavailablePrivateSource(warning));
+        var overview = await service.GetOverviewAsync();
+        Assert.Empty(overview.CapitalCommitments);
+        Assert.Equal("Partial", overview.BalanceSheet.EvidenceCompleteness);
+        Assert.Equal("Partial", overview.Readiness.EvidenceCompleteness);
+        Assert.Equal("NeedsReview", overview.BalanceSheet.ReconciliationStatus);
+        Assert.Contains(warning, overview.Readiness.Blockers);
+    }
+
+    private sealed class UnavailablePrivateSource(string warning) : IPrivateCapitalLifecycleSource
+    {
+        public Task<PrivateCapitalLifecycleRead> ReadAsync(string familyOfficeId, IReadOnlySet<string> entityIds,
+            DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default,
+            Func<DateOnly, CancellationToken, Task<IReadOnlySet<string>>>? historicalEntityScope = null)
+            => Task.FromResult(new PrivateCapitalLifecycleRead([], [], [warning], IsAvailable: false));
+    }
+
+    private sealed class RetainedPrivateSource(string familyId, string entityId) : IPrivateCapitalLifecycleSource
+    {
+        public Task<PrivateCapitalLifecycleRead> ReadAsync(string familyOfficeId, IReadOnlySet<string> entityIds,
+            DateOnly asOf, DateTimeOffset knownAt, CancellationToken ct = default,
+            Func<DateOnly, CancellationToken, Task<IReadOnlySet<string>>>? historicalEntityScope = null)
+        {
+            Assert.Equal(familyId, familyOfficeId);
+            Assert.Contains(entityId, entityIds);
+            CapitalCommitmentDto Commitment(string id, string currency) => new(id, entityId, $"Vehicle {id}", "Growth", currency,
+                100m, 80m, 35m, 15m, 90m, 2024, "manager-statement", "document-a", asOf, asOf, "Complete", "NotReconciled", null, null);
+            var activity = new CapitalActivityDto("activity-a", "commitment-usd", entityId, "Distribution", "USD", 15m,
+                asOf, null, null, "Settled", "manager-statement", "document-a", asOf, asOf, "Complete", "NotReconciled", null, null);
+            return Task.FromResult(new PrivateCapitalLifecycleRead([Commitment("commitment-usd", "USD"), Commitment("commitment-eur", "EUR")], [activity], []));
+        }
+    }
+
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;

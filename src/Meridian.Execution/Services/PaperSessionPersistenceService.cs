@@ -480,6 +480,18 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         return BuildSessionDetailDto(session);
     }
 
+    /// <summary>Detached execution-report evidence without rebuilding the session portfolio or ledger.</summary>
+    public IReadOnlyList<ExecutionReport> GetSessionFillHistory(string sessionId)
+    {
+        ThrowIfDisposed();
+        if (!CurrentSessions.TryGetValue(sessionId, out var session))
+            return [];
+        lock (session.SyncRoot)
+        {
+            return session.FillHistory.Select(CloneExecutionReport).ToArray();
+        }
+    }
+
     /// <summary>Returns a defensive portfolio snapshot for an active session, or null.</summary>
     public PaperTradingPortfolio? GetActivePortfolio(string sessionId)
     {

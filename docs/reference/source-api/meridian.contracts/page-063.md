@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterFilterDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterFilterDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1477](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1477).
+
+```csharp
+public sealed record ReportWriterFilterDefinitionDto(string Field, ReportWriterFilterOperatorDto Operator = ReportWriterFilterOperatorDto.Equals, string? Value = null, string? Label = null);
+```
+
+## ReportWriterFilterLineageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterFilterLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1564](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1564).
+
+```csharp
+public sealed record ReportWriterFilterLineageDto(string Field, string Operator, string? Value, string? Label = null);
+```
+
+## ReportWriterFilterOperatorDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterFilterOperatorDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1462](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1462).
+
+```csharp
+public enum ReportWriterFilterOperatorDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Equals = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1464](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1464) |  |
+| <code>NotEquals = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1465](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1465) |  |
+| <code>Contains = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1466](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1466) |  |
+| <code>StartsWith = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1467](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1467) |  |
+| <code>EndsWith = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1468](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1468) |  |
+| <code>GreaterThan = 5</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1469](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1469) |  |
+| <code>GreaterThanOrEqual = 6</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1470](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1470) |  |
+| <code>LessThan = 7</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1471](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1471) |  |
+| <code>LessThanOrEqual = 8</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1472](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1472) |  |
+| <code>IsBlank = 9</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1473](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1473) |  |
+| <code>IsNotBlank = 10</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1474](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1474) |  |
+
+## ReportWriterFormatRuleDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterFormatRuleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1508](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1508).
+
+```csharp
+public sealed record ReportWriterFormatRuleDto(string Column, ReportWriterFilterOperatorDto Operator, ReportWriterCellStyleDto Style, string? Value = null, string? Label = null);
+```
+
 ## ReportWriterFormulaDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterFormulaDefinitionDto</code>. Kind: `record`.
@@ -363,7 +419,7 @@ public sealed record RevokePreparerAttestationRequestDto(Guid CommandId, Guid Re
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunAttributionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:923](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L923).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:927](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L927).
 
 Complete attribution breakdown for one run.
 
@@ -375,7 +431,7 @@ public sealed record RunAttributionSummary(string RunId, StrategyRunMode Mode, d
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashFlowSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:970](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L970).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:974](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L974).
 
 Cash-flow projection summary for a strategy run. Includes both the raw historical entries and a time-bucketed cash ladder computed by the F# CashLadder.build module.
 
@@ -387,7 +443,7 @@ public sealed record RunCashFlowSummary(string RunId, DateTimeOffset AsOf, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashLadder</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:956](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L956).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:960](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L960).
 
 Time-bucketed forward view of projected cash flows for one run.
 
@@ -399,7 +455,7 @@ public sealed record RunCashLadder(DateTimeOffset AsOf, string Currency, int Buc
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:757](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L757).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:761](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L761).
 
 Normalized cross-mode run comparison DTO that includes the full set of BacktestMetrics fields plus equity curve data and parentage chain info. Returned by GET /api/strategies/runs/compare?ids=a,b. Defined nonfinite outcomes retain the SDK&#x27;s named JSON values: positive infinity for loss-free profit factor or downside-free Sortino, and NaN for unavailable XIRR.
 
@@ -411,7 +467,7 @@ public sealed record RunComparisonDto(string RunId, string? ParentRunId, string 
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:801](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L801).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:805](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L805).
 
 Request to compare multiple strategy runs side by side.
 
@@ -423,7 +479,7 @@ public sealed record RunComparisonRequest(IReadOnlyList<string> RunIds, IReadOnl
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunDiffRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:806](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L806).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:810](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L810).
 
 Request to diff two strategy runs.
 
@@ -435,7 +491,7 @@ public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:894](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L894).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:898](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L898).
 
 A single executed fill from a strategy run.
 
@@ -447,7 +503,7 @@ public sealed record RunFillEntry(Guid FillId, Guid OrderId, string Symbol, long
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:905](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L905).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:909](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L909).
 
 Trade-level fill list for one run.
 
@@ -459,7 +515,7 @@ public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int Tota
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1143](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1143).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1147](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1147).
 
 Lot history for a single strategy run, optionally filtered to one symbol.
 
@@ -471,7 +527,7 @@ public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClo
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:985](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L985).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:989](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L989).
 
 Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
 
@@ -517,48 +573,4 @@ Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:60](../../../../src/
 
 ```csharp
 public sealed record SampleHighlightDto(string Label, string Value, string Detail, string Route);
-```
-
-## SampleHoldingDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleHoldingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L39).
-
-```csharp
-public sealed record SampleHoldingDto(string Symbol, decimal Quantity, decimal AveragePrice, decimal LastPrice, decimal MarketValue, decimal UnrealizedPnl);
-```
-
-## SampleMarketHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleMarketHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L58).
-
-```csharp
-public sealed record SampleMarketHistoryDto(IReadOnlyList<string> Symbols, int Sessions, string Route);
-```
-
-## SampleWorkspaceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleWorkspaceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L23).
-
-Populated snapshot of the sample demo tenant loaded when a user chooses &quot;Use sample data&quot;. Present only for sample workspaces; lets onboarding surfaces show a believable, populated workspace (holdings, breaks, a report, a paper strategy) instead of only a mode badge.
-
-```csharp
-public sealed record SampleWorkspaceDto(string Headline, string Summary, string PortfolioName, decimal PortfolioValue, decimal Cash, decimal UnrealizedPnl, IReadOnlyList<SampleHoldingDto> Holdings, IReadOnlyList<string> Watchlist, IReadOnlyList<SampleBreakDto> ReconciliationBreaks, SampleArtifactDto Report, SampleArtifactDto Strategy, SampleMarketHistoryDto MarketHistory, IReadOnlyList<SampleHighlightDto> Highlights, string Provenance = "Seeded");
-```
-
-## SecurityClassificationSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityClassificationSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs#L8).
-
-Workstation-facing Security Master classification summary for Data and Accounting surfaces.
-
-```csharp
-public sealed record SecurityClassificationSummaryDto(string AssetClass, string? SubType, string? PrimaryIdentifierKind, string? PrimaryIdentifierValue, string? MatchedIdentifierKind = null, string? MatchedIdentifierValue = null, string? MatchedProvider = null, string? RiskCountry = null, string? IssuerType = null, string? TypeName = null);
 ```

@@ -559,8 +559,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Mid =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:69](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L69) | Mid-point price. |
-| <code>public double SpreadPct =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:72](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L72) | Fractional spread: (ask - bid) / mid. |
+| <code>public bool DeltaAvailable { get; init; } = true;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:69](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L69) | Missing provider measurements must not masquerade as measured zeros. |
+| <code>public bool OpenInterestAvailable { get; init; } = true;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:70](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L70) |  |
+| <code>public bool VolumeAvailable { get; init; } = true;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:71](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L71) |  |
+| <code>public decimal Mid =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:74](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L74) | Mid-point price. |
+| <code>public double SpreadPct =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:77](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L77) | Fractional spread: (ask - bid) / mid. |
 
 ## OptionsOverwriteFilters
 
@@ -579,16 +582,16 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static bool PassesLiquidityFilter(OptionCandidateInfo opt, OptionsOverwriteParams p);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:24](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L24) | Returns true when the candidate meets all liquidity requirements: Bid price must be strictly positive (no zero-bid contracts) Open interest ≥ OptionsOverwriteParams.MinOpenInterest Volume ≥ OptionsOverwriteParams.MinVolume Bid-ask spread ≤ OptionsOverwriteParams.MaxSpreadPct |
-| <code>public static bool PassesRiskFilter(OptionCandidateInfo opt, OptionsOverwriteParams p);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:55](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L55) | Returns true when the candidate satisfies all risk constraints: Strike ≥ OptionsOverwriteParams.MinStrike &#124;Delta&#124; ≤ OptionsOverwriteParams.MaxDelta DTE ≥ OptionsOverwriteParams.MinDte DTE ≤ OptionsOverwriteParams.MaxDte (when set) IV percentile ≥ OptionsOverwriteParams.MinIvPercentile (when available) |
-| <code>public static bool HasDividendAssignmentRisk(OptionCandidateInfo opt, OptionsOverwriteParams p);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:93](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L93) | Returns true when the candidate has elevated dividend-early-assignment risk and should therefore be excluded. Applies only to American-style options where: Ex-dividend date is within OptionsOverwriteParams.ExDivWindowDays days. The option is in-the-money. Remaining extrinsic value is less than the expected dividend amount — the rational holder will exercise to capture the dividend rather than sell the option. |
-| <code>public static bool HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo opt, OptionsOverwriteParams p, decimal underlyingPrice);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:126](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L126) | Returns true when the candidate has elevated dividend-assignment risk, with access to the actual underlying price for a precise ITM / extrinsic calculation. |
-| <code>public static bool OpenPositionHasDividendRisk(ShortCallPosition position, OptionsOverwriteParams p, DateOnly asOf, decimal underlyingPrice, int? daysToNextExDiv, decimal? nextDividendAmount);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:158](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L158) | Returns true when an open short call has elevated assignment risk from an upcoming ex-dividend event (mirror of HasDividendAssignmentRiskWithUnderlyingPrice but operating on a ShortCallPosition). |
+| <code>public static bool PassesRiskFilter(OptionCandidateInfo opt, OptionsOverwriteParams p);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:58](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L58) | Returns true when the candidate satisfies all risk constraints: Strike ≥ OptionsOverwriteParams.MinStrike &#124;Delta&#124; ≤ OptionsOverwriteParams.MaxDelta DTE ≥ OptionsOverwriteParams.MinDte DTE ≤ OptionsOverwriteParams.MaxDte (when set) IV percentile ≥ OptionsOverwriteParams.MinIvPercentile (when available) |
+| <code>public static bool HasDividendAssignmentRisk(OptionCandidateInfo opt, OptionsOverwriteParams p);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:98](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L98) | Returns true when the candidate has elevated dividend-early-assignment risk and should therefore be excluded. Applies only to American-style options where: Ex-dividend date is within OptionsOverwriteParams.ExDivWindowDays days. The option is in-the-money. Remaining extrinsic value is less than the expected dividend amount — the rational holder will exercise to capture the dividend rather than sell the option. |
+| <code>public static bool HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo opt, OptionsOverwriteParams p, decimal underlyingPrice);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:131](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L131) | Returns true when the candidate has elevated dividend-assignment risk, with access to the actual underlying price for a precise ITM / extrinsic calculation. |
+| <code>public static bool OpenPositionHasDividendRisk(ShortCallPosition position, OptionsOverwriteParams p, DateOnly asOf, decimal underlyingPrice, int? daysToNextExDiv, decimal? nextDividendAmount);</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs:163](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs#L163) | Returns true when an open short call has elevated assignment risk from an upcoming ex-dividend event (mirror of HasDividendAssignmentRiskWithUnderlyingPrice but operating on a ShortCallPosition). |
 
 ## OptionsOverwriteMetrics
 
 Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:214](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L214).
+Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:219](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L219).
 
 Extended performance metrics specific to the options overwrite strategy, supplementing the standard BacktestMetrics from the engine.
 
@@ -676,7 +679,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:166](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L166).
+Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:171](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L171).
 
 Records the complete lifecycle of a single covered-call trade.
 
@@ -688,11 +691,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal NetPnlPerContract =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:191](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L191) | Net P&amp;L per contract × multiplier (positive = profit for the short seller). |
-| <code>public decimal TotalNetPnl =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:194](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L194) | Total net P&amp;L for all contracts. |
-| <code>public bool IsWin =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:197](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L197) | True when the short call finished with positive P&amp;L. |
-| <code>public int HoldingDays =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:200](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L200) | Calendar days the position was held. |
-| <code>public bool WasAssigned =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:203](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L203) | True when the option was assigned (exercised against the writer). |
+| <code>public decimal NetPnlPerContract =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:196](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L196) | Net P&amp;L per contract × multiplier (positive = profit for the short seller). |
+| <code>public decimal TotalNetPnl =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:199](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L199) | Total net P&amp;L for all contracts. |
+| <code>public bool IsWin =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:202](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L202) | True when the short call finished with positive P&amp;L. |
+| <code>public int HoldingDays =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:205](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L205) | Calendar days the position was held. |
+| <code>public bool WasAssigned =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:208](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L208) | True when the option was assigned (exercised against the writer). |
 
 ## OverwriteScoringMode
 
@@ -717,7 +720,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason</code>. Kind: `enum`.
 
-Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:149](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L149).
+Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:154](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L154).
 
 Outcome of a completed short-call cycle (entry → exit).
 
@@ -729,18 +732,18 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ExpiredWorthless</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:152](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L152) | Option expired worthless. |
-| <code>Assigned</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:154](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L154) | Option was exercised (assignment). |
-| <code>TakeProfitRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:156](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L156) | Take-profit trigger reached; position was closed / rolled. |
-| <code>RiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:158](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L158) | Delta-risk trigger reached; position was rolled. |
-| <code>DividendRiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:160](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L160) | Dividend-assignment risk trigger; position was closed / rolled. |
-| <code>ForcedClose</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:162](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L162) | Strategy ended while position was still open (backtest ran out of data). |
+| <code>ExpiredWorthless</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:157](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L157) | Option expired worthless. |
+| <code>Assigned</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:159](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L159) | Option was exercised (assignment). |
+| <code>TakeProfitRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:161](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L161) | Take-profit trigger reached; position was closed / rolled. |
+| <code>RiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:163](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L163) | Delta-risk trigger reached; position was rolled. |
+| <code>DividendRiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:165](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L165) | Dividend-assignment risk trigger; position was closed / rolled. |
+| <code>ForcedClose</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:167](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L167) | Strategy ended while position was still open (backtest ran out of data). |
 
 ## ShortCallPosition
 
 Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition</code>. Kind: `class`.
 
-Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:84](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L84).
+Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:89](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L89).
 
 Tracks a single open simulated short call position. P&amp;L is computed by comparing the current BSM mark-to-close against the original entry credit.
 
@@ -752,22 +755,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid PositionId { get; } = Guid.NewGuid();</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:87](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L87) | Unique position identifier. |
-| <code>public required string UnderlyingSymbol { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:90](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L90) | Underlying symbol (e.g. &quot;SPY&quot;). |
-| <code>public required decimal Strike { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:93](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L93) | Strike price of the short call. |
-| <code>public required DateOnly Expiration { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:96](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L96) | Expiration date. |
-| <code>public required int Contracts { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:99](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L99) | Number of contracts (positive integer; the position is short). |
-| <code>public required int Multiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:102](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L102) | Contract multiplier (typically 100). |
-| <code>public required OptionStyle Style { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:105](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L105) | Exercise style. |
-| <code>public required DateOnly EntryDate { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:108](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L108) | Date the position was opened. |
-| <code>public required decimal EntryCredit { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:111](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L111) | Premium collected per share at entry (bid price used conservatively). |
-| <code>public double? EntryImpliedVolatility { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:117](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L117) | Entry implied volatility (for relative scoring and BSM mark-to-market). Settable so tests and position managers can override the IV used for daily re-marking. |
-| <code>public decimal MarkToClose { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:120](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L120) | Current mark-to-close (BSM value of the short call). Updated daily. |
-| <code>public double CurrentDelta { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:123](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L123) | Current delta (absolute value). Updated daily. |
-| <code>public int CurrentDte { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:126](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L126) | Days to expiration as of last mark. Updated daily. |
-| <code>public decimal TotalPremiumReceived =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:131](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L131) | Total premium received (entry credit × contracts × multiplier). |
-| <code>public decimal UnrealisedPnl =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:134](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L134) | Current unrealised P&amp;L on the short option (positive = profit). |
-| <code>public double PremiumCaptured =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:140](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L140) | Fraction of the original premium that has been &quot;captured&quot;. A value of 1.0 means the option has gone to zero (full profit). |
+| <code>public Guid PositionId { get; } = Guid.NewGuid();</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:92](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L92) | Unique position identifier. |
+| <code>public required string UnderlyingSymbol { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:95](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L95) | Underlying symbol (e.g. &quot;SPY&quot;). |
+| <code>public required decimal Strike { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:98](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L98) | Strike price of the short call. |
+| <code>public required DateOnly Expiration { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:101](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L101) | Expiration date. |
+| <code>public required int Contracts { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:104](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L104) | Number of contracts (positive integer; the position is short). |
+| <code>public required int Multiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:107](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L107) | Contract multiplier (typically 100). |
+| <code>public required OptionStyle Style { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:110](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L110) | Exercise style. |
+| <code>public required DateOnly EntryDate { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:113](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L113) | Date the position was opened. |
+| <code>public required decimal EntryCredit { get; init; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:116](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L116) | Premium collected per share at entry (bid price used conservatively). |
+| <code>public double? EntryImpliedVolatility { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:122](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L122) | Entry implied volatility (for relative scoring and BSM mark-to-market). Settable so tests and position managers can override the IV used for daily re-marking. |
+| <code>public decimal MarkToClose { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:125](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L125) | Current mark-to-close (BSM value of the short call). Updated daily. |
+| <code>public double CurrentDelta { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:128](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L128) | Current delta (absolute value). Updated daily. |
+| <code>public int CurrentDte { get; set; }</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:131](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L131) | Days to expiration as of last mark. Updated daily. |
+| <code>public decimal TotalPremiumReceived =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:136](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L136) | Total premium received (entry credit × contracts × multiplier). |
+| <code>public decimal UnrealisedPnl =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:139](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L139) | Current unrealised P&amp;L on the short option (positive = profit). |
+| <code>public double PremiumCaptured =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:145](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L145) | Fraction of the original premium that has been &quot;captured&quot;. A value of 1.0 means the option has gone to zero (full profit). |
 
 ## StrategyParameterAttribute
 

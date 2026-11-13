@@ -6,6 +6,121 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PositionSnapshotAutomatedJournalDividendPositionResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PositionSnapshotAutomatedJournalDividendPositionResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:36](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L36).
+
+Loads exact-owner durable position history for a recurring dividend cycle. Each snapshot is expanded with zero-quantity tombstones for symbols absent from later snapshots, allowing the corporate-action producer to reconstruct the quantity actually held on each ex-date.
+
+```csharp
+public sealed class PositionSnapshotAutomatedJournalDividendPositionResolver : IAutomatedJournalDividendPositionResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PositionSnapshotAutomatedJournalDividendPositionResolver(IPositionSnapshotStore? snapshotStore);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:41](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L41) |  |
+| <code>public async Task&lt;AutomatedJournalDividendPositionResolution&gt; ResolveAsync(AutomatedJournalScheduleWorkItem workItem, DateTimeOffset evaluatedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:46](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L46) |  |
+
+## PostedLedgerAmountProvenanceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PostedLedgerAmountProvenanceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:13](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L13).
+
+Resolves immutable posted-line identities without account-name, symbol, or case searches.
+
+```csharp
+public sealed class PostedLedgerAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, IEvidenceArtifactStore? artifacts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string BuildRetainedSubjectId(string subjectId, LedgerAmountScopeDto scope) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:19](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L19) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs:22](../../../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs#L22) |  |
+
+## PostedPeriodComparisonService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PostedPeriodComparisonService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:11](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L11).
+
+Source-backed comparisons of posted accounting periods under retained fund ownership.
+
+```csharp
+public sealed class PostedPeriodComparisonService(ILedgerJournalStore journals, ILedgerBookService books, IFundProfileTenancyRegistry tenancy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PostedPeriodComparisonDto&gt; GetAsync(string tenantId, string companyId, Guid bookId, Guid currentPeriodId, Guid? baselinePeriodId, DateTimeOffset asOf, LedgerDimensionSetDto? dimensions, Func&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;, IReadOnlyList&lt;LedgerJournalEntryDto&gt;&gt; project, CancellationToken ct = default, AccountingBasisKindDto? accountingBasis = null);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L14) |  |
+| <code>public static (PostedPeriodComparisonRangeDto Current, PostedPeriodComparisonRangeDto? Baseline, string? Reason) SelectWindows(LedgerAccountingPeriod current, LedgerAccountingPeriod baseline, DateTimeOffset asOf);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:139](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L139) |  |
+| <code>public static IReadOnlyList&lt;PostedPeriodComparisonLineDto&gt; CompareLines(IReadOnlyList&lt;LedgerJournalEntryDto&gt; current, IReadOnlyList&lt;LedgerJournalEntryDto&gt; baseline);</code> | [src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs:169](../../../../src/Meridian.Ui.Shared/Services/PostedPeriodComparisonService.cs#L169) |  |
+
+## PrivateCapitalBankObservationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L14).
+
+Imports reviewed settled bank observations without creating a payment or posting cash.
+
+```csharp
+public sealed class PrivateCapitalBankObservationService(IEvidenceArtifactStore vault, IBankingStore store, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |
+
+## PrivateCapitalFundEventCommandCenterService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalFundEventCommandCenterService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:9](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L9).
+
+Builds private-capital fund-event command-center projections with readiness and published-output evidence.
+
+```csharp
+public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapitalFundEventCommandCenterService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PrivateCapitalFundEventCommandCenterService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L28) |  |
+| <code>public async Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs:33](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs#L33) |  |
+
+## PrivateCapitalLifecycleRead
+
+Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalLifecycleRead</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs:8](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs#L8).
+
+```csharp
+public sealed record PrivateCapitalLifecycleRead(IReadOnlyList<CapitalCommitmentDto> Commitments, IReadOnlyList<CapitalActivityDto> Activities, IReadOnlyList<string> Warnings, bool IsAvailable = true);
+```
+
+## ProductExposure
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProductExposure</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:25](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L25).
+
+```csharp
+public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
+```
+
 ## PromotionTrustEvidenceServiceCollectionExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.PromotionTrustEvidenceServiceCollectionExtensions</code>. Kind: `class`.
@@ -747,135 +862,3 @@ Exact output returned by the server-side renderer/artifact producer. Artifact id
 ```csharp
 public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
 ```
-
-## ReportingAuthoritativeSourceCapture
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L15).
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCapture(ReportingAuthoritativeSourceCheckpoint Checkpoint, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingCertifiedLedgerPresentationInput? CertifiedLedgerPresentation = null);
-```
-
-## ReportingAuthoritativeSourceCaptureIntent
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCaptureIntent</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:24](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L24).
-
-Template identity supplied by the governed certification/revalidation path when an authoritative source capture may require template-specific presentation evidence.
-
-```csharp
-public sealed record ReportingAuthoritativeSourceCaptureIntent(string TemplateId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RequiresCertifiedLedgerPresentation { get; init; }</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L27) |  |
-| <code>public static ReportingAuthoritativeSourceCaptureIntent FromTemplate(ReportingTemplateMetadata template);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:29](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L29) |  |
-
-## ReportingAuthoritativeSourceUnavailableException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceUnavailableException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:71](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L71).
-
-Indicates that an authoritative source required for reporting is unavailable.
-
-```csharp
-public class ReportingAuthoritativeSourceUnavailableException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingAuthoritativeSourceUnavailableException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:73](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L73) |  |
-
-## ReportingCertifiedLedgerPresentationInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingCertifiedLedgerPresentationInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L16).
-
-Checkpoint-bound input for a canonical ledger presentation. The source implementation must resolve an already-built LedgerFinancialReportPack from the exact authoritative checkpoint represented by the reporting manifest. It must not rebuild the report pack from the manifest&#x27;s display rows because those rows do not prove opening balances or period classifications.
-
-```csharp
-public sealed record ReportingCertifiedLedgerPresentationInput(string SourceCheckpointId, string SourceCheckpointHash, string CertifiedDatasetHashSha256, LedgerFinancialReportPack ReportPack);
-```
-
-## ReportingDeliveryDispatcher
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryDispatcher</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L13).
-
-Queues reporting delivery jobs, dispatches due work, and retains provider receipts.
-
-```csharp
-public sealed class ReportingDeliveryDispatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingDeliveryDispatcher(IReportingDeliveryStore store, IEnumerable&lt;IReportingDeliveryTransport&gt; transports, IReportingReleaseAuthorizationVerifier releaseVerifier, TimeProvider? timeProvider = null, ReportingDeliveryDispatcherOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L22) |  |
-| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; QueueAsync(ReportingDeliveryQueueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L39) |  |
-| <code>public bool IsTransportConfigured(string transportId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:122](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L122) | True only when a concrete transport adapter is present in this process. |
-| <code>public IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:126](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L126) | Configured adapter identifiers, never provider credentials or endpoints. |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingDeliveryJobRecord&gt;&gt; DispatchDueAsync(string leaseOwner, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:129](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L129) |  |
-| <code>public async Task&lt;ReportingDeliveryJobRecord&gt; AppendReceiptAsync(string jobId, string tenantId, ReportingDeliveryReceipt receipt, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L156) |  |
-| <code>public static string BuildIdempotencyKey(string tenantId, string packageId, string distributionId, string transportId, string releaseVersion, string artifactManifestHash, ReportingDeliveryPayload? payload = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs:288](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryDispatcher.cs#L288) |  |
-
-## ReportingDeliveryReadModelSecurity
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReadModelSecurity</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L16).
-
-Fail-closed projection policy for legacy report-pack delivery records. Delivery attempts do not carry an independent tenant/access authority, so they are visible only through an exact, immutable workflow or governed-run binding. Credential-bearing links are never returned by a workstation read model.
-
-```csharp
-public static class ReportingDeliveryReadModelSecurity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RetiredAccessSummary = &quot;Legacy delivery access is retired; issue an opaque access grant through canonical secure distribution.&quot;;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L18) |  |
-| <code>public static IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; FilterVisibleAttempts(IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; attempts, ReportAccessQueryContext? accessContext, IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt;? workflowRecords = null, IReadOnlyList&lt;ReportingRunSnapshot&gt;? reportingRuns = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L50) |  |
-| <code>public static (IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt; Attempts, bool SourceAvailable) ListVisibleAttempts(IServiceProvider services, int limit);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:83](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L83) |  |
-| <code>public static ReportAccessQueryContext? ResolveCurrentAccessContext(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:109](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L109) |  |
-| <code>public static ReportPackDeliveryAttemptDto SanitizeAttempt(ReportPackDeliveryAttemptDto attempt);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L136) |  |
-| <code>public static ReportPackDeliveryPackageDto SanitizePackage(ReportPackDeliveryPackageDto package);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:150](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L150) |  |
-| <code>public static IReadOnlyList&lt;ReportPackEvidenceLinkDto&gt;? SanitizeEvidenceLinks(IReadOnlyList&lt;ReportPackEvidenceLinkDto&gt;? links) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L236) |  |
-| <code>public static string SanitizeHref(string href);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:247](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L247) |  |
-| <code>public static string? SanitizeOptionalHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:274](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L274) |  |
-| <code>public static bool IsSafeRetainedEvidenceHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:277](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L277) |  |
-| <code>public static bool IsUnsafeHref(string? href) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:280](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L280) |  |
-| <code>public static bool ContainsCredentialMaterial(string? value);</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs:286](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs#L286) |  |
-
-## ReportingDeliveryReleaseAuthorizationFactory
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReleaseAuthorizationFactory</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L15).
-
-Creates the delivery authorization envelope from the immutable governed run. The proof is a stable content digest, not a caller credential: authorization still requires a fresh comparison with the authoritative governance repository through GovernanceReportingReleaseAuthorizationVerifier.
-
-```csharp
-public static class ReportingDeliveryReleaseAuthorizationFactory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReportingDeliveryReleaseAuthorization Create(GovernedReportingRun run);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L17) |  |
-| <code>public static bool HasValidSelfProof(ReportingDeliveryReleaseAuthorization authorization);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L68) |  |
-| <code>public static bool Matches(ReportingDeliveryReleaseAuthorization supplied, ReportingDeliveryReleaseAuthorization authoritative);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:74](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L74) |  |

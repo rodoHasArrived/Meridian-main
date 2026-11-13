@@ -94,7 +94,8 @@ public sealed partial class FundOperationsWorkspaceReadServiceTests
             var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(root),
                 new JsonlStrategyRunLedgerArchive(root, new AtomicFileWriterAdapter()));
             await store.RecordRunAsync(BuildRun("archive-identity", "strategy", "Archive Identity", fundProfileId, "Archive Fund")
-                with { InputHashSha256 = null });
+                with
+            { InputHashSha256 = null });
             var repository = new ArchiveReadTrackingRepository(store, detail => mismatch switch
             {
                 "missing" => null,

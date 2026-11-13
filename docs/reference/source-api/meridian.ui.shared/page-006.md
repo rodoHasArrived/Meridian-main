@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpdateExecutionSymbolPositionLimitRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1570](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1570).
+
+Request to update or clear a symbol-specific execution position limit.
+
+```csharp
+public sealed record UpdateExecutionSymbolPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
+```
+
+## UpdateMaintenanceScheduleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateMaintenanceScheduleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:518](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L518).
+
+```csharp
+public record UpdateMaintenanceScheduleRequest(string? Name = null, string? Description = null, string? CronExpression = null, string? TimeZoneId = null, string? TaskType = null, string? Priority = null, bool? Enabled = null, int? MaxDurationMinutes = null, int? MaxRetries = null, string[]? TargetPaths = null, string[]? Tags = null, MaintenanceOptionsDto? Options = null);
+```
+
+## ValidateMaintenanceCronRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateMaintenanceCronRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:539](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L539).
+
+```csharp
+public record ValidateMaintenanceCronRequest(string CronExpression, string? TimeZoneId = null);
+```
+
+## ValidateRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:456](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L456).
+
+Request model for package validation.
+
+```csharp
+public sealed record ValidateRequest(string PackagePath);
+```
+
 ## WorkstationEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationEndpoints</code>. Kind: `class`.
@@ -1281,103 +1325,3 @@ Declared public members:
 | <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1068](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1068) |  |
 | <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1070](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1070) |  |
 | <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1073](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1073) |  |
-
-## SinglePrincipalAttestationAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationAuthority</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L9).
-
-Server-derived authority; this type is never bound from an HTTP request body.
-
-```csharp
-public sealed record SinglePrincipalAttestationAuthority(string Actor, OperationsActionOriginDto Origin, bool CanRead, bool CanAdministerDeclaration = false, bool CanAttest = false, bool CanRevoke = false, bool CanModifyTarget = false, bool CanModifyDraftTarget = false);
-```
-
-## SinglePrincipalAttestationException
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L19).
-
-```csharp
-public sealed class SinglePrincipalAttestationException(string code, string message) : InvalidOperationException(message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L22) |  |
-
-## SinglePrincipalAttestationStore
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs:6](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs#L6).
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore : IPreparerAttestationReferenceClassifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs#L13) | Classifies exact identities only for denying their use as ordinary approval. This trusted server seam is not an operator read endpoint and never returns receipt contents or authority. Retained assertions remain preparer assertions after withdrawal or revocation. |
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L30).
-
-Scoped, default-off storage for non-posting evidence acknowledgments and explicit draft checks. Declarations, assertions, revocations and their audit events share one atomic snapshot and a cross-process lease. No method creates an ordinary approval, changes evidence review status or grants domain authority.
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string PolicyHash { get; } = Digest(SinglePrincipalAttestationPolicy.Version + &quot;\n&quot; + SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + &quot;\n&quot; + SinglePrincipalAttestationPolicy.Confirmation + &quot;\nNo approval, posting, waiver, certification or release authority.&quot;);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:41](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L41) |  |
-| <code>public static string DraftPolicyHash { get; } = Digest(SinglePrincipalAttestationPolicy.DraftVersion + &quot;\n&quot; + SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + &quot;\n&quot; + SinglePrincipalAttestationPolicy.DraftCheck + &quot;\n&quot; + SinglePrincipalAttestationPolicy.Confirmation + &quot;\n&quot; + SinglePrincipalAttestationPolicy.DraftConfirmation + &quot;\nNo approval, posting, waiver, certification or release authority.&quot;);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:45](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L45) |  |
-| <code>public SinglePrincipalAttestationStore(string dataRoot, Func&lt;SinglePrincipalAttestationScopeDto, SinglePrincipalAttestationAuthority, RecordPreparerAttestationRequestDto, CancellationToken, Task&lt;SinglePrincipalAttestationSubjectSnapshotDto?&gt;&gt; resolveSubject, bool policyEnabled = false, Func&lt;string, string, CancellationToken, Task&gt;? stateWriter = null, bool draftChecksEnabled = false);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:53](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L53) |  |
-| <code>public async Task&lt;SinglePrincipalAttestationStateDto&gt; GetAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L71) |  |
-| <code>public async Task&lt;SinglePrincipalDeclarationDto&gt; ChangeDeclarationAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, ChangeSinglePrincipalDeclarationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:82](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L82) |  |
-| <code>public async Task&lt;PreparerAttestationReceiptDto&gt; AttestAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, RecordPreparerAttestationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L123) |  |
-| <code>public async Task&lt;PreparerAttestationRevocationDto&gt; RevokeAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, RevokePreparerAttestationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:186](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L186) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:11](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L11).
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PreparerAttestationProofFile&gt; GetReceiptExportAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, Guid receiptId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L17) | Reproduces historical assertion evidence without granting current authority. Current read permission is still required; withdrawal and revocation do not rewrite these bytes. |
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs#L8).
-
-```csharp
-public sealed partial class SinglePrincipalAttestationStore
-```
-
-## StatementImportEvidenceBridge
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementImportEvidenceBridge</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L34).
-
-Retains statement-connector imports in Evidence Vault without moving reconciliation ownership out of Financial Operations.
-
-```csharp
-public sealed class StatementImportEvidenceBridge(IEvidenceArtifactStore store, string dataRoot) : IStatementImportEvidenceRetainer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:40](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L40) |  |

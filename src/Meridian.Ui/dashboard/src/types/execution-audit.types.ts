@@ -11,6 +11,8 @@ export interface AuditTrailTimelineEntry {
   occurredAt: string;
   objectKind: string;
   objectId: string;
+  orderId?: string | null;
+  brokerName?: string | null;
   category: string;
   action: string;
   outcome: string;
@@ -38,6 +40,9 @@ export interface AuditTrailExplorerResult {
   totalMatched: number;
   returned: number;
   entries: AuditTrailTimelineEntry[];
+  sources?: Array<{ source: string; state: string }> | null;
+  coverageNote?: string | null;
+  orderIdentityStatus?: string | null;
 }
 
 /** Query parameters accepted by `GET /api/execution/audit/search`. */
@@ -53,6 +58,7 @@ export interface AuditTrailSearchQuery {
   objectKind?: string;
   objectId?: string;
   relatedObjectId?: string;
+  orderId?: string;
   fromUtc?: string;
   toUtc?: string;
   limit?: number;
