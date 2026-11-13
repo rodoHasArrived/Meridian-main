@@ -30,6 +30,10 @@ EIR recurrence independent of receivable/payable balances. Legacy preparation re
 windows without reinterpreting prior instructions or reversal authority. Generated posting always
 uses the canonical human-origin gate before storage and the existing independent approval checks.
 
+Unreadable operations-close snapshots report the exception type without the workflow path,
+identity or exception payload. Reviewed posting candidates require trusted human authority before
+store access; nonhuman and undefined origins cannot append a journal.
+
 `AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
 default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
 candidate through existing accounting authority, checks the declared receivable/income account

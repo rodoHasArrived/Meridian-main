@@ -2,7 +2,7 @@ using System.Globalization;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Tests.Reconciliation;

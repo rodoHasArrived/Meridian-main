@@ -55,9 +55,7 @@ public sealed class StrategyRunWorkspaceService
 
     private static string ResolveConfiguredDataRoot()
     {
-        var configService = ConfigService.Instance;
-        var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-        return configService.ResolveDataRoot(config);
+        return ConfigService.Instance.ConfiguredDataRoot;
     }
 
     public StrategyRunWorkspaceService(

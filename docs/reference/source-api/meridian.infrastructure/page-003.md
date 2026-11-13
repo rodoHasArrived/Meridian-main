@@ -381,17 +381,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public RateLimiter(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null, ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L24) |  |
-| <code>public async Task&lt;TimeSpan&gt; WaitForSlotAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L45) | Wait until a request can be made within rate limits. Returns the time waited. |
-| <code>public void RecordRequest();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L97) | Record a request without waiting (for tracking external calls). |
-| <code>public (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining) GetStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:108](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L108) | Get current usage statistics. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:138](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L138) |  |
+| <code>public RateLimiter(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null, ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L23) |  |
+| <code>public void UpdateLimits(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:40](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L40) | Updates admission limits in place, retaining recent request history. |
+| <code>public async Task&lt;TimeSpan&gt; WaitForSlotAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L53) | Wait until a request can be made within rate limits. Returns the time waited. |
+| <code>public void RecordRequest();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:106](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L106) | Record a request without waiting (for tracking external calls). |
+| <code>public (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining) GetStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:117](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L117) | Get current usage statistics. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:144](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L144) |  |
 
 ## RateLimiterRegistry
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.RateLimiterRegistry</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:150](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L150).
+Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:156](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L156).
 
 Manages rate limiters for multiple providers.
 
@@ -403,10 +404,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public RateLimiterRegistry(ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:156](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L156) |  |
-| <code>public RateLimiter GetOrCreate(string providerName, int maxRequests, TimeSpan window, TimeSpan? minDelay = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:164](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L164) | Get or create a rate limiter for a provider. |
-| <code>public IReadOnlyDictionary&lt;string, (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining)&gt; GetAllStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:179](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L179) | Get status for all registered rate limiters. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:187](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L187) |  |
+| <code>public RateLimiterRegistry(ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:163](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L163) |  |
+| <code>public RateLimiter GetOrCreate(string providerName, int maxRequests, TimeSpan window, TimeSpan? minDelay = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:171](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L171) | Get or create a rate limiter for a provider. |
+| <code>public IReadOnlyDictionary&lt;string, (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining)&gt; GetAllStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:194](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L194) | Get status for all registered rate limiters. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs:202](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs#L202) |  |
 
 ## RateLimitInfo
 

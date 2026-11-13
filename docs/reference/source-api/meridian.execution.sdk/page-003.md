@@ -6,6 +6,129 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderState
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderState</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/Models.cs:329](../../../../src/Meridian.Execution.Sdk/Models.cs#L329).
+
+Current state of an order tracked by the OMS.
+
+```csharp
+public sealed record OrderState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:331](../../../../src/Meridian.Execution.Sdk/Models.cs#L331) |  |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:332](../../../../src/Meridian.Execution.Sdk/Models.cs#L332) |  |
+| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:333](../../../../src/Meridian.Execution.Sdk/Models.cs#L333) |  |
+| <code>public required OrderType Type { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:334](../../../../src/Meridian.Execution.Sdk/Models.cs#L334) |  |
+| <code>public required decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:335](../../../../src/Meridian.Execution.Sdk/Models.cs#L335) |  |
+| <code>public decimal FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:336](../../../../src/Meridian.Execution.Sdk/Models.cs#L336) |  |
+| <code>public decimal? LimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:337](../../../../src/Meridian.Execution.Sdk/Models.cs#L337) |  |
+| <code>public decimal? StopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:338](../../../../src/Meridian.Execution.Sdk/Models.cs#L338) |  |
+| <code>public required OrderStatus Status { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:339](../../../../src/Meridian.Execution.Sdk/Models.cs#L339) |  |
+| <code>public decimal? AverageFillPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:340](../../../../src/Meridian.Execution.Sdk/Models.cs#L340) |  |
+| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:341](../../../../src/Meridian.Execution.Sdk/Models.cs#L341) |  |
+| <code>public DateTimeOffset? LastUpdatedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:342](../../../../src/Meridian.Execution.Sdk/Models.cs#L342) |  |
+| <code>public string? StrategyId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:343](../../../../src/Meridian.Execution.Sdk/Models.cs#L343) |  |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:346](../../../../src/Meridian.Execution.Sdk/Models.cs#L346) | Accounting scope the order was submitted under, when fund-scoped. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? BrokerAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:350](../../../../src/Meridian.Execution.Sdk/Models.cs#L350) | External account retained from the broker acknowledgement for exact restart recovery. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ParentOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:359](../../../../src/Meridian.Execution.Sdk/Models.cs#L359) | The tracked order whose acknowledgement created this one, for a broker-side bracket/OCO exit leg; null for an ordinary order. Sibling legs of one parent are one-cancels-other, so at most one of them executes — a control that sums working orders uses this to count the legs once rather than twice. |
+| <code>public string? RunId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:362](../../../../src/Meridian.Execution.Sdk/Models.cs#L362) | Strategy run that authorized this retained order, when supplied. |
+| <code>public decimal? RoutedNotional { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:369](../../../../src/Meridian.Execution.Sdk/Models.cs#L369) | Broker-native routed notional when the order is sized in dollars rather than quantity (see BrokerNotionalMetadata). Exposure reserves for working orders must value these at the routed dollars, not quantity x price. |
+| <code>public bool UsesFaceValuePercentageOfPar { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:376](../../../../src/Meridian.Execution.Sdk/Models.cs#L376) | The active gateway routes Quantity as face value and quotes the order price as a percentage of par. Retained so working-order reserves and amendments use the same economic sizing semantics as initial validation. |
+| <code>public decimal ContractMultiplier { get; init; } = 1m;</code> | [src/Meridian.Execution.Sdk/Models.cs:384](../../../../src/Meridian.Execution.Sdk/Models.cs#L384) | Contract multiplier for a derivative order: the notional one unit of Quantity represents. 1 for outright instruments, 100 for standard equity option contracts. A working-order exposure reserve that ignores it holds back a hundredth of what 100 contracts will actually execute. |
+| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:390](../../../../src/Meridian.Execution.Sdk/Models.cs#L390) | Derivative identity of the working order, retained so its exposure reserve and any amendment are valued the same way the pre-trade gate valued it. |
+| <code>public IReadOnlyList&lt;OrderLeg&gt;? Legs { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:397](../../../../src/Meridian.Execution.Sdk/Models.cs#L397) | Legs of a working combination order. A spread&#x27;s reserve is the sum of its legs&#x27; absolute notionals, not its net package price — without the legs, a $1 net-debit spread reserves $100 where the gate charged $1,900. |
+
+## OrderStatus
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/Models.cs:47](../../../../src/Meridian.Execution.Sdk/Models.cs#L47).
+
+Current state of an order in the OMS.
+
+```csharp
+public enum OrderStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PendingNew</code> | [src/Meridian.Execution.Sdk/Models.cs:49](../../../../src/Meridian.Execution.Sdk/Models.cs#L49) |  |
+| <code>Accepted</code> | [src/Meridian.Execution.Sdk/Models.cs:50](../../../../src/Meridian.Execution.Sdk/Models.cs#L50) |  |
+| <code>PartiallyFilled</code> | [src/Meridian.Execution.Sdk/Models.cs:51](../../../../src/Meridian.Execution.Sdk/Models.cs#L51) |  |
+| <code>Filled</code> | [src/Meridian.Execution.Sdk/Models.cs:52](../../../../src/Meridian.Execution.Sdk/Models.cs#L52) |  |
+| <code>PendingCancel</code> | [src/Meridian.Execution.Sdk/Models.cs:53](../../../../src/Meridian.Execution.Sdk/Models.cs#L53) |  |
+| <code>Cancelled</code> | [src/Meridian.Execution.Sdk/Models.cs:54](../../../../src/Meridian.Execution.Sdk/Models.cs#L54) |  |
+| <code>Rejected</code> | [src/Meridian.Execution.Sdk/Models.cs:55](../../../../src/Meridian.Execution.Sdk/Models.cs#L55) |  |
+| <code>Expired</code> | [src/Meridian.Execution.Sdk/Models.cs:56](../../../../src/Meridian.Execution.Sdk/Models.cs#L56) |  |
+
+## OrderType
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/Models.cs:24](../../../../src/Meridian.Execution.Sdk/Models.cs#L24).
+
+Order type.
+
+```csharp
+public enum OrderType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Market</code> | [src/Meridian.Execution.Sdk/Models.cs:26](../../../../src/Meridian.Execution.Sdk/Models.cs#L26) |  |
+| <code>Limit</code> | [src/Meridian.Execution.Sdk/Models.cs:27](../../../../src/Meridian.Execution.Sdk/Models.cs#L27) |  |
+| <code>StopMarket</code> | [src/Meridian.Execution.Sdk/Models.cs:28](../../../../src/Meridian.Execution.Sdk/Models.cs#L28) |  |
+| <code>StopLimit</code> | [src/Meridian.Execution.Sdk/Models.cs:29](../../../../src/Meridian.Execution.Sdk/Models.cs#L29) |  |
+| <code>MarketOnOpen</code> | [src/Meridian.Execution.Sdk/Models.cs:30](../../../../src/Meridian.Execution.Sdk/Models.cs#L30) |  |
+| <code>MarketOnClose</code> | [src/Meridian.Execution.Sdk/Models.cs:31](../../../../src/Meridian.Execution.Sdk/Models.cs#L31) |  |
+| <code>LimitOnOpen</code> | [src/Meridian.Execution.Sdk/Models.cs:32](../../../../src/Meridian.Execution.Sdk/Models.cs#L32) |  |
+| <code>LimitOnClose</code> | [src/Meridian.Execution.Sdk/Models.cs:33](../../../../src/Meridian.Execution.Sdk/Models.cs#L33) |  |
+| <code>TrailingStop</code> | [src/Meridian.Execution.Sdk/Models.cs:34](../../../../src/Meridian.Execution.Sdk/Models.cs#L34) |  |
+
+## OrderValidationError
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderValidationError</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:7](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L7).
+
+A structural problem in a new order request, before gateway or risk evaluation.
+
+```csharp
+public sealed record OrderValidationError(string Field, string Code, string Message);
+```
+
+## PendingOrderAmendment
+
+Qualified name: <code>Meridian.Execution.Sdk.PendingOrderAmendment</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs:14](../../../../src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs#L14).
+
+Both possible amendment terms and qualified provider identities.
+
+```csharp
+public sealed record PendingOrderAmendment(OrderState Original, OrderState Proposed, string? OriginalBrokerOrderId)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CandidateBrokerOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs:17](../../../../src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs#L17) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CandidateClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs:19](../../../../src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs#L19) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? PriorChainBrokerOrderIds { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs:27](../../../../src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs#L27) | Broker ids of replacement-chain members before OriginalBrokerOrderId, in no particular order. Empty means the original is the chain&#x27;s first member; null means unknown (retained before this field existed). Recovery reads their final fills authoritatively. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? ProposedTrail { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs:31](../../../../src/Meridian.Execution.Sdk/IBrokerageOrderAmendmentRecoveryGateway.cs#L31) | Requested trail amount. Order state carries no trail terms, so a trail-only amendment has identical original and proposed snapshots and is told apart by this. |
+
 ## PositionExtensions
 
 Qualified name: <code>Meridian.Execution.Sdk.PositionExtensions</code>. Kind: `class`.
@@ -209,3 +332,88 @@ Declared public members:
 | <code>public OrderRequest Request { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:21](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L21) |  |
 | <code>public OrderPricing Pricing { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:22](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L22) |  |
 | <code>public static bool TryCreate(OrderRequest request, [NotNullWhen(true)] out ValidatedOrder? order, out IReadOnlyList&lt;OrderValidationError&gt; errors);</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:25](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L25) | Snapshots caller collections before validating the fields used downstream. |
+
+## IRiskEscalationQueue
+
+Qualified name: <code>Meridian.Execution.Services.IRiskEscalationQueue</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:49](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L49).
+
+Governed approval authority consumed by the risk engine.
+
+```csharp
+public interface IRiskEscalationQueue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;RiskEscalationEntry&gt; TryConsumeApprovals(OrderRequest request);</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:51](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L51) |  |
+| <code>bool TryRestoreApproval(string escalationId);</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:52](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L52) |  |
+| <code>RiskEscalationEntry Park(OrderRequest request, string reason, string? ruleName = null, string? actor = null, string? runId = null, string? correlationId = null, IReadOnlyList&lt;RiskEscalationEntry&gt;? consumedApprovals = null);</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:53](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L53) |  |
+
+## RiskEscalationEntry
+
+Qualified name: <code>Meridian.Execution.Services.RiskEscalationEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:19](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L19).
+
+An order parked by the pre-trade risk gate awaiting governed operator approval. The original OrderRequest is retained so an approval can release exactly the order that was evaluated, never a caller-supplied variant.
+
+```csharp
+public sealed record RiskEscalationEntry(string EscalationId, OrderRequest Request, string Reason, string? RuleName, string? Actor, string? RunId, string? CorrelationId, DateTimeOffset ParkedAt, RiskEscalationStatus Status, string? ResolvedBy = null, string? ResolutionReason = null, DateTimeOffset? ResolvedAt = null, string? ReleasedBy = null, DateTimeOffset? ReleasedAt = null, bool ReleaseInFlight = false, string? SubmitterProvenance = null);
+```
+
+## RiskEscalationMetadata
+
+Qualified name: <code>Meridian.Execution.Services.RiskEscalationMetadata</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:59](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L59).
+
+Shared metadata vocabulary; no queue implementation dependency.
+
+```csharp
+public static class RiskEscalationMetadata
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EvaluationOnlyMetadataKey = &quot;riskEvaluationOnly&quot;;</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:61](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L61) |  |
+| <code>public const string IncrementalNotionalMetadataKey = &quot;riskIncrementalNotional&quot;;</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:62](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L62) |  |
+| <code>public static string JoinTokens(IEnumerable&lt;string&gt; escalationIds) =&gt; …;</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:63](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L63) |  |
+
+## RiskEscalationSnapshot
+
+Qualified name: <code>Meridian.Execution.Services.RiskEscalationSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:46](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L46).
+
+Persisted snapshot of the governed-approval queue.
+
+```csharp
+public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);
+```
+
+## RiskEscalationStatus
+
+Qualified name: <code>Meridian.Execution.Services.RiskEscalationStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:6](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L6).
+
+Lifecycle of a parked risk escalation.
+
+```csharp
+public enum RiskEscalationStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PendingApproval</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:8](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L8) |  |
+| <code>Approved</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:9](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L9) |  |
+| <code>Denied</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:10](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L10) |  |
+| <code>Released</code> | [src/Meridian.Execution.Sdk/RiskEscalationContracts.cs:11](../../../../src/Meridian.Execution.Sdk/RiskEscalationContracts.cs#L11) |  |

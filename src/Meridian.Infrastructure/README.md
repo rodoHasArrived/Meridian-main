@@ -181,6 +181,13 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Historical Alpaca, Polygon Security Master ingest, and Robinhood option-contract pagination
+reject repeated continuation cursors. Failed Polygon ingest and Robinhood contract pages propagate
+failure rather than publishing partial data as a complete response. Continuation URLs are validated
+against the provider's HTTPS origin before credentials or rate-limit admission; Robinhood requests
+are paced and dispose their responses. Registry updates apply new provider limits to the existing
+limiter while retaining its current request history.
+
 Provider construction preserves the credential resolver's selected record, including missing,
 removed and deleted fields. Stored records cannot be overlaid by module settings; selected module
 sidecars cannot borrow missing fields from environment mappings. Alpaca historical, streaming,

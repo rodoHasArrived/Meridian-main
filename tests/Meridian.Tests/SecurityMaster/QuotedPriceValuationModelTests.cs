@@ -21,6 +21,7 @@ public sealed class QuotedPriceValuationModelTests
 {
     private static readonly DateTimeOffset PriceAsOf = ValuationTestSecurities.AsOf.AddDays(-1);
     private static readonly DateTimeOffset KnownAt = ValuationTestSecurities.AsOf.AddHours(6);
+    private const string MissingFactorHistory = "a dated factor at or before the first coupon's accrual start is required";
 
     [Fact]
     public async Task ExplicitDirtyQuote_CannotSilentlyBecomeCleanMarketValue()
@@ -127,6 +128,43 @@ public sealed class QuotedPriceValuationModelTests
     }
 
     [Theory]
+    [InlineData("schedule", 70, MissingFactorHistory)]
+    [InlineData("dated-scalar", 70, MissingFactorHistory)]
+    [InlineData("profile-dated-scalar", 70, MissingFactorHistory)]
+    [InlineData("none", 90, null)]
+    [InlineData("future-scalar", 90, MissingFactorHistory)]
+    [InlineData("undated-scalar", 80, MissingFactorHistory)]
+    public async Task QuotedOpeningPrincipal_AndAccrualReadinessFollowTheirRetainedEvidence(
+        string factorSource, int expectedOutstanding, string? expectedProjectionBlocker)
+    {
+        var bond = RepayingBond(factorSource, new DateOnly(2025, 12, 1));
+
+        // An opening quoted balance needs no invented coupon history. The v5 accrual walk also
+        // needs the balance at the coupon's start, which these factor fixtures do not retain.
+        await AssertQuotedPrincipalAndProjectionReadinessAsync(bond, expectedOutstanding, expectedProjectionBlocker);
+    }
+
+    [Theory]
+    [InlineData("schedule")]
+    [InlineData("dated-scalar")]
+    [InlineData("profile-dated-scalar")]
+    public async Task CompleteFactorAndPrincipalHistory_ReconcilesQuotedAndProjectedPrincipal(string factorSource)
+    {
+        var bond = RepayingBondWithCompleteAccrualHistory(factorSource);
+
+        await AssertQuotedPrincipalAndProjectionReadinessAsync(bond, 70m);
+    }
+
+    [Fact]
+    public async Task AQuotedOpeningBalance_DoesNotPermitContradictoryAccrualEvidence()
+    {
+        var bond = RepayingBondWithCompleteAccrualHistory("schedule", factorDatePayment: 10m);
+
+        await AssertQuotedPrincipalAndProjectionReadinessAsync(bond, 70m,
+            "dated factors and explicit principal payments do not reconcile");
+    }
+
+    [Theory]
     [InlineData(0, 12345678)]
     [InlineData(1, 11345678)]
     public async Task QuotedFace_RetainsFactorPrecisionBeforeScalingToTheHolding(
@@ -174,6 +212,7 @@ public sealed class QuotedPriceValuationModelTests
         var bond = RepayingBond("schedule", DateOnly.ParseExact(paymentDate, "yyyy-MM-dd", CultureInfo.InvariantCulture));
 
         await AssertQuoteMatchesLegacyV4ProjectionAsync(bond, 80m);
+        await AssertQuotedPrincipalAndProjectionReadinessAsync(bond, 80m, MissingFactorHistory);
     }
 
     [Theory]
@@ -255,6 +294,17 @@ public sealed class QuotedPriceValuationModelTests
         receipt.Projection.Schedule.First().InterestSegments!.Select(segment => segment.ReferencePrincipal)
             .Should().Equal(100m, 80m, 70m);
         await AssertQuotedOpeningFaceAsync(bond, 70m);
+    }
+
+    [Theory]
+    [InlineData(100, null)]
+    [InlineData(110, "a principal payment exceeds the outstanding balance")]
+    public async Task CompletedPrincipalPayments_CannotMakeTheQuotedFaceNegative(
+        int paymentAmount, string? expectedProjectionBlocker)
+    {
+        var bond = RepayingBond("none", new DateOnly(2025, 12, 1), paymentAmount);
+
+        await AssertQuotedPrincipalAndProjectionReadinessAsync(bond, 0m, expectedProjectionBlocker);
     }
 
     [Fact]
@@ -381,6 +431,67 @@ public sealed class QuotedPriceValuationModelTests
         JsonSerializer.Serialize(replay, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto)
             .Should().Be(JsonSerializer.Serialize(receipt.Projection, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto));
         replay.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(expectedOutstanding);
+        await AssertQuotedOpeningFaceAsync(bond, expectedOutstanding);
+    }
+
+    private static SecurityDetailDto RepayingBondWithCompleteAccrualHistory(
+        string factorSource, decimal factorDatePayment = 20m)
+    {
+        var issueDate = new DateOnly(2025, 1, 1);
+        var terms = new Dictionary<string, object>
+        {
+            ["issueDate"] = issueDate,
+            ["maturityDate"] = new DateOnly(2027, 1, 1),
+            ["par"] = 100m,
+            ["couponRate"] = 0m,
+            ["paymentFrequency"] = "Annual"
+        };
+        if (factorSource == "schedule")
+        {
+            // The opening 1.0 balance and the 20 payment explain the later 0.8 factor; the
+            // December 10 then reduces both the quoted and projected principal to 70.
+            terms["factorScheduleEntries"] = new[]
+            {
+                new { asOfDate = issueDate, factor = 1m },
+                new { asOfDate = new DateOnly(2025, 6, 1), factor = 0.8m }
+            };
+            terms["principalSchedule"] = new[]
+            {
+                new { paymentDate = new DateOnly(2025, 6, 1), amount = factorDatePayment },
+                new { paymentDate = new DateOnly(2025, 12, 1), amount = 10m }
+            };
+        }
+        else
+        {
+            // A scalar dated at issue supplies the coupon's opening balance directly.
+            terms["currentFactor"] = 0.8m;
+            terms["factorDate"] = issueDate;
+            terms["principalSchedule"] = new[] { new { paymentDate = new DateOnly(2025, 12, 1), amount = 10m } };
+        }
+
+        var retainedTerms = factorSource == "profile-dated-scalar"
+            ? JsonSerializer.SerializeToElement(new { profileFields = terms })
+            : JsonSerializer.SerializeToElement(terms);
+        return ValuationTestSecurities.Bond() with { AssetSpecificTerms = retainedTerms };
+    }
+
+    private static async Task AssertQuotedPrincipalAndProjectionReadinessAsync(
+        SecurityDetailDto bond, decimal expectedOutstanding, string? expectedProjectionBlocker = null)
+    {
+        var projection = await CashFlows(bond).GetProjectionAsOfAsync(
+            bond.SecurityId, StructuredCashFlowScenario.Base, ValuationTestSecurities.AsOf);
+
+        projection.Should().NotBeNull();
+        if (expectedProjectionBlocker is null)
+        {
+            projection!.BlockedReason.Should().BeNull();
+            projection.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(expectedOutstanding);
+        }
+        else
+        {
+            projection!.BlockedReason.Should().Contain(expectedProjectionBlocker);
+            projection.Schedule.Should().BeEmpty("unreconciled accrual evidence must not yield a partial projection");
+        }
         await AssertQuotedOpeningFaceAsync(bond, expectedOutstanding);
     }
 

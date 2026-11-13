@@ -23,7 +23,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static readonly TimeSpan DefaultPerRuleTimeout = TimeSpan.FromSeconds(5);</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:46](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L46) | Wall-clock ceiling on a single rule. A rule that never completes would otherwise hold the pre-trade path open indefinitely, which is a trading outage rather than a risk decision. |
-| <code>public CompositeRiskValidator(IEnumerable&lt;IRiskRule&gt; rules, ILogger&lt;CompositeRiskValidator&gt; logger, ExecutionOperatorControlService? operatorControls = null, RiskEscalationQueueService? escalationQueue = null, TimeSpan? perRuleTimeout = null, ICircuitBreakerTripHandler? tripHandler = null);</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:50](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L50) |  |
+| <code>public CompositeRiskValidator(IEnumerable&lt;IRiskRule&gt; rules, ILogger&lt;CompositeRiskValidator&gt; logger, IRiskCircuitBreakerControl? operatorControls = null, IRiskEscalationQueue? escalationQueue = null, TimeSpan? perRuleTimeout = null, ICircuitBreakerTripHandler? tripHandler = null);</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:50](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L50) |  |
 | <code>public async Task&lt;RiskValidationResult&gt; ValidateOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:96](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L96) |  |
 | <code>public const string EvaluationFailedCode = &quot;RISK_RULE_EVALUATION_FAILED&quot;;</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:450](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L450) | Stable code recorded when a rule itself fails, rather than reporting a breach. |
 
@@ -143,7 +143,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public KillSwitchSweepTripHandler(Func&lt;IOrderManager?&gt; orderManagerAccessor, ILogger&lt;KillSwitchSweepTripHandler&gt; logger, ExecutionAuditTrailService? auditTrail = null);</code> | [src/Meridian.Risk/KillSwitchSweepTripHandler.cs:24](../../../../src/Meridian.Risk/KillSwitchSweepTripHandler.cs#L24) |  |
+| <code>public KillSwitchSweepTripHandler(Func&lt;IOrderManager?&gt; orderManagerAccessor, ILogger&lt;KillSwitchSweepTripHandler&gt; logger, IRiskControlAuditWriter? auditTrail = null);</code> | [src/Meridian.Risk/KillSwitchSweepTripHandler.cs:24](../../../../src/Meridian.Risk/KillSwitchSweepTripHandler.cs#L24) |  |
 | <code>public async Task OnCircuitBreakerTrippedAsync(string reason, string trippedBy, CancellationToken ct);</code> | [src/Meridian.Risk/KillSwitchSweepTripHandler.cs:35](../../../../src/Meridian.Risk/KillSwitchSweepTripHandler.cs#L35) |  |
 
 ## PortfolioExposureProviderExtensions

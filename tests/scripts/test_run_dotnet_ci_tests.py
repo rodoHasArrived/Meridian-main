@@ -2,6 +2,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -71,6 +72,8 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 "core-market-instruments",
                 "core-platform-domain-root",
                 "core-reporting",
+                "storage-unit",
+                "execution-unit",
                 "contracts-unit",
                 "core-unit",
                 "demo",
@@ -204,7 +207,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(solution["projects"], [
                 project.path.replace("/", "\\") for project in MODULE.get_unique_build_projects(projects)
             ])
-            self.assertEqual(len(solution["projects"]), 12)
+            self.assertEqual(len(solution["projects"]), 14)
             self.assertTrue(all((resolved_solution.parent / path.replace("\\", "/")).is_file()
                                 for path in solution["projects"]))
 
@@ -518,6 +521,71 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertGreater(Path(results[0].log_path).stat().st_size, 100_000)
             self.assertLess(len(output.getvalue()), 18_000)
             self.assertIn("final failure detail", output.getvalue())
+
+    def test_unicode_failure_tail_on_legacy_console_preserves_failure_and_runs_later_shards(self):
+        projects = [MODULE.TestProject(name, f"tests/{name}.csproj") for name in ("failed", "later")]
+        failure = "xUnit failure: expected \u2193 but found \u2191; caf\u00e9\n"
+        attempted = []
+
+        def complete(command, **kwargs):
+            name = Path(command[2]).stem
+            attempted.append(name)
+            self.write_trx(command)
+            if name == "failed":
+                kwargs["stdout"].write(failure)
+                directory = Path(command[command.index("--results-directory") + 1])
+                for trx in directory.glob("*.trx"):
+                    document = ET.parse(trx)
+                    ET.SubElement(document.getroot().find("Results"), "UnitTestResult",
+                                  testName="FailedExample", outcome="Failed")
+                    document.write(trx, encoding="utf-8")
+            return subprocess.CompletedProcess(command, 7 if name == "failed" else 0)
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
+                patch.object(MODULE.subprocess, "run", side_effect=complete):
+            raw_console = io.BytesIO()
+            with io.TextIOWrapper(raw_console, encoding="cp1252", errors="strict") as console:
+                with redirect_stdout(console):
+                    results = self.run_projects(projects, tmp)
+                console.flush()
+                displayed = raw_console.getvalue().decode("cp1252")
+                self.assertEqual(console.errors, "strict", "the caller's console policy must remain unchanged")
+                self.assertIn("expected \\u2193 but found \\u2191; caf\u00e9", displayed)
+                self.assertIn("Finished later: passed", displayed)
+            self.assertEqual(attempted, ["failed", "later"])
+            self.assertEqual([result.exit_code for result in results], [7, 0])
+            self.assertEqual([result.status for result in results], ["failed", "passed"])
+            self.assertEqual(results[0].evidence["counts"]["failed"], 1)
+            self.assertIn(failure.encode("utf-8"), Path(results[0].log_path).read_bytes())
+            summary = Path(tmp) / "summary.json"
+            MODULE.write_summaries(results, summary_output=Path(tmp) / "summary.md", json_output=summary)
+            payload = json.loads(summary.read_text(encoding="utf-8"))
+            self.assertEqual(payload["failed"], 1)
+            self.assertEqual([result["exit_code"] for result in payload["results"]], [7, 0])
+
+    def test_default_build_unicode_failure_preserves_log_and_exit_code_for_console_encodings(self):
+        failure = "Build failed: expected \u2193; caf\u00e9\n"
+
+        def fail(command, **kwargs):
+            kwargs["stdout"].write(failure)
+            return subprocess.CompletedProcess(command, 7)
+
+        for encoding in ("cp1252", "utf-8"):
+            with self.subTest(encoding=encoding), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
+                    patch.object(MODULE.subprocess, "run", side_effect=fail):
+                raw_console = io.BytesIO()
+                with io.TextIOWrapper(raw_console, encoding=encoding, errors="strict") as console:
+                    with redirect_stdout(console):
+                        result = MODULE.run_default_build(
+                            MODULE.parse_project_entries([]), repo_root=SCRIPT_PATH.parents[3],
+                            configuration="Release", results_dir=Path(tmp), dry_run=False)
+                    console.flush()
+                    displayed = raw_console.getvalue().decode(encoding)
+                    self.assertIn("Build failed: expected " + ("\\u2193" if encoding == "cp1252" else "\u2193")
+                                  + "; caf\u00e9", displayed)
+                self.assertEqual(result.exit_code, 7)
+                self.assertEqual(result.status, "failed")
+                self.assertIn(failure.encode("utf-8"), Path(result.log_path).read_bytes())
 
     def test_parallel_default_roster_preserves_every_filter_timeout_and_result_directory(self):
         projects = MODULE.parse_project_entries([])
@@ -945,6 +1013,53 @@ class ExtractedUnitProjectTests(unittest.TestCase):
         self.assertEqual(MODULE.build_isolation_properties(None), [])
         self.assertEqual(MODULE.build_isolation_properties("cold-run_1"),
                          ["/p:MeridianBuildIsolationKey=cold-run_1"])
+
+
+class LinkedUnitProjectCoverageTests(unittest.TestCase):
+    REPO = Path(__file__).resolve().parents[2]
+
+    def test_linked_unit_suites_do_not_strand_service_backed_integration_tests(self):
+        spec = importlib.util.spec_from_file_location(
+            "linked_unit_integration_evidence", self.REPO / "build/scripts/ci/integration_evidence.py")
+        evidence = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(evidence)
+        service_backed_projects = {suite["project"] for suite in evidence.SUITES.values()}
+        main_project = "tests/Meridian.Tests/Meridian.Tests.csproj"
+        self.assertIn(main_project, service_backed_projects)
+        main_xml = ET.parse(self.REPO / main_project).getroot()
+
+        for subsystem, item_name in (("Storage", "StorageCoreTestSource"),
+                                     ("Execution", "ExecutionTestSource")):
+            project = f"tests/Meridian.{subsystem}.Tests/Meridian.{subsystem}.Tests.csproj"
+            manifest = self.REPO / "tests" / f"Meridian.{subsystem}.Tests" / f"{item_name}s.props"
+            with self.subTest(project=project):
+                self.assertNotIn(project, service_backed_projects)
+                # Both assemblies use this item list: linked sources compile in the
+                # focused suite and are removed from the service-backed main suite.
+                self.assertIn(f"../Meridian.{subsystem}.Tests/{manifest.name}",
+                              [item.get("Project") for item in main_xml.iter("Import")])
+                self.assertIn(f"@({item_name})", [item.get("Remove") for item in main_xml.iter("Compile")])
+                project_xml = ET.parse(self.REPO / project).getroot()
+                self.assertIn(manifest.name, [item.get("Project") for item in project_xml.iter("Import")])
+                self.assertTrue({f"@({item_name})", f"@({item_name}->Distinct())"}.intersection(
+                    item.get("Include") for item in project_xml.iter("Compile")))
+
+                def expand(patterns):
+                    return {source.resolve() for pattern in patterns.split(";") if pattern
+                            for source in manifest.parent.glob(
+                                pattern.removeprefix("$(MSBuildThisFileDirectory)"))}
+
+                sources = set()
+                for item in ET.parse(manifest).getroot().iter(item_name):
+                    sources.update(expand(item.get("Include", "")) - expand(item.get("Exclude", "")))
+                    sources.difference_update(expand(item.get("Remove", "")))
+                self.assertTrue(sources, "the ownership guard must inspect the linked sources")
+                stranded = [source.relative_to(self.REPO).as_posix() for source in sorted(sources)
+                            if re.search(r'\[\s*Trait\s*\(\s*"Category"\s*,\s*"Integration"\s*\)\s*\]',
+                                         source.read_text(encoding="utf-8-sig"))]
+                self.assertEqual(stranded, [],
+                                 "integration sources must stay in the service-backed main assembly")
 
 
 class UnitAggregateCommandTests(unittest.TestCase):
