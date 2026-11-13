@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTaxLotReliefProjection
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefProjection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:6](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L6).
+
+Realized-gain/loss projection produced by applying an account-level tax-lot relief method.
+
+```csharp
+public sealed record LedgerTaxLotReliefProjection(LedgerTaxLotReliefInput Input, IReadOnlyList<LedgerTaxLotReliefSelection> Selections, decimal Proceeds, decimal CostBasis, decimal RealizedGainOrLoss, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Lines)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TotalDebits =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:14](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L14) |  |
+| <code>public decimal TotalCredits =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:16](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L16) |  |
+| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:18](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L18) |  |
+| <code>public JournalEntry ToJournalEntry(Guid journalId, DateTimeOffset timestamp, string description, JournalEntryMetadata? metadata = null, LedgerLineDimensionSet? lineDimensions = null);</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:21](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L21) | Materializes the authoritative disposal with its exact investing cash attribution. |
+| <code>public IReadOnlyList&lt;LedgerTaxLotBasisAdjustment&gt; AppliedAdjustments { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:38](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L38) | The reference-data basis adjustments that were applied to the open lots before relief. Empty when the sale relieved lots at their recorded quantity and unit cost. |
+| <code>public IReadOnlyList&lt;LedgerTaxLot&gt; EffectiveLots { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:41](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L41) | The effective open lots after applying AppliedAdjustments. |
+| <code>public IReadOnlyList&lt;Meridian.Contracts.Accounting.Lots.OpenLotDto&gt; CanonicalOpenLots { get; init; } = [];</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:44](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L44) | Retained pre-disposal identity and acquisition facts for the report evidence artifact. |
+| <code>public WashSaleOutcome? WashSale { get; init; }</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:53](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L53) | Wash-sale deferral outcome when a realized loss was disallowed against replacement acquisitions. Null when no loss parcels match or the policy does not govern this sale date. When present, RealizedGainOrLoss still reports the full economic result, while Lines recognize that result plus the disallowed loss and capitalize WashSaleOutcome.DisallowedLoss into the replacement lot&#x27;s basis. |
+| <code>public decimal DisallowedWashSaleLoss =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:59](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L59) | The wash-sale loss deferred out of this period, or zero when no deferral applied. Convenience accessor for exports and read models that would otherwise repeat the null coalesce. |
+| <code>public decimal RecognizedGainOrLoss =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:66](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L66) | The gain or loss actually recognized on the ledger this period: the full economic result less any deferred wash-sale portion. A realized loss is negative, so adding back the (positive) disallowed amount moves it toward zero. |
+| <code>public decimal ShortTermRealizedGainOrLoss =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:72](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L72) | Economic result from parcels held one year or less. Parcel amounts are allocated so this and LongTermRealizedGainOrLoss sum exactly to RealizedGainOrLoss. |
+| <code>public decimal LongTermRealizedGainOrLoss =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs:75](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjection.cs#L75) | Economic result from parcels held more than one year. |
+
+## LedgerTaxLotReliefProjector
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs:8](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs#L8).
+
+Applies account-level tax-lot relief policy to produce realized gain/loss journal lines.
+
+```csharp
+public static class LedgerTaxLotReliefProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int CurrentProceedsAllocationVersion = 1;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs:11](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs#L11) | Retained convention for the current sign-preserving proceeds allocator. |
+| <code>public static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input) =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs:13](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs#L13) |  |
+
 ## LedgerTaxLotReliefSelection
 
 Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefSelection</code>. Kind: `record`.
@@ -927,33 +975,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Simple = 0</code> | [src/Meridian.Ledger/PreferredReturnCalculator.cs:10](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L10) | Interest accrues on contributed capital only; accrued pref never joins the base. |
 | <code>Compound = 1</code> | [src/Meridian.Ledger/PreferredReturnCalculator.cs:13](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L13) | Accrued pref capitalizes into the base at each cash-flow boundary (compounded). |
-
-## PreferredReturnResult
-
-Qualified name: <code>Meridian.Ledger.PreferredReturnResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PreferredReturnCalculator.cs:30](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L30).
-
-Result of accruing preferred return to a valuation date.
-
-```csharp
-public sealed record PreferredReturnResult(decimal ContributedCapital, decimal ReturnedCapital, decimal AccruedPreferredReturn, IReadOnlyList<PreferredReturnSegment> Segments)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal OutstandingCapital =&gt; …;</code> | [src/Meridian.Ledger/PreferredReturnCalculator.cs:37](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L37) | Contributed capital not yet returned. |
-
-## PreferredReturnSegment
-
-Qualified name: <code>Meridian.Ledger.PreferredReturnSegment</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PreferredReturnCalculator.cs:23](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L23).
-
-One accrual segment between two cash-flow boundaries.
-
-```csharp
-public sealed record PreferredReturnSegment(DateOnly From, DateOnly To, decimal Base, decimal AccruedInterest);
-```

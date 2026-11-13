@@ -213,7 +213,9 @@ public sealed partial class PostgresLedgerJournalStore :
                 connection,
                 transaction,
                 entry.PeriodId,
-                forUpdate: _options.EnablePeriodLocking || verifiedCashDividendAttestation,
+                // Retained period membership must also exclude reassignment when compatibility
+                // callers disable the additional period-locking option.
+                forUpdate: true,
                 callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
@@ -613,7 +615,7 @@ public sealed partial class PostgresLedgerJournalStore :
                 connection,
                 transaction,
                 period.PeriodId,
-                forUpdate: requireClosedTemporaryAccounts || _options.EnablePeriodLocking,
+                forUpdate: true,
                 callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
@@ -643,6 +645,9 @@ public sealed partial class PostgresLedgerJournalStore :
                 throw PeriodVersionConflict(period.PeriodId, expectedVersion, current.Version);
             }
 
+            await RejectPopulatedPeriodBookMoveAsync(connection, transaction, current, period, ct)
+                .ConfigureAwait(false);
+
             if (requireClosedTemporaryAccounts)
             {
                 await EnsureTemporaryAccountsClosedAsync(
@@ -663,10 +668,23 @@ public sealed partial class PostgresLedgerJournalStore :
             }
         }
 
+        LedgerBalanceCheckpointContent? checkpoint = null;
+        string? checkpointHash = null;
+        if (requireClosedTemporaryAccounts && closeEvent is not null
+            && saved.LedgerBookId is { } checkpointBookId && checkpointBookId != Guid.Empty)
+        {
+            checkpoint = await CaptureBalanceCheckpointAsync(connection, transaction, saved, closeEvent, ct)
+                .ConfigureAwait(false);
+            checkpointHash = BalanceCheckpointHash(checkpoint);
+        }
         if (closeEvent is not null)
         {
-            await InsertCloseEventAsync(connection, transaction, closeEvent, saved.Version, ct).ConfigureAwait(false);
+            await InsertCloseEventAsync(connection, transaction, closeEvent, saved.Version, ct,
+                checkpoint?.CheckpointId, checkpointHash).ConfigureAwait(false);
         }
+        if (checkpoint is not null)
+            await InsertBalanceCheckpointAsync(connection, transaction, checkpoint, checkpointHash!, ct)
+                .ConfigureAwait(false);
 
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "period", saved.PeriodId, saved.Version,
             current is null ? "PeriodCreated" : saved.Status == "Open" && current.Status != "Open" ? "PeriodReopened"
@@ -1524,7 +1542,9 @@ public sealed partial class PostgresLedgerJournalStore :
         NpgsqlTransaction transaction,
         PeriodCloseEventRecord closeEvent,
         long periodVersion,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid? balanceCheckpointId = null,
+        string? balanceCheckpointHash = null)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
@@ -1538,7 +1558,9 @@ public sealed partial class PostgresLedgerJournalStore :
                 closed_by,
                 notes,
                 recorded_at,
-                period_version)
+                period_version,
+                balance_checkpoint_id,
+                balance_checkpoint_hash)
             values (
                 @event_id,
                 @period_id,
@@ -1547,7 +1569,9 @@ public sealed partial class PostgresLedgerJournalStore :
                 @closed_by,
                 @notes,
                 @recorded_at,
-                @period_version);
+                @period_version,
+                @checkpoint_id,
+                @checkpoint_hash);
             """;
         command.Parameters.AddWithValue("event_id", closeEvent.EventId);
         command.Parameters.AddWithValue("period_id", closeEvent.PeriodId);
@@ -1557,6 +1581,8 @@ public sealed partial class PostgresLedgerJournalStore :
         command.Parameters.AddWithValue("notes", closeEvent.Notes);
         command.Parameters.AddWithValue("recorded_at", closeEvent.RecordedAt.UtcDateTime);
         command.Parameters.AddWithValue("period_version", periodVersion);
+        command.Parameters.AddWithValue("checkpoint_id", (object?)balanceCheckpointId ?? DBNull.Value);
+        command.Parameters.AddWithValue("checkpoint_hash", (object?)balanceCheckpointHash ?? DBNull.Value);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 

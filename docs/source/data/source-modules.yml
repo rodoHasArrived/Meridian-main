@@ -300,14 +300,14 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
   - id: SRC-STORAGE-ACCOUNTING
     path: src/Meridian.Storage.Accounting
     name: Meridian accounting persistence adapters
     layer: Storage Adapter
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Accounting export projections, portable ledger-payload validation and PostgreSQL business persistence adapters composing Storage primitives with Ledger and Reporting contracts, retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
+    purpose: Accounting export projections including period income and as-of balance sheets, portable ledger-payload validation and PostgreSQL business persistence adapters with immutable close-balance checkpoints and scoped as-of reads, composing Storage primitives with Ledger and Reporting contracts while retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
     readme: src/Meridian.Storage.Accounting/README.md
     roadmap_items:
       - W4-RECON-001
@@ -321,10 +321,11 @@ modules:
     validation:
       - dotnet build src/Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~ReviewBoundaryTests
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerAnalysisExportTests|FullyQualifiedName~LedgerBalanceCheckpoint|FullyQualifiedName~LedgerBalanceSnapshot"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
 
 
   - id: SRC-EXECUTION
@@ -480,7 +481,7 @@ modules:
     layer: Ledger
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff. Explicit shared posting-account definitions and retained opening/closing trade economics serve backtesting, paper portfolios, execution and lending.
+    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff. Explicit shared posting-account definitions and retained opening/closing trade economics serve backtesting, paper portfolios, execution and lending. Period income statements retain operating activity independently of as-of unclosed balances and retained-earnings transfers.
     readme: src/Meridian.Ledger/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -499,12 +500,13 @@ modules:
       - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StandardChartOfAccountsTests|FullyQualifiedName~SecurityTradePosting" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerIncomeStatementTests|FullyQualifiedName~LedgerFinancialStatement"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementPostingGuardTests|FullyQualifiedName~DimensionSignatureBackwardCompatibilityTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
 
   - id: SRC-FSHARP
     path: src/Meridian.FSharp
@@ -1112,7 +1114,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard

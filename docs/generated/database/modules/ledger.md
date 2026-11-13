@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 52
-- Functions/procedures: 29
-- Triggers: 56
+- Relations: 54
+- Functions/procedures: 30
+- Triggers: 60
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -384,6 +384,34 @@ erDiagram
         numeric_38_10_ transaction_credit
         numeric_38_10_ fx_rate_to_functional
     }
+    ledger_ledger_balance_checkpoint_rows {
+        uuid checkpoint_id PK,FK
+        integer row_no PK
+        text account_name
+        text account_type
+        text symbol
+        text financial_account_id
+        jsonb dimensions
+        numeric debit
+        numeric credit
+        bigint entry_count
+    }
+    ledger_ledger_balance_checkpoints {
+        uuid checkpoint_id PK
+        uuid close_event_id FK
+        uuid ledger_book_id FK
+        uuid period_id FK
+        bigint period_version
+        text tenant_id
+        integer schema_version
+        timestamp_with_time_zone as_of_utc
+        bigint source_sequence
+        bigint future_audit_sequence
+        bigint journal_count
+        bigint line_count
+        text content_hash
+        timestamp_with_time_zone created_at_utc
+    }
     ledger_ledger_book_control_activation {
         uuid receipt_id PK
         uuid ledger_book_id FK
@@ -552,6 +580,8 @@ erDiagram
         text notes
         timestamp_with_time_zone recorded_at
         bigint period_version
+        uuid balance_checkpoint_id
+        text balance_checkpoint_hash
     }
     ledger_private_capital_calls {
         text tenant_id PK
@@ -688,6 +718,7 @@ erDiagram
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_posting_rules : "accounting_configuration_posting_rules_workspace_fkey"
     ledger_accounting_configuration_workspaces ||--o{ ledger_accounting_configuration_rule_test_cases : "accounting_configuration_rule_test_cases_workspace_fkey"
     ledger_accounting_periods ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_period_id_fkey"
+    ledger_accounting_periods ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_period_id_fkey"
     ledger_accounting_periods ||--o{ ledger_period_close_events : "period_close_events_period_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_corrects_mutation_batch_id_fkey"
@@ -713,6 +744,7 @@ erDiagram
     ledger_journal_entries ||--o{ ledger_private_capital_postings : "private_capital_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
+    ledger_ledger_balance_checkpoints ||--o{ ledger_ledger_balance_checkpoint_rows : "ledger_balance_checkpoint_rows_checkpoint_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_ledger_book_id_fkey"
@@ -723,6 +755,7 @@ erDiagram
     ledger_ledger_books ||--o{ ledger_intercompany_account_binding_revisions : "intercompany_account_binding_revisions_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_intercompany_proposals : "intercompany_proposals_source_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_journal_leg_currency_affirmations : "journal_leg_currency_affirmations_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_ledger_book_control_activation : "ledger_book_control_activation_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_ledger_book_controls : "ledger_book_controls_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_legacy_intercompany_attributions : "legacy_intercompany_attributions_ledger_book_id_fkey"
@@ -739,6 +772,7 @@ erDiagram
     ledger_open_lot_backfill_receipts ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_resolution_receipt_id_fkey"
     ledger_open_lot_backfill_reviews ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_evidence_record_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
+    ledger_period_close_events ||--o{ ledger_ledger_balance_checkpoints : "ledger_balance_checkpoints_close_event_id_fkey"
     ledger_private_capital_calls ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profile_fkey"
     ledger_private_capital_commitments ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profil_fkey1"
     ledger_tax_lots ||--o{ ledger_bond_coupon_cash_consumption : "bond_coupon_cash_consumption_tax_lot_record_id_fkey"
@@ -782,10 +816,12 @@ erDiagram
 | `journal_leg_currency_affirmations` | table | 7 | `affirmation_id` | 1 | 2 | Operator assertions that a ledger book with no retained currency evidence transacted only in its base currency, and the currency-blind journal legs each assertion completed. Append-only: this is the authority for a repair the data alone could not determine. |
 | `journal_leg_currency_backfill_status` | view | 8 | - | 0 | 0 | - |
 | `journal_legs` | table | 30 | `entry_id` | 1 | 9 | - |
+| `ledger_balance_checkpoint_rows` | table | 10 | `checkpoint_id`, `row_no` | 1 | 1 | Exact account and line-dimension debit/credit totals in one immutable hard-close balance checkpoint, including known zero balances. |
+| `ledger_balance_checkpoints` | table | 14 | `checkpoint_id` | 3 | 4 | Immutable cumulative balances captured atomically with an authoritative hard close and bound to its retained audit evidence. |
 | `ledger_book_control_activation` | table | 8 | `receipt_id` | 1 | 1 | - |
 | `ledger_book_controls` | table | 8 | `ledger_book_id` | 1 | 1 | - |
 | `ledger_books` | table | 13 | `ledger_book_id` | 0 | 7 | - |
-| `ledger_event_audit_events` | table | 13 | `chain_sequence` | 0 | 3 | Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect. |
+| `ledger_event_audit_events` | table | 13 | `chain_sequence` | 0 | 4 | Ledger facts and actor attribution, hash chained in the same transaction as journal and period mutations. Null actor explicitly means unattributed; it is never synthesized from an approver. Verification checks covered facts as well as links. Coherent rollback of the head, suffix and corresponding facts requires an external retained checkpoint to detect. |
 | `ledger_event_audit_genesis` | table | 3 | `subject_kind`, `subject_id` | 0 | 1 | - |
 | `ledger_event_audit_head` | table | 6 | `chain_id` | 0 | 1 | - |
 | `ledger_journal_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
@@ -796,7 +832,7 @@ erDiagram
 | `open_lot_backfill_reviews` | table | 5 | `evidence_record_id` | 1 | 1 | - |
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
 | `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
-| `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
+| `period_close_events` | table | 10 | `event_id` | 1 | 2 | - |
 | `private_capital_calls` | table | 6 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `call_id` | 1 | 2 | Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope. |
 | `private_capital_commitments` | table | 7 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `commitment_id`, `revision` | 1 | 2 | Effective-dated source-backed investor commitment revisions; approval changes only retained review metadata. |
 | `private_capital_postings` | table | 17 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `posting_id` | 4 | 8 | Immutable issuance and funding receipts committed atomically with their ledger journals and source identities. |

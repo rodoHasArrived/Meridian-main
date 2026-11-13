@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IQuotaEnforcementService
+
+Qualified name: <code>Meridian.Storage.Services.IQuotaEnforcementService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:347](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L347).
+
+Interface for quota enforcement service.
+
+```csharp
+public interface IQuotaEnforcementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QuotaCheckResult CheckQuota(string symbol, string source, string eventType, long additionalBytes);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:349](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L349) |  |
+| <code>void RecordUsage(string filePath, long bytes);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:350](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L350) |  |
+| <code>Task&lt;QuotaScanResult&gt; ScanAndUpdateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:351](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L351) |  |
+| <code>QuotaStatusReport GetStatus();</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:352](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L352) |  |
+
+## IssueSeverity
+
+Qualified name: <code>Meridian.Storage.Services.IssueSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881).
+
+```csharp
+public enum IssueSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
+| <code>Warning</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
+| <code>Critical</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
+
 ## IssueType
 
 Qualified name: <code>Meridian.Storage.Services.IssueType</code>. Kind: `enum`.
@@ -758,30 +797,4 @@ Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:376](../../../
 
 ```csharp
 public sealed record QuotaScanResult(DateTime ScannedAtUtc, int FilesScanned, long TotalBytes, IReadOnlyList<QuotaViolation> Violations);
-```
-
-## QuotaStatusEntry
-
-Qualified name: <code>Meridian.Storage.Services.QuotaStatusEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:399](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L399).
-
-```csharp
-public sealed record QuotaStatusEntry(string QuotaId, string DisplayName, long UsedBytes, long MaxBytes, long? UsedFiles, long? MaxFiles, QuotaEnforcementPolicy Policy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double UsagePercentage =&gt; …;</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:408](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L408) |  |
-
-## QuotaStatusReport
-
-Qualified name: <code>Meridian.Storage.Services.QuotaStatusReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:393](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L393).
-
-```csharp
-public sealed record QuotaStatusReport(DateTime GeneratedAtUtc, DateTime LastScanUtc, IReadOnlyList<QuotaStatusEntry> Entries, IReadOnlyList<QuotaViolation> Violations);
 ```
