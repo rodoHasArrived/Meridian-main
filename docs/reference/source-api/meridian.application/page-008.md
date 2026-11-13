@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IMultiAssetCoverageInvalidator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:14](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L14).
+
+Evicts any cached multi-asset coverage / operational-readiness view affected by a published Security Master revision, so the next read recomputes against the refreshed projection. The coverage read path (MultiAssetCoverageReadService) is currently recomputed per request rather than cached, so the default NullMultiAssetCoverageInvalidator is a no-op; a real eviction lands when a coverage cache is introduced. The seam exists now so the ordered published-revision fan-out has a stable place to evict from.
+
+```csharp
+public interface IMultiAssetCoverageInvalidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task InvalidateAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:17](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L17) | Invalidates cached coverage for the security/fund implicated by evt. |
+
 ## IndeterminateRestatementCandidateResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IndeterminateRestatementCandidateResolver</code>. Kind: `class`.
@@ -1006,33 +1024,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static RestatementCandidateResult Empty { get; } = new ([], false);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:51](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L51) |  |
-
-## SecurityAssetProfileGovernanceService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityAssetProfileGovernanceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:39](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L39).
-
-Maintains versioned asset profiles and their governance lifecycle.
-
-```csharp
-public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfileGovernanceService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityAssetProfileGovernanceService();</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:76](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L76) |  |
-| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:80](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L80) |  |
-| <code>public SecurityAssetProfileGovernanceService(StorageOptions storageOptions, ISecurityMasterGovernanceRequirements governanceRequirements) : this(storageOptions);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:94](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L94) | The composed constructor: an approval by an actor who drafted the version is refused while the independent-approver requirement is in force, which is when SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover is on (off by default) or the Institutional governance profile applies. The effective value is read from ISecurityMasterGovernanceRequirements at approval time so the setting hot-reloads. The other constructors keep self-approval allowed. |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:110](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L110) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetProfiles(DateOnly effectiveAt) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:117](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L117) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfileDefinitionDto&gt; GetAllProfiles() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:126](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L126) |  |
-| <code>public bool TryGetProfile(string profileId, int version, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:129](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L129) |  |
-| <code>public bool TryGetLatestApprovedProfile(string profileId, out SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:137](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L137) |  |
-| <code>public SecurityAssetProfileLineageDto GetLineage(string profileId);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:147](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L147) |  |
-| <code>public IReadOnlyList&lt;SecurityAssetProfilePromotionCandidateDto&gt; GetPromotionCandidates() =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:163](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L163) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; DraftProfileAsync(SecurityAssetProfileDraftRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:171](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L171) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; ApproveProfileAsync(SecurityAssetProfileApprovalRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:243](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L243) |  |
-| <code>public async Task&lt;SecurityAssetProfileGovernanceResultDto&gt; RollbackProfileAsync(SecurityAssetProfileRollbackRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs:313](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs#L313) |  |

@@ -84,6 +84,24 @@ public sealed class EndpointTestFixtureDataIsolationTests
         using var replay = JsonDocument.Parse(await replayResponse.Content.ReadAsStringAsync(ct));
         var sessionId = replay.RootElement.GetProperty("sessionId").GetString()!;
 
+        // Replay holds an exclusive closed-capture lease while scanning. This test checks
+        // concurrent host isolation, so finish that scan before sampling the same source.
+        while (true)
+        {
+            using var statusResponse = await client.GetAsync($"/api/replay/{sessionId}/status", ct);
+            statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            using var scan = JsonDocument.Parse(await statusResponse.Content.ReadAsStringAsync(ct));
+            var status = scan.RootElement.GetProperty("status").GetString();
+            if (status == "completed")
+            {
+                scan.RootElement.GetProperty("eventsProcessed").GetInt64().Should().Be(1);
+                break;
+            }
+
+            status.Should().Be("scanning", "the fixture replay must complete successfully");
+            await Task.Delay(TimeSpan.FromMilliseconds(10), ct);
+        }
+
         using var sampleResponse = await client.PostAsJsonAsync(
             "/api/sampling/create", new { Symbol = "ISOLATION", Strategy = "systematic", SampleSize = 10 }, ct);
         sampleResponse.StatusCode.Should().Be(HttpStatusCode.OK);

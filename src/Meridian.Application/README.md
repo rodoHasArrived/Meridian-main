@@ -18,12 +18,17 @@ record external legal review while ordinary independent review remains available
 revisions retain the same separate audit facts. See
 [terms and review boundaries](../../docs/domain/intercompany-agreements.md).
 
+Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
+and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.
+Corporate-action ingest and inbox outcomes distinguish complete empty history from unknown, failed
+and partial coverage; incomplete histories are withheld from proposal staging.
 
 `SymbolSearchService.SearchAuthoritativeAsync` supplies explicit single-provider candidate lookup.
 Provider failures propagate to the discovery surface as unavailable, separately from a successful
 empty search. It never consumes best-effort autocomplete cache entries; swallowed autocomplete
 failures cannot become authoritative candidate evidence. The browser discovery journey currently
 uses Alpaca's fixed-income filter and stages identity evidence for review without approving terms.
+
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
 use the scoped retained date population before pagination and bind cursors to the range revision.

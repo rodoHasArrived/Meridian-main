@@ -6,13 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionFetchResult
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionFetchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L26).
+
+Usable observations and the completeness of their source fetch.
+
+```csharp
+public sealed record CorporateActionFetchResult(IReadOnlyList<CorporateActionCommand> Actions, CorporateActionFetchStatus Status, IReadOnlyList<CorporateActionFetchFailure> Failures)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsComplete =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L32) | Only complete histories are eligible for authoritative ingestion. |
+| <code>public IReadOnlyList&lt;CorporateActionCommand&gt; Observations =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L34) |  |
+| <code>public string? Reason { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L36) |  |
+| <code>public int WithheldObservationCount { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L39) |  |
+| <code>public static CorporateActionFetchResult Incomplete(string reason, int withheldObservationCount = 0);</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L45) |  |
+| <code>public static CorporateActionFetchResult Unavailable(string reason);</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L53) |  |
+| <code>public static CorporateActionFetchResult Complete(IReadOnlyList&lt;CorporateActionCommand&gt; actions);</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:59](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L59) |  |
+| <code>public static CorporateActionFetchResult Failed(string code, int? statusCode = null, TimeSpan? retryAfter = null, string? scope = null) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L65) |  |
+| <code>public static CorporateActionFetchResult Combine(params CorporateActionFetchResult[] results);</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L70) | A successful empty endpoint still contributes to partial coverage when another fails. |
+| <code>public static bool IsPartialResponse(HttpResponseMessage response) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:83](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L83) |  |
+| <code>public static CorporateActionFetchResult FromHttpFailure(HttpResponseMessage response, string? scope = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:86](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L86) |  |
+| <code>public static CorporateActionFetchResult FromException(Exception exception, string? scope = null) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:104](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L104) | Caller cancellation must be rethrown by the caller before using this helper. |
+
 ## CorporateActionFetchStatus
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionFetchStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:82](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L82).
+Source: [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L8).
 
-How much of a provider&#x27;s corporate-action history a fetch read.
+Coverage of an adapter&#x27;s supported request scope, not live-provider certification.
 
 ```csharp
 public enum CorporateActionFetchStatus
@@ -22,9 +51,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Complete = 0</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:85](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L85) | The provider answered in full; an empty result means it has no actions. |
-| <code>Incomplete = 1</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L88) | The fetch began but stopped before the provider&#x27;s history was read in full. |
-| <code>Unavailable = 2</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L91) | The provider could not be read at all (for example no credentials, or a refused first request). |
+| <code>Complete = 0</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L10) |  |
+| <code>Incomplete = 1</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L11) |  |
+| <code>Unavailable = 2</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L12) |  |
+| <code>Unknown = 3</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L13) |  |
+| <code>Partial = 4</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L14) |  |
+| <code>Failed = 5</code> | [src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/CorporateActionFetchResult.cs#L15) |  |
 
 ## CoverageReport
 
@@ -383,7 +415,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider</code>. Kind: `interface`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L30).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L26).
 
 Provider-agnostic interface for fetching corporate action history (dividends and stock splits) from a data source and merging it into the Security Master event store.
 
@@ -395,10 +427,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L36) | Returns the provider identifier string used to tag corporate action events when multiple sources contribute data for the same security. |
-| <code>CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L42) | Declares whether this adapter release is certified to supply acceptance-grade event identity and retained raw evidence. The safe default is review-only. |
-| <code>Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:57](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L57) | Fetches all available corporate actions (dividends, splits, mergers, etc.) for ticker and securityId from the upstream data source. |
-| <code>async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L73) | Fetches corporate actions and states whether the provider&#x27;s history was read in full. Ingest calls this member so that a fetch that failed or was cut short is not mistaken for a provider that has no actions. |
+| <code>string ProviderId { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L32) | Returns the provider identifier string used to tag corporate action events when multiple sources contribute data for the same security. |
+| <code>CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L38) | Declares whether this adapter release is certified to supply acceptance-grade event identity and retained raw evidence. The safe default is review-only. |
+| <code>Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L53) | Fetches all available corporate actions (dividends, splits, mergers, etc.) for ticker and securityId from the upstream data source. |
+| <code>async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs:63](../../../../src/Meridian.Infrastructure/Adapters/Core/ICorporateActionProvider.cs#L63) | Fetches observations with explicit coverage for this adapter&#x27;s supported request scope. Legacy adapters retain unknown coverage until they implement this method; an empty legacy collection never establishes that no actions exist. |
 
 ## IFilterableSymbolSearchProvider
 
@@ -1007,33 +1039,3 @@ Standardized rate limit profile for provider metadata.
 ```csharp
 public sealed record ProviderRateLimitProfile(int MaxRequestsPerWindow, TimeSpan Window, TimeSpan? MinDelay = null);
 ```
-
-## ProviderRateLimitTracker
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L10).
-
-Tracks rate limit status across multiple providers for intelligent rotation.
-
-```csharp
-public sealed class ProviderRateLimitTracker : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderRateLimitTracker(ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L19) |  |
-| <code>public void RegisterProvider(string providerName, int maxRequestsPerWindow, TimeSpan window, TimeSpan minDelay);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L28) | Register a provider with its rate limit configuration. |
-| <code>public void RegisterProvider(IHistoricalDataProvider provider);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L53) | Register a provider from its interface properties. |
-| <code>public void RecordRequest(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L67) | Record a successful request to a provider. |
-| <code>public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L80) | Record that a provider hit its rate limit (HTTP 429). |
-| <code>public bool IsRateLimited(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:101](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L101) | Check if a provider is currently rate limited. |
-| <code>public bool IsApproachingLimit(string providerName, double threshold = 0.8);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:113](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L113) | Check if a provider is approaching its rate limit threshold. |
-| <code>public TimeSpan? GetTimeUntilReset(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:128](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L128) | Get time until a provider&#x27;s rate limit resets. |
-| <code>public string? GetBestAvailableProvider(IEnumerable&lt;string&gt; providerNames);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:142](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L142) | Get the best available provider from a list, preferring those with more capacity. |
-| <code>public IReadOnlyDictionary&lt;string, RateLimitStatus&gt; GetAllStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:176](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L176) | Get status for all tracked providers. |
-| <code>public RateLimitStatus? GetStatus(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:191](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L191) | Get status for a specific provider. |
-| <code>public void ClearRateLimitState(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:203](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L203) | Clear rate limit state for a provider (e.g., after successful request). |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L213) |  |

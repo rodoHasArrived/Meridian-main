@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FirstTimeConfigOptions
+
+Qualified name: <code>Meridian.Application.Services.FirstTimeConfigOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:955](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L955).
+
+Options for first-time configuration generation.
+
+```csharp
+public sealed record FirstTimeConfigOptions(UseCase UseCase = UseCase.Development, SymbolPreset SymbolPreset = SymbolPreset.USMajorIndices, bool EnableBackfill = true, bool EnableCompression = true);
+```
+
 ## GcStats
 
 Qualified name: <code>Meridian.Application.Services.GcStats</code>. Kind: `class`.
@@ -973,53 +985,3 @@ A retained local capability is unavailable until its tenant migration is reviewe
 ```csharp
 public sealed class LocalTenantMigrationRequiredException() : MeridianException(LocalTenantMigrationGate.RefusalMessage);
 ```
-
-## TenantGuardedLocalFundAccountService
-
-Qualified name: <code>Meridian.Application.Tenancy.TenantGuardedLocalFundAccountService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:9](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L9).
-
-Guards every local fund operation before reading or mutating retained snapshots.
-
-```csharp
-public sealed class TenantGuardedLocalFundAccountService(InMemoryFundAccountService inner, LocalTenantMigrationGate gate) : INonProductionOnlyService, IFundAccountService, IAccountManagementService, IAccountQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;AccountSummaryDto&gt; CreateAccountAsync(CreateAccountRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:12](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L12) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; GetAccountAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:15](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L15) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSummaryDto&gt;&gt; QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:18](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L18) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; UpdateCustodianDetailsAsync(Guid accountId, UpdateCustodianAccountDetailsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:21](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L21) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; UpdateBankDetailsAsync(Guid accountId, UpdateBankAccountDetailsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:24](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L24) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; DeactivateAccountAsync(Guid accountId, string deactivatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:27](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L27) |  |
-| <code>public Task&lt;FundAccountsDto&gt; GetFundAccountsAsync(Guid fundId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:30](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L30) |  |
-| <code>public Task&lt;AccountBalanceSnapshotDto&gt; RecordBalanceSnapshotAsync(RecordAccountBalanceSnapshotRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:33](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L33) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountBalanceSnapshotDto&gt;&gt; GetBalanceHistoryAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:36](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L36) |  |
-| <code>public Task&lt;AccountBalanceSnapshotDto?&gt; GetLatestBalanceSnapshotAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:39](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L39) |  |
-| <code>public Task&lt;CustodianStatementBatchDto&gt; IngestCustodianStatementAsync(IngestCustodianStatementRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:42](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L42) |  |
-| <code>public Task&lt;BankStatementBatchDto&gt; IngestBankStatementAsync(IngestBankStatementRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:45](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L45) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CustodianPositionLineDto&gt;&gt; GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:48](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L48) |  |
-| <code>public Task&lt;CustodianHoldingSnapshotDto?&gt; GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:51](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L51) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BankStatementLineDto&gt;&gt; GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:55](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L55) |  |
-| <code>public Task&lt;AccountReconciliationRunDto&gt; ReconcileAccountAsync(ReconcileAccountRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:58](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L58) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationRunDto&gt;&gt; GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:61](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L61) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationResultDto&gt;&gt; GetReconciliationResultsForAccountsAsync(IReadOnlyCollection&lt;Guid&gt; accountIds, bool openOnly = false, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:64](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L64) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationResultDto&gt;&gt; GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:67](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L67) |  |
-| <code>public Task&lt;IReadOnlyList&lt;PositionReconciliationBreakDto&gt;&gt; GetOpenPositionBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:70](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L70) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CashReconciliationBreakDto&gt;&gt; GetOpenCashBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:73](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L73) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationBreakDto&gt;&gt; GetOpenBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:76](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L76) |  |
-| <code>public Task&lt;AccountSyncHistoryEntryDto&gt; RecordSyncHistoryAsync(RecordAccountSyncHistoryRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:79](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L79) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:82](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L82) |  |
-| <code>public Task&lt;AccountSyncHistoryEntryDto?&gt; GetLatestSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:85](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L85) |  |
-| <code>public Task&lt;AccountReadinessSnapshotDto?&gt; GetReadinessAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:88](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L88) |  |
-| <code>public Task&lt;MarginSnapshotDto&gt; RecordMarginSnapshotAsync(RecordMarginSnapshotRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:91](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L91) |  |
-| <code>public Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:94](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L94) |  |
-| <code>public Task&lt;MarginSnapshotDto?&gt; GetLatestMarginSnapshotAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:97](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L97) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSummaryDto&gt;&gt; ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:100](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L100) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSettlementInstructionView&gt;&gt; ListSettlementInstructionsAsync(Guid? accountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:103](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L103) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountBalanceSnapshotDto&gt;&gt; GetBalanceTimelineAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:106](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L106) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountOpenBreakView&gt;&gt; ListOpenBreaksAsync(Guid? accountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:109](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L109) |  |

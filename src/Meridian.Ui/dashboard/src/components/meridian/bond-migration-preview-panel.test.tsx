@@ -6,6 +6,10 @@ import { BondMigrationPreviewPanel } from "./bond-migration-preview-panel";
 const SECURITY_ID = "11111111-1111-1111-1111-111111111111";
 
 describe("bond migration preview", () => {
+  it("opens the operator form for an explicit migration action", () => {
+    render(<BondMigrationPreviewPanel securityId={SECURITY_ID} expectedVersion={7} initiallyOpen />);
+    expect(screen.getByRole("form", { name: "Bond migration preview inputs" })).toBeVisible();
+  });
   it("requires the current terms version and an explicit coupon unit", async () => {
     const preview = vi.fn();
     const { rerender } = render(
