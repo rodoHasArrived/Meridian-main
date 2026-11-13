@@ -6,6 +6,75 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCaseworkAction
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkAction</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:419](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L419).
+
+```csharp
+public enum ReconciliationCaseworkAction : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Assign = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:421](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L421) |  |
+| <code>ChangePriority = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L422) |  |
+| <code>TransitionStatus = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:423](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L423) |  |
+| <code>AddComment = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:424](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L424) |  |
+| <code>EditComment = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:425](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L425) |  |
+| <code>DeleteComment = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:426](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L426) |  |
+| <code>SetRootCause = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:427](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L427) |  |
+| <code>SetResolution = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:428](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L428) |  |
+| <code>LinkEvidence = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:429](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L429) |  |
+| <code>SignOff = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:430](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L430) |  |
+| <code>Reopen = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:431](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L431) |  |
+| <code>Resolve = 11</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:432](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L432) |  |
+| <code>Waive = 12</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:433](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L433) |  |
+| <code>Supersede = 13</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:434](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L434) |  |
+
+## ReconciliationCaseworkCloseScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:725](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L725).
+
+Exact accounting-close scope retained when statement casework has been handed to the matching Operations Continuity workflow. This scope is queue-owned evidence; callers cannot use it to post, approve, or close a ledger period.
+
+```csharp
+public sealed record ReconciliationCaseworkCloseScopeDto(string FundProfileId, Guid LedgerBookId, Guid AccountingPeriodId, DateOnly AsOfDate);
+```
+
+## ReconciliationCaseworkCommand
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:685](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L685).
+
+```csharp
+public sealed record ReconciliationCaseworkCommand(string BreakId, ReconciliationCaseworkAction Action, string Actor, string CommandId, string CorrelationId, string Source, long ExpectedVersion, string? Reason = null, string? Assignee = null, ReconciliationCasePriority? Priority = null, ReconciliationCaseLifecycleState? Status = null, string? Note = null, string? RootCauseCode = null, string? ResolutionCode = null, string? CausationId = null, string? CommentId = null, string? ParentCommentId = null, ReconciliationCaseCommentVisibility Visibility = ReconciliationCaseCommentVisibility.Internal, IReadOnlyList<string>? EvidenceLinks = null, bool Privileged = false, ReconciliationCaseLifecycleState? StatusTransition = null, IReadOnlyList<string>? Mentions = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? ApprovalActor = null, string? ApprovalReference = null, string? SupersedingBreakId = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationCaseworkCloseScopeDto? CloseScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:717](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L717) | Server-resolved close scope bound by the statement/Operations evidence handoff. Init-only preserves the established command constructor and deconstruction ABI. |
+
+## ReconciliationCaseworkOperationResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:915](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L915).
+
+API-safe terminal receipt for a single reconciliation casework attempt. HTTP success only means the command was evaluated; callers must use Outcome to determine whether its postconditions were satisfied, blocked, or failed.
+
+```csharp
+public sealed record ReconciliationCaseworkOperationResult(string TransitionStatus, ReconciliationBreakQueueItem? Item, VerifiedOperationOutcome Outcome, string? Error = null, string? ErrorCode = null, IReadOnlyList<string>? ValidationIssues = null);
+```
+
 ## ReconciliationCompletedRunObservation
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCompletedRunObservation</code>. Kind: `record`.
@@ -616,52 +685,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = EvidenceReferences??[];</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1354](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1354) |  |
-
-## ReportingRunReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1357](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1357).
-
-```csharp
-public sealed record ReportingRunReadinessDto(string EvaluationId, DateTimeOffset EvaluatedAtUtc, VersionedReportTemplateIdDto ResolvedTemplate, ReportingRunParametersDto ResolvedParameters, ReportingRunReadinessStatusDto Status, bool CanGenerateDraft, bool CanGenerateFinal, IReadOnlyList<ReportingRunReadinessCheckDto> Checks, IReadOnlyList<string> BlockingReasons, string EvidenceHash);
-```
-
-## ReportingRunReadinessStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunReadinessStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1305](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1305).
-
-```csharp
-public enum ReportingRunReadinessStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1307](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1307) |  |
-| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1308](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1308) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1309](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1309) |  |
-| <code>Unavailable = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1310](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1310) |  |
-
-## ReportingRunRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1369](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1369).
-
-```csharp
-public sealed record ReportingRunRequestDto(string TemplateId, DateOnly? AsOfDate = null, int MaxRetries = 0, string? JobId = null, string? RequestedBy = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? DatasetSourceId = null, string? RetryReason = null, bool AllowRestatement = false, VersionedReportTemplateIdDto? Template = null, ReportingRunParametersDto? Parameters = null);
-```
-
-## ReportingRunResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingRunResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1382](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1382).
-
-```csharp
-public sealed record ReportingRunResultDto(WorkstationReportingRunPayload Run);
-```

@@ -14,7 +14,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 805 / 805 |
+| Endpoints documented | 812 / 812 |
 | Workstation contracts documented | 1026 / 1026 |
 
 ## Endpoint Coverage
@@ -311,6 +311,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:155` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:39` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:52` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/amortization/drafts` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:38` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/amortization/prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:24` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:77` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/drafts/{journalEntryId:guid}/capabilities` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:25` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:58` |
@@ -353,6 +355,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:100` |
 | `GET` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:82` |
 | `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/retry` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:135` |
+| `GET` | `/api/ledger/journal-automation/accrual-schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:29` |
+| `POST` | `/api/ledger/journal-automation/accrual-schedules/configure` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:115` |
+| `POST` | `/api/ledger/journal-automation/accrual-schedules/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:69` |
+| `POST` | `/api/ledger/journal-automation/accrual-schedules/{scheduleId}/run` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:170` |
 | `POST` | `/api/ledger/journal-automation/capital-call-default-interest-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:736` |
 | `POST` | `/api/ledger/journal-automation/capital-call-funding-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:693` |
 | `POST` | `/api/ledger/journal-automation/capital-call-issuance-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:650` |
@@ -369,10 +375,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/journal-automation/monthly-schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:61` |
 | `POST` | `/api/ledger/journal-automation/monthly-schedules/run-due` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:207` |
 | `POST` | `/api/ledger/journal-automation/period-close-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:822` |
-| `POST` | `/api/ledger/journal-automation/recurring/initialize` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:108` |
-| `GET` | `/api/ledger/journal-automation/recurring/occurrences` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:83` |
-| `POST` | `/api/ledger/journal-automation/recurring/restore-definitions` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:179` |
-| `POST` | `/api/ledger/journal-automation/recurring/schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:126` |
+| `POST` | `/api/ledger/journal-automation/recurring/initialize` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:109` |
+| `GET` | `/api/ledger/journal-automation/recurring/occurrences` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:84` |
+| `POST` | `/api/ledger/journal-automation/recurring/restore-definitions` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:180` |
+| `POST` | `/api/ledger/journal-automation/recurring/schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:127` |
 | `GET` | `/api/ledger/journal-entry-workbench` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1224` |
 | `POST` | `/api/ledger/journal-entry-workbench/drafts` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1545` |
 | `POST` | `/api/ledger/journal-entry-workbench/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1697` |
@@ -556,25 +562,26 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/reference-data/bonds/connection-readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:65` |
 | `POST` | `/api/reference-data/bonds/cutover` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:75` |
 | `GET` | `/api/reference-data/bonds/cutover-readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:69` |
+| `GET` | `/api/reference-data/bonds/discovery` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:19` |
 | `POST` | `/api/reference-data/bonds/fred-observations/import` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:82` |
 | `POST` | `/api/reference-data/bonds/identifier-discovery` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:77` |
-| `GET` | `/api/reference-data/bonds/issuer-ladder` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:73` |
+| `GET` | `/api/reference-data/bonds/issuer-ladder` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:74` |
 | `GET` | `/api/reference-data/bonds/issuer-ladder/page` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:19` |
 | `GET` | `/api/reference-data/bonds/market-observations` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:36` |
 | `POST` | `/api/reference-data/bonds/market-observations` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:53` |
-| `GET` | `/api/reference-data/bonds/maturity-ladder` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:97` |
+| `GET` | `/api/reference-data/bonds/maturity-ladder` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:98` |
 | `GET` | `/api/reference-data/bonds/maturity-ladder/page` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:27` |
 | `POST` | `/api/reference-data/bonds/migration-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:20` |
 | `POST` | `/api/reference-data/bonds/migration-preview/batch` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:27` |
 | `POST` | `/api/reference-data/bonds/migration-submit` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:47` |
 | `GET` | `/api/reference-data/bonds/provider-responses/{contentSha256}` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:94` |
 | `POST` | `/api/reference-data/bonds/screen` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:71` |
-| `POST` | `/api/reference-data/bonds/settlement-consideration` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:21` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:28` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:60` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:31` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/exercise-notices` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:96` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:44` |
+| `POST` | `/api/reference-data/bonds/settlement-consideration` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:22` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:29` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:61` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:37` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/exercise-notices` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:106` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:45` |
 | `POST` | `/api/reference-data/bonds/{securityId:guid}/workflow` | Documented | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:24` |
 | `GET` | `/api/reference-data/certificates-of-deposit/by-issuer` | Documented | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:33` |
 | `GET` | `/api/reference-data/certificates-of-deposit/maturing-before` | Documented | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:44` |

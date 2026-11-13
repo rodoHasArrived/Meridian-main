@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyDesignFieldCatalogItem
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignFieldCatalogItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L47).
+
+AMX-style field vocabulary item mapped to a Meridian canonical source.
+
+```csharp
+public sealed record StrategyDesignFieldCatalogItem(string FieldId, string Label, string Source, string DataSet, string TypeName, string Description, bool IsEnabled, string? DisabledReason, IReadOnlyList<string> Synonyms);
+```
+
+## StrategyDesignPreviewResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignPreviewResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:111](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L111).
+
+Preview result returned before execution.
+
+```csharp
+public sealed record StrategyDesignPreviewResult(StrategyDesignValidationResult Validation, StrategyDesignCompiledScript Compiled, IReadOnlyList<StrategyDesignPreviewRow> Rows, IReadOnlyList<StrategyDesignRunTraceEntry> Trace);
+```
+
+## StrategyDesignPreviewRow
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignPreviewRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L90).
+
+Preview row explaining how a cell will be compiled.
+
+```csharp
+public sealed record StrategyDesignPreviewRow(string RowId, string CellId, string Label, string Purpose, string Status, IReadOnlyList<string> FieldRefs, string Detail);
+```
+
+## StrategyDesignRunBacktestRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunBacktestRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:158](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L158).
+
+Request body for a Strategy Builder backtest run.
+
+```csharp
+public sealed record StrategyDesignRunBacktestRequest(StrategyDesignDocument Document, IReadOnlyDictionary<string, string>? Parameters = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; OperatorAcceptanceCriteria { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:169](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L169) |  |
+| <code>public IReadOnlyList&lt;string&gt; RetainedEvidenceReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L175) |  |
+| <code>public IReadOnlyList&lt;string&gt; AccountingRecordReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L181) |  |
+| <code>public IReadOnlyList&lt;string&gt; ApprovalReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L187) |  |
+| <code>public IReadOnlyList&lt;string&gt; PaperValidationReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:193](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L193) |  |
+| <code>public IReadOnlyList&lt;string&gt; GovernedReportReferences { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:199](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L199) |  |
+
 ## StrategyDesignRunBacktestResponse
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignRunBacktestResponse</code>. Kind: `record`.
@@ -654,46 +713,4 @@ Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:239](../../
 
 ```csharp
 public sealed record StrategySweepObjectiveRanking(string RunId, string StrategyName, decimal? ObjectiveValue, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, DateTimeOffset LastUpdatedAt);
-```
-
-## StrategySweepResultGroup
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepResultGroup</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:248](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L248).
-
-```csharp
-public sealed record StrategySweepResultGroup(string SweepId, string SweepDefinitionHash, string? Objective, DateTimeOffset StartedAt, int RunCount, IReadOnlyList<StrategyRunSummary> Runs, IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings, bool ComparisonContextVerified = false, bool HistoryMayBeTruncated = false, string CoverageDescription = "Expected grid was not retained; missing cells are inferred from observed parameter values.");
-```
-
-## StrategyWhatChangedItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyWhatChangedItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L70).
-
-&quot;What changed&quot; entry summarizing recent run or workflow movement.
-
-```csharp
-public sealed record StrategyWhatChangedItem(string ChangeId, string Title, string Summary, string Category, DateTimeOffset Timestamp, string RelativeTime, string? RunId = null);
-```
-
-## StructuredReportingExportColumnDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportColumnDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:387](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L387).
-
-```csharp
-public sealed record StructuredReportingExportColumnDto(string Name, string DataType, string? Description = null);
-```
-
-## StructuredReportingExportDataDictionaryFieldDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportDataDictionaryFieldDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:392](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L392).
-
-```csharp
-public sealed record StructuredReportingExportDataDictionaryFieldDto(string Name, string DataType, string? Description, int Ordinal, bool Required = true);
 ```

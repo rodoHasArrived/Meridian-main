@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 2 of 6
 
-Objects 81-160 of 426. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 430. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -506,6 +506,19 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto["AutomatedJournalEvidenceQualityDto"] {
     }
+    class Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto["CanonicalAmortizationOccurrenceDto"] {
+        +DateOnly Date
+        +decimal FunctionalCostBasis
+        +decimal TransactionCostBasis
+    }
+    class Meridian_Contracts_Ledger_CanonicalAmortizationPreparationDto["CanonicalAmortizationPreparationDto"] {
+        +OpenLotAmortizationInstructionDto Instruction
+        +IReadOnlyList~ProjectedAccountingEffectLineDto~ Lines
+        +IReadOnlyList~CanonicalAmortizationOccurrenceDto~ Occurrences
+        +string PreparationFingerprint
+        +OpenLotAmortizationProjectionDto Projection
+        +AssetAccountingEventScopeDto Scope
+    }
     class Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto["CapitalAccountWorkbenchAllocationInputDto"] {
         +decimal? Amount
         +string? Currency
@@ -640,18 +653,6 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_CloseDeadlineDayCountDto["CloseDeadlineDayCountDto"] {
     }
-    class Meridian_Contracts_Ledger_CloseDeadlineRuleDto["CloseDeadlineRuleDto"] {
-        +CloseDeadlineAdjustmentDto Adjustment
-        +CloseDeadlineAnchorDto Anchor
-        +CloseDeadlineDayCountDto DayCount
-        +int OffsetDays
-        +string TaskId
-    }
-    class Meridian_Contracts_Ledger_CloseDependencyDto["CloseDependencyDto"] {
-        +string DependencyId
-        +string DependsOnTaskId
-        +string Reason
-    }
     Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetRequestDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionTargetDto
@@ -700,6 +701,7 @@ classDiagram
     Meridian_Contracts_Ledger_AllocationRuleDto --> Meridian_Contracts_Ledger_AllocationRuleBasisDto
     Meridian_Contracts_Ledger_AssetAccountingDraftCapabilitiesDto --> Meridian_Contracts_Ledger_AssetAccountingApprovalReceiptDto
     Meridian_Contracts_Ledger_AutomatedJournalEvidenceAssessmentDto --> Meridian_Contracts_Ledger_AutomatedJournalEvidenceQualityDto
+    Meridian_Contracts_Ledger_CanonicalAmortizationPreparationDto --> Meridian_Contracts_Ledger_CanonicalAmortizationOccurrenceDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationInputDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchAllocationRuleDto
@@ -708,8 +710,4 @@ classDiagram
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchInvestorAccountDto --> Meridian_Contracts_Ledger_AccountingConfigurationValidationIssueDto
     Meridian_Contracts_Ledger_CapitalAccountWorkbenchStatementLineageDto --> Meridian_Contracts_Ledger_CapitalAccountWorkbenchRestatementChangedLineDto
-    Meridian_Contracts_Ledger_CaptureClosePlanTemplateRequestDto --> Meridian_Contracts_Ledger_CloseDeadlineRuleDto
-    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAdjustmentDto
-    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineAnchorDto
-    Meridian_Contracts_Ledger_CloseDeadlineRuleDto --> Meridian_Contracts_Ledger_CloseDeadlineDayCountDto
 ```

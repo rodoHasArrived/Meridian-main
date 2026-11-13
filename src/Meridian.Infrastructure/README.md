@@ -17,6 +17,12 @@ upstream errors remain distinct from an unknown symbol or a valid empty date win
 retains the shared credential request budget and the current historical HTTP retry owner.
 These behaviors are synthetic-verified and live-untested.
 
+`BaseSymbolSearchProvider.SearchAuthoritativeAsync` preserves HTTP, transport, credential and
+throttling failures for explicit candidate review. Alpaca also rejects malformed responses and
+missing asset identity or filter facts; those failures cannot become successful empty lookups.
+Existing autocomplete keeps its best-effort behavior. Alpaca bond discovery uses the retained `fixed_income` filter; evidence is
+synthetic-verified in tests and live-untested without a configured provider run.
+
 Bond identifier discovery uses `OpenFigiClient.LookupBondIdentifierAsync`: ISIN/CUSIP lookups no
 longer assume Equity, competing bond FIGIs remain unresolved candidates, and equity ticker
 resolution keeps its existing scope. Broker snapshots retain accrued interest and valuation basis;

@@ -29,6 +29,22 @@ public sealed class SecurityMasterCurveEndpointsTests
     private static readonly DateTimeOffset AsOfInstant = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public async Task History_EncodesPillarDecimalsAsExactStringsForBrowserComparison()
+    {
+        var definition = Definition();
+        var stored = Version(definition, 1) with { Points = [new SecurityCurvePointDto(AsOf, 0.1234567890123456789012345678m)] };
+        var store = Substitute.For<ISecurityCurveStore>();
+        store.GetDefinitionAsync(definition.CurveId, Arg.Any<CancellationToken>()).Returns(definition);
+        store.ListVersionsAsync(definition.CurveId, Arg.Any<CancellationToken>()).Returns(new[] { stored });
+        await using var app = await CreateAppAsync(store);
+        var response = await app.GetTestClient().GetAsync($"/api/security-master/curves/{definition.CurveId}/versions");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        json.RootElement[0].GetProperty("points")[0].GetProperty("value").GetString().Should().Be("0.1234567890123456789012345678");
+    }
+
+
+    [Fact]
     public async Task GenericPublication_RefusesClientAssertedVerifiedRateEvidence()
     {
         var definition = Definition();

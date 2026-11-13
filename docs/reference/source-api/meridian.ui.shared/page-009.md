@@ -6,6 +6,81 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondPerformanceTransactionSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondPerformanceTransactionSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondPerformanceTransactionSource.cs:14](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceTransactionSource.cs#L14).
+
+Verified, independently reviewed account transaction populations; imports accept source identifiers only.
+
+```csharp
+public sealed class BondPerformanceTransactionSource(IEvidenceArtifactStore vault, IBondPerformanceTransactionPopulationStore populations, IBondMonitoringService monitoring, ISecurityMasterQueryService securities, IAccountBondHoldingsSource holdings, IBondPerformanceSourceVerifier verifier, TimeProvider? clock = null) : IBondPerformanceTransactionSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondPerformanceTransactionPopulationDto&gt; ImportAsync(AccountCashForecastScopeDto scope, string evidenceUri, string documentId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceTransactionSource.cs:22](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceTransactionSource.cs#L22) |  |
+| <code>public async Task&lt;BondPerformanceTransactionEvidenceDto&gt; GetAsync(AccountCashForecastScopeDto scope, DateOnly from, DateOnly through, DateTimeOffset knownAt, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceTransactionSource.cs:35](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceTransactionSource.cs#L35) |  |
+
+## BondProviderIntakeService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondProviderIntakeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs:13](../../../../src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs#L13).
+
+Explicit operator intake; discovery never mutates identity and reviewed FRED mappings never imply curves.
+
+```csharp
+public sealed class BondProviderIntakeService(OpenFigiClient figi, FredHistoricalDataProvider fred, IEvidenceArtifactStore vault, IBondMarketDataService market, IBondProviderResponseStore responses, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;BondProviderResponseDto?&gt; GetProviderResponseAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs:18](../../../../src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs#L18) |  |
+| <code>public async Task&lt;BondIdentifierDiscoveryResult&gt; DiscoverIdentifierAsync(BondIdentifierDiscoveryRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs:21](../../../../src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs#L21) |  |
+| <code>public async Task&lt;BondFredIntakeResult&gt; ImportFredAsync(string tenantId, string companyId, string actor, BondFredIntakeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs:32](../../../../src/Meridian.Ui.Shared/Services/BondProviderIntakeService.cs#L32) |  |
+
+## BondWorkflowConnectionReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondWorkflowConnectionReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs:13](../../../../src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs#L13).
+
+Read-only fixed-income input coverage for exact tenant-owned connections. A successful login never establishes a verified bond workflow, market-data entitlement, or execution authority.
+
+```csharp
+public sealed class BondWorkflowConnectionReadinessService(ProviderConnectionService connections, ProviderConnectionLifecycleService? lifecycle = null, IDataVendorEntitlementService? entitlements = null, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;BondConnectionCapabilityDto&gt;&gt; GetAsync(string tenantId, string? accountId = null, Guid? securityId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs:21](../../../../src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs#L21) |  |
+| <code>public static IReadOnlyList&lt;BondConnectionCapabilityDto&gt; BuildRows(ProviderConnectionDto connection, ProviderConnectionRowDto? credential, IReadOnlyList&lt;DataVendorEntitlementDto&gt; entitlements, DateTimeOffset now, string? accountId = null, Guid? securityId = null);</code> | [src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs:45](../../../../src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs#L45) | Pure projection used by endpoint and contract tests; credentials contain status only. |
+
+## BrokerageConnectionOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageConnectionOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:10](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L10).
+
+```csharp
+public sealed record BrokerageConnectionOptions(string ProviderId, string DisplayName, string AuthorizationEndpoint, string TokenEndpoint, string RevokeEndpoint, string ClientId, string ClientSecret, string RedirectUri, string Scope)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BrokerageConnectionOptions RobinhoodFromEnvironment() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:21](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L21) |  |
+| <code>public static BrokerageConnectionOptions RobinhoodFromConfiguration(CompositionConfiguration configuration) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs:24](../../../../src/Meridian.Ui.Shared/Services/BrokerageConnectionService.cs#L24) |  |
+
 ## BrokerageConnectionService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageConnectionService</code>. Kind: `class`.
@@ -876,75 +951,4 @@ Valuation evidence and workbench intake outcome for one daily-close run.
 
 ```csharp
 public sealed record DailyMarkToMarketIntakeRunResult(DailyMarkToMarketRun Valuation, AutomatedJournalDraftIntakeResult Intake, string? BatchCorrelationId = null);
-```
-
-## DailyValuationBatchLifecycleService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationBatchLifecycleService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs:13](../../../../src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs#L13).
-
-Applies one governed operator decision to every retained draft in the current daily-valuation batch. Batch membership is read from the server-owned schedule, validation runs for every member before posting begins, and a retry resumes already submitted/approved/posted members.
-
-```csharp
-public sealed class DailyValuationBatchLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DailyValuationBatchLifecycleService(IDailyValuationPortfolioSource scheduleSource, IManualJournalEntryDraftStore draftStore, IManualJournalEntryLifecycleService lifecycle);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs:20](../../../../src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs#L20) |  |
-| <code>public async Task&lt;DailyValuationBatchLifecycleResultDto&gt; ApproveAndPostAsync(DailyValuationBatchLifecycleRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs:30](../../../../src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs#L30) |  |
-
-## DailyValuationPositionResolution
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationPositionResolution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:19](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L19).
-
-Fail-closed result of resolving the positions for one valuation run.
-
-```csharp
-public sealed record DailyValuationPositionResolution(IReadOnlyList<MarkToMarketPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:24](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L24) |  |
-
-## DailyValuationPositionService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationPositionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:32](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L32).
-
-Resolves positions as of the valuation cutoff from explicitly named durable snapshots, or from an explicitly time-stamped static override. Every position must resolve to an active Security Master record in the valuation base currency before a provider mark can enter an accounting draft.
-
-```csharp
-public sealed class DailyValuationPositionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DailyValuationPositionService(IPositionSnapshotStore? snapshotStore, ICanonicalSymbolRegistry? symbolRegistry, ISecurityMasterQueryService? securityMaster);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:38](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L38) |  |
-| <code>public async Task&lt;DailyValuationPositionResolution&gt; ResolveConfiguredAsync(DailyValuationScheduleWorkItem workItem, DateTimeOffset valuationAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:48](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L48) |  |
-| <code>public Task&lt;DailyValuationPositionResolution&gt; ResolveAdHocAsync(IReadOnlyList&lt;MarkToMarketPosition&gt; positions, string baseCurrency, DateTimeOffset valuationAsOfUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:212](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L212) |  |
-| <code>public bool CanResolveConfigured(DailyValuationScheduleWorkItem workItem);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:224](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L224) | Returns whether this process has the dependencies required by one retained schedule. Scheduler hosts use this before claiming due work so an optional desktop composition cannot turn a healthy retained schedule into a durable Blocked state. |
-| <code>public static string ComputeStaticPositionHash(IReadOnlyList&lt;MarkToMarketPosition&gt; positions);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:233](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L233) |  |
-
-## DailyValuationPositionSnapshotScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationPositionSnapshotScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:16](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L16).
-
-One explicit durable run/account position-snapshot scope. Accounting ownership is inherited from the immutable schedule identity and must match the retained snapshot exactly.
-
-```csharp
-public sealed record DailyValuationPositionSnapshotScope(string RunId, string AccountId);
 ```

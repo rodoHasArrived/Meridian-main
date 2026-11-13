@@ -1133,6 +1133,9 @@ book, period version, accounting policy, and promoted rule pack, rejects any cli
 and appends Drafted only after Rules Studio returns a balanced approval-gated candidate. Generic
 `AssetAccounting.*` candidate requests are rejected so callers cannot bypass this server-owned
 authority path.
+Amortization may resolve its exact event and evidence from retained position lineage history,
+bound to the same current position version, security and ledger book. Unretained or mismatched
+occurrences remain blocked; a reviewed preparation does not grant posting authority.
 For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
 position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
 the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence

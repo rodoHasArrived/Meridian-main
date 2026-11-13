@@ -11,6 +11,9 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Storage
 
+Position snapshots preserve reviewed preparation lineages alongside economic-state history.
+Historical reads still exclude lineage effective after their requested date.
+
 `FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
 partitions with process-wide file leases, atomic publication, content validation and immutable
 source revision identity. This store does not publish prices or post journals. Signed curves use

@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 1 of 6
 
-Objects 1-80 of 426. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 430. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
