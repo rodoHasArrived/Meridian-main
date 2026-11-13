@@ -976,8 +976,36 @@ maturity instead. Reads were already ordered by the legacy read-order guard. No 
 fixture moved. The schema-bound decode ratchet and existing comments now name
 `ToBondCouponStructure`.
 
-Still hand-written (3): Equity, InvestmentFund and CustomAsset, for the bespoke reasons in the
-cohort-1 table.
+Still hand-written at this entry (3): Equity, InvestmentFund and CustomAsset, for the bespoke
+reasons in the cohort-1 table.
+
+#### Cohort 4 — Equity and InvestmentFund; CustomAsset stays verbatim — 2026-11-13
+
+Equity and InvestmentFund now have both codec arms generated, so 31 of the 32 classes are
+generated. Neither needed a new row kind:
+
+- **Equity.** The classification union is written as four keys (`classification`,
+  `otherClassification`, `preferredTerms`, `convertibleTerms`) through `WrittenAs` rows. The
+  decode stays `ToEquityClassificationOption`, with its write-strict, read-tolerant handling of
+  unrecognized and unnamed `Other` classifications. `EquityCapitalCodec` moved unchanged into the
+  writer-parts file, which compiles before the generated writer, and is split into one function per
+  key. `toPayload` and `toJson` are rebuilt from those functions, so the economic document's
+  `equityCapital` serialization is unchanged.
+- **InvestmentFund.** Plain rows plus a `Computed` distribution policy.
+  `ToInvestmentFundReferenceTerms` is removed. Its comment pinned the old scalar read order, but
+  none of these reads can throw (absent or mistyped values read as absent, and an unrecognized
+  distribution policy is kept as `Other`), so record order changes no outcome.
+
+**CustomAsset is not generated, by design.** Its flat codec is not a set of class keys. A record
+holds the approved profile's document: the profile id, the profile version and the
+profile-governed fields. The writer emits that document verbatim and unstamped (it already
+carries its profile schema version), and the decode either keeps it whole or, on a read of a
+legacy row without a profile envelope, salvages the row as an OtherSecurity. A binding table row
+would only restate that pass-through, and the profile's own schema governs the fields. ADR-027
+stage 3's goal, one statement of which key carries which member, is met for every class that has
+class keys.
+
+Behaviour is unchanged. No golden, corpus or fixture moved and no test changed.
 
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 7,059 passed, 1 skipped; adjacent suites — 5,145 passed, 134 skipped;

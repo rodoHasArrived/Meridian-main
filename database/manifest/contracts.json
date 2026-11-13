@@ -5410,7 +5410,7 @@
       ]
     }
   ],
-  "fingerprint": "14c26d16255948629d33d244617860695077af4dcd4131aff07083dcaf4701ce",
+  "fingerprint": "fd6bd29204a8db755c87cbcb3cfdfd7f9a781da6dab4d75de086c0f54eaeed09",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -7958,7 +7958,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "a2982408f22f0a86c4f535bb7528d6d8b057b408580347e058deb7c7b161c10c",
+      "fingerprint": "8198546090e4336b5dfc848d7473845fb7612bdbac2295f02f2b87a387918cdb",
       "mapped_schemas": [
         "security_master"
       ],
@@ -318155,7 +318155,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "d3f934e5079a2746ef018eec968829b02b2bcaa912606f3db28c21d6d9fdc75d",
+      "fingerprint": "6f5cf406b695a64445cc5be63b09fa5724389f4eed6118ba5689f9bad703afcd",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
       "kind": "class",
@@ -318174,7 +318174,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyDictionary<string, SecurityClassCodecBinding>",
-          "source_line": 492,
+          "source_line": 513,
           "type": "IReadOnlyDictionary<string, SecurityClassCodecBinding>"
         },
         {
