@@ -293,7 +293,7 @@ export function SettingsAlpacaSection({ vm, alpacaForm }: SettingsAlpacaSectionP
 
 interface SettingsRobinhoodSectionProps {
   vm: SettingsScreenViewModel;
-  robinhoodAuthorizationUrl: string;
+  robinhoodAuthorizationUrl: string | null;
   robinhoodForm: SettingsRobinhoodConnectionFormViewModel;
 }
 

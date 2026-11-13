@@ -20,7 +20,7 @@ import { SettingsChip, settingsBannerTone, setupStepToneClass } from "@/screens/
 interface SettingsAccessPostureSectionProps {
   vm: SettingsScreenViewModel;
   overview: SystemOverviewResponse | null;
-  providerHealth: ProviderHealthCount;
+  providerHealth: ProviderHealthCount | null;
 }
 
 /** Profile authentication and system posture cards. */
