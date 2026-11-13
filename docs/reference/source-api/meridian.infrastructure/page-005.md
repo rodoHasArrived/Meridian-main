@@ -154,7 +154,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:18](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L18).
+Source: [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:22](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L22).
 
 Client for the OpenFIGI API (https://www.openfigi.com/api). Provides mapping between tickers, ISINs, CUSIPs, SEDOLs and FIGI identifiers. Free tier: 25 requests/minute, 250 identifiers per request.
 
@@ -166,9 +166,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:30](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L30) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:31](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L31) |  |
-| <code>public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:39](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L39) | Creates a new OpenFIGI client. |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:34](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L34) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:35](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L35) |  |
+| <code>public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, IProviderCredentialResolver? credentialResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:43](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L43) | Creates a new OpenFIGI client. |
 | <code>public async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:61](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L61) | Check if the OpenFIGI API is available. |
 | <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByTickerAsync(string ticker, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:82](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L82) | Lookup FIGI mappings by ticker symbol. |
 | <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupByIsinAsync(string isin, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:103](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L103) | Lookup FIGI mappings by ISIN. |
@@ -176,8 +176,8 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; LookupBySedolAsync(string sedol, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:141](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L141) | Lookup FIGI mappings by SEDOL. |
 | <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; BulkLookupByTickersAsync(IEnumerable&lt;string&gt; tickers, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:160](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L160) | Bulk lookup FIGI mappings for multiple tickers. |
 | <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchAsync(string query, string? exchangeCode = null, string? marketSector = &quot;Equity&quot;, string? securityType = null, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:200](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L200) | Search for securities by query string (uses filter endpoint). |
-| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; EnrichWithFigiAsync(IEnumerable&lt;SymbolSearchResult&gt; results, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:260](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L260) | Enrich symbol search results with FIGI information. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:426](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L426) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; EnrichWithFigiAsync(IEnumerable&lt;SymbolSearchResult&gt; results, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:257](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L257) | Enrich symbol search results with FIGI information. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs:420](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs#L420) |  |
 
 ## OpenFigiSymbolResolver
 
@@ -196,11 +196,11 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:29](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L29) |  |
-| <code>public OpenFigiSymbolResolver(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:31](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L31) |  |
-| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:50](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L50) |  |
-| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:203](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L203) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:217](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L217) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:263](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L263) |  |
+| <code>public OpenFigiSymbolResolver(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, IProviderCredentialResolver? credentialResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:31](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L31) |  |
+| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:46](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L46) |  |
+| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:200](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L200) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:214](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L214) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs:261](../../../../src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs#L261) |  |
 
 ## FilePlaidConnectionRepository
 
@@ -261,7 +261,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher</code>. Kind: `interface`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L17).
+Source: [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:18](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L18).
 
 Fetches corporate action data (dividends and stock splits) from Polygon.io REST API and persists them to the Security Master event store.
 
@@ -273,8 +273,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;PolygonCorporateActionFetchResult&gt; FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L23) | Fetch and persist all corporate-action pages for a security ticker. Failures throw with completion evidence; cancellation propagates with acknowledged persistence counts. |
-| <code>Task FetchAndPersistAllAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L28) | Fetch and persist corporate actions for all active securities. |
+| <code>Task&lt;PolygonCorporateActionFetchResult&gt; FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L24) | Fetch and persist all corporate-action pages for a security ticker. Failures throw with completion evidence; cancellation propagates with acknowledged persistence counts. |
+| <code>Task FetchAndPersistAllAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:29](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L29) | Fetch and persist corporate actions for all active securities. |
 
 ## ITradingParametersBackfillService
 
@@ -351,7 +351,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L38).
+Source: [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L39).
 
 Background service that periodically fetches corporate action data from Polygon.io and persists it to the Security Master. Implements rate limiting and graceful error handling.
 
@@ -363,11 +363,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PolygonCorporateActionFetcher(IHttpClientFactory httpClientFactory, ISecurityMasterQueryService queryService, ISecurityMasterCorporateActionCommandService corporateActionCommandService, RateLimiter rateLimiter, IConfiguration configuration, ILogger&lt;PolygonCorporateActionFetcher&gt; logger);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L54) |  |
-| <code>public Task StartAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L70) |  |
-| <code>public async Task StopAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:104](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L104) |  |
-| <code>public async Task&lt;PolygonCorporateActionFetchResult&gt; FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L126) |  |
-| <code>public async Task FetchAndPersistAllAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:147](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L147) |  |
+| <code>public PolygonCorporateActionFetcher(IHttpClientFactory httpClientFactory, ISecurityMasterQueryService queryService, ISecurityMasterCorporateActionCommandService corporateActionCommandService, RateLimiter rateLimiter, IConfiguration configuration, ILogger&lt;PolygonCorporateActionFetcher&gt; logger, IProviderCredentialResolver? credentialResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L55) |  |
+| <code>public async Task StartAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L73) |  |
+| <code>public async Task StopAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:107](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L107) |  |
+| <code>public async Task&lt;PolygonCorporateActionFetchResult&gt; FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:129](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L129) |  |
+| <code>public async Task FetchAndPersistAllAsync(CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs:146](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonCorporateActionFetcher.cs#L146) |  |
 
 ## PolygonCorporateActionFetchException
 
@@ -434,11 +434,11 @@ Declared public members:
 | <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly with { Intraday = true };</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L59) | Polygon supports adjusted bars with intraday aggregates and corporate actions. |
 | <code>public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null) : base(httpClient, log, timeProvider : timeProvider);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:65](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L65) |  |
 | <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L75) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:98](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L98) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:104](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L104) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:190](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L190) | Get intraday bars for a symbol. Polygon supports various intervals. |
-| <code>public async Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:275](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L275) | Get stock splits for a symbol. |
-| <code>public async Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:303](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L303) | Get dividends for a symbol. |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:96](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L96) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:102](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L102) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:188](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L188) | Get intraday bars for a symbol. Polygon supports various intervals. |
+| <code>public async Task&lt;IReadOnlyList&lt;SplitInfo&gt;&gt; GetSplitsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:273](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L273) | Get stock splits for a symbol. |
+| <code>public async Task&lt;IReadOnlyList&lt;DividendInfo&gt;&gt; GetDividendsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs:301](../../../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonHistoricalDataProvider.cs#L301) | Get dividends for a symbol. |
 
 ## PolygonMarketDataClient
 

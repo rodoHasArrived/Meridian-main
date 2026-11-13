@@ -82,7 +82,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
         {
             // Quick health check with quote endpoint
             var url = $"{ApiBaseUrl}?function=GLOBAL_QUOTE&symbol=AAPL&apikey={_apiKey}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
                 return false;
