@@ -150,6 +150,91 @@ public sealed class ConfigStoreCredentialPersistenceTests : IDisposable
         validate.Should().Throw<ProviderConfigurationCredentialException>().Which.ToString().Should().NotContain("synthetic-secret");
     }
 
+    [Theory]
+    [InlineData("{\"DataSources\":{\"Sources\":{\"nyse\":{\"NYSE\":{\"ApiKey\":\"synthetic-map-secret\"}}}}}")]
+    [InlineData("{\"DataSources\":{\"Sources\":{\"NYSE\":{\"ApiSecret\":\"synthetic-map-secret\"}}}}")]
+    [InlineData("{\"DataSources\":{\"Sources\":{\"primary\":{\"NYSE\":{\"ClientId\":\"synthetic-map-secret\"}}}}}")]
+    [InlineData("{\"DataSources\":{\"Sources\":{\"alternate\":{\"Polygon\":{\"ApiKey\":\"synthetic-map-secret\"}}}}}")]
+    [InlineData("{\"DataSources\":{\"Sources\":{\"alpaca\":{\"SecretKey\":\"synthetic-map-secret\"}}}}")]
+    [InlineData("{\"DataSources:Sources:nyse:NYSE:ApiKey\":\"synthetic-map-secret\"}")]
+    [InlineData("{\"DataSources:Sources:primary:Polygon:ApiKey\":\"synthetic-map-secret\"}")]
+    [InlineData("{\"DataSources:Sources:Alpaca:KeyId\":\"synthetic-map-secret\"}")]
+    [InlineData("{\"Providers\":{\"Alpaca:KeyId\":\"synthetic-map-secret\"}}")]
+    [InlineData("{\"Backfill\":{\"Providers:Alpaca:SecretKey\":\"synthetic-map-secret\"}}")]
+    [InlineData("{\"Backfill:Providers\":{\"Alpaca\":{\"SecretKey\":\"synthetic-map-secret\"}}}")]
+    [InlineData("{\"DataSources\":{\"Sources:nyse:NYSE:ApiKey\":\"synthetic-map-secret\"}}")]
+    [InlineData("{\"DataSources\":{\"Sources\":{\"nyse:NYSE:ApiKey\":\"synthetic-map-secret\"}}}")]
+    [InlineData("{\"DataSources:Sources\":[{\"Alpaca:SecretKey\":\"synthetic-map-secret\"}]}")]
+    [InlineData("{\"ProviderModules\":{\"Modules:alpaca:Settings:SecretKey\":\"synthetic-map-secret\"}}")]
+    [InlineData("{\"ProviderModules:Modules\":{\"alpaca\":{\"Settings:SecretKey\":\"synthetic-map-secret\"}}}")]
+    public async Task ProductionFeatureOverrides_RefuseKnownCredentialPathsWithoutChangingOriginalBytes(string json)
+    {
+        Directory.CreateDirectory(_root);
+        await File.WriteAllTextAsync(ConfigPath, json);
+        var before = await File.ReadAllBytesAsync(ConfigPath);
+        var store = new ConfigStore(ConfigPath, Required);
+
+        Func<Task> save = () => store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+
+        var failure = await save.Should().ThrowAsync<ProviderConfigurationCredentialException>();
+        failure.Which.ToString().Should().NotContain("synthetic-map-secret");
+        (await File.ReadAllBytesAsync(ConfigPath)).Should().Equal(before);
+    }
+
+    [Theory]
+    [InlineData(true, "${NYSE_API_KEY}")]
+    [InlineData(false, "synthetic-development-key")]
+    public async Task LegacySourceMap_NonSecretReferencesAndDevelopmentWritesRemainSupported(bool requireOwnership, string key)
+    {
+        Directory.CreateDirectory(_root);
+        var json = JsonSerializer.Serialize(new
+        {
+            DataSources = new
+            {
+                Sources = new Dictionary<string, object>
+                {
+                    ["nyse"] = new { NYSE = new { ApiKey = key }, Credentials = new { ApiKeyVar = "NYSE_API_KEY" } },
+                    ["notes"] = new { ApiKey = "An option name in documentation." }
+                }
+            }
+        });
+        await File.WriteAllTextAsync(ConfigPath, json);
+        var store = new ConfigStore(ConfigPath, new(requireOwnership));
+
+        await store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+
+        using var retained = JsonDocument.Parse(await File.ReadAllTextAsync(ConfigPath));
+        retained.RootElement.GetProperty("DataSources").GetProperty("Sources").GetProperty("nyse")
+            .GetProperty("NYSE").GetProperty("ApiKey").GetString().Should().Be(key);
+        retained.RootElement.GetProperty("FeatureCapabilities").GetProperty("Overrides").GetProperty("Synthetic").GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task MixedConfigurationPaths_PreserveEnvironmentReferencesAndUnrelatedNotes()
+    {
+        Directory.CreateDirectory(_root);
+        const string json = """
+            {
+              "Backfill": { "Providers:Alpaca:KeyId": "${ALPACA_KEY_ID}" },
+              "DataSources:Sources": { "primary:NYSE": { "ApiKey": "${NYSE_API_KEY}" } },
+              "ProviderModules:Modules": { "alpaca:Credentials": { "keyId": "ALPACA_KEY_ID", "secretKey": "ALPACA_SECRET_KEY" } },
+              "Notes": { "Backfill:Providers:Alpaca:KeyId": "An option name in documentation." },
+              "Backfill:Providers:Alpaca:Unknown:Nested:KeyId": "An unsupported path in documentation."
+            }
+            """;
+        await File.WriteAllTextAsync(ConfigPath, json);
+        var store = new ConfigStore(ConfigPath, Required);
+
+        await store.SaveFeatureCapabilityOverridesAsync(new Dictionary<string, bool> { ["Synthetic"] = true });
+
+        using var retained = JsonDocument.Parse(await File.ReadAllTextAsync(ConfigPath));
+        retained.RootElement.GetProperty("ProviderModules:Modules").GetProperty("alpaca:Credentials")
+            .GetProperty("keyId").GetString().Should().Be("ALPACA_KEY_ID");
+        retained.RootElement.GetProperty("Notes").GetProperty("Backfill:Providers:Alpaca:KeyId")
+            .GetString().Should().Be("An option name in documentation.");
+        retained.RootElement.GetProperty("FeatureCapabilities").GetProperty("Overrides").GetProperty("Synthetic").GetBoolean().Should().BeTrue();
+    }
+
     [Fact]
     public void SerializedSnapshotValidation_AcceptsCommentsAndTrailingCommasButRefusesMalformedProductionCopies()
     {

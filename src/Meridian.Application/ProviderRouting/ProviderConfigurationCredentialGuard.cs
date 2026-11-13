@@ -61,7 +61,9 @@ public static class ProviderConfigurationCredentialGuard
             return false;
         foreach (var property in root.EnumerateObject())
         {
-            var path = property.Name.Split(':');
+            var path = property.Name.Split(':', 6, StringSplitOptions.None);
+            if (ContainsKnownCredentialPath(property.Value, path))
+                return true;
             if (path.Length > 1 && IsCredentialPath(path) && HasValue(property.Value))
                 return true;
             if (CredentialEnvironmentKeys.Contains(property.Name) && HasValue(property.Value))
@@ -72,14 +74,60 @@ public static class ProviderConfigurationCredentialGuard
                 return true;
             if (Same(property.Name, "Providers") && ProviderMapHasCredentials(property.Value))
                 return true;
-            if (Same(property.Name, "DataSources") && AnyProperty(property.Value, "Sources",
-                    sources => sources.ValueKind == JsonValueKind.Array && sources.EnumerateArray().Any(ContainsCredentials)))
+            if (Same(property.Name, "DataSources") && AnyProperty(property.Value, "Sources", DataSourcesHaveCredentials))
                 return true;
             if (Same(property.Name, "ProviderModules") && AnyProperty(property.Value, "Modules", ModuleMapHasCredentials))
                 return true;
         }
         return false;
     }
+
+    private static bool DataSourcesHaveCredentials(JsonElement sources)
+        => sources.ValueKind switch
+        {
+            JsonValueKind.Array => sources.EnumerateArray().Any(ContainsCredentials),
+            // Legacy source configuration is also keyed by source ID. The ID can name a
+            // provider directly, or its value can hold named provider options (for example NYSE).
+            JsonValueKind.Object => sources.EnumerateObject().Any(source =>
+                (IsProvider(source.Name) && ProviderHasCredentials(source.Value)) || ContainsCredentials(source.Value)),
+            _ => false
+        };
+
+    private static bool ContainsKnownCredentialPath(JsonElement value, string[] path)
+    {
+        if (path.Length > 5)
+            return false;
+        if (IsCredentialPath(path))
+            return HasValue(value);
+        if (!IsKnownCredentialPrefix(path))
+            return false;
+        if (value.ValueKind == JsonValueKind.Object)
+            return value.EnumerateObject().Any(property =>
+            {
+                var parts = property.Name.Split(':', 6, StringSplitOptions.None);
+                return path.Length + parts.Length <= 5 && ContainsKnownCredentialPath(property.Value, [.. path, .. parts]);
+            });
+        // The source ID is opaque. Only Sources accepts array indexing in the retained models.
+        return value.ValueKind == JsonValueKind.Array && path.Length == 2 && Same(path[0], "DataSources") &&
+            Same(path[1], "Sources") && value.EnumerateArray().Any(source => ContainsKnownCredentialPath(source, [.. path, "#source"]));
+    }
+
+    private static bool IsKnownCredentialPrefix(string[] path)
+        => path.Length switch
+        {
+            1 => IsProvider(path[0]) || Same(path[0], "Providers") || Same(path[0], "Backfill") ||
+                Same(path[0], "DataSources") || Same(path[0], "ProviderModules"),
+            2 => (Same(path[0], "Providers") && IsProvider(path[1])) ||
+                (Same(path[0], "Backfill") && Same(path[1], "Providers")) ||
+                (Same(path[0], "DataSources") && Same(path[1], "Sources")) ||
+                (Same(path[0], "ProviderModules") && Same(path[1], "Modules")),
+            3 => (Same(path[0], "Backfill") && Same(path[1], "Providers") && IsProvider(path[2])) ||
+                (Same(path[0], "DataSources") && Same(path[1], "Sources")) ||
+                (Same(path[0], "ProviderModules") && Same(path[1], "Modules") && IsProvider(path[2])),
+            4 => (Same(path[0], "DataSources") && Same(path[1], "Sources") && IsProvider(path[3])) ||
+                (Same(path[0], "ProviderModules") && Same(path[1], "Modules") && IsProvider(path[2]) && Same(path[3], "Settings")),
+            _ => false
+        };
 
     private static bool ProviderMapHasCredentials(JsonElement providers)
         => providers.ValueKind == JsonValueKind.Object && providers.EnumerateObject()
@@ -99,7 +147,11 @@ public static class ProviderConfigurationCredentialGuard
         => CredentialFields.Contains(path[^1]) &&
             ((path.Length == 2 && IsProvider(path[0])) ||
              (path.Length == 3 && Same(path[0], "Providers") && IsProvider(path[1])) ||
-             (path.Length == 4 && Same(path[0], "Backfill") && Same(path[1], "Providers") && IsProvider(path[2])));
+             (path.Length == 4 && Same(path[0], "Backfill") && Same(path[1], "Providers") && IsProvider(path[2])) ||
+             (path.Length == 4 && Same(path[0], "DataSources") && Same(path[1], "Sources") && IsProvider(path[2])) ||
+             (path.Length == 5 && Same(path[0], "DataSources") && Same(path[1], "Sources") && IsProvider(path[3])) ||
+             (path.Length == 5 && Same(path[0], "ProviderModules") && Same(path[1], "Modules") &&
+                 IsProvider(path[2]) && Same(path[3], "Settings")));
 
     private static bool IsProvider(string name)
         => Same(name, "NYSE") || ProviderCredentialCatalog.Find(name)?.RequiresCredentials == true;
