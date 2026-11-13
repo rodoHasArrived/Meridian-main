@@ -475,7 +475,8 @@ public sealed class ConfigJsonSchemaGenerator
             .Where(p => p.GetCustomAttribute<JsonExtensionDataAttribute>() is null)
             // Ignored members may support in-process compatibility aliases, but they are
             // not accepted by the JSON configuration contract.
-            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+            // Conditional write suppression still permits the property in input configuration.
+            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition != JsonIgnoreCondition.Always)
             .OrderBy(p => p.Name, StringComparer.Ordinal);
 
     private string GetDefinitionName(Type type)

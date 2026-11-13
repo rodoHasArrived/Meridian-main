@@ -23,6 +23,8 @@ Application refuses historical unpinned selections until an explicit rebind. It 
 Application owns validation and resolution. It contains no secrets and confers no verification.
 `OwnershipRequiredProviders` retains the boundary when an owned connection is removed, so even
 deletion before host selection cannot implicitly reactivate provider-wide fallback.
+Schema generation preserves these valid input fields even when conditional serialization omits
+their absent values; compatibility aliases marked always ignored remain excluded.
 
 `IProviderCredentialStore.ReadCredentialRecordAsync` distinguishes a selected empty credential record from proven absence. Compatibility stores conservatively retain an unknown/empty selection; module setup cannot combine its missing fields with ambient credentials.
 

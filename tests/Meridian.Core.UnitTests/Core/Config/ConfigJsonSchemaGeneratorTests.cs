@@ -95,6 +95,18 @@ public sealed class ConfigJsonSchemaGeneratorTests
     }
 
     [Fact]
+    public void GenerateSchema_DescribesConditionallyWrittenCredentialOwnership()
+    {
+        var definitions = _generator.GenerateSchema()["$defs"]!.AsObject();
+        var connections = definitions["ProviderConnectionsConfig"]!["properties"]!.AsObject();
+        connections.Select(property => property.Key).Should().Contain(
+            ["RuntimeCredentials", "OwnershipRequiredProviders"]);
+        var binding = definitions["ProviderRuntimeCredentialBinding"]!["properties"]!.AsObject();
+        binding.Select(property => property.Key).Should().Contain(
+            ["ProviderId", "TenantId", "ConnectionId", "ExternalAccountId", "Environment", "SelectionId"]);
+    }
+
+    [Fact]
     public void GenerateSchema_IncludesSecurityMasterWorkbenchOptions()
     {
         var workbenchSchema = GetRootProperty("SecurityMasterWorkbench");
