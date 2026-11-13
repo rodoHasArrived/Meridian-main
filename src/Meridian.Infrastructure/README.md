@@ -20,6 +20,9 @@ synthetic-verified in tests and live-untested without a configured provider run.
 Authoritative decoding requires asset names because issuer matching depends on them, and refuses
 partial HTTP responses and content ranges. Providers must
 implement the strict decoder explicitly; its default refuses unsupported authoritative lookups.
+Unknown raw asset classes cannot establish complete search evidence. The authoritative decoder
+recognizes Alpaca's documented response classes independently of supported query filters, and maps
+`treasury` and `corporate` responses to fixed-income candidates. Ordinary decoding stays tolerant.
 Bond identifier discovery uses `OpenFigiClient.LookupBondIdentifierAsync`: ISIN/CUSIP lookups no
 longer assume Equity, competing bond FIGIs remain unresolved candidates, and equity ticker
 resolution keeps its existing scope. Broker snapshots retain accrued interest and valuation basis;

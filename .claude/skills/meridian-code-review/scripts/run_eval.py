@@ -8,9 +8,11 @@ for a set of queries. Outputs results as JSON.
 import argparse
 import json
 import os
+import queue
 import shutil
 import subprocess
 import sys
+import threading
 import time
 import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -151,23 +153,13 @@ def run_single_query(  # noqa: C901
         pending_tool_name = None
         accumulated_json = ""
 
-        try:
-            stdout, _ = process.communicate(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
-            return False
-
-        buffer = stdout.decode("utf-8", errors="replace") if stdout else ""
-        for raw_line in buffer.splitlines():
-            line = raw_line.strip()
-            if not line:
-                continue
-
+        def evaluate(line: str) -> bool | None:
+            """Return a decision for one stream-json line, or None to keep reading."""
+            nonlocal triggered, pending_tool_name, accumulated_json
             try:
                 event = json.loads(line)
             except json.JSONDecodeError:
-                continue
+                return None
 
             if event.get("type") == "stream_event":
                 se = event.get("event", {})
@@ -212,7 +204,42 @@ def run_single_query(  # noqa: C901
             elif event.get("type") == "result":
                 return triggered
 
-        return triggered
+            return None
+
+        # Read stdout on a background thread so events are evaluated as they arrive (a
+        # trigger seen before the timeout still counts) without relying on select(), which
+        # does not support pipes on Windows.
+        lines: queue.Queue[bytes | None] = queue.Queue()
+
+        def pump() -> None:
+            assert process.stdout is not None
+            for raw in iter(process.stdout.readline, b""):
+                lines.put(raw)
+            lines.put(None)
+
+        threading.Thread(target=pump, daemon=True).start()
+        deadline = time.monotonic() + timeout
+        decision: bool | None = None
+        try:
+            while decision is None:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                try:
+                    raw = lines.get(timeout=remaining)
+                except queue.Empty:
+                    break
+                if raw is None:
+                    break
+                line = raw.decode("utf-8", errors="replace").strip()
+                if line:
+                    decision = evaluate(line)
+        finally:
+            if process.poll() is None:
+                process.kill()
+            process.wait()
+
+        return triggered if decision is None else decision
     finally:
         if command_file.exists():
             command_file.unlink()

@@ -18,67 +18,6 @@ module private NullableHelpers =
         | Some v -> v
         | None -> Unchecked.defaultof<'T>
 
-/// One lossless typed equity serializer shared by the economic document and flat codec.
-module EquityCapitalCodec =
-    let toPayload (terms: EquityCapitalTerms) =
-        let preferredTermsToLegacy (preferred: PreferredTerms) =
-            let liquidationKind, liquidationMultiple =
-                match preferred.LiquidationPreference with
-                | LiquidationPreference.Pari -> "Pari", None
-                | LiquidationPreference.Senior multiple -> "Senior", Some multiple
-                | LiquidationPreference.Subordinated -> "Subordinated", None
-
-            {| dividendRate = preferred.DividendRate
-               dividendType = preferred.DividendType |> DividendType.asString
-               redemptionPrice = preferred.RedemptionPrice
-               redemptionDate = preferred.RedemptionDate
-               callableDate = preferred.CallableDate
-               participationTerms =
-                    preferred.ParticipationTerms
-                    |> Option.map (fun terms ->
-                        {| participatesInCommonDividends = terms.ParticipatesInCommonDividends
-                           additionalDividendThreshold = terms.AdditionalDividendThreshold |})
-               liquidationPreference =
-                    {| kind = liquidationKind
-                       multiple = liquidationMultiple |} |}
-
-        let convertibleTermsToLegacy (convertible: ConvertibleTerms) =
-            let (SecurityId underlyingSecurityId) = convertible.UnderlyingSecurityId
-            {| underlyingSecurityId = underlyingSecurityId
-               conversionRatio = convertible.ConversionRatio
-               conversionPrice = convertible.ConversionPrice
-               conversionStartDate = convertible.ConversionStartDate
-               conversionEndDate = convertible.ConversionEndDate |}
-
-        // "Other" classifications serialize as the discriminant "Other" plus the raw label in
-        // otherClassification — writing the raw label into the classification slot produced a
-        // value the deserializer did not recognize, failing every read of the row.
-        let classification, otherClassification =
-            match terms.Classification with
-            | Some (EquityClassification.Other label) -> Some "Other", Some label
-            | Some value -> Some (EquityClassification.asString value), None
-            | None -> None, None
-
-        let preferredTerms, convertibleTerms =
-            match terms.Classification with
-            | Some (EquityClassification.Preferred preferred) ->
-                Some (preferredTermsToLegacy preferred), None
-            | Some (EquityClassification.Convertible convertible) ->
-                None, Some (convertibleTermsToLegacy convertible)
-            | Some (EquityClassification.ConvertiblePreferred (preferred, convertible)) ->
-                Some (preferredTermsToLegacy preferred), Some (convertibleTermsToLegacy convertible)
-            | _ ->
-                None, None
-
-        {| shareClass = terms.ShareClass
-           votingRightsCat = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
-           classification = classification
-           otherClassification = otherClassification
-           preferredTerms = preferredTerms
-           convertibleTerms = convertibleTerms |}
-
-    let toJson (terms: EquityCapitalTerms) = JsonSerializer.Serialize(toPayload terms)
-
 /// Exact typed tranche serialization; the flat codec keeps its existing field spellings.
 module TrancheContractCodec =
     let toJson (terms: TrancheContractTerms) =
@@ -134,9 +73,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
 
     let unstampedAssetSpecificTermsJson =
         match record.Kind with
-        | SecurityKind.Equity terms ->
-            let payload = EquityCapitalCodec.toPayload terms.Capital
-            JsonSerializer.Serialize({| payload with schemaVersion = schemaVersion |})
+        | SecurityKind.Equity terms -> GeneratedFlatWriter.writeEquity schemaVersion terms
         | SecurityKind.Option terms -> GeneratedFlatWriter.writeOption schemaVersion terms
         | SecurityKind.Future terms -> GeneratedFlatWriter.writeFuture schemaVersion terms
         | SecurityKind.Bond terms -> GeneratedFlatWriter.writeBond schemaVersion (writesScheduleConventions ()) (writesCallPutSchedules ()) terms
@@ -166,15 +103,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
         | SecurityKind.Swaption terms -> GeneratedFlatWriter.writeSwaption schemaVersion terms
         | SecurityKind.CapFloor terms -> GeneratedFlatWriter.writeCapFloor schemaVersion terms
         | SecurityKind.StructuredNote terms -> GeneratedFlatWriter.writeStructuredNote schemaVersion terms
-        | SecurityKind.InvestmentFund terms ->
-            JsonSerializer.Serialize(
-                {| schemaVersion = schemaVersion
-                   fundType = terms.FundType
-                   fundFamily = terms.FundFamily
-                   navCurrency = terms.NavCurrency
-                   distributionPolicy = terms.DistributionPolicy |> Option.map DistributionPolicy.label
-                   isStableNav = terms.IsStableNav
-                   pricingSource = terms.PricingSource |})
+        | SecurityKind.InvestmentFund terms -> GeneratedFlatWriter.writeInvestmentFund schemaVersion terms
         | SecurityKind.CustomAsset terms ->
             // The custom-asset document is emitted verbatim: it already carries its own
             // schemaVersion (the CustomAssetProfile family) and its dynamic, profile-governed

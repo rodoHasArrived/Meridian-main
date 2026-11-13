@@ -343,7 +343,7 @@ internal static partial class SecurityMasterMapping
             EnsureLegacyRequiredReadOrder(assetClass, bound, boundTerms);
         var kind = assetClass switch
         {
-            "Equity" => SecurityKind.NewEquity(new EquityTerms(new EquityCapitalTerms(ToOption(bound.OptionalString("shareClass")), ToVotingRightsCatOption(bound.OptionalString("votingRightsCat")), ToEquityClassificationOption(bound, mode)))),
+            "Equity" => DecodeGeneratedEquity(bound, mode, assetClass, json),
             "Option" => DecodeGeneratedOption(bound, mode, assetClass, json),
             "Future" => DecodeGeneratedFuture(bound, mode, assetClass, json),
             "Bond" => DecodeBond(bound, mode, assetClass, json, versionedTerms, economicSchedules!),
@@ -377,7 +377,7 @@ internal static partial class SecurityMasterMapping
             "Swaption" => DecodeGeneratedSwaption(bound, mode, assetClass, json),
             "CapFloor" => DecodeGeneratedCapFloor(bound, mode, assetClass, json),
             "StructuredNote" => DecodeGeneratedStructuredNote(bound, mode, assetClass, json),
-            "InvestmentFund" => SecurityKind.NewInvestmentFund(ToInvestmentFundReferenceTerms(bound)),
+            "InvestmentFund" => DecodeGeneratedInvestmentFund(bound, mode, assetClass, json),
             // Read tolerance must not become write tolerance. On a create, an unrecognized class
             // ("ExchangeTradedFund", which the pack registry only PLANS; a typo like "Equitiy")
             // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a

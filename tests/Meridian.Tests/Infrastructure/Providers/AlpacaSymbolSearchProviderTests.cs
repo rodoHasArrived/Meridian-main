@@ -18,6 +18,7 @@ public sealed class AlpacaSymbolSearchProviderTests
 
     [Theory]
     [InlineData(HttpStatusCode.PartialContent, false)]
+    [InlineData(HttpStatusCode.Accepted, false)]
     [InlineData(HttpStatusCode.OK, true)]
     public async Task AuthoritativeSearch_WithPartialArray_RefusesIncompleteEvidence(HttpStatusCode status, bool contentRange)
     {
@@ -43,6 +44,7 @@ public sealed class AlpacaSymbolSearchProviderTests
     [InlineData("null")]
     [InlineData("[null]")]
     [InlineData("[{}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"name\":\"Synthetic Treasury\",\"class\":\"unknown-class\",\"tradable\":true}]")]
     [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"fixed_income\",\"tradable\":true}]")]
     [InlineData("[{\"symbol\":\"912TEST\",\"name\":\"\",\"class\":\"fixed_income\",\"tradable\":true}]")]
     [InlineData("[{\"symbol\":\"912TEST\",\"name\":\"  \",\"class\":\"fixed_income\",\"tradable\":true}]")]
@@ -143,6 +145,51 @@ public sealed class AlpacaSymbolSearchProviderTests
         result.Symbol.Should().Be("912TEST");
         result.AssetType.Should().Be("FixedIncome");
         result.Source.Should().Be("alpaca");
+    }
+
+    [Theory]
+    [InlineData("us_equity", "Stock")]
+    [InlineData("us_option", "Option")]
+    [InlineData("crypto", "Crypto")]
+    [InlineData("crypto_perp", "crypto_perp")]
+    [InlineData("treasury", "FixedIncome")]
+    [InlineData("corporate", "FixedIncome")]
+    [InlineData("CORPORATE", "FixedIncome")]
+    [InlineData("global_equity", "global_equity")]
+    [InlineData("us_index", "us_index")]
+    [InlineData("us_equity_chain", "us_equity_chain")]
+    [InlineData("ipo", "ipo")]
+    [InlineData("fixed_income", "FixedIncome")]
+    public async Task AuthoritativeSearch_RecognizesVendorResponseClassesIndependentlyOfQueryFilters(string rawClass, string expectedType)
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new[] { new { symbol = "TEST", name = "Synthetic asset", @class = rawClass, tradable = true } }))
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+
+        var result = (await provider.SearchAuthoritativeAsync("TEST", assetType: "fixed_income")).Should().ContainSingle().Subject;
+
+        result.AssetType.Should().Be(expectedType);
+    }
+
+    [Theory]
+    [InlineData("treasury")]
+    [InlineData("corporate")]
+    [InlineData("unknown-class")]
+    public async Task OrdinarySearch_PreservesTolerantRawAssetClassMapping(string rawClass)
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new[] { new { symbol = "TEST", name = "Synthetic asset", @class = rawClass, tradable = true } }))
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+
+        var result = (await provider.SearchAsync("TEST", assetType: "fixed_income")).Should().ContainSingle().Subject;
+
+        result.AssetType.Should().Be(rawClass);
     }
 
     [Fact]

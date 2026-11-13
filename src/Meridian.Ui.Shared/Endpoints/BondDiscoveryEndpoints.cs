@@ -98,31 +98,35 @@ public static class BondDiscoveryEndpoints
             ?? throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
                 "Owned provider configuration is unavailable.");
         IDisposable? lease = null;
+        var transferred = false;
         try
         {
             // A binding cannot be removed or reassigned between this check and provider dispatch.
             lease = await config.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
             var scope = ProviderRuntimeCredentialService.ResolveScope(config.LoadRequired(), "alpaca")
                 ?? throw new InvalidOperationException("An owned Alpaca runtime binding is required.");
-            if (!string.Equals(scope.TenantId, context.Items[LoginSessionMiddleware.CurrentTenantIdKey] as string, StringComparison.Ordinal))
-                return new(lease, false);
-            var runtime = context.RequestServices.GetService<ProviderRuntimeCredentialService>()
-                ?? throw new InvalidOperationException("Runtime credential application status is unavailable.");
-            var status = runtime.GetApplicationStatus("alpaca", scope.ConnectionId, scope.TenantId);
-            if (!status.IsBound || status.PendingRestart)
-                throw new InvalidOperationException("The owned credential binding has not reached running provider instances.");
-            return new(lease, true);
+            var tenantAllowed = string.Equals(scope.TenantId, context.Items[LoginSessionMiddleware.CurrentTenantIdKey] as string, StringComparison.Ordinal);
+            if (tenantAllowed)
+            {
+                var runtime = context.RequestServices.GetService<ProviderRuntimeCredentialService>()
+                    ?? throw new InvalidOperationException("Runtime credential application status is unavailable.");
+                var status = runtime.GetApplicationStatus("alpaca", scope.ConnectionId, scope.TenantId);
+                if (!status.IsBound || status.PendingRestart)
+                    throw new InvalidOperationException("The owned credential binding has not reached running provider instances.");
+            }
+            var result = new OwnershipLease(lease, tenantAllowed);
+            transferred = true;
+            return result;
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException or InvalidOperationException or TimeoutException)
         {
-            lease?.Dispose();
             throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
                 "Owned provider credentials are unavailable.", ex);
         }
-        catch
+        finally
         {
-            lease?.Dispose();
-            throw;
+            if (!transferred)
+                lease?.Dispose();
         }
     }
 }

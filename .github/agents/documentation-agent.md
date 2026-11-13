@@ -283,7 +283,6 @@ Resources for AI agents working in this repository.
 | `CLAUDE.fsharp.md` | F# domain library and C# interop |
 | `CLAUDE.api.md` | REST API, backtesting, strategy management |
 | `CLAUDE.repo-updater.md` | `ai-repo-updater.py` audit/verify/report |
-| `CLAUDE.structure.md` | Full annotated file tree |
 | `CLAUDE.actions.md` | GitHub Actions workflows |
 | `CLAUDE.domain-naming.md` | Domain naming conventions |
 

@@ -178,6 +178,18 @@ public static class SecurityAssetTermsCodecBindings
     /// <summary>The generated classes, in catalog order.</summary>
     public static IReadOnlyList<SecurityClassCodecBinding> Classes { get; } =
     [
+        Class("Equity",
+            B("Capital.ShareClass", "shareClass", SecurityTermRead.OptionalString),
+            Computed("Capital.VotingRightsCat", "votingRightsCat",
+                "ToVotingRightsCatOption(bound.OptionalString(\"votingRightsCat\"))",
+                "terms.Capital.VotingRightsCat |> Option.map VotingRightsCat.asString"),
+            // The classification union is written as four keys; classification discriminates and
+            // the preferred and convertible blocks carry the dependent terms.
+            Fixed("Capital.Classification", "ToEquityClassificationOption(bound, mode)"),
+            WrittenAs("Capital.Classification", "classification", "EquityCapitalCodec.classification terms.Capital"),
+            WrittenAs("Capital.Classification", "otherClassification", "EquityCapitalCodec.otherClassification terms.Capital"),
+            WrittenAs("Capital.Classification", "preferredTerms", "EquityCapitalCodec.preferredTerms terms.Capital"),
+            WrittenAs("Capital.Classification", "convertibleTerms", "EquityCapitalCodec.convertibleTerms terms.Capital")),
         Class("Option",
             B("Dates.MaturityDate", "expiry", SecurityTermRead.RequiredDate, via: "Expiry"),
             B("ListingDetail.OptChainId", "optChainId", SecurityTermRead.OptionalString),
@@ -486,6 +498,15 @@ public static class SecurityAssetTermsCodecBindings
             B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.RequiredString, via: "IssuerName"),
             B("ContractualRate.CouponRate", "couponRate", SecurityTermRead.StrictDecimal),
             B("ContractualRate.PaymentFrequency", "paymentFrequency", SecurityTermRead.ConventionString)),
+        Class("InvestmentFund",
+            B("FundShare.FundType", "fundType", SecurityTermRead.OptionalString),
+            B("FundShare.NavCurrency", "navCurrency", SecurityTermRead.OptionalString),
+            Computed("FundShare.DistributionPolicy", "distributionPolicy",
+                "ToDistributionPolicyOption(bound.OptionalString(\"distributionPolicy\"))",
+                "terms.DistributionPolicy |> Option.map DistributionPolicy.label"),
+            B("FundShare.IsStableNav", "isStableNav", SecurityTermRead.OptionalBoolean),
+            B("FundTerms.FundFamily", "fundFamily", SecurityTermRead.OptionalString),
+            B("ReferenceDataSource.PricingSource", "pricingSource", SecurityTermRead.OptionalString)),
     ];
 
     /// <summary>The generated classes by name.</summary>

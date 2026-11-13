@@ -120,16 +120,22 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
     }
 
     [Theory]
-    [InlineData(UserPermission.ViewSecurityMaster, false)]
-    [InlineData(UserPermission.ModifySecurityMaster, true)]
-    public async Task Lookup_UsesFixedIncomeProviderAndReturnsStagingPermission(UserPermission permission, bool canStage)
+    [InlineData(UserPermission.ViewSecurityMaster, false, "fixed_income")]
+    [InlineData(UserPermission.ModifySecurityMaster, true, "fixed_income")]
+    [InlineData(UserPermission.ViewSecurityMaster, false, "treasury")]
+    [InlineData(UserPermission.ViewSecurityMaster, false, "corporate")]
+    public async Task Lookup_UsesFixedIncomeProviderAndReturnsStagingPermission(UserPermission permission, bool canStage, string rawClass)
     {
         using var handler = new StubHttpMessageHandler(request =>
         {
             request.RequestUri!.Query.Should().Contain("asset_class=fixed_income");
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent("""[{"symbol":"912TEST","name":"Synthetic Treasury","class":"fixed_income","tradable":true},{"symbol":"WRONG","name":"Treasury stock","class":"us_equity","tradable":true}]""")
+                Content = new StringContent(JsonSerializer.Serialize(new[]
+                {
+                    new { symbol = "912TEST", name = "Synthetic Treasury", @class = rawClass, tradable = true },
+                    new { symbol = "WRONG", name = "Treasury stock", @class = "us_equity", tradable = true }
+                }))
             };
         });
         using var http = new HttpClient(handler);
@@ -194,6 +200,7 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
     [InlineData("transportError", true, true, HttpStatusCode.OK)]
     [InlineData("transportError", true, false, HttpStatusCode.ServiceUnavailable)]
     [InlineData("incompleteResponse", true, false, HttpStatusCode.PartialContent)]
+    [InlineData("incompleteResponse", true, false, HttpStatusCode.Accepted)]
     [InlineData("throttled", true, false, HttpStatusCode.TooManyRequests)]
     public async Task Lookup_SeparatesCredentialTransportAndIncompleteFailures(
         string failureReason, bool credentials, bool transportFailure, HttpStatusCode providerStatus)
@@ -285,6 +292,7 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
     [InlineData("[{\"symbol\":\"912TEST\",\"tradable\":true}]")]
     [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"fixed_income\",\"tradable\":true}]")]
     [InlineData("[{\"symbol\":\"912TEST\",\"name\":\"\",\"class\":\"fixed_income\",\"tradable\":true}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"name\":\"Synthetic Treasury\",\"class\":\"unknown-class\",\"tradable\":true}]")]
     public async Task Lookup_WithRealAlpacaDecoderFailureReturnsUnavailable(string bondPayload)
     {
         var bondRequests = 0;
@@ -330,8 +338,10 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
             Directory.CreateDirectory(root);
             var config = new ConfigStore(Path.Combine(root, "appsettings.json"));
             await config.SaveAsync(new AppConfig(DataRoot: root, ProviderConnections: new ProviderConnectionsConfig(
-                Connections: [new ProviderConnectionConfig("bond-account-a", "alpaca", "Synthetic bond account",
-                    TenantId: OwnerTenant, ExternalAccountId: "account-a", CredentialEnvironment: "paper")])));
+                Connections: [new ProviderConnectionConfig("bond-account-a", "alpaca", "Synthetic bond account A",
+                    TenantId: OwnerTenant, ExternalAccountId: "account-a", CredentialEnvironment: "paper"),
+                    new ProviderConnectionConfig("bond-account-b", "alpaca", "Synthetic bond account B",
+                        TenantId: "foreign-tenant", ExternalAccountId: "account-b", CredentialEnvironment: "paper")])));
             var tracker = new ProviderRuntimeCredentialApplicationTracker();
             var runtime = new ProviderRuntimeCredentialService(config, Substitute.For<IProviderCredentialStore>(), applicationTracker: tracker);
             if (ownership != "missing")
@@ -345,8 +355,10 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
                     {
                         ProviderConnections = current.ProviderConnections! with
                         {
-                            Connections = ownership == "deleted" ? [] : current.ProviderConnections.Connections!
-                                .Select(connection => connection with { TenantId = "different-owner" }).ToArray()
+                            Connections = ownership == "deleted"
+                                ? current.ProviderConnections.Connections!.Where(connection => connection.ConnectionId != "bond-account-a").ToArray()
+                                : current.ProviderConnections.Connections!
+                                    .Select(connection => connection.ConnectionId == "bond-account-a" ? connection with { TenantId = "different-owner" } : connection).ToArray()
                         }
                     });
                 }
@@ -406,6 +418,8 @@ public sealed class BondDiscoveryEndpointsTests : IDisposable
         protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query) => [];
         protected override IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
             => [new("912TEST", "Synthetic Treasury", AssetType: assetType, Source: "alpaca"), new("WRONG", "Wrong asset", AssetType: "Stock", Source: "alpaca")];
+        protected override IEnumerable<SymbolSearchResult> ApplyFilters(IEnumerable<SymbolSearchResult> results, string? assetType, string? exchange)
+            => results; // Match Alpaca's native-filter path so the endpoint's alias predicate is exercised.
         protected override Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct)
             => Task.FromResult<SymbolDetails?>(null);
     }

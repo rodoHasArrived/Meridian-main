@@ -261,7 +261,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
                 return Array.Empty<SymbolSearchResult>();
             }
 
-            if (failOnProviderError && (response.StatusCode == HttpStatusCode.PartialContent
+            if (failOnProviderError && (response.StatusCode is HttpStatusCode.PartialContent or HttpStatusCode.Accepted
                 || response.Content.Headers.ContentRange is not null))
                 throw new ProviderSearchException(ProviderSearchFailure.IncompleteResponse,
                     "Provider search returned a partial response.");
