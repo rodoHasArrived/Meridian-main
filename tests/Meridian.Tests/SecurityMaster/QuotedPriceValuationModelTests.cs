@@ -116,14 +116,14 @@ public sealed class QuotedPriceValuationModelTests
     [InlineData("none", 90)]
     [InlineData("future-scalar", 90)]
     [InlineData("undated-scalar", 80)]
-    public async Task QuotedValuationAndProjection_UseTheSameRetainedOpeningPrincipal(
+    public async Task QuotedValuationAndLegacyV4Projection_UseTheSameRetainedOpeningPrincipal(
         string factorSource, int expectedOutstanding)
     {
         // The June factor knows nothing about December's payment. An undated scalar is assumed
         // current, however, so deducting that same payment again would count it twice.
         var bond = RepayingBond(factorSource, new DateOnly(2025, 12, 1));
 
-        await AssertQuoteMatchesProjectionAsync(bond, expectedOutstanding);
+        await AssertQuoteMatchesLegacyV4ProjectionAsync(bond, expectedOutstanding);
     }
 
     [Theory]
@@ -173,17 +173,88 @@ public sealed class QuotedPriceValuationModelTests
     {
         var bond = RepayingBond("schedule", DateOnly.ParseExact(paymentDate, "yyyy-MM-dd", CultureInfo.InvariantCulture));
 
-        await AssertQuoteMatchesProjectionAsync(bond, 80m);
+        await AssertQuoteMatchesLegacyV4ProjectionAsync(bond, 80m);
     }
 
     [Theory]
     [InlineData(100)]
     [InlineData(110)]
-    public async Task CompletedPrincipalPayments_CannotMakeTheQuotedFaceNegative(int paymentAmount)
+    public async Task LegacyV4CompletedPrincipalPayments_CannotMakeTheQuotedFaceNegative(int paymentAmount)
     {
         var bond = RepayingBond("none", new DateOnly(2025, 12, 1), paymentAmount);
 
-        await AssertQuoteMatchesProjectionAsync(bond, 0m);
+        await AssertQuoteMatchesLegacyV4ProjectionAsync(bond, 0m);
+    }
+
+    [Theory]
+    [InlineData("schedule")]
+    [InlineData("dated-scalar")]
+    [InlineData("profile-dated-scalar")]
+    [InlineData("future-scalar")]
+    [InlineData("undated-scalar")]
+    public async Task CurrentV5ProjectionRequiresCouponBalanceHistoryBeyondTheQuotedOpeningFace(string factorSource)
+    {
+        // These original valuation fixtures identify current face, but carry no factor at the
+        // first coupon's 2025-01-01 accrual start. Current-face evidence cannot prove that accrual.
+        var bond = RepayingBond(factorSource, new DateOnly(2025, 12, 1));
+        var receipt = (await CashFlows(bond).CaptureProjectionAsync(bond.SecurityId, StructuredCashFlowScenario.Base,
+            new(ValuationTestSecurities.AsOf, KnownAt: KnownAt)))!;
+
+        receipt.ModelVersion.Should().Be(SecurityMasterCashFlowService.ContextCalculationVersion);
+        receipt.Projection.BlockedReason.Should().Contain("dated factor at or before the first coupon's accrual start");
+        receipt.Projection.Schedule.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(100, false)]
+    [InlineData(110, true)]
+    public async Task CurrentV5PrincipalWalkAcceptsExactPayoffAndRefusesOverpayment(int paymentAmount, bool overpayment)
+    {
+        var bond = RepayingBond("none", new DateOnly(2025, 12, 1), paymentAmount);
+        var receipt = (await CashFlows(bond).CaptureProjectionAsync(bond.SecurityId, StructuredCashFlowScenario.Base,
+            new(ValuationTestSecurities.AsOf, KnownAt: KnownAt)))!;
+
+        receipt.ModelVersion.Should().Be(SecurityMasterCashFlowService.ContextCalculationVersion);
+        if (overpayment)
+        {
+            receipt.Projection.BlockedReason.Should().Contain("principal payment exceeds the outstanding balance");
+            receipt.Projection.Schedule.Should().BeEmpty();
+        }
+        else
+        {
+            receipt.Projection.BlockedReason.Should().BeNull();
+            receipt.Projection.Schedule.Sum(row => row.PrincipalAmount).Should().Be(0m);
+        }
+    }
+
+    [Fact]
+    public async Task FullyReconciledDatedHistoryMakesCurrentV5ProjectionAndQuotedFaceAgree()
+    {
+        // A separate complete synthetic history proves 100 at issue, a matching 20 June payment
+        // and post-payment factor .8, then a further 10 payment in December: current face is 70.
+        var bond = RepayingBond("none", new DateOnly(2025, 12, 1));
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["factorScheduleEntries"] = new[]
+        {
+            new { asOfDate = new DateOnly(2025, 1, 1), factor = 1m },
+            new { asOfDate = new DateOnly(2025, 6, 1), factor = .8m }
+        };
+        terms["principalSchedule"] = new[]
+        {
+            new { paymentDate = new DateOnly(2025, 6, 1), amount = 20m },
+            new { paymentDate = new DateOnly(2025, 12, 1), amount = 10m }
+        };
+        bond = bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
+        var receipt = (await CashFlows(bond).CaptureProjectionAsync(bond.SecurityId, StructuredCashFlowScenario.Base,
+            new(ValuationTestSecurities.AsOf, KnownAt: KnownAt)))!;
+
+        receipt.ModelVersion.Should().Be(SecurityMasterCashFlowService.ContextCalculationVersion);
+        receipt.Projection.BlockedReason.Should().BeNull();
+        receipt.Projection.Schedule.Should().OnlyContain(row => row.RowVersion == 2);
+        receipt.Projection.Schedule.Sum(row => row.PrincipalAmount).Should().Be(70m);
+        receipt.Projection.Schedule.First().InterestSegments!.Select(segment => segment.ReferencePrincipal)
+            .Should().Equal(100m, 80m, 70m);
+        await AssertQuotedOpeningFaceAsync(bond, 70m);
     }
 
     [Fact]
@@ -282,23 +353,50 @@ public sealed class QuotedPriceValuationModelTests
         return ValuationTestSecurities.Bond() with { AssetSpecificTerms = retainedTerms };
     }
 
-    private static async Task AssertQuoteMatchesProjectionAsync(SecurityDetailDto bond, decimal expectedOutstanding)
+    private static async Task AssertQuoteMatchesLegacyV4ProjectionAsync(SecurityDetailDto bond, decimal expectedOutstanding)
+    {
+        // The quoted-price v1 opening-face reader intentionally retains its original undated
+        // factor and clamping rules. Compare it to the matching historical projection model;
+        // context v5 separately requires a fully reconciled coupon-balance history.
+        var source = new SecurityCashFlowSourceDto(bond.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, KnownAt, false, null, null);
+        var frozen = typeof(SecurityMasterCashFlowService).GetMethod("BuildCalculatedProjection",
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+        var projection = (StructuredCashFlowProjectionDto)frozen.Invoke(null,
+            [bond, source.SourceKind, StructuredCashFlowScenario.Base, StructuredCashFlowStaleness.Fresh,
+                source.LastUpdatedUtc, ValuationTestSecurities.AsOf, null, null, null])!;
+        projection = SecurityCashFlowScheduleRowCodec.ForVersion(projection, 1);
+        var receipt = new SecurityCashFlowCalculationReceipt(SecurityMasterCashFlowService.PreviousContextCalculationVersion,
+            bond, source, StructuredCashFlowScenario.Base,
+            new(ValuationTestSecurities.AsOf, KnownAt: KnownAt, SecurityVersion: bond.Version), [], projection, string.Empty);
+        receipt = receipt with { ContentSha256 = SecurityMasterCashFlowService.ReceiptHash(receipt) };
+        var receipts = Substitute.For<ISecurityCashFlowReceiptStore>();
+        receipts.GetAsync(receipt.ContentSha256, Arg.Any<CancellationToken>()).Returns(receipt);
+
+        var replay = await CashFlows(bond, receipts).ReplayProjectionAsync(receipt.ContentSha256);
+
+        receipt.ModelVersion.Should().Be("bond-cash-flow-context-v4");
+        replay.Should().NotBeNull();
+        replay!.BlockedReason.Should().BeNull();
+        replay.Schedule.Should().OnlyContain(row => row.RowVersion == 1 && row.InterestSegments == null);
+        JsonSerializer.Serialize(replay, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto)
+            .Should().Be(JsonSerializer.Serialize(receipt.Projection, SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto));
+        replay.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(expectedOutstanding);
+        await AssertQuotedOpeningFaceAsync(bond, expectedOutstanding);
+    }
+
+    private static SecurityMasterCashFlowService CashFlows(SecurityDetailDto bond, ISecurityCashFlowReceiptStore? receipts = null)
     {
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(bond.SecurityId, Arg.Any<CancellationToken>()).Returns(
             new SecurityCashFlowSourceDto(bond.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, KnownAt, false, null, null));
         var query = Substitute.For<SecurityMasterQueryContract>();
         query.GetByIdAsync(bond.SecurityId, Arg.Any<CancellationToken>()).Returns(bond);
-        var cashFlows = new SecurityMasterCashFlowService(
-            store, [], query, NullLogger<SecurityMasterCashFlowService>.Instance);
+        query.GetRecordedByIdAsOfAsync(bond.SecurityId, KnownAt, Arg.Any<CancellationToken>()).Returns(bond);
+        return new(store, [], query, NullLogger<SecurityMasterCashFlowService>.Instance, receiptStore: receipts);
+    }
 
-        var projection = await cashFlows.GetProjectionAsOfAsync(
-            bond.SecurityId, StructuredCashFlowScenario.Base, ValuationTestSecurities.AsOf);
-
-        projection.Should().NotBeNull();
-        projection!.BlockedReason.Should().BeNull();
-        projection.Schedule.Sum(static row => row.PrincipalAmount).Should().Be(expectedOutstanding);
-
+    private static async Task AssertQuotedOpeningFaceAsync(SecurityDetailDto bond, decimal expectedOutstanding)
+    {
         var pricing = Pricing(bond, new SecurityPriceGoldenCopyDto(
             bond.SecurityId, 100m, SecurityPriceKind.MarketGoldenCopy, "BLOOMBERG", PriceAsOf, false, 1, [],
             SecurityPriceUnit.PercentOfPar, ValuationTestSecurities.AsOf, PriceAsOf, KnownAt, Guid.NewGuid()));
