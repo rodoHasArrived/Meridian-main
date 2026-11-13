@@ -86,8 +86,8 @@
       "id": "SRC-DESIGN-INSTRUMENTS",
       "path": "src/Meridian.Instruments",
       "readme": "src/Meridian.Instruments/README.md",
-      "readme_hash": "de87214082307f9521f19a8f0691ce2c3940ba8e861349fa14a6a2afab4f82d6",
-      "source_hash": "b64f98f3174b38d8badd70b5b331b794e87630df3386284118e6439e281c815c"
+      "readme_hash": "b6bc4b21a2ea04c757a79aedf992f7d782005592802deb99a407eada07b39e21",
+      "source_hash": "ccb857b6cc6da44ba3ce872d172623ff8eabc4f72f4077348913d5fc250055ec"
     },
     {
       "id": "SRC-DESIGN-PLATFORM",
@@ -283,7 +283,7 @@
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
       "readme_hash": "8c31890de1f0291087125d4aebac0b455f678586a2d2249079918a0ab61aabea",
-      "source_hash": "f02058a9ab726e5295744a1e1b33103c2b55234847a3ef1f84fd69f35188837b"
+      "source_hash": "8d25c24afbe66a9e00bf44fbfbd88c53999adeb0438dcf1490f4646f97a306ca"
     },
     {
       "id": "SRC-WPF",

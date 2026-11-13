@@ -28,10 +28,25 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
         if (retained.Request is not { } request || retained.ModelVersion is not (ModelVersion or LegacyModelVersion)
             || request.ModelVersion is { } pinned && pinned != retained.ModelVersion)
             throw new ArgumentException("Retained workflow replay requires its original request and exact supported model version.");
+        if (request.Context.AsOf != retained.Context.AsOf
+            || request.Context.KnownAt is { } known && known != retained.Context.KnownAt
+            || request.Context.SettlementDate is { } settlement && settlement != retained.Context.SettlementDate
+            || request.Context.SecurityVersion is { } securityVersion && securityVersion != retained.Context.SecurityVersion)
+            throw new ArgumentException("Retained workflow request cutoffs or terms version disagree with its resolved context.");
+        request = request with
+        {
+            Context = request.Context with
+            {
+                KnownAt = request.Context.KnownAt ?? retained.Context.KnownAt,
+                SettlementDate = request.Context.SettlementDate ?? retained.Context.SettlementDate,
+                SecurityVersion = request.Context.SecurityVersion ?? retained.Context.SecurityVersion
+            }
+        };
+        request = await PinRetainedCurvesAsync(retained, request, ct).ConfigureAwait(false);
         var replay = await CalculateCoreAsync(request with { ModelVersion = retained.ModelVersion }, retained.FrozenIndexAt, ct).ConfigureAwait(false);
-        // Historical v1 requests omitted their version. The receipt selects the arithmetic while
-        // its original request bytes remain untouched in the replayed result.
-        return replay is null ? null : replay with { Request = retained.Request };
+        // Historical receipts omitted resolved pins and, in v1, their model selector. Recalculate
+        // their exact retained sources, then preserve the original request/context serialization.
+        return replay is null ? null : replay with { Request = retained.Request, Context = retained.Context };
     }
 
     private async Task<BondWorkflowResult?> CalculateCoreAsync(BondWorkflowRequest request, DateOnly? freezeIndexAt, CancellationToken ct)
@@ -193,9 +208,12 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                 return Block("FloatingIndexMissing", "Floating coupons require a retained named benchmark index.");
             var forward = kind == "Floating" && index is not null
                 ? await ResolveCurve("Forward:" + index, SecurityCurveKind.Forward, index, security.Currency, context, inputs, ct).ConfigureAwait(false) : null;
+            context = PinResolvedCurve(context, "Forward:" + index, forward);
             var discount = await ResolveCurve("Discount", SecurityCurveKind.Discount, null, security.Currency, context, inputs, ct).ConfigureAwait(false);
+            context = PinResolvedCurve(context, "Discount", discount);
             var inflationCurve = kind == "InflationLinked" && terms.InflationIndex is { } inflationIndex
                 ? await ResolveCurve("Inflation:" + inflationIndex, SecurityCurveKind.Inflation, inflationIndex, security.Currency, context, inputs, ct).ConfigureAwait(false) : null;
+            context = PinResolvedCurve(context, "Inflation:" + terms.InflationIndex, inflationCurve);
             var fixingRows = index is not null && observations is not null
                 ? await RoleObservations(index, BondMarketObservationKind.Fixing, first.AddDays(-400), terms.MaturityDate!.Value.AddMonths(1), knownAt, ct).ConfigureAwait(false) : [];
             var inflationRows = terms.InflationIndex is { } inflationSeries && observations is not null
@@ -608,8 +626,9 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
         }
         else
         {
-            var choices = await curves.ListDefinitionsAsync(kind, currency, index, ct).ConfigureAwait(false);
-            if (choices.Count != 1)
+            var choices = (await curves.ListDefinitionsAsync(kind, currency, index, ct).ConfigureAwait(false))
+                .Where(choice => choice.CreatedAt <= context.KnownAt).ToArray();
+            if (choices.Length != 1)
                 return null;
             definition = choices[0];
             version = await curves.GetLatestVersionAsOfAsync(definition.CurveId,
@@ -618,12 +637,58 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
         if (definition is null || version is null)
             return null;
         if (definition.Kind != kind || definition.Currency != currency || definition.IndexName != index
+            || definition.CreatedAt > context.KnownAt || version.CurveId != definition.CurveId || version.CurveKey != definition.CurveKey
+            || pins.Length == 1 && (definition.CurveId != pins[0].CurveId || version.CurveVersionId != pins[0].CurveVersionId)
             || version.RecordedAt > context.KnownAt || version.AsOf > DateOnly.FromDateTime(context.AsOf.UtcDateTime))
             throw new ArgumentException("Pinned curve is incompatible with its role or economic/knowledge cutoff: " + role);
         inputs.Add(new("Curve:" + role, definition.CurveKey, version.Version, version.ContentSha256,
             version.CurveVersionId, new DateTimeOffset(version.AsOf.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), version.RecordedAt));
         inputs.Add(new("CurveRatePolicy:" + role, definition.RatePolicy.ToString()));
         return version;
+    }
+
+    private static BondCalculationContext PinResolvedCurve(BondCalculationContext context, string role, SecurityCurveVersionDto? version)
+        => version is null || context.Curves?.Any(pin => pin.Role == role) == true ? context : context with
+        { Curves = (context.Curves ?? []).Append(new BondPinnedCurveInput(role, version.CurveId, version.CurveVersionId)).ToArray() };
+
+    private async Task<BondWorkflowRequest> PinRetainedCurvesAsync(BondWorkflowResult retained, BondWorkflowRequest request, CancellationToken ct)
+    {
+        var dependencies = retained.Inputs.Where(input => input.Kind.StartsWith("Curve:", StringComparison.Ordinal)).ToArray();
+        if (dependencies.Length == 0)
+            return request;
+        if (curves is null || request.Context.KnownAt is not { } knownAt
+            || dependencies.GroupBy(input => input.Kind, StringComparer.Ordinal).Any(group => group.Count() != 1))
+            throw new ArgumentException("Retained curve replay requires an exact knowledge cutoff, curve source and one dependency per role.");
+        var context = request.Context;
+        foreach (var dependency in dependencies)
+        {
+            var role = dependency.Kind["Curve:".Length..];
+            var kind = role == "Discount" ? SecurityCurveKind.Discount
+                : role.StartsWith("Forward:", StringComparison.Ordinal) ? SecurityCurveKind.Forward
+                : role.StartsWith("Inflation:", StringComparison.Ordinal) ? SecurityCurveKind.Inflation
+                : throw new ArgumentException("Retained curve replay has an unsupported role: " + role);
+            var index = role == "Discount" ? null : role[(role.IndexOf(':') + 1)..];
+            var pins = context.Curves?.Where(pin => pin.Role == role).ToArray() ?? [];
+            if (pins.Length > 1 || dependency.VersionId is not { } versionId
+                || pins.Length == 1 && pins[0].CurveVersionId != versionId)
+                throw new ArgumentException("Retained curve pins disagree with their exact input dependency: " + role);
+            var definitions = pins.Length == 1
+                ? new[] { await curves.GetDefinitionAsync(pins[0].CurveId, ct).ConfigureAwait(false) }
+                : (await curves.ListDefinitionsAsync(kind, retained.Currency, index, ct).ConfigureAwait(false))
+                    .Where(candidate => candidate.CurveKey == dependency.Key).ToArray();
+            if (definitions.Length != 1 || definitions[0] is not { } definition)
+                throw new ArgumentException("The exact retained curve definition is unavailable or ambiguous: " + role);
+            var version = await curves.GetVersionByIdAsync(definition.CurveId, versionId, ct).ConfigureAwait(false);
+            if (version is null || definition.Kind != kind || definition.Currency != retained.Currency || definition.IndexName != index
+                || definition.CreatedAt > knownAt || version.RecordedAt > knownAt
+                || version.AsOf > DateOnly.FromDateTime(context.AsOf.UtcDateTime)
+                || version.CurveId != definition.CurveId || version.CurveVersionId != versionId || version.CurveKey != definition.CurveKey
+                || dependency != new BondCalculationInput("Curve:" + role, definition.CurveKey, version.Version, version.ContentSha256,
+                    version.CurveVersionId, new DateTimeOffset(version.AsOf.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), version.RecordedAt))
+                throw new ArgumentException("Retained curve identity, version, content or cutoff differs from its immutable input dependency: " + role);
+            context = PinResolvedCurve(context, role, version);
+        }
+        return request with { Context = context };
     }
 
     private static decimal? CurveValue(SecurityCurveVersionDto curve, SecurityCurveKind kind, DateOnly date)

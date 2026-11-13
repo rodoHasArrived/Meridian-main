@@ -12635,6 +12635,7 @@ Meridian-main
 │   │   │   ├── BondProviderResponseStoreTests.cs
 │   │   │   ├── BondReferenceExpansionTests.cs
 │   │   │   ├── BondScreeningServiceTests.cs
+│   │   │   ├── BondWorkflowCurveSelectionTests.cs
 │   │   │   ├── BondWorkflowPricingTests.cs
 │   │   │   ├── BondWorkflowProjectionTests.cs
 │   │   │   ├── BondWorkflowServiceTests.cs

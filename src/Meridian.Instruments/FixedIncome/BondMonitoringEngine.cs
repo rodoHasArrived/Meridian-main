@@ -10,11 +10,18 @@ namespace Meridian.Instruments.FixedIncome;
 /// <summary>Retained collection evidence and watch information; never posting or payment authority.</summary>
 public static class BondMonitoringEngine
 {
-    public const string EngineVersion = "bond-monitoring-v1";
+    public const string LegacyEngineVersion = "bond-monitoring-v1";
+    public const string EngineVersion = "bond-monitoring-v2";
 
-    public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request)
+    public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request) => Build(request, EngineVersion);
+
+    public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request, string? engineVersion)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var version = engineVersion ?? EngineVersion;
+        if (version is not (LegacyEngineVersion or EngineVersion))
+            throw new ArgumentException("The requested bond monitoring engine is not retained.", nameof(engineVersion));
+        var legacy = version == LegacyEngineVersion;
         var inputs = JsonSerializer.Deserialize(JsonSerializer.SerializeToUtf8Bytes(request,
             BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest), BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest)!;
         if (inputs.Scope is null || inputs.Obligations is null || inputs.Payments is null || inputs.Allocations is null
@@ -107,8 +114,11 @@ public static class BondMonitoringEngine
         foreach (var revision in inputs.ReceiptRevisions)
         {
             Evidence(revision.Evidence, revision.ExpectedFlowId);
-            if (!inputs.Obligations.Any(row => row.ObligationId == revision.ExpectedFlowId) || revision.ReceiptDate < today)
-                Add("bond-monitoring.receipt-revision-invalid", "A revised receipt date requires an existing obligation and a current or future date.", revision.ExpectedFlowId);
+            var obligation = inputs.Obligations.FirstOrDefault(row => row.ObligationId == revision.ExpectedFlowId);
+            if (obligation is null || (legacy ? revision.ReceiptDate < today : revision.ReceiptDate == default))
+                Add("bond-monitoring.receipt-revision-invalid", legacy
+                    ? "A revised receipt date requires an existing obligation and a current or future date."
+                    : "A revised receipt date requires an existing obligation and an explicit receipt date.", revision.ExpectedFlowId);
         }
         foreach (var observation in inputs.Observations)
         {
@@ -131,7 +141,8 @@ public static class BondMonitoringEngine
             if (gross != 0m && (Math.Sign(gross) != Math.Sign(obligation.Amount) || Math.Abs(gross) > Math.Abs(obligation.Amount)))
                 Add("bond-monitoring.obligation-overallocated", "Allocated gross cash exceeds the signed obligation.", obligation.ObligationId);
             var revision = inputs.ReceiptRevisions.FirstOrDefault(row => row.ExpectedFlowId == obligation.ObligationId);
-            var overdue = residual != 0m && obligation.DueDate < today && revision is null;
+            var receiptDate = revision?.ReceiptDate ?? obligation.DueDate;
+            var overdue = residual != 0m && (legacy ? obligation.DueDate < today && revision is null : receiptDate < today);
             var unexplained = activePayments.Any(payment => payment.SecurityId == obligation.SecurityId
                 && payment.Currency == obligation.Currency && payment.FlowType == obligation.FlowType
                 && payment.Amount != inputs.Allocations.Where(row => row.ActualVersionId == payment.VersionId).Sum(row => row.NetAmount));
@@ -139,7 +150,7 @@ public static class BondMonitoringEngine
                 obligation.DueDate, obligation.Amount, allocated.Sum(row => row.NetAmount), gross,
                 allocated.Sum(row => row.WithholdingTax), allocated.Sum(row => row.Fees), residual,
                 obligation.Currency, residual == 0m ? "Collected" : unexplained ? "Unexplained" : overdue ? "Overdue" : gross != 0m ? "Partial" : "Expected",
-                residual == 0m ? 0 : Math.Max(0, today.DayNumber - obligation.DueDate.DayNumber), revision?.ReceiptDate,
+                residual == 0m ? 0 : Math.Max(0, today.DayNumber - (legacy ? obligation.DueDate : receiptDate).DayNumber), revision?.ReceiptDate,
                 residual != 0m && !overdue && !unexplained && obligation.IsCurrentHolding, allocated.Select(row => row.ActualVersionId).Distinct().ToArray());
         }).ToArray();
         var watch = inputs.Obligations.Where(row => row.IsCurrentHolding && row.DueDate >= today).Select(row => new BondWatchItemDto(
@@ -215,7 +226,7 @@ public static class BondMonitoringEngine
                     null, payment.Provenance.SourceDomain, true, []));
         }
         var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(inputs, BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest));
-        return new(Sha256Digest.ComputeUtf8($"{EngineVersion}|{hash}"), EngineVersion, inputs, collection,
+        return new(Sha256Digest.ComputeUtf8($"{version}|{hash}"), version, inputs, collection,
             watch.OrderBy(row => row.Date).ThenBy(row => row.WatchId, StringComparer.Ordinal).ToArray(), issues);
 
         void Add(string code, string message, string? id = null) => issues.Add(new(code, message, id));
@@ -277,6 +288,17 @@ public sealed partial class BondMonitoringService(IBondMonitoringStore store,
 {
     public async Task<BondMonitoringSnapshotDto> CaptureAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+        var retained = (await GetHistoryAsync(request.Scope, ct).ConfigureAwait(false))
+            .SingleOrDefault(row => row.Inputs.RunId == request.RunId);
+        if (retained is not null)
+        {
+            var replay = BondMonitoringEngine.Build(request, retained.EngineVersion);
+            if (JsonSerializer.Serialize(replay.Inputs, BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest)
+                != JsonSerializer.Serialize(retained.Inputs, BondMonitoringJsonContext.Default.BondMonitoringCaptureRequest))
+                throw new InvalidOperationException("A monitoring run identity cannot be reused with different inputs.");
+            return retained;
+        }
         var snapshot = BondMonitoringEngine.Build(request);
         if (snapshot.Issues.Count > 0)
             throw new ArgumentException(string.Join(" ", snapshot.Issues.Select(row => row.Message)), nameof(request));
@@ -289,7 +311,7 @@ public sealed partial class BondMonitoringService(IBondMonitoringStore store,
         var history = await store.GetHistoryAsync(scope, ct).ConfigureAwait(false);
         foreach (var snapshot in history)
         {
-            var replay = BondMonitoringEngine.Build(snapshot.Inputs);
+            var replay = BondMonitoringEngine.Build(snapshot.Inputs, snapshot.EngineVersion);
             if (snapshot.Inputs.Scope != scope || JsonSerializer.Serialize(snapshot, BondMonitoringJsonContext.Default.BondMonitoringSnapshotDto)
                 != JsonSerializer.Serialize(replay, BondMonitoringJsonContext.Default.BondMonitoringSnapshotDto))
                 throw new InvalidDataException("Retained bond monitoring failed exact scope or deterministic replay validation.");

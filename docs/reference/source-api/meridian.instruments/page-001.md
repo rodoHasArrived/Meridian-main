@@ -24,7 +24,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string EngineVersion = &quot;account-cash-forecast-v1&quot;;</code> | [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs:11](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs#L11) |  |
 | <code>public static AccountCashForecastSnapshotDto Build(AccountCashForecastRequestDto request);</code> | [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs:13](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs#L13) |  |
-| <code>public static bool IsCompleteScope(AccountCashForecastScopeDto scope) =&gt; …;</code> | [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs:243](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs#L243) |  |
+| <code>public static bool IsCompleteScope(AccountCashForecastScopeDto scope) =&gt; …;</code> | [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs:244](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.cs#L244) |  |
 
 Source: [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs:7](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs#L7).
 
@@ -36,7 +36,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string NativeEngineVersion = &quot;account-cash-forecast-v2&quot;;</code> | [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs:9](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs#L9) |  |
+| <code>public const string LegacyNativeEngineVersion = &quot;account-cash-forecast-v2&quot;;</code> | [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs:9](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs#L9) |  |
+| <code>public const string NativeEngineVersion = &quot;account-cash-forecast-v3&quot;;</code> | [src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs:10](../../../../src/Meridian.Instruments/AssetOperations/AccountCashForecastEngine.V2.cs#L10) |  |
 
 ## AccountCashForecastProjectionAdapter
 

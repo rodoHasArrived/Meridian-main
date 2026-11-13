@@ -353,7 +353,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:13](
 public static partial class LedgerEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L19).
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L20).
 
 ```csharp
 public static partial class LedgerEndpoints
@@ -363,7 +363,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapLedgerBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L22) |  |
+| <code>public static void MapLedgerBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L23) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseExecution.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseExecution.cs#L8).
 

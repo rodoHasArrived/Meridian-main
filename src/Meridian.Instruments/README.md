@@ -23,6 +23,10 @@ reconciles model settlement cash and index ratios to the accepted mark.
 legacy dispatch. Account planning, collection monitoring, risk and sequential performance consume
 accepted holdings and retained inputs; accounting amortization is excluded from market attribution.
 New workflow v2 requests explicitly pin their model; old null-selector v1 receipts replay v1.
+Resolved curve/version pins retain definitions admitted at the knowledge cutoff. Planning and
+capture combine same-identity principal installments before native rounding while retaining coupon
+rights separately. Monitoring v2 and native forecast v3 age residuals from evidenced revised dates;
+historical monitoring v1 and native forecast v2 retain their original replay rules.
 Risk scenarios reuse the selected baseline request/version, and monitoring verifies each retained
 obligation's exact model evidence. Screening drops expired verified European/Bermudan exercises;
 continuous, ambiguous and unresolved calendar-adjusted rights remain conservative or unverified.

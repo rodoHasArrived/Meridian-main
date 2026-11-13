@@ -6,27 +6,29 @@ namespace Meridian.Instruments.AssetOperations;
 
 public static partial class AccountCashForecastEngine
 {
-    public const string NativeEngineVersion = "account-cash-forecast-v2";
+    public const string LegacyNativeEngineVersion = "account-cash-forecast-v2";
+    public const string NativeEngineVersion = "account-cash-forecast-v3";
 
-    private static AccountCashForecastSnapshotDto BuildV2Checked(AccountCashForecastRequestDto request)
+    private static AccountCashForecastSnapshotDto BuildV2Checked(AccountCashForecastRequestDto request, string engineVersion)
     {
         try
-        { return BuildV2(request); }
+        { return BuildV2(request, engineVersion); }
         catch (OverflowException)
         {
             var inputs = Canonicalize(request);
             var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(inputs, AccountCashForecastJsonContext.Default.AccountCashForecastRequestDto));
-            var id = Sha256Digest.ComputeUtf8($"{NativeEngineVersion}|{hash}");
+            var id = Sha256Digest.ComputeUtf8($"{engineVersion}|{hash}");
             var issue = new AccountCashForecastIssueDto("cash-forecast.amount-overflow", "Retained cash amounts exceed supported decimal arithmetic.");
             var ladder = PortfolioCashLadderEngine.BuildFromRetainedContributions(inputs.PeriodStart, inputs.PeriodEnd,
                 inputs.Scope.BaseCurrency, 0m, [], inputs.MinimumCashThreshold, inputs.BucketDays, inputs.RecordedAtUtc, [issue.Message]);
-            return new(id, id, NativeEngineVersion, inputs, null, null, null, null, null, false, ladder, [issue])
+            return new(id, id, engineVersion, inputs, null, null, null, null, null, false, ladder, [issue])
             { CurrencyLadders = [], Residuals = [] };
         }
     }
 
-    private static AccountCashForecastSnapshotDto BuildV2(AccountCashForecastRequestDto request)
+    private static AccountCashForecastSnapshotDto BuildV2(AccountCashForecastRequestDto request, string engineVersion)
     {
+        var legacy = engineVersion == LegacyNativeEngineVersion;
         var inputs = Canonicalize(request);
         if (inputs.PeriodStart == default || inputs.PeriodEnd < inputs.PeriodStart || inputs.PeriodEnd == DateOnly.MaxValue
             || inputs.PeriodEnd.DayNumber - inputs.PeriodStart.DayNumber >= 3660 || inputs.BucketDays is < 1 or > 3660)
@@ -86,8 +88,11 @@ public static partial class AccountCashForecastEngine
         }
         foreach (var revision in revisions)
         {
-            if (!expected.Any(row => row.FlowId == revision.ExpectedFlowId) || revision.ReceiptDate < today)
-                Add("cash-forecast.receipt-revision-invalid", "Revised receipt dates require an existing obligation and cannot be in the past.", revision.ExpectedFlowId);
+            var obligation = expected.FirstOrDefault(row => row.FlowId == revision.ExpectedFlowId);
+            if (obligation is null || (legacy ? revision.ReceiptDate < today : revision.ReceiptDate == default))
+                Add("cash-forecast.receipt-revision-invalid", legacy
+                    ? "Revised receipt dates require an existing obligation and cannot be in the past."
+                    : "Revised receipt dates require an existing obligation and an explicit receipt date.", revision.ExpectedFlowId);
             ValidateAdditionalEvidence(revision.Evidence, revision.ExpectedFlowId);
         }
         foreach (var obligation in expected)
@@ -98,7 +103,7 @@ public static partial class AccountCashForecastEngine
                 Add("cash-forecast.obligation-overallocated", "Allocated gross cash exceeds the signed contractual obligation.", obligation.FlowId);
             var revision = revisions.FirstOrDefault(row => row.ExpectedFlowId == obligation.FlowId);
             var receiptDate = revision?.ReceiptDate ?? obligation.CashReceiptDate;
-            var overdue = residual != 0m && obligation.CashReceiptDate < today && revision is null;
+            var overdue = residual != 0m && (legacy ? obligation.CashReceiptDate < today && revision is null : receiptDate < today);
             var unallocated = actual.Any(receipt => receipt.SecurityId == obligation.SecurityId && receipt.Currency == obligation.Currency
                 && receipt.FlowType == obligation.FlowType && receipt.Amount != allocations.Where(row => row.ActualVersionId == receipt.VersionId).Sum(row => row.NetAmount));
             if (unallocated && residual != 0m)
@@ -170,8 +175,8 @@ public static partial class AccountCashForecastEngine
             Add("cash-forecast.closing-required", "Observed closing cash is required for cash reconciliation certification.");
         var certified = blockers.Length == 0 && !unpaidAtClosing && native.Count > 0 && native.All(row => row.IsCertified) && variance == 0m;
         var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(inputs, AccountCashForecastJsonContext.Default.AccountCashForecastRequestDto));
-        var identity = Sha256Digest.ComputeUtf8($"{NativeEngineVersion}|{hash}");
-        return new(identity, identity, NativeEngineVersion, inputs, openingBase, actualBase, reconciled, closingBase, variance,
+        var identity = Sha256Digest.ComputeUtf8($"{engineVersion}|{hash}");
+        return new(identity, identity, engineVersion, inputs, openingBase, actualBase, reconciled, closingBase, variance,
             certified, baseLadder, issues.Distinct().ToArray())
         { CurrencyLadders = native.Select(row => row.ForecastLadder).ToArray(), Residuals = residuals };
 

@@ -74,22 +74,7 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
                 directions[group.Key] = direction;
                 var inputs = result.Inputs.Append(new BondCalculationInput("HoldingsSnapshot", snapshot.BatchId.ToString("D"),
                     ContentSha256: snapshot.SourceContentHash, AsOf: new DateTimeOffset(snapshot.AsOfDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero))).ToArray();
-                foreach (var flow in result.CashFlows)
-                {
-                    if (flow.Interest != 0m)
-                        AddObligation("Coupon", direction * flow.Interest);
-                    if (flow.Principal != 0m)
-                        AddObligation("Principal", direction * flow.Principal);
-                    void AddObligation(string kind, decimal amount)
-                    {
-                        var payable = LedgerCurrencyRounding.RoundCurrency(amount, result.Currency);
-                        if (payable == 0m)
-                            return;
-                        var id = ObligationIdentity(request.Scope, group.Key, kind, flow.PaymentDate, flow.AccrualStart);
-                        obligations.Add(new(id, group.Key, kind, flow.PaymentDate,
-                            payable, result.Currency, result.ModelVersion, inputs, flow.IsForecast));
-                    }
-                }
+                obligations.AddRange(ProjectObligations(request.Scope, group.Key, result, direction, inputs));
             }
         }
         var history = await monitoring.GetHistoryAsync(request.Scope, ct).ConfigureAwait(false);
@@ -183,6 +168,24 @@ public sealed class AccountBondIncomePlanningService(IAccountBondHoldingsSource 
 
     public static string ObligationIdentity(AccountCashForecastScopeDto scope, Guid security, string kind, DateOnly payment, DateOnly accrual) =>
         Sha256Digest.ComputeUtf8($"{scope.AccountId}|{scope.BookId}|{security:D}|{kind}|{payment:yyyy-MM-dd}|{accrual:yyyy-MM-dd}");
+
+    internal static IReadOnlyList<BondMonitoringObligationDto> ProjectObligations(AccountCashForecastScopeDto scope,
+        Guid securityId, BondWorkflowResult result, int direction, IReadOnlyList<BondCalculationInput> inputs)
+    {
+        var coupons = result.CashFlows.Where(flow => flow.Interest != 0m).Select(flow =>
+            (Kind: "Coupon", flow.PaymentDate, flow.AccrualStart, Amount: flow.Interest, flow.IsForecast));
+        // A final installment and residual balloon can be separate model rows for one obligation.
+        // Sum raw principal before its single native cash boundary; coupon rights remain separate.
+        var principal = result.CashFlows.Where(flow => flow.Principal != 0m)
+            .GroupBy(flow => (flow.PaymentDate, flow.AccrualStart))
+            .Select(group => (Kind: "Principal", group.Key.PaymentDate, group.Key.AccrualStart,
+                Amount: group.Sum(flow => flow.Principal), IsForecast: group.Any(flow => flow.IsForecast)));
+        return coupons.Concat(principal).Select(row => new BondMonitoringObligationDto(
+                ObligationIdentity(scope, securityId, row.Kind, row.PaymentDate, row.AccrualStart),
+                securityId, row.Kind, row.PaymentDate, LedgerCurrencyRounding.RoundCurrency(direction * row.Amount, result.Currency),
+                result.Currency, result.ModelVersion, inputs, row.IsForecast))
+            .Where(row => row.Amount != 0m).ToArray();
+    }
 
     private static IReadOnlyList<BondMonitoringResetDto> ResetInputs(IReadOnlyList<BondWorkflowResult> calculations,
         IReadOnlyDictionary<Guid, int> directions, BondMonitoringSnapshotDto? previous)

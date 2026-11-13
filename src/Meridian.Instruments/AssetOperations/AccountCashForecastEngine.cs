@@ -20,7 +20,8 @@ public static partial class AccountCashForecastEngine
         return request.CalculationVersion switch
         {
             null or EngineVersion => BuildV1(request),
-            NativeEngineVersion => BuildV2Checked(request),
+            LegacyNativeEngineVersion => BuildV2Checked(request, LegacyNativeEngineVersion),
+            NativeEngineVersion => BuildV2Checked(request, NativeEngineVersion),
             _ => throw new ArgumentException("The requested account cash forecast engine is not retained.", nameof(request))
         };
     }

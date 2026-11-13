@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Meridian.Contracts.FixedIncome;
-using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.FixedIncome;
 
@@ -41,7 +40,7 @@ public sealed partial class BondMonitoringService
                 || models.Length != 1 || models[0].Key != obligation.ModelVersion)
                 throw new InvalidOperationException("Monitoring obligations require one exact supported retained workflow model and matching CalculationModel input; refresh ambiguous or unsupported source evidence explicitly.");
         }
-        var authoritative = new Dictionary<string, (Guid Security, string Kind, DateOnly Due, decimal Amount, string Currency, string Model)>();
+        var authoritative = new Dictionary<string, (Guid Security, string Kind, DateOnly Due, decimal Amount, string Currency, string Model, bool IsForecast)>();
         foreach (var group in snapshot.Positions.Where(row => row.Bond is not null && row.SecurityId is { } id && id != Guid.Empty)
             .GroupBy(row => row.SecurityId!.Value))
         {
@@ -57,26 +56,14 @@ public sealed partial class BondMonitoringService
                 || rows.Select(row => row.Currency).Distinct().Count() != 1
                 || result.Currency != rows[0].Currency || result.CurrentFace != Math.Abs(rows.Sum(row => row.IsShort ? -Math.Abs(row.Bond!.CurrentFace) : row.Bond!.CurrentFace)))
                 throw new InvalidOperationException("Retained bond economics do not reproduce accepted account holdings for monitoring capture.");
-            foreach (var flow in result.CashFlows)
-            {
-                if (flow.Interest != 0m)
-                    Add("Coupon", flow.Interest);
-                if (flow.Principal != 0m)
-                    Add("Principal", flow.Principal);
-                void Add(string kind, decimal value)
-                {
-                    var payable = LedgerCurrencyRounding.RoundCurrency(Math.Sign(face) * value, result.Currency);
-                    if (payable == 0m)
-                        return;
-                    var identity = AccountBondIncomePlanningService.ObligationIdentity(request.Scope, group.Key, kind, flow.PaymentDate, flow.AccrualStart);
-                    authoritative.Add(identity, (group.Key, kind, flow.PaymentDate,
-                        payable, result.Currency, result.ModelVersion));
-                }
-            }
+            foreach (var obligation in AccountBondIncomePlanningService.ProjectObligations(request.Scope, group.Key, result,
+                Math.Sign(face), result.Inputs))
+                authoritative.Add(obligation.ObligationId, (group.Key, obligation.FlowType, obligation.DueDate,
+                    obligation.Amount, result.Currency, result.ModelVersion, obligation.IsForecast));
         }
         if (active.Length != authoritative.Count || active.Any(row => !authoritative.TryGetValue(row.ObligationId, out var value)
             || row.SecurityId != value.Security || row.FlowType != value.Kind || row.DueDate != value.Due || row.Amount != value.Amount
-            || row.Currency != value.Currency || row.ModelVersion != value.Model
+            || row.Currency != value.Currency || row.ModelVersion != value.Model || row.IsForecast != value.IsForecast
             || !row.Inputs.Any(input => input.Kind == "HoldingsSnapshot" && input.Key == snapshot.BatchId.ToString("D")
                 && input.ContentSha256 == snapshot.SourceContentHash)))
             throw new InvalidOperationException("Captured monitoring obligations differ from canonical accepted holdings and retained calculation inputs.");

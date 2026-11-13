@@ -159,6 +159,10 @@ Use existing Security Master curve definitions and immutable published versions.
 `SignedRates` explicitly permits signed forwards and strictly positive discount factors that may
 exceed one or rise between pillars. Define a new curve key to change policy. Pin calculation roles
 as `Discount`, `Forward:<index>` or `Inflation:<index>`. Retain version/hash and economic/recorded dates.
+Automatic selection admits definitions known at the knowledge cutoff and retains the resolved
+curve/version pins for replay; later catalog additions do not change those selections.
+Receipts that used a definition created after their knowledge cutoff require source review and
+a new calculation; replay refuses that look-ahead evidence.
 Negative coupons remain obligations unless a contractual floor applies; no missing floor becomes zero.
 
 Connection readiness separates implementation, exact connection configuration, input-specific
@@ -174,6 +178,8 @@ answers annual income questions. Plans use accepted scoped holdings and actual f
 Security Master inventory as a substitute for owned quantities. Native ladders stay separate.
 Base-currency totals need retained dated directed FX; there is no 1:1 or inverse-pair fallback.
 Missing or excluded inputs remain visible.
+Principal installments and residual balloons sharing one obligation identity are combined before
+native-currency cash rounding, so planning and monitoring capture retain one payable amount.
 
 Simple floaters need exact observed resets for elapsed periods and eligible forward inputs for future
 resets. Compounded overnight coupons also require fixing calendar, lookback, observation method,
@@ -200,8 +206,12 @@ change across all refreshed inputs. Contractual caps, floors, held face and paya
 come from the shared bond model.
 
 Expected/actual status exposes overdue, partial, short, overpaid and unexplained cash. Revised receipt
-dates retain original obligations. Overdue residuals do not become spendable simply because they were
+dates retain original obligations and remain valid history after their dates pass. Unpaid residuals
+age from the evidenced revised date. Overdue residuals do not become spendable simply because they were
 forecast. Positive coupons create receivables; negative coupons payables and signed outflows.
+New monitoring snapshots use `bond-monitoring-v2`; native forecast requests select
+`account-cash-forecast-v3`. Historical monitoring v1 and native forecast v2 snapshots replay their
+original rules and identities.
 Captured exceptions enter existing reconciliation casework. Later source-clearing evidence does not
 automatically resolve, sign off or reopen a governed case; use the existing casework commands.
 

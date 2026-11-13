@@ -2213,91 +2213,91 @@
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-workflows/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:25",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-income/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:33",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:34",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-monitoring",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:53",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:54",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-monitoring",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:60",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:61",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:92",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:93",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk/{runId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:106",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:107",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:115",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:116",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons/{runId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:131",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:132",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:140",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:141",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance/transactions/import",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:148",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:149",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-holdings/import",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:158",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:159",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:169",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:170",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/prepare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:181",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:182",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:197",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:198",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-prepare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:207",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:208",
       "documented": true
     },
     {

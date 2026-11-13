@@ -7,6 +7,7 @@ using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.FixedIncome;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
@@ -40,7 +41,7 @@ public static partial class LedgerEndpoints
                     return Results.BadRequest(new { error = "Opening balances and explicit FX collections are required." });
                 var sources = new AccountCashForecastRequestDto("verify-planning-inputs", scope.ForecastScope,
                     bound.PeriodStart, bound.PeriodEnd, null, null, [], bound.FxConversions, DateTimeOffset.UtcNow)
-                { CalculationVersion = "account-cash-forecast-v2", NativeOpeningBalances = bound.OpeningBalances };
+                { CalculationVersion = AccountCashForecastEngine.NativeEngineVersion, NativeOpeningBalances = bound.OpeningBalances };
                 await new AccountCashForecastEvidenceAdapter(context.RequestServices.GetRequiredService<IEvidenceArtifactStore>())
                     .VerifyAsync(sources, context.RequestAborted).ConfigureAwait(false);
                 var result = await context.RequestServices.GetRequiredService<IAccountBondIncomePlanningService>()
