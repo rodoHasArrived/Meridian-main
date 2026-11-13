@@ -166,19 +166,41 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.getByRole("region", { name: "Daily control tower confidence" }))
       .toHaveTextContent(`${total} items in the finance queue`);
 
-    // Two lists, two units, each named and described; the counted queue comes first.
+    // One queue, two sources, each named and described; the counted source comes first.
     const financeQueue = screen.getByRole("region", { name: "Finance queue" });
     const inbox = screen.getByRole("region", { name: "Operator inbox" });
     expect(within(financeQueue).getByRole("heading", { name: "Finance queue" })).toBeInTheDocument();
     expect(financeQueue).toContainElement(queue);
-    expect(financeQueue).toHaveTextContent("Signals from the loaded workspaces; the sidebar badges count these.");
+    expect(financeQueue).toHaveTextContent("Source: workspace signals. The sidebar badges count these.");
     expect(within(inbox).getByRole("heading", { name: "Operator inbox" })).toBeInTheDocument();
     expect(within(inbox).getByRole("table", { name: "Stub operator inbox" })).toHaveTextContent("Stub inbox item");
-    expect(inbox).toHaveTextContent("Triage items from the shared host, with assignment and snooze.");
+    expect(inbox).toHaveTextContent("Source: shared inbox. Assign, snooze and acknowledge here.");
     expect(financeQueue.compareDocumentPosition(inbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Both sources sit under the one Queue heading.
+    const queueSection = screen.getByRole("region", { name: "Queue" });
+    expect(queueSection).toContainElement(financeQueue);
+    expect(queueSection).toContainElement(inbox);
 
     const results = await axe(container);
     expect(results.violations).toEqual([]);
+  });
+
+  it("filters the one Today queue by source without losing either list", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+    const source = screen.getByRole("tablist", { name: "Queue source" });
+
+    await user.click(within(source).getByRole("tab", { name: /Shared inbox/ }));
+    expect(screen.queryByRole("region", { name: "Finance queue" })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Operator inbox" })).toBeInTheDocument();
+
+    await user.click(within(source).getByRole("tab", { name: /Workspace signals/ }));
+    expect(screen.getByRole("region", { name: "Finance queue" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Operator inbox" })).not.toBeInTheDocument();
+
+    await user.click(within(source).getByRole("tab", { name: /All sources/ }));
+    expect(screen.getByRole("region", { name: "Finance queue" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Operator inbox" })).toBeInTheDocument();
   });
 
   it("states the workstation status in one line that names only the open issues", () => {

@@ -88,11 +88,17 @@ only, so the trust strip is the one shell place that names the worst open issue.
   changes are thousands separators on signed percents and returns of 1,000 or more, "-0" counts
   now reading "0", and a trimmed currency code.
 
+**P1 third step (landed 2026-11-13):** Today's "Finance queue" and "Operator inbox" now sit
+under one Queue heading with a Source filter (All sources, Workspace signals, Shared inbox). The
+inbox keeps its assignment, snooze and acknowledge controls. The two sources still render as two
+tables: interleaving them into one grid needs a shared row model for workspace signals and inbox
+items, which is a follow-up.
+
 **Remaining in Phase 1:**
 - Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
 - Bring `handRolledNumberFormatting` (now 72) to 0.
 - One date format with a time-zone preference.
-- The rest of P1 (one merged Today queue) and the P4 scope bar.
+- A single interleaved Today grid (shared row model) and the P4 scope bar.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the

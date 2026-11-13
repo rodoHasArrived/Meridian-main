@@ -1025,7 +1025,7 @@ is known and not live, the panel and row are a neutral setup state with a "Choos
 a live, unknown or failed state keeps the blocked row. The sidebar pins `Today` (the Daily Control
 Tower) above the seven workspaces and shows per-workspace attention counts from
 `selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as its Finance queue
-(above the Operator inbox); each count is part of its link's accessible name, the badge sits beside
+(above the Operator inbox, both under one Queue heading with a Source filter); each count is part of its link's accessible name, the badge sits beside
 the link so the visible label stays in the name, and the link's tooltip names the unit
 (`3 items from Accounting in Today's finance queue`).
 

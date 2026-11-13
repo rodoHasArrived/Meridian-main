@@ -21,6 +21,10 @@ import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+
+/** Which source the one Today queue shows (UX consolidation P1). */
+export type TodayQueueSource = "all" | "workspace" | "inbox";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
@@ -45,6 +49,7 @@ export function DailyControlTowerScreen({
   // leaving the tower. Falls back to the leading decision's row until one is chosen
   // (or when the chosen row leaves the queue on refresh).
   const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
+  const [queueSource, setQueueSource] = useState<TodayQueueSource>("all");
   const selectedQueueRow =
     model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.leadingRow;
   const evidencePanelId = "daily-control-tower-evidence-detail";
@@ -146,13 +151,30 @@ export function DailyControlTowerScreen({
         </div>
       </section>
 
-      {/* Two lists, two units. The finance queue is exactly what the sidebar Today badge, the
-          status row and the footer count, so it always renders. The operator inbox is the shared
-          host's triage population; it is not a subset of the queue and is counted separately. */}
+      {/* One queue, two sources (UX consolidation P1). The workspace signals are exactly what the
+          sidebar Today badge and the masthead count; the shared inbox is the host's triage
+          population, which is not a subset of them and keeps its own assignment and snooze. One
+          heading and one Source filter make this the single to-do list on Today. */}
+      <section aria-labelledby="today-queue-heading" className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 id="today-queue-heading" className="text-sm font-semibold">Queue</h3>
+          <SegmentedControl
+            aria-label="Queue source"
+            size="sm"
+            value={queueSource}
+            onChange={(value) => setQueueSource(value as TodayQueueSource)}
+            options={[
+              { value: "all", label: "All sources" },
+              { value: "workspace", label: "Workspace signals", count: model.queueRows.length },
+              { value: "inbox", label: "Shared inbox" }
+            ]}
+          />
+        </div>
+      {queueSource !== "inbox" ? (
       <section aria-label="Finance queue" className="space-y-2">
         <div>
-          <h3 className="text-sm font-semibold">Finance queue</h3>
-          <p className="text-xs text-muted-foreground">Signals from the loaded workspaces; the sidebar badges count these.</p>
+          <h4 className="text-sm font-semibold">Finance queue</h4>
+          <p className="text-xs text-muted-foreground">Source: workspace signals. The sidebar badges count these.</p>
         </div>
         {model.queueRows.length > 0 ? (
           <div onKeyDownCapture={queueKeyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
@@ -206,17 +228,21 @@ export function DailyControlTowerScreen({
           </PanelSurface>
         )}
       </section>
+      ) : null}
 
+      {queueSource !== "workspace" ? (
       <section aria-label="Operator inbox" className="space-y-2">
         <div>
-          <h3 className="text-sm font-semibold">Operator inbox</h3>
-          <p className="text-xs text-muted-foreground">Triage items from the shared host, with assignment and snooze.</p>
+          <h4 className="text-sm font-semibold">Operator inbox</h4>
+          <p className="text-xs text-muted-foreground">Source: shared inbox. Assign, snooze and acknowledge here.</p>
         </div>
         <OperatorTriageQueue
           key={viewModel.operatingScope.fundAccountId ?? "all"}
           fundAccountId={viewModel.operatingScope.fundAccountId}
           refreshKey={refreshing}
         />
+      </section>
+      ) : null}
       </section>
 
     </div>
