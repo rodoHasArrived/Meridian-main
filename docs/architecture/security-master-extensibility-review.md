@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-11
-**Review history:** owner decisions on the close-out pass 2026-11-11; close-out pass 2026-11-10; increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-12
+**Review history:** scheduled institutional-requirements pass 2026-11-12; owner decisions on the close-out pass 2026-11-11; close-out pass 2026-11-10; increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -9920,3 +9920,65 @@ record did.
   stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility
   proof, as S3-E1 to S3-E4 did. The module homes for the residual complement are part of that
   work.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-11-12
+
+**Source:** `c31dfaf9` (main after #3516). **Interval:** the seven Security Master source files that
+changed after this record's last commit (`9b1d16d9`): the amortization ledger bridge, the cash-flow
+service and DTO, the legacy ledger bridge, and the corporate-action inbox export. Everything else
+stands as dispositioned in the 2026-11-10 close-out and the 2026-11-11 owner decisions; this pass
+does not re-review it.
+
+**Verdict:** no regression in the asset model, identifier resolution, projections, provenance,
+schema versioning, or governed edits. The interval adds day-weighted, lot-aware coupon accrual
+for recurring journals and marks two posting paths `PostingCalculationNotYetConnected`. Three
+fragile patterns arrived with it. None blocks a new asset class today, but J1 will when a
+non-bond class goes through the accrual window.
+
+### J1 — Par-of-100 lot convention hard-coded in the accrual window (medium)
+
+`SecurityMasterAmortizationLedgerBridge.HeldCouponAccruedInWindow` computes a lot's face share as
+`lot.Quantity * ParPrice / principalBasis` with `ParPrice = 100m` ("bond lots hold quantity in
+units of 100 of par"). The premium/discount path already used the same constant. This puts a
+quote convention in an accounting calculation instead of reading it from the unified lot model
+(`FaceValueLot` / `LotQuantity`) or the descriptor-owned quote convention (`SecurityQuoteConvention`).
+A loan, CD, deposit, or a factored pool that reaches this bridge with face-denominated quantity
+would accrue at 100× or 1/100×. **Remedy:** derive face from the lot model or the class's quote
+convention, and refuse a lot whose quantity unit the bridge cannot read.
+
+### J2 — Unserialized side-channel members on a retained wire DTO (low–medium)
+
+`StructuredCashFlowScheduleEntry` gains `[JsonIgnore]` `InterestMeasuredFrom/To` and a hand-written
+`Equals`/`GetHashCode` so calculation receipts still replay. The rationale is sound, but the pattern
+is fragile: any member added later must be added to `Equals` by hand or replay equality silently
+narrows, and the accrual interval is lost on any serialize/deserialize hop. **Remedy:** version the
+receipt row shape (a schema-versioned receipt, as ADR-027 does for terms) so the interval can be a
+serialized member, or move the interval to a calculation-only type outside the wire record. Until
+then, a reflection test should assert that `Equals` covers every serialized member.
+
+### J3 — Blocked projection reported as "nothing to post" in the bridge (low)
+
+`PostProjectedCashFlowsAsync` returns 0 with a Debug log when `Schedule.Count == 0`. That check
+runs before `StructuredCashFlowLedgerGate.EvaluateBlockReason`. A projection that carries a typed
+`Blocker` (`NegativeInterestUnsupported`, rate unit unavailable) has an empty schedule, so it is
+reported as "no projection" rather than as blocked. The one production caller
+(`RecurringJournalCalculations`) checks the gate itself first, so this is latent. **Remedy:**
+evaluate the gate before the empty-schedule check. This keeps the 2026-11-11 negative-rate
+decision (block with a typed reason) intact for any future caller. Also in this file: a stray
+duplicated `<summary>` block above `HeldCouponAccruedInWindow` (cosmetic).
+
+### Standing priorities (unchanged; from the 2026-11-11 owner decisions)
+
+1. ADR-027 S3-E record contraction, one field group at a time, with replay proofs.
+2. D10 code is delivered in the follow-through (`rateUnit` repair term, `NegativeInterestUnsupported`).
+   StructuredNote FVTPL waits for its accounting template.
+3. Retire or repoint the two `PostingCalculationNotYetConnected` paths. Redemptions still need a
+   lot-relieving governed path.
+4. J1 before any non-bond class is admitted to recurring accrual journals.
+5. J2 receipt-row versioning, so calculation working data stops depending on hand-maintained equality.
+
+Validation: source inspection only (`git diff 9b1d16d9 c31dfaf9` over the Security Master paths).
+No build or tests were run; no code changed.
+
