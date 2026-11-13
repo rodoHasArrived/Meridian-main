@@ -71,8 +71,12 @@ or mutation authority. Presentational Settings sections live beside the screen:
 `settings-screen.profile-sections.tsx` (profile authentication, system posture, appearance),
 `settings-screen.brokerage-sections.tsx` (Alpaca and Robinhood), `settings-screen.diagnostics-section.tsx`,
 and `settings-screen.capability-sections.tsx` (runtime and backend capabilities), with shared chips and
-tone helpers in `settings-screen.section-primitives.tsx`. The screen keeps state, handlers, and the
-route-driven section gates. Accounting Security Master selection/search state belongs to
+tone helpers in `settings-screen.section-primitives.tsx`. The state-heavy sections pair a private
+`useSettings<Section>SectionState` hook with their component in `settings-screen.scoped-access-section.tsx`,
+`settings-screen.operations-section.tsx`, `settings-screen.asset-profile-section.tsx`, and
+`settings-screen.provider-section.tsx`; draft-state shapes shared with the screen live in
+`settings-screen.section-state.ts`. The screen keeps shared state, the effects that reconcile it with
+incoming props, the mutation-confirmation dialog, and the route-driven section gates. Accounting Security Master selection/search state belongs to
 `accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
 instrument-passport projections belong to `accounting-screen.security-projections.ts`.
 The Accounting screen composes its larger panels from sibling modules:

@@ -9960,6 +9960,7 @@ Meridian-main
 │   │   │   │   │   ├── settings-route-state.test.ts
 │   │   │   │   │   ├── settings-route-state.ts
 │   │   │   │   │   ├── settings-screen.a11y.test.tsx
+│   │   │   │   │   ├── settings-screen.asset-profile-section.tsx
 │   │   │   │   │   ├── settings-screen.brokerage-sections.tsx
 │   │   │   │   │   ├── settings-screen.capability-sections.tsx
 │   │   │   │   │   ├── settings-screen.date-format.ts
@@ -9967,8 +9968,12 @@ Meridian-main
 │   │   │   │   │   ├── settings-screen.execution-alerts.tsx
 │   │   │   │   │   ├── settings-screen.operations-control.ts
 │   │   │   │   │   ├── settings-screen.operations-form-options.ts
+│   │   │   │   │   ├── settings-screen.operations-section.tsx
 │   │   │   │   │   ├── settings-screen.profile-sections.tsx
+│   │   │   │   │   ├── settings-screen.provider-section.tsx
+│   │   │   │   │   ├── settings-screen.scoped-access-section.tsx
 │   │   │   │   │   ├── settings-screen.section-primitives.tsx
+│   │   │   │   │   ├── settings-screen.section-state.ts
 │   │   │   │   │   ├── settings-screen.test.tsx
 │   │   │   │   │   ├── settings-screen.tsx
 │   │   │   │   │   ├── settings-screen.view-model.test.ts
