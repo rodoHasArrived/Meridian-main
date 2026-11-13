@@ -60,12 +60,28 @@ public sealed partial class PostgresLedgerJournalStore
     }
 
     private async Task<IAsyncDisposable?> AcquireAgreementAuthorityAsync(NpgsqlConnection connection,
-        NpgsqlTransaction transaction, LedgerJournalEntryWrite write, CancellationToken ct)
+        NpgsqlTransaction transaction, LedgerJournalEntryWrite write, CancellationToken ct,
+        Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof? structureAuthority = null)
     {
-        if (!IntercompanyAgreementPostingGuard.HasReferences(write.Entry))
+        var request = await BuildAgreementAuthorityRequestAsync(connection, transaction, write, ct, structureAuthority).ConfigureAwait(false);
+        if (request is null)
             return null;
         var authority = _intercompanyAgreementAuthority?.Invoke()
             ?? throw new LedgerValidationException("Authoritative intercompany agreement validation is unavailable; posting is blocked.");
+        try
+        {
+            return await authority.AcquireValidatedLeaseAsync(request, ct).ConfigureAwait(false)
+                ?? throw new LedgerValidationException("Agreement authority did not retain its validation lease.");
+        }
+        catch (InvalidOperationException exception) { throw new LedgerValidationException(exception.Message); }
+    }
+
+    private async Task<IntercompanyAgreementPostingRequest?> BuildAgreementAuthorityRequestAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, LedgerJournalEntryWrite write, CancellationToken ct,
+        Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof? structureAuthority = null)
+    {
+        if (!IntercompanyAgreementPostingGuard.HasReferences(write.Entry))
+            return null;
         if (write.LedgerBookId is not { } bookId)
             throw new LedgerValidationException("Agreement posting requires an authoritative ledger-book identity.");
         // Book locks precede independent agreement/structure locks and the ledger audit head.
@@ -90,10 +106,36 @@ public sealed partial class PostgresLedgerJournalStore
             verifiedReversal = true;
         }
         var request = IntercompanyAgreementPostingGuard.BuildRequest(write, book, tenant, verifiedReversal);
+        request.StructureAuthorityProof = structureAuthority;
+        return request;
+    }
+
+    private async Task<IAsyncDisposable?> AcquireCanonicalBatchAuthorityAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, IReadOnlyList<LedgerPostingAuthorityContext> contexts, CancellationToken ct)
+    {
+        var requested = new List<(LedgerPostingAuthorityContext Context, IntercompanyAgreementPostingRequest Request)>();
+        foreach (var context in contexts.Where(item => item.Book.LedgerBookId != Guid.Empty))
+        {
+            var request = await BuildAgreementAuthorityRequestAsync(connection, transaction, context.Write, ct,
+                context.StructureAuthorityProof).ConfigureAwait(false);
+            if (request is not null)
+                requested.Add((context, request));
+        }
+        if (requested.Count == 0)
+            return null;
+        var authority = _intercompanyAgreementAuthority?.Invoke()
+            ?? throw new LedgerValidationException("Authoritative intercompany agreement validation is unavailable; posting is blocked.");
         try
         {
-            return await authority.AcquireValidatedLeaseAsync(request, ct).ConfigureAwait(false)
+            var lease = (authority is IIntercompanyAgreementBatchPostingAuthority batch
+                ? await batch.AcquireValidatedBatchLeaseAsync(requested.Select(item => item.Request).ToArray(), ct).ConfigureAwait(false)
+                : requested.Count == 1 ? await authority.AcquireValidatedLeaseAsync(requested[0].Request, ct).ConfigureAwait(false)
+                    : throw new LedgerValidationException("Native agreement authority cannot retain one lease for this multi-journal transaction."))
                 ?? throw new LedgerValidationException("Agreement authority did not retain its validation lease.");
+            if (lease is Meridian.Storage.FundStructure.IIntercompanyAgreementPostingLease retained)
+                foreach (var item in requested)
+                    item.Context.VerifiedCanonicalAgreementRevisions = retained.Agreements.SelectMany(state => state.Revisions).ToArray();
+            return lease;
         }
         catch (InvalidOperationException exception)
         {

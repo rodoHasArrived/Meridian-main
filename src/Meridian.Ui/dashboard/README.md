@@ -17,6 +17,20 @@ account changes and unmounting retire older callbacks. The preference, journal a
 controls use the shared keyboard-focus and target-size contracts. The journal's **Before date**
 filter uses an exclusive UTC end boundary, matching the execution summary.
 
+Accounting's entity and intercompany view uses shared host contracts for authorized entity history,
+accounting profiles, source-linked proposals, breaks and versioned consolidation. Each accounting
+profile pins a canonical approved legal agreement ID, integer version and payload hash; operators
+configure book/account mappings without copying or editing legal terms. Legal authoring and
+independent approval remain in Accounting Configure's canonical agreement registry. Financial amounts and
+capabilities come from the host. Current draft scope must match the preview before mutation;
+loading, stale, blocked and unavailable states remain visible. See
+[intercompany operations](../../../docs/operators/intercompany-entity-controls.md).
+Guarantee mappings and FX options use shared keyboard-focus and target-size controls; disabled
+commands explain their existing blockers. Controlled-close receipt navigation retains the server
+response's journal, book, profile and version even when the next request is edited; incomplete
+receipt identities provide no journal link. Active FX edits retain their as-of scope until save or
+explicit cancel, and pending saves retain the mounted editor.
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Accounting Security Master selection/search state belongs to
@@ -29,6 +43,13 @@ The existing four fixed-number and one signed-money formatting ratchet allowance
 unchanged declarations into the projections module; aggregate ceilings remain unchanged.
 The Settings typography allowance likewise follows the unchanged JSX: 16 occurrences remain in
 the screen and 45 belong to the provider components, retaining the prior aggregate ceiling of 61.
+Fund-structure setup transport types live in `lib/api/fund-structure-setup.contracts.ts`, with
+`lib/api.ts` retaining its public type exports. Trading promotion checklist and retained-evidence
+helpers live in `trading-screen.promotion-evidence.ts`; the existing view-model entrypoint retains
+its public exports. Payloads, evidence-token rules and approval semantics are unchanged. Three
+existing fixed-number formatting allowances follow their identical declarations into the helper;
+the original aggregate allowance of six is unchanged.
+
 Strategy overview composition lives in `strategy-overview-hub.tsx`; equity-path comparison state,
 load results and presentation live in `strategy-screen.equity-paths.view-model.ts` and
 `strategy-screen.equity-paths.tsx`. The existing Strategy
@@ -2476,6 +2497,8 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

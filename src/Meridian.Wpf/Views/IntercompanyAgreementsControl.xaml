@@ -41,6 +41,8 @@
                 <Button Content="New agreement" Command="{Binding NewCommand}" VerticalAlignment="Center" />
             </WrapPanel>
             <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding MigrationWarnings}" TextWrapping="Wrap"
+                       AutomationProperties.Name="Legal agreement lifecycle migration warnings" />
             <DataGrid ItemsSource="{Binding Agreements}" SelectedItem="{Binding SelectedRow}" MinHeight="130" MaxHeight="260" AutomationProperties.Name="Agreement list">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="110" />

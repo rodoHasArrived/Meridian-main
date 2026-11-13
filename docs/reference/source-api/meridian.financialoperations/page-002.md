@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DistributionDeclarationRecord
+
+Qualified name: <code>Meridian.FinancialOperations.FundAdministration.DistributionDeclarationRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:40](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L40).
+
+One declared distribution to one investor and the waterfall tiers it paid. Later distributions to the same investor read the earlier tiers from here, so return of capital, preferred return and GP catch-up are each paid once across the fund&#x27;s life.
+
+```csharp
+public sealed record DistributionDeclarationRecord(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, string InvestorId, string DistributionId, DateOnly EffectiveDate, Guid JournalEntryId, decimal ContributedCapital, decimal PreferredReturnAccrued, decimal AmountToDistribute, decimal CarryRate, decimal CatchUpRate, decimal ReturnOfCapital, decimal PreferredReturn, decimal GpCatchUp, decimal LpCatchUp, decimal LpCarry, decimal GpCarry, string DeclaredBy, DateTimeOffset DeclaredAtUtc);
+```
+
+## FileDistributionRegister
+
+Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileDistributionRegister</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:153](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L153).
+
+File-backed IDistributionRegister; a corrupt snapshot is an error.
+
+```csharp
+public sealed class FileDistributionRegister(string directory) : JsonFileSnapshotStore<FileDistributionRegister.Snapshot>(Path.Combine(directory, "distribution-register.json"), FundAdministrationRegisterJson.Options), IDistributionRegister
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireDeclarationLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:157](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L157) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DistributionDeclarationRecord&gt;&gt; ListAsync(string tenantId, string companyId, string fundProfileId, Guid ledgerBookId, string investorId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:161](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L161) |  |
+| <code>public Task&lt;DistributionDeclarationRecord&gt; RecordAsync(DistributionDeclarationRecord record, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:168](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L168) |  |
+
+## Snapshot
+
+Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileDistributionRegister.Snapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:194](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L194).
+
+```csharp
+public sealed record Snapshot(IReadOnlyList<DistributionDeclarationRecord> Distributions);
+```
+
+## FileFixedAssetRegister
+
+Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileFixedAssetRegister</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:97](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L97).
+
+File-backed IFixedAssetRegister. A corrupt snapshot is an error, never an empty register: losing the register must block depreciation, not silently stop it.
+
+```csharp
+public sealed class FileFixedAssetRegister(string directory) : JsonFileSnapshotStore<FileFixedAssetRegister.Snapshot>(Path.Combine(directory, "fixed-asset-register.json"), FundAdministrationRegisterJson.Options), IFixedAssetRegister
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;FixedAssetRegisterEntry&gt;&gt; ListAsync(string tenantId, string companyId, string fundProfileId, Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:101](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L101) |  |
+| <code>public Task&lt;FixedAssetRegisterEntry&gt; UpsertAsync(FixedAssetRegisterEntry entry, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs:108](../../../../src/Meridian.FinancialOperations/FundAdministration/FundAdministrationRegisters.cs#L108) |  |
+
 ## Snapshot
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.FileFixedAssetRegister.Snapshot</code>. Kind: `record`.
@@ -132,7 +193,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.IRecurringJournalSession</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:104](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L104).
+Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:109](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L109).
 
 The lease covers planning, claim retention, intake and completion. Dispose before reentering the store. Every mutating method commits before returning; disposal does not commit changes.
 
@@ -144,25 +205,26 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IReadOnlyList&lt;RecurringTemplateDefinition&gt; Templates { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:106](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L106) |  |
-| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; Schedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:107](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L107) |  |
-| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; CurrentSchedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:108](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L108) |  |
-| <code>IReadOnlyList&lt;RecurringOccurrenceRecord&gt; Occurrences { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:109](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L109) |  |
-| <code>IReadOnlyList&lt;RecurringDefinitionActivation&gt; Activations { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:110](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L110) |  |
-| <code>RecurringScheduleDefinition GetCurrentSchedule(string scheduleId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:111](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L111) |  |
-| <code>RecurringTemplateDefinition GetCurrentTemplate(string templateId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:112](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L112) |  |
-| <code>Task ActivateDefinitionsAsync(string scheduleId, int scheduleVersion, int templateVersion, string actor, string reason, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:113](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L113) |  |
-| <code>Task&lt;RecurringScheduleDefinition&gt; ConfigureAsync(RecurringJournalSchedule schedule, JournalTemplate template, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:115](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L115) |  |
-| <code>Task&lt;RecurringTemplateDefinition&gt; RegisterTemplateAsync(JournalTemplate template, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default, RecurringJournalScope? scope = null);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:118](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L118) |  |
-| <code>Task&lt;RecurringScheduleDefinition&gt; RegisterScheduleAsync(RecurringJournalSchedule schedule, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:120](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L120) |  |
-| <code>Task&lt;RecurringOccurrenceRecord&gt; ClaimAsync(string scheduleId, DateOnly date, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:123](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L123) |  |
-| <code>Task&lt;RecurringOccurrenceRecord&gt; SetOutcomeAsync(string key, RecurringOccurrenceState state, string? reason, string? periodId, string? lockOwner, string? reopenPath, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:125](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L125) |  |
+| <code>IReadOnlyList&lt;RecurringTemplateDefinition&gt; Templates { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:111](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L111) |  |
+| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; Schedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:112](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L112) |  |
+| <code>IReadOnlyList&lt;RecurringScheduleDefinition&gt; CurrentSchedules { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:113](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L113) |  |
+| <code>IReadOnlyList&lt;RecurringOccurrenceRecord&gt; Occurrences { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:114](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L114) |  |
+| <code>IReadOnlyList&lt;RecurringDefinitionActivation&gt; Activations { get; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:115](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L115) |  |
+| <code>RecurringScheduleDefinition GetCurrentSchedule(string scheduleId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:116](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L116) |  |
+| <code>RecurringTemplateDefinition GetCurrentTemplate(string templateId);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:117](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L117) |  |
+| <code>Task ActivateDefinitionsAsync(string scheduleId, int scheduleVersion, int templateVersion, string actor, string reason, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:118](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L118) |  |
+| <code>Task&lt;RecurringScheduleDefinition&gt; ConfigureAsync(RecurringJournalSchedule schedule, JournalTemplate template, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:120](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L120) |  |
+| <code>Task&lt;RecurringTemplateDefinition&gt; RegisterTemplateAsync(JournalTemplate template, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default, RecurringJournalScope? scope = null);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:123](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L123) |  |
+| <code>Task&lt;RecurringScheduleDefinition&gt; RegisterScheduleAsync(RecurringJournalSchedule schedule, RecurringJournalScope scope, IReadOnlyList&lt;JournalEvidenceReference&gt; evidence, string actor, int expectedVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:125](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L125) |  |
+| <code>Task&lt;RecurringOccurrenceRecord&gt; ClaimAsync(string scheduleId, DateOnly date, int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:128](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L128) |  |
+| <code>Task&lt;RecurringOccurrenceRecord&gt; PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:130](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L130) |  |
+| <code>Task&lt;RecurringOccurrenceRecord&gt; SetOutcomeAsync(string key, RecurringOccurrenceState state, string? reason, string? periodId, string? lockOwner, string? reopenPath, DateTimeOffset now, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:132](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L132) |  |
 
 ## IRecurringJournalStore
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:95](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L95).
+Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:100](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L100).
 
 Opens sessions for reading and updating recurring journal schedules and templates.
 
@@ -174,7 +236,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IRecurringJournalSession&gt; OpenSessionAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:97](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L97) |  |
+| <code>Task&lt;IRecurringJournalSession&gt; OpenSessionAsync(CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:102](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L102) |  |
 
 ## OnboardingPlan
 
@@ -280,7 +342,7 @@ public sealed record RecurringDefinitionActivation(string? ScheduleId, int? Sche
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.RecurringJournalDefinitionChangedException</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:90](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L90).
+Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:95](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L95).
 
 A definition change cannot silently reinterpret a retained approval draft.
 
@@ -292,7 +354,7 @@ public sealed class RecurringJournalDefinitionChangedException(string message) :
 
 Qualified name: <code>Meridian.FinancialOperations.FundAdministration.RecurringJournalIdentity</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:153](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L153).
+Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:160](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L160).
 
 Produces canonical serialized identities for recurring journal definitions and occurrences.
 
@@ -304,11 +366,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static string SerializeSchedule(RecurringScheduleDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:155](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L155) |  |
-| <code>public static string SerializeTemplate(RecurringTemplateDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:158](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L158) |  |
-| <code>public static RecurringTemplateDefinition DeserializeTemplate(string json) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:161](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L161) |  |
-| <code>public static string OccurrenceKey(string scheduleId, DateOnly date);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:165](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L165) |  |
-| <code>public static Guid DraftId(string occurrenceKey) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:173](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L173) |  |
+| <code>public static string SerializeSchedule(RecurringScheduleDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:162](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L162) |  |
+| <code>public static string SerializeTemplate(RecurringTemplateDefinition definition) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:165](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L165) |  |
+| <code>public static RecurringTemplateDefinition DeserializeTemplate(string json) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:168](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L168) |  |
+| <code>public static string OccurrenceKey(string scheduleId, DateOnly date);</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:172](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L172) |  |
+| <code>public static Guid DraftId(string occurrenceKey) =&gt; …;</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:180](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L180) |  |
 
 ## RecurringJournalScheduleSnapshot
 
@@ -350,8 +412,14 @@ Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalSta
 One retained claim per schedule/date. Definitions and evidence are copies, never references to the mutable current registry. Draft identity does not change when a runner restarts.
 
 ```csharp
-public sealed record RecurringOccurrenceRecord(string OccurrenceKey, Guid DraftId, DateOnly EffectiveDate, RecurringScheduleDefinition ScheduleDefinition, RecurringTemplateDefinition TemplateDefinition, RecurringOccurrenceState State, DateTimeOffset ClaimedAtUtc, DateTimeOffset UpdatedAtUtc, IReadOnlyList<RecurringOccurrenceTransition> History, string? Reason = null, string? PeriodId = null, string? LockOwner = null, string? ReopenPath = null);
+public sealed record RecurringOccurrenceRecord(string OccurrenceKey, Guid DraftId, DateOnly EffectiveDate, RecurringScheduleDefinition ScheduleDefinition, RecurringTemplateDefinition TemplateDefinition, RecurringOccurrenceState State, DateTimeOffset ClaimedAtUtc, DateTimeOffset UpdatedAtUtc, IReadOnlyList<RecurringOccurrenceTransition> History, string? Reason = null, string? PeriodId = null, string? LockOwner = null, string? ReopenPath = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? DraftEvidenceDigest { get; init; }</code> | [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs:91](../../../../src/Meridian.FinancialOperations/FundAdministration/RecurringJournalState.cs#L91) | Write-once digest of trusted calculated intake evidence, independent of the editable draft store. |
 
 ## RecurringOccurrenceState
 
@@ -403,6 +471,200 @@ Source: [src/Meridian.FinancialOperations/FundAdministration/RecurringJournalSta
 public sealed record RecurringTemplateDefinition(string TemplateId, int Version, string ContentHash, JournalTemplate Template, string RegisteredBy, DateTimeOffset RegisteredAtUtc, RecurringJournalScope? Scope = null);
 ```
 
+## FundStructureIntercompanyAccountingArrangementScopeAuthority
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.FundStructureIntercompanyAccountingArrangementScopeAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L12).
+
+Resolves organization membership, tenant ownership and real book/chart identities from retained services.
+
+```csharp
+public sealed class FundStructureIntercompanyAccountingArrangementScopeAuthority(IFundStructureService structures, IFundStructureStore? structureStore, ILedgerJournalStore journals, IAccountingConfigurationStore configuration, IEntityLifecycleStore lifecycleStore, IFundProfileTenancyRegistry ownership, bool allowUnpartitionedSyntheticStore = false, TimeProvider? timeProvider = null) : IIntercompanyAccountingArrangementScopeAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IIntercompanyAccountingArrangementScopeLease&gt; AcquireLeaseAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:19](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L19) |  |
+| <code>public async Task&lt;IIntercompanyAccountingArrangementScopeLease&gt; AcquireLeasesAsync(string tenantId, IReadOnlyList&lt;ResolvedIntercompanyAccountingArrangementDto&gt; agreements, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L22) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyEntityLifecycleReferenceDto&gt;&gt; GetLifecycleEvidenceAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:52](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L52) |  |
+| <code>public async Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto agreement, bool requireActive, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs:71](../../../../src/Meridian.FinancialOperations/Intercompany/FundStructureIntercompanyAccountingArrangementScopeAuthority.cs#L71) |  |
+
+## IIntercompanyAccountingArrangementScopeAuthority
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IIntercompanyAccountingArrangementScopeAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:13](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L13).
+
+```csharp
+public interface IIntercompanyAccountingArrangementScopeAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IIntercompanyAccountingArrangementScopeLease&gt; AcquireLeaseAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:15](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L15) |  |
+| <code>Task ValidateAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, bool requireActive, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:17](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L17) |  |
+| <code>Task&lt;IReadOnlyList&lt;IntercompanyEntityLifecycleReferenceDto&gt;&gt; GetLifecycleEvidenceAsync(string tenantId, ResolvedIntercompanyAccountingArrangementDto arrangement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:18](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L18) |  |
+
+## IIntercompanyAccountingArrangementScopeLease
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IIntercompanyAccountingArrangementScopeLease</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:9](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L9).
+
+```csharp
+public interface IIntercompanyAccountingArrangementScopeLease : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LegalEntityReadAuthorityProof? StructureAuthorityProof { get; }</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:11](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L11) |  |
+
+## IIntercompanyBalanceScheduleSource
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IIntercompanyBalanceScheduleSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L12).
+
+```csharp
+public interface IIntercompanyBalanceScheduleSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyBalanceScheduleDto&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:14](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L14) |  |
+| <code>Task&lt;IntercompanyBalanceScheduleDto&gt; GetForCloseAsync(string? tenant, string? company, string? fund, Guid? book, string? periodId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:16](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L16) |  |
+
+## IntercompanyAccountingArrangementService
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyAccountingArrangementService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L23).
+
+Approves accounting configuration only; native legal terms, review and history are never authored here.
+
+```csharp
+public sealed class IntercompanyAccountingArrangementService(IIntercompanyAccountingArrangementStore store, IIntercompanyAccountingArrangementScopeAuthority scopeAuthority, IIntercompanyAccountingArrangementLegalAuthority legalAuthority, TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;ResolvedIntercompanyAccountingArrangementDto&gt;&gt; ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:28](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L28) |  |
+| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto?&gt; GetAsync(string tenantId, Guid id, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:36](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L36) |  |
+| <code>public Task&lt;IntercompanyAccountingArrangementHistoryDto?&gt; GetHistoryAsync(string tenantId, Guid id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:41](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L41) |  |
+| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto&gt; ResolveApprovedRevisionAsync(string tenantId, Guid arrangementId, Guid revisionId, DateTimeOffset economicDate, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:43](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L43) |  |
+| <code>public async Task&lt;ResolvedIntercompanyAccountingArrangementDto&gt; GetApprovedRevisionAsync(string tenantId, Guid arrangementId, Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:53](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L53) | Exact immutable configuration for proven source inverses/history; does not grant new posting eligibility. |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; CreateAsync(string tenantId, string actor, CreateIntercompanyAccountingArrangementRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:62](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L62) |  |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ReviseAsync(string tenantId, string actor, Guid arrangementId, ReviseIntercompanyAccountingArrangementRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:93](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L93) |  |
+| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; ApplyActionAsync(string tenantId, string actor, Guid arrangementId, IntercompanyAccountingArrangementActionDto action, IntercompanyAccountingArrangementActionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs:149](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs#L149) |  |
+
+## IntercompanyBalanceScheduleService
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyBalanceScheduleService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L21).
+
+Agreement-enriched posted balances for close readiness and external mapping controls.
+
+```csharp
+public sealed class IntercompanyBalanceScheduleService(ILedgerJournalStore journals, IntercompanyAccountingArrangementService agreements, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationStore configuration, IFundProfileTenancyRegistry owners, IIntercompanyAccountingArrangementStore agreementStore, ILegacyIntercompanyAttributionStore? legacyAttributions = null) : IIntercompanyBalanceScheduleSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyBalanceScheduleDto&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:25](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L25) |  |
+| <code>public async Task&lt;IntercompanyBalanceScheduleDto&gt; GetForCloseAsync(string? tenant, string? company, string? fund, Guid? book, string? periodId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs:235](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs#L235) |  |
+
+## IntercompanyCounterpartReversalBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyCounterpartReversalBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs:9](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs#L9).
+
+Reverses an isolated posted counterpart using its retained economics, without repricing.
+
+```csharp
+public static class IntercompanyCounterpartReversalBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DateOnly VerifySource(IntercompanyProposalSourceDto source, LedgerJournalEntryRecord original, LedgerJournalEntryRecord inverse);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs:11](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs#L11) |  |
+| <code>public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal, IntercompanyProposalDto prior, ResolvedIntercompanyAccountingArrangementDto agreement, LedgerJournalEntryRecord original, LedgerBookRecord target, LedgerAccountingPeriod period, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; bindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, DateTimeOffset now);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs:23](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyCounterpartReversalBuilder.cs#L23) |  |
+
+## IntercompanyJournalFamily
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyJournalFamily</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:7](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L7).
+
+Indexes actual same-book correction lineage; shared transaction labels never merge unrelated settlements.
+
+```csharp
+public sealed class IntercompanyJournalFamily
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyJournalFamily(IReadOnlyList&lt;LedgerJournalEntryRecord&gt; records, DateOnly asOf);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L12) |  |
+| <code>public bool Contains(Guid id) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:20](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L20) |  |
+| <code>public IReadOnlyList&lt;LedgerJournalEntryRecord&gt; Resolve(Guid anchor);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:22](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L22) |  |
+| <code>public static DateOnly EffectiveDate(LedgerJournalEntryRecord record) =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyJournalFamily.cs#L50) |  |
+
+## IntercompanyLedgerPostingAuthority
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:12](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L12).
+
+Resolves agreement and account authority under leases retained through ledger commit.
+
+```csharp
+public sealed class IntercompanyLedgerPostingAuthority(IIntercompanyAccountingArrangementStore agreements, IntercompanyAccountingArrangementService service, IIntercompanyAccountBindingStore bindings, IAccountingConfigurationStore configuration, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners, ILegacyIntercompanyAttributionStore? legacyAttributions = null, IConsolidationFxAuthority? fxAuthority = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:19](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L19) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L21) |  |
+| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:194](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L194) |  |
+
+## IntercompanyProposalDraftBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.Intercompany.IntercompanyProposalDraftBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:8](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L8).
+
+Creates a balanced proposal from retained source facts, never a posting instruction.
+
+```csharp
+public static class IntercompanyProposalDraftBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ManualJournalEntryDraftDto Build(IntercompanyProposalDto proposal, ResolvedIntercompanyAccountingArrangementDto agreement, LedgerBookRecord target, LedgerAccountingPeriod period, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; sourceBindings, IReadOnlyList&lt;IntercompanyAccountBindingDto&gt; targetBindings, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt; chart, ConsolidationFxAmountDto? fx, DateTimeOffset now, IReadOnlyList&lt;ChartOfAccountsNodeDto&gt;? sourceChart = null);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs:10](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs#L10) |  |
+
 ## AccountingBasisProjectionRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionRequest</code>. Kind: `record`.
@@ -427,7 +689,7 @@ public sealed record AccountingBasisProjectionResult(AccountingPolicyDto Policy,
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AccountingBasisProjectionService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:316](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L316).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:334](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L334).
 
 Builds accounting-basis projections using the resolved accounting policy.
 
@@ -439,7 +701,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:321](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L321) |  |
+| <code>public async Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:339](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L339) |  |
 
 ## AccountingBasisProjectionSetService
 
@@ -651,273 +913,3 @@ Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateServi
 ```csharp
 public sealed record AssetAccountingCandidateAuthorityContext(Guid EventId, long EventVersion, long SourceSpineVersion, long DraftSpineVersion, string SourceProjectionFingerprint, AssetAccountingEventKindDto EventKind, Guid SecurityId, Guid BookPositionId, long ExpectedBookPositionVersion, Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, string RulePackId, string RulePackVersion, long SecurityVersion = 0, string? CanonicalInstrumentSymbol = null);
 ```
-
-## AssetAccountingEventSpineService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.AssetAccountingEventSpineService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:52](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L52).
-
-Assembles accounting-event lineage across source events, projections, candidates, approvals, and postings.
-
-```csharp
-public sealed partial class AssetAccountingEventSpineService : IAssetAccountingEventSpineService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IAssetAccountingEventSpineService? TryCreate(IAssetAccountingEventProjectionStore? eventStore, IInstrumentPositionProjectionStore? positionStore, ISecurityMasterQueryService? securityMasterQueryService, ILedgerBookService? ledgerBookService, IAccountingPolicyService? accountingPolicyService, IAccountingConfigurationService? configurationService, IAccountingPostingCandidateAuthorityBuilder? authorityBuilder, ILedgerJournalStore? journalStore, ISecurityMasterStore? securityMasterStore = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:73](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L73) | Creates the governed spine only when every authority and durable-ledger dependency exists. Optional workstation hosts can therefore leave the feature unavailable instead of failing service-provider resolution during startup. |
-| <code>public AssetAccountingEventSpineService(IAssetAccountingEventProjectionStore eventStore, IInstrumentPositionProjectionStore positionStore, ISecurityMasterQueryService securityMasterQueryService, ILedgerBookService ledgerBookService, IAccountingPolicyService accountingPolicyService, IAccountingConfigurationService configurationService, IAccountingPostingCandidateAuthorityBuilder authorityBuilder, ILedgerJournalStore journalStore, ISecurityMasterStore? securityMasterStore = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:112](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L112) |  |
-| <code>public async Task&lt;AssetAccountingEventSpineDto?&gt; GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:138](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L138) |  |
-| <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; ProjectAsync(ProjectAssetAccountingEventRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:153](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L153) |  |
-| <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; AppendLifecycleStageAsync(AppendAssetAccountingLifecycleStageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:302](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L302) |  |
-| <code>public async Task&lt;AssetAccountingPostingCandidateDto&gt; BuildPostingCandidateAsync(AssetAccountingPostingCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:390](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L390) |  |
-
-Source: [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs:9](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs#L9).
-
-```csharp
-public sealed partial class AssetAccountingEventSpineService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; ReprepareUnpostedFactorPaydownAsync(ProjectAssetAccountingEventRequestDto request, AssetLotMutationInstructionDto lotMutation, long expectedSpineVersion, string expectedCanonicalFingerprint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs#L11) |  |
-
-## BondSettlementConsiderationService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.BondSettlementConsiderationService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/BondSettlementConsiderationService.cs:9](../../../../src/Meridian.FinancialOperations/Ledger/BondSettlementConsiderationService.cs#L9).
-
-Prepares explicit settlement economics from the shared bond engine. This is an analytical receipt; the existing event-spine approval and atomic journal/lot boundary retain posting authority.
-
-```csharp
-public sealed class BondSettlementConsiderationService(IBondAnalyticsService analytics) : IBondSettlementConsiderationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;BondAnalyticsBlocker&gt;&gt; VerifyAsync(BondSettlementConsiderationDto settlement, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondSettlementConsiderationService.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/BondSettlementConsiderationService.cs#L11) |  |
-| <code>public async Task&lt;BondSettlementPreparationResult&gt; PrepareAsync(BondSettlementConsiderationRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondSettlementConsiderationService.cs:41](../../../../src/Meridian.FinancialOperations/Ledger/BondSettlementConsiderationService.cs#L41) |  |
-
-## CanonicalLotAmortizationPreview
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.CanonicalLotAmortizationPreview</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs#L10).
-
-```csharp
-public sealed record CanonicalLotAmortizationPreview(OpenLotAmortizationInstructionDto Instruction, OpenLotAmortizationProjectionDto Projection);
-```
-
-## CanonicalLotAmortizationService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.CanonicalLotAmortizationService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs:20](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs#L20).
-
-Read-only preparation for the existing asset-accounting candidate and independent approval workflow. Posting rechecks every version and the complete lot/reference snapshot atomically. Optional workstation hosts may construct the service without persistence; preview refuses missing authorities before reading any source records.
-
-```csharp
-public sealed class CanonicalLotAmortizationService(ILedgerJournalStore? lots, ISecurityMasterStore? securities, IInstrumentPositionProjectionStore? positions, IBondCalculationPolicy? bondCalculationPolicy = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;CanonicalLotAmortizationPreview&gt; PreviewReversalAsync(Guid ledgerBookId, Guid mutationBatchId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs:27](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs#L27) | Prepares an inverse from retained posting economics and reviewed reference authority. |
-| <code>public async Task&lt;CanonicalLotAmortizationPreview&gt; PreviewReversalAsync(Guid ledgerBookId, Guid mutationBatchId, RetainedEvidenceIdentityDto? securityEvidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs#L31) |  |
-| <code>public Task&lt;CanonicalLotAmortizationPreview&gt; PreviewAsync(Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate, RetainedEvidenceIdentityDto securityEvidence, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs:69](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs#L69) |  |
-| <code>public Task&lt;CanonicalLotAmortizationPreview&gt; PreviewExtendedAsync(Guid ledgerBookId, Guid taxLotRecordId, DateOnly asOfDate, RetainedEvidenceIdentityDto securityEvidence, bool amortizeRemainingFace, bool automaticYieldToWorst, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs:75](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotAmortizationService.cs#L75) | Opt-in v3 preparation; the complete automatic selection remains subject to independent posting approval. |
-
-## CanonicalLotCorporateActionService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.CanonicalLotCorporateActionService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.CapitalReturn.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.CapitalReturn.cs#L7).
-
-```csharp
-public sealed partial class CanonicalLotCorporateActionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AssetLotMutationInstructionDto&gt; PreviewAsync(CorporateActionAssetAccountingEventProjectionDto mapped, OpenLotCapitalReturnInstructionDto reviewed, string assetAccountId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.CapitalReturn.cs:9](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.CapitalReturn.cs#L9) |  |
-| <code>public async Task&lt;AssetAccountingPostingCandidateDto&gt; DraftAsync(CorporateActionAssetAccountingEventProjectionDto mapped, OpenLotCapitalReturnInstructionDto reviewed, string assetAccountId, string actor, DateTimeOffset accountingTimestamp, string description, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.CapitalReturn.cs:73](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.CapitalReturn.cs#L73) | Retains Projected/Drafted stages only; independent approval and atomic posting remain required. |
-
-Source: [src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.cs#L11).
-
-Connects an already mapped corporate-action projection to the shared draft/approval rail. Never approves or posts.
-
-```csharp
-public sealed partial class CanonicalLotCorporateActionService(ILedgerJournalStore? lots, ISecurityMasterStore? securities, IInstrumentPositionProjectionStore? positions, IAssetAccountingEventSpineService? spine = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AssetLotMutationInstructionDto&gt; PreviewAsync(CorporateActionAssetAccountingEventProjectionDto mapped, OpenLotSuccessorInstructionDto reviewed, string assetAccountId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.cs#L17) |  |
-| <code>public async Task&lt;AssetAccountingPostingCandidateDto&gt; DraftAsync(CorporateActionAssetAccountingEventProjectionDto mapped, OpenLotSuccessorInstructionDto reviewed, string assetAccountId, string actor, DateTimeOffset accountingTimestamp, string description, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.cs:104](../../../../src/Meridian.FinancialOperations/Ledger/CanonicalLotCorporateActionService.cs#L104) | Persists only Projected/Drafted stages. Independent human approval and the existing posting command remain required. |
-
-## FactorPaydownLotInstructionService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.FactorPaydownLotInstructionService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:59](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L59).
-
-Prepares a reviewed factor paydown from the lots of record: loads the lots open in the scope as of the effective date, derives held face and the position principal through the registered projector, allocates principal and pro-rata basis relief per lot, and assembles the canonical corporate-action event, lineage, two- or three-line projected effect and lot instruction the spine retains. It never approves or posts; the candidate service and the atomic store re-derive and re-lock everything here before anything is written. Hosts compose it like the amortization preview: a host without persistence still starts, and preparation refuses the missing authority before reading any source record.
-
-```csharp
-public sealed class FactorPaydownLotInstructionService(ILedgerJournalStore? lots, ISecurityMasterStore? securities, IInstrumentPositionProjectionStore? positions, IFactorPaydownProjectionService? projector)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;FactorPaydownPreparation&gt; PrepareAsync(FactorPaydownPreparationRequest request, string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:65](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L65) |  |
-
-## FactorPaydownPreparation
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.FactorPaydownPreparation</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:43](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L43).
-
-The derived instruction and the spine projection request that carries it.
-
-```csharp
-public sealed record FactorPaydownPreparation(OpenLotFactorPaydownInstructionDto Instruction, AssetLotMutationInstructionDto LotMutation, ProjectAssetAccountingEventRequestDto ProjectRequest, IReadOnlyDictionary<string, decimal> Components);
-```
-
-## FactorPaydownPreparationRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.FactorPaydownPreparationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L17).
-
-What a caller states about a factor observation: the scope, the two factors, the retained factor evidence and the chart paths the paydown posts to. Everything else — the lots, the principal, the per-lot allocation, the realized result — is derived server side.
-
-```csharp
-public sealed record FactorPaydownPreparationRequest(Guid LedgerBookId, Guid SecurityId, Guid BookPositionId, Guid PeriodId, long ExpectedPeriodVersion, AccountingBasisKindDto AccountingBasis, string FundProfileId, DateOnly EffectiveDate, decimal PriorFactor, decimal NewFactor, string SourceDomain, string SourceEntityId, string SourceContentHash, DateTimeOffset OccurredAtUtc, IReadOnlyList<RetainedEvidenceIdentityDto> FactorEvidence, string CashAccountPath, string CarryingAccountPath, string RealizedGainAccountPath, string RealizedLossAccountPath, string? TenantId = null, string? CompanyId = null, LedgerDimensionSetDto? Dimensions = null, Guid? CorrelationId = null);
-```
-
-## IAccountingBasisProjectionService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingBasisProjectionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:29](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L29).
-
-Projects an accounting request into basis-specific journal results.
-
-```csharp
-public interface IAccountingBasisProjectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AccountingBasisProjectionResult&gt; ProjectAsync(AccountingBasisProjectionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L31) |  |
-
-## IAccountingBasisProjectionSetService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingBasisProjectionSetService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:9](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L9).
-
-Builds a set of journal candidate projections across requested accounting bases.
-
-```csharp
-public interface IAccountingBasisProjectionSetService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AccountingBasisProjectionSetDto&gt; BuildProjectionSetAsync(AccountingBasisProjectionSetRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/AccountingBasisProjectionSetService.cs#L11) |  |
-
-## IAccountingCashDividendAttestedPostService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingCashDividendAttestedPostService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:15](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L15).
-
-Posts only producer-leased native cash-dividend preparer decisions, never ordinary approval.
-
-```csharp
-public interface IAccountingCashDividendAttestedPostService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PostedPostingRuleJournalCandidateResultDto&gt; PostAttestedCashDividendCandidateAsync(PostAttestedCashDividendPostingCandidateRequestDto request, CorporateActionCashDividendPostingLease lease, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs#L17) |  |
-
-## IAccountingJournalDraftService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingJournalDraftService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:12](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L12).
-
-Defines policy-bound journal drafting from accounting event and line requests.
-
-```csharp
-public interface IAccountingJournalDraftService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AccountingJournalDraftResult&gt; BuildDraftAsync(AccountingJournalDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs#L14) |  |
-
-## IAccountingPolicyService
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPolicyService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:12](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L12).
-
-Defines creation and resolution of accounting policies and authority leases for consolidation.
-
-```csharp
-public interface IAccountingPolicyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AccountingPolicyDto&gt; CreatePolicyAsync(CreateAccountingPolicyRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L14) |  |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireConsolidationAuthorityLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L17) | Prevents policy mutation until the consolidation transaction has committed or rolled back. |
-| <code>Task&lt;AccountingPolicyDto&gt; ResolvePolicyAsync(AccountingPolicyQuery query, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:21](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L21) |  |
-| <code>Task&lt;IReadOnlyList&lt;AccountingPolicyDto&gt;&gt; ListPoliciesAsync(AccountingBasisKindDto? accountingBasis = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs#L23) |  |
-
-## IAccountingPostingCandidateAuthorityBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPostingCandidateAuthorityBuilder</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:36](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L36).
-
-Internal-process authority handoff used only after the Asset Accounting Event Spine has resolved immutable Asset Operations, Security Master, ledger-book, period, evidence, model, and rule-pack state. Generic candidate callers cannot opt canonical asset events into this path.
-
-```csharp
-public interface IAccountingPostingCandidateAuthorityBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:38](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L38) |  |

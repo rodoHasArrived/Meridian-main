@@ -11,6 +11,27 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Wpf
 
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Accounting Configure includes **Entities & consolidation**, backed by the shared entity timeline
+and governed consolidation HTTP projections. It keeps gross, proposed eliminations, posted
+eliminations, actual consolidated and preview amounts separate, with matching breaks, translation
+reserve, rate fingerprints and source-journal identities. Creating a draft never approves or posts
+it. The review handoff opens the retained server draft in Manual Journals, whose operator surface
+now prefers `IWorkstationManualJournalApiClient`; background services retain their existing seams.
+The older summed Fund Ledger surface is labeled **Gross Fund View**. Native visual and interaction
+verification requires Windows; pure view-model and transport checks do not prove native rendering.
+
+`EntityConsolidationViewModel` and its Accounting control consume shared workstation APIs for
+entity timeline, ownership, agreements, books and consolidation preview/drafts. The desktop does
+not recompute financial balances; legacy summed views remain gross. Current Windows build/runtime
+proof must be recorded separately from Linux source inspection or cross-target compilation.
+See [versioned consolidation scope](../../docs/domain/intercompany-consolidation.md).
+
 `SecurityMasterPresentation` and `AccountingWorkbenchPresentation` own stateless display and
 readiness projections formerly embedded in their large workspace view models. View models retain
 selection, asynchronous commands and mutable workflow state; the presentation helpers retain the
@@ -1142,6 +1163,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -11,6 +11,32 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+Execution blotter and position read-model helpers live in
+`Endpoints/ExecutionEndpoints.PositionReadModels.cs`. The endpoint entrypoint retains the same
+routes, public contracts, permission checks and command handlers.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Consolidation transition routes retain a server preview for independent reopening/review and an
+exact-fingerprint activation receipt. They check both books' current tenant/company ownership;
+workstation clients cannot supply preparer identity or silently replace the reporting path.
+
+Entity timelines, intercompany agreements, role bindings, legacy attribution and counterpart
+proposal delivery share host read models and existing journal review APIs. Consolidation projects
+server-authoritative gross/proposed/posted/actual/preview values and separate FX/rounding evidence.
+Browser and WPF consume the same seams; destination permissions remain authoritative.
+See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
+
+Entity lifecycle revisions, book-control preflight/activation, and controlled-close authorization
+use shared endpoints in `LedgerEndpoints.EntityControls.cs`. The manual journal workbench
+authorizes only an exact approved draft with retained obligation evidence and a reviewer other
+than its preparer. Posting retains the authorization identity and rechecks its economic hash at
+the ledger boundary, so browser and WPF clients consume the same policy.
+
 Financial Record Explorer agreement ID and version filters compare the bound `Agreement` and
 `Agreement version` detail fields exactly, including saved-view dimension filters. Version `1`
 does not admit version `10`, and unrelated evidence text cannot supply a missing agreement identity.
@@ -59,7 +85,8 @@ tenant/company scope and access to every legal entity disclosed in the retained 
 service binds independent review to frozen terms and accepted, byte-verified Evidence Vault artifacts.
 Missing PostgreSQL registry authority returns unavailable rather than substituting a local store.
 The source-line drill-through additionally requires ledger-report authority and an owned entity book;
-it shows exact posted provenance and advisory coverage without changing consolidation matching.
+it shows exact posted legal provenance. Separate accounting-profile and role controls govern
+counterpart draft delivery and versioned consolidation matching.
 `MERIDIAN_INTERCOMPANY_REFERENCE_AUTHORING_ENABLED=true` exposes reference-authoring capability only
 when posting authority is registered; validators remain mandatory regardless of this rollout switch.
 
@@ -94,6 +121,8 @@ block the calculation. The result is an approval draft, with principal cash move
 The typed calculation captures a retained v5 receipt using the selected security version and
 passes that same projection to the bridge without another source read. Its receipt hash and model
 survive in the draft's structured recurring source evidence and evidence links across restart.
+Review and posting compare those exact bytes with the occurrence's independently retained digest;
+changing a receipt and recomputing only the draft digest cannot authorize it.
 External, floating and declared-schedule posting gates remain. Catalog admission does not resolve
 a missing rate unit: an undeclared non-zero Bond coupon still blocks, and a declared schedule
 remains outside posting until its existing evidence-retention and journal-identity gates are met.
@@ -3474,6 +3503,10 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

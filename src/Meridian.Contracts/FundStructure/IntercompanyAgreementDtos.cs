@@ -46,7 +46,11 @@ public sealed record IntercompanyAgreementRevisionDto(
 
 public sealed record IntercompanyAgreementAuditDto(
     Guid EventId, Guid ProposalId, string Action, string Actor, DateTimeOffset RecordedAtUtc,
-    long AggregateVersion, string? Rationale, IntercompanyAgreementDraftDto? Snapshot = null);
+    long AggregateVersion, string? Rationale, IntercompanyAgreementDraftDto? Snapshot = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? MigrationWarnings { get; init; }
+}
 
 public sealed record IntercompanyAgreementCapabilitiesDto(
     bool CanEdit, bool CanSubmit, bool CanApprove, bool CanReject, bool CanWithdraw,
@@ -64,7 +68,11 @@ public sealed record IntercompanyAgreementDetailDto(
     IReadOnlyList<IntercompanyAgreementProposalDto> Proposals,
     IReadOnlyList<IntercompanyAgreementRevisionDto> Revisions,
     IReadOnlyList<IntercompanyAgreementAuditDto> History,
-    IntercompanyAgreementCapabilitiesDto Capabilities);
+    IntercompanyAgreementCapabilitiesDto Capabilities)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? MigrationWarnings { get; init; }
+}
 
 public sealed record IntercompanyAgreementCommandReceiptDto(
     Guid CommandId, string Action, string PayloadHash, string Actor, DateTimeOffset RecordedAtUtc,

@@ -32,6 +32,11 @@ public sealed partial class AccountingPostingCandidatePostService
                string.Equals(durable.CustomerId, expected.CustomerId, StringComparison.Ordinal) &&
                string.Equals(durable.VendorId, expected.VendorId, StringComparison.Ordinal) &&
                string.Equals(durable.ProjectId, expected.ProjectId, StringComparison.Ordinal) &&
+               string.Equals(durable.AccountingArrangementId, expected.AccountingArrangementId, StringComparison.Ordinal) &&
+               string.Equals(durable.AccountingArrangementRevisionId, expected.AccountingArrangementRevisionId, StringComparison.Ordinal) &&
+               string.Equals(durable.ChartAccountNodeId, expected.ChartAccountNodeId, StringComparison.Ordinal) &&
+               string.Equals(durable.AccountBindingRevisionId, expected.AccountBindingRevisionId, StringComparison.Ordinal) &&
+               string.Equals(durable.IntercompanyTransactionId, expected.IntercompanyTransactionId, StringComparison.Ordinal) &&
                durable.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
                    .SequenceEqual(expected.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.Ordinal));
     }
@@ -61,6 +66,11 @@ public sealed partial class AccountingPostingCandidatePostService
             {
                 PositionId = dimensions.PositionId,
                 IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
-                IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
+                IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+                AccountingArrangementId = dimensions.AccountingArrangementId,
+                AccountingArrangementRevisionId = dimensions.AccountingArrangementRevisionId,
+                ChartAccountNodeId = dimensions.ChartAccountNodeId,
+                AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+                IntercompanyTransactionId = dimensions.IntercompanyTransactionId
             };
 }

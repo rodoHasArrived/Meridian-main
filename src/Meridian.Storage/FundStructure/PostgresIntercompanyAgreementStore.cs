@@ -57,9 +57,20 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         return result;
     }
 
-    public async Task<T> ExecuteAsync<T>(string tenantId, Guid agreementId,
+    public Task<T> ExecuteAsync<T>(string tenantId, Guid agreementId,
         Func<IIntercompanyAgreementStoreTransaction, CancellationToken, Task<T>> operation,
         CancellationToken ct = default)
+        => ExecuteCoreAsync(tenantId, agreementId, null, operation, ct);
+
+    public Task<T> ExecuteAsync<T>(string tenantId, Guid agreementId, LegalEntityReadAuthorityProof structureAuthority,
+        Func<IIntercompanyAgreementStoreTransaction, CancellationToken, Task<T>> operation, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(structureAuthority);
+        return ExecuteCoreAsync(tenantId, agreementId, structureAuthority, operation, ct);
+    }
+
+    private async Task<T> ExecuteCoreAsync<T>(string tenantId, Guid agreementId, LegalEntityReadAuthorityProof? structureAuthority,
+        Func<IIntercompanyAgreementStoreTransaction, CancellationToken, Task<T>> operation, CancellationToken ct)
     {
         var tenant = NormalizeTenant(tenantId);
         RequireAgreementId(agreementId);
@@ -68,7 +79,10 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
         // Same order as the posting lease: structure authority first, then agreement IDs. The
         // advisory lock also protects an absent head during simultaneous first-draft creation.
-        await LockEntitiesAsync(connection, transaction, ct).ConfigureAwait(false);
+        if (structureAuthority is null)
+            await LockEntitiesAsync(connection, transaction, ct).ConfigureAwait(false);
+        else
+            ValidateStructureProof(connection, structureAuthority);
         await LockAgreementAsync(connection, transaction, tenant, agreementId, shared: false, ct).ConfigureAwait(false);
         var original = await ReadStateAsync(connection, transaction, tenant, agreementId, ct).ConfigureAwait(false);
         var unit = new CommandTransaction(this, connection, transaction, tenant, Clone(original));
@@ -87,8 +101,19 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         return result;
     }
 
-    public async Task<IIntercompanyAgreementPostingLease> AcquirePostingLeaseAsync(
+    public Task<IIntercompanyAgreementPostingLease> AcquirePostingLeaseAsync(
         string tenantId, IReadOnlyList<Guid> agreementIds, CancellationToken ct = default)
+        => AcquirePostingLeaseCoreAsync(tenantId, agreementIds, null, ct);
+
+    public Task<IIntercompanyAgreementPostingLease> AcquirePostingLeaseAsync(string tenantId, IReadOnlyList<Guid> agreementIds,
+        LegalEntityReadAuthorityProof structureAuthority, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(structureAuthority);
+        return AcquirePostingLeaseCoreAsync(tenantId, agreementIds, structureAuthority, ct);
+    }
+
+    private async Task<IIntercompanyAgreementPostingLease> AcquirePostingLeaseCoreAsync(
+        string tenantId, IReadOnlyList<Guid> agreementIds, LegalEntityReadAuthorityProof? structureAuthority, CancellationToken ct)
     {
         var tenant = NormalizeTenant(tenantId);
         ArgumentNullException.ThrowIfNull(agreementIds);
@@ -100,7 +125,10 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
         try
         {
             transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
-            await LockEntitiesAsync(connection, transaction, ct).ConfigureAwait(false);
+            if (structureAuthority is null)
+                await LockEntitiesAsync(connection, transaction, ct).ConfigureAwait(false);
+            else
+                ValidateStructureProof(connection, structureAuthority);
             var states = new List<IntercompanyAgreementStoreState>(ids.Length);
             foreach (var id in ids)
             {
@@ -121,6 +149,15 @@ public sealed partial class PostgresIntercompanyAgreementStore : IIntercompanyAg
             finally { await connection.DisposeAsync().ConfigureAwait(false); }
             throw;
         }
+    }
+
+    private void ValidateStructureProof(NpgsqlConnection connection, LegalEntityReadAuthorityProof proof)
+    {
+        if (!proof.IsActive || proof.Port != connection.Port
+            || !string.Equals(proof.Host, connection.Host, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(proof.Database, connection.Database, StringComparison.Ordinal)
+            || !string.Equals(proof.Schema, _options.Schema, StringComparison.Ordinal))
+            throw new IntercompanyAgreementValidationException("The retained legal-entity authority is expired or belongs to another backend or schema.");
     }
 
     private string Q(string table) => $"\"{_options.Schema}\".\"{table}\"";

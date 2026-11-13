@@ -55,6 +55,102 @@
       "target_schema": "fund_structure"
     },
     {
+      "fingerprint": "814321a657936b24a8c558d5db0c18f1667e9d7cfbb379dcf5d68f9879c8e243",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_legacy_baseline_entity_id_fkey on fund_structure.entity_lifecycle_legacy_baseline",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.legal_entity.entity_id",
+      "target_kind": "table column",
+      "target_name": "legal_entity",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "157a39a3f5abc9fb318c8bf79006554fc3267600fc5b74123c0f73ddf38fe095",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_legacy_baseline_entity_id_fkey on fund_structure.entity_lifecycle_legacy_baseline",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.legal_entity_pkey",
+      "target_kind": "index",
+      "target_name": "legal_entity_pkey",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "5e2f207e805f1e8e18c5e9a1099ba80269f8374d51feb061961c91cec4f61a17",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_revision_content_hash_check on fund_structure.entity_lifecycle_revision",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.entity_lifecycle_revision.content_hash",
+      "target_kind": "table column",
+      "target_name": "entity_lifecycle_revision",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "1d4bb365fdf5e915329f8baa67a71581ee79f67e6134131c34bc465f3e86ddef",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_revision_entity_id_fkey on fund_structure.entity_lifecycle_revision",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.legal_entity.entity_id",
+      "target_kind": "table column",
+      "target_name": "legal_entity",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "fe68fd1039e5fa9d1e5f59c0987bed81cd55a6b6202af379d43ed01fed248599",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_revision_entity_id_fkey on fund_structure.entity_lifecycle_revision",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.legal_entity_pkey",
+      "target_kind": "index",
+      "target_name": "legal_entity_pkey",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "e911fae6d8e50483ddc98d26de9fedcc4e9c62eda4b25e8c145bb29a77ecdaca",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_revision_recorded_by_check on fund_structure.entity_lifecycle_revision",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.entity_lifecycle_revision.recorded_by",
+      "target_kind": "table column",
+      "target_name": "entity_lifecycle_revision",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "d06b7bc43fe58b215bf37d4b42724bcb780b45b4fa628d0a2281b9fe7d6e3e94",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_revision_revision_check on fund_structure.entity_lifecycle_revision",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.entity_lifecycle_revision.revision",
+      "target_kind": "table column",
+      "target_name": "entity_lifecycle_revision",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "c1df8154e6383131335bbd433037e81736f3312da62ffb31b86b518e46e8fd30",
+      "kind": "normal",
+      "source": "fund_structure.entity_lifecycle_revision_tenant_id_check on fund_structure.entity_lifecycle_revision",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.entity_lifecycle_revision.tenant_id",
+      "target_kind": "table column",
+      "target_name": "entity_lifecycle_revision",
+      "target_schema": "fund_structure"
+    },
+    {
       "fingerprint": "cf048410639a7193c3d82ba8bed37b250bcb30af41b401b61a4aa8ebc6ab35c2",
       "kind": "normal",
       "source": "fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
@@ -112,6 +208,30 @@
       "target": "fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows",
       "target_kind": "table column",
       "target_name": "fund_structure_tenant_backfill_receipt",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "b1c7d00b355f629fb95f03427f21bf488c68875f845dc4c92be07c5a238376d0",
+      "kind": "normal",
+      "source": "fund_structure.intercompany_accounting_arrangement_eve_aggregate_version_check on fund_structure.intercompany_accounting_arrangement_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.intercompany_accounting_arrangement_events.aggregate_version",
+      "target_kind": "table column",
+      "target_name": "intercompany_accounting_arrangement_events",
+      "target_schema": "fund_structure"
+    },
+    {
+      "fingerprint": "efb14fe12b618d7b2cab954378c5b465aecc70de6cd30c8cab06081b246d2ca4",
+      "kind": "normal",
+      "source": "fund_structure.intercompany_accounting_arrangement_events_tenant_id_check on fund_structure.intercompany_accounting_arrangement_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_structure",
+      "target": "fund_structure.intercompany_accounting_arrangement_events.tenant_id",
+      "target_kind": "table column",
+      "target_name": "intercompany_accounting_arrangement_events",
       "target_schema": "fund_structure"
     },
     {
@@ -371,7 +491,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "4232435a7c9bf2e3432490c9d4b72ddc3c1b4eddcdc8dc08fb0dbde02f6d15c0",
+  "fingerprint": "ad4a8d01d9900f56677bf55fca20f88d82c2cafff94c74bc3e80d1e4ad30661b",
   "foreign_tables": [],
   "functions": [
     {
@@ -402,6 +522,68 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "guard_intercompany_agreement_head()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "bf1baa13e19acd1a9213b6054d5e335d199f2d721f42589cdb0a37124c2efcb6",
+      "fingerprint": "4334244417a0fcb52732ade9d38d5e191daa9a8495c998cf614f7592c2f16e74",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "refuse_intercompany_accounting_arrangement_history_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "fund_structure",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "904450f1447e6d3ceb713b840b53b424e73c03c6797913ae4c91dd1eff0d558d",
+      "fingerprint": "6b8e84309b61772aa6f3a5c01bcaf811f434ec31732ebd7da4f5679519c6b5c0",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_entity_lifecycle_rewrite",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "fund_structure",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_entity_lifecycle_rewrite()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -1197,6 +1379,610 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entity_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f0d3dce62b3bfc95392f6084af88d25ba10aeae8e530003051043e2d7d34fc99",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "lifecycle_status",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "798666f449139eda093ed2ba909faf9673ba36fce2522cb176b939f95bd5e15d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "captured_at_utc",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "entity_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (entity_id) REFERENCES fund_structure.legal_entity(entity_id)",
+          "delete_action": "no_action",
+          "fingerprint": "2d121414bf3ee8b907f29cfa813b3dc85d4bb917d05256fb603d491385f75d85",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "entity_lifecycle_legacy_baseline_entity_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "entity_id"
+          ],
+          "referenced_schema": "fund_structure",
+          "referenced_table": "legal_entity",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "entity_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (entity_id)",
+          "delete_action": null,
+          "fingerprint": "f1b14a49463177be56edb881463f370779766d752481ee98f1fd9fe74de92368",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_legacy_baseline_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "7c41b2e7c3d7860817e5b9df183d3b8af683e9bafee1a8e8744b9842a15e7bdf",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX entity_lifecycle_legacy_baseline_pkey ON fund_structure.entity_lifecycle_legacy_baseline USING btree (entity_id)",
+          "expression": null,
+          "fingerprint": "88afaacd73786c21fa3a3c948d48f6f385e87770fce8505b54621cf0835ae764",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "entity_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "entity_lifecycle_legacy_baseline_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "entity_lifecycle_legacy_baseline",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_baseline_immutable BEFORE DELETE OR UPDATE ON fund_structure.entity_lifecycle_legacy_baseline FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "afecb437279d795d0585cc1563e636af1c87ccf51c92ac24b31a7cdeb09b894e",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "bd41c4705741cd7ead2ee7b8c5e5d5270f609bf55f1cb1dc20bd62973554222d",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "row",
+          "name": "entity_lifecycle_baseline_immutable",
+          "relation": "entity_lifecycle_legacy_baseline",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_baseline_no_truncate BEFORE TRUNCATE ON fund_structure.entity_lifecycle_legacy_baseline FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "e4baaaf31a2d7e175c5906ee4f2d2dc7b29d5b6ab8f3aa16d3e7d93b3cd90712",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "0a0c0a4be2f41383b7b053c616448932c3294723b74eb1120e79c8d3b1970a44",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "statement",
+          "name": "entity_lifecycle_baseline_no_truncate",
+          "relation": "entity_lifecycle_legacy_baseline",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "3e8ef78be37d1ab7aa383d5574cac4817dc91528843c047a84280b0cce8d2197",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entity_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "3c93a54261ba07ddb6325052e67a7a156f32cc935485e2ec12d616c60144e53c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "revision",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "8ce14a1468c47fa0c268fe996a1f78c2d023ad79b5a7b4ee161ee56a25928cca",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at_utc",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "06b3d20c28407fb32dee1757776524494ef73d60547e84278d2b1f75a22bf256",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1910d642eccb07136027a8e402495e085df90d2d93b5c9a36611267f7d8cb483",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_hash",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "220f27ee2d32cf7406851087edd89eee483aeb48af3af286c3fbf2445ed9b276",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "previous_hash",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "fb7d66a8ced9bbd4f00354a1e10e95b1cea1610b7928556df856da2a9d4e5341",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "content_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (content_hash ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "4668f77a94b7a136505e5fc543b1b1fb23242c91ceef10ebfb5dc664676c6944",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_content_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "recorded_by"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM recorded_by)) > 0)",
+          "delete_action": null,
+          "fingerprint": "33c3cd77f79ba1e77f35fe3e0d0d49516377107d6c72b93596cf9ccea88291eb",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_recorded_by_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (revision > 0)",
+          "delete_action": null,
+          "fingerprint": "ac6bdca79b756cf2d23c6a4132277db9fddcfd41eba975a78d4b85bc0b7e7ad2",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_revision_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id = lower(TRIM(BOTH FROM tenant_id)) AND length(tenant_id) > 0 AND tenant_id <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "30c73b8dd8856d019b39bd3f5eae91cf664bbb4db0f2400f0639d4fdc2b11938",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "entity_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (entity_id) REFERENCES fund_structure.legal_entity(entity_id)",
+          "delete_action": "no_action",
+          "fingerprint": "efd25b374fdeb8d142cd042296613af5e6cf38c41cee21e500597c822c77bd84",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "entity_lifecycle_revision_entity_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "entity_id"
+          ],
+          "referenced_schema": "fund_structure",
+          "referenced_table": "legal_entity",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "entity_id",
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, entity_id, revision)",
+          "delete_action": null,
+          "fingerprint": "d60de5b251c93dec3a749ad65d5fd7d8313685af897db46c238dd210a176c3d7",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "9107fae5987af601455e34a615460be4d87c0d921752a820c7b8dda68bcade1f",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX entity_lifecycle_revision_pkey ON fund_structure.entity_lifecycle_revision USING btree (tenant_id, entity_id, revision)",
+          "expression": null,
+          "fingerprint": "84e52247950e0068e3cf67614e3af43b81aa7a8b8ec681644b8416c7fb88ac18",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "entity_id",
+            "revision"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "entity_lifecycle_revision_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "entity_lifecycle_revision",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_revision_immutable BEFORE DELETE OR UPDATE ON fund_structure.entity_lifecycle_revision FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "c700ded8aa984190ef7821b68ea22030dad6153da984719ab06723707e3de7a8",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "352447261cdef7efc2d7e0ef8ff6383f9d781215025214a9e7312dd9b664a8d5",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "row",
+          "name": "entity_lifecycle_revision_immutable",
+          "relation": "entity_lifecycle_revision",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_revision_no_truncate BEFORE TRUNCATE ON fund_structure.entity_lifecycle_revision FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "1b722a766a7aa473393e0a64ed59a62e52306ccdb92f2e95baea8961faa138f3",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "eefe99d05a49e5c03260beac60b1aaa778c95b8ccff9fdbf6719ef5aa693e54f",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "statement",
+          "name": "entity_lifecycle_revision_no_truncate",
+          "relation": "entity_lifecycle_revision",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -3062,6 +3848,326 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "0fefd15e93fabd09215cbf05f847e742abb0d3fec8775a3f50a14773f74c6293",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "arrangement_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "bf585fd0660cc0fff35afc53a9697107458f6e2aeb14b3cd3bd95d25e8369b2b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "aggregate_version",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "e956e60ae1ab57cb27bbeb1e9f4d7c4167b763ff934b4e6585ca93c5e1d3c8a0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "request_id",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "3de60eb54b140bcbf34dcc3e6bbd1463132073f9ce6fb1a6dea5d885a098eaf0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "aggregate_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (aggregate_version > 0)",
+          "delete_action": null,
+          "fingerprint": "d2bf2904956aaf82d846a9ac2b4e9e0d433e204741e09ba61afc7be5ce7bc958",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arrangement_eve_aggregate_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id = lower(TRIM(BOTH FROM tenant_id)) AND tenant_id <> ''::text AND tenant_id <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "a1d67f0ce27e4cada48f0f1fd00f12ad3c598f03e88402661bf5a1db67f6be86",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arrangement_events_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "arrangement_id",
+            "aggregate_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, arrangement_id, aggregate_version)",
+          "delete_action": null,
+          "fingerprint": "e3f9751e0d134e0a99b47d5537ac2db1b1450ad7a95196fee73c33fde9617667",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arrangement_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "arrangement_id",
+            "request_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (tenant_id, arrangement_id, request_id)",
+          "delete_action": null,
+          "fingerprint": "8cc1f3d4ead081c41c2a04851e62185c77f847fc51e72e9cbaf87d93c4407791",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arran_tenant_id_arrangement_id_requ_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ce05f62db3a5edb387a95b4ffbd5d971315505577692f678b28030590510bc95",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_accounting_arran_tenant_id_arrangement_id_requ_key ON fund_structure.intercompany_accounting_arrangement_events USING btree (tenant_id, arrangement_id, request_id)",
+          "expression": null,
+          "fingerprint": "eba580ccc9dbe5397829525661becf8ea56c4447d7450934f9d0358f82fbe7ea",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "arrangement_id",
+            "request_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_accounting_arran_tenant_id_arrangement_id_requ_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_accounting_arrangement_events_pkey ON fund_structure.intercompany_accounting_arrangement_events USING btree (tenant_id, arrangement_id, aggregate_version)",
+          "expression": null,
+          "fingerprint": "634846979af2518d327f231bb1a70769b3c161ae490baef969230709f32ca14f",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "arrangement_id",
+            "aggregate_version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_accounting_arrangement_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "intercompany_accounting_arrangement_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_accounting_arrangement_history_immutable BEFORE DELETE OR UPDATE ON fund_structure.intercompany_accounting_arrangement_events FOR EACH ROW EXECUTE FUNCTION fund_structure.refuse_intercompany_accounting_arrangement_history_mutation()",
+          "definition_hash": "7afb5d890bebc0a128f47ee72e03e1d68564e8f43bb401d3924af9122643c37a",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "4dc84ce0ebcf00f5a311dc2611e88ccf508f4fa6fe3debde4740faf5ba3b315d",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+          "level": "row",
+          "name": "intercompany_accounting_arrangement_history_immutable",
+          "relation": "intercompany_accounting_arrangement_events",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_accounting_arrangement_history_no_truncate BEFORE TRUNCATE ON fund_structure.intercompany_accounting_arrangement_events FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.refuse_intercompany_accounting_arrangement_history_mutation()",
+          "definition_hash": "79c06e7dd92edf42f7fd3a4dfc455ddf248caea909648f37ccb7f176ac4af049",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "3688a0586ddf6aa3da170d7e0fd84fa965268ac4431c69e921060df24799b274",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+          "level": "statement",
+          "name": "intercompany_accounting_arrangement_history_no_truncate",
+          "relation": "intercompany_accounting_arrangement_events",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -6604,6 +7710,22 @@
     },
     {
       "enabled": false,
+      "fingerprint": "8c76f1578f97e2ec3878559e308f558fda280a75865262b1a3c4dcc5b915ac9a",
+      "forced": false,
+      "policies": [],
+      "relation": "entity_lifecycle_legacy_baseline",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "ee926709966416a4f6464b3240c73d46d232432a1478457261a1b0a746552085",
+      "forced": false,
+      "policies": [],
+      "relation": "entity_lifecycle_revision",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
       "fingerprint": "f4202fe49a88c98209b5a3c8d3e2548c878cc715669aa698fc9687651cc1b4ea",
       "forced": false,
       "policies": [],
@@ -6656,6 +7778,14 @@
       "forced": false,
       "policies": [],
       "relation": "fund_structure_tenant_quarantine",
+      "schema": "fund_structure"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "861cd669bc45c742b112fbf22d50956ffe8a3fc65bffe6300ff7a9471e39ee42",
+      "forced": false,
+      "policies": [],
+      "relation": "intercompany_accounting_arrangement_events",
       "schema": "fund_structure"
     },
     {
@@ -7469,6 +8599,610 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "7db572e054fbd89f0b1b2bf8fa2bf02a37a1608f774752d4871c79489e9c1de7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entity_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f0d3dce62b3bfc95392f6084af88d25ba10aeae8e530003051043e2d7d34fc99",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "lifecycle_status",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "798666f449139eda093ed2ba909faf9673ba36fce2522cb176b939f95bd5e15d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "captured_at_utc",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "entity_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (entity_id) REFERENCES fund_structure.legal_entity(entity_id)",
+          "delete_action": "no_action",
+          "fingerprint": "2d121414bf3ee8b907f29cfa813b3dc85d4bb917d05256fb603d491385f75d85",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "entity_lifecycle_legacy_baseline_entity_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "entity_id"
+          ],
+          "referenced_schema": "fund_structure",
+          "referenced_table": "legal_entity",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "entity_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (entity_id)",
+          "delete_action": null,
+          "fingerprint": "f1b14a49463177be56edb881463f370779766d752481ee98f1fd9fe74de92368",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_legacy_baseline_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "7c41b2e7c3d7860817e5b9df183d3b8af683e9bafee1a8e8744b9842a15e7bdf",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX entity_lifecycle_legacy_baseline_pkey ON fund_structure.entity_lifecycle_legacy_baseline USING btree (entity_id)",
+          "expression": null,
+          "fingerprint": "88afaacd73786c21fa3a3c948d48f6f385e87770fce8505b54621cf0835ae764",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "entity_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "entity_lifecycle_legacy_baseline_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "entity_lifecycle_legacy_baseline",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_baseline_immutable BEFORE DELETE OR UPDATE ON fund_structure.entity_lifecycle_legacy_baseline FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "afecb437279d795d0585cc1563e636af1c87ccf51c92ac24b31a7cdeb09b894e",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "bd41c4705741cd7ead2ee7b8c5e5d5270f609bf55f1cb1dc20bd62973554222d",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "row",
+          "name": "entity_lifecycle_baseline_immutable",
+          "relation": "entity_lifecycle_legacy_baseline",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_baseline_no_truncate BEFORE TRUNCATE ON fund_structure.entity_lifecycle_legacy_baseline FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "e4baaaf31a2d7e175c5906ee4f2d2dc7b29d5b6ab8f3aa16d3e7d93b3cd90712",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "0a0c0a4be2f41383b7b053c616448932c3294723b74eb1120e79c8d3b1970a44",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "statement",
+          "name": "entity_lifecycle_baseline_no_truncate",
+          "relation": "entity_lifecycle_legacy_baseline",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "3e8ef78be37d1ab7aa383d5574cac4817dc91528843c047a84280b0cce8d2197",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "entity_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "3c93a54261ba07ddb6325052e67a7a156f32cc935485e2ec12d616c60144e53c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "revision",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "8ce14a1468c47fa0c268fe996a1f78c2d023ad79b5a7b4ee161ee56a25928cca",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at_utc",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "06b3d20c28407fb32dee1757776524494ef73d60547e84278d2b1f75a22bf256",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_by",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "1910d642eccb07136027a8e402495e085df90d2d93b5c9a36611267f7d8cb483",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_hash",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "220f27ee2d32cf7406851087edd89eee483aeb48af3af286c3fbf2445ed9b276",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "previous_hash",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "fb7d66a8ced9bbd4f00354a1e10e95b1cea1610b7928556df856da2a9d4e5341",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "content_hash"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (content_hash ~ '^[a-f0-9]{64}$'::text)",
+          "delete_action": null,
+          "fingerprint": "4668f77a94b7a136505e5fc543b1b1fb23242c91ceef10ebfb5dc664676c6944",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_content_hash_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "recorded_by"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (length(TRIM(BOTH FROM recorded_by)) > 0)",
+          "delete_action": null,
+          "fingerprint": "33c3cd77f79ba1e77f35fe3e0d0d49516377107d6c72b93596cf9ccea88291eb",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_recorded_by_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (revision > 0)",
+          "delete_action": null,
+          "fingerprint": "ac6bdca79b756cf2d23c6a4132277db9fddcfd41eba975a78d4b85bc0b7e7ad2",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_revision_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id = lower(TRIM(BOTH FROM tenant_id)) AND length(tenant_id) > 0 AND tenant_id <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "30c73b8dd8856d019b39bd3f5eae91cf664bbb4db0f2400f0639d4fdc2b11938",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "entity_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (entity_id) REFERENCES fund_structure.legal_entity(entity_id)",
+          "delete_action": "no_action",
+          "fingerprint": "efd25b374fdeb8d142cd042296613af5e6cf38c41cee21e500597c822c77bd84",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "entity_lifecycle_revision_entity_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "entity_id"
+          ],
+          "referenced_schema": "fund_structure",
+          "referenced_table": "legal_entity",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "entity_id",
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, entity_id, revision)",
+          "delete_action": null,
+          "fingerprint": "d60de5b251c93dec3a749ad65d5fd7d8313685af897db46c238dd210a176c3d7",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "entity_lifecycle_revision_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "9107fae5987af601455e34a615460be4d87c0d921752a820c7b8dda68bcade1f",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX entity_lifecycle_revision_pkey ON fund_structure.entity_lifecycle_revision USING btree (tenant_id, entity_id, revision)",
+          "expression": null,
+          "fingerprint": "84e52247950e0068e3cf67614e3af43b81aa7a8b8ec681644b8416c7fb88ac18",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "entity_id",
+            "revision"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "entity_lifecycle_revision_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "entity_lifecycle_revision",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_revision_immutable BEFORE DELETE OR UPDATE ON fund_structure.entity_lifecycle_revision FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "c700ded8aa984190ef7821b68ea22030dad6153da984719ab06723707e3de7a8",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "352447261cdef7efc2d7e0ef8ff6383f9d781215025214a9e7312dd9b664a8d5",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "row",
+          "name": "entity_lifecycle_revision_immutable",
+          "relation": "entity_lifecycle_revision",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER entity_lifecycle_revision_no_truncate BEFORE TRUNCATE ON fund_structure.entity_lifecycle_revision FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+          "definition_hash": "1b722a766a7aa473393e0a64ed59a62e52306ccdb92f2e95baea8961faa138f3",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "eefe99d05a49e5c03260beac60b1aaa778c95b8ccff9fdbf6719ef5aa693e54f",
+          "function_schema": "fund_structure",
+          "function_signature": "reject_entity_lifecycle_rewrite()",
+          "level": "statement",
+          "name": "entity_lifecycle_revision_no_truncate",
+          "relation": "entity_lifecycle_revision",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -9334,6 +11068,326 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "0fefd15e93fabd09215cbf05f847e742abb0d3fec8775a3f50a14773f74c6293",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "arrangement_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": null,
+          "fingerprint": "bf585fd0660cc0fff35afc53a9697107458f6e2aeb14b3cd3bd95d25e8369b2b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "aggregate_version",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "e956e60ae1ab57cb27bbeb1e9f4d7c4167b763ff934b4e6585ca93c5e1d3c8a0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "request_id",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "3de60eb54b140bcbf34dcc3e6bbd1463132073f9ce6fb1a6dea5d885a098eaf0",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "aggregate_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (aggregate_version > 0)",
+          "delete_action": null,
+          "fingerprint": "d2bf2904956aaf82d846a9ac2b4e9e0d433e204741e09ba61afc7be5ce7bc958",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arrangement_eve_aggregate_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id = lower(TRIM(BOTH FROM tenant_id)) AND tenant_id <> ''::text AND tenant_id <> 'all'::text)",
+          "delete_action": null,
+          "fingerprint": "a1d67f0ce27e4cada48f0f1fd00f12ad3c598f03e88402661bf5a1db67f6be86",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arrangement_events_tenant_id_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "arrangement_id",
+            "aggregate_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, arrangement_id, aggregate_version)",
+          "delete_action": null,
+          "fingerprint": "e3f9751e0d134e0a99b47d5537ac2db1b1450ad7a95196fee73c33fde9617667",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arrangement_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "tenant_id",
+            "arrangement_id",
+            "request_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "UNIQUE (tenant_id, arrangement_id, request_id)",
+          "delete_action": null,
+          "fingerprint": "8cc1f3d4ead081c41c2a04851e62185c77f847fc51e72e9cbaf87d93c4407791",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "intercompany_accounting_arran_tenant_id_arrangement_id_requ_key",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "unique",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ce05f62db3a5edb387a95b4ffbd5d971315505577692f678b28030590510bc95",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_accounting_arran_tenant_id_arrangement_id_requ_key ON fund_structure.intercompany_accounting_arrangement_events USING btree (tenant_id, arrangement_id, request_id)",
+          "expression": null,
+          "fingerprint": "eba580ccc9dbe5397829525661becf8ea56c4447d7450934f9d0358f82fbe7ea",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "arrangement_id",
+            "request_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_accounting_arran_tenant_id_arrangement_id_requ_key",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX intercompany_accounting_arrangement_events_pkey ON fund_structure.intercompany_accounting_arrangement_events USING btree (tenant_id, arrangement_id, aggregate_version)",
+          "expression": null,
+          "fingerprint": "634846979af2518d327f231bb1a70769b3c161ae490baef969230709f32ca14f",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "arrangement_id",
+            "aggregate_version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "intercompany_accounting_arrangement_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "intercompany_accounting_arrangement_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "fund_structure",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_accounting_arrangement_history_immutable BEFORE DELETE OR UPDATE ON fund_structure.intercompany_accounting_arrangement_events FOR EACH ROW EXECUTE FUNCTION fund_structure.refuse_intercompany_accounting_arrangement_history_mutation()",
+          "definition_hash": "7afb5d890bebc0a128f47ee72e03e1d68564e8f43bb401d3924af9122643c37a",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "4dc84ce0ebcf00f5a311dc2611e88ccf508f4fa6fe3debde4740faf5ba3b315d",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+          "level": "row",
+          "name": "intercompany_accounting_arrangement_history_immutable",
+          "relation": "intercompany_accounting_arrangement_events",
+          "schema": "fund_structure",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER intercompany_accounting_arrangement_history_no_truncate BEFORE TRUNCATE ON fund_structure.intercompany_accounting_arrangement_events FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.refuse_intercompany_accounting_arrangement_history_mutation()",
+          "definition_hash": "79c06e7dd92edf42f7fd3a4dfc455ddf248caea909648f37ccb7f176ac4af049",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "3688a0586ddf6aa3da170d7e0fd84fa965268ac4431c69e921060df24799b274",
+          "function_schema": "fund_structure",
+          "function_signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+          "level": "statement",
+          "name": "intercompany_accounting_arrangement_history_no_truncate",
+          "relation": "intercompany_accounting_arrangement_events",
+          "schema": "fund_structure",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -12860,6 +14914,76 @@
   "triggers": [
     {
       "comment": null,
+      "definition": "CREATE TRIGGER entity_lifecycle_baseline_immutable BEFORE DELETE OR UPDATE ON fund_structure.entity_lifecycle_legacy_baseline FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+      "definition_hash": "afecb437279d795d0585cc1563e636af1c87ccf51c92ac24b31a7cdeb09b894e",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "bd41c4705741cd7ead2ee7b8c5e5d5270f609bf55f1cb1dc20bd62973554222d",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_entity_lifecycle_rewrite()",
+      "level": "row",
+      "name": "entity_lifecycle_baseline_immutable",
+      "relation": "entity_lifecycle_legacy_baseline",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER entity_lifecycle_baseline_no_truncate BEFORE TRUNCATE ON fund_structure.entity_lifecycle_legacy_baseline FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+      "definition_hash": "e4baaaf31a2d7e175c5906ee4f2d2dc7b29d5b6ab8f3aa16d3e7d93b3cd90712",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "0a0c0a4be2f41383b7b053c616448932c3294723b74eb1120e79c8d3b1970a44",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_entity_lifecycle_rewrite()",
+      "level": "statement",
+      "name": "entity_lifecycle_baseline_no_truncate",
+      "relation": "entity_lifecycle_legacy_baseline",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER entity_lifecycle_revision_immutable BEFORE DELETE OR UPDATE ON fund_structure.entity_lifecycle_revision FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+      "definition_hash": "c700ded8aa984190ef7821b68ea22030dad6153da984719ab06723707e3de7a8",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "352447261cdef7efc2d7e0ef8ff6383f9d781215025214a9e7312dd9b664a8d5",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_entity_lifecycle_rewrite()",
+      "level": "row",
+      "name": "entity_lifecycle_revision_immutable",
+      "relation": "entity_lifecycle_revision",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER entity_lifecycle_revision_no_truncate BEFORE TRUNCATE ON fund_structure.entity_lifecycle_revision FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.reject_entity_lifecycle_rewrite()",
+      "definition_hash": "1b722a766a7aa473393e0a64ed59a62e52306ccdb92f2e95baea8961faa138f3",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "eefe99d05a49e5c03260beac60b1aaa778c95b8ccff9fdbf6719ef5aa693e54f",
+      "function_schema": "fund_structure",
+      "function_signature": "reject_entity_lifecycle_rewrite()",
+      "level": "statement",
+      "name": "entity_lifecycle_revision_no_truncate",
+      "relation": "entity_lifecycle_revision",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
       "definition": "CREATE TRIGGER tenant_backfill_receipt_immutable BEFORE DELETE OR UPDATE ON fund_structure.fund_structure_tenant_backfill_receipt FOR EACH ROW EXECUTE FUNCTION fund_structure.reject_tenant_backfill_receipt_rewrite()",
       "definition_hash": "5e31bb81952e884754d3894a36fcbdbe8fef29ee70183a12e8c669a0334d2b22",
       "enabled": "origin",
@@ -12890,6 +15014,41 @@
       "level": "statement",
       "name": "tenant_backfill_receipt_no_truncate",
       "relation": "fund_structure_tenant_backfill_receipt",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER intercompany_accounting_arrangement_history_immutable BEFORE DELETE OR UPDATE ON fund_structure.intercompany_accounting_arrangement_events FOR EACH ROW EXECUTE FUNCTION fund_structure.refuse_intercompany_accounting_arrangement_history_mutation()",
+      "definition_hash": "7afb5d890bebc0a128f47ee72e03e1d68564e8f43bb401d3924af9122643c37a",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "4dc84ce0ebcf00f5a311dc2611e88ccf508f4fa6fe3debde4740faf5ba3b315d",
+      "function_schema": "fund_structure",
+      "function_signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+      "level": "row",
+      "name": "intercompany_accounting_arrangement_history_immutable",
+      "relation": "intercompany_accounting_arrangement_events",
+      "schema": "fund_structure",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER intercompany_accounting_arrangement_history_no_truncate BEFORE TRUNCATE ON fund_structure.intercompany_accounting_arrangement_events FOR EACH STATEMENT EXECUTE FUNCTION fund_structure.refuse_intercompany_accounting_arrangement_history_mutation()",
+      "definition_hash": "79c06e7dd92edf42f7fd3a4dfc455ddf248caea909648f37ccb7f176ac4af049",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "3688a0586ddf6aa3da170d7e0fd84fa965268ac4431c69e921060df24799b274",
+      "function_schema": "fund_structure",
+      "function_signature": "refuse_intercompany_accounting_arrangement_history_mutation()",
+      "level": "statement",
+      "name": "intercompany_accounting_arrangement_history_no_truncate",
+      "relation": "intercompany_accounting_arrangement_events",
       "schema": "fund_structure",
       "timing": "before"
     },

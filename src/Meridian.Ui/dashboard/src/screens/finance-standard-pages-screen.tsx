@@ -36,6 +36,7 @@ import { useAccountingPostedLedgerViewModel, type PostedLedgerJournalLine } from
 import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import { ConsolidationPanel } from "@/screens/accounting-screen.consolidation-panel";
+import { EntityOperationsPanel } from "@/screens/accounting-screen.entity-operations";
 import { FactorPaydownPanel } from "@/screens/accounting-screen.factor-paydown-panel";
 import {
   buildTemplateRows,
@@ -773,6 +774,7 @@ function AccountingScopedWorkflowScreen({ kind }: { kind: "factor-paydown" | "co
       ) : periodId && bookId ? (
         <ConsolidationPanel key={`${bookId}:${periodId}`} initialBookId={bookId} initialPeriodId={periodId} />
       ) : <StatusBanner tone="warning" title="Accounting scope unavailable" detail={postedLedger.view.periodSelector.errorText ?? postedLedger.view.periodSelector.loadingText ?? "Choose an available ledger book and period before preparing consolidation."} />}
+      {kind === "consolidation" && postedLedger.selectedBook ? <EntityOperationsPanel key={bookId} book={postedLedger.selectedBook} /> : null}
     </div>
   );
 }
