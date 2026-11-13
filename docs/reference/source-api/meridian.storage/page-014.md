@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetentionStatus
+
+Qualified name: <code>Meridian.Storage.Services.RetentionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:221](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L221).
+
+Retention status for a file.
+
+```csharp
+public enum RetentionStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Compliant</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:223](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L223) |  |
+| <code>ExceedsPolicy</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:224](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L224) |  |
+| <code>Archived</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:225](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L225) |  |
+| <code>PendingDeletion</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:226](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L226) |  |
+
+## RetentionViolation
+
+Qualified name: <code>Meridian.Storage.Services.RetentionViolation</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:210](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L210).
+
+A retention policy violation.
+
+```csharp
+public sealed record RetentionViolation(string FilePath, string Symbol, int AgeDays, int RetentionLimitDays, int ExcessDays, long SizeBytes);
+```
+
 ## ScheduleDecision
 
 Qualified name: <code>Meridian.Storage.Services.ScheduleDecision</code>. Kind: `record`.
@@ -922,35 +955,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public required string DataRoot { get; init; }</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:9](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L9) |  |
-
-## JsonFileIBDataResultStore
-
-Qualified name: <code>Meridian.Storage.Store.JsonFileIBDataResultStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L16).
-
-Crash-safe IB result store. Each upsert replaces one complete atomic snapshot, so an interrupted write leaves either the previous valid result set or the new valid result set available at restart.
-
-```csharp
-public sealed class JsonFileIBDataResultStore : IIBDataResultStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonFileIBDataResultStore(IBDataResultStoreOptions options);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:22](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L22) |  |
-| <code>public async ValueTask UpsertAsync(IBDataResult result, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:29](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L29) |  |
-| <code>public async ValueTask&lt;IReadOnlyList&lt;IBDataResult&gt;&gt; QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:57](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L57) |  |
-
-## JsonFileSnapshotStore (generic arity 1)
-
-Qualified name: <code>Meridian.Storage.Store.JsonFileSnapshotStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Store/JsonFileSnapshotStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileSnapshotStore.cs#L16).
-
-Base class for whole-file JSON snapshot stores: state lives in a single JSON document that is loaded on demand, mutated in memory, and persisted with AtomicFileWriter so the file is never left partially written. A SemaphoreSlim serializes read-modify-write cycles. Derived stores supply the empty snapshot, choose reflection- or source-generated serialization via the constructor, and can override the corrupt-snapshot and post-load hooks to keep their historical recovery semantics (propagate, log-and-start-fresh, or fail fast).
-
-```csharp
-public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
-```

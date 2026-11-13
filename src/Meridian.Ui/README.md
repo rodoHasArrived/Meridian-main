@@ -42,6 +42,11 @@ The rebuilt browser assets include the current design-system date and keyboard a
 current-view print styling. Printed views retain mounted selection, financial context, session and
 provenance; printing does not fetch unmounted records or change report authority.
 
+Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
+CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
+trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
+in the package. Rebuild `dashboard/` to refresh the checked-in workstation bundle.
+
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 
 The generated dashboard route catalog includes the shared account oversight APIs for cash

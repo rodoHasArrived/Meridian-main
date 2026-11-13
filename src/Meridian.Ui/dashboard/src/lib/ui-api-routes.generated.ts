@@ -757,6 +757,7 @@ export const UI_API_ROUTES = {
   RunsContinuity: "/api/workstation/runs/{runId}/continuity",
   RunsReviewPacket: "/api/workstation/runs/{runId}/review-packet",
   RunsLedgerTrialBalance: "/api/workstation/runs/{runId}/ledger/trial-balance",
+  RunsLedgerExport: "/api/workstation/runs/{runId}/ledger/export",
   RunsLedgerJournal: "/api/workstation/runs/{runId}/ledger/journal",
   LedgerBooks: "/api/ledger/books",
   LedgerBookRolloutAssessment: "/api/ledger/books/rollout-assessment",

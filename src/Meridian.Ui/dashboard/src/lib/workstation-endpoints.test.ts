@@ -500,6 +500,12 @@ describe("workstation API endpoint catalog", () => {
     });
     expect(workstationRunLedgerEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/ledger");
     expect(workstationRunLedgerJournalEndpoint("run / 1")).toBe("/api/workstation/runs/run%20%2F%201/ledger/journal");
+    expect(workstationRunLedgerTrialBalanceEndpoint("run / 1", { asOf: "2026-01-31T23:59:59.9999999Z" })).toBe(
+      "/api/workstation/runs/run%20%2F%201/ledger/trial-balance?asOf=2026-01-31T23%3A59%3A59.9999999Z"
+    );
+    expect(workstationRunLedgerJournalEndpoint("run / 1", { asOf: "2026-01-31T23:59:59.9999999Z" })).toBe(
+      "/api/workstation/runs/run%20%2F%201/ledger/journal?asOf=2026-01-31T23%3A59%3A59.9999999Z"
+    );
     expect(workstationRunLedgerJournalEndpoint("run / 1", { from: "2026-01-01", to: "2026-01-31" })).toBe(
       "/api/workstation/runs/run%20%2F%201/ledger/journal?from=2026-01-01&to=2026-01-31"
     );

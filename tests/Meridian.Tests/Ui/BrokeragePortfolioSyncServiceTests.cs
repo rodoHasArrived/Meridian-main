@@ -22,6 +22,9 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class BrokeragePortfolioSyncServiceTests
 {
+    // Recreating an adapter changes receipt time, not the business facts of an existing source ID.
+    private static readonly DateTimeOffset ActivityEconomicTime = DateTimeOffset.UtcNow;
+
     [Fact]
     public async Task RunSyncAsync_SuccessfulPortfolioCapturePublishesProductionAccountingSnapshot()
     {
@@ -418,9 +421,11 @@ public sealed class BrokeragePortfolioSyncServiceTests
             // The provider's window moves on: the second sync repeats "cash-2" and no longer
             // returns "cash-1".
             activity.CashTransactionIds = ["cash-1", "cash-2"];
-            await service.RunSyncAsync(fundAccountId, request, cts.Token);
+            (await service.RunSyncAsync(fundAccountId, request, cts.Token)).Health
+                .Should().Be(WorkstationBrokerageSyncHealth.Healthy);
             activity.CashTransactionIds = ["cash-2", "cash-3"];
-            await service.RunSyncAsync(fundAccountId, request, cts.Token);
+            (await service.RunSyncAsync(fundAccountId, request, cts.Token)).Health
+                .Should().Be(WorkstationBrokerageSyncHealth.Healthy);
 
             (await service.GetActivityForActiveLinkAsync(fundAccountId, cts.Token)).Should().NotBeNull();
             var history = await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token);
@@ -429,6 +434,17 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 .Select(static cash => cash.TransactionId)
                 .Should().BeEquivalentTo(["cash-2", "cash-3"], "the projection stays the latest provider snapshot");
             (await service.GetCashTransactionHistoryAsync(Guid.NewGuid(), cts.Token)).Should().BeEmpty();
+
+            // Rebuild supplementary history from the accepted inbox after an interrupted or
+            // lost history projection, even when the provider's current window is empty.
+            File.Delete(Path.Combine(root, "activity-history", $"{fundAccountId:N}.json"));
+            activity.CashTransactionIds = [];
+            (await service.RunSyncAsync(fundAccountId, request, cts.Token)).Health
+                .Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            (await service.GetActivityAsync(fundAccountId, cts.Token))!.CashTransactions.Should().BeEmpty();
+            (await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token))
+                .Select(static cash => cash.TransactionId)
+                .Should().BeEquivalentTo(["cash-1", "cash-2", "cash-3"]);
 
             // After a relink the retained rows belong to the previous external account and must
             // not be served as the new account's activity.
@@ -1719,7 +1735,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         "DIV",
                         12m,
                         "USD",
-                        DateTimeOffset.UtcNow.AddHours(-1),
+                        ActivityEconomicTime.AddHours(-1),
                         "AAPL"))
                     .ToArray()));
         }
@@ -1727,6 +1743,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
 
     private sealed class FixedActivityAdapter(string providerId) : IBrokerageActivitySync
     {
+        private readonly DateTimeOffset _sourceTime = ActivityEconomicTime;
         public string ProviderId { get; } = providerId;
 
         public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
@@ -1751,7 +1768,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         0m,
                         185m,
                         null,
-                        DateTimeOffset.UtcNow.AddMinutes(-8))
+                        _sourceTime.AddMinutes(-8))
                 ],
                 [
                     new BrokerageFillSnapshotDto(
@@ -1761,7 +1778,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         OrderSide.Buy,
                         10m,
                         184.25m,
-                        DateTimeOffset.UtcNow.AddMinutes(-12),
+                        _sourceTime.AddMinutes(-12),
                         "XNAS",
                         0m,
                         125m)
@@ -1772,7 +1789,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         "DIV",
                         42.50m,
                         "USD",
-                        DateTimeOffset.UtcNow.AddDays(-1),
+                        _sourceTime.AddDays(-1),
                         "AAPL",
                         "Dividend")
                 ],
@@ -1782,8 +1799,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         "corp-div-aapl",
                         "Dividend",
                         "AAPL",
-                        DateOnly.FromDateTime(DateTime.UtcNow.Date),
-                        DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-2)),
+                        DateOnly.FromDateTime(_sourceTime.UtcDateTime.Date),
+                        DateOnly.FromDateTime(_sourceTime.UtcDateTime.Date.AddDays(-2)),
                         Amount: 0.24m,
                         Currency: "USD",
                         Description: "AAPL dividend")

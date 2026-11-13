@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CurveDefinedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CurveDefinedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:94](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L94).
+
+Curves / CurveDefined.
+
+```csharp
+public sealed record CurveDefinedPayload(Guid CurveId, string CurveKey, string Kind, string Currency, string? IndexName, string? Tenor, string DayCount, string Interpolation, string Source, string? Description) : ISecurityGovernancePayload;
+```
+
+## CurveVersionPublishedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CurveVersionPublishedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:107](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L107).
+
+Curves / CurveVersionPublished.
+
+```csharp
+public sealed record CurveVersionPublishedPayload(Guid CurveId, Guid CurveVersionId, string CurveKey, string Kind, string Currency, string? IndexName, long Version, DateOnly AsOf, int PointCount, string ContentSha256, string Source, DateTimeOffset? SourcedAt) : ISecurityGovernancePayload;
+```
+
 ## CustomAssetProfileFieldProjectionRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.CustomAssetProfileFieldProjectionRow</code>. Kind: `record`.
@@ -911,26 +935,4 @@ OperatorOverrides / Patched: staged overlay values awaiting review.
 
 ```csharp
 public sealed record OperatorOverridesPatchedPayload(IReadOnlyList<string> SetKeys, IReadOnlyList<string> RemovedKeys, IReadOnlyDictionary<string, string> PreviousValues, IReadOnlyDictionary<string, string> Values, string? ReasonCode, string ApprovalStatus, long? ExpectedCanonicalVersion) : ISecurityGovernancePayload;
-```
-
-## OptionContractProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OptionContractProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L17).
-
-```csharp
-public sealed record OptionContractProjectionRow(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, string LifecycleStat, DateTimeOffset LastUpdatedUtc, long Version);
-```
-
-## OtcCollateralBalanceChangedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalanceChangedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:163](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L163).
-
-OtcCollateral / CollateralBalanceRecorded or CollateralBalanceAmended.
-
-```csharp
-public sealed record OtcCollateralBalanceChangedPayload(Guid MasterAgreementId, OtcCollateralBalancePayload Balance, OtcCollateralBalancePayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
 ```

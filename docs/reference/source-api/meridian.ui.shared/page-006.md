@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1788](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1788).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1570](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1570).
 
 Request to update or clear a symbol-specific execution position limit.
 
@@ -199,6 +199,12 @@ public static partial class WorkstationEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs#L11).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs#L14).
 
 ```csharp
 public static partial class WorkstationEndpoints

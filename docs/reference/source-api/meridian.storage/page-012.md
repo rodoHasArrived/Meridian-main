@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EventSearchQuery
+
+Qualified name: <code>Meridian.Storage.Services.EventSearchQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:756](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L756).
+
+```csharp
+public sealed record EventSearchQuery(string Symbol, MarketEventType Type, DateTimeOffset From, DateTimeOffset To, decimal? MinPrice = null, decimal? MaxPrice = null, long? MinVolume = null, AggressorSide? Side = null, long? SequenceFrom = null, long? SequenceTo = null, int Limit = 1000);
+```
+
+## EventSearchResult
+
+Qualified name: <code>Meridian.Storage.Services.EventSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:800](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L800).
+
+```csharp
+public sealed record EventSearchResult(DateTimeOffset Timestamp, string Symbol, string EventType, long Sequence, string Source, object? Payload);
+```
+
 ## FacetedSearchQuery
 
 Qualified name: <code>Meridian.Storage.Services.FacetedSearchQuery</code>. Kind: `record`.
@@ -901,23 +921,3 @@ Declared public members:
 | <code>public async Task&lt;LifecycleExecutionResult&gt; ExecuteAsync(IReadOnlyList&lt;LifecycleAction&gt; actions, bool dryRun = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:129](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L129) |  |
 | <code>public StoragePolicyConfig ResolvePolicy(string filePath);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:240](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L240) |  |
 | <code>public IReadOnlyDictionary&lt;StorageTier, LifecycleTierInfo&gt; GetTierStatistics();</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:265](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L265) |  |
-
-## LifecycleState
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleState</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:450](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L450).
-
-```csharp
-public sealed record LifecycleState(StorageTier CurrentTier, TimeSpan FileAge, DataClassification Classification);
-```
-
-## LifecycleTierInfo
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleTierInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:455](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L455).
-
-```csharp
-public sealed record LifecycleTierInfo(int FileCount, long TotalBytes, TimeSpan OldestFileAge, TimeSpan NewestFileAge);
-```

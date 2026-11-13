@@ -1,17 +1,3 @@
-import {
-  buildPromotionApprovalChecklist,
-  buildPromotionApprovalChecklistTokens,
-  getInvalidPromotionEvidenceReferences,
-  getMissingPromotionEvidenceReferences,
-  isLivePromotionTarget,
-  livePromotionApprovalChecklist,
-  paperPromotionApprovalChecklist,
-  parsePromotionEvidenceReferences,
-  type PromotionApprovalChecklistItem
-} from "./trading-screen.promotion-evidence";
-export { buildPromotionApprovalChecklist, livePromotionApprovalChecklist, paperPromotionApprovalChecklist } from "./trading-screen.promotion-evidence";
-export type { PromotionApprovalChecklistItem } from "./trading-screen.promotion-evidence";
-
 import { presentMarkFreshness, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screens/trading-screen.blotter-details";
 import {
@@ -86,6 +72,33 @@ import type {
   TradingRiskState,
   TradingWorkspaceResponse
 } from "@/types";
+
+import {
+  buildPromotionApprovalChecklist,
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  isPromotionEvaluationForRun,
+  selectPromotionEvaluationForRun,
+  trimPromotionGateForm,
+  validatePromotionApproval,
+  validatePromotionRejection,
+  type PromotionApprovalChecklistItem,
+  type PromotionGateField,
+  type PromotionGateForm
+} from "./trading-screen.promotion-evidence";
+
+export {
+  buildPromotionApprovalChecklist,
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  livePromotionApprovalChecklist,
+  paperPromotionApprovalChecklist,
+  validatePromotionApproval,
+  validatePromotionRejection
+} from "./trading-screen.promotion-evidence";
+export type { PromotionApprovalChecklistItem, PromotionGateField, PromotionGateForm } from "./trading-screen.promotion-evidence";
 
 export {
   formatReadinessStatusValue,
@@ -3889,26 +3902,6 @@ function formatQuantity(value: number): string {
   return formatQuantityValue(Math.abs(value), { maxDecimals: 4 });
 }
 
-export type PromotionGateField =
-  | "runId"
-  | "approvedBy"
-  | "approvalReason"
-  | "rejectionReason"
-  | "reviewNotes"
-  | "manualOverrideId"
-  | "evidenceReferences";
-
-export interface PromotionGateForm {
-  runId: string;
-  approvedBy: string;
-  approvalReason: string;
-  rejectionReason: string;
-  reviewNotes: string;
-  manualOverrideId: string;
-  evidenceReferences: string;
-  approvalChecklist: string[];
-}
-
 export type PromotionGatePhase = "idle" | "evaluating" | "approving" | "rejecting";
 export type PromotionOutcomeLevel = "success" | "warning" | "danger";
 
@@ -4009,17 +4002,6 @@ export interface BuildPromotionGateStateOptions {
   evaluation: PromotionEvaluationResult | null;
   history: PromotionRecord[];
 }
-
-export const emptyPromotionGateForm: PromotionGateForm = {
-  runId: "",
-  approvedBy: "",
-  approvalReason: "",
-  rejectionReason: "",
-  reviewNotes: "",
-  manualOverrideId: "",
-  evidenceReferences: "",
-  approvalChecklist: []
-};
 
 const defaultPromotionServices: PromotionGateServices = {
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
@@ -4598,132 +4580,6 @@ function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistory
       ariaLabel: `Promotion ${record.promotionId}: ${label}`
     };
   });
-}
-
-export function validatePromotionApproval(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null
-): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  if (!evaluation) {
-    return "Evaluate gate checks before confirming promotion.";
-  }
-
-  if (!isPromotionEvaluationForRun(evaluation, trimmedForm.runId)) {
-    return `Evaluate gate checks for ${trimmedForm.runId} before confirming promotion.`;
-  }
-
-  if (!evaluation.isEligible) {
-    return evaluation.blockingReasons?.[0] ?? evaluation.reason ?? "Promotion gate is blocked.";
-  }
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.approvalReason) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  const liveTarget = isLivePromotionTarget(evaluation);
-  const requiredChecklist = liveTarget
-    ? livePromotionApprovalChecklist
-    : paperPromotionApprovalChecklist;
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-
-  if (liveTarget) {
-    if (!trimmedForm.manualOverrideId) {
-      return "Live promotion approval requires an active AllowLivePromotion override id.";
-    }
-  }
-
-  const missingEvidence = getMissingPromotionEvidenceReferences(requiredChecklist, evidenceReferences);
-  if (missingEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are incomplete: ${missingEvidence.join(", ")}.`;
-  }
-
-  const invalidEvidence = getInvalidPromotionEvidenceReferences(
-    requiredChecklist,
-    evidenceReferences,
-    trimmedForm.manualOverrideId);
-  if (invalidEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are invalid: ${invalidEvidence.join(", ")}.`;
-  }
-
-  return null;
-}
-
-export function validatePromotionRejection(form: PromotionGateForm): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.rejectionReason) {
-    return "Run id, operator, and rejection reason are required.";
-  }
-
-  return null;
-}
-
-export function buildPromotionApprovalRequest(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null = null
-): ApprovePromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-  const approvalChecklist = evaluation
-    ? buildPromotionApprovalChecklistTokens(evaluation)
-    : trimmedForm.approvalChecklist;
-  return {
-    runId: trimmedForm.runId,
-    approvedBy: trimmedForm.approvedBy,
-    approvalReason: trimmedForm.approvalReason,
-    approvalChecklist: approvalChecklist.length > 0 ? approvalChecklist : undefined,
-    evidenceReferences: evidenceReferences.length > 0 ? evidenceReferences : undefined,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-export function buildPromotionRejectionRequest(form: PromotionGateForm): RejectPromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  return {
-    runId: trimmedForm.runId,
-    reason: trimmedForm.rejectionReason,
-    rejectedBy: trimmedForm.approvedBy,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
-  return {
-    runId: form.runId.trim(),
-    approvedBy: form.approvedBy.trim(),
-    approvalReason: form.approvalReason.trim(),
-    rejectionReason: form.rejectionReason.trim(),
-    reviewNotes: form.reviewNotes.trim(),
-    manualOverrideId: form.manualOverrideId.trim(),
-    evidenceReferences: form.evidenceReferences.trim(),
-    approvalChecklist: form.approvalChecklist
-  };
-}
-
-function selectPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult | null,
-  runId: string
-): PromotionEvaluationResult | null {
-  if (!evaluation || !isPromotionEvaluationForRun(evaluation, runId)) {
-    return null;
-  }
-
-  return evaluation;
-}
-
-function isPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult,
-  runId: string
-): boolean {
-  return Boolean(runId) && evaluation.runId === runId;
 }
 
 function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome {

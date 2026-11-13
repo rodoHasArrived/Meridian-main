@@ -121,6 +121,11 @@ trip the circuit breaker.
 
 ## Important workflows
 
+`CompositeRiskValidator.PreviewResolvedOrderAsync` observes the gateway-resolved order through
+non-reserving rule evaluation. It consumes no approval releases, enqueues no escalations, and
+neither trips the circuit breaker nor retries a pending trip. Refusals and warnings remain visible;
+an actual submission still enters the ordinary validation, reservation and approval path.
+
 Use this module for pre-trade checks, limits, safety gates, and execution-control evidence.
 `CompositeRiskValidator.PreviewResolvedOrderAsync` evaluates risk after gateway sizing without
 taking reservations, consuming approval tokens, parking escalations or tripping execution controls;
