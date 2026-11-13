@@ -347,6 +347,15 @@ and Trading blotters retain their existing interaction models.
 
 ## Shared workstation header
 
+The notification bell counts unread events, separately from unresolved financial work.
+Its operator inbox belongs to the current account scope: changing accounts immediately
+withholds old rows and cancels obsolete reads. Polls do not overlap, and reads time out
+after 15 seconds so a stalled request cannot prevent recovery. Failed inbox reads
+clear prior inbox evidence and show an unavailable message with Retry inbox; independent
+system events and price alerts remain available. Loading and unavailable counts explicitly
+cover loaded feeds only. Regression coverage is in `use-notification-center.test.tsx` and
+`notification-center.test.tsx`.
+
 The browser shell renders `WorkspaceHeader` as one row above every route:
 
 - **Left:** the breadcrumb, ending in the page name as the page's only `h1` (`Trading > Orders`;
