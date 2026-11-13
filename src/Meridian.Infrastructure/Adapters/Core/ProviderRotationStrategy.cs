@@ -19,13 +19,16 @@ internal sealed class ProviderRotationStrategy
 
     private readonly ProviderRateLimitTracker _rateLimitTracker;
     private readonly double _approachingThreshold;
+    private readonly ProviderRateLimitHistory _history;
 
     public ProviderRotationStrategy(
         ProviderRateLimitTracker rateLimitTracker,
         bool enabled,
-        double approachingThreshold)
+        double approachingThreshold,
+        ProviderRateLimitHistory? history = null)
     {
         _rateLimitTracker = rateLimitTracker;
+        _history = history ?? ProviderRateLimitHistory.Shared;
         Enabled = enabled;
         _approachingThreshold = approachingThreshold;
     }
@@ -40,10 +43,12 @@ internal sealed class ProviderRotationStrategy
     /// </summary>
     public IEnumerable<IHistoricalDataProvider> OrderByAvailability(IEnumerable<IHistoricalDataProvider> providers)
     {
+        // Quota ranking must not promote fabricated data above any eligible observed vendor.
+        var observedFirst = providers.OrderBy(p => p.IsSimulated);
         if (!Enabled)
-            return providers;
+            return observedFirst;
 
-        return providers.OrderBy(p =>
+        return observedFirst.ThenBy(p =>
         {
             if (_rateLimitTracker.IsRateLimited(p.Name))
                 return 1000; // Put rate-limited providers last
@@ -91,8 +96,14 @@ internal sealed class ProviderRotationStrategy
 
     public void RecordRequest(string providerName) => _rateLimitTracker.RecordRequest(providerName);
 
-    public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter)
-        => _rateLimitTracker.RecordRateLimitHit(providerName, retryAfter);
+    public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter, int? httpStatus = null)
+    {
+        _rateLimitTracker.RecordRateLimitHit(providerName, retryAfter);
+        _history.Record(providerName, _rateLimitTracker.GetStatus(providerName), httpStatus: httpStatus);
+    }
+
+    public void RecordRotation(string providerName, string nextProvider)
+        => _history.Record(providerName, _rateLimitTracker.GetStatus(providerName), nextProvider);
 
     public void ClearRateLimitState(string providerName) => _rateLimitTracker.ClearRateLimitState(providerName);
 

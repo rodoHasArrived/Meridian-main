@@ -35,8 +35,29 @@ public static class FailoverEndpoints
         group.MapGet(UiApiRoutes.FailoverConfig, (
             HttpContext context,
             [FromServices] ConfigStore store,
-            [FromServices] StreamingFailoverRegistry? registry) =>
+            [FromServices] StreamingFailoverRegistry? registry,
+            bool? configurationOnly) =>
         {
+            // Editing retained settings must remain possible when streaming is stopped. This opt-in
+            // read never fabricates an active provider or implies the saved rules are running.
+            if (configurationOnly == true)
+            {
+                var settings = store.Load().DataSources ?? new DataSourcesConfig();
+                var snapshots = registry?.Service?.GetRuleSnapshots()
+                    .ToDictionary(snapshot => snapshot.RuleId, StringComparer.OrdinalIgnoreCase);
+                var configuredRules = (settings.FailoverRules ?? []).Select(rule =>
+                {
+                    var live = registry?.Service?.HasLiveTransitionHandler(rule.Id) == true
+                        ? snapshots?.GetValueOrDefault(rule.Id)
+                        : null;
+                    return new FailoverRuleResponse(rule.Id, rule.PrimaryProviderId, rule.BackupProviderIds,
+                        rule.FailoverThreshold, rule.RecoveryThreshold, rule.DataQualityThreshold, rule.MaxLatencyMs,
+                        live?.IsInFailoverState ?? false, live?.CurrentActiveProviderId);
+                }).ToArray();
+                return Results.Json(new FailoverConfigResponse(settings.EnableFailover,
+                    settings.HealthCheckIntervalSeconds, settings.AutoRecover, settings.FailoverTimeoutSeconds,
+                    configuredRules, configuredRules.Any(rule => rule.CurrentActiveProviderId is not null)), jsonOptions);
+            }
             if (registry?.Service is not { } svc)
                 return ApiProblemDetails.ServiceUnavailable(context, "streaming failover runtime");
 
@@ -98,7 +119,7 @@ public static class FailoverEndpoints
                     };
                 }, ct).ConfigureAwait(false);
 
-                return Results.Ok();
+                return Results.Ok(new { changeImpact = store.GetChangeStatus() });
             },
             "The failover configuration could not be saved.",
             loggerFactory.CreateLogger(nameof(FailoverEndpoints)),
@@ -108,6 +129,7 @@ public static class FailoverEndpoints
             .Produces(200)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status500InternalServerError)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
             .RequirePermission(UserPermission.ManageProviders);
 
         // Get all failover rules enriched with required live state.
@@ -170,6 +192,13 @@ public static class FailoverEndpoints
                     "thresholds",
                     "FailoverThreshold and RecoveryThreshold must be at least 1.");
             }
+            if (!double.IsFinite(req.DataQualityThreshold) || req.DataQualityThreshold < 0 || req.DataQualityThreshold > 100 ||
+                !double.IsFinite(req.MaxLatencyMs) || req.MaxLatencyMs < 0)
+                return ApiProblemDetails.Validation(context, "thresholds", "Quality must be between 0 and 100 and latency must be non-negative; all thresholds must be finite.");
+            if (req.BackupProviderIds.Distinct(StringComparer.OrdinalIgnoreCase).Count() != req.BackupProviderIds.Length)
+                return ApiProblemDetails.Validation(context, "backupProviderIds", "Backup provider identifiers must be unique.");
+            if (req.Reason?.Length > 2000)
+                return ApiProblemDetails.Validation(context, "reason", "The change reason cannot exceed 2000 characters.");
 
             return await EndpointHelpers.GuardAsync(async () =>
             {
@@ -184,27 +213,52 @@ public static class FailoverEndpoints
                     MaxLatencyMs: req.MaxLatencyMs
                 );
 
-                await store.UpdateAsync(cfg =>
+                var rejection = await store.UpdateAsync<IResult?>(cfg =>
                 {
                     var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                     var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
 
                     var idx = rules.FindIndex(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
+                    var audit = dataSources.FailoverRuleAudit ?? [];
+                    if (idx >= 0)
+                    {
+                        var previous = rules[idx];
+                        var loosened = rule.DataQualityThreshold < previous.DataQualityThreshold ||
+                            (previous.MaxLatencyMs > 0 && (rule.MaxLatencyMs == 0 || rule.MaxLatencyMs > previous.MaxLatencyMs)) ||
+                            rule.FailoverThreshold > previous.FailoverThreshold || rule.RecoveryThreshold < previous.RecoveryThreshold;
+                        if (loosened)
+                        {
+                            if (string.IsNullOrWhiteSpace(req.Reason))
+                                return (cfg, ApiProblemDetails.Validation(context, "reason", "A recorded reason is required when loosening a rule threshold."));
+                            var actor = HttpContextWorkstationTenantContextAccessor.Resolve(context).Actor;
+                            if (string.IsNullOrWhiteSpace(actor))
+                                return (cfg, ApiProblemDetails.Forbidden(context, "An authenticated actor is required for threshold relaxation."));
+                            audit = [.. audit, new FailoverRuleThresholdAudit(id, actor, req.Reason.Trim(), DateTimeOffset.UtcNow,
+                                previous.DataQualityThreshold, rule.DataQualityThreshold, previous.MaxLatencyMs, rule.MaxLatencyMs,
+                                previous.FailoverThreshold, rule.FailoverThreshold, previous.RecoveryThreshold, rule.RecoveryThreshold)];
+                        }
+                    }
                     if (idx >= 0)
                         rules[idx] = rule;
                     else
                         rules.Add(rule);
 
-                    return cfg with { DataSources = dataSources with { FailoverRules = rules.ToArray() } };
+                    return (cfg with { DataSources = dataSources with { FailoverRules = rules.ToArray(), FailoverRuleAudit = audit } }, null);
                 }, ct).ConfigureAwait(false);
 
-                return Results.Ok(new { id });
+                if (rejection is not null)
+                    return rejection;
+                loggerFactory.CreateLogger(nameof(FailoverEndpoints)).LogInformation(
+                    "Failover rule {RuleId} saved by {Actor}; reason {Reason}; quality {DataQualityThreshold}; latency {MaxLatencyMs}",
+                    id, HttpContextWorkstationTenantContextAccessor.Resolve(context).Actor, req.Reason, req.DataQualityThreshold, req.MaxLatencyMs);
+                return Results.Ok(new { id, changeImpact = store.GetChangeStatus() });
             },
             "The failover rule could not be saved.",
             loggerFactory.CreateLogger(nameof(FailoverEndpoints)),
             context: context).ConfigureAwait(false);
         })
             .WithName("UpsertFailoverRule")
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
             .Produces(200)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status500InternalServerError)
@@ -216,6 +270,7 @@ public static class FailoverEndpoints
             [FromServices] ConfigStore store,
             [FromServices] ILoggerFactory loggerFactory,
             string id,
+            [FromBody] FailoverRuleDeleteRequest? req,
             CancellationToken ct) =>
         {
             return await EndpointHelpers.GuardAsync(async () =>
@@ -225,112 +280,54 @@ public static class FailoverEndpoints
                     var dataSources = cfg.DataSources ?? new DataSourcesConfig();
                     var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
 
-                    var removed = rules.RemoveAll(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase)) > 0;
-                    if (!removed)
+                    var previous = rules.FirstOrDefault(rule => string.Equals(rule.Id, id, StringComparison.OrdinalIgnoreCase));
+                    if (previous is null)
                         return (cfg, ApiProblemDetails.NotFound(context, "The requested failover rule was not found."));
-
-                    return (cfg with { DataSources = dataSources with { FailoverRules = rules.ToArray() } }, null);
+                    if (string.IsNullOrWhiteSpace(req?.Reason) || req.Reason.Length > 2000)
+                        return (cfg, ApiProblemDetails.Validation(context, "reason", "Deleting a rule removes its validation protections; provide a recorded reason of at most 2000 characters."));
+                    var actor = HttpContextWorkstationTenantContextAccessor.Resolve(context).Actor;
+                    if (string.IsNullOrWhiteSpace(actor))
+                        return (cfg, ApiProblemDetails.Forbidden(context, "An authenticated actor is required to remove a failover rule."));
+                    var audit = new FailoverRuleThresholdAudit(previous.Id, actor, req.Reason.Trim(), DateTimeOffset.UtcNow,
+                        previous.DataQualityThreshold, 0, previous.MaxLatencyMs, 0,
+                        previous.FailoverThreshold, previous.FailoverThreshold, previous.RecoveryThreshold, previous.RecoveryThreshold,
+                        Operation: "RuleDeleted", PrimaryProviderId: previous.PrimaryProviderId, BackupProviderIds: previous.BackupProviderIds);
+                    rules.Remove(previous);
+                    return (cfg with { DataSources = dataSources with
+                    {
+                        FailoverRules = rules.ToArray(),
+                        FailoverRuleAudit = [.. (dataSources.FailoverRuleAudit ?? []), audit]
+                    } }, null);
                 }, ct).ConfigureAwait(false);
 
-                return outcome ?? Results.Ok();
+                if (outcome is null)
+                    loggerFactory.CreateLogger(nameof(FailoverEndpoints)).LogInformation(
+                        "Failover rule {RuleId} deleted by {Actor}; reason {Reason}", id,
+                        HttpContextWorkstationTenantContextAccessor.Resolve(context).Actor, req?.Reason);
+                return outcome ?? Results.Ok(new { changeImpact = store.GetChangeStatus() });
             },
             "The failover rule could not be deleted.",
             loggerFactory.CreateLogger(nameof(FailoverEndpoints)),
             context: context).ConfigureAwait(false);
         })
             .WithName("DeleteFailoverRule")
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
             .Produces(200)
+            .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
             .RequirePermission(UserPermission.ManageProviders);
 
-        // Force failover — wired to runtime StreamingFailoverService
-        group.MapPost(UiApiRoutes.FailoverForce.Replace("{ruleId}", "{ruleId}"), async (
-            HttpContext context,
-            [FromServices] ConfigStore store,
-            [FromServices] StreamingFailoverRegistry? registry,
-            [FromServices] ILoggerFactory loggerFactory,
-            string ruleId,
-            ForceFailoverRequest req,
-            CancellationToken ct) =>
-        {
-            var cfg = store.Load();
-            var rules = cfg.DataSources?.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
-            var rule = rules.FirstOrDefault(r => string.Equals(r.Id, ruleId, StringComparison.OrdinalIgnoreCase));
-
-            if (rule is null)
-                return ApiProblemDetails.NotFound(context, "The requested failover rule was not found.");
-
-            if (string.IsNullOrWhiteSpace(req.TargetProviderId))
-                return ApiProblemDetails.Validation(
-                    context,
-                    "targetProviderId",
-                    "TargetProviderId is required.");
-
-            var providerIds = new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds);
-            if (!providerIds.Any(id =>
-                    string.Equals(id, req.TargetProviderId, StringComparison.OrdinalIgnoreCase)))
-            {
-                return ApiProblemDetails.Validation(
-                    context,
-                    "targetProviderId",
-                    "TargetProviderId must identify the rule's primary provider or one of its backup providers.");
-            }
-
-            if (registry?.Service is not { } svc)
-                return ApiProblemDetails.ServiceUnavailable(context, "streaming failover runtime");
-            if (!svc.HasLiveTransitionHandler(ruleId))
-                return ApiProblemDetails.ServiceUnavailable(context, "streaming failover runtime");
-
-            try
-            {
-                var success = await svc
-                    .ForceFailoverAsync(ruleId, req.TargetProviderId, ct)
-                    .ConfigureAwait(false);
-                if (!success)
-                {
-                    if (!svc.HasLiveTransitionHandler(ruleId))
-                        return ApiProblemDetails.ServiceUnavailable(context, "streaming failover runtime");
-
-                    return ApiProblemDetails.Conflict(
-                        context,
-                        "The active runtime rejected the requested failover transition.");
-                }
-
-                return Results.Json(new
-                {
-                    success = true,
-                    implemented = true,
-                    message = $"Failover executed: rule '{ruleId}' switched to provider '{req.TargetProviderId}'.",
-                    ruleId,
-                    targetProviderId = req.TargetProviderId
-                }, jsonOptions);
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                throw;
-            }
-            catch (TimeoutException)
-            {
-                return ApiProblemDetails.Timeout(context);
-            }
-            catch (Exception ex)
-            {
-                loggerFactory.CreateLogger(nameof(FailoverEndpoints))
-                    .LogError(ex, "Forced failover failed for rule {RuleId}.", ruleId);
-                return ApiProblemDetails.Internal(
-                    context,
-                    "The failover transition could not be completed.");
-            }
-        })
+        group.MapPost(UiApiRoutes.FailoverForce, (
+            HttpContext context, [FromServices] ConfigStore store,
+            [FromServices] StreamingFailoverRegistry? registry, [FromServices] ILoggerFactory loggerFactory,
+            string ruleId, ForceFailoverRequest req, CancellationToken ct) =>
+            FailoverControlOperations.ExecuteAsync(context, store, registry, loggerFactory, jsonOptions,
+                ruleId, req.TargetProviderId, reset: false, ct))
             .WithName("ForceFailover")
-            .Produces(200)
-            .ProducesValidationProblem()
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict)
-            .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
-            .ProducesProblem(StatusCodes.Status504GatewayTimeout)
+            .Produces(200).ProducesValidationProblem().ProducesProblem(404).ProducesProblem(409)
+            .ProducesProblem(500).ProducesProblem(503).ProducesProblem(504)
+            .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
             .RequirePermission(UserPermission.ManageProviders);
 
         // Get provider health — returns live data from StreamingFailoverService when available

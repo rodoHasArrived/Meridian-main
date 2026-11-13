@@ -83,7 +83,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
               <h3 className="text-sm font-semibold text-foreground">Current request windows</h3>
               <p className="mt-1 text-xs text-muted-foreground">{panel.rateLimitSummary}</p>
             </div>
-            <Badge variant="outline">History unavailable</Badge>
+            <Badge variant="outline">Quota history below</Badge>
           </div>
 
           {panel.rateLimits.length > 0 ? (

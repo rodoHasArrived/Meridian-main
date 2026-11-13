@@ -2,6 +2,7 @@ import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts"
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { listScopedAccessAssignments } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
@@ -721,6 +722,7 @@ export function SettingsScreen({
       </section>
 
       <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
+      <SettingsChangeImpactBanner />
 
       {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}
       {showPreferencesSection ? <ExecutionAlertSettingsPanel accountId={fundAccountId} /> : null}

@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+Historical adapter factories apply catalog-backed priorities and request caps when constructing the
+provider and limiter. Twelve Data historical, search and corporate-action capabilities use one
+credential-scoped quota with identical budgets; changed limits require a host restart. OpenFIGI
+uses the same catalog and retains a maximum 25/minute when credentials resolve dynamically.
+
 
 `BaseSymbolSearchProvider.SearchAuthoritativeAsync` preserves HTTP, transport, credential and
 throttling failures for explicit candidate review. Alpaca also rejects malformed responses and
@@ -187,6 +192,21 @@ and the executed matcher/tolerance-policy fingerprint. Legacy artifacts omit the
 establish clearing. The optional fields preserve legacy artifact hashes when absent.
 
 ## Purpose
+
+Provider validation profiles are retained per provider in `Backfill.ValidationProfiles` and
+applied when providers are constructed: daily-bar recency uses calendar-day tolerance,
+and Alpaca, Polygon and Robinhood boundary checks use future-skew, stale-event and latency
+tolerances. Profile edits require a host restart; loosening records a reason and atomic
+before/after audit evidence through the shared provider settings endpoint. Null stale-event
+threshold and zero maximum latency disable their respective optional checks.
+
+Composite provider rotation retains the latest 1,024 quota observations across providers in
+process memory. The existing rate-limit history API exposes observed throttles and the next
+provider actually attempted, with known HTTP 429 status, request usage and reset time.
+Restart clears this bounded history; it is diagnostic evidence rather than a durable audit.
+Adjusted-history requests run the same provider-specific recency check and fail closed when
+adjusted coverage is unavailable. They do not substitute raw bars; a chain containing real
+providers cannot conceal unavailable adjusted coverage with synthetic prices.
 
 Infrastructure contains provider adapters, HTTP integration, ETL adapters, resilience helpers, and concrete data-source implementations.
 

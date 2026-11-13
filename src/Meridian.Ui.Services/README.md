@@ -11,6 +11,19 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Services
 
+The default shared configuration service re-reads existing JSON under the common host write lease
+and applies the same whole-document save guard as desktop settings before atomic publication.
+Missing files allow validated first-run creation; malformed or empty existing files are never
+replaced by fallback defaults. Loaded drafts retain only a source fingerprint, so a stale draft
+cannot erase a concurrent host change. Plaintext credentials, host tenancy and live activation,
+provider ceilings, audit ownership and stored-data semantics use the central guard.
+
+Backfill provider metadata consumes the same Core tier catalog as the HTTP editor and adapter
+constructors. Shared option validation enforces vendor ceilings; tier IDs and Twelve Data/OpenFIGI
+options survive DTO roundtrips. Nested extension data also retains validation profiles/audit, failover
+rules/audit/timing and symbol mappings. Common provider-option edits preserve existing provider-specific
+host fields from the locked read. Offline metadata does not imply a connected or credentialed runtime.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native

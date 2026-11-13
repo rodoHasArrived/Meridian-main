@@ -1,4 +1,5 @@
 using Meridian.Application.UI;
+using Meridian.Contracts.Api;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.ProviderSdk;
 using Meridian.Storage.Services;
@@ -13,6 +14,8 @@ public interface IBestOfBreedProviderSelector
     Task<ProviderRouteResult> SelectAsync(ProviderRouteContext context, CancellationToken ct = default);
     Task<ProviderRouteResult> SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default)
         => throw new NotSupportedException("Tenant-scoped provider selection is unavailable.");
+    Task<ProviderRouteResult> PreviewForTenantAsync(ProviderRouteContext context, string tenantId, ProviderRoutingProposedConfig proposed, CancellationToken ct = default)
+        => throw new NotSupportedException("Proposed routing preview is unavailable.");
 }
 
 /// <summary>
@@ -52,10 +55,20 @@ public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
         return SelectCoreAsync(context, tenantId, ct);
     }
 
-    private async Task<ProviderRouteResult> SelectCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
+    public Task<ProviderRouteResult> PreviewForTenantAsync(ProviderRouteContext context, string tenantId,
+        ProviderRoutingProposedConfig proposed, CancellationToken ct = default)
     {
-        var routeResult = tenantId is null ? await _routingService.RouteAsync(context, ct).ConfigureAwait(false) :
-            await _routingService.RouteForTenantAsync(context, tenantId, ct).ConfigureAwait(false);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return SelectCoreAsync(context, tenantId, ct, proposed);
+    }
+
+    private async Task<ProviderRouteResult> SelectCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct,
+        ProviderRoutingProposedConfig? proposed = null)
+    {
+        var routeResult = proposed is not null
+            ? await _routingService.PreviewForTenantAsync(context, tenantId!, proposed, ct).ConfigureAwait(false)
+            : tenantId is null ? await _routingService.RouteAsync(context, ct).ConfigureAwait(false) :
+                await _routingService.RouteForTenantAsync(context, tenantId, ct).ConfigureAwait(false);
         if (routeResult.Candidates.Count == 0)
             return routeResult;
 

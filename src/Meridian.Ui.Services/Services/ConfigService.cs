@@ -2,12 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
 using Meridian.Storage.Archival;
 using Meridian.Ui.Services.Contracts;
+using Meridian.Ui.Shared.Services;
+using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Ui.Services;
 
@@ -18,6 +24,8 @@ namespace Meridian.Ui.Services;
 /// </summary>
 public class ConfigService : IConfigService
 {
+    private sealed record LoadedSnapshot(string Fingerprint);
+    private readonly ConditionalWeakTable<AppConfig, LoadedSnapshot> _loadedSnapshots = new();
     private static readonly Lazy<ConfigService> _instance = new(() => new ConfigService());
     private static readonly Func<string> _defaultPathResolver = () =>
         Path.Combine(AppContext.BaseDirectory, "config", "appsettings.json");
@@ -28,7 +36,8 @@ public class ConfigService : IConfigService
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         WriteIndented = true,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     public string ConfigPath { get; }
@@ -58,6 +67,7 @@ public class ConfigService : IConfigService
                 return null;
 
             config.DataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, config.DataRoot);
+            _loadedSnapshots.Add(config, new LoadedSnapshot(Fingerprint(json)));
             return config;
         }
         catch (IOException) { return null; }
@@ -67,17 +77,33 @@ public class ConfigService : IConfigService
 
     public virtual async Task SaveConfigAsync(AppConfig config, CancellationToken ct = default)
     {
-        var dir = Path.GetDirectoryName(ConfigPath);
-        if (dir != null)
-            Directory.CreateDirectory(dir);
+        ArgumentNullException.ThrowIfNull(config);
+        using var lease = await new CoreConfigStore(ConfigPath).AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
+        string existingJson;
+        try
+        {
+            existingJson = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+        }
+        catch (FileNotFoundException) { existingJson = "{}"; }
+        catch (DirectoryNotFoundException) { existingJson = "{}"; }
+
+        if (_loadedSnapshots.TryGetValue(config, out var snapshot)
+            && !string.Equals(snapshot.Fingerprint, Fingerprint(existingJson), StringComparison.Ordinal))
+            throw new InvalidOperationException("Configuration changed after this draft was loaded. Reload it and reapply your edits before saving.");
 
         config.DataRoot = string.IsNullOrWhiteSpace(config.DataRoot)
             ? MeridianPathDefaults.DefaultDataRoot
             : config.DataRoot;
 
         var json = JsonSerializer.Serialize(config, _jsonOptions);
+        UiConfigurationSaveGuard.ValidateWholeDocumentJson(existingJson, json);
         await AtomicFileWriter.WriteAsync(ConfigPath, json, ct).ConfigureAwait(false);
+        _loadedSnapshots.Remove(config);
+        _loadedSnapshots.Add(config, new LoadedSnapshot(Fingerprint(json)));
     }
+
+    private static string Fingerprint(string json)
+        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json)));
 
     public string ResolveDataRoot(AppConfig? config = null)
         => MeridianPathDefaults.ResolveDataRoot(ConfigPath, config?.DataRoot);

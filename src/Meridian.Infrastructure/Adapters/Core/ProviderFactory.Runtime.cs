@@ -40,6 +40,9 @@ public sealed partial class ProviderFactory
             .AddInMemoryCollection(configuredValues.Select(value =>
                 new KeyValuePair<string, string?>(value.Name, credentials.Get(value.Name))))
             .Build();
+        if (typeof(TProvider) == typeof(Meridian.Infrastructure.Adapters.TwelveData.TwelveDataCorporateActionProvider))
+            return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
+                BackfillProviderRuntimeOptions.FromConfig(_config.Backfill?.Providers, "twelvedata"));
         return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials);
     }
 
@@ -113,7 +116,7 @@ public sealed partial class ProviderFactory
     internal IMarketDataClient CreateAlpacaStreamingClient() => new AlpacaMarketDataClient(
         Services.GetRequiredService<TradeDataCollector>(),
         Services.GetRequiredService<QuoteCollector>(),
-        ResolveAlpacaOptions());
+        ResolveAlpacaOptions(), ProviderValidationProfile.Resolve(_config.Backfill, "alpaca"));
 
     private AlpacaOptions ResolveAlpacaOptions() => ResolveAlpacaOptions(out _);
 
@@ -150,7 +153,8 @@ public sealed partial class ProviderFactory
             Services.GetRequiredService<TradeDataCollector>(),
             Services.GetRequiredService<QuoteCollector>(),
             options: (_config.Polygon ?? new PolygonOptions()) with { ApiKey = credentials.Get("POLYGON_API_KEY") ?? string.Empty },
-            reconnectionMetrics: Services.GetService<IReconnectionMetrics>());
+            reconnectionMetrics: Services.GetService<IReconnectionMetrics>(),
+            validationProfile: ProviderValidationProfile.Resolve(_config.Backfill, "polygon"));
     }
 
     internal IMarketDataClient CreateNyseStreamingClient() => new NyseMarketDataClient(
@@ -163,7 +167,8 @@ public sealed partial class ProviderFactory
     internal IMarketDataClient CreateRobinhoodStreamingClient() => new RobinhoodMarketDataClient(
         Services.GetRequiredService<IHttpClientFactory>(),
         Services.GetRequiredService<QuoteCollector>(),
-        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken());
+        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken(),
+        ProviderValidationProfile.Resolve(_config.Backfill, "robinhood"));
 
     internal IMarketDataClient CreateSyntheticStreamingClient() => new SyntheticMarketDataClient(
         Services.GetRequiredService<IMarketEventPublisher>(), _config.Synthetic);

@@ -11,6 +11,30 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+Symbol mappings expose provider-scoped rollout at `/api/symbols/mappings/rollout`. Reads return
+saved versus active modes and retained comparison evidence. Canonical promotion requires active
+and saved Compare mode, the reviewed mismatch count, a reason and archive/series acknowledgements.
+Changes use the configuration lock and atomic writer and do not activate a running resolver;
+responses explicitly report `RestartHost`. Unacknowledged or stale promotions leave config intact.
+Focused coverage: `SymbolMappingRolloutEndpointTests` and `CanonicalRegistrySymbolResolverTests`.
+
+Streaming failover compatibility trigger/reset controls await the live runtime hand-off and refuse
+unavailable or rejected transitions. Config reads with `configurationOnly=true` remain available
+while streaming is stopped and report unknown active providers explicitly. Rule quality, latency,
+failure and recovery threshold relaxations require an operator reason; the rule and immutable audit
+entry persist together. Saves return the shared setting-change impact; failover timing diagnostics
+report retained `DataSourcesConfig` values rather than placeholder thresholds.
+Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
+provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.
+
+Configuration saves validate under the shared write lease before atomic persistence. Ordinary UI
+saves refuse tenant-posture changes, plaintext credential edits and live brokerage activation;
+changes to price adjustment or Canonical resolution require an explicit archive/series confirmation.
+`GET /api/config/changes` and configuration-save responses expose field names and `Live`,
+`ReconnectProvider` or `RestartHost` impact. Pending state lasts for the host lifetime; a saved
+change is never presented as an applied provider rebuild. Browser Settings and Data use the same
+status.
+
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
 entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)

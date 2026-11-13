@@ -1,3 +1,4 @@
+using Meridian.Core.Config;
 using System.Collections.Concurrent;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -29,7 +30,8 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
     public string Name => "openfigi";
 
     public OpenFigiSymbolResolver(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
-        IProviderCredentialResolver? credentialResolver = null)
+        IProviderCredentialResolver? credentialResolver = null,
+        OpenFigiConfig? options = null)
     {
         _credentials = new OpenFigiRequestCredentials(apiKey, credentialResolver, useEnvironmentFallback: false);
         _log = log ?? LoggingSetup.ForContext<OpenFigiSymbolResolver>();
@@ -39,7 +41,16 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
         _http.DefaultRequestHeaders.Add("Accept", "application/json");
 
         // Rate limit: 25/min without key, 250/min with key
-        var maxRequests = credentialResolver is not null || string.IsNullOrEmpty(apiKey) ? 25 : 250;
+        var tier = BackfillProviderCatalog.GetTier("openfigi", options?.TierId ?? "free");
+        var configured = options?.RateLimitPerMinute ?? tier.RateLimitPerMinute!.Value;
+        if (configured < 1 || configured > tier.RateLimitPerMinute)
+            throw new ArgumentOutOfRangeException(nameof(options), "OpenFIGI limit exceeds the selected tier ceiling.");
+        // A dynamically resolved credential can disappear or change. Preserve the unauthenticated
+        // ceiling until request-time credential authority can supply a different limiter.
+        var safeCeiling = credentialResolver is not null || string.IsNullOrEmpty(apiKey)
+            ? BackfillProviderCatalog.GetTier("openfigi", "free").RateLimitPerMinute!.Value
+            : tier.RateLimitPerMinute!.Value;
+        var maxRequests = Math.Min(configured, safeCeiling);
         _rateLimiter = new RateLimiter(maxRequests, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(100), _log);
     }
 

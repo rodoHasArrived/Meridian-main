@@ -227,19 +227,55 @@ public static class BackfillEndpoints
         // Get provider statuses from the effective host configuration.
         group.MapGet(UiApiRoutes.BackfillProviderStatuses, (HttpContext context, [FromServices] ConfigStore store) =>
         {
-            var providerConfig = store.Load().Backfill?.Providers;
-            if (providerConfig is null)
-                return ApiProblemDetails.ServiceUnavailable(context, "backfill provider configuration");
-
+            var providerConfig = store.Load().Backfill?.Providers ?? new BackfillProvidersConfig();
             var metadata = GetKnownProviderMetadata();
             var statuses = BuildProviderStatuses(metadata, providerConfig);
             return Results.Json(statuses, jsonOptions);
         })
         .WithName("GetBackfillProviderStatuses")
-        .WithDescription("Returns the configured status of backfill providers; unavailable configuration fails closed.")
+        .WithDescription("Returns configured and catalog-default provider options without implying runtime activation.")
         .Produces<Meridian.Contracts.Configuration.BackfillProviderStatusDto[]>(200)
         .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders);
+
+        // Secret-free provider edits preserve all unrelated host configuration under the store lock.
+        group.MapPut(UiApiRoutes.BackfillProviders + "/{id}", async (
+            string id, BackfillProviderEdit request, HttpContext context,
+            [FromServices] ConfigStore store, CancellationToken ct) =>
+        {
+            if (!BackfillProviderCatalog.Providers.Any(p => p.Id == id))
+                return ApiProblemDetails.NotFound(context, "Unknown or non-editable provider.");
+            try
+            {
+                var saved = await store.UpdateAsync(config =>
+                {
+                    var backfill = config.Backfill ?? new BackfillConfig();
+                    var providers = BackfillProviderCatalog.Apply(backfill.Providers ?? new(), id, request);
+                    var updated = config with { Backfill = backfill with { Providers = providers } };
+                    return (updated, GetProviderOptionsFromConfig(providers, id));
+                }, ct).ConfigureAwait(false);
+                return Results.Json(new
+                {
+                    providerId = id,
+                    options = saved,
+                    changeImpact = store.GetChangeStatus()
+                }, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return ApiProblemDetails.Validation(context, "provider", ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Validation(context, "configuration", ex.Message);
+            }
+        })
+        .WithName("UpdateBackfillProvider")
+        .WithDescription("Updates secret-free backfill options within the declared vendor-tier ceiling; requires a host restart.")
+        .ProducesValidationProblem()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.ManageProviders)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Get fallback chain preview (enabled providers only, sorted by priority)
         group.MapGet(UiApiRoutes.BackfillFallbackChain, (HttpContext context, [FromServices] ConfigStore store) =>
@@ -250,7 +286,7 @@ public static class BackfillEndpoints
 
             var metadata = GetKnownProviderMetadata();
             var statuses = BuildProviderStatuses(metadata, providerConfig);
-            var chain = statuses.Where(s => s.Options.Enabled).ToArray();
+            var chain = statuses.Where(s => s.Options.Enabled && s.Metadata.ProviderId != "openfigi").ToArray();
             return Results.Json(chain, jsonOptions);
         })
         .WithName("GetBackfillFallbackChain")
@@ -277,7 +313,7 @@ public static class BackfillEndpoints
 
             var metadata = GetKnownProviderMetadata();
             var statuses = BuildProviderStatuses(metadata, providerConfig);
-            var enabledChain = statuses.Where(s => s.Options.Enabled).ToArray();
+            var enabledChain = statuses.Where(s => s.Options.Enabled && s.Metadata.ProviderId != "openfigi").ToArray();
 
             var plan = BuildDryRunPlan(body.Symbols, enabledChain);
             return Results.Json(plan, jsonOptions);
@@ -313,107 +349,46 @@ public static class BackfillEndpoints
     }
 
     private static Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] GetKnownProviderMetadata()
-    {
-        return
-        [
-            new() { ProviderId = "alpaca", DisplayName = "Alpaca", Description = "Bars, trades, and quotes via REST API.", DataTypes = ["Bars", "Trades", "Quotes"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 5, DefaultRateLimitPerMinute = 200 },
-            new() { ProviderId = "polygon", DisplayName = "Polygon", Description = "Full market data including aggregates.", DataTypes = ["Bars", "Trades", "Quotes", "Aggregates"], RequiresApiKey = true, FreeTier = false, DefaultPriority = 12, DefaultRateLimitPerMinute = 5 },
-            new() { ProviderId = "tiingo", DisplayName = "Tiingo", Description = "Daily bars and end-of-day data.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 15, DefaultRateLimitPerHour = 50, SupportedGranularities = ["Daily"] },
-            new() { ProviderId = "finnhub", DisplayName = "Finnhub", Description = "Daily bars with international coverage.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 18, DefaultRateLimitPerMinute = 60, SupportedGranularities = ["Daily"] },
-            new() { ProviderId = "stooq", DisplayName = "Stooq", Description = "Free daily bar data. No API key required.", DataTypes = ["Daily bars"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 20, SupportedGranularities = ["Daily"] },
-            new() { ProviderId = "yahoo", DisplayName = "Yahoo Finance", Description = "Unofficial daily and intraday bar data.", DataTypes = ["Daily bars", "Intraday bars", "Aggregates"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 10, DefaultRateLimitPerHour = 2000, SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"], FeatureFlags = new Dictionary<string, bool> { ["supportsIntraday"] = true, ["unofficial"] = true } },
-            new() { ProviderId = "alphavantage", DisplayName = "Alpha Vantage", Description = "Daily and intraday bars with strict rate limits.", DataTypes = ["Daily bars", "Intraday bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 25, DefaultRateLimitPerMinute = 5, SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly"] },
-            new() { ProviderId = "nasdaqdatalink", DisplayName = "Nasdaq Data Link", Description = "Various market data sets.", DataTypes = ["Various"], RequiresApiKey = true, FreeTier = false, DefaultPriority = 30, SupportedGranularities = ["Daily"] },
-        ];
-    }
+        => BackfillProviderCatalog.Describe();
 
     private static Meridian.Contracts.Configuration.BackfillProviderStatusDto[] BuildProviderStatuses(
         Meridian.Contracts.Configuration.BackfillProviderMetadataDto[] metadata,
         BackfillProvidersConfig config)
-    {
-        return metadata.Select(m =>
+        => metadata.Select(m => new Meridian.Contracts.Configuration.BackfillProviderStatusDto
         {
-            var opts = GetProviderOptionsFromConfig(config, m.ProviderId);
-            return new Meridian.Contracts.Configuration.BackfillProviderStatusDto
-            {
-                Metadata = m,
-                Options = opts,
-                EffectiveConfigSource = HasExplicitProviderConfig(config, m.ProviderId)
-                    ? "user"
-                    : "default",
-            };
-        })
-        .OrderBy(s => s.Options.Enabled ? 0 : 1)
-        .ThenBy(s => s.Options.Priority ?? s.Metadata.DefaultPriority)
-        .ToArray();
-    }
+            Metadata = m,
+            Options = GetProviderOptionsFromConfig(config, m.ProviderId),
+            EffectiveConfigSource = HasExplicitProviderConfig(config, m.ProviderId) ? "user" : "default"
+        }).OrderBy(s => s.Options.Enabled ? 0 : 1).ThenBy(s => s.Options.Priority).ToArray();
+
+    private static bool HasExplicitProviderConfig(BackfillProvidersConfig config, string id) => id switch
+    {
+        "alpaca" => config.Alpaca is not null,
+        "polygon" => config.Polygon is not null,
+        "tiingo" => config.Tiingo is not null,
+        "finnhub" => config.Finnhub is not null,
+        "stooq" => config.Stooq is not null,
+        "yahoo" => config.Yahoo is not null,
+        "alphavantage" => config.AlphaVantage is not null,
+        "nasdaqdatalink" => config.Nasdaq is not null,
+        "twelvedata" => config.TwelveData is not null,
+        "openfigi" => config.OpenFigi is not null,
+        _ => false
+    };
 
     internal static Meridian.Contracts.Configuration.BackfillProviderOptionsDto GetProviderOptionsFromConfig(
-        BackfillProvidersConfig config,
-        string providerId)
+        BackfillProvidersConfig config, string providerId)
     {
-        return providerId switch
+        var edit = BackfillProviderCatalog.Read(config, providerId);
+        return new Meridian.Contracts.Configuration.BackfillProviderOptionsDto
         {
-            "alpaca" => ToOptions(
-                config.Alpaca?.Enabled ?? true,
-                config.Alpaca?.Priority ?? 5,
-                rateLimitPerMinute: config.Alpaca?.RateLimitPerMinute ?? 200),
-            "polygon" => ToOptions(
-                config.Polygon?.Enabled ?? true,
-                config.Polygon?.Priority ?? 12,
-                rateLimitPerMinute: config.Polygon?.RateLimitPerMinute ?? 5),
-            "tiingo" => ToOptions(
-                config.Tiingo?.Enabled ?? true,
-                config.Tiingo?.Priority ?? 15,
-                rateLimitPerHour: config.Tiingo?.RateLimitPerHour ?? 50),
-            "finnhub" => ToOptions(
-                config.Finnhub?.Enabled ?? true,
-                config.Finnhub?.Priority ?? 18,
-                rateLimitPerMinute: config.Finnhub?.RateLimitPerMinute ?? 60),
-            "stooq" => ToOptions(
-                config.Stooq?.Enabled ?? true,
-                config.Stooq?.Priority ?? 20),
-            "yahoo" => ToOptions(
-                config.Yahoo?.Enabled ?? true,
-                config.Yahoo?.Priority ?? 10,
-                rateLimitPerHour: config.Yahoo?.RateLimitPerHour ?? 2000),
-            "alphavantage" => ToOptions(
-                config.AlphaVantage?.Enabled ?? true,
-                config.AlphaVantage?.Priority ?? 25,
-                rateLimitPerMinute: config.AlphaVantage?.RateLimitPerMinute ?? 5),
-            "nasdaqdatalink" => ToOptions(
-                config.Nasdaq?.Enabled ?? true,
-                config.Nasdaq?.Priority ?? 30),
-            _ => throw new InvalidOperationException($"Unsupported backfill provider metadata id '{providerId}'.")
+            Enabled = edit.Enabled,
+            Priority = edit.Priority,
+            TierId = edit.TierId,
+            RateLimitPerMinute = edit.RateLimitPerMinute,
+            RateLimitPerHour = edit.RateLimitPerHour
         };
     }
-
-    private static bool HasExplicitProviderConfig(BackfillProvidersConfig config, string providerId)
-        => providerId switch
-        {
-            "alpaca" => config.Alpaca is not null,
-            "polygon" => config.Polygon is not null,
-            "tiingo" => config.Tiingo is not null,
-            "finnhub" => config.Finnhub is not null,
-            "stooq" => config.Stooq is not null,
-            "yahoo" => config.Yahoo is not null,
-            "alphavantage" => config.AlphaVantage is not null,
-            "nasdaqdatalink" => config.Nasdaq is not null,
-            _ => false
-        };
-
-    private static Meridian.Contracts.Configuration.BackfillProviderOptionsDto ToOptions(
-        bool enabled,
-        int priority,
-        int? rateLimitPerMinute = null,
-        int? rateLimitPerHour = null)
-        => new()
-        {
-            Enabled = enabled,
-            Priority = priority,
-            RateLimitPerMinute = rateLimitPerMinute,
-            RateLimitPerHour = rateLimitPerHour
-        };
 
     private static Meridian.Contracts.Configuration.BackfillDryRunPlanDto BuildDryRunPlan(
         string[] symbols,

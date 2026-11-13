@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Core
 
+`Config/BackfillProviderCatalog.cs` owns secret-free historical-provider tier presets, conservative
+request ceilings and pure option edits. Provider records retain the declared tier; editor updates
+preserve stored credentials and archive adjustment semantics. Unknown providers (including IB and
+synthetic provenance controls), unknown tiers and rate increases beyond the declared tier cap refuse.
+
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by

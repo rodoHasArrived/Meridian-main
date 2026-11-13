@@ -51,17 +51,20 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
 
 
 
-    public override int Priority => 22;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromMilliseconds(7500); // 8 req/min
-    public override int MaxRequestsPerWindow => 8;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.TwelveDataPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromMinutes(1) / Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", "free").RateLimitPerMinute!.Value; // 8 req/min
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", "free").RateLimitPerMinute!.Value;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromMinutes(1);
 
     public override HistoricalDataCapabilities Capabilities { get; } =
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "EU", "CA", "AU");
 
 
-    public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null)
-        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider)
+    public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("TWELVEDATA_API_KEY");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
