@@ -178,11 +178,11 @@ public sealed record CapitalCommitmentDto(
     string VehicleName,
     string Strategy,
     string Currency,
-    decimal CommitmentAmount,
-    decimal CalledAmount,
-    decimal UnfundedAmount,
-    decimal DistributedAmount,
-    decimal CurrentNav,
+    [property: System.Text.Json.Serialization.JsonRequired] decimal CommitmentAmount,
+    [property: System.Text.Json.Serialization.JsonRequired] decimal CalledAmount,
+    [property: System.Text.Json.Serialization.JsonRequired] decimal UnfundedAmount,
+    [property: System.Text.Json.Serialization.JsonRequired] decimal DistributedAmount,
+    [property: System.Text.Json.Serialization.JsonRequired] decimal CurrentNav,
     int? VintageYear,
     string SourceSystem,
     string? SourceDocumentId,
@@ -191,7 +191,35 @@ public sealed record CapitalCommitmentDto(
     string EvidenceCompleteness,
     string ReconciliationStatus,
     string? LastReviewedBy,
-    DateTimeOffset? LastReviewedAtUtc);
+    DateTimeOffset? LastReviewedAtUtc,
+    bool BalancesAvailable = true,
+    string BalanceStatus = "Retained",
+    string? SnapshotId = null,
+    int? SourceRevision = null,
+    DateTimeOffset? RecordedAtUtc = null,
+    PrivateCapitalExactBalancesDto? ExactBalances = null,
+    string? SourceContentSha256 = null);
+
+public sealed record PrivateCapitalExactBalancesDto(string CommitmentAmount, string CalledAmount,
+    string UnfundedAmount, string DistributedAmount, string CurrentNav);
+
+/// <summary>Retained source revisions, never inferred from ownership assignments or posting intent.</summary>
+public sealed record PrivateCapitalLifecycleDocumentDto(
+    int SchemaVersion,
+    IReadOnlyList<PrivateCapitalSnapshotDto> Snapshots,
+    IReadOnlyList<PrivateCapitalActivitySourceDto> Activities);
+
+public sealed record PrivateCapitalSnapshotDto(
+    string FamilyOfficeId,
+    string SnapshotId,
+    int Revision,
+    DateTimeOffset RecordedAtUtc,
+    CapitalCommitmentDto Commitment);
+
+public sealed record PrivateCapitalActivitySourceDto(
+    string FamilyOfficeId,
+    DateTimeOffset RecordedAtUtc,
+    CapitalActivityDto Activity);
 
 public sealed record CapitalActivityDto(
     string ActivityId,
@@ -199,7 +227,7 @@ public sealed record CapitalActivityDto(
     string EntityId,
     string ActivityType,
     string Currency,
-    decimal Amount,
+    [property: System.Text.Json.Serialization.JsonRequired] decimal Amount,
     DateOnly EffectiveDate,
     DateOnly? NoticeDate,
     DateOnly? DueDate,

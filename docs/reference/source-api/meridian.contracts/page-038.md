@@ -391,7 +391,7 @@ public sealed record CorporateActionCaseAccountingStatusDto(Guid? ProjectionId, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseActionAvailabilityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:512](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L512).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:518](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L518).
 
 Server-owned action posture consumed by browser and desktop clients.
 
@@ -415,7 +415,7 @@ public sealed record CorporateActionCaseScopeDto(string TenantId, string Company
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseSourceSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:487](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L487).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:490](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L490).
 
 Immutable provider observation retained with a processing-case read. The case owns workflow state and scope; this snapshot supplies the source/action identity needed to identify and audit the case after its accepted proposal leaves the actionable inbox.
 
@@ -498,7 +498,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:570](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L570).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:576](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L576).
 
 ```csharp
 public sealed record CorporateActionCaseTransitionDto(Guid TransitionId, Guid CaseId, string? FromState, string ToState, long ExpectedVersion, long ResultingVersion, string Actor, string Reason, string IdempotencyKey, DateTimeOffset OccurredAtUtc, string? CorrelationId = null, bool PolicyOverrideApplied = false);
@@ -528,7 +528,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:732](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L732).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:738](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L738).
 
 ```csharp
 public sealed record CorporateActionCaseTransitionResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseTransitionDto Transition, bool Replayed);
@@ -707,7 +707,7 @@ public sealed record CorporateActionCashDividendWorkspaceDto(int SchemaVersion, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictCandidateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:535](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L535).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:541](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L541).
 
 ```csharp
 public sealed record CorporateActionConflictCandidateDto(string Source, JsonElement Value, string? EvidenceReference = null);
@@ -717,7 +717,7 @@ public sealed record CorporateActionConflictCandidateDto(string Source, JsonElem
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:540](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L540).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:546](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L546).
 
 ```csharp
 public sealed record CorporateActionConflictDto(Guid ConflictId, Guid CaseId, string Field, string Description, IReadOnlyList<CorporateActionConflictCandidateDto> Candidates, string State, string? Resolution, long CaseVersion, string RecordedBy, DateTimeOffset RecordedAtUtc, string? ResolvedBy = null, DateTimeOffset? ResolvedAtUtc = null, string? ResolutionEvidenceReference = null, string? ResolutionEvidenceHash = null);
@@ -727,7 +727,7 @@ public sealed record CorporateActionConflictDto(Guid ConflictId, Guid CaseId, st
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionConflictMutationResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:717](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L717).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:723](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L723).
 
 ```csharp
 public sealed record CorporateActionConflictMutationResultDto(CorporateActionProcessingCaseDto Case, CorporateActionConflictDto Conflict, bool Replayed);

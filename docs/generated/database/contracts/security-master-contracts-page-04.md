@@ -2,11 +2,31 @@
 
 # `security-master-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 554. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 557. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcContractStatus["OtcContractStatus"] {
+    }
+    class Meridian_Contracts_SecurityMaster_OtcContractValuationDto["OtcContractValuationDto"] {
+        +DateOnly AsOfDate
+        +IReadOnlyList~OtcValuationBlockerDto~ Blockers
+        +Guid ContractId
+        +string Currency
+        +IReadOnlyList~OtcValuationInputDto~ Inputs
+        +decimal? MarkToMarket
+        +string Method
+        +DataProvenance Provenance
+        +Guid SecurityId
+        +OtcValuationStatus Status
+    }
+    class Meridian_Contracts_SecurityMaster_OtcContractValuationRequest["OtcContractValuationRequest"] {
+        +DateOnly AsOfDate
+        +OtcContractDto Contract
+        +string Currency
+        +DateTimeOffset? KnowledgeAsOf
+    }
     class Meridian_Contracts_SecurityMaster_OtcContractsJsonContext["OtcContractsJsonContext"] {
     }
     class Meridian_Contracts_SecurityMaster_OtcCreditEventData["OtcCreditEventData"] {
@@ -440,27 +460,12 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAccountingInstrumentClasses["SecurityAccountingInstrumentClasses"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAliasDto["SecurityAliasDto"] {
-        +Guid AliasId
-        +string AliasKind
-        +string AliasValue
-        +DateTimeOffset CreatedAt
-        +string CreatedBy
-        +bool IsEnabled
-        +string? Provider
-        +string? Reason
-        +SecurityAliasScope Scope
-        +Guid SecurityId
-        +DateTimeOffset ValidFrom
-        +DateTimeOffset? ValidTo
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAliasHistoryConflictException["SecurityAliasHistoryConflictException"] {
-        +Guid AliasId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
-    }
+    Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationBlockerDto
+    Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationInputDto
+    Meridian_Contracts_SecurityMaster_OtcContractValuationDto --> Meridian_Contracts_SecurityMaster_OtcValuationStatus
     Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcCreditEventKind
     Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty
+    Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcContractValuationDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcExposureSnapshotInputsDto
     Meridian_Contracts_SecurityMaster_OtcExposureSnapshotDto --> Meridian_Contracts_SecurityMaster_OtcExposureSnapshotStatus
@@ -496,5 +501,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleStubPolicy
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenor
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenor --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenorUnit
-    Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
 ```

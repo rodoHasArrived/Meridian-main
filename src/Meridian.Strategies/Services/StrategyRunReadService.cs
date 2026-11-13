@@ -906,28 +906,36 @@ public sealed class StrategyRunReadService
             : await GetRunsAsync(query, scope, ct).ConfigureAwait(false);
         return runs
             .Where(static run => !string.IsNullOrWhiteSpace(run.SweepId) && !string.IsNullOrWhiteSpace(run.SweepDefinitionHash))
-            .GroupBy(static run => $"{run.SweepId}|{run.SweepDefinitionHash}", StringComparer.Ordinal)
+            .GroupBy(static run => (run.SweepId, run.SweepDefinitionHash, run.StrategyId,
+                run.Engine, run.Mode, run.DatasetReference, run.FeedReference, run.SweepObjective))
             .OrderByDescending(static group => group.Max(run => run.StartedAt))
             .Take(Math.Clamp(limit, 1, 100))
             .Select(group =>
             {
                 var groupedRuns = group.OrderByDescending(static run => run.StartedAt).ToArray();
+                var head = groupedRuns[0];
+                decimal? ObjectiveValue(StrategyRunSummary run) => head.SweepObjective?.Trim().ToUpperInvariant() switch
+                {
+                    "FINALEQUITY" => run.FinalEquity,
+                    "NETPNL" => run.NetPnl,
+                    "TOTALRETURN" => run.TotalReturn,
+                    _ => null
+                };
                 var topObjective = groupedRuns
-                    .Where(static run => run.Status == StrategyRunStatus.Completed)
-                    .OrderByDescending(static run => run.FinalEquity ?? decimal.MinValue)
-                    .ThenByDescending(static run => run.NetPnl ?? decimal.MinValue)
+                    .Where(run => run.Status == StrategyRunStatus.Completed && ObjectiveValue(run).HasValue)
+                    .OrderByDescending(run => ObjectiveValue(run))
+                    .ThenBy(static run => run.RunId, StringComparer.Ordinal)
                     .Take(10)
-                    .Select(static run => new StrategySweepObjectiveRanking(
+                    .Select(run => new StrategySweepObjectiveRanking(
                         run.RunId,
                         run.StrategyName,
-                        run.FinalEquity,
+                        ObjectiveValue(run),
                         run.NetPnl,
                         run.TotalReturn,
                         run.FinalEquity,
                         run.LastUpdatedAt))
                     .ToArray();
 
-                var head = groupedRuns[0];
                 return new StrategySweepResultGroup(
                     SweepId: head.SweepId!,
                     SweepDefinitionHash: head.SweepDefinitionHash!,
@@ -935,7 +943,9 @@ public sealed class StrategyRunReadService
                     StartedAt: groupedRuns.Min(static run => run.StartedAt),
                     RunCount: groupedRuns.Length,
                     Runs: groupedRuns,
-                    ObjectiveRankings: topObjective);
+                    ObjectiveRankings: topObjective,
+                    ComparisonContextVerified: head.SweepDefinitionHash!.StartsWith("sweep-v2:", StringComparison.Ordinal),
+                    HistoryMayBeTruncated: runs.Count >= query.Limit);
             })
             .ToArray();
     }
@@ -973,7 +983,8 @@ public sealed class StrategyRunReadService
             ParentRunId: run.ParentRunId,
             SweepId: run.SweepId,
             SweepDefinitionHash: run.SweepDefinitionHash,
-            SweepObjective: run.SweepObjective);
+            SweepObjective: run.SweepObjective,
+            Parameters: run.ParameterSet);
     }
 
 

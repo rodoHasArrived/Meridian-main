@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityListingIdentityFinding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityListingIdentityFinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityListingIdentity.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityListingIdentity.cs#L10).
+
+One listing-identity inconsistency on a stored security.
+
+```csharp
+public sealed record SecurityListingIdentityFinding(string Code, string FieldPath, string Message);
+```
+
+## SecurityLotModel
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L40).
+
+The one lot model: every SecurityLotUnitKind maps to exactly one entry stating what its quantity means and which typed lot carries it. Consumers that need to know how a holding is sized read For(SecurityLotUnitKind) or ForAssetClass(string?) instead of switching on asset-class strings.
+
+```csharp
+public static class SecurityLotModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;SecurityLotUnitDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L57) | Every lot unit the model describes, in enum order. |
+| <code>public static SecurityLotUnitDescriptor For(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L60) | The entry for unitKind. |
+| <code>public static SecurityLotUnitDescriptor ForAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L66) | The entry for the lot unit the asset-class registry assigns to assetClass. |
+| <code>public static SecurityLotUnitDescriptor For(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L70) | The entry for the unit a lot reports. |
+| <code>public static IReadOnlyList&lt;string&gt; AssetClassesWithUnit(SecurityLotUnitKind unitKind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L77) | The asset classes whose lots carry unitKind, in catalog order. |
+| <code>public static bool IsCanonicalLot(IUnitizedLot lot);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L87) | True when lot is the canonical typed lot for its own unit, or its unit has no typed lot and any IUnitizedLot may carry it. |
+
+## SecurityLotUnitDescriptor
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L23).
+
+What one lot unit means and which canonical lot type carries it. Keyed on SecurityLotUnitKind, so an asset class&#x27;s lot behaviour is read from its descriptor&#x27;s SecurityAssetClassDescriptor.LotUnit and never from its name.
+
+```csharp
+public sealed record SecurityLotUnitDescriptor(SecurityLotUnitKind UnitKind, Type? CanonicalLotType, string QuantityMeaning, bool TracksPaydownFactor = false, bool AmortizesBySchedule = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasCanonicalLotType =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs#L31) | True when a typed lot aggregate owns this unit&#x27;s economics. |
+
 ## SecurityLotUnitKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityLotUnitKind</code>. Kind: `enum`.
@@ -822,58 +875,3 @@ Raw observation and the explicit construction assumption retained with each immu
 ```csharp
 public sealed record SecurityRatePointEvidenceDto(SecurityRateObservationDto Observation, SecurityRateConstructionMethod ConstructionMethod, string MethodDescription, string ReviewedBy);
 ```
-
-## SecurityRateUnit
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateUnit</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10).
-
-```csharp
-public enum SecurityRateUnit
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fraction</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>Percent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>BasisPoints</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-| <code>IndexLevel</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L10) |  |
-
-## SecurityRawPriceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRawPriceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L26).
-
-A dated source observation retained without overwriting earlier prices.
-
-```csharp
-public sealed record SecurityRawPriceDto(string SourceId, decimal Price, DateTimeOffset PriceAsOf, SecurityPriceUnit Unit)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityPriceQuotationEvidence? Quotation { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterPricing.cs#L29) |  |
-
-## SecurityRecordProvenance
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRecordProvenance</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L26).
-
-Typed record-level provenance read from the Security Master provenance document — who supplied the record, when it was true, and who applied it.
-
-```csharp
-public sealed record SecurityRecordProvenance(string SourceSystem, string? SourceRecordId, DateTimeOffset? AsOf, string? UpdatedBy, string? Reason)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityFieldProvenance ForField(string fieldPath, decimal? confidence = null) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L37) | Projects this record-level provenance onto one field — the per-field (vendor, asOf, confidence) attribution consumed by field-conflict assessment and display. |

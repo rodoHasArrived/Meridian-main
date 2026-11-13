@@ -2,11 +2,30 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 554. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 557. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleValidation["SecurityEconomicScheduleValidation"] {
+        +SecurityScheduleParseResult~StructuredFactorScheduleEntry~ FactorSchedule
+        +SecurityScheduleParseResult~StructuredPrincipalScheduleEntry~ PrincipalSchedule
+        +SecurityScheduleParseResult~StructuredStepCouponEntry~ StepCouponSchedule
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster["SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"] {
+        +IReadOnlyList~string~ BridgedModules
+        +IReadOnlyList~string~ DroppedModules
+        +IReadOnlyList~string~ EconomicTermsModules
+        +SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster Instance
+        +IReadOnlyList~string~ ModulesAddedAfterIdentityGate
+        +IReadOnlyList~string~ ShapeRuleModules
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto["SecurityEvidenceLinkDto"] {
+        +string EvidenceId
+        +string EvidenceKind
+        +string? Route
+        +string? Summary
+    }
     class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict["SecurityFactorHistoryConflict"] {
         +DateOnly AsOfDate
         +IReadOnlyList~SecurityFactorHistoryPoint~ Points
@@ -391,20 +410,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityRecordRateUnit["SecurityRecordRateUnit"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic["SecurityScheduleDiagnostic"] {
-        +string Code
-        +string Message
-        +string Path
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult["SecurityScheduleParseResult"] {
-        +IReadOnlyList~SecurityScheduleDiagnostic~ Diagnostics
-        +IReadOnlyList~T~ Entries
-        +SecuritySchedulePresence Presence
-        +IReadOnlyList~T~ SourceEntries
-        +string? SourcePath
-    }
-    class Meridian_Contracts_SecurityMaster_SecuritySchedulePresence["SecuritySchedulePresence"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
@@ -436,6 +441,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityRatePointEvidenceDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
-    Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
-    Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
 ```

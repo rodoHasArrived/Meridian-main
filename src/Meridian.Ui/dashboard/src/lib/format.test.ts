@@ -30,6 +30,12 @@ describe("formatNumber", () => {
     expect(formatNumber(0.123456, { maximumFractionDigits: 4 })).toBe("0.1235");
   });
 
+  it("preserves tiny nonzero observations with explicitly requested scientific notation", () => {
+    expect(formatNumber(1e-9, { notation: "scientific", maximumFractionDigits: 11 })).toBe("1E-9");
+    expect(formatNumber(1e-100, { notation: "scientific", maximumFractionDigits: 11 })).toBe("1E-100");
+    expect(formatNumber(0, { notation: "scientific" })).toBe("0E0");
+  });
+
   it("renders the fallback for null, undefined, and non-finite values", () => {
     expect(formatNumber(null)).toBe("—");
     expect(formatNumber(undefined)).toBe("—");
