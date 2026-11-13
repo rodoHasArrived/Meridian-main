@@ -202,7 +202,7 @@ describe("OperationalTrustSummary", () => {
         </MemoryRouter>
       );
 
-    it("cannot read all sources current while the masthead warns about a provider", () => {
+    it("points to the trust strip instead of repeating a shell issue the masthead names", () => {
       // The Trading example: page freshness is "2s ago" and ready, the masthead says 1 warning.
       const { container } = renderInShell([
         shellSignal({
@@ -216,12 +216,13 @@ describe("OperationalTrustSummary", () => {
       ]);
 
       const summary = container.querySelector("summary")!;
-      expect(within(summary).queryByTestId("status-row-clear")).toBeNull();
-      const line = within(summary).getByTestId("status-row-issues");
-      expect(line).toHaveTextContent("Needs review");
-      expect(line).toHaveTextContent("Providers:1 warning");
-      expect(line).not.toHaveTextContent("2s ago");
-      expect(screen.getByRole("region", { name: "Trading data confidence" })).toHaveAttribute("data-status-tone", "review");
+      // Never "All sources current" over a warning masthead, and never the masthead's item again.
+      const clear = within(summary).getByTestId("status-row-clear");
+      expect(clear).toHaveTextContent("This page's sources are current · 1 workspace issue in the trust strip");
+      expect(summary).not.toHaveTextContent("Providers");
+      expect(summary).not.toHaveTextContent(/All sources current/);
+      // The shell issue and its recovery link stay available under Details.
+      expect(within(container.querySelector("dl")!).getByText("Providers")).toBeInTheDocument();
       expect(screen.getByRole("link", { name: "Open provider posture" })).toHaveAttribute("href", "/data/providers");
     });
 
