@@ -667,7 +667,7 @@ public sealed class CorporateActionIngestOrchestratorTests
 
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
-            => Task.FromResult(outcome.Observations);
+            => throw new InvalidOperationException("Coverage-aware ingestion must use the outcome API.");
 
         public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
@@ -852,19 +852,6 @@ public sealed class CorporateActionIngestOrchestratorTests
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionCommand>>([]);
-    }
-
-    private sealed class OutcomeProvider(string providerId, CorporateActionFetchResult outcome) : ICorporateActionProvider
-    {
-        public string ProviderId => providerId;
-
-        public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
-            string ticker, Guid securityId, CancellationToken ct = default)
-            => throw new InvalidOperationException("Coverage-aware ingestion must use the outcome API.");
-
-        public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
-            string ticker, Guid securityId, CancellationToken ct = default)
-            => Task.FromResult(outcome);
     }
 
     private sealed class ThrowingProvider(string providerId) : ICorporateActionProvider
