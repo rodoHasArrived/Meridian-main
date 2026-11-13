@@ -76,6 +76,9 @@ public sealed class PostedLedgerAmountProvenanceService(
             return null;
 
         var canonicalId = $"{journalId:D}:{entryId:D}:{(debit ? "debit" : "credit")}";
+        // Native accounting classification survives missing/expired source support. It neither
+        // raises source readiness nor converts a preparer assertion into ordinary approval.
+        var accountingAttestations = AccountingPreparerAttestationDisclosure.Read(record, scope);
         var retainedSubject = BuildRetainedSubjectId(canonicalId, scope);
         var siblingSubjects = record.Entry.Lines.Where(other => other.EntryId != entryId)
             .Select(other => BuildRetainedSubjectId($"{journalId:D}:{other.EntryId:D}:{(other.Debit > 0m ? "debit" : "credit")}", scope))
@@ -205,7 +208,8 @@ public sealed class PostedLedgerAmountProvenanceService(
             Review("No verified retained source evidence supports this amount. Review is required.");
 
         return Packet(canonicalId, scope, debit ? line.Debit : line.Credit,
-            line.Currency?.FunctionalCurrency ?? baseCurrency, status, evidence, warnings.Distinct().ToArray());
+            line.Currency?.FunctionalCurrency ?? baseCurrency, status, evidence, warnings.Distinct().ToArray(),
+            accountingAttestations);
 
         void Review(string warning)
         {
@@ -217,7 +221,8 @@ public sealed class PostedLedgerAmountProvenanceService(
 
     private static EvidencePacketDto Packet(string subjectId, LedgerAmountScopeDto scope, decimal amount,
         string currency, EvidenceStatusDto status, IReadOnlyList<LedgerAmountProofEvidenceDto> evidence,
-        IReadOnlyList<string> warnings)
+        IReadOnlyList<string> warnings,
+        IReadOnlyList<AccountingPreparerAttestationDisclosureDto>? accountingAttestations = null)
     {
         var subject = new EvidenceSubjectDto(subjectId, EvidenceSubjectResolver.LedgerAmountKind,
             "Posted ledger amount", "Accounting", null, "AccountingLedgerExplorer", scope.LedgerBookId);
@@ -245,7 +250,11 @@ public sealed class PostedLedgerAmountProvenanceService(
             new EvidenceEdgeDto(id, ledgerIds[0], "supports", "Exact retained scope and source digest support this posted amount.")).ToArray();
         return new EvidencePacketDto(subject, DateTimeOffset.UtcNow, nodes, edges, completeness, [], warnings)
         {
-            LedgerAmount = new LedgerAmountProofDto(subjectId, scope, amount, currency, status, evidence, warnings),
+            LedgerAmount = new LedgerAmountProofDto(subjectId, scope, amount, currency, status, evidence, warnings)
+            {
+                AccountingPreparerAttestations = accountingAttestations,
+                OrdinaryRecordedApprovalSatisfied = accountingAttestations is { Count: > 0 } ? false : null
+            },
             ProofChain = new EvidenceProofChainDto(completeness.Score, status,
                 status == EvidenceStatusDto.Ready ? 2 : evidence.Count > 0 ? 1 : 0, 2,
                 [new EvidenceProofChainLayerDto(EvidenceProofChainLayerKindDto.Source, "Retained source", status,

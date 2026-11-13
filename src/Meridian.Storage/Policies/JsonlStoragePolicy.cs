@@ -267,8 +267,13 @@ public sealed class JsonlStoragePolicy : IStoragePolicy
                 fileName = fileName[..^ext.Length];
             }
         }
-        return fileName;
+        return StripMergeSuffix(fileName);
     }
+
+    // Maintenance fragments keep the original partition-bearing name verbatim before this
+    // reserved suffix, including provider names which may themselves contain underscores.
+    internal static string StripMergeSuffix(string fileName)
+        => Regex.Replace(fileName, @"\.merged-[0-9a-fA-F]{32}$", string.Empty);
 
     // Flat: {root}/{prefix}{symbol}_{type}_{date}[_{source}].ext
     private ParsedPathMetadata? ParseFlatPath(string fileName)

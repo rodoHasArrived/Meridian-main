@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Backtesting
@@ -86,6 +86,14 @@ reconstructs that basis from a rounded entry quote. FIFO/LIFO/HIFO ordering and 
 SpecificId-to-FIFO fallback are preserved. This calculation convergence does not manufacture
 canonical SecurityIds or acquisition FX, authorize short posting, or replace retained Ledger lots.
 
+`SimulatedPortfolio` resolves posting accounts through the shared `IChartOfAccounts` and
+`StandardChartOfAccounts` role registry, retaining existing account identities and brokerage/symbol
+scopes for capital, fills, financing, income, and corporate actions. Fill and commission journal
+lines consume the shared `SecurityTradePostingProjector` with each leg's exact relieved basis or
+short proceeds; simulation keeps its descriptions, activity types, and fill/order references.
+The simulator retains short-payable accounting; it does not migrate historical execution journals
+that record short positions as credits to Securities.
+
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
 adjuster uses scalar compatibility economics: it does not retain the prior lot factor or original
@@ -160,6 +168,13 @@ tracked by `PRD-106`; the scope decision does not close these implementation or 
 See the [expanded objectives](../../docs/product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives).
 
 ## Execution realism and result trustworthiness
+
+Financing accrues on every calendar date using ACT/365 fixed. Sharpe, Sortino, rolling replay
+metrics, and stitched walk-forward metrics use the same 365-observation annualization because
+the native snapshot series includes weekends. Trade cash flows contain only consideration;
+commission cash flows carry fees separately, and their sum reconciles to the cash movement.
+Fill models apply fixed, minimum, and maximum commissions cumulatively per order across all
+accepted partial fills rather than charging each execution as a new order.
 
 - `BacktestRequest.FillTiming` defaults to `NextBar`: an order can only fill against events
   strictly later than the event that generated it, eliminating same-bar look-ahead. Under

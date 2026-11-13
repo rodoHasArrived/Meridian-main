@@ -6,7 +6,7 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
-public sealed class EvidenceWorkbenchViewModelTests
+public sealed partial class EvidenceWorkbenchViewModelTests
 {
     [Theory]
     [InlineData("accounting-record/accounting-record-2026-05", "accounting-record", "accounting-record-2026-05")]
@@ -74,6 +74,99 @@ public sealed class EvidenceWorkbenchViewModelTests
         client.LastPacketSubject.Should().Be(("strategy-run", "run-42"));
         client.LastRequestListQuery.Should().Be(("strategy-run", "run-42", 25));
         client.LastDocumentQuery.Should().Be(("strategy-run", "run-42", 25));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_PreparerHistoryRetainsDisclosureAfterWithdrawalAndRevocation()
+    {
+        var client = CreateLoadedClient();
+        client.AttestationsResponse = ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Ok(CreateAttestationWorkspace(revoked: true));
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.HasPacket.Should().BeTrue();
+        viewModel.AttestationStatusText.Should().Contain("policy disabled").And.Contain("withdrawn");
+        viewModel.AttestationScopeText.Should().Contain("tenant-1").And.Contain("company-1");
+        var row = viewModel.AttestationRows.Should().ContainSingle().Which;
+        row.Disclosure.Should().Be(SinglePrincipalAttestationPolicy.Disclosure);
+        row.ActorAndTime.Should().Contain("preparer-1");
+        row.Subject.Should().Contain("vault-1/document-1").And.Contain("revision version-7");
+        row.Hashes.Should().Contain("subject-sha256").And.Contain("source-sha256");
+        row.SourceProvenance.Should().Contain("Synthetic").And.Contain("provider-importer");
+        row.CurrentStatus.Should().Contain("Revoked").And.Contain("Original assertion retained");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_UnrevokedHistoryDoesNotClaimCurrentSupportOrIndependentReview()
+    {
+        var client = CreateLoadedClient();
+        client.AttestationsResponse = ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Ok(CreateAttestationWorkspace());
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.AttestationRows.Should().ContainSingle().Which.CurrentStatus
+            .Should().Be("Recorded assertion; current support has not been reassessed.");
+        viewModel.CompletenessStatusText.Should().Be("Review Required");
+        viewModel.AttestationStatusText.Should().Contain("do not grant approval, posting, close or release authority");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_AttestationAccessFailureClearsPreviouslyLoadedHistory()
+    {
+        var client = CreateLoadedClient();
+        client.AttestationsResponse = ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Ok(CreateAttestationWorkspace());
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+        await viewModel.RefreshAsync();
+        viewModel.AttestationRows.Should().ContainSingle();
+        client.AttestationsResponse = ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Fail("Attestation access denied.", 403);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.HasPacket.Should().BeTrue();
+        viewModel.AttestationRows.Should().BeEmpty();
+        viewModel.AttestationStatusText.Should().Be("Attestation access denied.");
+        viewModel.AttestationScopeText.Should().Be("Scope unavailable");
+    }
+
+    [Fact]
+    public async Task RefreshAsync_UnknownReceiptClassificationDoesNotInferIndependentApproval()
+    {
+        var client = CreateLoadedClient();
+        var workspace = CreateAttestationWorkspace();
+        var unknown = workspace.State.Receipts[0] with { SchemaVersion = 99, DecisionKind = "Approved", Disclosure = "Independent review" };
+        client.AttestationsResponse = ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Ok(
+            workspace with { State = workspace.State with { Receipts = [unknown] } });
+        using var viewModel = new EvidenceWorkbenchViewModel(client);
+
+        await viewModel.RefreshAsync();
+
+        viewModel.AttestationRows.Should().ContainSingle().Which.Disclosure
+            .Should().Be("Review classification unavailable; retained record does not establish approval.");
+    }
+
+    private static SinglePrincipalAttestationWorkspaceDto CreateAttestationWorkspace(bool revoked = false)
+    {
+        var scope = new SinglePrincipalAttestationScopeDto("tenant-1", "company-1");
+        var recordedAt = new DateTimeOffset(2026, 11, 12, 8, 30, 0, TimeSpan.Zero);
+        var receipt = new PreparerAttestationReceiptDto(
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), SinglePrincipalAttestationPolicy.SchemaVersion,
+            SinglePrincipalAttestationPolicy.DecisionKind, SinglePrincipalAttestationPolicy.Disclosure,
+            scope, SinglePrincipalAttestationPolicy.EvidenceAcknowledgment, "evidence-document", "vault-1/document-1",
+            "version-7", "subject-sha256", "artifact-1", "source-sha256", "provider-importer", "Synthetic",
+            "preparer-1", "preparer-1", OperationsActionOriginDto.HumanOperator, Guid.NewGuid(), 3,
+            SinglePrincipalAttestationPolicy.Version, "policy-sha256", recordedAt, "Inspected source fields.",
+            SinglePrincipalAttestationPolicy.Confirmation, ["Retained source hash verified"]);
+        var declaration = new SinglePrincipalDeclarationDto(receipt.DeclarationId, 4, scope, false, "preparer-1",
+            SinglePrincipalAttestationPolicy.Version, "policy-sha256", "preparer-1", recordedAt.AddHours(1), "Withdrawn prospectively.");
+        var revocations = revoked
+            ? new[] { new PreparerAttestationRevocationDto(Guid.NewGuid(), receipt.ReceiptId, 2, "preparer-1", recordedAt.AddHours(2), "Incorrect source assertion") }
+            : Array.Empty<PreparerAttestationRevocationDto>();
+        var state = new SinglePrincipalAttestationStateDto(scope, false, SinglePrincipalAttestationPolicy.Version,
+            "policy-sha256", SinglePrincipalAttestationPolicy.Disclosure, SinglePrincipalAttestationPolicy.Confirmation,
+            [], declaration, [declaration], [receipt], revocations, []);
+        return new SinglePrincipalAttestationWorkspaceDto(state, "preparer-1", false, false, false);
     }
 
     [Fact]
@@ -522,8 +615,14 @@ public sealed class EvidenceWorkbenchViewModelTests
         };
     }
 
-    private sealed class FakeEvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
+    private sealed partial class FakeEvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
     {
+        public ApiResponse<SinglePrincipalAttestationWorkspaceDto> AttestationsResponse { get; set; } =
+            ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Fail("Preparer attestation history is unavailable.", 403);
+
+        public Task<ApiResponse<SinglePrincipalAttestationWorkspaceDto>> GetAttestationsAsync(CancellationToken ct = default)
+            => Task.FromResult(AttestationsResponse);
+
         public ApiResponse<EvidenceSubjectDto[]> SubjectsResponse { get; set; } =
             ApiResponse<EvidenceSubjectDto[]>.Ok([]);
 

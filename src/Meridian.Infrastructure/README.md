@@ -11,6 +11,14 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Infrastructure
 
+Gap inventory preserves date-only records as calendar dates before attempting timestamp parsing.
+Actual timestamp records still use their UTC date, regardless of the collector host's time zone.
+
+HTTP resilience applies a fresh timeout to each attempt inside the total operation budget.
+Quota responses (HTTP 429) pass straight through to provider handling, retaining `Retry-After`
+for the quota-aware backfill scheduler; they are neither generic retries nor circuit-breaker
+failures. Caller cancellation is also excluded from circuit-breaker failures.
+
 FRED supports a typed rates observation path alongside the legacy synthetic-bar compatibility API.
 Fixed-income ingestion uses original decimal text, provider units, observation date, publication
 (unknown when unavailable), vintage interval, retrieval time and transformation metadata. Constant-
@@ -165,6 +173,13 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Historical Alpaca, Polygon Security Master ingest, and Robinhood option-contract pagination
+reject repeated continuation cursors. Failed Polygon ingest and Robinhood contract pages propagate
+failure rather than publishing partial data as a complete response. Continuation URLs are validated
+against the provider's HTTPS origin before credentials or rate-limit admission; Robinhood requests
+are paced and dispose their responses. Registry updates apply new provider limits to the existing
+limiter while retaining its current request history.
+
 Provider construction preserves the credential resolver's selected record, including missing,
 removed and deleted fields. Stored records cannot be overlaid by module settings; selected module
 sidecars cannot borrow missing fields from environment mappings. Alpaca historical, streaming,
@@ -295,6 +310,15 @@ for multi-capability adapters and isolates construction failures from other prov
 Options enumeration reuses successfully constructed module entries rather than retrying failed
 factories during catalog reads.
 `FredProviderModuleCompositionTests` and `ProviderModuleCompositionTests` cover these seams.
+`YahooFinanceProviderModule` owns Yahoo's historical registration, construction, and descriptor
+through the same module mechanism. Yahoo remains enabled without backfill configuration and
+requires no credentials; either the family switch or `Backfill.Providers.Yahoo.Enabled=false`
+keeps it unavailable. Its late availability check reads the final host configuration without
+network requests. Hosted consumers share the container-owned historical singleton, including its
+intraday aggregate interface, while standalone `ProviderFactory` calls delegate to the same local
+factory. The adapter's existing priority, rate limits, coverage, and HTTP behavior are retained.
+`YahooFinanceProviderModuleCompositionTests` covers default and disabled configurations,
+final host configuration, lifetime ownership, catalog inventory, and standalone compatibility.
 OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
 projects only its six supported surfaces and omits resolver-only rows. Streaming instrument coverage is independently
 declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported

@@ -1,0 +1,845 @@
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
+using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Text;
+using Meridian.Domain.Reconciliation;
+using Meridian.Core.IO;
+
+namespace Meridian.DataIntegration.Reconciliation;
+
+public sealed record StatementRunMatchArtifact(
+    string RunId,
+    string ImportId,
+    IReadOnlyList<ReconciliationBreakRecord> Breaks,
+    IReadOnlyList<ReconciliationCase> Cases,
+    int MatchCount)
+{
+    /// <summary>
+    /// One record per matched result carrying the evidence membership that formed the match, so a
+    /// retained artifact distinguishes different pair or split assignments of the same size. Null on
+    /// legacy artifacts written before groups were retained; the null is omitted from serialization
+    /// so a legacy artifact round-trips byte-identically and keeps verifying against the recovery
+    /// checkpoint hash recorded when it was written. New runs always retain a (possibly empty)
+    /// list. The widening is forward-only: a rolled-back binary whose artifact type lacks this
+    /// property reserializes a group-carrying artifact without it and reports every post-upgrade
+    /// run as a checkpoint conflict — roll the binary forward instead of editing retained
+    /// artifacts.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<StatementRunMatchGroupRecord>? MatchGroups { get; init; }
+
+    /// <summary>Null on legacy artifacts. Only complete internal populations can establish source clearing.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? SourceComparisonComplete { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceComparisonMappingFingerprint { get; init; }
+
+    /// <summary>Hash of the matcher revision and the exact executed tolerance profile, including rules/version.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceComparisonPolicyFingerprint { get; init; }
+
+    /// <summary>Population kinds actually compared; a narrower feed cannot clear a broader feed's breaks.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<string>? SourceComparisonPopulationKinds { get; init; }
+}
+
+/// <summary>
+/// Deterministic sidecar binding a live statement projection to the immutable match artifact that
+/// produced it. Missing sidecars may be reconstructed; mismatched sidecars are corruption.
+/// </summary>
+public sealed record StatementRunProjectionAudit(
+    int SchemaVersion,
+    string RunId,
+    string ImportId,
+    string ProjectionKind,
+    string ProjectionId,
+    string ArtifactSha256,
+    DateTimeOffset MaterializedAtUtc)
+{
+    public const int CurrentSchemaVersion = 1;
+    public const string BreakKind = "break";
+    public const string CaseKind = "case";
+}
+
+/// <summary>
+/// Loads and saves the retained match artifact for a statement reconciliation run.
+/// </summary>
+public interface IStatementRunMatchArtifactStore
+{
+    Task<StatementRunMatchArtifact?> GetAsync(string runId, CancellationToken ct = default);
+    Task SaveAsync(StatementRunMatchArtifact artifact, CancellationToken ct = default);
+}
+
+/// <summary>
+/// Retains statement run match artifacts in memory and rejects inconsistent artifact replacement.
+/// </summary>
+public sealed class InMemoryStatementRunMatchArtifactStore : IStatementRunMatchArtifactStore
+{
+    private readonly ConcurrentDictionary<string, StatementRunMatchArtifact> _artifacts =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<StatementRunMatchArtifact?> GetAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult(_artifacts.TryGetValue(runId.Trim(), out var artifact) ? artifact : null);
+    }
+
+    public Task SaveAsync(StatementRunMatchArtifact artifact, CancellationToken ct = default)
+    {
+        ValidateArtifact(artifact);
+        ct.ThrowIfCancellationRequested();
+        _artifacts.AddOrUpdate(
+            artifact.RunId,
+            artifact,
+            (_, retained) => StatementDurabilityHashing.FixedTimeEquals(
+                    StatementDurabilityHashing.Hash(
+                        retained,
+                        StatementDurabilityJsonContext.Default.StatementRunMatchArtifact),
+                    StatementDurabilityHashing.Hash(
+                        artifact,
+                        StatementDurabilityJsonContext.Default.StatementRunMatchArtifact))
+                ? retained
+                : throw new InvalidOperationException(
+                    $"Statement run '{artifact.RunId}' already retains a different match artifact."));
+        return Task.CompletedTask;
+    }
+
+    internal static void ValidateArtifact(StatementRunMatchArtifact artifact)
+    {
+        ArgumentNullException.ThrowIfNull(artifact);
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifact.RunId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifact.ImportId);
+        ArgumentNullException.ThrowIfNull(artifact.Breaks);
+        ArgumentNullException.ThrowIfNull(artifact.Cases);
+        if (artifact.MatchCount < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(artifact), "Statement match count cannot be negative.");
+        }
+
+        // Legacy artifacts predate retained match groups (null). When groups are retained they must
+        // account for every counted match, or the artifact could again claim matches whose
+        // membership is unverifiable.
+        if (artifact.MatchGroups is { } groups)
+        {
+            if (groups.Count != artifact.MatchCount)
+            {
+                throw new ArgumentException(
+                    $"Statement run '{artifact.RunId}' retains {groups.Count} match groups for {artifact.MatchCount} counted matches.",
+                    nameof(artifact));
+            }
+
+            if (groups.Any(static group => group is null))
+            {
+                throw new ArgumentException(
+                    $"Statement run '{artifact.RunId}' retains a null match group.",
+                    nameof(artifact));
+            }
+        }
+    }
+}
+
+/// <summary>
+/// Persists statement run match artifacts as validated files under the data root.
+/// </summary>
+public sealed class FileStatementRunMatchArtifactStore : IStatementRunMatchArtifactStore
+{
+    private readonly IAtomicFileWriter _atomicFileWriter;
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly string _root;
+
+    public FileStatementRunMatchArtifactStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
+    {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        _root = Path.Combine(dataRoot, "reconciliation", "statement-runs");
+    }
+
+    public async Task<StatementRunMatchArtifact?> GetAsync(string runId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var path = ArtifactPath(runId);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await JsonSerializer
+            .DeserializeAsync(stream, StatementDurabilityJsonContext.Default.StatementRunMatchArtifact, ct)
+            .ConfigureAwait(false);
+    }
+
+    public async Task SaveAsync(StatementRunMatchArtifact artifact, CancellationToken ct = default)
+    {
+        InMemoryStatementRunMatchArtifactStore.ValidateArtifact(artifact);
+        var path = ArtifactPath(artifact.RunId);
+        var gate = Gates.GetOrAdd(path, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var retained = await GetAsync(artifact.RunId, ct).ConfigureAwait(false);
+            if (retained is not null)
+            {
+                if (!StatementDurabilityHashing.FixedTimeEquals(
+                        StatementDurabilityHashing.Hash(
+                            retained,
+                            StatementDurabilityJsonContext.Default.StatementRunMatchArtifact),
+                        StatementDurabilityHashing.Hash(
+                            artifact,
+                            StatementDurabilityJsonContext.Default.StatementRunMatchArtifact)))
+                {
+                    throw new InvalidOperationException(
+                        $"Statement run '{artifact.RunId}' already retains a different match artifact.");
+                }
+
+                return;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                var json = JsonSerializer.Serialize(
+                    artifact,
+                    StatementDurabilityJsonContext.Default.StatementRunMatchArtifact);
+                await _atomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
+                File.Move(temporaryPath, path, overwrite: false);
+                await _atomicFileWriter
+                    .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (IOException) when (File.Exists(path))
+            {
+                retained = await GetAsync(artifact.RunId, ct).ConfigureAwait(false)
+                    ?? throw new InvalidDataException(
+                        $"Statement run '{artifact.RunId}' retained an unreadable concurrent match artifact.");
+                if (!StatementDurabilityHashing.FixedTimeEquals(
+                        StatementDurabilityHashing.Hash(
+                            retained,
+                            StatementDurabilityJsonContext.Default.StatementRunMatchArtifact),
+                        StatementDurabilityHashing.Hash(
+                            artifact,
+                            StatementDurabilityJsonContext.Default.StatementRunMatchArtifact)))
+                {
+                    throw new InvalidOperationException(
+                        $"Statement run '{artifact.RunId}' concurrently retained a different match artifact.");
+                }
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private string ArtifactPath(string runId)
+        => Path.Combine(_root, ReconciliationRecordFileName.For(runId), "workflow-match-artifact.json");
+}
+
+public sealed record StatementCaseworkCommitEnvelope(
+    int SchemaVersion,
+    string CommandId,
+    string InputHashSha256,
+    string ImportId,
+    ReconciliationBreakRecord OriginalBreak,
+    ReconciliationBreakRecord NextBreak,
+    ReconciliationCase? OriginalCase,
+    ReconciliationCase? NextCase,
+    StatementBreakCaseworkAuditEvent BreakAudit,
+    ReconciliationCaseAuditEvent? CaseAudit,
+    DateTimeOffset PreparedAtUtc,
+    bool AdoptedLegacyReceipt)
+{
+    public const int CurrentSchemaVersion = 1;
+}
+
+public sealed record StatementCaseworkLegacyReceipt(
+    string CommandId,
+    string BreakId,
+    string InputHashSha256,
+    ReconciliationBreakRecord Record,
+    StatementBreakCaseworkAuditEvent Audit);
+
+internal sealed record StatementCaseworkCompletion(
+    string CommandId,
+    string InputHashSha256,
+    string EnvelopeHashSha256,
+    DateTimeOffset CompletedAtUtc);
+
+/// <summary>
+/// Prepares, retrieves, and completes durable statement casework command envelopes.
+/// </summary>
+public interface IStatementCaseworkCommitStore
+{
+    Task<StatementCaseworkCommitEnvelope?> GetAsync(string commandId, CancellationToken ct = default);
+    Task<IReadOnlyList<StatementCaseworkCommitEnvelope>> ListByRunAsync(
+        string runId,
+        CancellationToken ct = default)
+        => throw new NotSupportedException(
+            "This statement casework commit store cannot enumerate retained source commits by run.");
+    Task<StatementCaseworkLegacyReceipt?> GetLegacyReceiptAsync(
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default);
+    Task<StatementCaseworkCommitEnvelope> PrepareAsync(
+        StatementCaseworkCommitEnvelope envelope,
+        CancellationToken ct = default);
+    Task<bool> IsCompletedAsync(string commandId, string inputHashSha256, CancellationToken ct = default);
+    Task CompleteAsync(string commandId, string inputHashSha256, CancellationToken ct = default);
+}
+
+/// <summary>
+/// Retains statement casework command envelopes and completion state in files under the data root.
+/// </summary>
+public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitStore
+{
+    private readonly IAtomicFileWriter _atomicFileWriter;
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly string _root;
+    private readonly string _legacyReceiptRoot;
+
+    public FileStatementCaseworkCommitStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
+    {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        _root = Path.Combine(dataRoot, "reconciliation", "statement-casework-commits");
+        _legacyReceiptRoot = Path.Combine(
+            dataRoot,
+            "reconciliation",
+            "statement-breaks",
+            "_casework",
+            "receipts");
+    }
+
+    public async Task<StatementCaseworkCommitEnvelope?> GetAsync(
+        string commandId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        var envelope = await ReadAsync(
+                EnvelopePath(commandId),
+                StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope,
+                ct)
+            .ConfigureAwait(false);
+        if (envelope is null)
+        {
+            return null;
+        }
+
+        ValidateEnvelope(envelope);
+        if (!string.Equals(envelope.CommandId, commandId.Trim(), StringComparison.Ordinal))
+        {
+            throw new InvalidDataException(
+                $"Statement casework commit '{commandId}' retained mismatched command identity '{envelope.CommandId}'.");
+        }
+
+        return envelope;
+    }
+
+    public async Task<IReadOnlyList<StatementCaseworkCommitEnvelope>> ListByRunAsync(
+        string runId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        var envelopeDirectory = Path.Combine(_root, "envelopes");
+        if (!Directory.Exists(envelopeDirectory))
+        {
+            return [];
+        }
+
+        var retained = new List<StatementCaseworkCommitEnvelope>();
+        foreach (var path in Directory.EnumerateFiles(envelopeDirectory, "*.json")
+                     .OrderBy(static item => item, StringComparer.OrdinalIgnoreCase))
+        {
+            ct.ThrowIfCancellationRequested();
+            var envelope = await ReadAsync(
+                    path,
+                    StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope,
+                    ct)
+                .ConfigureAwait(false)
+                ?? throw new InvalidDataException(
+                    $"Statement casework envelope '{path}' retained a null payload.");
+            ValidateEnvelope(envelope);
+            if (!PathsEqual(path, EnvelopePath(envelope.CommandId)))
+            {
+                throw new InvalidDataException(
+                    $"Statement casework envelope '{path}' is retained under the wrong command identity.");
+            }
+
+            if (!string.Equals(envelope.ImportId, runId.Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            // This validates an existing completion marker against the immutable envelope while
+            // deliberately retaining prepared-but-incomplete envelopes as source authority too.
+            _ = await IsCompletedAsync(
+                    envelope.CommandId,
+                    envelope.InputHashSha256,
+                    ct)
+                .ConfigureAwait(false);
+            retained.Add(envelope);
+        }
+
+        return retained
+            .OrderBy(static envelope => envelope.PreparedAtUtc)
+            .ThenBy(static envelope => envelope.CommandId, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    public async Task<StatementCaseworkLegacyReceipt?> GetLegacyReceiptAsync(
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+    {
+        ValidateKey(commandId, inputHashSha256);
+        var path = Path.Combine(_legacyReceiptRoot, $"{CommandFileName(commandId)}.json");
+        var receipt = await ReadAsync(
+                path,
+                StatementLegacyCaseworkJsonContext.Default.StatementCaseworkLegacyReceipt,
+                ct)
+            .ConfigureAwait(false);
+        if (receipt is null)
+        {
+            return null;
+        }
+
+        if (!string.Equals(receipt.CommandId, commandId.Trim(), StringComparison.Ordinal) ||
+            !StatementDurabilityHashing.FixedTimeEquals(receipt.InputHashSha256, inputHashSha256))
+        {
+            throw new InvalidOperationException(
+                $"Legacy statement casework receipt '{commandId}' is bound to different input and cannot be adopted.");
+        }
+
+        return receipt;
+    }
+
+    public async Task<StatementCaseworkCommitEnvelope> PrepareAsync(
+        StatementCaseworkCommitEnvelope envelope,
+        CancellationToken ct = default)
+    {
+        ValidateEnvelope(envelope);
+        var path = EnvelopePath(envelope.CommandId);
+        var gate = Gates.GetOrAdd(path, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var retained = await ReadAsync(
+                    path,
+                    StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope,
+                    ct)
+                .ConfigureAwait(false);
+            if (retained is not null)
+            {
+                ValidateEnvelope(retained);
+                EnsureSameInput(retained, envelope.CommandId, envelope.InputHashSha256);
+                return retained;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                var json = JsonSerializer.Serialize(
+                    envelope,
+                    StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope);
+                await _atomicFileWriter.WriteAsync(temporaryPath, json, ct).ConfigureAwait(false);
+                File.Move(temporaryPath, path, overwrite: false);
+                await _atomicFileWriter
+                    .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
+                    .ConfigureAwait(false);
+                return envelope;
+            }
+            catch (IOException) when (File.Exists(path))
+            {
+                retained = await ReadAsync(
+                        path,
+                        StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope,
+                        ct)
+                    .ConfigureAwait(false)
+                    ?? throw new InvalidDataException(
+                        $"Statement casework commit '{envelope.CommandId}' exists without a readable envelope.");
+                ValidateEnvelope(retained);
+                EnsureSameInput(retained, envelope.CommandId, envelope.InputHashSha256);
+                return retained;
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    public async Task<bool> IsCompletedAsync(
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+    {
+        ValidateKey(commandId, inputHashSha256);
+        var completion = await ReadAsync(
+                CompletionPath(commandId),
+                StatementDurabilityJsonContext.Default.StatementCaseworkCompletion,
+                ct)
+            .ConfigureAwait(false);
+        if (completion is null)
+        {
+            return false;
+        }
+
+        if (!string.Equals(completion.CommandId, commandId.Trim(), StringComparison.Ordinal) ||
+            !StatementDurabilityHashing.FixedTimeEquals(completion.InputHashSha256, inputHashSha256))
+        {
+            throw new InvalidOperationException(
+                $"Statement casework completion '{commandId}' is bound to different input.");
+        }
+
+        var envelope = await GetAsync(commandId, ct).ConfigureAwait(false)
+            ?? throw new InvalidDataException(
+                $"Statement casework completion '{commandId}' exists without its immutable envelope.");
+        if (!StatementDurabilityHashing.FixedTimeEquals(
+                completion.EnvelopeHashSha256,
+                StatementDurabilityHashing.Hash(envelope)))
+        {
+            throw new InvalidDataException(
+                $"Statement casework completion '{commandId}' does not match its immutable envelope.");
+        }
+
+        return true;
+    }
+
+    public async Task CompleteAsync(
+        string commandId,
+        string inputHashSha256,
+        CancellationToken ct = default)
+    {
+        ValidateKey(commandId, inputHashSha256);
+        var envelope = await GetAsync(commandId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Statement casework commit '{commandId}' cannot complete before its immutable envelope is retained.");
+        EnsureSameInput(envelope, commandId, inputHashSha256);
+        var completion = new StatementCaseworkCompletion(
+            commandId.Trim(),
+            inputHashSha256.Trim().ToLowerInvariant(),
+            StatementDurabilityHashing.Hash(envelope),
+            DateTimeOffset.UtcNow);
+        var path = CompletionPath(commandId);
+        var gate = Gates.GetOrAdd(path, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var retained = await ReadAsync(
+                    path,
+                    StatementDurabilityJsonContext.Default.StatementCaseworkCompletion,
+                    ct)
+                .ConfigureAwait(false);
+            if (retained is not null)
+            {
+                if (!string.Equals(retained.CommandId, commandId.Trim(), StringComparison.Ordinal) ||
+                    !StatementDurabilityHashing.FixedTimeEquals(retained.InputHashSha256, inputHashSha256) ||
+                    !StatementDurabilityHashing.FixedTimeEquals(retained.EnvelopeHashSha256, completion.EnvelopeHashSha256))
+                {
+                    throw new InvalidOperationException(
+                        $"Statement casework completion '{commandId}' conflicts with the retained envelope.");
+                }
+
+                return;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                await _atomicFileWriter
+                    .WriteAsync(
+                        temporaryPath,
+                        JsonSerializer.Serialize(
+                            completion,
+                            StatementDurabilityJsonContext.Default.StatementCaseworkCompletion),
+                        ct)
+                    .ConfigureAwait(false);
+                File.Move(temporaryPath, path, overwrite: false);
+                await _atomicFileWriter
+                    .SyncDirectoryAsync(Path.GetDirectoryName(path)!, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch (IOException) when (File.Exists(path))
+            {
+                retained = await ReadAsync(
+                        path,
+                        StatementDurabilityJsonContext.Default.StatementCaseworkCompletion,
+                        ct)
+                    .ConfigureAwait(false)
+                    ?? throw new InvalidDataException(
+                        $"Statement casework completion '{commandId}' exists without a readable marker.");
+                if (!string.Equals(retained.CommandId, commandId.Trim(), StringComparison.Ordinal) ||
+                    !StatementDurabilityHashing.FixedTimeEquals(retained.InputHashSha256, inputHashSha256) ||
+                    !StatementDurabilityHashing.FixedTimeEquals(retained.EnvelopeHashSha256, completion.EnvelopeHashSha256))
+                {
+                    throw new InvalidOperationException(
+                        $"Statement casework completion '{commandId}' conflicts with the retained envelope.");
+                }
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private static void ValidateEnvelope(StatementCaseworkCommitEnvelope envelope)
+    {
+        ArgumentNullException.ThrowIfNull(envelope);
+        ValidateKey(envelope.CommandId, envelope.InputHashSha256);
+        ArgumentException.ThrowIfNullOrWhiteSpace(envelope.ImportId);
+        ArgumentNullException.ThrowIfNull(envelope.OriginalBreak);
+        ArgumentNullException.ThrowIfNull(envelope.NextBreak);
+        ArgumentNullException.ThrowIfNull(envelope.BreakAudit);
+        if (envelope.PreparedAtUtc == default)
+        {
+            throw new InvalidDataException(
+                $"Statement casework commit '{envelope.CommandId}' is missing its preparation timestamp.");
+        }
+
+        if (envelope.SchemaVersion != StatementCaseworkCommitEnvelope.CurrentSchemaVersion)
+        {
+            throw new InvalidDataException(
+                $"Unsupported statement casework commit schema version '{envelope.SchemaVersion}'.");
+        }
+
+        if (!string.Equals(envelope.OriginalBreak.BreakId, envelope.NextBreak.BreakId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(envelope.OriginalBreak.RunId, envelope.NextBreak.RunId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(envelope.OriginalBreak.ImportId, envelope.ImportId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(envelope.NextBreak.ImportId, envelope.ImportId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(envelope.BreakAudit.BreakId, envelope.NextBreak.BreakId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(envelope.BreakAudit.ImportId, envelope.ImportId, StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(envelope.BreakAudit.CommandId, envelope.CommandId, StringComparison.Ordinal) ||
+            !string.Equals(envelope.BreakAudit.PreviousStatus, envelope.OriginalBreak.Status, StringComparison.Ordinal) ||
+            !string.Equals(envelope.BreakAudit.NewStatus, envelope.NextBreak.Status, StringComparison.Ordinal) ||
+            !StatementDurabilityHashing.FixedTimeEquals(
+                envelope.BreakAudit.InputHashSha256,
+                envelope.InputHashSha256))
+        {
+            throw new InvalidDataException(
+                $"Statement casework commit '{envelope.CommandId}' retains inconsistent break images or audit evidence.");
+        }
+
+        if ((envelope.OriginalCase is null) != (envelope.NextCase is null) ||
+            (envelope.NextCase is null) != (envelope.CaseAudit is null))
+        {
+            throw new InvalidDataException(
+                $"Statement casework commit '{envelope.CommandId}' retains an incomplete case projection pair.");
+        }
+
+        if (envelope.NextCase is not null && envelope.CaseAudit is not null &&
+            (!string.Equals(envelope.NextCase.ImportId, envelope.ImportId, StringComparison.OrdinalIgnoreCase) ||
+             envelope.OriginalCase is not null &&
+             (!string.Equals(envelope.OriginalCase.CaseId, envelope.NextCase.CaseId, StringComparison.OrdinalIgnoreCase) ||
+              !string.Equals(envelope.OriginalCase.ImportId, envelope.ImportId, StringComparison.OrdinalIgnoreCase)) ||
+              !envelope.NextCase.AuditEvents.Any(item =>
+                  string.Equals(item.EventId, envelope.CaseAudit.EventId, StringComparison.Ordinal) &&
+                  StatementDurabilityHashing.FixedTimeEquals(
+                      StatementDurabilityHashing.Hash(item),
+                      StatementDurabilityHashing.Hash(envelope.CaseAudit)))))
+        {
+            throw new InvalidDataException(
+                $"Statement casework commit '{envelope.CommandId}' retains inconsistent case images or audit evidence.");
+        }
+    }
+
+    private static void EnsureSameInput(
+        StatementCaseworkCommitEnvelope envelope,
+        string commandId,
+        string inputHashSha256)
+    {
+        if (!string.Equals(envelope.CommandId, commandId.Trim(), StringComparison.Ordinal) ||
+            !StatementDurabilityHashing.FixedTimeEquals(envelope.InputHashSha256, inputHashSha256))
+        {
+            throw new InvalidOperationException(
+                $"Statement casework command '{commandId}' is already bound to different input.");
+        }
+    }
+
+    private static void ValidateKey(string commandId, string inputHashSha256)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputHashSha256);
+        if (inputHashSha256.Trim().Length != 64 ||
+            inputHashSha256.Trim().Any(static character => !Uri.IsHexDigit(character)))
+        {
+            throw new ArgumentException("Statement casework input hash must be a SHA-256 hexadecimal value.", nameof(inputHashSha256));
+        }
+    }
+
+    private static async Task<T?> ReadAsync<T>(
+        string path,
+        JsonTypeInfo<T> typeInfo,
+        CancellationToken ct)
+        where T : class
+    {
+        if (!File.Exists(path))
+        {
+            return default;
+        }
+
+        await using var stream = new FileStream(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+        return await JsonSerializer.DeserializeAsync(stream, typeInfo, ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidDataException(
+                $"Statement durability artifact '{path}' retained a null payload.");
+    }
+
+    private string EnvelopePath(string commandId)
+        => Path.Combine(_root, "envelopes", $"{CommandFileName(commandId)}.json");
+
+    private string CompletionPath(string commandId)
+        => Path.Combine(_root, "completed", $"{CommandFileName(commandId)}.json");
+
+    private static string CommandFileName(string commandId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandId);
+        return Sha256Digest.ComputeUtf8(commandId.Trim());
+    }
+
+    private static bool PathsEqual(string left, string right)
+    {
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+        return string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), comparison);
+    }
+
+}
+
+/// <summary>
+/// Computes a deterministic fingerprint of a statement break casework update.
+/// </summary>
+public static class StatementBreakCaseworkFingerprint
+{
+    public static string Compute(StatementBreakCaseworkUpdate update)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+        var canonical = JsonSerializer.Serialize(update with
+        {
+            BreakId = update.BreakId.Trim(),
+            ImportId = update.ImportId.Trim(),
+            Status = update.Status.Trim(),
+            Actor = update.Actor.Trim(),
+            Action = update.Action.Trim(),
+            CommandId = update.CommandId.Trim(),
+            CorrelationId = update.CorrelationId.Trim(),
+            Reason = TextPrimitives.NormalizeOptional(update.Reason),
+            Disposition = TextPrimitives.NormalizeOptional(update.Disposition),
+            ApprovalActor = TextPrimitives.NormalizeOptional(update.ApprovalActor),
+            ApprovalReference = TextPrimitives.NormalizeOptional(update.ApprovalReference),
+            SupersedingBreakId = TextPrimitives.NormalizeOptional(update.SupersedingBreakId),
+            EvidenceLinks = NormalizeEvidence(update.EvidenceLinks),
+            OccurredAtUtc = update.OccurredAtUtc.ToUniversalTime()
+        }, StatementLegacyCaseworkJsonContext.Default.StatementBreakCaseworkUpdate);
+        return Sha256Digest.ComputeUtf8($"meridian.statement-break-casework.v1\n{canonical}");
+    }
+
+    private static IReadOnlyList<string> NormalizeEvidence(IReadOnlyList<string>? evidence)
+        => (evidence ?? [])
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+}
+
+/// <summary>
+/// Computes content hashes for statement durability records and compares retained digests.
+/// </summary>
+public static class StatementDurabilityHashing
+{
+    public static string Hash<T>(T value, JsonTypeInfo<T> typeInfo)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(typeInfo);
+        var json = JsonSerializer.Serialize(value, typeInfo);
+        return Sha256Digest.ComputeUtf8(json);
+    }
+
+    public static string Hash(BrokerStatementImportResult value)
+        => Hash(value, StatementDurabilityJsonContext.Default.BrokerStatementImportResult);
+
+    public static string Hash(StatementRunMatchArtifact value)
+        => Hash(value, StatementDurabilityJsonContext.Default.StatementRunMatchArtifact);
+
+    public static string Hash(ReconciliationBreakRecord value)
+        => Hash(value, StatementDurabilityJsonContext.Default.ReconciliationBreakRecord);
+
+    public static string Hash(ReconciliationCase value)
+        => Hash(value, StatementDurabilityJsonContext.Default.ReconciliationCase);
+
+    public static string Hash(ReconciliationCaseAuditEvent value)
+        => Hash(value, StatementDurabilityJsonContext.Default.ReconciliationCaseAuditEvent);
+
+    public static string Hash(StatementBreakCaseworkAuditEvent value)
+        => Hash(value, StatementDurabilityJsonContext.Default.StatementBreakCaseworkAuditEvent);
+
+    public static string Hash(StatementCaseworkCommitEnvelope value)
+        => Hash(value, StatementDurabilityJsonContext.Default.StatementCaseworkCommitEnvelope);
+
+    public static bool FixedTimeEquals(string left, string right)
+    {
+        if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
+        {
+            return false;
+        }
+
+        try
+        {
+            var leftBytes = Convert.FromHexString(left.Trim());
+            var rightBytes = Convert.FromHexString(right.Trim());
+            return leftBytes.Length == rightBytes.Length &&
+                   CryptographicOperations.FixedTimeEquals(leftBytes, rightBytes);
+        }
+        catch (FormatException)
+        {
+            return false;
+        }
+    }
+}

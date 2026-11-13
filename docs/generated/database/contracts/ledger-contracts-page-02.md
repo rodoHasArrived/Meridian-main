@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 367. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 368. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -176,11 +176,11 @@ classDiagram
         +AccountingPostingApprovalStateDto ApprovalState
         +AccountingBookContextDto? BookContext
         +Guid? BookPositionId
+        +AssetAccountingPreparerAttestationDto? CashDividendAttestation
         +Guid? CausationId
         +Guid CommandId
         +Guid? CorrelationId
         +EconomicEventReferenceDto? EconomicEvent
-        +DateOnly EffectiveDate
     }
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
     }

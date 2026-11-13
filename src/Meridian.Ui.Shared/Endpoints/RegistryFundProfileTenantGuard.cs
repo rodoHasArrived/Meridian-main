@@ -64,10 +64,11 @@ internal sealed class RegistryFundProfileTenantGuard : IFundProfileTenantGuard
         {
             // The deployment boundary is the control; a transient registry failure must not block a
             // legitimate edit. Allow and surface a warning rather than denying on uncertainty.
+            // A registry failure may include request scope in its exception message. Keep
+            // fund identifiers and exception details out of this operational warning.
             _logger.LogWarning(
-                ex,
-                "Fund-profile tenancy registry unavailable for {FundProfileId}; allowing (deployment boundary remains the control).",
-                fund.Replace('\n', ' ').Replace('\r', ' '));
+                "Fund-profile tenancy registry unavailable ({FailureType}); allowing (deployment boundary remains the control).",
+                ex.GetType().Name);
             return FundProfileTenantDecision.Allow("Fund-profile tenancy registry unavailable; deferring to deployment boundary.");
         }
     }

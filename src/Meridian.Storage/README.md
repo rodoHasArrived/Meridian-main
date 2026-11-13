@@ -6,10 +6,85 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Storage
+
+JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
+retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
+the current buffer. Failed flushes restore their batches and retain the buffer. Parquet filenames
+and policy directories both use the event's UTC date. `CompositeSink` in `FailOnAnyFailure` mode
+retains per-child acknowledgements for the same in-process event admission, preventing retries
+from re-appending to successful children; this is not cross-process replay deduplication.
+`CatalogSyncSink` carries whole-file counts and ranges across flush windows and restarts, with
+directory indexes persisted when a file first enters the catalog.
+
+`ListTaxLotAccrualSnapshotsAsync` reads one tenant/book/security/position scope under repeatable
+read. It reconstructs daily open shares and pre-paydown interest factors from retained mutations,
+including the final interest day of a fully paid-down lot. It preserves same-day disposals and
+refuses incomplete quantity histories or missing acquisition face terms. The read does not
+change posted journals, lot facts or current concurrency versions.
+
+Ledger-period reopen and shared instrument-role approval validation reject reserved W14 preparer
+assertion references before governed writes. Instrument-role validation applies to both in-memory
+and PostgreSQL projection stores. A preparer assertion cannot supply ordinary write approval.
+
+`ILedgerSecurityEntitlementInventory` adds a complete, unpaged book/security inventory for bounded
+cash-dividend eligibility. The PostgreSQL reader requires exact authenticated tenant/company book
+ownership, inspects all book lots for unidentified legacy positions, verifies acquisition journals,
+and reconstructs dated quantities with the existing retained mutation-history rules in a repeatable
+read transaction. Its retained population and hash include later-disposed lots when held at the
+cutoff; missing identity, acquisition or historical quantity facts fail closed. Existing account and
+position lot-read APIs keep their behavior.
+
+The separate economic-attestation store also reads every retained processing option and evidence
+record for the exact tenant/company case version. That repeatable-read snapshot supports explicit
+case-fact exclusions without inferring tax or election terms from freeform document prose. Its
+content digest excludes workflow-only case-version increments so recovery after an attestation
+stage can reuse unchanged source facts.
+
+The bounded W14 cash-dividend path uses a native PostgreSQL book declaration, separate immutable
+capacity reservations, and a sealed invocation lease. Migration 066 preserves ordinary approval
+rows and adds distinct preparer receipts and posted proof. Source ex-date fixes the monthly bucket;
+provider aliases cannot move a retained event into another bucket. Exact reaffirmation reuses its
+reservation, while rollback or withdrawal never releases uncertain capacity. Declaration withdrawal
+serializes with the journal, both lifecycle stages and the case receipt in one database transaction.
+Posting locks run in this order: economic owner scope, complete-book entitlement advisory lock,
+ledger book row, Security Master parent row, canonical security chain, and exact case. Parent-row
+share authority freezes current security metadata; the existing chain lock prevents cancellation
+or supersession. Ordinary journal, lot, backfill, position and book-specific accounting-configuration
+writers take the matching shared lock first, keeping the exact promoted account/rule binding
+stable through posting as well as the inventory.
+The producer also rereads the retained candidate's dated ticker against the current native
+Security Master identity and version in that held transaction; missing, ambiguous or changed
+instrument authority refuses before the journal append.
+Only that lease permits the native preparer-attested journal and spine append. Host policy defaults
+off, and enabling the declaration requires a separately authorized explicit existing account/rule
+binding. All receipts retain the original declaration, reviewed projection and evidence digest.
+These new economic transactions use ReadCommitted after acquiring the exclusive tenant/company
+scope lock: a queued command sees the preceding budget commit rather than retaining a snapshot
+from before its lock wait. Exact case versions, the complete-book inventory lock, period-row
+locking and the event-stream compare-and-swap remain enforced through the final commit. Ordinary
+transaction isolation is unchanged.
+
+Maintenance windows and trading-session checks use the configured `PrimaryTimeZone`,
+including the starting weekday of overnight windows and the offset at each window boundary.
+The scheduler scans deferred queue entries without blocking other due jobs, and counts running
+admissions before case-history writes complete when enforcing scheduled-job concurrency.
+Explicit `ExecuteJobAsync` calls retain their existing manual-execution bypass of window admission.
+
+Date-only natural-language search filters use UTC midnight boundaries. Parquet timestamp-column
+conversion shares the export timestamp parser, treating date-only strings and unspecified
+`DateTime` values as UTC while preserving the instant carried by explicit timestamp offsets.
+
+`PostgresIntercompanyAgreementStore` uses fund-structure migration `006`: a tenant-qualified head
+points to immutable command snapshots, approved revisions, audit decisions and command receipts.
+One command atomically checks its expected head and retains its result; command identities are
+unique within a tenant. Database guards refuse history rewrites and tenant reassignment. Party
+reads remain stable under entity authority locks; sorted shared agreement leases survive through
+the ledger store's owned commit. Explicit references require that authority, while unsupported
+caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 `LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
 The exception still requires unit-successor lineage, an originating atomic mutation batch and a
@@ -130,21 +205,34 @@ version stamps remain unchanged. Forward migration 058 widens only the two sched
 to unconstrained numeric, preserving full accepted decimal precision. See
 [dated economic schedules](../../docs/domain/security.md#dated-economic-schedule-validation).
 
-Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
-is denied while an existing destination is open, publication uses `File.Replace` with a temporary
-backup. Sync and async overwrite publication share bounded gates within this process, keyed by
-the normalized, case-insensitive destination path; temporary-file writes and flushes
-remain concurrent. This prevents competing replacements and their recovery steps from overlapping.
-Readers that share deletion keep their old generation while fresh readers see the complete
-replacement. A failed replacement restores the old generation only when the destination is absent;
-an unrestored `.atomic-recovery.<id>.tmp` backup is retained beside the destination for recovery.
-The recovery error log identifies that generated backup name and the error code without logging
-caller-controlled paths or exception text. Backup cleanup after successful publication is best
-effort. Transient Windows sharing/access failures use the existing ten-attempt, growing 20 ms
-backoff, including when a brief deletion-denying handle coexists with a retained snapshot reader.
-Async waits release the thread. A retained backup that could not be restored ends retries so later
-attempts cannot overwrite the recovery evidence. A handle that stays open still fails publication,
-and permission failures remain visible.
+Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, publication
+uses one `SetFileInformationByHandle(FileRenameInfoEx)` replacement with POSIX semantics, so
+readers that share deletion keep their old generation while every fresh open sees a complete
+published file. There is no rename-away interval at the live path. Native rename support is
+required; unsupported filesystems fail before the live file changes. Delete-access handles retain
+the sharing protection of readers that deny deletion. Sync and async publishers share bounded
+gates within this process, keyed by normalized, case-insensitive destination paths; temporary-file
+writes and flushes remain concurrent. Local, UNC and extended-length paths use the same primitive.
+Existing destination access rules are explicitly copied and persisted before publication, retaining
+protected DACLs on the replacement as well as its backup.
+
+Windows diagnostic run `43327730266` passed 2,777 tests and failed one backup descriptor
+assertion: the backup retained the same access rules but returned `D:P` instead of `D:PAI`.
+The backup now reapplies the original access descriptor after creation and before either
+publication. Subsequent manual and pull-request Windows runs on `7798dc2b18` each passed all
+2,778 tests, including all 60 atomic-writer cases and both protected-DACL rows; smoke publication
+also passed. The earlier failed diagnostic remains historical evidence.
+
+`ReplaceAsync` stages and flushes the previous generation in a recovery file created with the
+original DACL, then prepares both live and backup publications. A failure before the live commit
+preserves the destination and existing `.bak`. After the live rename commits, the staged snapshot
+is promoted to `.bak`. If a later filesystem fault prevents backup promotion, the committed write
+still returns successfully and the durable `.atomic-recovery.<id>.bak` snapshot remains beside
+the destination. Its `.bak` suffix protects recovery evidence from temporary-file orphan cleanup.
+The error log identifies only that generated recovery filename and an error code, without
+caller-controlled paths or exception text. Transient Windows sharing/access failures use the
+existing ten-attempt, growing 20 ms backoff; async waits release the thread. A handle that stays
+open still fails publication, and permission failures remain visible.
 `AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
 retention, including coordinated publishers using equivalent path spellings. These locks do not
 coordinate separate processes, add a Windows power-loss guarantee, or make concurrent appends transactional.
@@ -1186,6 +1274,10 @@ long-retention evidence moving through hot, warm, cold, and archive tiers. Tier 
 copied payload checksums before deleting source evidence when a rollover is configured to move
 rather than copy files, and rejects non-positive parallelism before touching hot-tier or target-tier
 files so operator misconfiguration cannot hang a migration or delete evidence.
+Migration selects source entries through discovery beneath the configured root and rejects symbolic
+links or reparse points instead of trusting lexical containment alone. Rooted guards also check the
+final compression-adjusted destination before access and again after copying and compression finish,
+before atomic publication. Source deletion rechecks both paths after successful target verification.
 `Config/StorageConfigExtensions.cs` keeps the shared AppConfig storage
 section-to-`StorageOptions` mapping in the same project that owns the durable storage option types
 and profile presets.
@@ -1593,6 +1685,7 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |

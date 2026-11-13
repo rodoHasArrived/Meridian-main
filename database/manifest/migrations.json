@@ -568,6 +568,15 @@
       "sha256": "44d8a4092656b1287c5e60db0a18190e42ef915c76d78faab8bc670345ebca7b"
     },
     {
+      "filename": "066_corporate_action_cash_dividend_attestations.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 66,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
+      "schema": "security_master",
+      "sha256": "b5f6dcb254945b0547fb40db6d12d96f10832182325d39784050aa5a524c69de"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1234,6 +1243,15 @@
       "sha256": "3855a01189025fdd047b6cd4270de1cb6dd67a24502ac4e2475b9d58a479ae30"
     },
     {
+      "filename": "006_intercompany_agreements.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "schema": "fund_structure",
+      "sha256": "61fa511ef5c478c4828c521dc3850de05203afe078da24a93969176929784b60"
+    },
+    {
       "filename": "001_fund_accounts.sql",
       "immutable": true,
       "migration_set_id": "fund-accounts",
@@ -1478,7 +1496,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "938494673270e97608bd6d2dd27d318fc615158542d54626255701360d99079c",
+  "fingerprint": "767e00634f1eb54541557ae786c7aba3ecee8339564dc0932a1dd4adcba6d843",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1740,9 +1758,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 164,
+    "files": 166,
     "migration_sets": 11,
-    "waivers": 29,
+    "waivers": 31,
     "warnings": 0
   },
   "waivers": [
@@ -1758,6 +1776,13 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
       "reason": "The lexical TRUNCATE match is a BEFORE TRUNCATE guard trigger that rejects deletion of immutable tenant-backfill receipts. This migration truncates no data; PostgreSQL regression coverage attempts truncation and verifies refusal with the receipt retained.",
       "review_after": "2027-03-22",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable agreement snapshots, approved revisions, audit events and command receipts. The migration truncates no data. This follows fund-structure migration 005; PostgreSQL regression coverage attempts truncation and verifies refusal with retained history unchanged.",
+      "review_after": "2027-02-12",
       "rule_id": "migration-truncate"
     },
     {
@@ -1940,6 +1965,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
       "reason": "Requires independent human schema/storage review. Authorized by the repository owner on 2026-11-11, who stated they had reviewed the migration and the findings of the agent-run technical review of 2026-11-10 (recorded in docs/architecture/security-master-extensibility-review.md). It found the DDL, the Baseline contents and the append-only guards sound and set three apply conditions: stop every Security Master writer while the migration runs, because the Baseline backfill can deadlock with a writer that holds a securities row lock; let no pre-062 binary write after it commits, because such a writer changes security_identifiers without recording a revision; and above about one million identifier rows raise the command timeout for that start. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated. The migration creates the table, one index, three comments, the rejection function and two triggers, and appends Baseline revisions for existing security_identifiers rows; it changes nothing in security_identifiers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests, SecurityMasterIdentifierRevisionMigrationTests) attempts update, delete and truncate, runs the backfill on a populated pre-062 schema across failure, retry and restart, and verifies refusal and retention.",
       "review_after": "2027-05-04",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers on the newly created bounded cash-dividend declaration history, reservations, event aliases, postings and attestation receipts. No TRUNCATE command or data removal is executed. UPDATE and DELETE guards remain intact. The real PostgreSQL native-post regression attempts UPDATE, DELETE and raw TRUNCATE CASCADE after a successful posting, requires SQLSTATE 55000 from the rejection triggers, and checks that every original row remains unchanged. This exception covers only this migration's truncation-rejection trigger declarations.",
+      "review_after": "2027-05-12",
       "rule_id": "migration-truncate"
     },
     {

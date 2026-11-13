@@ -100,7 +100,9 @@ public sealed class LedgerDimensionTagsTests
             (nameof(LedgerDimensionSetDto.ProjectId), new LedgerDimensionSetDto(ProjectId: "x")),
             (nameof(LedgerDimensionSetDto.ExternalGlDimensions), new LedgerDimensionSetDto(
                 ExternalGlDimensions: new Dictionary<string, string> { ["costCentre"] = "100" })),
-            (nameof(LedgerDimensionSetDto.PositionId), new LedgerDimensionSetDto { PositionId = Guid.NewGuid() })
+            (nameof(LedgerDimensionSetDto.PositionId), new LedgerDimensionSetDto { PositionId = Guid.NewGuid() }),
+            (nameof(LedgerDimensionSetDto.IntercompanyAgreementId), new LedgerDimensionSetDto { IntercompanyAgreementId = Guid.NewGuid() }),
+            (nameof(LedgerDimensionSetDto.IntercompanyAgreementVersion), new LedgerDimensionSetDto { IntercompanyAgreementVersion = 1 })
         ];
 
         var uncovered = singleFieldSets

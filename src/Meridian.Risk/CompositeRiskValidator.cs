@@ -29,8 +29,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
 {
     private readonly IReadOnlyList<IRiskRule> _rules;
     private readonly ILogger<CompositeRiskValidator> _logger;
-    private readonly ExecutionOperatorControlService? _operatorControls;
-    private readonly RiskEscalationQueueService? _escalationQueue;
+    private readonly IRiskCircuitBreakerControl? _operatorControls;
+    private readonly IRiskEscalationQueue? _escalationQueue;
     private readonly ICircuitBreakerTripHandler? _tripHandler;
 
     // Fail-closed latch: set when a critical rule demanded the circuit breaker but the
@@ -50,8 +50,8 @@ public sealed class CompositeRiskValidator : IRiskValidator
     public CompositeRiskValidator(
         IEnumerable<IRiskRule> rules,
         ILogger<CompositeRiskValidator> logger,
-        ExecutionOperatorControlService? operatorControls = null,
-        RiskEscalationQueueService? escalationQueue = null,
+        IRiskCircuitBreakerControl? operatorControls = null,
+        IRiskEscalationQueue? escalationQueue = null,
         TimeSpan? perRuleTimeout = null,
         ICircuitBreakerTripHandler? tripHandler = null)
     {
@@ -388,7 +388,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 ? approved
                 : approved with
                 {
-                    ConsumedApprovalId = RiskEscalationQueueService.JoinTokens(
+                    ConsumedApprovalId = RiskEscalationMetadata.JoinTokens(
                         releasedEntries.Select(static entry => entry.EscalationId))
                 };
         }
@@ -709,7 +709,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
     private static bool IsEvaluationOnly(OrderRequest request) =>
         request.Metadata is not null &&
-        request.Metadata.TryGetValue(RiskEscalationQueueService.EvaluationOnlyMetadataKey, out var flag) &&
+        request.Metadata.TryGetValue(RiskEscalationMetadata.EvaluationOnlyMetadataKey, out var flag) &&
         bool.TryParse(flag, out var evaluationOnly) &&
         evaluationOnly;
 
@@ -799,7 +799,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
         var trippedBy = $"risk-engine/{rule.RuleName}";
         try
         {
-            if (_operatorControls.GetSnapshot().CircuitBreaker.IsOpen)
+            if (_operatorControls.IsCircuitBreakerOpen)
             {
                 // Already halted: whichever activation opened the breaker owned its sweep
                 // (the operator endpoint's, or an earlier trip's below), so a repeat breach
@@ -888,7 +888,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
 
         try
         {
-            if (_operatorControls.GetSnapshot().CircuitBreaker.IsOpen)
+            if (_operatorControls.IsCircuitBreakerOpen)
             {
                 _breakerTripPending = false;
                 return;

@@ -1,3 +1,4 @@
+using Meridian.Execution.Sdk;
 using System.Text.Json;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
@@ -54,7 +55,7 @@ public sealed record ExecutionAuditEntry(
 /// The payload volume is low compared with market-data paths, so we bias toward
 /// explicit durability and traceability over raw throughput.
 /// </summary>
-public sealed class ExecutionAuditTrailService : IAsyncDisposable
+public sealed class ExecutionAuditTrailService : IRiskControlAuditWriter, IAsyncDisposable
 {
     private const string AuditRecordType = "ExecutionAudit";
 
@@ -257,6 +258,11 @@ public sealed class ExecutionAuditTrailService : IAsyncDisposable
     /// <summary>
     /// Appends a new audit entry and returns the persisted record.
     /// </summary>
+    async Task IRiskControlAuditWriter.RecordCircuitBreakerSweepAsync(string outcome, string? actor,
+        string? message, string? reason, CancellationToken ct) =>
+        await RecordAsync("controls", "CircuitBreakerCancelAll", outcome, actor: actor,
+            message: message, reason: reason, ct: ct).ConfigureAwait(false);
+
     public async Task<ExecutionAuditEntry> RecordAsync(
         string category,
         string action,

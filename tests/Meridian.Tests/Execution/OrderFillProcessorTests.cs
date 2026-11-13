@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Meridian.Tests.Execution;
 
-public sealed class OrderFillProcessorTests
+public sealed partial class OrderFillProcessorTests
 {
     [Fact]
     public async Task PortfolioFailure_KeepsPreciseExposureAndOwnershipUntilApplicationSucceeds()
@@ -189,16 +189,18 @@ public sealed class OrderFillProcessorTests
         // Buy 1 contract at $2 (already on the book), then the OMS closes it at $3 on a 100
         // multiplier: $100 realized on $300 proceeds, so the ledger's cost basis is $200. With
         // an unscaled gross value the consumer would compute -$97 and refuse the posting.
+        var accountId = Guid.NewGuid();
         var portfolio = new PaperTradingPortfolio(10_000m);
         portfolio.ApplyFill(CreateReport("opening-buy") with
         {
             OrderQuantity = 1m,
             FilledQuantity = 1m,
             FillPrice = 2m
-        }, ownerAccountId: null, contractMultiplier: 100m);
+        }, ownerAccountId: accountId.ToString("D"), contractMultiplier: 100m);
 
         var order = CreateOrder("option-close") with
         {
+            FundAccountId = accountId,
             Side = OrderSide.Sell,
             Quantity = 1m,
             FilledQuantity = 1m,
@@ -221,6 +223,10 @@ public sealed class OrderFillProcessorTests
         Assert.Equal(100m, trade.RealizedPnl);
         Assert.Equal(300m, trade.GrossValue);
         Assert.Equal(200m, trade.GrossValue - trade.RealizedPnl);
+        var evidence = Assert.IsType<Meridian.Ledger.TradeFillAccountingEvidence>(trade.AccountingEvidence);
+        Assert.Equal(200m, evidence.Closing!.CarryingValue);
+        Assert.Equal(300m, evidence.Closing.GrossValue);
+        Assert.Equal(1m, evidence.Closing.Quantity);
     }
 
     [Fact]
@@ -407,6 +413,7 @@ public sealed class OrderFillProcessorTests
 
         var incomplete = await oms.PlaceOrderAsync(Request("incomplete", fundAccountId));
         Assert.False(incomplete.Success);
+        Assert.NotNull(incomplete.OrderState);
         Assert.Equal(OrderStatus.Filled, incomplete.OrderState.Status);
         Assert.True((await oms.PlaceOrderAsync(Request("completed-one", null))).Success);
         Assert.True((await oms.PlaceOrderAsync(Request("completed-two", null))).Success);
@@ -435,8 +442,8 @@ public sealed class OrderFillProcessorTests
 
     private static OrderFillProcessor CreateProcessor(
         OrderState order,
-        IPortfolioState portfolio,
-        RecordingPublisher publisher,
+        IPortfolioState? portfolio,
+        RecordingPublisher? publisher,
         PaperSessionPersistenceService? persistence,
         out ExecutionReportHub hub)
     {
@@ -494,10 +501,10 @@ public sealed class OrderFillProcessorTests
     {
         private int _reads;
         public IOException Failure { get; } = new("Portfolio view is temporarily unavailable.");
-        public decimal Cash => 10_000m;
+        public decimal Cash => ++_reads == 1 ? throw Failure : 10_000m;
         public decimal PortfolioValue => Cash;
         public decimal UnrealisedPnl => 0m;
-        public decimal RealisedPnl => ++_reads == 1 ? throw Failure : 0m;
+        public decimal RealisedPnl => 0m;
         public IReadOnlyDictionary<string, IPosition> Positions { get; } = new Dictionary<string, IPosition>();
     }
 

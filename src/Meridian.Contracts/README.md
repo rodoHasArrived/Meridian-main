@@ -11,10 +11,61 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
-The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
-structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
-certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
-Disposal instructions compare selections by retained ordinal while keeping every field exact.
+`SecurityMasterLedgerSymbol` resolves a dated, unambiguous active ticker that the existing native
+lineage grammar can represent. It supplies server-owned instrument context for new non-lot
+corporate-action candidates; it grants no approval and accepts no caller authority.
+
+`SecurityMaster/CorporateActionCashDividendAttestationContracts.cs` defines the bounded W14
+economic class separately from ordinary approval and from non-posting evidence tasks. The policy
+fixes regular mandatory USD dividend declaration, a USD 10,000 complete-event gross limit, and a
+USD 100,000 book limit per source-ex-date calendar month. A retained full-book entitlement digest,
+an exact book-scoped declaration revision and a durable native reservation bind each preparer
+receipt. The posting contract names `AttestationId` and contains no ordinary `ApprovalId`.
+`CorporateActionCaseStates.PreparerAttested` is a downstream, content-frozen state; the ordinary
+`Approved` state retains its independent-actor guard. Unknown classes and incomplete entitlement
+remain ineligible. Runtime activation, business grants and posting authority are separate controls.
+
+`PreparerAttestationEvidenceDtos` adds a separate, optional evidence-task disclosure to packet
+and graph reads. Counts are preparer receipts, never financial assertions or Verified Coverage;
+unavailable history keeps counts null. Each entry retains the original declaration, assertion and
+any later revocation alongside a dated exact/stale/unavailable source assessment. Frozen evidence
+exports retain the same disclosure independently of later declaration changes.
+
+`Workstation/SinglePrincipalAttestationDtos.cs` defines versioned preparer assertions separately
+from approval receipts. The scope binds tenant, company and optional book; declarations carry a
+revision and policy identity; receipts retain the exact subject and source hashes, preparer,
+attesting human, origin, confirmation and evidence checks. `SubjectSnapshotJson` preserves the
+server-evaluated document operands, with their digest, independently of later review metadata.
+Declaration history and revocation records preserve the original receipt rather than rewriting it.
+The first HTTP adapter resolves tenant/company scope only; the optional book contract does not
+register a book-scoped evidence provider.
+`SinglePrincipalAttestationPolicy.Disclosure` supplies the shared label,
+"Attested by preparer — not independently reviewed". Neither this decision classification nor
+the evidence acknowledgment supplies accounting approval, posting authority or verified coverage.
+`ATTEST-DRAFT-CHECK` supports only an exact newly server-bound, retained, non-postable Security
+contractual-cash-flow run owned by its original human preparer. Explicit v2 declaration
+reaffirmation and the separate default-off host gate are required; legacy/unbound runs and Loan
+calculations remain unsupported. The receipt records a preparer check without advancing a
+controlled workflow or granting approval/posting authority. This B assertion remains distinct
+from the separate native C cash-dividend lane. See the [development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
+for the bounded default-off scope and outstanding W14 acceptance.
+
+Intercompany agreement contracts retain bilateral party roles, descriptive terms, proposal state,
+immutable approved versions, evidence hashes and shared capabilities. Authenticated call context
+supplies tenant and actor separately from command bodies. Optional ledger agreement ID/version
+properties travel together; their conditional signature suffix preserves legacy hashes when absent.
+`FundStructureContractsJsonContext` registers the shared registry wire types. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond and
+StructuredCredit; coupon structure, lot units and valuation treatment do not imply recurring
+admission or bypass missing-rate-unit and schedule-posting gates. `FaceValueAccrualHolding` retains
+a lot's acquisition facts, daily open share and interest-before-paydown factor. Schedule row
+contract 2 retains measured interest segments, their actual reference principal, and unrounded
+interest under cash-flow calculation context v5. Older contexts keep their frozen row contracts,
+JSON shapes and arithmetic. Shared lot validation certifies the twelve-decimal quote derived from
+a governed unit successor's exact allocated basis. Disposal instructions compare selections by
+retained ordinal while keeping every field exact.
 
 `SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
 Security Master C# decode and F# writer arms; schema requiredness remains in
@@ -71,6 +122,10 @@ or create a payment. The retained source hash and document identity explain the 
 `SecurityInterestSupport` supplies the typed `NegativeInterestUnsupported` capability blocker for
 unsigned cash-flow, obligation and ledger readers. This is separate from a rate field's validity:
 negative fixings and spreads can still produce a supported positive coupon after contractual floors.
+
+`StructuredCashFlowScheduleEntry` equality compares persisted row state, including `RowVersion`
+and the measured accrual interval on current rows. A reflection regression enumerates writable
+members so adding persisted state without matching equality fails verification.
 
 Economic replay has explicit module homes for commodity quantity units, digital-asset networks,
 underlying exposure and exact leverage, settlement methods, raw classification labels, fund-share
@@ -2032,6 +2087,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
