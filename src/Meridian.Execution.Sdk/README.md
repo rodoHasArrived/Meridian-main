@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION-SDK
 path: src/Meridian.Execution.Sdk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-07-05
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Execution.Sdk
@@ -58,6 +58,23 @@ quantity, broker-native notional, or face value priced as percentage of par as d
 `ToRiskRequest` is the compatibility boundary for existing risk rules: it stamps resolved sizing
 on a copy, never on the submitted gateway request. Neither typed object permits construction with
 arbitrary caller-asserted sizing. Amendments and recovery retain their existing contracts.
+
+`IOrderPreviewService` returns the normalized request, fingerprint, expiry, market reference and
+checks without granting routing authority. `IRiskPreviewValidator` observes a resolved order without
+reserving capacity or changing execution controls; submission still performs current admission and
+risk validation. `IOrderSessionPolicy`, `IOrderMarketReferenceSource` and
+`IOrderInstrumentCoverageSource` supply shared policy and evidence seams. `OrderRequest.SessionIntent`
+and `OrderState.SessionIntent` carry `RegularOnly`, `QueueNextSession` or `ExtendedHours` intent.
+See [execution workflows](../../docs/engineering/execution-workflows.md) for session eligibility,
+preview freshness and supported instrument coverage.
+
+`OrderResult.RequiresOrderReconciliation` identifies a failed submission that may have routed;
+reconcile the retained order identity before retrying. `OrderSubmissionRefusal` marks exceptions known
+to precede dispatch while preserving their type and cause. `OrderState.JournalAttemptId` identifies
+the tracked submission incarnation, keeping reused client IDs separate in retained history.
+`AccountInfo.PreviousCloseEquity` and `EquityEvidenceComplete` carry provider equity evidence for
+loss monitoring; missing or invalid evidence must remain unknown. These nullable fields and session
+intent are omitted from JSON when absent; the reconciliation flag is omitted when false.
 
 Use this module when execution integration contracts need to be shared by multiple execution implementations.
 `BrokerageOrderPlacementGate` is the shared pre-submit safety gate for HTTP endpoints and the OMS:
@@ -168,6 +185,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet build src/Meridian.Execution.Sdk/Meridian.Execution.Sdk.csproj /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~Meridian.Tests.Execution.ExecutionWorkflowTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

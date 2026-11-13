@@ -106,6 +106,17 @@ server authority remain unchanged. Native number inputs can normalize characters
 the strict decimal parser validates the text the browser actually supplies. Focused coverage lives
 in `trading-screen.test.tsx` and `trading-screen.view-model.test.ts`.
 
+The supported USD-equity order flow also requires a current shared-server preview and operator
+acknowledgement before submission; edits invalidate that preview, and submission rechecks admission.
+An unconfirmed outcome holds the submitted account/client identity until Refresh checks finds a
+terminal retained journal outcome. Orders exposes that journal, notifications link to its evidence,
+Settings Preferences holds account-scoped execution alerts, and Strategy shows retained run
+comparison. These surfaces consume shared services: unknown costs and incomplete comparison remain
+explicit, and agreement grants no promotion authority. See
+[execution workflows](../../../docs/engineering/execution-workflows.md). Focused browser coverage
+lives in `trading-screen.server-preview.test.tsx`, `trading-screen.journal.test.tsx`, and
+`lib/notification-center/execution.test.ts`.
+
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
 

@@ -73,6 +73,10 @@ contain those actions. Mergers, spin-offs and other position transformations are
 
 ## Important workflows
 
+`BacktestEngine` notifies `IBacktestOrderTerminationObserver` when filled, cancelled, expired or
+rejected pending orders are retired, allowing the shared strategy to release pending intent.
+See the [shared SMA contract](../Meridian.Backtesting.Sdk/README.md#shared-sma-decision-contract).
+
 The native engine resolves lot denomination from each available Security Master definition
 before replay. Fund definitions retain `Units` and equities retain `Shares`, both with multiplier
 1. Definitions requiring face, notional, commitment, currency, or contract pricing are refused
