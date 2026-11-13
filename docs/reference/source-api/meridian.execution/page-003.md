@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExecutionAuditTrailOptions
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionAuditTrailOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:12](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L12).
+
+Configuration for the durable execution audit trail.
+
+```csharp
+public sealed record ExecutionAuditTrailOptions(string RootDirectory, int InMemoryRetention = 1_000, WalSyncMode SyncMode = WalSyncMode.EveryWrite, TimeSpan? InMemoryRetentionWindow = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ExecutionAuditTrailOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;audit&quot;));</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:25](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L25) |  |
+| <code>public string WalDirectory =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:28](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L28) |  |
+
+## ExecutionAuditTrailService
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionAuditTrailService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:58](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L58).
+
+Durable execution audit trail backed by the platform WAL. The payload volume is low compared with market-data paths, so we bias toward explicit durability and traceability over raw throughput.
+
+```csharp
+public sealed class ExecutionAuditTrailService : IRiskControlAuditWriter, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RetentionWindowComplete =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:89](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L89) | Whether every entry inside the retention window is actually retained. False once a burst exceeds the hard ceiling below. A consumer that reasons over a time window — &quot;no breach in the last hour&quot; — cannot make that claim from an incomplete window, and logging the shortfall does not make the claim true. Reading this lets such a consumer decline to assert safety instead, which is the only fail-closed answer available. Incompleteness is sticky until the gap itself ages out. It is judged from the newest entry ever discarded from inside the window, not from whether the currently retained set fits the cap — those differ exactly when it matters, because once entries have been dropped the retained set can fit again while the dropped ones are still inside the window. This answers for this trail&#x27;s window. A consumer reasoning over a shorter span should ask RetentionWindowCompleteFor instead, or it will keep failing closed after the gap has already left its own horizon. |
+| <code>public bool RetentionWindowCompleteFor(TimeSpan horizon);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:110](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L110) | Whether every entry inside the caller&#x27;s horizon is retained — the same question RetentionWindowComplete answers, asked at the span the caller actually reasons over rather than at this trail&#x27;s retention window. The distinction is not cosmetic, because incompleteness blocks callers. A discard is only capable of hiding something from a caller if it fell inside that caller&#x27;s horizon, so a trail retaining two hours and a consumer claiming one must stop reporting a gap once the discarded entry is an hour old, not two. Measuring against the longer window instead keeps every non-breached rule Constrained — and order readiness blocked — for an extra hour in which no breach the consumer could assert about was ever missing. This is orthogonal to whether the horizon fits at all: a caller whose horizon exceeds InMemoryRetentionWindow loses entries to age-based trimming that never register as discards, so it must compare the two windows as well. Neither check subsumes the other. |
+| <code>public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:125](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L125) | Default window kept regardless of the count cap. See the option&#x27;s remarks. |
+| <code>public static readonly TimeSpan WriterClockSkewAllowance = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:139](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L139) | How far ahead of now a caller-stamped timestamp is still treated as real when deciding whether discarding it left a coverage gap. Writers do not share a clock, so a little drift is ordinary; a record stamped well beyond it is not evidence any consumer would have reasoned with, and counting its loss as a gap would let a caller hold completeness false — and order readiness closed — until wall-clock time caught up with the date it chose. Consumers apply their own plausibility bound when reading (RiskRuleRuntimeService uses a five-minute violation clock-skew allowance). This is the trail&#x27;s own, deliberately not shared: a consumer tightening its reading must not silently change what this records as lost. |
+| <code>public TimeSpan InMemoryRetentionWindow =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:147](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L147) | The window this instance actually keeps. A consumer whose own claim spans longer than this cannot establish that claim from this trail, however complete the window is — completeness is measured against this window, so an entry older than it is trimmed without ever registering as a gap. Consumers are expected to compare their horizon against this value. |
+| <code>public ExecutionAuditTrailService(ExecutionAuditTrailOptions? options, ILogger&lt;ExecutionAuditTrailService&gt; logger);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:161](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L161) |  |
+| <code>public ExecutionAuditTrailService(string rootDirectory, ILogger&lt;ExecutionAuditTrailService&gt; logger) : this(new ExecutionAuditTrailOptions(rootDirectory), logger);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:187](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L187) | Convenience constructor that accepts a root directory string directly. Useful for tests and simple host scenarios that do not need the full options object. |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetRecentAsync(int take = 100, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:197](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L197) | Returns the most recent audit entries, newest first. |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetRecentOrSinceAsync(int take, DateTimeOffset since, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:224](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L224) | The newest take entries plus every retained entry at or after since, newest first. A count-bounded query and a time-bounded claim do not mix. A caller that says &quot;a breach in the last hour holds this rule constrained&quot; and then reads a fixed number of newest entries silently drops that breach as soon as enough unrelated activity follows it — which on an active desk happens well inside the hour, turning a live breach into a healthy rule and reopening whatever gate reads it. The count still bounds ordinary history; the window is what the caller actually reasons about, so both are honoured. |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:247](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L247) | Returns all retained audit entries in chronological order. |
+| <code>public async Task&lt;ExecutionAuditEntry&gt; RecordAsync(string category, string action, string outcome, string? actor = null, string? brokerName = null, string? orderId = null, string? runId = null, string? symbol = null, string? correlationId = null, string? message = null, string? reason = null, string? scope = null, IReadOnlyDictionary&lt;string, string&gt;? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:266](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L266) |  |
+| <code>public async Task RecordAsync(ExecutionAuditEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:306](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L306) | Appends a pre-built audit entry. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:328](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L328) |  |
+
 ## ExecutionCircuitBreakerState
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionCircuitBreakerState</code>. Kind: `record`.
@@ -49,6 +98,70 @@ Persisted snapshot of the live execution control state.
 public sealed record ExecutionControlSnapshot(ExecutionCircuitBreakerState CircuitBreaker, decimal? DefaultMaxPositionSize, IReadOnlyDictionary<string, decimal> SymbolPositionLimits, IReadOnlyList<ExecutionManualOverride> ManualOverrides, DateTimeOffset AsOf, long Version = 0);
 ```
 
+## ExecutionEquityEvidence
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionEquityEvidence</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:16](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L16).
+
+```csharp
+public static class ExecutionEquityEvidence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ExecutionEquityObservation FromBroker(Guid account, string scope, DateOnly date, DateTimeOffset readStarted, DateTimeOffset cutoff, DateTimeOffset previousClose, AccountInfo balance, BrokerageActivitySnapshotDto activity);</code> | [src/Meridian.Execution/Services/ExecutionAlerts.cs:18](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L18) |  |
+
+## ExecutionEquityObservation
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionEquityObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:11](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L11).
+
+```csharp
+public sealed record ExecutionEquityObservation(Guid AccountId, string Scope, DateOnly TradingDate, DateTimeOffset ObservedAt, decimal? Equity, decimal? PreviousCloseEquity, decimal? NetExternalFlows, bool IsComplete, string? BlockingReason = null, string Currency = "USD");
+```
+
+## ExecutionJournal
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionJournal</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:36](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L36).
+
+Single-writer, crash-replayable WAL. Identity/content conflicts fail closed.
+
+```csharp
+public sealed class ExecutionJournal : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Func&lt;Guid, string, JournalOpeningEvidence?&gt;? OpeningEvidenceSource { private get; init; }</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:43](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L43) |  |
+| <code>public Func&lt;Guid?&gt;? PaperBookIdentitySource { private get; init; }</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:44](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L44) |  |
+| <code>public ExecutionJournal(string root) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:46](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L46) |  |
+| <code>public Task AppendAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:54](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L54) |  |
+| <code>public Task AppendConditionAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:58](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L58) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionJournalEntry&gt;&gt; ReadAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:116](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L116) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;JournalOrder&gt;&gt; OrdersAsync(Guid accountId, string? symbol = null, string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null, int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null, string? attemptId = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:127](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L127) |  |
+| <code>public async Task&lt;JournalSummary&gt; SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:292](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L292) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:444](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L444) |  |
+
+## ExecutionJournalEntry
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionJournalEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:11](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L11).
+
+Immutable execution evidence; operational reporting never posts accounting journals.
+
+```csharp
+public sealed record ExecutionJournalEntry(int Version, string EventId, string Scope, Guid? AccountId, string OrderId, string Kind, DateTimeOffset RecordedAt, OrderRequest? Request = null, ExecutionReport? Report = null, OrderState? State = null, OrderMarketReference? Reference = null, string? Detail = null, ExecutionNotification? Notification = null, ExecutionAlertSettings? Settings = null, ExecutionEquityObservation? Equity = null, BrokerageFillSnapshotDto? ActivityFill = null, BrokerageActivityCursorDto? ActivityCursor = null, JournalOpeningEvidence? Opening = null, string? ReportingAssetClass = null, DateTimeOffset? ReconciledThrough = null, BrokerageActivityEventDto? Activity = null, OrderModification? Modification = null, Guid? AttemptId = null, Guid? PaperBookId = null);
+```
+
 ## ExecutionManualOverride
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionManualOverride</code>. Kind: `record`.
@@ -81,6 +194,16 @@ Declared public members:
 | <code>public const string AllowLivePromotion = &quot;AllowLivePromotion&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:38](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L38) |  |
 | <code>public const string ForceBlockOrders = &quot;ForceBlockOrders&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:39](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L39) |  |
 | <code>public static bool IsSupported(string kind) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:41](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L41) |  |
+
+## ExecutionNotification
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionNotification</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:7](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L7).
+
+```csharp
+public sealed record ExecutionNotification(string Id, Guid AccountId, string Scope, string Severity, string Title, string Detail, DateTimeOffset Timestamp, string? OrderId = null);
+```
 
 ## ExecutionOperatorControlOptions
 
@@ -122,14 +245,15 @@ Declared public members:
 | <code>public ExecutionOperatorControlService(ExecutionOperatorControlOptions? options, ILogger&lt;ExecutionOperatorControlService&gt; logger, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:162](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L162) |  |
 | <code>public ExecutionOperatorControlService() : this(ExecutionOperatorControlOptions.Default, Microsoft.Extensions.Logging.Abstractions.NullLogger&lt;ExecutionOperatorControlService&gt;.Instance);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:185](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L185) | Convenience constructor for test scenarios that do not need explicit options or a logger. Uses ExecutionOperatorControlOptions.Default and a null logger. |
 | <code>public ExecutionControlSnapshot GetSnapshot();</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:193](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L193) | Returns the current control state. |
-| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetCircuitBreakerAsync(bool isOpen, string? reason, string? changedBy, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:205](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L205) | Opens or closes the global execution circuit breaker. |
-| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetDefaultPositionLimitAsync(decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:260](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L260) | Updates the default position limit used when no symbol-specific limit exists. |
-| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetSymbolPositionLimitAsync(string symbol, decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:299](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L299) | Updates or clears the symbol-specific position limit. |
-| <code>public async Task&lt;ExecutionManualOverride&gt; CreateManualOverrideAsync(ManualOverrideRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:351](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L351) | Creates a new manual override. |
-| <code>public async Task&lt;bool&gt; ClearManualOverrideAsync(string overrideId, string? changedBy, string? reason, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:411](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L411) | Clears an existing manual override. |
-| <code>public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:453](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L453) | Evaluates a new order against the current operator controls. |
-| <code>public LivePromotionControlDecision EvaluateLivePromotion(string runId, string? strategyId, string? manualOverrideId);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:659](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L659) | Evaluates whether a Paper -&gt; Live promotion may proceed. |
-| <code>public async Task&lt;bool&gt; TryRecordPendingCircuitBreakerTripAsync(string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:726](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L726) | Durably records a circuit-breaker trip whose snapshot write failed, so a restart before the retry succeeds still comes up halted. Best-effort by nature — the caller already holds an in-memory fail-closed latch — but a snapshot write can fail for reasons a small independent marker survives. Returns whether the marker landed. |
+| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetCircuitBreakerAsync(bool isOpen, string? reason, string? changedBy, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:204](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L204) | Opens or closes the global execution circuit breaker. |
+| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetDefaultPositionLimitAsync(decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:259](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L259) | Updates the default position limit used when no symbol-specific limit exists. |
+| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetSymbolPositionLimitAsync(string symbol, decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:298](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L298) | Updates or clears the symbol-specific position limit. |
+| <code>public async Task&lt;ExecutionManualOverride&gt; CreateManualOverrideAsync(ManualOverrideRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:350](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L350) | Creates a new manual override. |
+| <code>public async Task&lt;bool&gt; ClearManualOverrideAsync(string overrideId, string? changedBy, string? reason, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:410](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L410) | Clears an existing manual override. |
+| <code>public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:452](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L452) | Evaluates a new order against the current operator controls. |
+| <code>public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId, bool observationOnly);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:455](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L455) |  |
+| <code>public LivePromotionControlDecision EvaluateLivePromotion(string runId, string? strategyId, string? manualOverrideId);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:663](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L663) | Evaluates whether a Paper -&gt; Live promotion may proceed. |
+| <code>public async Task&lt;bool&gt; TryRecordPendingCircuitBreakerTripAsync(string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:730](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L730) | Durably records a circuit-breaker trip whose snapshot write failed, so a restart before the retry succeeds still comes up halted. Best-effort by nature — the caller already holds an in-memory fail-closed latch — but a snapshot write can fail for reasons a small independent marker survives. Returns whether the marker landed. |
 
 ## ExecutionPortfolioSnapshotDto
 
@@ -179,7 +303,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.ILiveOrderReadinessGate</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:9](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L9).
+Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:15](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L15).
 
 Validates that a live broker order belongs to a W7-approved, audit-retained live operation before the OMS submits it to an external broker gateway.
 
@@ -191,7 +315,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;LiveOrderReadinessDecision&gt; EvaluateAsync(LiveOrderReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:11](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L11) |  |
+| <code>Task&lt;LiveOrderReadinessDecision&gt; EvaluateAsync(LiveOrderReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:17](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L17) |  |
+
+## ILiveOrderReadinessPreview
+
+Qualified name: <code>Meridian.Execution.Services.ILiveOrderReadinessPreview</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:6](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L6).
+
+Reads already-produced readiness evidence; never initializes or reconciles runtime state.
+
+```csharp
+public interface ILiveOrderReadinessPreview
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LiveOrderReadinessDecision? Observe(LiveOrderReadinessRequest request);</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:8](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L8) |  |
 
 ## IPaperSessionStore
 
@@ -221,6 +363,46 @@ Declared public members:
 | <code>Task&lt;PaperSessionSettlementAppendStatus&gt; TryAppendSettlementAsync(string sessionId, PaperSessionSettlementRecord record, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:385](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L385) | Durably appends a daily variation-margin settlement unless its key (account, symbol, trading date) is already recorded. Implementations must serialize concurrent appends and must not complete until the record is crash-durable. The default fails closed, so a store that cannot persist settlements never lets one reach the portfolio. |
 | <code>Task&lt;IReadOnlyList&lt;PaperSessionSettlementRecord&gt;&gt; LoadSettlementsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:396](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L396) | Returns the recorded variation-margin settlements for sessionId, in append order. The default returns none, which is exact for stores that cannot append them. |
 | <code>Task&lt;IReadOnlyList&lt;PersistedJournalEntryDto&gt;&gt; LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:405](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L405) | Returns the persisted ledger journal entries for sessionId. Returns an empty list when no ledger has been saved for this session. |
+
+## JournalAttribution
+
+Qualified name: <code>Meridian.Execution.Services.JournalAttribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:23](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L23).
+
+```csharp
+public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);
+```
+
+## JournalOpeningEvidence
+
+Qualified name: <code>Meridian.Execution.Services.JournalOpeningEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:22](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L22).
+
+```csharp
+public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
+```
+
+## JournalOrder
+
+Qualified name: <code>Meridian.Execution.Services.JournalOrder</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:25](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L25).
+
+```csharp
+public sealed record JournalOrder(string OrderId, string Scope, Guid AccountId, string Symbol, string Side, string Status, decimal Quantity, decimal FilledQuantity, decimal? AverageFillPrice, string? StrategyId, string? RunId, string? Tag, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, IReadOnlyList<ExecutionJournalEntry> Events, string? AttemptId = null);
+```
+
+## JournalSummary
+
+Qualified name: <code>Meridian.Execution.Services.JournalSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:31](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L31).
+
+```csharp
+public sealed record JournalSummary(int Orders, int Fills, decimal? RealizedPnl, decimal? Commissions, decimal? Fees, decimal? Slippage, string Coverage, string Method = "FIFO operational attribution", decimal? NetRealizedPnl = null, IReadOnlyList<JournalAttribution>? Attributions = null);
+```
 
 ## JsonlFilePaperSessionStore
 
@@ -258,7 +440,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.LiveOrderReadinessDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:28](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L28).
+Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:34](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L34).
 
 ```csharp
 public sealed record LiveOrderReadinessDecision(bool IsApproved, string? Reason = null, string? EvidenceReference = null)
@@ -268,14 +450,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static LiveOrderReadinessDecision Approved(string evidenceReference) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:33](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L33) |  |
-| <code>public static LiveOrderReadinessDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:36](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L36) |  |
+| <code>public static LiveOrderReadinessDecision Approved(string evidenceReference) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:39](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L39) |  |
+| <code>public static LiveOrderReadinessDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:42](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L42) |  |
 
 ## LiveOrderReadinessRequest
 
 Qualified name: <code>Meridian.Execution.Services.LiveOrderReadinessRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:16](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L16).
+Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:22](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L22).
 
 ```csharp
 public sealed record LiveOrderReadinessRequest(string RunId, string BrokerName, string Symbol, OrderSide Side, OrderType OrderType, decimal Quantity, string? StrategyId = null, string? Actor = null, string? CorrelationId = null, Guid? FundAccountId = null);
@@ -333,6 +515,25 @@ Declared public members:
 | <code>public OrderStatusUpdate? GetStatus(string orderId);</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:45](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L45) | Returns the most recent status update for orderId, or null if the order is not known. |
 | <code>public IReadOnlyList&lt;OrderStatusUpdate&gt; GetAllOrders();</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:54](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L54) | Returns all tracked orders as a snapshot. |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/OrderLifecycleManager.cs:86](../../../../src/Meridian.Execution/Services/OrderLifecycleManager.cs#L86) |  |
+
+## OrderPreviewService
+
+Qualified name: <code>Meridian.Execution.Services.OrderPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/OrderPreviewService.cs:13](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L13).
+
+Evaluates the same admission/risk policies without dispatching or taking reservations.
+
+```csharp
+public sealed class OrderPreviewService : IOrderPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OrderPreviewService(IExecutionGateway gateway, IOrderManager orders, IRiskValidator risk, IOrderMarketReferenceSource prices, ILogger&lt;OrderPreviewService&gt; logger, BrokerageConfiguration? configuration = null, ISecurityMasterGate? securityMaster = null, ExecutionOperatorControlService? controls = null, IPortfolioState? portfolio = null, IOrderSessionPolicy? sessions = null, TimeProvider? clock = null, IOrderInstrumentCoverageSource? coverage = null, ILiveOrderReadinessGate? liveReadiness = null);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:23](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L23) |  |
+| <code>public async Task&lt;OrderPreviewResult&gt; PreviewAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/OrderPreviewService.cs:41](../../../../src/Meridian.Execution/Services/OrderPreviewService.cs#L41) |  |
 
 ## PaperSessionDetailDto
 
@@ -548,39 +749,50 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string DefaultAccountId = &quot;default&quot;;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:21](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L21) | Key used for the default / backwards-compatible account. |
-| <code>public PositionLotSelectionMethod LotSelectionMethod =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:33](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L33) | The relief method every closing fill in this portfolio applies. It is fixed at construction; an order carries no lot instruction that could override it. |
-| <code>public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger = null, Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(initialCash, ledger, (ILivePositionCorporateActionAdjuster?) corporateActionAdjuster, lotSelectionMethod);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:47](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L47) |  |
-| <code>public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger, ILivePositionCorporateActionAdjuster? corporateActionAdjuster, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:58](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L58) | Composes the portfolio through the Contracts-owned adjuster. |
-| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger = null, Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(accounts, ledger, (ILivePositionCorporateActionAdjuster?) corporateActionAdjuster, lotSelectionMethod);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:97](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L97) |  |
-| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger, ILivePositionCorporateActionAdjuster? corporateActionAdjuster, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:108](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L108) | Composes the portfolio through the Contracts-owned adjuster. |
-| <code>public decimal Cash { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:148](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L148) |  |
-| <code>public decimal MarginBalance { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:154](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L154) | Total margin borrowed (long positions) across all accounts (0 for all-cash portfolios). |
-| <code>public decimal ShortMarginCollateral { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:160](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L160) | Total short margin collateral held across all accounts. |
-| <code>public decimal PortfolioValue { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:171](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L171) |  |
-| <code>public decimal UnrealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:187](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L187) |  |
-| <code>public decimal RealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:193](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L193) |  |
-| <code>public IReadOnlyDictionary&lt;string, IPosition&gt; Positions { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:200](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L200) |  |
-| <code>public IReadOnlyList&lt;IAccountPortfolio&gt; Accounts { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:257](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L257) |  |
-| <code>public IAccountPortfolio? GetAccount(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:263](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L263) |  |
-| <code>public IReadOnlyList&lt;IPosition&gt; GetPositions() =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:274](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L274) | Returns aggregate open positions across all accounts for legacy single-account callers. |
-| <code>public MultiAccountPortfolioSnapshot GetAggregateSnapshot();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:277](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L277) |  |
-| <code>public IReadOnlyList&lt;PositionLotEntry&gt; GetPositionLots(string symbol);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:292](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L292) | Returns the current open lots for a symbol in the default account. |
-| <code>public ExecutionAccountDetailSnapshot? GetAccountSnapshot(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:312](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L312) | Returns a detailed snapshot for a single account. Returns null when the account does not exist. |
-| <code>public IReadOnlyList&lt;ExecutionAccountDetailSnapshot&gt; GetAllAccountSnapshots();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:323](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L323) | Returns detailed snapshots for all tracked accounts. |
-| <code>public MarginCallStatus CheckMarginStatus(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:352](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L352) | Evaluates the current maintenance-margin health of one account given a set of current market prices, and returns a MarginCallStatus indicating whether a margin call is in effect. |
-| <code>public MarginRequirement GetMarginRequirement(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:416](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L416) | Returns the portfolio-level MarginRequirement for the specified account. Returns a zeroed requirement for cash accounts or accounts with no margin model. |
-| <code>public void AccrueMarginInterest(decimal annualRate, int days = 1, DateTimeOffset? asOf = null);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:438](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L438) | Accrues interest on any outstanding margin loans in all margin accounts. |
-| <code>public void ApplyFill(ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:489](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L489) | Applies a fill to the DefaultAccountId account (single-account path). |
-| <code>public void ApplyFill(ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:501](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L501) | Applies a fill to the default account while recording the fund account that owns it and the contract multiplier it carries. The attribution lets a shared execution book be read per fund and keeps a derivative position&#x27;s exposure from being measured as if each contract were one share. For options the multiplier also scales the money: cash, ledger, lot basis, market value and P&amp;L move at quote × quantity × multiplier, while the stored cost basis stays a per-unit quote. Futures settle daily variation margin instead: no notional moves, only price changes scaled by the multiplier (see ApplyVariationMarginFill and ApplyVariationMarginSettlement). |
-| <code>public void ApplyFill(string accountId, ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:512](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L512) | Applies a fill to a specific accountId. When the account does not exist it is ignored (no-op). |
-| <code>public void ApplyFill(string accountId, ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:523](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L523) |  |
-| <code>public void UpdateMarketPrice(string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:803](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L803) | Updates the last-known market price for symbol across all accounts. A position opened by face-value fills stores its cost basis and market price in dollars per unit of face, so a quote still arriving as a percentage of par is normalized the same way the fill price was — otherwise a 100,000-face position marked at 102.25 would report ~$10.2M of market value instead of ~$102K. |
-| <code>public void UpdateMarketPrice(string accountId, string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:818](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L818) | Updates the last-known market price for symbol in a specific account. |
-| <code>public IReadOnlyLedger? Ledger =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:836](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L836) | Read-only view of the double-entry ledger for this session. Returns null when no ledger was supplied at construction time. |
-| <code>public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:844](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L844) | Applies any corporate-action adjustments (splits, dividends) to an existing open position in the default account. No-op when no adjuster was supplied. |
-| <code>public async Task ApplyCorporateActionsAsync(string accountId, string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:853](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L853) | Applies corporate-action adjustments to a position in a specific accountId. |
-| <code>public decimal ApplyVariationMarginSettlement(string accountId, string symbol, decimal settlementPrice, DateTimeOffset asOf);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1121](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1121) | Settles the daily variation margin of an open futures position in accountId at settlementPrice: cash and realized P&amp;L move by (settlement − last settlement) × quantity × multiplier, and the settlement becomes the new reference price, so the position&#x27;s unrealized P&amp;L returns to zero at that price. Mirrors FuturePosition.SettleDaily. Returns the cash moved; zero, and nothing changes, for a flat position, a notional-model position, or an account or symbol that is not held. |
-| <code>public IReadOnlyList&lt;VariationMarginPositionSnapshot&gt; GetOpenVariationMarginPositions();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1156](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1156) | The open positions, in every account, that settle daily variation margin, with the price they were last settled at. An end-of-day job settles each of these once per trading day. |
+| <code>public Guid BookId { get; } = Guid.NewGuid();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:24](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L24) | Identity of this in-memory book; a new portfolio starts a new economic history. |
+| <code>public PositionLotSelectionMethod LotSelectionMethod =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:36](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L36) | The relief method every closing fill in this portfolio applies. It is fixed at construction; an order carries no lot instruction that could override it. |
+| <code>public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger = null, Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(initialCash, ledger, (ILivePositionCorporateActionAdjuster?) corporateActionAdjuster, lotSelectionMethod);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:50](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L50) |  |
+| <code>public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger, ILivePositionCorporateActionAdjuster? corporateActionAdjuster, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:61](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L61) | Composes the portfolio through the Contracts-owned adjuster. |
+| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger = null, Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(accounts, ledger, (ILivePositionCorporateActionAdjuster?) corporateActionAdjuster, lotSelectionMethod);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:100](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L100) |  |
+| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger, ILivePositionCorporateActionAdjuster? corporateActionAdjuster, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:111](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L111) | Composes the portfolio through the Contracts-owned adjuster. |
+| <code>public decimal Cash { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:151](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L151) |  |
+| <code>public decimal MarginBalance { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:157](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L157) | Total margin borrowed (long positions) across all accounts (0 for all-cash portfolios). |
+| <code>public decimal ShortMarginCollateral { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:163](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L163) | Total short margin collateral held across all accounts. |
+| <code>public decimal PortfolioValue { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:174](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L174) |  |
+| <code>public decimal UnrealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:190](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L190) |  |
+| <code>public decimal RealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:196](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L196) |  |
+| <code>public IReadOnlyDictionary&lt;string, IPosition&gt; Positions { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:203](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L203) |  |
+| <code>public IReadOnlyList&lt;IAccountPortfolio&gt; Accounts { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:260](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L260) |  |
+| <code>public IAccountPortfolio? GetAccount(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:266](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L266) |  |
+| <code>public IReadOnlyList&lt;IPosition&gt; GetPositions() =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:277](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L277) | Returns aggregate open positions across all accounts for legacy single-account callers. |
+| <code>public MultiAccountPortfolioSnapshot GetAggregateSnapshot();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:280](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L280) |  |
+| <code>public IReadOnlyList&lt;PositionLotEntry&gt; GetPositionLots(string symbol);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:295](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L295) | Returns the current open lots for a symbol in the default account. |
+| <code>public ExecutionAccountDetailSnapshot? GetAccountSnapshot(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:315](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L315) | Returns a detailed snapshot for a single account. Returns null when the account does not exist. |
+| <code>public IReadOnlyList&lt;ExecutionAccountDetailSnapshot&gt; GetAllAccountSnapshots();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:326](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L326) | Returns detailed snapshots for all tracked accounts. |
+| <code>public MarginCallStatus CheckMarginStatus(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:355](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L355) | Evaluates the current maintenance-margin health of one account given a set of current market prices, and returns a MarginCallStatus indicating whether a margin call is in effect. |
+| <code>public MarginRequirement GetMarginRequirement(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:419](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L419) | Returns the portfolio-level MarginRequirement for the specified account. Returns a zeroed requirement for cash accounts or accounts with no margin model. |
+| <code>public void AccrueMarginInterest(decimal annualRate, int days = 1, DateTimeOffset? asOf = null);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:441](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L441) | Accrues interest on any outstanding margin loans in all margin accounts. |
+| <code>public void ApplyFill(ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:492](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L492) | Applies a fill to the DefaultAccountId account (single-account path). |
+| <code>public void ApplyFill(ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:504](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L504) | Applies a fill to the default account while recording the fund account that owns it and the contract multiplier it carries. The attribution lets a shared execution book be read per fund and keeps a derivative position&#x27;s exposure from being measured as if each contract were one share. For options the multiplier also scales the money: cash, ledger, lot basis, market value and P&amp;L move at quote × quantity × multiplier, while the stored cost basis stays a per-unit quote. Futures settle daily variation margin instead: no notional moves, only price changes scaled by the multiplier (see ApplyVariationMarginFill and ApplyVariationMarginSettlement). |
+| <code>public void ApplyFill(string accountId, ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:515](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L515) | Applies a fill to a specific accountId. When the account does not exist it is ignored (no-op). |
+| <code>public void ApplyFill(string accountId, ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:526](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L526) |  |
+| <code>public void UpdateMarketPrice(string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:806](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L806) | Updates the last-known market price for symbol across all accounts. A position opened by face-value fills stores its cost basis and market price in dollars per unit of face, so a quote still arriving as a percentage of par is normalized the same way the fill price was — otherwise a 100,000-face position marked at 102.25 would report ~$10.2M of market value instead of ~$102K. |
+| <code>public void UpdateMarketPrice(string accountId, string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:821](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L821) | Updates the last-known market price for symbol in a specific account. |
+| <code>public IReadOnlyLedger? Ledger =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:839](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L839) | Read-only view of the double-entry ledger for this session. Returns null when no ledger was supplied at construction time. |
+| <code>public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:847](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L847) | Applies any corporate-action adjustments (splits, dividends) to an existing open position in the default account. No-op when no adjuster was supplied. |
+| <code>public async Task ApplyCorporateActionsAsync(string accountId, string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:856](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L856) | Applies corporate-action adjustments to a position in a specific accountId. |
+| <code>public decimal ApplyVariationMarginSettlement(string accountId, string symbol, decimal settlementPrice, DateTimeOffset asOf);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1124](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1124) | Settles the daily variation margin of an open futures position in accountId at settlementPrice: cash and realized P&amp;L move by (settlement − last settlement) × quantity × multiplier, and the settlement becomes the new reference price, so the position&#x27;s unrealized P&amp;L returns to zero at that price. Mirrors FuturePosition.SettleDaily. Returns the cash moved; zero, and nothing changes, for a flat position, a notional-model position, or an account or symbol that is not held. |
+| <code>public IReadOnlyList&lt;VariationMarginPositionSnapshot&gt; GetOpenVariationMarginPositions();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1159](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1159) | The open positions, in every account, that settle daily variation margin, with the price they were last settled at. An end-of-day job settles each of these once per trading day. |
+
+## PendingExecutionWebhook
+
+Qualified name: <code>Meridian.Execution.Services.PendingExecutionWebhook</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionAlerts.cs:14](../../../../src/Meridian.Execution/Services/ExecutionAlerts.cs#L14).
+
+```csharp
+public sealed record PendingExecutionWebhook(ExecutionNotification Notification, int PreviousAttempts);
+```
 
 ## PersistedJournalEntryDto
 
@@ -713,248 +925,3 @@ Declared public members:
 | <code>public ReconciliationReport? GetLastReconciliationReport() =&gt; …;</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:51](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L51) | Exposes the report from the most recent reconciliation pass. |
 | <code>public PositionReconciliationService(IEnumerable&lt;(string Name, IBrokeragePositionSync Sync)&gt; providers, PortfolioRegistry registry, IOptions&lt;PositionSyncOptions&gt; options, ILogger&lt;PositionReconciliationService&gt; logger);</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:53](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L53) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationReport&gt;&gt; ReconcileAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:73](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L73) | Runs a single reconciliation pass against the highest-priority available provider. Emits a ReconciliationReport per account checked. |
-
-## PositionSyncOptions
-
-Qualified name: <code>Meridian.Execution.Services.PositionSyncOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/PositionSyncOptions.cs:8](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L8).
-
-Configuration for the brokerage position sync service. Set ProviderPriority to control which brokerage connection is queried first when multiple IBrokeragePositionSync implementations are registered.
-
-```csharp
-public sealed class PositionSyncOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; ProviderPriority { get; init; } = [];</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:20](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L20) | Ordered list of brokerage provider names to attempt for position syncing. The first entry in the list that has an active connection is used. Recognised values (case-insensitive): &quot;Alpaca&quot;, &quot;InteractiveBrokers&quot;. Any name not matching a registered provider is silently skipped. Leave empty to accept the default discovery order (all registered providers are queried in registration order). |
-| <code>public TimeSpan SyncInterval { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:26](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L26) | How often position data is refreshed from the brokerage. Default: 5 minutes. |
-| <code>public int MaxConsecutiveFailures { get; init; } = 3;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:31](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L31) | Maximum number of consecutive failures before the sync service backs off. |
-| <code>public TimeSpan BackOffInterval { get; init; } = TimeSpan.FromMinutes(15);</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:37](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L37) | Back-off interval applied after MaxConsecutiveFailures are reached. Default: 15 minutes. |
-| <code>public decimal DivergenceTolerance { get; init; } = 0m;</code> | [src/Meridian.Execution/Services/PositionSyncOptions.cs:44](../../../../src/Meridian.Execution/Services/PositionSyncOptions.cs#L44) | Tolerance threshold for position quantity divergence before a reconciliation alert is emitted. E.g. 0.001 means a 0.1% difference is tolerated. Default: 0 (any difference triggers an alert). |
-
-## ReconciliationReport
-
-Qualified name: <code>Meridian.Execution.Services.ReconciliationReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/PositionReconciliationService.cs:17](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L17).
-
-Result of a single reconciliation pass for one account.
-
-```csharp
-public sealed record ReconciliationReport(string AccountId, string ProviderName, IReadOnlyList<string> MatchedSymbols, IReadOnlyList<string> DivergentSymbols, IReadOnlyList<string> MissingInPortfolio, IReadOnlyList<string> MissingInBrokerage, DateTimeOffset ReconciledAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsClean =&gt; …;</code> | [src/Meridian.Execution/Services/PositionReconciliationService.cs:27](../../../../src/Meridian.Execution/Services/PositionReconciliationService.cs#L27) | True when no divergences were found. |
-
-## ReplayDriftAssessment
-
-Qualified name: <code>Meridian.Execution.Services.ReplayDriftAssessment</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ReplayDriftDetector.cs:10](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L10).
-
-```csharp
-public sealed record ReplayDriftAssessment(ReplayDriftStatus Status, bool IsDrifted, string RequiredNextAction, string Detail);
-```
-
-## ReplayDriftDetector
-
-Qualified name: <code>Meridian.Execution.Services.ReplayDriftDetector</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/ReplayDriftDetector.cs:19](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L19).
-
-Compares active paper-session identity and event counts with retained replay-verification evidence.
-
-```csharp
-public static class ReplayDriftDetector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ReplayDriftAssessment Assess(string activeSessionId, int activeFillCount, int activeOrderCount, int activeLedgerEntryCount, string? verifiedSessionId, int verifiedFillCount, int verifiedOrderCount, int verifiedLedgerEntryCount);</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:21](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L21) |  |
-
-## ReplayDriftStatus
-
-Qualified name: <code>Meridian.Execution.Services.ReplayDriftStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/Services/ReplayDriftDetector.cs:3](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L3).
-
-```csharp
-public enum ReplayDriftStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:5](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L5) |  |
-| <code>Aligned = 1</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:6](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L6) |  |
-| <code>DriftDetected = 2</code> | [src/Meridian.Execution/Services/ReplayDriftDetector.cs:7](../../../../src/Meridian.Execution/Services/ReplayDriftDetector.cs#L7) |  |
-
-## RetainedBrokerageOrder
-
-Qualified name: <code>Meridian.Execution.Services.RetainedBrokerageOrder</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:165](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L165).
-
-```csharp
-public sealed record RetainedBrokerageOrder(OrderState State, string? BrokerOrderId, bool RequiresRecovery)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public PendingOrderAmendment? PendingAmendment { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:168](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L168) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool RequiresAmendmentRecovery { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:170](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L170) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? BrokerOrderAliases { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:172](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L172) |  |
-
-## RiskEscalationQueueOptions
-
-Qualified name: <code>Meridian.Execution.Services.RiskEscalationQueueOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:24](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L24).
-
-Location of the durable governed-approval queue snapshot.
-
-```csharp
-public sealed record RiskEscalationQueueOptions(string SnapshotPath, int MaxRetainedEntries = 500, int MaxUnresolvedEntries = 250)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RiskEscalationQueueOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;risk-escalations&quot;, &quot;escalations.json&quot;));</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:29](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L29) |  |
-
-## RiskEscalationQueueService
-
-Qualified name: <code>Meridian.Execution.Services.RiskEscalationQueueService</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:44](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L44).
-
-Governed-approval queue for risk escalations: the enforced pre-trade validator parks escalated orders here instead of hard-rejecting them, operators approve or deny with an audited actor and reason, and an approval releases exactly one resubmission of the original order through the same risk gate. Metadata key ApprovalMetadataKey carries the one-shot approval token; consumption verifies the resubmitted order matches the full parked order fingerprint (every routing- and payoff-relevant field) so an approval can never release a different executable order than the risk desk reviewed. Queue transitions persist atomically so parked decisions and armed approvals survive process restarts.
-
-```csharp
-public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ApprovalMetadataKey = &quot;riskEscalationId&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:47](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L47) | Order-metadata key carrying the escalation id(s) of granted governed approvals. |
-| <code>public const string TokenSeparator = &quot;,&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:53](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L53) | Separator for the approval token set. An order breaching several escalation-capable rules carries one token per granted decision. |
-| <code>public const string IncrementalNotionalMetadataKey = RiskEscalationMetadata.IncrementalNotionalMetadataKey;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:61](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L61) | Order-metadata key carrying the incremental notional an amendment adds. Quantity stays the full amended quantity so position limits evaluate the real post-amendment position, while notional-based rules measure only the exposure being added (the snapshot already reserves the working order at its current size). |
-| <code>public const string EvaluationOnlyMetadataKey = RiskEscalationMetadata.EvaluationOnlyMetadataKey;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:69](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L69) | Order-metadata flag marking a probe evaluation: the rules should decide, but an escalation must not park a queue entry. Amendment validation uses this, since an escalated amendment could never be released as a modification and would leave an unusable approval behind. |
-| <code>public const string SubmitterMetadataKey = &quot;riskSubmitter&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:81](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L81) | Order-metadata key carrying the original submitting operator across a chained release. The actor key on a release names the operator performing the release — it feeds RiskEscalationEntry.ReleasedBy and the consumption-time segregation check — so it cannot also carry the submitter. Without this key, a re-park during a chained release would record the previous stage&#x27;s approver as the escalation&#x27;s actor: the original submitter could then approve a later stage of their own order, while the independent approver would be refused as a false self-release. |
-| <code>public RiskEscalationQueueService(ILogger&lt;RiskEscalationQueueService&gt; logger, ExecutionAuditTrailService? auditTrail = null, RiskEscalationQueueOptions? options = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:91](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L91) |  |
-| <code>public RiskEscalationEntry Park(OrderRequest request, string reason, string? ruleName = null, string? actor = null, string? runId = null, string? correlationId = null, IReadOnlyList&lt;RiskEscalationEntry&gt;? consumedApprovals = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:105](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L105) | Parks request for governed approval and returns the queue entry. |
-| <code>public bool TryBeginRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:219](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L219) | Atomically claims an approved entry for release. Two concurrent approve requests on the same entry would otherwise both submit the retained order; the first can fill and free its client order id before the second reaches the OMS, letting the second park a fresh escalation for an order that already executed. Returns false when the entry is not approved or a release is already in flight. |
-| <code>public void EndRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:238](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L238) | Clears a release claim that did not result in a released order. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetUnresolved() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:257](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L257) | Returns every entry that can still route an order — awaiting approval or approved and not yet released — oldest first. Used to rebuild the client-order-id reservations a restarted host would otherwise lose while this durable queue keeps the escalations themselves. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetPending() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:264](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L264) | Returns entries awaiting approval, oldest first. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetRecent(int take = 50);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:276](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L276) | Returns recent entries newest first. Unresolved entries (pending or armed approvals) are always included regardless of age — an old escalation that still needs a decision must never scroll out of the only queue listing — while terminal Denied/Released history fills whatever remains of the take window. |
-| <code>public RiskEscalationEntry? TryGet(string escalationId) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:295](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L295) | Returns the entry with escalationId, or null. |
-| <code>public RiskEscalationEntry? Approve(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:303](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L303) | Approves a pending escalation, arming a one-shot release of the parked order. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
-| <code>public RiskEscalationEntry? Deny(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:310](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L310) | Denies a pending escalation. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
-| <code>public RiskEscalationEntry? TryConsumeApproval(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:322](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L322) | Consumes a one-shot governed approval carried on request metadata. Returns the released entry only when the token references an approved, unreleased entry whose full order fingerprint matches the resubmitted order; the entry then transitions to RiskEscalationStatus.Released. The release commits durably before it is honored: if the snapshot cannot be persisted the in-memory transition rolls back and consumption fails closed, so a restart can never reload a stale approved token for an order that already routed. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; TryConsumeApprovals(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:336](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L336) | Consumes every governed approval carried on request metadata. An order that breaches several escalation-capable rules accumulates one token per granted decision (the token value is a delimited set), and all of them must be honored in a single evaluation — otherwise each release satisfies one rule while re-parking another and the order can never route despite every decision being granted. Each token is still one-shot and fingerprint-bound individually. |
-| <code>public static IReadOnlyList&lt;string&gt; SplitTokens(string? tokenValue) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:360](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L360) | Splits a governed-approval token value into its individual escalation ids. |
-| <code>public static string JoinTokens(IEnumerable&lt;string&gt; escalationIds) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:366](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L366) | Joins escalation ids into a single governed-approval token value. |
-| <code>public bool TryRestoreApproval(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:439](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L439) | Re-arms a released approval whose order did not route (a later hard rule rejected it), restoring the entry to RiskEscalationStatus.Approved so the operator&#x27;s decision remains retryable once the blocking condition clears. Only a caller that observed the failed release may restore, and only from Released. |
-| <code>public RiskEscalationEntry? Withdraw(string escalationId, string actor, string? reason);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:480](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L480) | Withdraws an escalation whose order can no longer be routed — the submitter cancelled it, or the run that owned it ended. Unlike Deny this also resolves an entry an operator already RiskEscalationStatus.Approved, because an approval that has not been released is still only a permission: the order behind it is gone. A release already in flight is left alone — that order is on its way to the broker and only its own outcome may resolve the entry. Returns null when there was nothing withdrawable, so callers can fail closed rather than reporting a cancellation the queue never accepted. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:989](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L989) | Drains outstanding audit writes so shutdown cannot lose approval evidence. |
-
-## SessionSymbolTcaSummary
-
-Qualified name: <code>Meridian.Execution.Services.SessionSymbolTcaSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:409](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L409).
-
-Per-symbol cost breakdown, sorted by total commission descending.
-
-```csharp
-public sealed record SessionSymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
-```
-
-## SessionTcaCostSummary
-
-Qualified name: <code>Meridian.Execution.Services.SessionTcaCostSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:398](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L398).
-
-Aggregate session-level cost summary.
-
-```csharp
-public sealed record SessionTcaCostSummary(decimal TotalCommissions, decimal TotalBuyNotional, decimal TotalSellNotional, decimal TotalNotional, double CommissionRateBps, int TotalFills, int BuyFills, int SellFills);
-```
-
-## SessionTcaExecutionQuality
-
-Qualified name: <code>Meridian.Execution.Services.SessionTcaExecutionQuality</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:433](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L433).
-
-Execution-quality statistics derived by joining fills to their originating orders. AvgLimitPriceImprovementBps is notional-weighted; positive values mean fills executed better than their limit price.
-
-```csharp
-public sealed record SessionTcaExecutionQuality(int OrdersWithLimitPrice, double AvgLimitPriceImprovementBps, double MedianTimeToFillSeconds, int TimedFillCount)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SessionTcaExecutionQuality Empty { get; } = new (0, 0.0, 0.0, 0);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:439](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L439) |  |
-
-## SessionTcaFillOutlier
-
-Qualified name: <code>Meridian.Execution.Services.SessionTcaFillOutlier</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:420](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L420).
-
-A fill whose commission rate significantly exceeds the session median.
-
-```csharp
-public sealed record SessionTcaFillOutlier(string OrderId, string Symbol, decimal Notional, decimal Commission, double CommissionRateBps, DateTimeOffset FilledAt);
-```
-
-## SessionTcaReport
-
-Qualified name: <code>Meridian.Execution.Services.SessionTcaReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:388](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L388).
-
-TCA report over a paper/live session fill tape.
-
-```csharp
-public sealed record SessionTcaReport(string SessionId, string StrategyId, DateTimeOffset GeneratedAtUtc, SessionTcaCostSummary CostSummary, IReadOnlyList<SessionSymbolTcaSummary> SymbolSummaries, IReadOnlyList<SessionTcaFillOutlier> Outliers, SessionTcaExecutionQuality ExecutionQuality);
-```
-
-## SessionTcaReporter
-
-Qualified name: <code>Meridian.Execution.Services.SessionTcaReporter</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:12](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L12).
-
-Generates a Transaction Cost Analysis (TCA) report from a paper/live session fill tape. Computes commission attribution, per-symbol cost breakdowns, outlier detection, and execution-quality statistics (time-to-fill, limit-price improvement). This is a post-processing pass over the session&#x27;s persisted ExecutionReport history; it requires no market data beyond the fills and orders already recorded by the session.
-
-```csharp
-public static class SessionTcaReporter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SessionTcaReport Generate(string sessionId, string strategyId, IReadOnlyList&lt;ExecutionReport&gt; fills, IReadOnlyList&lt;OrderState&gt;? orders = null);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:33](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L33) | Generates a SessionTcaReport for sessionId from the session&#x27;s fill history. Only reports of type ExecutionReportType.Fill or ExecutionReportType.PartialFill with a fill price and positive filled quantity contribute. Report sequences whose per-order quantities are cumulative (as emitted by brokers that report running totals, e.g. the IB gateway) are converted to incremental quantities before aggregation. orders is optional and enriches the report with time-to-fill and limit-price-improvement statistics. Returns a zero-valued report when no usable fills exist. |

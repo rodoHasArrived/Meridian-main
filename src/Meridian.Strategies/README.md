@@ -93,6 +93,10 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 
 ## Important workflows
 
+### Shared SMA reference and retained comparison
+
+The existing `moving-average-crossover` catalog factory wraps the SDK's shared SMA decision implementation. Explicit `inputMode=bars` and `strategyVersion=sma-crossover-v1` support controlled replay/paper comparisons; omitted mode retains legacy trade input and existing 10/30/10 defaults. Partial and terminal order outcomes maintain one pending intent per symbol. The strategy registry advertises the reference parameters. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
 Live-engine shutdown calls `IOrderManagementLifecycle.StopAsync` while its fill subscriptions
 remain active, so admitted orders and accounting handoffs drain before strategy consumers stop.

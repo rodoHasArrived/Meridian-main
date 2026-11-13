@@ -62,6 +62,8 @@ public sealed partial class AlpacaBrokerageGateway
         {
             AccountId = accountNumber ?? providerAccountId ?? "unknown",
             Equity = ParseDecimal(account?.Equity),
+            PreviousCloseEquity = ParseNullableDecimal(account?.LastEquity),
+            EquityEvidenceComplete = ParseNullableDecimal(account?.Equity).HasValue,
             Cash = ParseDecimal(account?.Cash),
             BuyingPower = ParseDecimal(account?.BuyingPower),
             Currency = account?.Currency ?? string.Empty,

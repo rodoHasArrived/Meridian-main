@@ -401,6 +401,41 @@ public static class WorkstationServiceCollectionExtensions
             });
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
+        services.TryAddSingleton<EquityOrderSessionPolicy>(sp => new EquityOrderSessionPolicy(
+            sp.GetService<ContractSecurityMasterQueryService>(), sp.GetService<TimeProvider>()));
+        services.TryAddSingleton<Meridian.Execution.Sdk.IOrderSessionPolicy>(sp => sp.GetRequiredService<EquityOrderSessionPolicy>());
+        services.TryAddSingleton<Meridian.Execution.Sdk.IOrderInstrumentCoverageSource>(sp => sp.GetRequiredService<EquityOrderSessionPolicy>());
+        services.TryAddSingleton<Meridian.Execution.Sdk.IOrderMarketReferenceSource, FeedOrderMarketReferenceSource>();
+        services.TryAddSingleton<ExecutionJournal>(sp => new ExecutionJournal(
+            Path.Combine(ResolveWorkstationDataDirectory(sp), "execution", "journal"))
+        {
+            PaperBookIdentitySource = () => (sp.GetService<Meridian.Execution.Models.IPortfolioState>() as PaperTradingPortfolio)?.BookId,
+            OpeningEvidenceSource = (accountId, scope) =>
+            {
+                var gateway = sp.GetRequiredService<Meridian.Execution.Sdk.IExecutionGateway>();
+                if (gateway is Meridian.Execution.Sdk.IBrokerageConnectionState connection)
+                {
+                    var live = sp.GetRequiredService<LiveBrokeragePortfolioSyncService>();
+                    var status = live.GetStatus(accountId);
+                    var snapshot = live.GetRiskSnapshot(accountId);
+                    return connection.ScopeIdentity == scope && status.IsReady && snapshot is not null
+                        ? new JournalOpeningEvidence(true, snapshot.Positions.All(position => position.Quantity == 0m), snapshot.RetrievedAt, "Reconciled broker opening positions") : null;
+                }
+                var portfolio = sp.GetService<Meridian.Execution.Models.IPortfolioState>();
+                return portfolio is PaperTradingPortfolio paper && paper.Positions.Count == 0
+                    ? new JournalOpeningEvidence(true, true, DateTimeOffset.UtcNow, "Authoritative local paper book is flat before first dispatch") : null;
+            }
+        });
+        services.TryAddSingleton<Meridian.Execution.Sdk.IOrderPreviewService>(sp =>
+            sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>() is null || sp.GetService<Meridian.Execution.Sdk.IOrderManager>() is null
+                ? null! : ActivatorUtilities.CreateInstance<OrderPreviewService>(sp));
+        services.TryAddSingleton<ExecutionAlertService>();
+        services.TryAddSingleton<StrategyRunParityService>();
+        services.TryAddSingleton<ExecutionWorkflowWorker>();
+        services.AddHostedService(sp => sp.GetRequiredService<ExecutionWorkflowWorker>());
+        services.AddHostedService<ExecutionWebhookWorker>();
+        services.AddHttpClient("execution-webhook", client => client.Timeout = TimeSpan.FromSeconds(15))
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         services.TryAddSingleton(sp => new LiveBrokeragePortfolioSyncService(
             () => sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>() as Meridian.Execution.Sdk.IBrokerageGateway,
             sp.GetService<Meridian.Execution.Sdk.IOrderManager>,

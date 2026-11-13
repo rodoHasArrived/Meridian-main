@@ -51,15 +51,22 @@ internal static class SecurityFlatCodecGenerator
             var shape = Shape(binding);
             source.Append('\n');
             source.Append("    private static SecurityKind DecodeGenerated").Append(binding.AssetClass)
-                .Append("(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)\n");
+                .Append("(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json")
+                .Append(binding.VersionedSchedules ? ", SecurityVersionedTermDecoding versionedTerms)\n" : ")\n");
             source.Append("        => SecurityKind.New").Append(binding.AssetClass).Append("(new ").Append(shape.TermsType.Name).Append("(\n");
             for (var f = 0; f < shape.Fields.Length; f++)
             {
                 var field = shape.Fields[f];
                 var last = f == shape.Fields.Length - 1;
+                var moduleRow = binding.Members.SingleOrDefault(row => row.Path == field.Name);
                 if (field.IsRateConvention)
                 {
                     source.Append("            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))");
+                }
+                else if (moduleRow is not null)
+                {
+                    source.Append("            ").Append(moduleRow.DecodeExpression
+                        ?? throw new InvalidOperationException($"{binding.AssetClass} module row {field.Name} names no expression."));
                 }
                 else
                 {
@@ -98,16 +105,41 @@ internal static class SecurityFlatCodecGenerator
         {
             var shape = Shape(binding);
             source.Append('\n');
-            source.Append("    let write").Append(binding.AssetClass).Append(" (schemaVersion: int) (terms: ")
-                .Append(shape.TermsType.Name).Append(") : string =\n");
-            source.Append("        JsonSerializer.Serialize(\n");
-            source.Append("            {| schemaVersion = schemaVersion");
-            foreach (var row in binding.Members.Where(static row => row.Key is not null && !row.DecodeOnly))
+            source.Append("    let write").Append(binding.AssetClass).Append(" (schemaVersion: int) ");
+            if (binding.VersionedSchedules)
             {
-                source.Append("\n               ").Append(row.Key).Append(" = ").Append(WriteExpression(binding, shape, row));
+                source.Append("(writesScheduleConventions: bool) (writesCallPutSchedules: bool) ");
             }
 
-            source.Append(" |})\n");
+            source.Append("(terms: ").Append(shape.TermsType.Name).Append(") : string =\n");
+            var indent = binding.VersionedSchedules ? "        let payload =\n            " : "        JsonSerializer.Serialize(\n            ";
+            source.Append(indent).Append("{| schemaVersion = schemaVersion");
+            var memberIndent = binding.VersionedSchedules ? "\n               " : "\n               ";
+            foreach (var row in binding.Members.Where(static row => row.Key is not null && !row.DecodeOnly))
+            {
+                source.Append(memberIndent).Append(row.Key).Append(" = ").Append(WriteExpression(binding, shape, row));
+            }
+
+            if (!binding.VersionedSchedules)
+            {
+                source.Append(" |})\n");
+                continue;
+            }
+
+            // The declared-schedule containers are written from the version that declares them
+            // (ADR-024's frozen written form): all three, the block alone, or neither.
+            source.Append(" |}\n");
+            source.Append("        if writesCallPutSchedules then\n");
+            source.Append("            JsonSerializer.Serialize(\n");
+            source.Append("                {| payload with\n");
+            source.Append("                     scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions\n");
+            source.Append("                     callSchedule = SecurityTermsWriteVersion.callSchedulePayload terms.CallPutSchedules.Calls\n");
+            source.Append("                     putSchedule = SecurityTermsWriteVersion.putSchedulePayload terms.CallPutSchedules.Puts |})\n");
+            source.Append("        elif writesScheduleConventions then\n");
+            source.Append("            JsonSerializer.Serialize(\n");
+            source.Append("                {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})\n");
+            source.Append("        else\n");
+            source.Append("            JsonSerializer.Serialize(payload)\n");
         }
 
         return source.ToString();
@@ -116,7 +148,7 @@ internal static class SecurityFlatCodecGenerator
     private static string DecodeExpression(SecurityClassCodecBinding binding, FieldShape field, PropertyInfo member)
     {
         var path = $"{field.Name}.{member.Name}";
-        var rows = binding.Members.Where(row => row.Path == path).ToArray();
+        var rows = binding.Members.Where(row => row.Path == path && !row.WriteOnly).ToArray();
         if (rows.Length > 1)
         {
             throw new InvalidOperationException($"{binding.AssetClass} binds {path} more than once.");
@@ -230,6 +262,21 @@ internal static class SecurityFlatCodecGenerator
         foreach (var row in binding.Members)
         {
             var parts = row.Path.Split('.');
+            if (parts.Length == 1)
+            {
+                if (fields.All(field => field.Name != parts[0]) || row.DecodeExpression is null || row.Key is not null)
+                {
+                    throw new InvalidOperationException($"{binding.AssetClass} module row {row.Path} must name a record field and an expression.");
+                }
+
+                continue;
+            }
+
+            if (row.WriteOnly && binding.Members.All(module => module.Path != parts[0]))
+            {
+                throw new InvalidOperationException($"{binding.AssetClass} writes {row.Key} from {row.Path}, but no module row reads {parts[0]}.");
+            }
+
             if (parts.Length != 2
                 || fields.SingleOrDefault(field => field.Name == parts[0]) is not { } owner
                 || owner.Members.All(member => member.Name != parts[1]))
