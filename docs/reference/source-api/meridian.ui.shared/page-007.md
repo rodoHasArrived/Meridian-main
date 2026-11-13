@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsApprovalEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.OperationsApprovalEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1205](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1205).
+
+Adds operational approval decisions and their linked evidence to an evidence graph.
+
+```csharp
+public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsApprovalEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1209](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1209) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1214](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1214) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1216](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1216) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1220](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1220) |  |
+
+## PaymentIntentEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.PaymentIntentEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1776](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1776).
+
+Adds payment-intent bank, reconciliation, and audit evidence to an evidence graph.
+
+```csharp
+public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PaymentIntentEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1780](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1780) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1785](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1785) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1787](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1787) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1790](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1790) |  |
+
+## PreparerAttestationEvidenceProjectionService
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.PreparerAttestationEvidenceProjectionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L17).
+
+Adds separate evidence-task disclosures to exact visible source documents. It never changes financial approval, evidence readiness, completeness, proof-layer coverage or Verified Coverage.
+
+```csharp
+public sealed class PreparerAttestationEvidenceProjectionService(SinglePrincipalAttestationStore attestations, IEvidenceArtifactStore artifacts, EvidenceAttestationSubjectResolver resolver)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Boundary = &quot;Evidence acknowledgments only; no financial approval, independent review or Verified Coverage credit.&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L22) |  |
+| <code>public async Task&lt;PreparerAttestationEvidenceProjectionDto?&gt; ProjectAsync(EvidencePacketDto packet, PreparerAttestationEvidenceReadContext? context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:25](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L25) |  |
+
+## PreparerAttestationEvidenceReadContext
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.PreparerAttestationEvidenceReadContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs#L8).
+
+Trusted server read authority, never a request-body contract.
+
+```csharp
+public sealed record PreparerAttestationEvidenceReadContext(SinglePrincipalAttestationScopeDto Scope, SinglePrincipalAttestationAuthority Authority, Func<string, string, bool> CanReadSourceSubject);
+```
+
 ## PreparerAttestationProofFile
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.PreparerAttestationProofFile</code>. Kind: `record`.
@@ -934,105 +1007,3 @@ Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationComman
 ```csharp
 public sealed record AccountingCertificationEvidenceResolutionRequest(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> EvidenceReferences);
 ```
-
-## AccountingCertificationEvidenceSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingCertificationEvidenceSource</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:48](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L48).
-
-```csharp
-public sealed record AccountingCertificationEvidenceSource(string AuthorityReference, RetainedEvidenceIdentityDto Evidence, IReadOnlyList<AccountingWorkflowCertificationLaneKindDto> WorkflowLanes, IReadOnlyList<AccountingDimensionalCertificationLaneKindDto> DimensionalLanes, IReadOnlyList<AccountingTenantAdminCertificationLaneKindDto> TenantAdministrationLanes);
-```
-
-## AccountingClosePostingWorkbenchBridge
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingClosePostingWorkbenchBridge</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:21](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L21).
-
-Projects the Financial Operations close gate onto the shared manual-journal workbench. It may create drafts or governed reversal drafts, but approval and posting stay human actions.
-
-```csharp
-public sealed class AccountingClosePostingWorkbenchBridge : IAccountingClosePostingWorkbench, IAccountingCloseMutationGate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingClosePostingWorkbenchBridge(AutomatedJournalIntakeRunner runner, IManualJournalEntryWorkbenchService workbench, IManualJournalEntryLifecycleService lifecycle, ILedgerBookService? ledgerBookService, ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IReconciliationBreakQueueRepository? breakQueue = null, IReportingReleaseConsistencyGate? releaseConsistencyGate = null) : this(runner, workbench, lifecycle, ledgerBookService, reportingEvidenceRetention, tenancyRegistry, breakQueue, operationsWorkflowService : null, releaseConsistencyGate : releaseConsistencyGate);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:39](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L39) |  |
-| <code>public AccountingClosePostingWorkbenchBridge(AutomatedJournalIntakeRunner runner, IManualJournalEntryWorkbenchService workbench, IManualJournalEntryLifecycleService lifecycle, ILedgerBookService? ledgerBookService, ReportingReconciliationEvidenceRetentionService? reportingEvidenceRetention, IFundProfileTenancyRegistry? tenancyRegistry, IReconciliationBreakQueueRepository? breakQueue, IOperationsContinuityWorkflowService? operationsWorkflowService, IReportingReleaseConsistencyGate? releaseConsistencyGate = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:61](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L61) |  |
-| <code>public async ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(AccountingClosePostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:91](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L91) |  |
-| <code>public async Task&lt;ClosePostingGateDto&gt; EvaluateAsync(AccountingClosePostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:105](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L105) |  |
-| <code>public async Task&lt;ClosePostingGateDto&gt; EnsureClosingDraftQueuedAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:139](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L139) |  |
-| <code>public async Task&lt;LedgerPeriodDto&gt; FinalizeHardCloseAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:173](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L173) |  |
-| <code>public async Task&lt;ClosePostingGateDto&gt; ReopenAndQueueClosingReversalsAsync(AccountingClosePostingContext context, AccountingClosePostingCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs:1084](../../../../src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs#L1084) |  |
-
-## AccountingConfigurationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingConfigurationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.ActivationValidation.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.ActivationValidation.cs#L19).
-
-```csharp
-public sealed partial class AccountingConfigurationService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:20](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L20).
-
-Manages accounting configuration, posting-rule previews, activation validation, and action audit history.
-
-```csharp
-public sealed partial class AccountingConfigurationService : IAccountingConfigurationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingConfigurationService(IAccountingConfigurationStore store, IAccountingActionAuditStore auditStore, ILedgerBookService? ledgerBookService = null, IAccountingAuditPendingMarkerStore? pendingAuditMarkers = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:54](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L54) |  |
-| <code>public async Task&lt;AccountingAuditRecoveryResult&gt; RecoverPendingAuditAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:81](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L81) | Resolves an audit append that was declared but never confirmed, and reports what it found. |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; GetWorkspaceAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:258](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L258) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertChartNodeAsync(UpsertChartOfAccountsNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:292](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L292) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertTemplateAsync(UpsertJournalEntryTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:321](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L321) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertPostingRuleAsync(UpsertPostingRuleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:348](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L348) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ApprovePostingRulePromotionAsync(ApprovePostingRulePromotionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:386](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L386) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; UpsertRuleTestCaseAsync(UpsertAccountingRuleTestCaseRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:497](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L497) |  |
-| <code>public async Task&lt;AccountingJournalTemplatePreviewDto&gt; PreviewTemplateAsync(PreviewJournalTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:537](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L537) |  |
-| <code>public async Task&lt;RuleDryRunResultDto&gt; DryRunPostingRuleAsync(RuleDryRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:590](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L590) |  |
-| <code>public async Task&lt;AccountingRuleTestSuiteResultDto&gt; ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:768](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L768) |  |
-| <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:826](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L826) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:853](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L853) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs:6](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs#L6).
-
-```csharp
-public sealed partial class AccountingConfigurationService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.RuleValidation.cs:17](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.RuleValidation.cs#L17).
-
-```csharp
-public sealed partial class AccountingConfigurationService
-```
-
-## AccountingMigrationRunExecutionService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingMigrationRunExecutionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs:13](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs#L13).
-
-Executes accounting migration worker plans and retains their resulting artifacts and evidence.
-
-```csharp
-public sealed class AccountingMigrationRunExecutionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingMigrationRunExecutionService(IAccountingMigrationRunArtifactStore store) : this(store, null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs:26](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs#L26) |  |
-| <code>public AccountingMigrationRunExecutionService(IAccountingMigrationRunArtifactStore store, IAccountingMigrationRunWorkerPlanStore? workerPlanStore);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs:31](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs#L31) |  |
-| <code>public async Task&lt;AccountingMigrationRunExecutionResultDto&gt; ExecuteAsync(AccountingMigrationRunExecutionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs:39](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunExecutionService.cs#L39) |  |

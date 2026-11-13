@@ -1,6 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as cashFlowApi from "@/lib/api/contractual-cash-flow.api";
+import * as curveApi from "@/lib/api/security-curves.api";
+import { ApiError } from "@/lib/api-errors";
+import { axe } from "jest-axe";
 import { ContractualCashFlowWorkbench } from "./contractual-cash-flow-workbench";
 import type { ContractualCashFlowResult, ContractualCashFlowRun } from "@/types/contractual-cash-flow.types";
 
@@ -18,6 +21,8 @@ vi.mock("@/lib/api/contractual-cash-flow.api", async () => {
     compareContractualCashFlowRuns: vi.fn()
   };
 });
+
+vi.mock("@/lib/api/security-curves.api", () => ({ listSecurityCurves: vi.fn(), listSecurityCurveVersions: vi.fn() }));
 
 const api = vi.mocked(cashFlowApi);
 afterEach(() => vi.resetAllMocks());
@@ -162,5 +167,128 @@ describe("ContractualCashFlowWorkbench", () => {
     fireEvent.click(screen.getByRole("button", { name: "Load retained run" }));
     await screen.findByLabelText("Loaded retained run");
     expect(screen.queryByLabelText("Retained run comparison")).toBeNull();
+  });
+
+  it("selects exact curve versions and multiple dated prepayments, retaining and replaying the complete request", async () => {
+    vi.mocked(curveApi.listSecurityCurves).mockResolvedValue([{
+      curveId: "curve-1", curveKey: "SOFR", kind: "Forward", currency: "USD", dayCount: "Act360", interpolation: "Linear", source: "test", createdBy: "operator", createdAt: "2026-10-30T00:00:00Z"
+    }]);
+    vi.mocked(curveApi.listSecurityCurveVersions).mockResolvedValue([{
+      curveId: "curve-1", curveVersionId: "version-1", curveKey: "SOFR", version: 1, asOf: "2026-10-29", recordedAt: "2026-10-29T00:00:00Z", source: "test", publishedBy: "operator", contentSha256: "curve-sha", points: []
+    }]);
+    api.previewContractualCashFlows.mockResolvedValue(calculated);
+    api.retainContractualCashFlowRun.mockImplementation(async (kind, subjectId, request) => ({
+      runId: request.runId, subjectKind: kind, subjectId, recordedAt: "2026-10-31T10:00:00Z", request: request.projection, result: calculated, actor: "operator-a"
+    }));
+    render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME" />);
+    fireEvent.change(screen.getByLabelText("Scenario valuation date"), { target: { value: "2026-10-31" } });
+    fireEvent.click(screen.getByRole("button", { name: "Add curve pin" }));
+    fireEvent.change(screen.getByLabelText("Benchmark key 1"), { target: { value: "SOFR" } });
+    await screen.findByRole("option", { name: "SOFR · Forward · USD" });
+    fireEvent.change(screen.getByLabelText("Curve 1"), { target: { value: "curve-1" } });
+    await screen.findByRole("option", { name: /v1 · 2026-10-29/ });
+    expect(screen.getByLabelText("Curve version 1")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText("Curve version 1"), { target: { value: "version-1" } });
+    for (const index of [1, 2]) {
+      fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} stream id`), { target: { value: "coupon" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} start date`), { target: { value: index === 1 ? "2026-10-31" : "2027-01-31" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} end date`), { target: { value: index === 1 ? "2027-01-31" : "2027-07-31" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} value`), { target: { value: index === 1 ? "0.06000000000001" : "1.25" } });
+    }
+    fireEvent.change(screen.getByLabelText("Prepayment 2 method"), { target: { value: "Psa" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 seasoning origin"), { target: { value: "2026-01-31" } });
+    fireEvent.change(screen.getByLabelText("Prepayment 2 recast policy"), { target: { value: "Recast" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
+    const request = api.previewContractualCashFlows.mock.calls[0][2];
+    expect(request.curvePins).toEqual([{ benchmarkKey: "SOFR", curveId: "curve-1", curveVersionId: "version-1" }]);
+    expect(request.prepayments).toEqual([
+      { streamId: "coupon", startDate: "2026-10-31", endDate: "2027-01-31", method: "Cpr", value: "0.06000000000001", policy: "PreservePayments" },
+      { streamId: "coupon", startDate: "2027-01-31", endDate: "2027-07-31", method: "Psa", value: "1.25", policy: "Recast", seasoningOrigin: "2026-01-31" }
+    ]);
+    fireEvent.click(screen.getByRole("button", { name: "Retain run" }));
+    await screen.findByLabelText("Retained run");
+    expect(api.retainContractualCashFlowRun.mock.calls[0][2].projection).toEqual(request);
+    const retained = { runId: "run-exact", subjectKind: "Security" as const, subjectId: "sec-1", request, result: calculated, actor: "operator-a", recordedAt: "2026-10-31T10:00:00Z" };
+    api.getContractualCashFlowRun.mockResolvedValue(retained);
+    fireEvent.change(screen.getByLabelText("Retained run identity"), { target: { value: "run-exact" } });
+    fireEvent.click(screen.getByRole("button", { name: "Load retained run" }));
+    await screen.findByLabelText("Loaded retained run");
+    expect(screen.getByText(/"curveVersionId": "version-1"/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Verify replay" }));
+    expect(await screen.findByLabelText("Replay verification")).toHaveTextContent("Replay matches");
+    expect(api.previewContractualCashFlows).toHaveBeenLastCalledWith("Security", "sec-1", request, expect.anything());
+    fireEvent.click(screen.getByRole("button", { name: "Remove prepayment 1" }));
+    expect(screen.queryByLabelText("Scenario evidence")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
+    expect(screen.getByLabelText("Prepayment 1 method")).toHaveValue("Psa");
+  });
+
+  it("refuses overlapping assumptions and PSA without a seasoning origin", async () => {
+    render(<ContractualCashFlowWorkbench subjectKind="Loan" subjectId="loan-1" subjectLabel="Facility" />);
+    fireEvent.change(screen.getByLabelText("Scenario valuation date"), { target: { value: "2026-10-31" } });
+    for (const index of [1, 2]) {
+      fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} stream id`), { target: { value: "principal" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} start date`), { target: { value: "2026-11-01" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} end date`), { target: { value: "2027-01-31" } });
+      fireEvent.change(screen.getByLabelText(`Prepayment ${index} value`), { target: { value: "0.06" } });
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("overlaps another prepayment interval");
+    expect(api.previewContractualCashFlows).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Remove prepayment 2" }));
+    fireEvent.change(screen.getByLabelText("Prepayment 1 method"), { target: { value: "Psa" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("PSA needs a seasoning origin");
+    expect(api.previewContractualCashFlows).not.toHaveBeenCalled();
+  });
+
+  it("shows permission refusal and makes run retention unavailable without blocking previews", async () => {
+    api.previewContractualCashFlows.mockResolvedValue(calculated);
+    api.retainContractualCashFlowRun.mockRejectedValue(new ApiError({ path: "/runs", status: 403 }));
+    render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME" />);
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    await screen.findByText("25,000.123456789012");
+    fireEvent.click(screen.getByRole("button", { name: "Retain run" }));
+    expect(await screen.findByText("Run retention unavailable")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Permission denied");
+    expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Preview scenario" })).toBeEnabled();
+  });
+
+  it("clears foreign scenario inputs and ignores delayed results after subject changes", async () => {
+    let resolve!: (result: ContractualCashFlowResult) => void;
+    api.previewContractualCashFlows.mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    const { rerender } = render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME" />);
+    fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+    fireEvent.click(screen.getByRole("button", { name: "Remove prepayment 1" }));
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    rerender(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-2" subjectLabel="OTHER" />);
+    resolve(calculated);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Preview scenario" })).toBeEnabled());
+    expect(screen.queryByLabelText("Scenario evidence")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Prepayment 1 stream id")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
+  });
+
+  it("shows calculation service unavailability and rejects a replay packet for another subject", async () => {
+    api.previewContractualCashFlows.mockRejectedValue(new ApiError({ path: "/preview", status: 503 }));
+    api.getContractualCashFlowRun.mockResolvedValue({ runId: "run-1", subjectKind: "Security", subjectId: "foreign", request: { valuationDate: "2026-10-31", knowledgeCutoff: "2026-10-31T00:00:00Z" }, result: calculated, recordedAt: "2026-10-31T00:00:00Z", actor: "operator" });
+    render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME" />);
+    fireEvent.click(screen.getByRole("button", { name: "Preview scenario" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("calculation service is unavailable");
+    fireEvent.change(screen.getByLabelText("Retained run identity"), { target: { value: "run-1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Load retained run" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("does not match the selected subject");
+    expect(screen.queryByLabelText("Loaded retained run")).not.toBeInTheDocument();
+  });
+
+  it("exposes accessible labels and keyboard-operable assumption configuration", async () => {
+    const { container } = render(<ContractualCashFlowWorkbench subjectKind="Security" subjectId="sec-1" subjectLabel="ACME" />);
+    fireEvent.click(screen.getByRole("button", { name: "Add prepayment assumption" }));
+    fireEvent.change(screen.getByLabelText("Prepayment 1 method"), { target: { value: "Psa" } });
+    expect((await axe(container)).violations).toEqual([]);
   });
 });

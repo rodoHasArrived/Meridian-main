@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpsertProviderModuleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
+
+Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
+
+```csharp
+public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
+```
+
+## WorkstationIntercompanyAgreementEvidenceAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:51](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L51).
+
+Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
+
+```csharp
+public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:54](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L54) |  |
+
+## WorkstationPersonalTableViewRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:219](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L219).
+
+```csharp
+public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
+```
+
+## WorkstationServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L86).
+
+Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
+
+```csharp
+public static class WorkstationServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1495](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1495) |  |
+
 ## WorkstationWorkflowReadScope
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowReadScope</code>. Kind: `record`.

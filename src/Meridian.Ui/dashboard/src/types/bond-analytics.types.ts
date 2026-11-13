@@ -100,6 +100,7 @@ export interface BondAnalyticsQuery {
   settlementDate: string;
   calculationVersion?: BondCalculationVersion;
   knownAt?: string;
+  securityVersion?: string;
   cleanPrice?: string;
   yield?: string;
   yieldConvention?: BondYieldConvention;

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
+import { AccrualScheduleWorkbench } from "@/components/accounting/accrual-schedule-workbench";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -637,12 +637,13 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
       <Input value={recurringEntity} placeholder="Select an entity ID" className="mt-1"
         onChange={(event) => setRecurringEntitySelection({ scopeKey: recurringScopeKey, entityId: event.target.value })} />
     </label>
-    <RecurringJournalQueue
+    <AccrualScheduleWorkbench
       scope={recurringFund && recurringBook && recurringEntity.trim()
         ? { fundProfileId: recurringFund, ledgerBookId: recurringBook, entityId: recurringEntity.trim() }
         : null}
       availableDraftIds={view.drafts.map((draft) => draft.journalEntryId)}
       onSelectDraft={view.selectDraft}
+      onDraftsGenerated={view.refresh}
     />
   </div>;
   // While an amount input holds unparseable text, its raw string is kept here (keyed
@@ -751,6 +752,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
         </div>
       ) : null}
 
+      {recurringQueue}
       {view.draft.assetAccountingDraft ? <p role="status" className="rounded border border-warning/30 bg-warning/10 p-3 text-sm">{view.assetWorkflow?.capability ? "This asset accounting draft is immutable. Available approval and posting decisions use the authenticated governed asset workflow below. Corrections remain unavailable here." : "This is an immutable asset accounting review draft. Validate and submit it for review here. Approval, posting and corrections require retained approval evidence through the governed asset workflow and remain unavailable until supported workflow capabilities are loaded."}</p> : null}
       <ManualJournalHealthBar view={view} hasInvalidAmountEdits={hasInvalidAmountEdits} invalidAmountReason={invalidAmountReason} />
 
@@ -787,7 +789,6 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
             </div>
           </section>
 
-          {recurringQueue}
           <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
         </div>
 

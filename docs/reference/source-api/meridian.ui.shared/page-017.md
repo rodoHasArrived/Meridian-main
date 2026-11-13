@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunCapitalCallDefaultInterestDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallDefaultInterestDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L28).
+
+Accrue default interest on the unfunded part of a posted capital call through a date.
+
+```csharp
+public sealed record RunCapitalCallDefaultInterestDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly AccrueThrough, IReadOnlyList<CapitalCallDefaultTermsInput> Defaults, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
+## RunCapitalCallFundingDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallFundingDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L30).
+
+Request to record LP cash receipts against an issued capital call and land the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything, and partial funding leaves the receivable open.
+
+```csharp
+public sealed record RunCapitalCallFundingDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly ReceivedDate, IReadOnlyList<CapitalCallFundingInput> Fundings, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
+## RunCapitalCallIssuanceDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallIssuanceDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:32](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L32).
+
+Request to plan a fund-level capital call over the supplied commitment register and land the per-LP issuance drafts in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything.
+
+```csharp
+public sealed record RunCapitalCallIssuanceDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, decimal AmountToCall, DateOnly NoticeDate, DateOnly DueDate, IReadOnlyList<CapitalCallCommitmentInput> Commitments, CapitalCallAllocationBasis AllocationBasis = CapitalCallAllocationBasis.ProRataByUncalled, string? Purpose = null, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
+## RunDailyMarkToMarketDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunDailyMarkToMarketDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L74).
+
+Explicitly governed end-of-day valuation request. Prices are resolved server-side from the registered historical provider chain; callers provide positions and policy, never the closing prices that enter the books.
+
+```csharp
+public sealed record RunDailyMarkToMarketDraftIntakeRequest(string FundProfileId, string Currency, string Actor, Guid LedgerBookId, Guid PeriodId, DateTimeOffset AsOf, IReadOnlyList<MarkToMarketPosition> Positions, string PolicyId, string PolicyName, string ValuationMethod, string PolicyApprovedBy, DateTimeOffset PolicyApprovedAtUtc, string Reason, int MaximumMarkAgeDays = 3, DailyPortfolioPriceConfidence MinimumConfidence = DailyPortfolioPriceConfidence.Medium, bool RequireCompleteCoverage = true, string? EntityId = null, string? TenantId = null, string? CompanyId = null, string? BatchCorrelationId = null, string? ScheduleId = null);
+```
+
 ## RunDistributionDeclarationDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RunDistributionDeclarationDraftIntakeRequest</code>. Kind: `record`.
@@ -819,62 +867,3 @@ Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strateg
 ```csharp
 public sealed partial class TradingOperatorReadinessService
 ```
-
-## UpsertProviderModuleRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
-
-Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
-
-```csharp
-public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
-```
-
-## WorkstationIntercompanyAgreementEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:51](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L51).
-
-Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
-
-```csharp
-public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:54](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L54) |  |
-
-## WorkstationPersonalTableViewRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:219](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L219).
-
-```csharp
-public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
-```
-
-## WorkstationServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L86).
-
-Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
-
-```csharp
-public static class WorkstationServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1495](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1495) |  |

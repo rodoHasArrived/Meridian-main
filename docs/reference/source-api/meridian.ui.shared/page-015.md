@@ -6,6 +6,73 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecurringJournalPeriodAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L20).
+
+The existing PostgreSQL ledger remains the sole authority for locks and reopens.
+
+```csharp
+public sealed class RecurringJournalPeriodAuthority(ILedgerJournalStore? journalStore = null, IFundProfileTenancyRegistry? tenancy = null, IRecurringJournalSubjectAuthority? subjects = null) : IRecurringJournalPeriodAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |
+
+## RecurringJournalPeriodState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodState</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L8).
+
+```csharp
+public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
+```
+
+## RecurringJournalRunner
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:13](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L13).
+
+Runs under the existing scheduled worker and admits only retained human-review drafts.
+
+```csharp
+public sealed class RecurringJournalRunner(IRecurringJournalStore store, AutomatedJournalDraftIntakeService intake, IManualJournalEntryDraftStore drafts, IRecurringJournalPeriodAuthority periods, IEnumerable<IRecurringJournalCalculation>? calculations = null) : IRecurringJournalQueueSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
+| <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
+| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default, string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:339](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L339) |  |
+
+## RecurringJournalSubjectAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalSubjectAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs#L18).
+
+Resolves entity/account membership from retained structure rather than caller labels.
+
+```csharp
+public sealed class RecurringJournalSubjectAuthority(IFundStructureStore? structure = null, IFundAccountStore? accounts = null, TimeProvider? clock = null) : IRecurringJournalSubjectAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyAsync(RecurringJournalScope scope, LedgerBookRecord book, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs:23](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs#L23) |  |
+
 ## RegionalSyncWindow
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RegionalSyncWindow</code>. Kind: `record`.
@@ -746,51 +813,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReportingReleasedArtifactIntegrityGate(IReportingArtifactCatalog catalog, IReportingArtifactStore artifactStore);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:244](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L244) |  |
 | <code>public async Task&lt;ReportingReleaseAuthorizationResult&gt; VerifyAsync(ReportingDeliveryReleaseAuthorization authorization, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:252](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L252) |  |
-
-## ReportingRenderedArtifact
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRenderedArtifact</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L12).
-
-Exact rendered bytes supplied by the reporting renderer. The vault clones these bytes before hashing or awaiting so caller-owned buffers cannot change during retention.
-
-```csharp
-public sealed record ReportingRenderedArtifact(string ArtifactId, string FileName, string ContentType, ReadOnlyMemory<byte> Content);
-```
-
-## ReportingRestatementCertificationInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRestatementCertificationInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L168).
-
-Inputs from server-owned read models used to certify a replacement snapshot. Dataset rows, source identity, template metadata, and access context must not be populated from an HTTP body.
-
-```csharp
-public sealed record ReportingRestatementCertificationInput(ReportingTemplateMetadata Template, ReportingRunReadinessDto Readiness, ReportAccessQueryContext AccessContext);
-```
-
-## ReportingRetainedManifestArtifactDescriptor
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestArtifactDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L22).
-
-Hash and byte-length declaration embedded in the retained manifest. The manifest entry itself intentionally has no hash/length to avoid a circular self-hash; its exact hash and length are authoritatively carried by the immutable package catalog.
-
-```csharp
-public sealed record ReportingRetainedManifestArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long? ByteLength, string? ContentHashSha256);
-```
-
-## ReportingRetainedManifestDocument
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L33).
-
-Canonical manifest bytes retained alongside every governed reporting package. This document is deliberately sufficient to validate release without consulting the mutable orchestration store.
-
-```csharp
-public sealed record ReportingRetainedManifestDocument(string SchemaVersion, string RunId, string SeriesId, string TemplateId, VersionedReportTemplateIdDto ResolvedTemplate, DateOnly AsOfDate, string ParametersCanonicalJson, string ParametersHash, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, ReportingAuthoritativeSourceCheckpoint AuthoritativeSource, ReportingRunReadinessDto Readiness, ImmutableArray<ReportingSectionManifest> Sections, int CertifiedDatasetRowCount, string CertifiedDatasetHashSha256, ImmutableArray<ReportingRetainedManifestArtifactDescriptor> Artifacts);
-```

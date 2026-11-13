@@ -5937,6 +5937,7 @@ Meridian-main
 │   │   │   ├── AccountingPostingCommandDtos.cs
 │   │   │   ├── AuditChainIntegrity.cs
 │   │   │   ├── AutomatedJournalEvidenceDtos.cs
+│   │   │   ├── CanonicalAmortizationPreparationDtos.cs
 │   │   │   ├── ConsolidationDtos.cs
 │   │   │   ├── ConsolidationFxDtos.cs
 │   │   │   ├── ConsolidationFxValidation.cs
@@ -8739,6 +8740,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting
 │   │   │   │   │   │   ├── AccountTree.test.tsx
 │   │   │   │   │   │   ├── AccountTree.tsx
+│   │   │   │   │   │   ├── accrual-schedule-workbench.test.tsx
+│   │   │   │   │   │   ├── accrual-schedule-workbench.tsx
 │   │   │   │   │   │   ├── AgingTable.test.tsx
 │   │   │   │   │   │   ├── AgingTable.tsx
 │   │   │   │   │   │   ├── AmountCell.test.tsx
@@ -8768,6 +8771,7 @@ Meridian-main
 │   │   │   │   │   │   ├── ReconciliationPanel.tsx
 │   │   │   │   │   │   ├── RecurringJournalQueue.test.tsx
 │   │   │   │   │   │   ├── RecurringJournalQueue.tsx
+│   │   │   │   │   │   ├── retained-evidence-fields.tsx
 │   │   │   │   │   │   ├── RollforwardTrace.test.tsx
 │   │   │   │   │   │   ├── RollforwardTrace.tsx
 │   │   │   │   │   │   ├── StatementTable.test.tsx
@@ -8860,6 +8864,8 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-analytics-panel.tsx
 │   │   │   │   │   │   ├── bond-coupon-recognition-panel.test.tsx
 │   │   │   │   │   │   ├── bond-coupon-recognition-panel.tsx
+│   │   │   │   │   │   ├── bond-discovery-panel.test.tsx
+│   │   │   │   │   │   ├── bond-discovery-panel.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.retained-scenarios.test.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.test.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.tsx
@@ -8878,6 +8884,8 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-saved-comparison.tsx
 │   │   │   │   │   │   ├── bond-screening-panel.test.tsx
 │   │   │   │   │   │   ├── bond-screening-panel.tsx
+│   │   │   │   │   │   ├── bond-settlement-panel.test.tsx
+│   │   │   │   │   │   ├── bond-settlement-panel.tsx
 │   │   │   │   │   │   ├── bond-workflow-panel.test.tsx
 │   │   │   │   │   │   ├── bond-workflow-panel.tsx
 │   │   │   │   │   │   ├── cash-dividend-attestation-panel.test.tsx
@@ -8915,6 +8923,8 @@ Meridian-main
 │   │   │   │   │   │   ├── detail-rail.tsx
 │   │   │   │   │   │   ├── entity-inspector.test.tsx
 │   │   │   │   │   │   ├── entity-inspector.tsx
+│   │   │   │   │   │   ├── exact-curve-inputs.test.tsx
+│   │   │   │   │   │   ├── exact-curve-inputs.tsx
 │   │   │   │   │   │   ├── figure-difference-note.test.tsx
 │   │   │   │   │   │   ├── figure-difference-note.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
@@ -8959,6 +8969,8 @@ Meridian-main
 │   │   │   │   │   │   ├── preparer-attestation-evidence.tsx
 │   │   │   │   │   │   ├── preparer-draft-check-panel.test.tsx
 │   │   │   │   │   │   ├── preparer-draft-check-panel.tsx
+│   │   │   │   │   │   ├── pricing-source-hierarchy-panel.test.tsx
+│   │   │   │   │   │   ├── pricing-source-hierarchy-panel.tsx
 │   │   │   │   │   │   ├── principal-id-input.test.tsx
 │   │   │   │   │   │   ├── principal-id-input.tsx
 │   │   │   │   │   │   ├── private-capital-lifecycle-panel.test.tsx
@@ -8987,10 +8999,17 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-lineage-summary.tsx
 │   │   │   │   │   │   ├── reporting-production-surface.test.tsx
 │   │   │   │   │   │   ├── reporting-production-surface.tsx
+│   │   │   │   │   │   ├── retained-evidence-fields.tsx
 │   │   │   │   │   │   ├── save-view-dialog.test.tsx
 │   │   │   │   │   │   ├── save-view-dialog.tsx
+│   │   │   │   │   │   ├── scenario-prepayment-inputs.test.ts
+│   │   │   │   │   │   ├── scenario-prepayment-inputs.tsx
 │   │   │   │   │   │   ├── scope-picker.test.tsx
 │   │   │   │   │   │   ├── scope-picker.tsx
+│   │   │   │   │   │   ├── security-curve-valuation-panel.test.tsx
+│   │   │   │   │   │   ├── security-curve-valuation-panel.tsx
+│   │   │   │   │   │   ├── security-curve-workbench.test.tsx
+│   │   │   │   │   │   ├── security-curve-workbench.tsx
 │   │   │   │   │   │   ├── security-details-tracker.test.tsx
 │   │   │   │   │   │   ├── security-details-tracker.tsx
 │   │   │   │   │   │   ├── security-details-tracker.view-model.test.ts
@@ -9234,6 +9253,8 @@ Meridian-main
 │   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── accounting-workspace.api.ts
+│   │   │   │   │   │   ├── accrual-schedules.api.test.ts
+│   │   │   │   │   │   ├── accrual-schedules.api.ts
 │   │   │   │   │   │   ├── admin-maintenance.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
 │   │   │   │   │   │   ├── asset-accounting-workflow.api.test.ts
@@ -9244,13 +9265,19 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-analytics.api.test.ts
 │   │   │   │   │   │   ├── bond-analytics.api.ts
 │   │   │   │   │   │   ├── bond-cutover.api.ts
+│   │   │   │   │   │   ├── bond-discovery.api.test.ts
+│   │   │   │   │   │   ├── bond-discovery.api.ts
 │   │   │   │   │   │   ├── bond-http-precision.test.ts
 │   │   │   │   │   │   ├── bond-migration.api.ts
 │   │   │   │   │   │   ├── bond-observed-fixings.api.ts
 │   │   │   │   │   │   ├── bond-reference.api.ts
+│   │   │   │   │   │   ├── bond-settlement.api.test.ts
+│   │   │   │   │   │   ├── bond-settlement.api.ts
 │   │   │   │   │   │   ├── bond-workflow.api.test.ts
 │   │   │   │   │   │   ├── bond-workflow.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
+│   │   │   │   │   │   ├── canonical-amortization.api.test.ts
+│   │   │   │   │   │   ├── canonical-amortization.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── chart-evidence.api.test.ts
 │   │   │   │   │   │   ├── close-checklist-history.api.test.ts
@@ -9287,6 +9314,8 @@ Meridian-main
 │   │   │   │   │   │   ├── option-visualization.api.test.ts
 │   │   │   │   │   │   ├── option-visualization.api.ts
 │   │   │   │   │   │   ├── portfolio-cash-ladder.api.ts
+│   │   │   │   │   │   ├── pricing-hierarchy.api.test.ts
+│   │   │   │   │   │   ├── pricing-hierarchy.api.ts
 │   │   │   │   │   │   ├── private-capital-records.api.test.ts
 │   │   │   │   │   │   ├── private-capital-records.api.ts
 │   │   │   │   │   │   ├── private-capital.api.test.ts
@@ -9305,6 +9334,8 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-governance.api.ts
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
 │   │   │   │   │   │   ├── reporting-runs.api.ts
+│   │   │   │   │   │   ├── security-curves.api.test.ts
+│   │   │   │   │   │   ├── security-curves.api.ts
 │   │   │   │   │   │   ├── security-master-schema.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.ts
@@ -9611,6 +9642,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.view-model.ts
 │   │   │   │   │   ├── accounting-screen.calibration-panel.tsx
+│   │   │   │   │   ├── accounting-screen.canonical-amortization-panel.test.tsx
+│   │   │   │   │   ├── accounting-screen.canonical-amortization-panel.tsx
 │   │   │   │   │   ├── accounting-screen.capital-account-workbench-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.capital-account-workbench-panel.tsx
 │   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.test.ts
@@ -10146,6 +10179,7 @@ Meridian-main
 │   │   │   │   │   ├── bond-cutover.types.ts
 │   │   │   │   │   ├── bond-migration.types.ts
 │   │   │   │   │   ├── bond-reference.types.ts
+│   │   │   │   │   ├── bond-settlement.types.ts
 │   │   │   │   │   ├── bond-workflow.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
@@ -10191,6 +10225,7 @@ Meridian-main
 │   │   │   │   │   ├── report-amount-proof.ts
 │   │   │   │   │   ├── reporting-governance.ts
 │   │   │   │   │   ├── reporting-income-comparison.ts
+│   │   │   │   │   ├── security-curves.types.ts
 │   │   │   │   │   ├── statement-run-detail.types.ts
 │   │   │   │   │   ├── workstation-1.ts
 │   │   │   │   │   ├── workstation-2.ts
@@ -10422,6 +10457,7 @@ Meridian-main
 │   │   │   ├── BackfillValidationEndpoints.cs
 │   │   │   ├── BankingEndpoints.cs
 │   │   │   ├── BondAnalyticsEndpoints.cs
+│   │   │   ├── BondDiscoveryEndpoints.cs
 │   │   │   ├── BondMigrationEndpoints.cs
 │   │   │   ├── BondReferenceEndpoints.cs
 │   │   │   ├── BondReferencePagingEndpoints.cs
@@ -10488,6 +10524,8 @@ Meridian-main
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
 │   │   │   ├── LedgerEndpoints.AccountOversight.cs
+│   │   │   ├── LedgerEndpoints.AccrualSchedules.cs
+│   │   │   ├── LedgerEndpoints.Amortization.cs
 │   │   │   ├── LedgerEndpoints.AuditIntegrity.cs
 │   │   │   ├── LedgerEndpoints.BondWorkflows.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
@@ -13945,6 +13983,7 @@ Meridian-main
 │   │   │   ├── AccountingAuditChainMigrationTests.cs
 │   │   │   ├── AccountingConfigurationPostgresStoreTests.cs
 │   │   │   ├── AccountingPostingCommandValidatorCurrencyTests.cs
+│   │   │   ├── AccrualScheduleAccountScopePostgresTests.cs
 │   │   │   ├── AdaptivePartitionPlacementPlannerTests.cs
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AnalysisQualityReportCsvTests.cs
@@ -14307,6 +14346,7 @@ Meridian-main
 │   │   │   ├── BondAnalyticsEndpointsTests.cs
 │   │   │   ├── BondCollectionCaseworkProjectionTests.cs
 │   │   │   ├── BondCouponRecognitionEvidenceVerifierTests.cs
+│   │   │   ├── BondDiscoveryEndpointsTests.cs
 │   │   │   ├── BondExerciseNoticeEndpointsTests.cs
 │   │   │   ├── BondFamilyAcceptance.cs
 │   │   │   ├── BondIncomeAuthorityCompositionTests.cs
@@ -14555,6 +14595,7 @@ Meridian-main
 │   │   │   ├── Wave2PaperTradingCockpitAcceptanceTests.cs
 │   │   │   ├── WorkflowLibraryEndpointTests.cs
 │   │   │   ├── WorkstationAuditTableExportTests.cs
+│   │   │   ├── WorkstationBondCandidateStagingTests.cs
 │   │   │   ├── WorkstationCloseTenantContextCompositionTests.cs
 │   │   │   ├── WorkstationCollateralExposureEndpointsTests.cs
 │   │   │   ├── WorkstationContractSnapshotTests.cs
@@ -14565,10 +14606,13 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.StatementAuthorityTests.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountOversight.cs
+│   │   │   ├── WorkstationEndpointsTests.AccrualSchedules.cs
 │   │   │   ├── WorkstationEndpointsTests.ApprovalCollaboration.cs
 │   │   │   ├── WorkstationEndpointsTests.AuditIntegrity.cs
 │   │   │   ├── WorkstationEndpointsTests.BondWorkflows.cs
 │   │   │   ├── WorkstationEndpointsTests.BulkCasework.cs
+│   │   │   ├── WorkstationEndpointsTests.CanonicalAmortization.cs
+│   │   │   ├── WorkstationEndpointsTests.CanonicalAmortizationAuthority.cs
 │   │   │   ├── WorkstationEndpointsTests.ClosePreparation.cs
 │   │   │   ├── WorkstationEndpointsTests.CloseReadiness.cs
 │   │   │   ├── WorkstationEndpointsTests.CrossScreenCounts.cs

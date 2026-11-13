@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingRenderedArtifact
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRenderedArtifact</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L12).
+
+Exact rendered bytes supplied by the reporting renderer. The vault clones these bytes before hashing or awaiting so caller-owned buffers cannot change during retention.
+
+```csharp
+public sealed record ReportingRenderedArtifact(string ArtifactId, string FileName, string ContentType, ReadOnlyMemory<byte> Content);
+```
+
+## ReportingRestatementCertificationInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRestatementCertificationInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:168](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L168).
+
+Inputs from server-owned read models used to certify a replacement snapshot. Dataset rows, source identity, template metadata, and access context must not be populated from an HTTP body.
+
+```csharp
+public sealed record ReportingRestatementCertificationInput(ReportingTemplateMetadata Template, ReportingRunReadinessDto Readiness, ReportAccessQueryContext AccessContext);
+```
+
+## ReportingRetainedManifestArtifactDescriptor
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestArtifactDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L22).
+
+Hash and byte-length declaration embedded in the retained manifest. The manifest entry itself intentionally has no hash/length to avoid a circular self-hash; its exact hash and length are authoritatively carried by the immutable package catalog.
+
+```csharp
+public sealed record ReportingRetainedManifestArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long? ByteLength, string? ContentHashSha256);
+```
+
+## ReportingRetainedManifestDocument
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRetainedManifestDocument</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs#L33).
+
+Canonical manifest bytes retained alongside every governed reporting package. This document is deliberately sufficient to validate release without consulting the mutable orchestration store.
+
+```csharp
+public sealed record ReportingRetainedManifestDocument(string SchemaVersion, string RunId, string SeriesId, string TemplateId, VersionedReportTemplateIdDto ResolvedTemplate, DateOnly AsOfDate, string ParametersCanonicalJson, string ParametersHash, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, ReportingAuthoritativeSourceCheckpoint AuthoritativeSource, ReportingRunReadinessDto Readiness, ImmutableArray<ReportingSectionManifest> Sections, int CertifiedDatasetRowCount, string CertifiedDatasetHashSha256, ImmutableArray<ReportingRetainedManifestArtifactDescriptor> Artifacts);
+```
+
 ## ReportingRunCertificationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunCertificationService</code>. Kind: `class`.
@@ -908,52 +956,4 @@ Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:64](../../../
 
 ```csharp
 public sealed record RiskRuleStatusDto(string RuleName, string State, string Summary, bool IsBreached, string Threshold, string CurrentValue, DateTimeOffset AsOf, IReadOnlyList<string> RecentViolations, decimal? UtilizationPercent = null, string? Severity = null);
-```
-
-## RunCapitalCallDefaultInterestDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallDefaultInterestDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L28).
-
-Accrue default interest on the unfunded part of a posted capital call through a date.
-
-```csharp
-public sealed record RunCapitalCallDefaultInterestDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly AccrueThrough, IReadOnlyList<CapitalCallDefaultTermsInput> Defaults, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
-```
-
-## RunCapitalCallFundingDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallFundingDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L30).
-
-Request to record LP cash receipts against an issued capital call and land the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything, and partial funding leaves the receivable open.
-
-```csharp
-public sealed record RunCapitalCallFundingDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly ReceivedDate, IReadOnlyList<CapitalCallFundingInput> Fundings, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
-```
-
-## RunCapitalCallIssuanceDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallIssuanceDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:32](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L32).
-
-Request to plan a fund-level capital call over the supplied commitment register and land the per-LP issuance drafts in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything.
-
-```csharp
-public sealed record RunCapitalCallIssuanceDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, decimal AmountToCall, DateOnly NoticeDate, DateOnly DueDate, IReadOnlyList<CapitalCallCommitmentInput> Commitments, CapitalCallAllocationBasis AllocationBasis = CapitalCallAllocationBasis.ProRataByUncalled, string? Purpose = null, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
-```
-
-## RunDailyMarkToMarketDraftIntakeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RunDailyMarkToMarketDraftIntakeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L74).
-
-Explicitly governed end-of-day valuation request. Prices are resolved server-side from the registered historical provider chain; callers provide positions and policy, never the closing prices that enter the books.
-
-```csharp
-public sealed record RunDailyMarkToMarketDraftIntakeRequest(string FundProfileId, string Currency, string Actor, Guid LedgerBookId, Guid PeriodId, DateTimeOffset AsOf, IReadOnlyList<MarkToMarketPosition> Positions, string PolicyId, string PolicyName, string ValuationMethod, string PolicyApprovedBy, DateTimeOffset PolicyApprovedAtUtc, string Reason, int MaximumMarkAgeDays = 3, DailyPortfolioPriceConfidence MinimumConfidence = DailyPortfolioPriceConfidence.Medium, bool RequireCompleteCoverage = true, string? EntityId = null, string? TenantId = null, string? CompanyId = null, string? BatchCorrelationId = null, string? ScheduleId = null);
 ```

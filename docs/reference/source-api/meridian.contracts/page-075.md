@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationTradingPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:430](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L430).
+
+Typed payload returned by GET /api/workstation/trading. Readiness is TradingOperatorReadinessDto; typed at the endpoint layer to avoid a circular project reference.
+
+```csharp
+public sealed record WorkstationTradingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationTradingPositionRow> Positions, IReadOnlyList<WorkstationTradingOrderRow> OpenOrders, IReadOnlyList<WorkstationTradingFillRow> Fills, WorkstationTradingRiskState Risk, WorkstationTradingBrokerageState Brokerage, TradingOperatorReadinessDto Readiness, IReadOnlyList<WorkstationModeComparisonGroup> Comparisons, WorkstationRunDrillInLinks? DrillIn);
+```
+
+## WorkstationTradingPositionRow
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPositionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:336](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L336).
+
+A single position row shown in the trading workstation positions table.
+
+```csharp
+public sealed record WorkstationTradingPositionRow(string PositionKey, string Symbol, string Side, string Quantity, string AveragePrice, string MarkPrice, string DayPnl, string UnrealizedPnl, string Exposure, MarkFreshnessAssessmentDto? MarkFreshness = null, string? MarketValue = null, string? Currency = null, string? Weight = null, string? WeightBasis = null);
+```
+
+## WorkstationTradingRiskState
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingRiskState</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:401](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L401).
+
+Risk state block embedded inside the trading payload. Guardrails carries the live rule-registry utilization bars; ActiveGuardrails keeps the flat string rendering of the same registry entries for text-only consumers.
+
+```csharp
+public sealed record WorkstationTradingRiskState(string State, string Summary, string NetExposure, string GrossExposure, string Var95, string MaxDrawdown, string BuyingPowerUsed, IReadOnlyList<string> ActiveGuardrails, IReadOnlyList<WorkstationRiskGuardrail>? Guardrails = null);
+```
+
+## WorkstationWatchlist
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationWatchlist</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L29).
+
+Shared workstation watchlist summary.
+
+```csharp
+public sealed record WorkstationWatchlist(string WatchlistId, string Name, IReadOnlyList<string> Symbols, int SymbolCount, bool IsPinned, int SortOrder, string? AccentColor = null, string? Summary = null);
+```
+
 ## WorkstationWorkspaceCatalog
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationWorkspaceCatalog</code>. Kind: `class`.

@@ -153,10 +153,13 @@
       "matched_paths": [
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountOversight.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountingConfiguration.cs",
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccrualSchedules.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.ApprovalCollaboration.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AuditIntegrity.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.BondWorkflows.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.BulkCasework.cs",
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.CanonicalAmortization.cs",
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.CanonicalAmortizationAuthority.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.ClosePreparation.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.CloseReadiness.cs",
         "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.CrossScreenCounts.cs",

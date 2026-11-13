@@ -19,6 +19,9 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
+import { SecurityCurveWorkbench } from "@/components/meridian/security-curve-workbench";
+import { SecurityCurveValuationPanel } from "@/components/meridian/security-curve-valuation-panel";
+import { BondDiscoveryPanel } from "@/components/meridian/bond-discovery-panel";
 import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
 import { BondWorkflowPanel } from "@/components/meridian/bond-workflow-panel";
 import { BondIncomePanel } from "@/components/meridian/bond-income-panel";
@@ -147,6 +150,8 @@ function normalizeOptionalQueryValue(value: string | null): string | undefined {
 }
 
 export function AccountingScreen({ data, multiAssetCoverage, session = null }: AccountingScreenProps) {
+  const [curvesOpen, setCurvesOpen] = useState(false);
+  const [bondDiscoveryOpen, setBondDiscoveryOpen] = useState(false);
   const { pathname, search, hash } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   // The same baseline the break queue marks rows against (C3), read without recording a visit:
@@ -944,7 +949,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (
-        <ManualJournalEntryWorkbenchPanel view={journalEntries} search={search} />
+        <ManualJournalEntryWorkbenchPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment])} view={journalEntries} search={search} />
       ) : null}
 
       {sectionVisibility.showCapitalAccounts ? (
@@ -1567,6 +1572,17 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             </div>
           </section>
 
+          <div className="grid gap-4" aria-label="Security Master market inputs and discovery">
+            <details className="rounded border border-border p-4" onToggle={(event) => setCurvesOpen(event.currentTarget.open)}>
+              <summary className="cursor-pointer font-semibold">Curves: definitions, pillars and historical versions</summary>
+              {curvesOpen ? <div className="mt-4"><SecurityCurveWorkbench key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+            </details>
+            <details className="rounded border border-border p-4" onToggle={(event) => setBondDiscoveryOpen(event.currentTarget.open)}>
+              <summary className="cursor-pointer font-semibold">Discover provider bonds and stage candidate imports</summary>
+              {bondDiscoveryOpen ? <div className="mt-4"><BondDiscoveryPanel key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+            </details>
+          </div>
+
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(24rem,0.8fr)]">
           {/* Search panel */}
           <Card className="panel-surface">
@@ -1984,6 +2000,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                               panel?.scrollIntoView({ block: "nearest" });
                             }} />
                         </div>
+                        <SecurityCurveValuationPanel key={`curve-valuation-${securityMaster.selectedSecurityId}`} securityId={securityMaster.selectedSecurityId} />
                         <BondWorkflowPanel securityId={securityMaster.selectedSecurityId} />
                         <BondIncomePanel key={`income-${securityMaster.selectedSecurityId}`} />
                         <section id="bond-conventions-review" tabIndex={-1} aria-label="Bond convention review">

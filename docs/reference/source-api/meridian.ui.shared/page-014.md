@@ -6,6 +6,82 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorTriagePolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriagePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:13](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L13).
+
+Triage changes attention metadata; it never advances the underlying readiness gate.
+
+```csharp
+public static class OperatorTriagePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OperatorTriageState ObserveSeverity(OperatorTriageState state, OperatorWorkItemToneDto tone, DateTimeOffset now);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L15) |  |
+| <code>public static bool IsSnoozed(OperatorTriagePersonalState? personal, OperatorWorkItemToneDto tone, DateTimeOffset now) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:32](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L32) |  |
+| <code>public static OperatorTriageState Apply(OperatorTriageState state, string actorId, OperatorTriageCommand command, OperatorWorkItemToneDto tone, DateTimeOffset now, bool sourceOwnsAssignment, out bool replayed);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:35](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L35) |  |
+
+## OperatorTriageServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L10).
+
+```csharp
+public static class OperatorTriageServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddOperatorTriageStorage(this IServiceCollection services, CompositionConfiguration configuration, bool isProduction);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L12) |  |
+
+## OptionAssessmentImportService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L10).
+
+Retains imported broker claims and their exact source bytes. No broker or OMS is called.
+
+```csharp
+public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArtifactStore evidence, TimeProvider clock)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxSourceBytes = 8 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:12](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L12) |  |
+| <code>public OptionAssessmentImportPreview Preview(OptionAssessmentImportRequest request);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L16) |  |
+| <code>public async Task&lt;RetainedOptionAssessment&gt; AcceptAsync(string tenant, string company, string actor, Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L40) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;RetainedOptionAssessment&gt;&gt; ListAsync(string tenant, string company, Guid account, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:100](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L100) |  |
+
+## OptionScreeningService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OptionScreeningService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:9](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L9).
+
+Bounded, current-snapshot option exploration. Does not evaluate account or execution permission.
+
+```csharp
+public sealed class OptionScreeningService(OptionsChainService chains, TimeProvider timeProvider)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumExpirations = 12;</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:11](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L11) |  |
+| <code>public async Task&lt;OptionScreenResult&gt; ScreenAsync(OptionScreenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:13](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L13) |  |
+
 ## OwnedProviderConnection
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
@@ -825,70 +901,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
-
-## RecurringJournalPeriodAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:20](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L20).
-
-The existing PostgreSQL ledger remains the sole authority for locks and reopens.
-
-```csharp
-public sealed class RecurringJournalPeriodAuthority(ILedgerJournalStore? journalStore = null, IFundProfileTenancyRegistry? tenancy = null, IRecurringJournalSubjectAuthority? subjects = null) : IRecurringJournalPeriodAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;RecurringJournalPeriodState&gt; ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:25](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L25) |  |
-
-## RecurringJournalPeriodState
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalPeriodState</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs:8](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs#L8).
-
-```csharp
-public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen, string? LockOwner, string? ReopenPath, string? Blocker, DateOnly? StartDate = null, DateOnly? EndDate = null);
-```
-
-## RecurringJournalRunner
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:13](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L13).
-
-Runs under the existing scheduled worker and admits only retained human-review drafts.
-
-```csharp
-public sealed class RecurringJournalRunner(IRecurringJournalStore store, AutomatedJournalDraftIntakeService intake, IManualJournalEntryDraftStore drafts, IRecurringJournalPeriodAuthority periods, IEnumerable<IRecurringJournalCalculation>? calculations = null) : IRecurringJournalQueueSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
-| <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
-| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:334](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L334) |  |
-
-## RecurringJournalSubjectAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalSubjectAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs#L18).
-
-Resolves entity/account membership from retained structure rather than caller labels.
-
-```csharp
-public sealed class RecurringJournalSubjectAuthority(IFundStructureStore? structure = null, IFundAccountStore? accounts = null, TimeProvider? clock = null) : IRecurringJournalSubjectAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task VerifyAsync(RecurringJournalScope scope, LedgerBookRecord book, DateOnly date, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs:23](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs#L23) |  |
