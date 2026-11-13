@@ -76,6 +76,10 @@ modules:
       - W5-ACCT-001
       - W9-GOV-008
       - W10-MARK-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -124,6 +128,10 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -268,6 +276,10 @@ modules:
       - W5-ACCT-001
       - W9-ASSET-010
       - W10-JRNL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -288,14 +300,14 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
   - id: SRC-STORAGE-ACCOUNTING
     path: src/Meridian.Storage.Accounting
     name: Meridian accounting persistence adapters
     layer: Storage Adapter
     status: active
     owner_lane: Accounting and Ledger
-    purpose: PostgreSQL business persistence adapters composing Storage primitives with Ledger and Reporting contracts, retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
+    purpose: Accounting export projections including period income and as-of balance sheets, portable ledger-payload validation and PostgreSQL business persistence adapters with immutable close-balance checkpoints and scoped as-of reads, composing Storage primitives with Ledger and Reporting contracts while retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
     readme: src/Meridian.Storage.Accounting/README.md
     roadmap_items:
       - W4-RECON-001
@@ -309,10 +321,11 @@ modules:
     validation:
       - dotnet build src/Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~ReviewBoundaryTests
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerAnalysisExportTests|FullyQualifiedName~LedgerBalanceCheckpoint|FullyQualifiedName~LedgerBalanceSnapshot"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
 
 
   - id: SRC-EXECUTION
@@ -468,7 +481,7 @@ modules:
     layer: Ledger
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff. Explicit shared posting-account definitions and retained opening/closing trade economics serve backtesting, paper portfolios, execution and lending.
+    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff. Explicit shared posting-account definitions and retained opening/closing trade economics serve backtesting, paper portfolios, execution and lending. Period income statements retain operating activity independently of as-of unclosed balances and retained-earnings transfers.
     readme: src/Meridian.Ledger/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -487,12 +500,13 @@ modules:
       - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StandardChartOfAccountsTests|FullyQualifiedName~SecurityTradePosting" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerIncomeStatementTests|FullyQualifiedName~LedgerFinancialStatement"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementPostingGuardTests|FullyQualifiedName~DimensionSignatureBackwardCompatibilityTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
 
   - id: SRC-FSHARP
     path: src/Meridian.FSharp
@@ -687,6 +701,8 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-ACCT-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -699,7 +715,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-11-12
 
   - id: SRC-DESIGN-DATA-INTEGRATION
     path: src/Meridian.DataIntegration
@@ -835,6 +851,10 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -1026,6 +1046,7 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W12-ENTITY-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -1074,6 +1095,10 @@ modules:
       - W10-PERF-001
       - W10-CONSOL-001
       - W9-SAFETY-007
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
@@ -1089,7 +1114,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-13
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -1111,6 +1136,8 @@ modules:
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
       - W6-BTSTUDIO-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -1158,6 +1185,7 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ENTITY-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack

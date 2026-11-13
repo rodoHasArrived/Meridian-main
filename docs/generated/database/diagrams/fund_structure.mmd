@@ -31,6 +31,21 @@ erDiagram
         timestamp_with_time_zone updated_at
         text tenant_id
     }
+    fund_structure_entity_lifecycle_legacy_baseline {
+        uuid entity_id PK,FK
+        text lifecycle_status
+        timestamp_with_time_zone captured_at_utc
+    }
+    fund_structure_entity_lifecycle_revision {
+        text tenant_id PK
+        uuid entity_id PK,FK
+        bigint revision PK
+        timestamp_with_time_zone recorded_at_utc
+        text recorded_by
+        text content_hash
+        text previous_hash
+        jsonb payload
+    }
     fund_structure_fund {
         uuid fund_id PK
         uuid business_id
@@ -94,6 +109,13 @@ erDiagram
         timestamp_with_time_zone resolved_at_utc
         text resolved_tenant_id
         text resolution_note
+    }
+    fund_structure_intercompany_accounting_arrangement_events {
+        text tenant_id PK
+        uuid arrangement_id PK
+        bigint aggregate_version PK
+        uuid request_id
+        jsonb payload
     }
     fund_structure_intercompany_agreement {
         text tenant_id PK,FK
@@ -225,3 +247,5 @@ erDiagram
     fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_revision : "intercompany_agreement_revision_tenant_id_agreement_id_fkey"
     fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_snapshot : "intercompany_agreement_snapshot_tenant_id_agreement_id_fkey"
     fund_structure_intercompany_agreement_snapshot ||--o{ fund_structure_intercompany_agreement : "intercompany_agreement_snapshot_pointer"
+    fund_structure_legal_entity ||--o{ fund_structure_entity_lifecycle_legacy_baseline : "entity_lifecycle_legacy_baseline_entity_id_fkey"
+    fund_structure_legal_entity ||--o{ fund_structure_entity_lifecycle_revision : "entity_lifecycle_revision_entity_id_fkey"

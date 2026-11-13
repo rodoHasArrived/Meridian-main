@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Execution.Sdk;
 
 /// <summary>Opaque connection epoch; changes revoke portfolio evidence without exposing credentials.</summary>
@@ -125,7 +127,16 @@ public sealed record BrokeragePositionSnapshotDto(
     string? Description = null,
     string? PositionId = null,
     string? Currency = null,
-    IReadOnlyDictionary<string, string>? Metadata = null);
+    IReadOnlyDictionary<string, string>? Metadata = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AccruedInterest { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public BrokeragePositionValuationBasis ValuationBasis { get; init; } = BrokeragePositionValuationBasis.Unavailable;
+}
+
+/// <summary>Whether the value is an observed mark or a cost-derived placeholder.</summary>
+public enum BrokeragePositionValuationBasis { Unavailable, ProviderReported, CostDerived }
 
 public sealed record BrokerageActivitySnapshotDto(
     string ProviderId,

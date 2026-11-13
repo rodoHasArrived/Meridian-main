@@ -133,7 +133,7 @@ public sealed class SecurityTermBlockAmendmentTests
     [Fact]
     public void For_OffersOnlyTheBlocksTheNodeWrites()
     {
-        SecurityTermBlocks.For("Bond").Select(static field => field.Key).Should().Equal("stepSchedule", "principalSchedule", "scheduleConventions", "callSchedule", "putSchedule");
+        SecurityTermBlocks.For("Bond").Select(static field => field.Key).Should().Equal("stepSchedule", "principalSchedule", "scheduleConventions", "callSchedule", "putSchedule", "bondWorkflow");
         SecurityTermBlocks.For("CertificateOfDeposit").Select(static field => field.Key).Should().Equal("scheduleConventions", "callSchedule", "putSchedule");
         SecurityTermBlocks.For("StructuredCredit").Select(static field => field.Key).Should().Equal("factorScheduleEntries", "scheduleConventions", "callSchedule", "putSchedule");
         SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");

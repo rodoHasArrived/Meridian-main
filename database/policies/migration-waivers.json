@@ -179,6 +179,90 @@
       "rule_id": "migration-alter-column-type",
       "reason": "Proposed exception submitted for independent human Security Master, cash-flow and schema/storage review; approval remains pending. Widens only direct_loan_principal_schedule_projection.amount and structured_credit_factor_schedule_projection.factor from bounded numeric typmods to unconstrained numeric, preserving every existing value and all accepted canonical decimal precision. No row, column or retained source document is removed. Apply through the transactional migration runner and advisory migration lock with a reviewed operational window for the ALTER TABLE locks; validate populated upgrade and fresh installation before rollout. Failed-upgrade rollback remains transactional. Do not downgrade after higher precision or larger principal values have been accepted. Previously rounded projection values are not reconstructed by this DDL; exact recovery requires separately governed replay from retained source terms.",
       "review_after": "2027-04-30"
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/007_entity_lifecycle.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new entity lifecycle revision and legacy-baseline tables. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/008_intercompany_accounting_arrangements.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new accounting-arrangement event history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_057__intercompany_account_bindings.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new intercompany account-binding revision history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_061__entity_controls.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new book-control activation receipts and controlled-close authorizations. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_062__intercompany_proposals.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new intercompany proposal sources, counterpart reservations, proposal links and retry history. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_063__consolidation_fx_rate_sets.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new approved FX rate-set and book-configuration revisions. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_064__legacy_intercompany_attribution.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new approved legacy intercompany attribution receipts. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_065__consolidation_transitions.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers protecting the new consolidation transition previews and approved cutover receipts. They execute no TRUNCATE command and remove no table, column, row or retained fact. Preserve these rejection triggers and the UPDATE/DELETE protections. This exact path/rule exception follows V_ledger_030 and V_ledger_031 and covers only these truncation-rejection declarations; it does not authorize data truncation or a history-removing downgrade.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/008_intercompany_accounting_arrangements.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new accounting-arrangement event-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_057__intercompany_account_bindings.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new account-binding revision-history rejection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_062__intercompany_proposals.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new proposal, counterpart-reservation, link and retry-history protection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_064__legacy_intercompany_attribution.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Each DROP TRIGGER IF EXISTS is immediately followed by recreation of the same named protection trigger on the same table, making the new legacy attribution receipt protection triggers reapply-idempotent. The migration runner executes the DDL and migration-ledger change in its transaction under the advisory migration lock, so failed recreation restores the prior protections. No table, column, row, retained receipt or history is removed. This exact path/rule exception follows V_ledger_030/V_ledger_031's drop-and-recreate idiom and does not authorize omission of any replacement trigger.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_066__dedicated_consolidation_book_slots.sql",
+      "rule_id": "migration-drop-object",
+      "reason": "Functional, row-preserving index replacement: drops only ux_ledger_books_fund_node_basis and recreates it in the same migration transaction as a partial unique index. Ordinary source/entity and Fund/Primary books retain the existing per-fund/node/basis uniqueness; the sole exclusion is Fund/Primary books with one of the four exact consolidation-v1/w10-v1 through consolidation-v4/w10-v4 policy pairs. A second unique index preserves distinct normalized reporting-book names within that excluded population. Every row satisfying the old unique index also satisfies both new indexes on first apply. No table, column, book, journal, overlay or receipt is removed or rewritten. The shared PostgreSQL migration runner holds its advisory migration lock and transaction through replacement and migration-ledger recording; failed creation rolls back the drop. DDL can wait for ledger_books users and requires a reviewed operational window. After multiple approved reporting books exist, do not restore the old all-books index by deleting books or history: retain them and use a reviewed forward correction. Exact policy-pair creation validation and reviewed cutover routing remain independent application controls; this exception does not widen them.",
+      "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_067__period_balance_checkpoints.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers on the immutable balance checkpoint tables; this migration executes no data truncation. Separate AI schema review confirmed this bounded exception. PostgreSQL regression coverage attempts update, delete and truncate on both tables, requires the guard SQLSTATE 55000, and verifies that retained rows and balances remain unchanged.",
+      "review_after": "2027-05-13"
     }
   ],
   "removed_migrations": [

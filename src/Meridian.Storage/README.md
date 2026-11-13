@@ -6,10 +6,73 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Storage
+
+Position snapshots preserve reviewed preparation lineages alongside economic-state history.
+Historical reads still exclude lineage effective after their requested date.
+
+`FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
+partitions with process-wide file leases, atomic publication, content validation and immutable
+source revision identity. This store does not publish prices or post journals. Signed curves use
+the existing PostgreSQL curve authority: each definition's immutable `rate_policy` is included in
+identity comparisons and governance evidence; legacy definitions retain their default policy.
+
+`FileBondProviderResponseStore` archives exact provider JSON text as UTF-8, addressed by its SHA-256
+inside hashed tenant/company partitions. Immutable atomic publication supports concurrent retries;
+scoped reads verify original content and metadata hashes and refuse corruption. Typed FRED inputs
+pin their first retained response while later overlapping fetches retain their own response evidence.
+
+Fixed-income stores retain scoped monitoring, saved runs and reviewed performance transaction
+populations. Account revision authority and curve-policy migrations preserve earlier rows; coupon
+recognition receipts participate in the existing governed journal/lot transaction. Restore retained
+evidence on corruption rather than recreating empty history. See [bond operations](../../docs/operators/bond-workflows.md).
+
+Coupon and terminal-principal writers take a history lock before any authority read. Ordinary
+journal writers take the compatible writer mode, so unrelated ordinary writes can proceed while
+coupon history remains stable through its validation and commit. Both ordinary and atomic entry
+paths select the lock mode before reading; stale serializable snapshots still fail explicitly.
+
+`AnalysisExportService.WriteInvariantTextTableAsync` writes schema-preserving text tables as CSV,
+XLSX, Parquet or Arrow. It owns format IO, formula-safe spreadsheet escaping and checksums without
+interpreting accounting records. Ledger-backed `ExportLedgerAsync` projections are extension methods
+compiled by `Meridian.Storage.Accounting`, keeping the primitives assembly independent of Ledger.
+
+The business adapters in the linked FundStructure and Ledger folders compile into
+`Meridian.Storage.Accounting`; generic storage primitives remain in `Meridian.Storage`.
+
+The linked ledger adapter commits immutable native balance checkpoints with governed book
+hard-close events and their audited digests. Its as-of balance capability combines the retained
+prefix with a verified journal tail in one repeatable-read transaction, preserving reopened and
+backdated activity, future-dated postings, exact dimensions and known zero accounts. See the
+[accounting adapter guide](../Meridian.Storage.Accounting/README.md#durable-balance-checkpoints)
+for the audit boundary and compatibility-store fallback.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Reporting cutovers retain immutable previews/receipts in ledger migration 065 and fence activation
+against the ledger append audit head. Migration 066 preserves ordinary/source book uniqueness while
+allowing distinctly named Fund/Primary books only for exact governed consolidation policy pairs.
+
+Intercompany storage retains append-only account-role revisions, atomic source-journal proposal
+intent, approved FX revisions and legacy-attribution sidecars over exact immutable journal digests.
+PostgreSQL supplies authority leases through financial commit; file stores provide durable local/demo
+parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
+bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
+
+Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
+Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
+`Enforced` at insertion. Activation recomputes migration preflight while holding its authority
+leases and retains an immutable receipt. Every booked append, including ambient transactions
+and atomic lot posting, requires a matching posting-authority scope retained through commit.
+Controlled-close authorizations bind an approved draft's economics, evidence and version;
+they permit no edits to posted journals. Unmapped historical periods retain explicit warnings.
 
 JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
 retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
@@ -152,6 +215,27 @@ same commitment advisory-lock identity. Historical capital journals without nati
 opening reconciliation. Funding receipt and bank-line uniqueness span the owning tenant/company,
 and database triggers protect approved authority, retained calls, and posting receipts from rewrite.
 
+Holder-side private-fund asset observations use the separate `IPrivateCapitalRecordStore`, not
+issuer-side `PostgresPrivateCapitalStore` call authority. Fund Accounts migration `009` adds
+`private_capital_record`: immutable register entries, original manual/CSV import inputs, reviewed
+previews, source-reported snapshots and command receipts, partitioned by tenant and company.
+Amounts remain exact decimal strings inside retained JSON; missing source values remain null.
+Explicit snapshot supersession records corrections, and the unique correction index refuses a
+second successor for the same retained observation. No legacy assignment is promoted to a
+measured balance, and no historical monetary digits are invented or backfilled.
+
+`PostgresPrivateCapitalRecordStore` uses the existing Fund Accounts connection, schema and
+migration runner. A transaction-scoped partition advisory lock serializes validation against
+current correction heads, append and receipt retention; failure rolls back the complete batch.
+`FilePrivateCapitalRecordStore` is the durable alternative when that connection is absent. It
+hashes the tenant/company identity into the partition path, checks the retained envelope scope,
+holds an exclusive cross-process writer lock, reloads current records under that lock and uses
+`AtomicFileWriter` to publish the complete replacement. Neither implementation silently replaces
+or deletes prior records. Repeating a command with identical reviewed inputs returns its retained
+outcome after restart; changed inputs under the same command identity conflict. Focused coverage
+is in `PrivateCapitalRecordServiceTests`, `PrivateCapitalRecordAuthorityTests`,
+`PrivateCapitalRecordEndpointTests` and `PostgresPrivateCapitalRecordStoreTests`.
+
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
 for logs that grow with every event. `AtomicFileWriter.AppendLinesAsync` still copies the whole
@@ -189,6 +273,10 @@ history projector continues to refuse an inferred opening-age character.
 V3 remaining-face amortization verifies each immutable paydown receipt before walking prior
 partial-disposal/amortization history. The current/booked factor scales surviving face once;
 booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
+The separately adopted US GAAP income model walks only exact scheduled-principal receipts through
+that history, without enabling the legacy remaining-face election. Missing, altered or legacy
+paydown authority blocks the next income posting; scheduled repayments continue to relieve basis
+through their principal workflow.
 
 The Security Master store also answers the ADR-024 decision-5 retirement-gate count
 (`CountUntaggedAssetSpecificTermsAsync`): one SQL aggregate over `securities` for rows whose
@@ -1183,6 +1271,15 @@ lookup paths, and evidence trails those layers rely on.
   process cache only after durable append succeeds; evaluation or retention failures return a
   validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
+## Accounting exports and portable evidence
+
+Ledger-aware export projections, lot schedules and typed portable-journal validation belong to
+the [accounting adapters](../Meridian.Storage.Accounting/README.md). Storage supplies generic
+text-table writers, ZIP IO and an opaque payload-validation port; it does not reconstruct journals
+or interpret accounting balances. Ledger-bearing package operations require the configured
+accounting validator before publication or extraction. Market-data-only package callers retain
+their existing behavior.
+
 ## Important workflows
 
 Security Master PostgreSQL searches break equal display names and full-text ranks with the unique
@@ -1562,6 +1659,12 @@ only the revision actually available and does not manufacture overwritten versio
 unprovable historical provenance. This store owns integration configuration persistence; provider
 alias and capability-factory composition remain in their existing ProviderSdk/Infrastructure owners.
 
+`IProviderIntegrationIdentityDecisionStore` retains each identity decision under its sync-run and
+decision IDs. The file-backed implementation takes a per-decision cross-process lease, accepts an
+identical retry, and refuses changed content for a retained decision before an atomic write. Listing
+reads only the requested sync-run directory; the existing tenant-store partition remains the scope
+boundary. Retention records the decision evidence and does not itself grant activation authority.
+
 Accounting configuration persistence keeps rich posting-rule payloads and saved Accounting Rules
 Studio regression cases as durable workspace-owned records. PostgreSQL stores saved rule test cases
 in `accounting_configuration_rule_test_cases` so service-owned dry-run regression suites round-trip
@@ -1694,6 +1797,10 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

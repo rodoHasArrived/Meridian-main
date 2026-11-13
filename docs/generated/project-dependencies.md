@@ -1,18 +1,18 @@
 # Project Dependency Graph
 
-> Generated: 2026-11-12 23:03:13 UTC
+> Generated: 2026-11-13 21:34:01 UTC
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
-| Total Projects | 61 |
+| Total Projects | 66 |
 | Foundation Projects | 11 |
-| Runtime Projects | 26 |
+| Runtime Projects | 28 |
 | UI/Host Projects | 5 |
-| Test Projects | 16 |
+| Test Projects | 19 |
 | Build/Benchmark Projects | 3 |
-| Root Projects | 17 |
+| Root Projects | 20 |
 | Leaf Projects | 9 |
 | Circular Dependencies | 0 |
 
@@ -24,11 +24,11 @@
 flowchart LR
     BuildTools["Build Tools<br/><br/>DocGenerator<br/>FSharpInteropGenerator"]
     Foundation["Foundation<br/><br/>Meridian.Contracts<br/>Meridian.Core<br/>Meridian.Domain<br/>Meridian.Execution.Sdk<br/>Meridian.FSharp<br/>Meridian.FSharp.DirectLending.Aggregates<br/>Meridian.FSharp.Ledger<br/>Meridian.FSharp.Trading<br/>Meridian.IbApi.SmokeStub<br/>Meridian.Ledger<br/>Meridian.ProviderSdk"]
-    Runtime["Runtime<br/><br/>Meridian.Application<br/>Meridian.Audit<br/>Meridian.Backtesting<br/>Meridian.Backtesting.Sdk<br/>Meridian.DataIntegration<br/>Meridian.Documents<br/>Meridian.Entities<br/>Meridian.Execution<br/>Meridian.FinancialOperations<br/>Meridian.Identity<br/>Meridian.Infrastructure<br/>Meridian.Instruments<br/>Meridian.Launcher<br/>Meridian.LifecycleSupervisor<br/>Meridian.Platform<br/>Meridian.PortfolioRecords<br/>Meridian.ProcessIsolation<br/>Meridian.QuantScript<br/>Meridian.QuantScript.Worker<br/>Meridian.ReferenceData<br/>Meridian.Reporting<br/>Meridian.Risk<br/>Meridian.Setup<br/>Meridian.Storage<br/>Meridian.Strategies<br/>Meridian.Workflow"]
+    Runtime["Runtime<br/><br/>Meridian.Application<br/>Meridian.Audit<br/>Meridian.Backtesting<br/>Meridian.Backtesting.Sdk<br/>Meridian.DataIntegration<br/>Meridian.Documents<br/>Meridian.Entities<br/>Meridian.Execution<br/>Meridian.FinancialOperations<br/>Meridian.Identity<br/>Meridian.Infrastructure<br/>Meridian.Instruments<br/>Meridian.Launcher<br/>Meridian.LifecycleSupervisor<br/>Meridian.Platform<br/>Meridian.PortfolioRecords<br/>Meridian.ProcessIsolation<br/>Meridian.QuantScript<br/>Meridian.QuantScript.Worker<br/>Meridian.ReferenceData<br/>Meridian.Reporting<br/>Meridian.Reporting.ReadModels<br/>Meridian.Risk<br/>Meridian.Setup<br/>Meridian.Storage<br/>Meridian.Storage.Accounting<br/>Meridian.Strategies<br/>Meridian.Workflow"]
     UIShared["UI Shared<br/><br/>Meridian.Ui.Services<br/>Meridian.Ui.Shared"]
     Hosts["Hosts<br/><br/>Meridian<br/>Meridian.Mcp<br/>Meridian.Wpf"]
     Benchmarks["Benchmarks<br/><br/>Meridian.Benchmarks"]
-    Tests["Tests<br/><br/>Meridian.Backtesting.Tests<br/>Meridian.Contracts.UnitTests<br/>Meridian.Core.UnitTests<br/>Meridian.DesignModules.Tests<br/>Meridian.DirectLending.Tests<br/>Meridian.FSharp.Tests<br/>Meridian.FundStructure.Tests<br/>Meridian.Lifecycle.Tests<br/>Meridian.LifecycleSupervisor.Tests<br/>Meridian.ProcessTestHelper<br/>Meridian.QuantScript.Tests<br/>Meridian.Setup.Tests<br/>Meridian.TestSupport<br/>Meridian.Tests<br/>Meridian.Ui.Tests<br/>Meridian.Wpf.Tests"]
+    Tests["Tests<br/><br/>Meridian.Backtesting.Tests<br/>Meridian.Contracts.UnitTests<br/>Meridian.Core.UnitTests<br/>Meridian.Demo.Tests<br/>Meridian.DesignModules.Tests<br/>Meridian.DirectLending.Tests<br/>Meridian.Execution.Tests<br/>Meridian.FSharp.Tests<br/>Meridian.FundStructure.Tests<br/>Meridian.Lifecycle.Tests<br/>Meridian.LifecycleSupervisor.Tests<br/>Meridian.ProcessTestHelper<br/>Meridian.QuantScript.Tests<br/>Meridian.Setup.Tests<br/>Meridian.Storage.Tests<br/>Meridian.TestSupport<br/>Meridian.Tests<br/>Meridian.Ui.Tests<br/>Meridian.Wpf.Tests"]
     BuildTools --> Foundation
     Foundation --> Runtime
     Runtime --> UIShared
@@ -83,14 +83,17 @@ graph LR
     Meridian_QuantScript_Worker[Meridian.QuantScript.Worker]
     Meridian_ReferenceData[Meridian.ReferenceData]
     Meridian_Reporting[Meridian.Reporting]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels]
     Meridian_Risk[Meridian.Risk]
     Meridian_Setup[Meridian.Setup]
     Meridian_Storage[Meridian.Storage]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Strategies[Meridian.Strategies]
     Meridian_Ui_Services[Meridian.Ui.Services]
     Meridian_Ui_Shared[Meridian.Ui.Shared]
     Meridian_Workflow[Meridian.Workflow]
     Meridian_Wpf[Meridian.Wpf]
+    Meridian[Meridian] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian[Meridian] --> Meridian_Application[Meridian.Application]
     Meridian[Meridian] --> Meridian_Audit[Meridian.Audit]
     Meridian[Meridian] --> Meridian_Backtesting[Meridian.Backtesting]
@@ -105,6 +108,7 @@ graph LR
     Meridian[Meridian] --> Meridian_QuantScript_Worker[Meridian.QuantScript.Worker]
     Meridian[Meridian] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
     Meridian[Meridian] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Application[Meridian.Application] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Application[Meridian.Application] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_Application[Meridian.Application] --> Meridian_Storage[Meridian.Storage]
     Meridian_Application[Meridian.Application] --> Meridian_Core[Meridian.Core]
@@ -149,6 +153,7 @@ graph LR
     Meridian_Domain[Meridian.Domain] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Domain[Meridian.Domain] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_Entities[Meridian.Entities] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Execution[Meridian.Execution] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Execution[Meridian.Execution] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Execution[Meridian.Execution] --> Meridian_Ledger[Meridian.Ledger]
     Meridian_Execution[Meridian.Execution] --> Meridian_Core[Meridian.Core]
@@ -161,13 +166,14 @@ graph LR
     Meridian_FSharp[Meridian.FSharp] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
     Meridian_FSharp_DirectLending_Aggregates[Meridian.FSharp.DirectLending.Aggregates] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_FSharp_DirectLending_Aggregates[Meridian.FSharp.DirectLending.Aggregates] --> Meridian_FSharp[Meridian.FSharp]
+    Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_DataIntegration[Meridian.DataIntegration]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Domain[Meridian.Domain]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
+    Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Entities[Meridian.Entities]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_FSharp[Meridian.FSharp]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Identity[Meridian.Identity]
-    Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Instruments[Meridian.Instruments]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Ledger[Meridian.Ledger]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
@@ -180,6 +186,7 @@ graph LR
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_IbApi_SmokeStub[Meridian.IbApi.SmokeStub]
+    Meridian_Instruments[Meridian.Instruments] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Instruments[Meridian.Instruments] --> Meridian_Core[Meridian.Core]
     Meridian_Instruments[Meridian.Instruments] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Instruments[Meridian.Instruments] --> Meridian_Domain[Meridian.Domain]
@@ -192,6 +199,7 @@ graph LR
     Meridian_Mcp[Meridian.Mcp] --> Meridian_Core[Meridian.Core]
     Meridian_Platform[Meridian.Platform] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Platform[Meridian.Platform] --> Meridian_Core[Meridian.Core]
+    Meridian_PortfolioRecords[Meridian.PortfolioRecords] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_PortfolioRecords[Meridian.PortfolioRecords] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_PortfolioRecords[Meridian.PortfolioRecords] --> Meridian_Storage[Meridian.Storage]
     Meridian_ProviderSdk[Meridian.ProviderSdk] --> Meridian_Contracts[Meridian.Contracts]
@@ -207,25 +215,29 @@ graph LR
     Meridian_ReferenceData[Meridian.ReferenceData] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Reporting[Meridian.Reporting] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Reporting[Meridian.Reporting] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Reporting[Meridian.Reporting]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Risk[Meridian.Risk] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
-    Meridian_Risk[Meridian.Risk] --> Meridian_Execution[Meridian.Execution]
     Meridian_Risk[Meridian.Risk] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Risk[Meridian.Risk] --> Meridian_FSharp[Meridian.FSharp]
     Meridian_Storage[Meridian.Storage] --> Meridian_Core[Meridian.Core]
     Meridian_Storage[Meridian.Storage] --> Meridian_Domain[Meridian.Domain]
     Meridian_Storage[Meridian.Storage] --> Meridian_Contracts[Meridian.Contracts]
-    Meridian_Storage[Meridian.Storage] --> Meridian_Ledger[Meridian.Ledger]
-    Meridian_Storage[Meridian.Storage] --> Meridian_Reporting[Meridian.Reporting]
     Meridian_Storage[Meridian.Storage] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting] --> Meridian_Reporting[Meridian.Reporting]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Strategies[Meridian.Strategies] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Core[Meridian.Core]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Execution[Meridian.Execution]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_FSharp[Meridian.FSharp]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_FSharp_Ledger[Meridian.FSharp.Ledger]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_FSharp_Trading[Meridian.FSharp.Trading]
-    Meridian_Strategies[Meridian.Strategies] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Instruments[Meridian.Instruments]
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Infrastructure[Meridian.Infrastructure]
@@ -233,6 +245,8 @@ graph LR
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Reporting[Meridian.Reporting]
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Storage[Meridian.Storage]
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Application[Meridian.Application]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Audit[Meridian.Audit]
@@ -259,6 +273,7 @@ graph LR
     Meridian_Workflow[Meridian.Workflow] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Workflow[Meridian.Workflow] --> Meridian_Entities[Meridian.Entities]
     Meridian_Workflow[Meridian.Workflow] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Wpf[Meridian.Wpf] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Ui_Services[Meridian.Ui.Services]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
@@ -293,12 +308,18 @@ These projects are not referenced by other projects:
 - **Meridian.Core.UnitTests**
   - Dependencies: 1
   - NuGet Packages: 5
+- **Meridian.Demo.Tests**
+  - Dependencies: 2
+  - NuGet Packages: 7
 - **Meridian.DesignModules.Tests**
   - Dependencies: 12
   - NuGet Packages: 4
 - **Meridian.DirectLending.Tests**
-  - Dependencies: 4
+  - Dependencies: 5
   - NuGet Packages: 7
+- **Meridian.Execution.Tests**
+  - Dependencies: 14
+  - NuGet Packages: 9
 - **Meridian.FSharp.Tests**
   - Dependencies: 9
   - NuGet Packages: 7
@@ -317,9 +338,12 @@ These projects are not referenced by other projects:
 - **Meridian.Setup.Tests**
   - Dependencies: 1
   - NuGet Packages: 4
+- **Meridian.Storage.Tests**
+  - Dependencies: 4
+  - NuGet Packages: 7
 - **Meridian.Tests**
-  - Dependencies: 30
-  - NuGet Packages: 15
+  - Dependencies: 31
+  - NuGet Packages: 16
 - **Meridian.Ui.Tests**
   - Dependencies: 1
   - NuGet Packages: 6
@@ -333,16 +357,16 @@ Projects with the most dependencies:
 
 | Project | Project Deps | Package Deps | Total |
 |---------|--------------|--------------|-------|
-| Meridian.Tests | 30 | 15 | 45 |
-| Meridian.Application | 19 | 13 | 32 |
-| Meridian.Wpf | 13 | 14 | 27 |
-| Meridian.Ui.Shared | 23 | 3 | 26 |
-| Meridian | 14 | 8 | 22 |
+| Meridian.Tests | 31 | 16 | 47 |
+| Meridian.Application | 20 | 13 | 33 |
+| Meridian.Ui.Shared | 25 | 3 | 28 |
+| Meridian.Wpf | 14 | 14 | 28 |
+| Meridian | 15 | 8 | 23 |
+| Meridian.Execution.Tests | 14 | 9 | 23 |
 | Meridian.Infrastructure | 6 | 12 | 18 |
-| Meridian.Storage | 6 | 11 | 17 |
 | Meridian.DesignModules.Tests | 12 | 4 | 16 |
 | Meridian.FSharp.Tests | 9 | 7 | 16 |
-| Meridian.QuantScript | 8 | 6 | 14 |
+| Meridian.Storage | 4 | 11 | 15 |
 
 ## Full Dependency Graph
 
@@ -362,6 +386,7 @@ graph LR
     Meridian_Core[Meridian.Core]
     Meridian_Core_UnitTests[Meridian.Core.UnitTests]
     Meridian_DataIntegration[Meridian.DataIntegration]
+    Meridian_Demo_Tests[Meridian.Demo.Tests]
     Meridian_DesignModules_Tests[Meridian.DesignModules.Tests]
     Meridian_DirectLending_Tests[Meridian.DirectLending.Tests]
     Meridian_Documents[Meridian.Documents]
@@ -369,6 +394,7 @@ graph LR
     Meridian_Entities[Meridian.Entities]
     Meridian_Execution[Meridian.Execution]
     Meridian_Execution_Sdk[Meridian.Execution.Sdk]
+    Meridian_Execution_Tests[Meridian.Execution.Tests]
     Meridian_FSharp[Meridian.FSharp]
     Meridian_FSharp_DirectLending_Aggregates[Meridian.FSharp.DirectLending.Aggregates]
     Meridian_FSharp_Ledger[Meridian.FSharp.Ledger]
@@ -396,10 +422,13 @@ graph LR
     Meridian_QuantScript_Worker[Meridian.QuantScript.Worker]
     Meridian_ReferenceData[Meridian.ReferenceData]
     Meridian_Reporting[Meridian.Reporting]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels]
     Meridian_Risk[Meridian.Risk]
     Meridian_Setup[Meridian.Setup]
     Meridian_Setup_Tests[Meridian.Setup.Tests]
     Meridian_Storage[Meridian.Storage]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting]
+    Meridian_Storage_Tests[Meridian.Storage.Tests]
     Meridian_Strategies[Meridian.Strategies]
     Meridian_TestSupport[Meridian.TestSupport]
     Meridian_Tests[Meridian.Tests]
@@ -409,6 +438,7 @@ graph LR
     Meridian_Workflow[Meridian.Workflow]
     Meridian_Wpf[Meridian.Wpf]
     Meridian_Wpf_Tests[Meridian.Wpf.Tests]
+    Meridian[Meridian] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian[Meridian] --> Meridian_Application[Meridian.Application]
     Meridian[Meridian] --> Meridian_Audit[Meridian.Audit]
     Meridian[Meridian] --> Meridian_Backtesting[Meridian.Backtesting]
@@ -423,6 +453,7 @@ graph LR
     Meridian[Meridian] --> Meridian_QuantScript_Worker[Meridian.QuantScript.Worker]
     Meridian[Meridian] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
     Meridian[Meridian] --> Meridian_Ui_Services[Meridian.Ui.Services]
+    Meridian_Application[Meridian.Application] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Application[Meridian.Application] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_Application[Meridian.Application] --> Meridian_Storage[Meridian.Storage]
     Meridian_Application[Meridian.Application] --> Meridian_Core[Meridian.Core]
@@ -473,6 +504,8 @@ graph LR
     Meridian_DataIntegration[Meridian.DataIntegration] --> Meridian_FSharp[Meridian.FSharp]
     Meridian_DataIntegration[Meridian.DataIntegration] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_DataIntegration[Meridian.DataIntegration] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Demo_Tests[Meridian.Demo.Tests] --> Meridian[Meridian]
+    Meridian_Demo_Tests[Meridian.Demo.Tests] --> Meridian_TestSupport[Meridian.TestSupport]
     Meridian_DesignModules_Tests[Meridian.DesignModules.Tests] --> Meridian_Audit[Meridian.Audit]
     Meridian_DesignModules_Tests[Meridian.DesignModules.Tests] --> Meridian_DataIntegration[Meridian.DataIntegration]
     Meridian_DesignModules_Tests[Meridian.DesignModules.Tests] --> Meridian_Documents[Meridian.Documents]
@@ -485,6 +518,7 @@ graph LR
     Meridian_DesignModules_Tests[Meridian.DesignModules.Tests] --> Meridian_ReferenceData[Meridian.ReferenceData]
     Meridian_DesignModules_Tests[Meridian.DesignModules.Tests] --> Meridian_Reporting[Meridian.Reporting]
     Meridian_DesignModules_Tests[Meridian.DesignModules.Tests] --> Meridian_Workflow[Meridian.Workflow]
+    Meridian_DirectLending_Tests[Meridian.DirectLending.Tests] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_DirectLending_Tests[Meridian.DirectLending.Tests] --> Meridian_Application[Meridian.Application]
     Meridian_DirectLending_Tests[Meridian.DirectLending.Tests] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_DirectLending_Tests[Meridian.DirectLending.Tests] --> Meridian_Storage[Meridian.Storage]
@@ -496,12 +530,27 @@ graph LR
     Meridian_Domain[Meridian.Domain] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Domain[Meridian.Domain] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_Entities[Meridian.Entities] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Execution[Meridian.Execution] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Execution[Meridian.Execution] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Execution[Meridian.Execution] --> Meridian_Ledger[Meridian.Ledger]
     Meridian_Execution[Meridian.Execution] --> Meridian_Core[Meridian.Core]
     Meridian_Execution[Meridian.Execution] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Execution[Meridian.Execution] --> Meridian_Storage[Meridian.Storage]
     Meridian_Execution_Sdk[Meridian.Execution.Sdk] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Application[Meridian.Application]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Backtesting[Meridian.Backtesting]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Execution[Meridian.Execution]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_FinancialOperations[Meridian.FinancialOperations]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Infrastructure[Meridian.Infrastructure]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Identity[Meridian.Identity]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Reporting[Meridian.Reporting]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Risk[Meridian.Risk]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Core[Meridian.Core]
+    Meridian_Execution_Tests[Meridian.Execution.Tests] --> Meridian_Domain[Meridian.Domain]
     Meridian_FSharp[Meridian.FSharp] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_FSharp[Meridian.FSharp] --> Meridian_Identity[Meridian.Identity]
     Meridian_FSharp[Meridian.FSharp] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
@@ -517,13 +566,14 @@ graph LR
     Meridian_FSharp_Tests[Meridian.FSharp.Tests] --> Meridian_FSharp_Trading[Meridian.FSharp.Trading]
     Meridian_FSharp_Tests[Meridian.FSharp.Tests] --> Meridian_FSharp_Ledger[Meridian.FSharp.Ledger]
     Meridian_FSharp_Tests[Meridian.FSharp.Tests] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_DataIntegration[Meridian.DataIntegration]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Domain[Meridian.Domain]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
+    Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Entities[Meridian.Entities]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_FSharp[Meridian.FSharp]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Identity[Meridian.Identity]
-    Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Instruments[Meridian.Instruments]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_Ledger[Meridian.Ledger]
     Meridian_FinancialOperations[Meridian.FinancialOperations] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
@@ -542,6 +592,7 @@ graph LR
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Infrastructure[Meridian.Infrastructure] --> Meridian_IbApi_SmokeStub[Meridian.IbApi.SmokeStub]
+    Meridian_Instruments[Meridian.Instruments] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Instruments[Meridian.Instruments] --> Meridian_Core[Meridian.Core]
     Meridian_Instruments[Meridian.Instruments] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Instruments[Meridian.Instruments] --> Meridian_Domain[Meridian.Domain]
@@ -560,8 +611,10 @@ graph LR
     Meridian_Mcp[Meridian.Mcp] --> Meridian_Core[Meridian.Core]
     Meridian_Platform[Meridian.Platform] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Platform[Meridian.Platform] --> Meridian_Core[Meridian.Core]
+    Meridian_PortfolioRecords[Meridian.PortfolioRecords] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_PortfolioRecords[Meridian.PortfolioRecords] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_PortfolioRecords[Meridian.PortfolioRecords] --> Meridian_Storage[Meridian.Storage]
+    Meridian_ProcessTestHelper[Meridian.ProcessTestHelper] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_ProcessTestHelper[Meridian.ProcessTestHelper] --> Meridian_Application[Meridian.Application]
     Meridian_ProcessTestHelper[Meridian.ProcessTestHelper] --> Meridian_Documents[Meridian.Documents]
     Meridian_ProcessTestHelper[Meridian.ProcessTestHelper] --> Meridian_Storage[Meridian.Storage]
@@ -580,27 +633,36 @@ graph LR
     Meridian_ReferenceData[Meridian.ReferenceData] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Reporting[Meridian.Reporting] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Reporting[Meridian.Reporting] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Reporting[Meridian.Reporting]
+    Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Risk[Meridian.Risk] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
-    Meridian_Risk[Meridian.Risk] --> Meridian_Execution[Meridian.Execution]
     Meridian_Risk[Meridian.Risk] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Risk[Meridian.Risk] --> Meridian_FSharp[Meridian.FSharp]
     Meridian_Setup_Tests[Meridian.Setup.Tests] --> Meridian_Setup[Meridian.Setup]
     Meridian_Storage[Meridian.Storage] --> Meridian_Core[Meridian.Core]
     Meridian_Storage[Meridian.Storage] --> Meridian_Domain[Meridian.Domain]
     Meridian_Storage[Meridian.Storage] --> Meridian_Contracts[Meridian.Contracts]
-    Meridian_Storage[Meridian.Storage] --> Meridian_Ledger[Meridian.Ledger]
-    Meridian_Storage[Meridian.Storage] --> Meridian_Reporting[Meridian.Reporting]
     Meridian_Storage[Meridian.Storage] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting] --> Meridian_Ledger[Meridian.Ledger]
+    Meridian_Storage_Accounting[Meridian.Storage.Accounting] --> Meridian_Reporting[Meridian.Reporting]
+    Meridian_Storage_Tests[Meridian.Storage.Tests] --> Meridian_Infrastructure[Meridian.Infrastructure]
+    Meridian_Storage_Tests[Meridian.Storage.Tests] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Storage_Tests[Meridian.Storage.Tests] --> Meridian_Core[Meridian.Core]
+    Meridian_Storage_Tests[Meridian.Storage.Tests] --> Meridian_Domain[Meridian.Domain]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Contracts[Meridian.Contracts]
+    Meridian_Strategies[Meridian.Strategies] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Core[Meridian.Core]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Execution[Meridian.Execution]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Execution_Sdk[Meridian.Execution.Sdk]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_FSharp[Meridian.FSharp]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_FSharp_Ledger[Meridian.FSharp.Ledger]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_FSharp_Trading[Meridian.FSharp.Trading]
-    Meridian_Strategies[Meridian.Strategies] --> Meridian_Infrastructure[Meridian.Infrastructure]
     Meridian_Strategies[Meridian.Strategies] --> Meridian_Instruments[Meridian.Instruments]
+    Meridian_Tests[Meridian.Tests] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Tests[Meridian.Tests] --> Meridian[Meridian]
     Meridian_Tests[Meridian.Tests] --> Meridian_Application[Meridian.Application]
     Meridian_Tests[Meridian.Tests] --> Meridian_Audit[Meridian.Audit]
@@ -637,6 +699,8 @@ graph LR
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Reporting[Meridian.Reporting]
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Storage[Meridian.Storage]
     Meridian_Ui_Services[Meridian.Ui.Services] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Reporting_ReadModels[Meridian.Reporting.ReadModels]
+    Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Application[Meridian.Application]
     Meridian_Ui_Shared[Meridian.Ui.Shared] --> Meridian_Audit[Meridian.Audit]
@@ -664,6 +728,7 @@ graph LR
     Meridian_Workflow[Meridian.Workflow] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Workflow[Meridian.Workflow] --> Meridian_Entities[Meridian.Entities]
     Meridian_Workflow[Meridian.Workflow] --> Meridian_Storage[Meridian.Storage]
+    Meridian_Wpf[Meridian.Wpf] --> Meridian_Storage_Accounting[Meridian.Storage.Accounting]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Ui_Services[Meridian.Ui.Services]
     Meridian_Wpf[Meridian.Wpf] --> Meridian_Ui_Shared[Meridian.Ui.Shared]
@@ -712,11 +777,13 @@ graph LR
 - Meridian.QuantScript
 - Meridian.QuantScript.Worker
 - Meridian.Storage
+- Meridian.Storage.Accounting
 - Meridian.Ui.Services
 - Meridian.Ui.Shared
 
 **Referenced By:**
 - Meridian.Benchmarks
+- Meridian.Demo.Tests
 - Meridian.Tests
 
 **NuGet Packages (8):**
@@ -752,12 +819,14 @@ graph LR
 - Meridian.ProviderSdk
 - Meridian.ReferenceData
 - Meridian.Storage
+- Meridian.Storage.Accounting
 - Meridian.Workflow
 
 **Referenced By:**
 - Meridian
 - Meridian.Benchmarks
 - Meridian.DirectLending.Tests
+- Meridian.Execution.Tests
 - Meridian.FundStructure.Tests
 - Meridian.Lifecycle.Tests
 - Meridian.ProcessTestHelper
@@ -806,6 +875,7 @@ graph LR
 **Referenced By:**
 - Meridian
 - Meridian.Backtesting.Tests
+- Meridian.Execution.Tests
 - Meridian.QuantScript
 - Meridian.Tests
 - Meridian.Ui.Shared
@@ -903,6 +973,7 @@ graph LR
 - Meridian.QuantScript
 - Meridian.ReferenceData
 - Meridian.Reporting
+- Meridian.Reporting.ReadModels
 - Meridian.Risk
 - Meridian.Storage
 - Meridian.Strategies
@@ -942,12 +1013,14 @@ graph LR
 - Meridian.DataIntegration
 - Meridian.Documents
 - Meridian.Execution
+- Meridian.Execution.Tests
 - Meridian.Infrastructure
 - Meridian.Instruments
 - Meridian.Ledger
 - Meridian.Mcp
 - Meridian.Platform
 - Meridian.Storage
+- Meridian.Storage.Tests
 - Meridian.Strategies
 - Meridian.Tests
 
@@ -998,6 +1071,23 @@ graph LR
 - Microsoft.Extensions.Logging.Abstractions
 - System.Security.Cryptography.ProtectedData
 
+### Meridian.Demo.Tests
+
+**Path:** `tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj`
+
+**Project References:**
+- Meridian
+- Meridian.TestSupport
+
+**NuGet Packages (7):**
+- FluentAssertions
+- Microsoft.AspNetCore.TestHost
+- Microsoft.NET.Test.Sdk
+- Npgsql
+- coverlet.collector
+- xunit
+- xunit.runner.visualstudio
+
 ### Meridian.DesignModules.Tests
 
 **Path:** `tests/Meridian.DesignModules.Tests/Meridian.DesignModules.Tests.csproj`
@@ -1030,6 +1120,7 @@ graph LR
 - Meridian.Application
 - Meridian.Contracts
 - Meridian.Storage
+- Meridian.Storage.Accounting
 - Meridian.TestSupport
 
 **NuGet Packages (7):**
@@ -1076,11 +1167,13 @@ graph LR
 - Meridian.Benchmarks
 - Meridian.Core
 - Meridian.DataIntegration
+- Meridian.Execution.Tests
 - Meridian.FinancialOperations
 - Meridian.Infrastructure
 - Meridian.Instruments
 - Meridian.QuantScript
 - Meridian.Storage
+- Meridian.Storage.Tests
 - Meridian.Tests
 
 **NuGet Packages (1):**
@@ -1096,6 +1189,7 @@ graph LR
 **Referenced By:**
 - Meridian.Application
 - Meridian.DesignModules.Tests
+- Meridian.FinancialOperations
 - Meridian.FundStructure.Tests
 - Meridian.Tests
 - Meridian.Ui.Shared
@@ -1111,9 +1205,10 @@ graph LR
 - Meridian.Execution.Sdk
 - Meridian.Ledger
 - Meridian.Storage
+- Meridian.Storage.Accounting
 
 **Referenced By:**
-- Meridian.Risk
+- Meridian.Execution.Tests
 - Meridian.Strategies
 - Meridian.Tests
 - Meridian.Ui.Shared
@@ -1132,6 +1227,7 @@ graph LR
 
 **Referenced By:**
 - Meridian.Execution
+- Meridian.Execution.Tests
 - Meridian.FSharp
 - Meridian.FSharp.Tests
 - Meridian.FinancialOperations
@@ -1139,6 +1235,37 @@ graph LR
 - Meridian.Risk
 - Meridian.Strategies
 - Meridian.Tests
+
+### Meridian.Execution.Tests
+
+**Path:** `tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj`
+
+**Project References:**
+- Meridian.Application
+- Meridian.Backtesting
+- Meridian.Core
+- Meridian.Domain
+- Meridian.Execution
+- Meridian.Execution.Sdk
+- Meridian.FinancialOperations
+- Meridian.Identity
+- Meridian.Infrastructure
+- Meridian.Ledger
+- Meridian.Reporting
+- Meridian.Risk
+- Meridian.Storage
+- Meridian.Storage.Accounting
+
+**NuGet Packages (9):**
+- FluentAssertions
+- FsCheck.Xunit
+- Microsoft.AspNetCore.Mvc.Testing
+- Microsoft.NET.Test.Sdk
+- Moq
+- NSubstitute
+- coverlet.collector
+- xunit
+- xunit.runner.visualstudio
 
 ### Meridian.FSharp
 
@@ -1236,18 +1363,20 @@ graph LR
 - Meridian.Contracts
 - Meridian.DataIntegration
 - Meridian.Domain
+- Meridian.Entities
 - Meridian.Execution.Sdk
 - Meridian.FSharp
 - Meridian.Identity
-- Meridian.Infrastructure
 - Meridian.Instruments
 - Meridian.Ledger
 - Meridian.ProviderSdk
 - Meridian.Storage
+- Meridian.Storage.Accounting
 
 **Referenced By:**
 - Meridian.Application
 - Meridian.DesignModules.Tests
+- Meridian.Execution.Tests
 - Meridian.Tests
 - Meridian.Ui.Shared
 
@@ -1293,6 +1422,7 @@ graph LR
 - Meridian.Application
 - Meridian.Audit
 - Meridian.DesignModules.Tests
+- Meridian.Execution.Tests
 - Meridian.FSharp
 - Meridian.FSharp.Tests
 - Meridian.FinancialOperations
@@ -1320,8 +1450,8 @@ graph LR
 - Meridian
 - Meridian.Application
 - Meridian.Backtesting.Tests
-- Meridian.FinancialOperations
-- Meridian.Strategies
+- Meridian.Execution.Tests
+- Meridian.Storage.Tests
 - Meridian.Tests
 - Meridian.Ui.Services
 - Meridian.Wpf
@@ -1349,6 +1479,7 @@ graph LR
 - Meridian.Domain
 - Meridian.ProviderSdk
 - Meridian.Storage
+- Meridian.Storage.Accounting
 
 **Referenced By:**
 - Meridian.Application
@@ -1387,10 +1518,12 @@ graph LR
 - Meridian.Backtesting.Sdk
 - Meridian.Documents
 - Meridian.Execution
+- Meridian.Execution.Tests
 - Meridian.FSharp.Tests
 - Meridian.FinancialOperations
 - Meridian.Reporting
-- Meridian.Storage
+- Meridian.Reporting.ReadModels
+- Meridian.Storage.Accounting
 - Meridian.Tests
 
 ### Meridian.Lifecycle.Tests
@@ -1448,8 +1581,9 @@ graph LR
 **Referenced By:**
 - Meridian.Tests
 
-**NuGet Packages (2):**
+**NuGet Packages (3):**
 - Microsoft.Extensions.Hosting
+- Microsoft.Extensions.Http
 - ModelContextProtocol
 
 ### Meridian.Platform
@@ -1487,6 +1621,7 @@ graph LR
 **Project References:**
 - Meridian.Contracts
 - Meridian.Storage
+- Meridian.Storage.Accounting
 
 **Referenced By:**
 - Meridian.Application
@@ -1508,6 +1643,7 @@ graph LR
 - Meridian.Application
 - Meridian.Documents
 - Meridian.Storage
+- Meridian.Storage.Accounting
 
 **Referenced By:**
 - Meridian.Tests
@@ -1530,6 +1666,7 @@ graph LR
 - Meridian.Instruments
 - Meridian.QuantScript
 - Meridian.Storage
+- Meridian.Strategies
 - Meridian.Ui.Shared
 
 **NuGet Packages (2):**
@@ -1619,7 +1756,9 @@ graph LR
 
 **Referenced By:**
 - Meridian.DesignModules.Tests
-- Meridian.Storage
+- Meridian.Execution.Tests
+- Meridian.Reporting.ReadModels
+- Meridian.Storage.Accounting
 - Meridian.Tests
 - Meridian.Ui.Services
 - Meridian.Ui.Shared
@@ -1629,17 +1768,30 @@ graph LR
 **NuGet Packages (1):**
 - Microsoft.Extensions.Logging.Abstractions
 
+### Meridian.Reporting.ReadModels
+
+**Path:** `src/Meridian.Reporting.ReadModels/Meridian.Reporting.ReadModels.csproj`
+
+**Project References:**
+- Meridian.Contracts
+- Meridian.Ledger
+- Meridian.Reporting
+- Meridian.Storage.Accounting
+
+**Referenced By:**
+- Meridian.Ui.Shared
+
 ### Meridian.Risk
 
 **Path:** `src/Meridian.Risk/Meridian.Risk.csproj`
 
 **Project References:**
 - Meridian.Contracts
-- Meridian.Execution
 - Meridian.Execution.Sdk
 - Meridian.FSharp
 
 **Referenced By:**
+- Meridian.Execution.Tests
 - Meridian.Tests
 - Meridian.Ui.Shared
 
@@ -1675,9 +1827,7 @@ graph LR
 - Meridian.Contracts
 - Meridian.Core
 - Meridian.Domain
-- Meridian.Ledger
 - Meridian.ProviderSdk
-- Meridian.Reporting
 
 **Referenced By:**
 - Meridian
@@ -1689,6 +1839,7 @@ graph LR
 - Meridian.DirectLending.Tests
 - Meridian.Documents
 - Meridian.Execution
+- Meridian.Execution.Tests
 - Meridian.FinancialOperations
 - Meridian.Identity
 - Meridian.Instruments
@@ -1696,6 +1847,8 @@ graph LR
 - Meridian.PortfolioRecords
 - Meridian.ProcessTestHelper
 - Meridian.QuantScript
+- Meridian.Storage.Accounting
+- Meridian.Storage.Tests
 - Meridian.Tests
 - Meridian.Ui.Services
 - Meridian.Ui.Shared
@@ -1715,6 +1868,53 @@ graph LR
 - ZstdSharp.Port
 - ... and 1 more
 
+### Meridian.Storage.Accounting
+
+**Path:** `src/Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj`
+
+**Project References:**
+- Meridian.Ledger
+- Meridian.Reporting
+- Meridian.Storage
+
+**Referenced By:**
+- Meridian
+- Meridian.Application
+- Meridian.DirectLending.Tests
+- Meridian.Execution
+- Meridian.Execution.Tests
+- Meridian.FinancialOperations
+- Meridian.Instruments
+- Meridian.PortfolioRecords
+- Meridian.ProcessTestHelper
+- Meridian.Reporting.ReadModels
+- Meridian.Tests
+- Meridian.Ui.Shared
+- Meridian.Wpf
+
+**NuGet Packages (2):**
+- Npgsql
+- Serilog
+
+### Meridian.Storage.Tests
+
+**Path:** `tests/Meridian.Storage.Tests/Meridian.Storage.Tests.csproj`
+
+**Project References:**
+- Meridian.Core
+- Meridian.Domain
+- Meridian.Infrastructure
+- Meridian.Storage
+
+**NuGet Packages (7):**
+- FluentAssertions
+- FsCheck.Xunit
+- Microsoft.NET.Test.Sdk
+- Moq
+- coverlet.collector
+- xunit
+- xunit.runner.visualstudio
+
 ### Meridian.Strategies
 
 **Path:** `src/Meridian.Strategies/Meridian.Strategies.csproj`
@@ -1728,8 +1928,8 @@ graph LR
 - Meridian.FSharp
 - Meridian.FSharp.Ledger
 - Meridian.FSharp.Trading
-- Meridian.Infrastructure
 - Meridian.Instruments
+- Meridian.ProviderSdk
 
 **Referenced By:**
 - Meridian.Backtesting
@@ -1747,6 +1947,7 @@ graph LR
 **Path:** `tests/Meridian.TestSupport/Meridian.TestSupport.csproj`
 
 **Referenced By:**
+- Meridian.Demo.Tests
 - Meridian.DirectLending.Tests
 - Meridian.Tests
 
@@ -1784,24 +1985,25 @@ graph LR
 - Meridian.Reporting
 - Meridian.Risk
 - Meridian.Storage
+- Meridian.Storage.Accounting
 - Meridian.Strategies
 - Meridian.TestSupport
 - Meridian.Ui.Services
 - Meridian.Ui.Shared
 - Meridian.Workflow
 
-**NuGet Packages (15):**
+**NuGet Packages (16):**
 - Bogus
 - FluentAssertions
 - FsCheck.Xunit
 - Microsoft.AspNetCore.Mvc.Testing
+- Microsoft.Extensions.TimeProvider.Testing
 - Microsoft.NET.Test.Sdk
 - Moq
 - NSubstitute
 - Npgsql
 - System.Reactive
-- Testcontainers.PostgreSql
-- ... and 5 more
+- ... and 6 more
 
 ### Meridian.Ui.Services
 
@@ -1853,8 +2055,10 @@ graph LR
 - Meridian.QuantScript
 - Meridian.ReferenceData
 - Meridian.Reporting
+- Meridian.Reporting.ReadModels
 - Meridian.Risk
 - Meridian.Storage
+- Meridian.Storage.Accounting
 - Meridian.Strategies
 
 **Referenced By:**
@@ -1914,6 +2118,7 @@ graph LR
 - Meridian.QuantScript.Worker
 - Meridian.Reporting
 - Meridian.Storage
+- Meridian.Storage.Accounting
 - Meridian.Strategies
 - Meridian.Ui.Services
 - Meridian.Ui.Shared

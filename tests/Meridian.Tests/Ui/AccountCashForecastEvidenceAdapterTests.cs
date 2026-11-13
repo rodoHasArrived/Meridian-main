@@ -151,6 +151,57 @@ public sealed class AccountCashForecastEvidenceAdapterTests : IDisposable
         await action.Should().ThrowAsync<AccountCashForecastSourceAuthorityException>();
     }
 
+    [Fact]
+    public async Task NativeOpeningBalance_IsVerifiedAgainstExactRetainedBytes()
+    {
+        var request = await ValidRequestAsync();
+        var opening = request.OpeningCash!;
+        var native = request with
+        {
+            OpeningCash = null,
+            ClosingCash = null,
+            Flows = [],
+            FxConversions = [],
+            CalculationVersion = "account-cash-forecast-v2",
+            NativeOpeningBalances = [opening]
+        };
+        await Adapter().VerifyAsync(native);
+        var tampered = native with { NativeOpeningBalances = [opening with { Amount = opening.Amount + 1m }] };
+        await FluentActions.Invoking(() => Adapter().VerifyAsync(tampered))
+            .Should().ThrowAsync<AccountCashForecastSourceAuthorityException>();
+    }
+
+    [Fact]
+    public async Task Deductions_RequireVersionTwoSourceWithExactAllocationEconomics()
+    {
+        var request = await ValidRequestAsync();
+        var source = new AccountCashForecastSourceDocument(2, "allocation", "bank", "deduction-1", 1,
+            _scope.AccountId, _scope.BookId, _date, AccountCashEvidenceRole.Observation,
+            Allocation: new("allocation-1", "coupon-1", "coupon-1.actual.v1", 8m, 10m, 1m, 1m));
+        var evidence = await RetainAsync(source);
+        var allocation = new AccountCashPaymentAllocationDto("allocation-1", "coupon-1", "coupon-1.actual.v1", 8m, 10m, 1m, 1m, evidence);
+        request = request with { PaymentAllocations = [allocation], CalculationVersion = "account-cash-forecast-v2" };
+        await Adapter().VerifyAsync(request);
+        await FluentActions.Invoking(() => Adapter().VerifyAsync(request with
+        { PaymentAllocations = [allocation with { WithholdingTax = 2m }] }))
+            .Should().ThrowAsync<AccountCashForecastSourceAuthorityException>();
+    }
+
+    [Fact]
+    public async Task RevisedReceiptDate_CannotReuseAnUnrelatedReviewedDate()
+    {
+        var request = await ValidRequestAsync();
+        var source = new AccountCashForecastSourceDocument(2, "receiptRevision", "custodian", "reschedule-1", 1,
+            _scope.AccountId, _scope.BookId, _date, AccountCashEvidenceRole.Observation,
+            ReceiptRevision: new("coupon-1", _date.AddDays(2)));
+        var evidence = await RetainAsync(source);
+        request = request with { ReceiptRevisions = [new("coupon-1", _date.AddDays(2), evidence)] };
+        await Adapter().VerifyAsync(request);
+        await FluentActions.Invoking(() => Adapter().VerifyAsync(request with
+        { ReceiptRevisions = [new("coupon-1", _date.AddDays(3), evidence)] }))
+            .Should().ThrowAsync<AccountCashForecastSourceAuthorityException>();
+    }
+
     internal async Task<AccountCashForecastRequestDto> ValidRequestAsync()
     {
         var opening = BalanceSource("opening", 100m);

@@ -1697,6 +1697,12 @@
         }
       }
     ],
+    "/api/ledger/intercompany/capabilities": {
+      "canManageAgreements": false,
+      "canManageLifecycle": false,
+      "canManageLedger": false,
+      "canViewLedger": true
+    },
     "/api/ledger/books": [
       {
         "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",

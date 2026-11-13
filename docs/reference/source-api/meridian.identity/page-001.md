@@ -62,7 +62,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Identity.Auth.PermissionCatalogItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:429](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L429).
+Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:450](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L450).
 
 ```csharp
 public sealed record PermissionCatalogItemDto(string Name, long Value, string Group, string Description);
@@ -72,7 +72,7 @@ public sealed record PermissionCatalogItemDto(string Name, long Value, string Gr
 
 Qualified name: <code>Meridian.Identity.Auth.RolePermissionCatalogDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:410](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L410).
+Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:431](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L431).
 
 ```csharp
 public sealed record RolePermissionCatalogDto(IReadOnlyList<RolePermissionProfileDto> Roles, IReadOnlyList<PermissionCatalogItemDto> Permissions);
@@ -82,7 +82,7 @@ public sealed record RolePermissionCatalogDto(IReadOnlyList<RolePermissionProfil
 
 Qualified name: <code>Meridian.Identity.Auth.RolePermissionProfileAuditEventDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:450](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L450).
+Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:471](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L471).
 
 ```csharp
 public sealed record RolePermissionProfileAuditEventDto(string AuditId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Rationale, string CorrelationId, string ProfileName, string BaseRole, IReadOnlyList<string> PermissionNames, long PermissionMask);
@@ -92,7 +92,7 @@ public sealed record RolePermissionProfileAuditEventDto(string AuditId, string E
 
 Qualified name: <code>Meridian.Identity.Auth.RolePermissionProfileDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:414](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L414).
+Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:435](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L435).
 
 ```csharp
 public sealed record RolePermissionProfileDto(string Role, string DisplayName, string Description, bool IsBuiltIn, IReadOnlyList<string> Permissions, long PermissionMask, string? BaseRole = null, string? CreatedBy = null, DateTimeOffset? CreatedAtUtc = null, string? UpdatedBy = null, DateTimeOffset? UpdatedAtUtc = null, string? LastRationale = null, string? LastAuditId = null);
@@ -102,7 +102,7 @@ public sealed record RolePermissionProfileDto(string Role, string DisplayName, s
 
 Qualified name: <code>Meridian.Identity.Auth.RolePermissionProfileUpsertRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:435](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L435).
+Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:456](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L456).
 
 ```csharp
 public sealed record RolePermissionProfileUpsertRequestDto(string ProfileName, string DisplayName, string? Description, string BaseRole, IReadOnlyList<string> PermissionNames, string RequestedBy, string Rationale, string? CorrelationId = null);
@@ -112,7 +112,7 @@ public sealed record RolePermissionProfileUpsertRequestDto(string ProfileName, s
 
 Qualified name: <code>Meridian.Identity.Auth.RolePermissionProfileUpsertResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:445](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L445).
+Source: [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:466](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L466).
 
 ```csharp
 public sealed record RolePermissionProfileUpsertResultDto(RolePermissionProfileDto Profile, RolePermissionCatalogDto Catalog, RolePermissionProfileAuditEventDto AuditEvent);
@@ -135,11 +135,11 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static UserPermission For(UserRole role) =&gt; …;</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:178](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L178) | Returns the UserPermission flags granted to role. |
-| <code>public static bool TryParseRoleName(string? configured, out UserRole role);</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:206](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L206) | Parses a configured role by name only, for the environment settings that name one -- MDC_ANONYMOUS_ROLE and MDC_API_KEY_ROLE in the browser host, the same anonymous role in the desktop shell. Enum.TryParse{TEnum}(string, bool, out TEnum) also accepts numeric text, and UserRole.Admin is the zero value, so &quot;0&quot; -- or any stray number -- would otherwise resolve to a full administrator rather than failing closed as unrecognised. Shared rather than reimplemented per host so the two lanes cannot disagree about what a misconfigured role means. |
-| <code>public static bool HasPermission(UserRole role, UserPermission required) =&gt; …;</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:227](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L227) |  |
-| <code>public static RolePermissionCatalogDto GetCatalog();</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:230](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L230) |  |
-| <code>public static IReadOnlyList&lt;string&gt; GetPermissionNames(UserPermission permissions) =&gt; …;</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:255](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L255) |  |
-| <code>public static bool TryParsePermissionNames(IEnumerable&lt;string&gt;? permissionNames, out UserPermission permissions, out IReadOnlyList&lt;string&gt; invalidPermissionNames);</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:262](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L262) |  |
+| <code>public static bool TryParseRoleName(string? configured, out UserRole role);</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:221](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L221) | Parses a configured role by name only, for the environment settings that name one -- MDC_ANONYMOUS_ROLE and MDC_API_KEY_ROLE in the browser host, the same anonymous role in the desktop shell. Enum.TryParse{TEnum}(string, bool, out TEnum) also accepts numeric text, and UserRole.Admin is the zero value, so &quot;0&quot; -- or any stray number -- would otherwise resolve to a full administrator rather than failing closed as unrecognised. Shared rather than reimplemented per host so the two lanes cannot disagree about what a misconfigured role means. |
+| <code>public static bool HasPermission(UserRole role, UserPermission required) =&gt; …;</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:242](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L242) |  |
+| <code>public static RolePermissionCatalogDto GetCatalog();</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:245](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L245) |  |
+| <code>public static IReadOnlyList&lt;string&gt; GetPermissionNames(UserPermission permissions) =&gt; …;</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:270](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L270) |  |
+| <code>public static bool TryParsePermissionNames(IEnumerable&lt;string&gt;? permissionNames, out UserPermission permissions, out IReadOnlyList&lt;string&gt; invalidPermissionNames);</code> | [src/Meridian.Identity/Contracts/Auth/RolePermissions.cs:277](../../../../src/Meridian.Identity/Contracts/Auth/RolePermissions.cs#L277) |  |
 
 ## ScopedAuthorizationDecisionDto
 
@@ -331,6 +331,10 @@ Enum declarations:
 | <code>ManageSinglePrincipalDeclarations = 1L&lt;&lt;40</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:152](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L152) | Administer a reasoned, scoped single-principal declaration; confers no domain approval authority. |
 | <code>RecordPreparerAttestations = 1L&lt;&lt;41</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:155](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L155) | Record non-posting preparer assertions with the existing target-modification permission. |
 | <code>ViewPreparerAttestations = 1L&lt;&lt;42</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:158](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L158) | Read scoped preparer-assertion receipts, declaration history and audit evidence. |
+| <code>ViewPrivateCapitalRecords = 1L&lt;&lt;43</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:161](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L161) | Read source-reported private-capital commitments and valuation observations. |
+| <code>ManagePrivateCapitalRecords = 1L&lt;&lt;44</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:164](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L164) | Register private-capital commitments and accept evidence-backed observation imports. |
+| <code>ViewOptionAssessments = 1L&lt;&lt;45</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:167](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L167) | Read account-scoped retained broker option assessments. |
+| <code>ManageOptionAssessments = 1L&lt;&lt;46</code> | [src/Meridian.Identity/Contracts/Auth/UserPermission.cs:170](../../../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs#L170) | Import and correct evidence-backed broker option assessments. |
 
 ## UserRole
 

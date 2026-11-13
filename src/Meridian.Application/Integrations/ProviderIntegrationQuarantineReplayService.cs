@@ -566,6 +566,8 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
             "uppercase" or "trimuppercase" => value.Trim().ToUpperInvariant(),
             "lowercase" or "trimlowercase" => value.Trim().ToLowerInvariant(),
             "decimal" or "decimalparsing" => ParseDecimal(value, mapping.TargetField, issues),
+            "boolean" => ProviderIntegrationFieldTransforms.ParseBoolean(value, mapping.TargetField, issues),
+            "json" => ProviderIntegrationFieldTransforms.ParseJson(value, mapping.TargetField, issues),
             "signedamount" => ParseSignedAmount(
                 value,
                 mapping,
@@ -661,6 +663,7 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
         {
             decimal decimalValue => JsonValue.Create(decimalValue),
             bool boolValue => JsonValue.Create(boolValue),
+            JsonNode nodeValue => nodeValue.DeepClone(),
             _ => JsonValue.Create(value.ToString())
         };
     }

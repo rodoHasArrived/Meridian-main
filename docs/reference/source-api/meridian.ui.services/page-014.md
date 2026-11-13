@@ -6,6 +6,103 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageServiceBase
+
+Qualified name: <code>Meridian.Ui.Services.StorageServiceBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L15).
+
+Base class for storage services providing platform-agnostic API delegation methods. Accepts ApiClientService via constructor for testability and to avoid coupling to a static singleton. WPF StorageService inherits from this class and adds platform-specific functionality (e.g., Brush-based styling).
+
+```csharp
+public class StorageServiceBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StorageStatsSummary?&gt; GetStorageStatsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L30) | Gets storage statistics summary. |
+| <code>public async Task&lt;List&lt;StorageCategory&gt;?&gt; GetStorageBreakdownAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:38](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L38) | Gets detailed storage usage by category. |
+| <code>public async Task&lt;SymbolStorageInfo?&gt; GetSymbolInfoAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L46) | Gets symbol-specific information. |
+| <code>public async Task&lt;SymbolStorageStats?&gt; GetSymbolStorageStatsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:55](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L55) | Gets storage statistics for a specific symbol. |
+| <code>public async Task&lt;string?&gt; GetSymbolFolderPathAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L64) | Gets the folder path for a symbol&#x27;s data. |
+| <code>public async Task&lt;StorageHealthReport?&gt; GetStorageHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:74](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L74) | Gets storage health report. |
+| <code>public async Task&lt;List&lt;CleanupCandidate&gt;?&gt; GetCleanupCandidatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:82](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L82) | Gets files that need cleanup based on retention policies. |
+| <code>public async Task&lt;CleanupResult?&gt; RunCleanupAsync(bool dryRun = true, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:90](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L90) | Runs storage cleanup. |
+| <code>public async Task&lt;ArchiveStats?&gt; GetArchiveStatsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:101](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L101) | Gets archive statistics. |
+| <code>public static string FormatBytes(long bytes) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L109) | Formats a byte count into a human-readable string (e.g., &quot;1.5 GB&quot;). |
+| <code>public static string GetFileIcon(string dataType);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:114](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L114) | Gets the icon glyph for a data type. |
+
+## StorageStatsSummary
+
+Qualified name: <code>Meridian.Ui.Services.StorageStatsSummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:12](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L12).
+
+Summarizes storage capacity, utilization, files, symbols, and retained date coverage.
+
+```csharp
+public sealed class StorageStatsSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:14](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L14) |  |
+| <code>public long UsedSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:15](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L15) |  |
+| <code>public long FreeSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:16](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L16) |  |
+| <code>public double UsedPercentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:17](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L17) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:18](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L18) |  |
+| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:19](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L19) |  |
+| <code>public DateTime OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:20](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L20) |  |
+| <code>public DateTime NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:21](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L21) |  |
+
+## StorageStatusResponse
+
+Qualified name: <code>Meridian.Ui.Services.StorageStatusResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:607](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L607).
+
+Carries API storage-path existence, writability, and free-space diagnostics.
+
+```csharp
+public sealed class StorageStatusResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:609](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L609) |  |
+| <code>public bool PathExists { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:610](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L610) |  |
+| <code>public bool IsWritable { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:611](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L611) |  |
+| <code>public double FreeSpaceGb { get; set; }</code> | [src/Meridian.Ui.Services/Services/DiagnosticsService.cs:612](../../../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs#L612) |  |
+
+## StorageTierConfig
+
+Qualified name: <code>Meridian.Ui.Services.StorageTierConfig</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:162](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L162).
+
+Configuration for a single storage tier.
+
+```csharp
+public sealed class StorageTierConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:164](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L164) |  |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:165](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L165) |  |
+| <code>public int Priority { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:166](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L166) |  |
+| <code>public int RetentionDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:167](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L167) |  |
+| <code>public string CompressionLevel { get; set; } = &quot;Standard&quot;;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:168](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L168) |  |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:169](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L169) |  |
+
 ## StreamHealthInfo
 
 Qualified name: <code>Meridian.Ui.Services.StreamHealthInfo</code>. Kind: `class`.
@@ -1127,91 +1224,3 @@ Declared public members:
 | <code>public int ActiveConnections { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:287](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L287) |  |
 | <code>public int PendingOperations { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:288](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L288) |  |
 | <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:289](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L289) |  |
-
-## TechnicalIndicatorInfo
-
-Qualified name: <code>Meridian.Ui.Services.TechnicalIndicatorInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ChartingService.cs:631](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L631).
-
-Technical indicator info.
-
-```csharp
-public sealed class TechnicalIndicatorInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:633](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L633) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:634](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L634) |  |
-| <code>public string ShortName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:635](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L635) |  |
-| <code>public string Category { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:636](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L636) |  |
-| <code>public string DefaultParams { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:637](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L637) |  |
-
-## ThroughputAnalysisOptions
-
-Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:501](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L501).
-
-Selects the provider, period, and time-bucket interval for throughput analysis.
-
-```csharp
-public sealed class ThroughputAnalysisOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? Provider { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:503](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L503) |  |
-| <code>public TimeSpan? Period { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:504](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L504) |  |
-| <code>public int IntervalSeconds { get; set; } = 60;</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:505](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L505) |  |
-
-## ThroughputAnalysisResponse
-
-Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:525](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L525).
-
-Carries API throughput rates, total processed events, and time-bucket measurements.
-
-```csharp
-public sealed class ThroughputAnalysisResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double CurrentThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:527](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L527) |  |
-| <code>public double AverageThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:528](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L528) |  |
-| <code>public double PeakThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:529](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L529) |  |
-| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:530](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L530) |  |
-| <code>public List&lt;ThroughputDataPoint&gt;? Timeline { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:531](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L531) |  |
-
-## ThroughputAnalysisResult
-
-Qualified name: <code>Meridian.Ui.Services.ThroughputAnalysisResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:511](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L511).
-
-Reports throughput-query success, current and peak rates, and the event timeline.
-
-```csharp
-public sealed class ThroughputAnalysisResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:513](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L513) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:514](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L514) |  |
-| <code>public double CurrentThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:515](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L515) |  |
-| <code>public double AverageThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:516](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L516) |  |
-| <code>public double PeakThroughput { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:517](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L517) |  |
-| <code>public long TotalEventsProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:518](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L518) |  |
-| <code>public List&lt;ThroughputDataPoint&gt; Timeline { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs:519](../../../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs#L519) |  |

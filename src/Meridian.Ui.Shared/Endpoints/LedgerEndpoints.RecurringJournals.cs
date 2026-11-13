@@ -80,6 +80,7 @@ public static partial class LedgerEndpoints
     private static void MapRecurringJournalEndpoints(WebApplication app, JsonSerializerOptions jsonOptions)
     {
         MapFixedAssetRegisterEndpoints(app, jsonOptions);
+        MapAccrualScheduleEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, async (HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))

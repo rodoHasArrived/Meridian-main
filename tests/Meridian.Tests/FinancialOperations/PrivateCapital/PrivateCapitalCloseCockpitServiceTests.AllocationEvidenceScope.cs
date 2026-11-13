@@ -14,7 +14,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     public async Task GetCockpitAsync_AllocationRollupCannotLaunderForeignChildEvidence_SourceRepairRestoresReadiness(string child)
     {
         var source = new StubManualJournalEntryWorkbenchService(BuildAllocationRollupActivity(child, repair: false));
-        var service = new PrivateCapitalCloseCockpitService(source,
+        var service = CreateSourceBackedCockpitService(source,
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]));
         var fee = source.Activity.FundEventRecords.Single(static record => record.FundEventType == "ManagementFee");
         // The production record builder merges same-event child links into the union,

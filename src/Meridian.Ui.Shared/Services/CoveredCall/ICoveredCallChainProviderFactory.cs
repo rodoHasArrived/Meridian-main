@@ -35,4 +35,11 @@ public interface ICoveredCallChainProviderFactory
 /// <summary>Result returned by <see cref="ICoveredCallChainProviderFactory.PreviewAsync"/>.</summary>
 public sealed record CoveredCallChainPreviewResult(
     decimal UnderlyingPrice,
-    IReadOnlyList<OptionCandidateInfo> Candidates);
+    IReadOnlyList<OptionCandidateInfo> Candidates)
+{
+    public bool CoverageKnown { get; init; }
+    public IReadOnlyList<DateOnly> RequestedExpirations { get; init; } = [];
+    public IReadOnlyList<DateOnly> LoadedExpirations { get; init; } = [];
+    public IReadOnlyList<DateTimeOffset> SnapshotTimes { get; init; } = [];
+    public int? MaxStrikesPerExpiration { get; init; }
+}

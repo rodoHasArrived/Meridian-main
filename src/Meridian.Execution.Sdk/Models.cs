@@ -102,6 +102,8 @@ public sealed record OrderRequest
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
 }
 
 /// <summary>One leg in a multi-leg options order.</summary>
@@ -294,6 +296,10 @@ public sealed record OrderResult
     public string? ErrorMessage { get; init; }
     public OrderState? OrderState { get; init; }
 
+    /// <summary>True when a failed submission may have routed and requires reconciliation before retrying.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RequiresOrderReconciliation { get; init; }
+
     /// <summary>
     /// Non-blocking risk flags raised while the order was approved (e.g. concentration
     /// observe-band or warning-severity rule breaches), surfaced so callers and operators
@@ -328,6 +334,12 @@ public sealed record OrderResult
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    /// <summary>The journal submission attempt associated with this tracked order incarnation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? JournalAttemptId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
     public required string OrderId { get; init; }
     public required string Symbol { get; init; }
     public required OrderSide Side { get; init; }

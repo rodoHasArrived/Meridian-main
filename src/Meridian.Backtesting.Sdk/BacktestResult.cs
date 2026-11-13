@@ -95,4 +95,8 @@ public sealed record BacktestResult(
     IReadOnlyList<TradeTicket>? TradeTickets = null,
     TcaReport? TcaReport = null,
     BacktestEngineMetadata? EngineMetadata = null,
-    BiasDisclosureReport? BiasDisclosure = null);
+    BiasDisclosureReport? BiasDisclosure = null)
+{
+    /// <summary>Day-end accounting differences retained for inspection; empty for a reconciled run.</summary>
+    public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks { get; init; } = [];
+}

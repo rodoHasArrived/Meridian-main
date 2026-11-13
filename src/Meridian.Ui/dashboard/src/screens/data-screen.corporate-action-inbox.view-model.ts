@@ -5,6 +5,7 @@ import type {
   CorporateActionCaseProjection,
   CorporateActionCaseScope,
   CorporateActionCaseStatus,
+  CorporateActionElectionCalendar,
   CorporateActionInboxAcceptRequest,
   CorporateActionInboxAcceptResult,
   CorporateActionInboxResponse,
@@ -20,6 +21,7 @@ export type CorporateActionIdempotencyKeyFactory = () => string;
 export type InboxRowTone = "warning" | "neutral";
 
 export interface CorporateActionInboxRowModel {
+  electionCalendar?: CorporateActionElectionCalendar | null;
   rowId: string;
   caseIdLabel: string;
   proposalIdLabel: string;
@@ -246,6 +248,7 @@ function buildProposalRow(
       ? caseFields.proposalIdLabel
       : `${proposal.securityId}:${proposal.actionType}:${proposal.exDate}`,
     ...caseFields,
+    electionCalendar: compactCase?.electionCalendar ?? proposal.electionCalendar ?? null,
     securityId: proposal.securityId,
     ticker: proposal.ticker,
     actionType: proposal.actionType,
@@ -340,6 +343,7 @@ function buildCaseOnlyRow(
     tone: isWarning ? "warning" : retainedSourceRow?.tone ?? "neutral",
     durableCase,
     compactCase: processingCase,
+    electionCalendar: processingCase.electionCalendar ?? null,
     proposal: null
   };
 }
@@ -356,23 +360,30 @@ export function buildCorporateActionInboxModel(
 ): CorporateActionInboxModel {
   const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
   const compactCases = response.cases ?? [];
+  const casesPerProposal = new Map<string, number>();
+  for (const processingCase of compactCases) casesPerProposal.set(processingCase.proposalId, (casesPerProposal.get(processingCase.proposalId) ?? 0) + 1);
   const compactCaseByProposalId = new Map(compactCases.map((processingCase) => [processingCase.proposalId, processingCase]));
   const retainedRowByProposalId = new Map(retainedRows.map((row) => [row.proposalIdLabel, row]));
   const stagedProposalIds = new Set(response.staged.flatMap((proposal) => proposal.proposalId ? [proposal.proposalId] : []));
   const rows = [
     ...response.staged.map((proposal) => buildProposalRow(
       proposal,
-      proposal.proposalId ? compactCaseByProposalId.get(proposal.proposalId) ?? null : null,
+      proposal.proposalId && casesPerProposal.get(proposal.proposalId) === 1 ? compactCaseByProposalId.get(proposal.proposalId) ?? null : null,
       todayUtc
     )),
     ...compactCases
-      .filter((processingCase) => !stagedProposalIds.has(processingCase.proposalId))
+      .filter((processingCase) => !stagedProposalIds.has(processingCase.proposalId) || (casesPerProposal.get(processingCase.proposalId) ?? 0) > 1)
       .map((processingCase) => buildCaseOnlyRow(
         processingCase,
         todayUtc,
         retainedRowByProposalId.get(processingCase.proposalId) ?? null
       ))
   ];
+  // A provider proposal can fan out to several account/book cases. Preserve each exact case
+  // identity rather than letting a calendar event or queue selection resolve the first match.
+  const rowCounts = new Map<string, number>();
+  for (const row of rows) rowCounts.set(row.rowId, (rowCounts.get(row.rowId) ?? 0) + 1);
+  for (const row of rows) if ((rowCounts.get(row.rowId) ?? 0) > 1 && row.compactCase) row.rowId = `case:${row.compactCase.caseId}`;
   rows.sort((a, b) => {
     if (a.daysUntilEx === null && b.daysUntilEx !== null) return 1;
     if (a.daysUntilEx !== null && b.daysUntilEx === null) return -1;

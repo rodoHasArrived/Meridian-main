@@ -10,7 +10,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { chromiumLaunchOptions, parseDesignSystemOptions, readOnlySmokeResponse } from "./design-system-smoke-helpers.mjs";
+import { chromiumLaunchOptions, isCanceledApiRequest, parseDesignSystemOptions, readOnlySmokeResponse } from "./design-system-smoke-helpers.mjs";
 import { runExpandedDesignSystemSmoke } from "./design-system-smoke-profile.mjs";
 
 const args = process.argv.slice(2);
@@ -72,8 +72,7 @@ async function monitor(page) {
     if (message.type() === "error") report.consoleErrors.push({ text: message.text(), url: message.location().url });
   });
   page.on("requestfailed", request => {
-    const canceledApi = new URL(request.url()).pathname.startsWith("/api/") && request.failure()?.errorText === "net::ERR_ABORTED";
-    if (!canceledApi) report.assetFailures.push(`${request.url()}: ${request.failure()?.errorText}`);
+    if (!isCanceledApiRequest(request)) report.assetFailures.push(`${request.url()}: ${request.failure()?.errorText}`);
   });
   page.on("response", response => {
     if (response.headers()["x-meridian-dev-fixture"] === "true") fixtureServer = true;
@@ -195,6 +194,7 @@ async function scan(page, label) {
     await fonts(audit);
     await audit.addScriptTag({ content: axeSource });
     const result = await audit.evaluate(async () => await window.axe.run(document, {
+      preload: false,
       runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] }
     }));
     report.accessibility.push({ label, passes: result.passes.length, incomplete: result.incomplete.map(item => item.id), violations: result.violations.map(item => ({ id: item.id, impact: item.impact, nodes: item.nodes.map(node => ({ target: node.target, summary: node.failureSummary })) })) });

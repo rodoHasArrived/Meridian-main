@@ -5039,16 +5039,16 @@ describe("AccountingScreen", () => {
     });
   });
 
-  it("preserves a manually selected bond through detail tabs after the explorer selected another security", async () => {
+  it.each(["Bond", "Fixed Income"])("preserves a manually selected %s bond through detail tabs after the explorer selected another security", async (assetClass) => {
     const user = userEvent.setup();
     const explorer = await api.getFinancialRecordExplorer("security-instrument");
     const sourceRow = explorer.rows[0];
     const selectedRow = { ...sourceRow, recordId: "security-instrument:sec-dev-001", detail: { ...sourceRow.detail, recordId: "security-instrument:sec-dev-001" } };
     vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [selectedRow], selectedRecord: selectedRow.detail });
     const bondId = "33333333-3333-3333-3333-333333333333";
-    vi.mocked(api.searchSecurities).mockResolvedValueOnce([{ securityId: bondId, displayName: "Reviewed corporate bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }]);
-    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", status: "Active", classification: { assetClass: securityId === bondId ? "Bond" : "Equity", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }));
-    vi.mocked(api.getSecurityIdentity).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", assetClass: securityId === bondId ? "Bond" : "Equity", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] }));
+    vi.mocked(api.searchSecurities).mockResolvedValueOnce([{ securityId: bondId, displayName: "Reviewed corporate bond", status: "Active", classification: { assetClass, subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }]);
+    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", status: "Active", classification: { assetClass: securityId === bondId ? assetClass : "Equity", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }));
+    vi.mocked(api.getSecurityIdentity).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", assetClass: securityId === bondId ? assetClass : "Equity", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] }));
     await renderAccountingScreen(data, "/accounting/security-master");
     await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-dev-001"));
     await user.type(screen.getByPlaceholderText("Search securities…"), "bond");
@@ -5156,8 +5156,15 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Collector")).toBeInTheDocument();
   });
 
-  it("renders multi-asset reference data source coverage after selecting a security", async () => {
+  it("renders reference coverage using authoritative identifiers and currency after selecting a security", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => ({
+      securityId,
+      displayName: "Reviewed reference instrument",
+      status: "Active",
+      classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Isin", primaryIdentifierValue: "FR0000000001" },
+      economicDefinition: { currency: "EUR", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" }
+    }));
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
@@ -5169,7 +5176,9 @@ describe("AccountingScreen", () => {
     expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
     expect(api.getReferenceDataWorkbenchCoverage).toHaveBeenCalledWith(expect.objectContaining({
       securityId: "22222222-2222-2222-2222-222222222222",
-      primaryIdentifierValue: "AAPL"
+      primaryIdentifierKind: "Isin",
+      primaryIdentifierValue: "FR0000000001",
+      currency: "EUR"
     }));
 
     const table = screen.getByRole("treegrid", {

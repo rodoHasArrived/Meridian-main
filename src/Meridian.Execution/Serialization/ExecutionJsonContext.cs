@@ -19,6 +19,8 @@ namespace Meridian.Execution.Serialization;
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     PropertyNameCaseInsensitive = true,
     UseStringEnumConverter = true)]
+[JsonSerializable(typeof(BrokerActivityImportRecord))]
+[JsonSerializable(typeof(BrokerActivityImportCheckpoint))]
 [JsonSerializable(typeof(PersistedSessionRecord))]
 [JsonSerializable(typeof(ExecutionReport))]
 [JsonSerializable(typeof(PaperSessionFillRecord))]
@@ -27,6 +29,7 @@ namespace Meridian.Execution.Serialization;
 [JsonSerializable(typeof(OrderState))]
 [JsonSerializable(typeof(BrokerageOrderRecoverySnapshot))]
 [JsonSerializable(typeof(List<string>))]
+[JsonSerializable(typeof(Meridian.Ledger.JournalEntryMetadata))]
 [JsonSerializable(typeof(PersistedJournalEntryDto))]
 [JsonSerializable(typeof(List<PersistedJournalEntryDto>))]
 [JsonSerializable(typeof(PersistedLedgerLineDto))]
@@ -67,6 +70,10 @@ namespace Meridian.Execution.Serialization;
 // Governed-approval queue persistence
 [JsonSerializable(typeof(RiskEscalationSnapshot))]
 [JsonSerializable(typeof(OrderRequest))]
+[JsonSerializable(typeof(ExecutionJournalEntry))]
+[JsonSerializable(typeof(OrderPreviewResult))]
+[JsonSerializable(typeof(ExecutionAlertSettings))]
+[JsonSerializable(typeof(ExecutionNotification))]
 internal sealed partial class ExecutionJsonContext : JsonSerializerContext
 {
 }

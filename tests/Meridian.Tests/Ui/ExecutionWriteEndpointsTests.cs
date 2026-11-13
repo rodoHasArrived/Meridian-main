@@ -43,7 +43,7 @@ namespace Meridian.Tests.Ui;
 /// named operator scenarios that guard against paper-session replay drift and
 /// promotion decisions that are not visibly auditable.
 /// </summary>
-public sealed class ExecutionWriteEndpointsTests
+public sealed partial class ExecutionWriteEndpointsTests
 {
     private const string ApprovedLiveRunId = "run-live-approved";
 
@@ -1044,6 +1044,24 @@ public sealed class ExecutionWriteEndpointsTests
             }));
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        gateway.SubmittedRequests.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task PositionActions_WhenActorMissing_RejectBeforeInvalidQuantityAndDoNotSubmit(int quantity)
+    {
+        var gateway = new RecordingBrokerageGateway(CreateRobinhoodOptionPosition("opt-actor"));
+        await using var app = await CreateAppAsync(
+            services => RegisterBrokerageOms(services, gateway), currentUser: null);
+        var client = app.GetTestClient();
+        foreach (var route in new[] { UiApiRoutes.ExecutionPositionActionClose, UiApiRoutes.ExecutionPositionActionUpsize })
+        {
+            var response = await client.PostAsync(route,
+                JsonContent(new ExecutionPositionActionRequest("opt-actor", Quantity: quantity)));
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
         gateway.SubmittedRequests.Should().BeEmpty();
     }
 

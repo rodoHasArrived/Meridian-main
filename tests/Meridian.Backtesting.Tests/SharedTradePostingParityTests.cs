@@ -51,6 +51,22 @@ public sealed class SharedTradePostingParityTests
         backtestLedger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
         paperLedger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
 
+        // Shared line economics must retain producer attribution too: the cash received on a
+        // sale/cover belongs to investing, while its carrying relief and result are noncash.
+        var postings = backtestLedger.Journal.Concat(paperLedger.Journal).ToArray();
+        var from = postings.Min(entry => entry.Timestamp).AddTicks(-1);
+        var through = postings.Max(entry => entry.Timestamp);
+        foreach (var ledger in new[] { backtestLedger, paperLedger })
+        {
+            var cashFlow = LedgerFinancialStatementBuilder.BuildForPeriod(ledger, from, through).CashFlow!;
+            cashFlow.BeginningCash.Should().Be(0m);
+            cashFlow.EndingCash.Should().Be(expectedCash);
+            cashFlow.InvestingCashFlow.Should().Be(expectedCash - 10_000m + 4m);
+            cashFlow.OperatingCashFlow.Should().Be(-4m);
+            cashFlow.FinancingCashFlow.Should().Be(10_000m);
+            cashFlow.IsReconciled.Should().BeTrue();
+        }
+
         void ApplyToBoth(long quantity, decimal price, decimal commission, DateTimeOffset filledAt)
         {
             var orderId = Guid.NewGuid();

@@ -57,6 +57,7 @@ public sealed class BondAnalyticsEndpointsTests
     [InlineData("cleanPrice=100&yieldConvention=999")]
     [InlineData("cleanPrice=100&yieldConvention=0")]
     [InlineData("yieldConvention=NominalPeriodic")]
+    [InlineData("cleanPrice=100&securityVersion=0")]
     public async Task Analytics_RejectsAmbiguousOrInvalidInputs(string query)
     {
         var service = Substitute.For<IBondAnalyticsService>();
@@ -222,12 +223,119 @@ public sealed class BondAnalyticsEndpointsTests
         return new BondAnalyticsService(query, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]), forwardCurves: curves);
     }
 
+    [Fact]
+    public async Task Analytics_BindsExactRetainedTermsVersion()
+    {
+        var service = Substitute.For<IBondAnalyticsService>();
+        await using var app = await CreateAppAsync(service);
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/reference-data/bonds/{Guid.NewGuid()}/analytics?asOf=2026-10-29T00:00:00Z&cleanPrice=100&securityVersion=7");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await service.Received(1).CalculateAsync(Arg.Is<BondAnalyticsRequest>(request =>
+            request.Context.SecurityVersion == 7 && request.Context.Curves == null), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Analytics_CombinesExactTermsWithRetainedPriceFixingsAndCalculationVersion()
+    {
+        var service = Substitute.For<IBondAnalyticsService>();
+        await using var app = await CreateAppAsync(service);
+        var priceReceipt = Guid.NewGuid();
+        var fixingReceipt = Guid.NewGuid();
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/reference-data/bonds/{Guid.NewGuid()}/analytics?asOf=2026-10-29T00:00:00Z&securityVersion=7&selectionReceiptId={priceReceipt}&priceAccountId=account-a&calculationVersion=bond-analytics-v3&observedFixingReceiptIds={fixingReceipt}");
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await service.Received(1).CalculateAsync(Arg.Is<BondAnalyticsRequest>(request =>
+            request.Context.SecurityVersion == 7 && request.SelectionReceiptId == priceReceipt
+            && request.PriceAccountId == "account-a" && request.CalculationVersion == "bond-analytics-v3"
+            && request.Context.ObservedFixingReceiptIds != null && request.Context.ObservedFixingReceiptIds.Count == 1
+            && request.Context.ObservedFixingReceiptIds[0] == fixingReceipt), Arg.Any<CancellationToken>());
+    }
+
+
+    [Fact]
+    public async Task Analytics_ReturnsExactDecimalStrings()
+    {
+        var securityId = Guid.NewGuid();
+        var service = Substitute.For<IBondAnalyticsService>();
+        var context = new BondCalculationContext(new DateTimeOffset(2026, 10, 29, 0, 0, 0, TimeSpan.Zero));
+        service.CalculateAsync(Arg.Any<BondAnalyticsRequest>(), Arg.Any<CancellationToken>()).Returns(new BondAnalyticsResult(
+            securityId, "USD", "synthetic", context, BondYieldConvention.NominalPeriodic,
+            CleanPrice: 99.12345678901234567890123456m, DirtyPrice: null, AccruedInterest: null,
+            YieldToMaturity: null, CurrentYield: null, MacaulayDuration: null, ModifiedDuration: null,
+            Convexity: null, Dv01: null, YieldToWorst: null, CashFlows: [], ExerciseYields: [],
+            Inputs: [], Blockers: [], Capabilities: [], Diagnostics: []));
+        await using var app = await CreateAppAsync(service);
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/reference-data/bonds/{securityId}/analytics?asOf=2026-10-29T00:00:00Z&cleanPrice=100");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("99.12345678901234567890123456", json.RootElement.GetProperty("cleanPrice").GetString());
+    }
+
+
+    [Fact]
+    public async Task Settlement_BindsExactDecimalInputsAndReturnsExactEconomicStrings()
+    {
+        var service = Substitute.For<IBondSettlementConsiderationService>();
+        var securityId = Guid.NewGuid();
+        var context = new BondCalculationContext(DateTimeOffset.Parse("2026-11-13T00:00:00Z"), new DateOnly(2026, 11, 16), SecurityVersion: 7);
+        var receipt = new BondSettlementConsiderationDto(securityId, "USD", "bond-analytics-v1", context,
+            BondYieldConvention.NominalPeriodic, 100000m, 1m, 99.123456789012345678m, 1.25m,
+            99123.46m, 1250m, 25m, 100398.46m, 100398.46m, "retained-evidence", "cash", "interest", "fees", []);
+        service.PrepareAsync(Arg.Any<BondSettlementConsiderationRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new BondSettlementPreparationResult(receipt, []));
+        await using var app = await CreateAppAsync(Substitute.For<IBondAnalyticsService>(), settlement: service);
+        var response = await app.GetTestClient().PostAsJsonAsync("/api/reference-data/bonds/settlement-consideration", new
+        {
+            analytics = new { securityId, context, cleanPrice = "99.123456789012345678", yieldConvention = "NominalPeriodic" },
+            originalFace = "100000",
+            bookedFactor = "1",
+            fees = "25",
+            observedDirtyCash = "100398.46",
+            sourceEvidenceId = "retained-evidence",
+            cashAccountId = "cash",
+            accruedInterestAccountId = "interest",
+            feesAccountId = "fees"
+        });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("99.123456789012345678", json.RootElement.GetProperty("settlement").GetProperty("cleanPricePer100").GetString());
+        Assert.Equal("100398.46", json.RootElement.GetProperty("settlement").GetProperty("dirtyConsideration").GetString());
+        await service.Received(1).PrepareAsync(Arg.Is<BondSettlementConsiderationRequest>(request =>
+            request.Analytics.CleanPrice == 99.123456789012345678m && request.Analytics.Context.SecurityVersion == 7
+            && request.ObservedDirtyCash == 100398.46m && request.Fees == 25m), Arg.Any<CancellationToken>());
+    }
+
+
+    [Fact]
+    public async Task Settlement_WithoutPreparationServiceIsExplicitlyUnavailable()
+    {
+        await using var app = await CreateAppAsync(Substitute.For<IBondAnalyticsService>());
+        var response = await app.GetTestClient().PostAsJsonAsync("/api/reference-data/bonds/settlement-consideration", new
+        {
+            analytics = new { securityId = Guid.NewGuid(), context = new { asOf = "2026-11-13T00:00:00Z" }, cleanPrice = "100" },
+            originalFace = "100000",
+            bookedFactor = "1",
+            fees = "0",
+            observedDirtyCash = "100000",
+            sourceEvidenceId = "evidence",
+            cashAccountId = "cash",
+            accruedInterestAccountId = "interest"
+        });
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+    }
+
+
     private static async Task<WebApplication> CreateAppAsync(IBondAnalyticsService service,
-        UserPermission permissions = UserPermission.ViewSecurityMaster)
+        UserPermission permissions = UserPermission.ViewSecurityMaster,
+        IBondSettlementConsiderationService? settlement = null)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(service);
+        if (settlement is not null)
+            builder.Services.AddSingleton(settlement);
         var app = builder.Build();
         app.Use(async (context, next) =>
         {

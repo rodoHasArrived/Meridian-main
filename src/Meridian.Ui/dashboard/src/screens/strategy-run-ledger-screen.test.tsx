@@ -82,6 +82,37 @@ describe("StrategyRunLedgerScreen", () => {
     expect(screen.getByText("Cash sweep")).toBeInTheDocument();
   });
 
+  it("applies one inclusive UTC date to balances and journal and can restore run end", async () => {
+    await renderRunLedger("/strategy/run-ledger?runId=run-42");
+    fireEvent.change(screen.getByLabelText("As of date (UTC)"), { target: { value: "2026-06-30" } });
+    await waitForAsyncEffects();
+
+    const cut = { asOf: "2026-06-30T23:59:59.9999999Z" };
+    expect(api.getRunTrialBalance).toHaveBeenLastCalledWith("run-42", cut);
+    expect(api.getRunLedgerJournal).toHaveBeenLastCalledWith("run-42", cut);
+    expect(screen.getByLabelText("As of date (UTC)")).toHaveValue("2026-06-30");
+
+    fireEvent.click(screen.getByRole("button", { name: "Run end" }));
+    await waitForAsyncEffects();
+    expect(api.getRunTrialBalance).toHaveBeenLastCalledWith("run-42");
+    expect(api.getRunLedgerJournal).toHaveBeenLastCalledWith("run-42");
+    expect(screen.getByLabelText("As of date (UTC)")).toHaveValue("");
+  });
+
+  it("exports the selected run and date in the selected accounting format", async () => {
+    await renderRunLedger("/strategy/run-ledger?runId=run-42&asOf=2026-03-01");
+    fireEvent.change(screen.getByLabelText("Accounting export format"), { target: { value: "Parquet" } });
+    expect(screen.getByRole("link", { name: "Download accounting package" })).toHaveAttribute(
+      "href", "/api/workstation/runs/run-42/ledger/export?format=Parquet&asOf=2026-03-01T23%3A59%3A59.9999999Z"
+    );
+  });
+
+  it("restores the economic date from a retained URL", async () => {
+    await renderRunLedger("/strategy/run-ledger?runId=run-42&asOf=2026-03-01");
+    expect(api.getRunTrialBalance).toHaveBeenCalledWith("run-42", { asOf: "2026-03-01T23:59:59.9999999Z" });
+    expect(api.getRunLedgerJournal).toHaveBeenCalledWith("run-42", { asOf: "2026-03-01T23:59:59.9999999Z" });
+  });
+
   it("renders the basis bridge that moved with this screen", async () => {
     // The trial balance shows one basis at a time, so the per-account Primary-to-GAAP difference
     // is only readable here. Moving the run ledger out of Accounting removed the bridge's only

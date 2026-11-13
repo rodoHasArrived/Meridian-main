@@ -421,6 +421,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             AccruedInterest = string.IsNullOrEmpty(p.AccruedInterest)
                 ? null
                 : ParseDecimal(p.AccruedInterest),
+            ValuationBasis = BrokeragePositionValuationBasis.ProviderReported,
         }).ToList().AsReadOnly();
     }
 
@@ -578,7 +579,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         await Task.WhenAll(openOrdersTask, activitiesTask).ConfigureAwait(false);
 
         var openOrders = await openOrdersTask.ConfigureAwait(false);
-        var activities = await activitiesTask.ConfigureAwait(false);
+        var activityResult = await activitiesTask.ConfigureAwait(false);
+        var activities = activityResult.Activities;
         if (untilExclusive.HasValue)
         {
             activities = EnforceHalfOpenActivityWindow(activities, since, untilExclusive.Value);
@@ -638,15 +640,14 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 .ToArray(),
             Fills: fills,
             CashTransactions: cashTransactions,
-            // No cursor: `GetAccountActivitiesAsync` returns a plain list. A paged variant
-            // returning an `AlpacaActivityFetchResult` with a `BrokerageActivityCursorDto` existed
-            // on `codex/deepen-broker-statement-connectors` (716d56be), but the merge into main
-            // kept this call site while taking the list-returning fetch, leaving a reference to an
-            // `activityResult` local that no longer existed — main has not compiled since. The
-            // argument is dropped rather than the fetch restored because nothing reads
-            // `BrokerageActivitySnapshotDto.Cursor` today; re-landing Alpaca activity paging is a
-            // product decision, not a build fix.
-            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray());
+            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray(),
+            Cursor: new BrokerageActivityCursorDto(
+                LastEventId: activities.OrderBy(ParseActivityTimestamp).ThenBy(BuildActivityId, StringComparer.Ordinal).LastOrDefault() is { } latest
+                    ? BuildActivityId(latest) : null,
+                HighWatermark: activities.Count == 0 ? null : activities.Max(ParseActivityTimestamp),
+                PageCount: activityResult.PageCount,
+                SourceRecordCount: activityResult.SourceRecordCount,
+                IsComplete: true));
     }
 
     /// <inheritdoc />
@@ -951,7 +952,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         }
     }
 
-    private async Task<IReadOnlyList<AlpacaAccountActivityResponse>> GetAccountActivitiesAsync(
+    private async Task<(IReadOnlyList<AlpacaAccountActivityResponse> Activities, int PageCount, int SourceRecordCount)> GetAccountActivitiesAsync(
         DateTimeOffset? after,
         DateTimeOffset? untilExclusive,
         CancellationToken ct)
@@ -970,6 +971,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         var activities = new List<AlpacaAccountActivityResponse>();
         var observedPageTokens = new HashSet<string>(StringComparer.Ordinal);
         string? pageToken = null;
+        var pageCount = 0;
         while (true)
         {
             ct.ThrowIfCancellationRequested();
@@ -982,11 +984,12 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             var page = await response.Content.ReadFromJsonAsync(
                     AlpacaBrokerageSerializerContext.Default.AlpacaAccountActivityResponseArray,
                     ct)
-                .ConfigureAwait(false) ?? [];
+                .ConfigureAwait(false) ?? throw new InvalidDataException("Alpaca activity pagination returned null instead of an activity array.");
+            pageCount++;
             activities.AddRange(page);
             if (page.Length < AccountActivityPageSize)
             {
-                return activities;
+                return (activities, pageCount, activities.Count);
             }
 
             var nextPageToken = page[^1].Id;
@@ -1041,7 +1044,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             LimitPrice = FormatDecimal(request.LimitPrice),
             StopPrice = FormatDecimal(request.StopPrice),
             ClientOrderId = request.ClientOrderId,
-            ExtendedHours = ReadMetadataBool(request.Metadata, "extended_hours", "extendedHours", "alpaca:extended_hours"),
+            ExtendedHours = request.SessionIntent is { } sessionIntent
+                ? sessionIntent == OrderSessionIntent.ExtendedHours
+                : ReadMetadataBool(request.Metadata, "extended_hours", "extendedHours", "alpaca:extended_hours"),
         };
 
         if (ReadMetadataString(request.Metadata, out var orderClass, "order_class", "orderClass", "alpaca:order_class"))
@@ -1526,6 +1531,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             ["sourceAuthority"] = "ProviderReported",
             ["providerActivityCode"] = providerCode
         };
+        metadata["timestampPrecision"] = !activity.TransactionTime.HasValue ? "day" : "instant";
         if (usesAccountCurrency)
             metadata["currencySource"] = "VerifiedAccount";
         if (!string.IsNullOrWhiteSpace(activity.Side))
@@ -1857,6 +1863,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         [JsonPropertyName("id")] public string? Id { get; set; }
         [JsonPropertyName("account_number")] public string? AccountNumber { get; set; }
         [JsonPropertyName("equity")] public string? Equity { get; set; }
+        [JsonPropertyName("last_equity")] public string? LastEquity { get; set; }
         [JsonPropertyName("cash")] public string? Cash { get; set; }
         [JsonPropertyName("buying_power")] public string? BuyingPower { get; set; }
         [JsonPropertyName("multiplier")] public string? Multiplier { get; set; }

@@ -28,7 +28,7 @@ import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
-import { DepthChart } from "@/components/charts";
+import { DepthQuantityIllustration } from "@/screens/depth-quantity-illustration";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
@@ -333,15 +333,7 @@ export function LiveQuotesScreen() {
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.orderbookState} />
                   {marketVm.orderbook.bids.length > 0 || marketVm.orderbook.asks.length > 0 ? (
-                    <div className="overflow-hidden rounded-[var(--radius-card,2px)] border border-border/70 bg-background/40">
-                      <DepthChart
-                        ariaLabel={`Order-book depth profile for ${activeSymbol}`}
-                        ariaDescription="Cumulative bid and ask size around the mid price. The depth ladder below lists each price level."
-                        bids={marketVm.orderbook.bids.map((level) => ({ price: level.price, size: level.size }))}
-                        asks={marketVm.orderbook.asks.map((level) => ({ price: level.price, size: level.size }))}
-                        mid={marketVm.orderbook.midPrice ?? null}
-                      />
-                    </div>
+                    <DepthQuantityIllustration key={activeSymbol} book={marketVm.orderbook} />
                   ) : null}
                   <DepthLadder
                     ladder={marketVm.depthLadder}

@@ -1966,7 +1966,7 @@
     {
       "name": "DOW",
       "kind": "constant",
-      "reviewedSourceHash": "7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd",
+      "reviewedSourceHash": "b2af8dea1ca5f49f90641c39a3bfb6e8f96beb2b1b953fc7106e9cde1c61fdfb",
       "applicableStates": [
         "declaration-compilation",
         "contract-logic"
@@ -2005,7 +2005,8 @@
       "coverageStatus": "complete",
       "notes": [
         "This export owns no independent UI action. Its state/helper/delegated contracts, where present, are listed explicitly; inherited HTML handlers alone do not create a component-owned interaction.",
-        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive."
+        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive.",
+        "PR #3542: the public DOW constant remains the same seven labels. Its source hash changes because localDate.js now constructs four-digit civil years without the 1900-century substitution; no new public value or DOW behavior is introduced. The existing constant and public declaration recipes remain applicable; fresh execution is recorded separately."
       ]
     },
     {
@@ -2187,7 +2188,7 @@
     {
       "name": "DatePicker",
       "kind": "component",
-      "reviewedSourceHash": "7609d3dbc617a5c24e5f08517e1bf37e96f972fc42fdd38fe435f5e411acfde8",
+      "reviewedSourceHash": "16c3d039d15e9540eee24e2614413f71c42d2e43f1d624ffdeb8a3a211c0ff50",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -2196,7 +2197,8 @@
         "bounds",
         "invalid-input",
         "calendar-navigation",
-        "disabled"
+        "disabled",
+        "validation-linkage"
       ],
       "ownsInteraction": true,
       "ownsState": false,
@@ -2252,6 +2254,21 @@
             "tests/core-composition-regression.mjs",
             "tests/core-gap-regression.mjs"
           ]
+        },
+        {
+          "name": "Calendar input receives external name and validation feedback; month-clamped keyboard selection keeps the civil date in UTC\u2212 and UTC+",
+          "path": "tests/core-integration-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "validation-linkage",
+            "calendar-navigation",
+            "controlled-value",
+            "keyboard",
+            "focus"
+          ],
+          "reference": "tests/core-integration-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
       "testedStates": [
@@ -2262,18 +2279,20 @@
         "disabled",
         "focus",
         "invalid-input",
-        "keyboard"
+        "keyboard",
+        "validation-linkage"
       ],
       "remainingApplicableStates": [],
       "coverageStatus": "complete",
       "notes": [
-        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive."
+        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive.",
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
       ]
     },
     {
       "name": "DateRangePicker",
       "kind": "component",
-      "reviewedSourceHash": "180561eebf197b2324b7bd3ff75554b0f9eb6ac7499bff722d208064248bef40",
+      "reviewedSourceHash": "c5441750261d7f149028e0b8552f554e261b254bb217e7de5285b2c1c2043a18",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -2285,7 +2304,8 @@
         "disabled",
         "bounds",
         "calendar-navigation",
-        "close"
+        "close",
+        "validation-linkage"
       ],
       "ownsInteraction": true,
       "ownsState": false,
@@ -2344,6 +2364,17 @@
             "tests/core-composition-regression.mjs",
             "tests/core-gap-regression.mjs"
           ]
+        },
+        {
+          "name": "Range trigger receives external label and combined help/error relationships in UTC\u2212 and UTC+",
+          "path": "tests/core-integration-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "validation-linkage"
+          ],
+          "reference": "tests/core-integration-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
       "testedStates": [
@@ -2357,12 +2388,14 @@
         "focus",
         "keyboard",
         "partial-range",
-        "preset"
+        "preset",
+        "validation-linkage"
       ],
       "remainingApplicableStates": [],
       "coverageStatus": "complete",
       "notes": [
-        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive."
+        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive.",
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
       ]
     },
     {
@@ -13350,13 +13383,14 @@
     {
       "name": "VirtualizedList",
       "kind": "component",
-      "reviewedSourceHash": "7d4b2fb86e609be1988255d758dfda402694c5cf458d9c0180e3971548ceabf6",
+      "reviewedSourceHash": "ab580f7bdb1575cf9a3f73b0d4e9e636f43b342b0f159d42ae70d4130667dd8e",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
         "focus",
         "scroll-window",
-        "empty"
+        "empty",
+        "list-position"
       ],
       "ownsInteraction": true,
       "ownsState": false,
@@ -13398,6 +13432,19 @@
           "references": [
             "tests/core-gap-regression.mjs"
           ]
+        },
+        {
+          "name": "Keyboard-focusable scroll region retains an inner semantic list with total and absolute item positions",
+          "path": "tests/integration-data-accessibility-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "scroll-window",
+            "focus",
+            "list-position"
+          ],
+          "reference": "tests/integration-data-accessibility-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
       "testedStates": [
@@ -13405,18 +13452,20 @@
         "empty",
         "focus",
         "keyboard",
-        "scroll-window"
+        "scroll-window",
+        "list-position"
       ],
       "remainingApplicableStates": [],
       "coverageStatus": "complete",
       "notes": [
-        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive."
+        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive.",
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
       ]
     },
     {
       "name": "WorksheetGrid",
       "kind": "component",
-      "reviewedSourceHash": "cf34e3fbce46f5045a52cb662174235a4b3604f2e70d40f608b1d7133262916b",
+      "reviewedSourceHash": "cc2df9ac17176575247cc6597ac8af20a429af285fbecf974bf887a4b696f78a",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -13425,7 +13474,8 @@
         "invalid-value",
         "zero",
         "edit",
-        "cancel"
+        "cancel",
+        "read-only"
       ],
       "ownsInteraction": true,
       "ownsState": false,
@@ -13470,6 +13520,17 @@
           "references": [
             "tests/core-composition-regression.mjs"
           ]
+        },
+        {
+          "name": "Grid announces read-only state while preserving the editable variant",
+          "path": "tests/integration-data-accessibility-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "read-only"
+          ],
+          "reference": "tests/integration-data-accessibility-regression.mjs",
+          "scope": "Focused synthetic Chromium regression passed before final source freeze; the final source runner supplies current complete execution evidence separately."
         }
       ],
       "testedStates": [
@@ -13480,12 +13541,14 @@
         "focus",
         "invalid-value",
         "keyboard",
-        "zero"
+        "zero",
+        "read-only"
       ],
       "remainingApplicableStates": [],
       "coverageStatus": "complete",
       "notes": [
-        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive."
+        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive.",
+        "PR #3542: source and exact callback/ARIA contracts re-reviewed against the 4.3 export; focused current-source regression passes and an original-main source control fails. Existing richer data, bounds, selection and financial contracts remain; final full-source execution is recorded separately."
       ]
     },
     {

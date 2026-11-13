@@ -1523,7 +1523,7 @@ public sealed partial class FundLedgerViewModel
     private static string HumanizeLedgerScope(FundLedgerScope scope)
         => scope switch
         {
-            FundLedgerScope.Consolidated => "Consolidated",
+            FundLedgerScope.Consolidated => "Gross fund",
             FundLedgerScope.Entity => "Entity default",
             FundLedgerScope.Sleeve => "Sleeve default",
             FundLedgerScope.Vehicle => "Vehicle default",

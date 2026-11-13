@@ -29,7 +29,13 @@ public static partial class LedgerEndpoints
     {
         MapDisposalTaxEndpoints(app, jsonOptions);
         MapConsolidationEndpoints(app, jsonOptions);
+        MapConsolidationFxEndpoints(app, jsonOptions);
+        MapConsolidationTransitionEndpoints(app, jsonOptions);
+        MapIntercompanyAccountBindingEndpoints(app, jsonOptions);
+        MapLegacyIntercompanyAttributionEndpoints(app, jsonOptions);
+        MapEntityControlEndpoints(app, jsonOptions);
         MapAccountOversightEndpoints(app, jsonOptions);
+        app.MapLedgerBondWorkflowEndpoints();
         MapPrivateCapitalEndpoints(app, jsonOptions);
         MapPostedPeriodComparisonEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
@@ -2349,6 +2355,11 @@ public static partial class LedgerEndpoints
             ProjectId: filter.ProjectId)
         {
             PositionId = positionId,
+            AccountingArrangementId = filter.AccountingArrangementId,
+            AccountingArrangementRevisionId = filter.AccountingArrangementRevisionId,
+            ChartAccountNodeId = filter.ChartAccountNodeId,
+            AccountBindingRevisionId = filter.AccountBindingRevisionId,
+            IntercompanyTransactionId = filter.IntercompanyTransactionId,
             IntercompanyAgreementId = Guid.TryParse(filter.IntercompanyAgreementId, out var agreementId) ? agreementId : null,
             IntercompanyAgreementVersion = int.TryParse(filter.IntercompanyAgreementVersion, out var agreementVersion) ? agreementVersion : null
         };
@@ -2389,6 +2400,11 @@ public static partial class LedgerEndpoints
             ProjectId: filter.ProjectId)
         {
             PositionId = positionId,
+            AccountingArrangementId = filter.AccountingArrangementId,
+            AccountingArrangementRevisionId = filter.AccountingArrangementRevisionId,
+            ChartAccountNodeId = filter.ChartAccountNodeId,
+            AccountBindingRevisionId = filter.AccountBindingRevisionId,
+            IntercompanyTransactionId = filter.IntercompanyTransactionId,
             IntercompanyAgreementId = Guid.TryParse(filter.IntercompanyAgreementId, out var agreementId) ? agreementId : null,
             IntercompanyAgreementVersion = int.TryParse(filter.IntercompanyAgreementVersion, out var agreementVersion) ? agreementVersion : null
         };
@@ -2536,6 +2552,11 @@ public static partial class LedgerEndpoints
             ProjectId: metadata.ProjectId ?? LedgerDimensionTags.FirstTag(tags, "projectId"))
         {
             PositionId = positionId,
+            AccountingArrangementId = LedgerDimensionTags.FirstTag(tags, "accountingArrangementId"),
+            AccountingArrangementRevisionId = LedgerDimensionTags.FirstTag(tags, "accountingArrangementRevisionId"),
+            ChartAccountNodeId = LedgerDimensionTags.FirstTag(tags, "chartAccountNodeId"),
+            AccountBindingRevisionId = LedgerDimensionTags.FirstTag(tags, "accountBindingRevisionId"),
+            IntercompanyTransactionId = LedgerDimensionTags.FirstTag(tags, "intercompanyTransactionId"),
             IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags),
             IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags)
         };
@@ -2571,6 +2592,11 @@ public static partial class LedgerEndpoints
             ProjectId: dimensions.ProjectId)
         {
             PositionId = dimensions.PositionId,
+            AccountingArrangementId = dimensions.AccountingArrangementId,
+            AccountingArrangementRevisionId = dimensions.AccountingArrangementRevisionId,
+            ChartAccountNodeId = dimensions.ChartAccountNodeId,
+            AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+            IntercompanyTransactionId = dimensions.IntercompanyTransactionId,
             IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
             IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
@@ -2611,6 +2637,11 @@ public static partial class LedgerEndpoints
             ProjectId: LedgerDimensionTags.FirstTag(tags, prefix + "projectId"))
         {
             PositionId = positionId,
+            AccountingArrangementId = LedgerDimensionTags.FirstTag(tags, prefix + "accountingArrangementId"),
+            AccountingArrangementRevisionId = LedgerDimensionTags.FirstTag(tags, prefix + "accountingArrangementRevisionId"),
+            ChartAccountNodeId = LedgerDimensionTags.FirstTag(tags, prefix + "chartAccountNodeId"),
+            AccountBindingRevisionId = LedgerDimensionTags.FirstTag(tags, prefix + "accountBindingRevisionId"),
+            IntercompanyTransactionId = LedgerDimensionTags.FirstTag(tags, prefix + "intercompanyTransactionId"),
             IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags, prefix),
             IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags, prefix)
         };
@@ -2651,6 +2682,11 @@ public static partial class LedgerEndpoints
                && Matches(filter.CapitalAccountId, dimensions.CapitalAccountId)
                && Matches(filter.InstrumentId, dimensions.InstrumentId?.ToString("D"))
                && Matches(filter.PositionId, dimensions.PositionId?.ToString("D"))
+               && Matches(filter.AccountingArrangementId, dimensions.AccountingArrangementId)
+               && Matches(filter.AccountingArrangementRevisionId, dimensions.AccountingArrangementRevisionId)
+               && Matches(filter.ChartAccountNodeId, dimensions.ChartAccountNodeId)
+               && Matches(filter.AccountBindingRevisionId, dimensions.AccountBindingRevisionId)
+               && Matches(filter.IntercompanyTransactionId, dimensions.IntercompanyTransactionId)
                && Matches(filter.IntercompanyAgreementId, dimensions.IntercompanyAgreementId?.ToString("D"))
                && Matches(filter.IntercompanyAgreementVersion, dimensions.IntercompanyAgreementVersion?.ToString(CultureInfo.InvariantCulture))
                && Matches(filter.TaxLotId, dimensions.TaxLotId)
@@ -2721,6 +2757,11 @@ public static partial class LedgerEndpoints
             ProjectId: NormalizeOptional(filter.ProjectId),
             ExternalGlDimensions: NormalizeExternalGlDimensions(filter.ExternalGlDimensions))
         {
+            AccountingArrangementId = NormalizeOptional(filter.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(filter.AccountingArrangementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(filter.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(filter.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(filter.IntercompanyTransactionId),
             IntercompanyAgreementId = NormalizeOptional(filter.IntercompanyAgreementId),
             IntercompanyAgreementVersion = NormalizeOptional(filter.IntercompanyAgreementVersion)
         };
@@ -2753,6 +2794,11 @@ public static partial class LedgerEndpoints
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
             PositionId = dimensions.PositionId,
+            AccountingArrangementId = dimensions.AccountingArrangementId,
+            AccountingArrangementRevisionId = dimensions.AccountingArrangementRevisionId,
+            ChartAccountNodeId = dimensions.ChartAccountNodeId,
+            AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+            IntercompanyTransactionId = dimensions.IntercompanyTransactionId,
             IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
             IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };

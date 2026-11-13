@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Integrity;
 using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Ledger;
 
@@ -74,7 +75,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
             scope.EntityId != evidence.EntityId || scope.TenantId != evidence.TenantId ||
             scope.CompanyId != evidence.CompanyId || scope.Currency != evidence.Currency ||
             (claim.PeriodId is not null && claim.PeriodId != evidence.PeriodId) ||
-            !claim.ScheduleDefinition.Evidence.SequenceEqual(evidence.SourceEvidence))
+            !MatchesRetainedRecurringSources(claim, evidence, draft.RecurringJournalEvidenceDigest!))
             throw new InvalidOperationException("Recurring journal provenance differs from its retained occurrence.");
         var currentSchedule = session.GetCurrentSchedule(evidence.ScheduleId);
         var currentTemplate = session.GetCurrentTemplate(evidence.TemplateId);
@@ -111,4 +112,15 @@ public sealed partial class ManualJournalEntryWorkbenchService
             current = source;
         }
     }
+    private static bool MatchesRetainedRecurringSources(RecurringOccurrenceRecord claim, RecurringJournalEvidence evidence, string digest)
+    {
+        if (claim.DraftEvidenceDigest is { } pin)
+            return Sha256Digest.FixedEquals(pin, digest)
+                && evidence.SourceEvidence.Take(claim.ScheduleDefinition.Evidence.Count)
+                    .SequenceEqual(claim.ScheduleDefinition.Evidence);
+        // Historical schedule-only claims preserve their original exact equality. Calculated
+        // additions require independent authority; a recomputed draft digest cannot supply it.
+        return claim.ScheduleDefinition.Evidence.SequenceEqual(evidence.SourceEvidence);
+    }
+
 }

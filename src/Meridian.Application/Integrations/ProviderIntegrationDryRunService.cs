@@ -422,6 +422,8 @@ public sealed class ProviderIntegrationDryRunService
             "uppercase" => value.Trim().ToUpperInvariant(),
             "lowercase" => value.Trim().ToLowerInvariant(),
             "decimal" or "decimalparsing" => ParseDecimal(value, mapping.TargetField, issues),
+            "boolean" => ProviderIntegrationFieldTransforms.ParseBoolean(value, mapping.TargetField, issues),
+            "json" => ProviderIntegrationFieldTransforms.ParseJson(value, mapping.TargetField, issues),
             "signedamount" => ParseSignedAmount(
                 value,
                 mapping,
@@ -593,6 +595,7 @@ public sealed class ProviderIntegrationDryRunService
         {
             decimal decimalValue => JsonValue.Create(decimalValue),
             bool boolValue => JsonValue.Create(boolValue),
+            JsonNode nodeValue => nodeValue.DeepClone(),
             _ => JsonValue.Create(value.ToString())
         };
     }

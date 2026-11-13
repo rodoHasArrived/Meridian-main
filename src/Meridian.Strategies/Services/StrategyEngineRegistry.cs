@@ -21,7 +21,8 @@ public sealed class StrategyEngineRegistry
     {
         var definitions = new List<StrategyEngineDefinition>
         {
-            CreateCoveredCallDefinition()
+            CreateCoveredCallDefinition(),
+            CreateSmaDefinition()
         };
 
         definitions.AddRange(_strategyDesignService.GetTemplates().Select(CreateDesignerDefinition));
@@ -29,6 +30,24 @@ public sealed class StrategyEngineRegistry
             .OrderBy(static definition => definition.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    private static StrategyEngineDefinition CreateSmaDefinition() => new(
+        StrategyId: "moving-average-crossover", Version: Meridian.Backtesting.Sdk.Strategies.MovingAverageCrossoverStrategy.Version,
+        Name: "SMA crossover reference", Type: StrategyEngineStrategyType.Momentum,
+        Description: "Long-only US equity reference using the same SMA implementation in backtests and paper execution. Select bars explicitly for controlled parity.",
+        AssetUniverse: ["Equity", "ETF"],
+        RequiredDataInputs: [new("equity-bars", StrategyEngineDataDependencyKind.PriceBars,
+            "Ordered, completed USD equity bars with retained provenance.", AssetClass: "Equity", Granularity: "Daily",
+            MissingDataPolicy: StrategyEngineMissingDataPolicy.Block, RequiredFields: ["close"])],
+        ParameterSchema: [
+            new("fastPeriod", StrategyEngineParameterType.Integer, "10", "Fast SMA period; must be smaller than slow period.", "Fast period", MinValue: "1"),
+            new("slowPeriod", StrategyEngineParameterType.Integer, "30", "Slow SMA period.", "Slow period", MinValue: "2"),
+            new("quantity", StrategyEngineParameterType.Integer, "10", "Target long quantity.", "Quantity", MinValue: "1"),
+            new("inputMode", StrategyEngineParameterType.String, "bars", "Use bars for controlled comparisons. Legacy catalog requests without this parameter retain trade input.", "Input mode"),
+            new("strategyVersion", StrategyEngineParameterType.String, Meridian.Backtesting.Sdk.Strategies.MovingAverageCrossoverStrategy.Version, "Retained algorithm version.", "Strategy version")],
+        SupportedModes: [StrategyEngineRunMode.Backtest, StrategyEngineRunMode.Replay, StrategyEngineRunMode.PaperValidation, StrategyEngineRunMode.ReviewOnly],
+        Owner: "Meridian Strategy Engine", Source: "src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs",
+        UiMetadata: new Dictionary<string, string> { ["route"] = "/workstation/strategy/research", ["readinessRoute"] = "/workstation/trading/readiness" });
 
     public StrategyEngineDefinition? GetDefinition(string strategyId, string? version = null)
     {

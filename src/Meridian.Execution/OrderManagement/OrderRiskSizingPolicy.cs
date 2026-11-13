@@ -136,6 +136,7 @@ internal static class OrderRiskSizingPolicy
         ClientOrderId = state.OrderId,
         StrategyId = state.StrategyId,
         FundAccountId = state.FundAccountId,
+        SessionIntent = state.SessionIntent,
         Metadata = BuildAmendedSizingMetadata(state, modification),
         // Without the derivative identity the rules re-value the amended order as shares,
         // repeating the 1x mistake the multiplier above exists to prevent.

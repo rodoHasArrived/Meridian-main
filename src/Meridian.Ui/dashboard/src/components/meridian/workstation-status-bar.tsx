@@ -1,3 +1,4 @@
+import { pluralizeCount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface WorkstationStatusBarItem {
@@ -75,7 +76,11 @@ export function buildWorkstationStatusItems({
         key: "attention",
         status: attention.tone === "blocked" ? "err" : "warn",
         label: "Attention",
-        value: attention.moreCount > 0 ? `${attention.title} +${attention.moreCount} more` : attention.title
+        // "issues", not "items": moreCount also counts host and source issues outside the finance
+        // queue, and it matches the masthead's screen-reader wording.
+        value: attention.moreCount > 0
+          ? `${attention.title} +${pluralizeCount(attention.moreCount, "more issue")}`
+          : attention.title
       }]
       : [];
 

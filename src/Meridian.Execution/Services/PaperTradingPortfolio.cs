@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
@@ -15,10 +16,13 @@ namespace Meridian.Execution.Services;
 /// Supports both single-account (backward-compatible) and multi-account modes.
 /// Optionally posts double-entry journal entries to a <see cref="Ledger"/> after each fill.
 /// </summary>
-public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
+public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
 {
     /// <summary>Key used for the default / backwards-compatible account.</summary>
     public const string DefaultAccountId = "default";
+
+    /// <summary>Identity of this in-memory book; a new portfolio starts a new economic history.</summary>
+    public Guid BookId { get; } = Guid.NewGuid();
 
     private readonly Meridian.Ledger.Ledger? _ledger;
     private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
@@ -60,6 +64,22 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         Meridian.Ledger.Ledger? ledger,
         ILivePositionCorporateActionAdjuster? corporateActionAdjuster,
         PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
+        : this(initialCash, ledger, corporateActionAdjuster, lotSelectionMethod, DateTimeOffset.UtcNow)
+    {
+    }
+
+    /// <summary>Rebuilds a retained session without moving its opening capital to replay time.</summary>
+    internal PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger, DateTimeOffset openingTimestamp)
+        : this(initialCash, ledger, null, PositionLotSelectionMethod.Fifo, openingTimestamp)
+    {
+    }
+
+    private PaperTradingPortfolio(
+        decimal initialCash,
+        Meridian.Ledger.Ledger? ledger,
+        ILivePositionCorporateActionAdjuster? corporateActionAdjuster,
+        PositionLotSelectionMethod lotSelectionMethod,
+        DateTimeOffset openingTimestamp)
     {
         if (initialCash < 0)
             throw new ArgumentOutOfRangeException(nameof(initialCash), "Initial cash must be non-negative.");
@@ -75,7 +95,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (ledger is not null && initialCash > 0)
         {
             ledger.PostLines(
-                DateTimeOffset.UtcNow,
+                openingTimestamp,
                 "Initial capital — paper trading session",
                 [
                     (_chartOfAccounts.Resolve(LedgerAccountRole.Cash), initialCash, 0m),
@@ -115,6 +135,18 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (accounts.Count == 0)
             throw new ArgumentException("At least one account must be supplied.", nameof(accounts));
 
+        // Validate the entire definition before posting opening balances.
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var definition in accounts)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(definition.AccountId);
+            if (definition.AccountId != definition.AccountId.Trim())
+                throw new ArgumentException("Paper account identities cannot contain surrounding whitespace.", nameof(accounts));
+            if (!ids.Add(definition.AccountId))
+                throw new ArgumentException($"Duplicate paper account '{definition.AccountId}'.", nameof(accounts));
+            if (definition.InitialCash < 0m)
+                throw new ArgumentOutOfRangeException(nameof(accounts), "Initial cash must be non-negative.");
+        }
         _ledger = ledger;
         _scopeLedgerAccounts = true;
         _corporateActionAdjuster = corporateActionAdjuster;
@@ -122,9 +154,6 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
         foreach (var def in accounts)
         {
-            if (def.InitialCash < 0)
-                throw new ArgumentOutOfRangeException(nameof(accounts), $"Account '{def.AccountId}' initial cash must be non-negative.");
-
             _accounts[def.AccountId] = new AccountState(
                 def.AccountId, def.DisplayName, def.Kind, def.InitialCash,
                 def.MarginType, def.MarginModel, syncRoot: _lock);
@@ -899,6 +928,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (ReferenceEquals(pos, originalPosition) && pos.LotVersion == originalLotVersion
                 && pos.Quantity == originalQuantity && pos.CostBasis == originalCostBasis)
             {
+                var adjustedTotalBasis = adjustment.AdjustedTotalCostBasis
+                    ?? Math.Abs(pos.Money(adjustment.AdjustedQuantity, adjustment.AdjustedCostBasis));
+                if (_ledger is not null && Math.Abs(adjustedTotalBasis - originalTotalCostBasis) > LedgerToleranceConstants.Balance)
+                    throw new InvalidOperationException(
+                        "A basis-changing paper corporate action requires explicit cash and journal economics. "
+                        + "The quote-only position adjuster cannot authorize a ledger posting.");
                 // Rescale the lot book by the same factors so lots stay consistent with the
                 // aggregate; otherwise the next lot-consuming fill falls into the shortfall
                 // fallback and mis-states realized P&L (e.g. selling through a post-split
@@ -1215,8 +1250,15 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
         capture.Opening = new SecurityTradePosting(
             SecurityTradePostingKind.OpenLong, qty, notional, BorrowedAmount: borrowed);
-        _ledger?.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
-            SecurityTradePostingProjector.Project(capture.Opening, symbol, LedgerScope(account), _chartOfAccounts));
+        if (_ledger is null)
+            return;
+        if (borrowed > 0m)
+            _ledger.PostLines(ts, $"Margin borrowing — {symbol}",
+                SecurityTradePostingProjector.MarginFinancing(borrowed, 0m, LedgerScope(account), _chartOfAccounts));
+        // Preserve the exact financing in captured evidence, while classifying gross trade
+        // cash and financing cash independently in the journal.
+        PostInvestingLedgerLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
+            SecurityTradePostingProjector.Project(capture.Opening with { BorrowedAmount = 0m }, symbol, LedgerScope(account), _chartOfAccounts));
     }
 
     private void ApplyCoverShort(
@@ -1244,8 +1286,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
 
         pos.Quantity += coverQty;
-        if (pos.Quantity == 0m)
-            pos.CostBasis = 0m;
+        pos.CostBasis = pos.Quantity == 0m ? 0m : pos.OpenCostBasis / (Math.Abs(pos.Quantity) * pos.EconomicMultiplier);
 
         // Cash: buy-to-cover cost minus the extra margin collateral released.
         account.Cash -= coverCost + commission;
@@ -1257,7 +1298,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         capture.ShortCollateralReleased = marginReleased;
         if (_ledger is not null)
         {
-            _ledger.PostLines(ts, $"Cover {coverQty} {symbol} @ {price:F4}",
+            PostInvestingLedgerLines(ts, $"Cover {coverQty} {symbol} @ {price:F4}",
                 SecurityTradePostingProjector.Project(capture.Closing, symbol, LedgerScope(account), _chartOfAccounts));
             if (marginReleased > 0m)
                 _ledger.PostLines(ts, $"Reg T short collateral released {coverQty} {symbol}",
@@ -1290,8 +1331,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
 
         pos.Quantity -= closeQty;
-        if (pos.Quantity == 0m)
-            pos.CostBasis = 0m;
+        pos.CostBasis = pos.Quantity == 0m ? 0m : pos.OpenCostBasis / (Math.Abs(pos.Quantity) * pos.EconomicMultiplier);
 
         // The trader receives proceeds minus the loan repayment.
         account.Cash += proceeds - loanRepaid - commission;
@@ -1299,8 +1339,13 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
         capture.Closing = new SecurityTradePosting(
             SecurityTradePostingKind.CloseLong, closeQty, proceeds, costBasisRemoved, LoanRepaid: loanRepaid);
-        _ledger?.PostLines(ts, $"Sell {closeQty} {symbol} @ {price:F4}",
-            SecurityTradePostingProjector.Project(capture.Closing, symbol, LedgerScope(account), _chartOfAccounts));
+        if (_ledger is null)
+            return;
+        PostInvestingLedgerLines(ts, $"Sell {closeQty} {symbol} @ {price:F4}",
+            SecurityTradePostingProjector.Project(capture.Closing with { LoanRepaid = 0m }, symbol, LedgerScope(account), _chartOfAccounts));
+        if (loanRepaid > 0m)
+            _ledger.PostLines(ts, $"Margin repayment — {symbol}",
+                SecurityTradePostingProjector.MarginFinancing(0m, loanRepaid, LedgerScope(account), _chartOfAccounts));
     }
 
     private void ApplyShortSell(
@@ -1342,7 +1387,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
         capture.Opening = new SecurityTradePosting(SecurityTradePostingKind.OpenShort, qty, proceeds);
         capture.ShortCollateralHeld = collateralHeld;
-        _ledger?.PostLines(ts, $"Short sell {qty} {symbol} @ {price:F4}",
+        if (_ledger is null)
+            return;
+        PostInvestingLedgerLines(ts, $"Short sell {qty} {symbol} @ {price:F4}",
             SecurityTradePostingProjector.Project(capture.Opening, symbol, LedgerScope(account), _chartOfAccounts));
 
         // Collateral held by the broker is an asset, but is not available cash.
@@ -1351,44 +1398,6 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 SecurityTradePostingProjector.ShortCollateral(collateralHeld, false, LedgerScope(account), _chartOfAccounts));
     }
 
-    private void PostCommissionEntry(AccountState account, string symbol, decimal commission, DateTimeOffset ts)
-        => _ledger?.PostLines(ts, $"Commission — {symbol}",
-            SecurityTradePostingProjector.Commission(commission, LedgerScope(account), _chartOfAccounts));
-
-    private string? LedgerScope(AccountState account) => _scopeLedgerAccounts ? account.AccountId : null;
-
-    private bool CanCertifyAccountingOwner(AccountState account, PaperPosition? position, string? ownerAccountId)
-    {
-        var owner = NormalizeOptional(ownerAccountId);
-        if (_scopeLedgerAccounts && owner is not null
-            && !string.Equals(owner, account.AccountId, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        if (position is null)
-            return true;
-
-        var accountingOwner = _scopeLedgerAccounts ? account.AccountId : owner;
-        if (position.OwnerQuantities.Any(entry => entry.Value != 0m
-                && !string.Equals(entry.Key, accountingOwner, StringComparison.OrdinalIgnoreCase)))
-        {
-            return false;
-        }
-
-        // An owner cannot certify basis acquired anonymously in the pooled default account.
-        return _scopeLedgerAccounts || accountingOwner is null || position.Quantity == 0m
-            || position.OwnerQuantities.GetValueOrDefault(accountingOwner) == position.Quantity;
-    }
-
-    private sealed class FillAccountingCapture
-    {
-        public SecurityTradePosting? Closing { get; set; }
-        public SecurityTradePosting? Opening { get; set; }
-        public decimal ShortCollateralHeld { get; set; }
-        public decimal ShortCollateralReleased { get; set; }
-        public decimal VariationMarginPnl { get; set; }
-    }
 
 }
 

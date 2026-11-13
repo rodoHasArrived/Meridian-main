@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { act, screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { OperatorTriageQueue, triageAgeLabel } from "@/components/meridian/operator-triage-queue";
@@ -37,6 +37,29 @@ describe("authorized operator triage", () => {
     expect(screen.getByRole("button", { name: "Snooze" })).toBeDisabled();
     expect(screen.getByRole("row", { name: "Cash variance" })).toHaveTextContent("Open");
     expect(screen.queryByRole("button", { name: "Resolve" })).not.toBeInTheDocument();
+  });
+
+  it("names its unit as inbox items, distinct from the finance queue the shell counts", async () => {
+    await mount();
+    const filters = screen.getByRole("group", { name: "Inbox filters" });
+    expect(filters).toHaveTextContent(/\d+ of \d+ inbox items? · All authorized accounts/);
+    expect(filters).toHaveTextContent("2 of 2 inbox items · All authorized accounts");
+    expect(filters).not.toHaveTextContent("authorized items");
+  });
+
+  it("renders only its loading status before the inbox resolves when no fallback is given", async () => {
+    let resolveInbox!: (inbox: OperatorTriageInbox) => void;
+    vi.mocked(getOperatorTriageInbox).mockImplementationOnce(() => new Promise((resolve) => { resolveInbox = resolve; }));
+    renderWithRouter(<OperatorTriageQueue />);
+
+    const group = screen.getByRole("group", { name: "Authorized operator inbox" });
+    expect(group.children).toHaveLength(1);
+    expect(within(group).getByRole("status")).toHaveTextContent("Refreshing authorized inbox…");
+    expect(group).toHaveTextContent(/^Refreshing authorized inbox…$/);
+
+    await act(async () => resolveInbox(response));
+    expect(await screen.findByRole("treegrid", { name: "Authorized ranked operator queue" })).toBeInTheDocument();
+    expect(screen.queryByText("Refreshing authorized inbox…")).not.toBeInTheDocument();
   });
 
   it("My items uses the authenticated actor rather than the workspace label", async () => {
@@ -174,7 +197,11 @@ describe("authorized operator triage", () => {
     unmount();
     vi.mocked(getOperatorTriageInbox).mockRejectedValue(new Error("Forbidden"));
     renderWithRouter(<OperatorTriageQueue fallback={<p>Loaded workspace evidence</p>} />);
-    expect(await screen.findByRole("alert")).toHaveTextContent("Inbox triage is unavailable");
+    const failure = await screen.findByRole("alert");
+    expect(failure).toHaveTextContent("Inbox triage is unavailable");
+    // The finance queue now sits above the inbox, so the notice no longer points "below".
+    expect(failure).toHaveTextContent("finance queue on this page is unaffected");
+    expect(failure).not.toHaveTextContent("remains visible below");
     expect(screen.getByText("Loaded workspace evidence")).toBeInTheDocument();
     expect(screen.queryByText("No authorized items match these filters.")).not.toBeInTheDocument();
   });

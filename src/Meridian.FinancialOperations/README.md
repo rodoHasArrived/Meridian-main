@@ -6,10 +6,56 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.FinancialOperations
+
+`BondIncomeService` resolves actual account/book/lot and adopted US GAAP policy before previewing or
+preparing `bond-income-us-gaap-v1` instructions. Eligible direct costs, purchased accrued interest,
+coupon income, premium/discount and observed indexation remain separate. Coupon recognition prepares
+signed receivable/payable and source-verified cash clearing through the canonical event spine and
+atomic posting boundary. Raw model economics remain separate from versioned ten-decimal booked
+targets and their retained rounding residuals. Native cash retains its currency minor units. See [policy adoption and review](../../docs/operators/bond-workflows.md).
+
+Held coupon accrual uses contractual earned interest rather than a new purchaser's ex-coupon
+invoice adjustment. Terminal principal pins earned rights independently of bank cash timing;
+later cash and typed reversals verify the original entitlement, source allocation and complete
+native journal history. Unreconciled manual coupon accounting blocks further clearing. Exact
+canonical noncash amortization remains distinct from coupon recognition and cash consumption.
+
+Explicit acquisition-captured accrual v2 separates the active period from earlier unpaid earned
+coupons, retains purchased-interest rounding adjustments at their native boundary and keeps clean
+EIR recurrence independent of receivable/payable balances. Legacy preparation refuses unsafe lag
+windows without reinterpreting prior instructions or reversal authority. Generated posting always
+uses the canonical human-origin gate before storage and the existing independent approval checks.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`ConsolidationTransitionService` reviews membership cutover into a new empty dedicated reporting
+book. Source/mapping/rate changes stale the preview; independent approval preserves old history and
+opens the new gross-derived target without carrying old overlays. Former-member exposures remain
+gross and explicitly non-eliminable; unapproved member or replacement-book changes remain blocked.
+
+`IntercompanyBalanceScheduleService` projects actual posted due-to/due-from amounts with
+approved agreement/account revisions and separately approved legacy attribution receipts.
+It follows authorized counterpart and consolidation source books, keeps opposing creditor/debtor
+directions separate, and reports missing mappings explicitly. Terms supply no balances.
+The close cockpit consumes this structured schedule instead of intercompany keywords.
+NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
+and freshness alongside the existing external NetSuite evidence requirements.
+
+Intercompany services own approved accounting-profile revisions and governed counterpart templates;
+canonical legal terms and independent review remain in Application/FundStructure.
+Consolidation dispatches exact book policy versions: retained v1, stable-role/N-entity v2, whole-book
+reporting translation v3, and separately enabled income elimination v4. Legacy adoption may create
+reviewed overlay reclassification but never changes source journals. Missing authority blocks output.
+See [versioned consolidation](../../docs/domain/intercompany-consolidation.md); current tests and
+Windows evidence remain separate from source implementation status.
 
 Unreadable operations-close snapshots report the exception type without the workflow path,
 identity or exception payload. Reviewed posting candidates require trusted human authority before
@@ -36,15 +82,17 @@ ordinary approval requirements; legacy opaque references still do not prove inde
 
 Journal construction and accounting/reporting projections carry optional agreement ID/version
 provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
-identities for unreferenced lines. Agreement coverage remains advisory and separate from the
-existing reciprocal-entity consolidation calculation; terms do not generate accruals, paired
-entries or settlements. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+identities for unreferenced lines. Legal provenance alone grants no accrual or settlement authority. Accounting profiles and
+account-role controls govern counterpart drafts and versioned consolidation, while native
+legal-only lines retain their separate advisory coverage. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their
 retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
 existing atomic disposal authority to relieve full quantities and bases together with their
 journal. Historical events omit the optional member and preserve their retained fingerprints.
+Adopted bond scheduled principal uses its separate governed paydown instruction to preserve
+scheduled basis relief without also applying disposal treatment.
 
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
@@ -271,6 +319,9 @@ recurring schedules and templates, exact source evidence, one claim per schedule
 and retained outcome history. A process-independent filesystem lease spans claim, intake and
 completion; retries preserve the deterministic draft identity. Changed definitions block existing
 claims until exact retained definitions are explicitly restored with an actor and reason.
+Calculated source additions also require a write-once evidence digest on the occurrence, retained
+independently of the journal draft. An unpinned pre-existing calculated draft requires trusted
+provenance repair; recovery cannot adopt its contents as authority.
 Initialization is explicit, and missing or corrupt initialized state fails closed. The runtime
 uses the existing PostgreSQL ledger for authoritative periods and governed reopens; the historical
 `FundAdministrationControlService` calendar and lock methods remain in-memory primitives, not
@@ -1082,6 +1133,9 @@ book, period version, accounting policy, and promoted rule pack, rejects any cli
 and appends Drafted only after Rules Studio returns a balanced approval-gated candidate. Generic
 `AssetAccounting.*` candidate requests are rejected so callers cannot bypass this server-owned
 authority path.
+Amortization may resolve its exact event and evidence from retained position lineage history,
+bound to the same current position version, security and ledger book. Unretained or mismatched
+occurrences remain blocked; a reviewed preparation does not grant posting authority.
 For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
 position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
 the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
@@ -1220,6 +1274,10 @@ evidence deletion.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

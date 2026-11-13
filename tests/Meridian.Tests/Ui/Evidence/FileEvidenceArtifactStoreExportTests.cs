@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -15,6 +16,28 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         TenantId = "tenant-export",
         Scope = "company-export"
     };
+
+    [Fact]
+    public async Task InvalidVaultIndex_RemainsUnavailableWithoutLoggingPathOrRetainedContents()
+    {
+        const string vaultId = "ev-012345678901234567890123";
+        const string invalidIndex = "{\"private-evidence-contents\": unquoted-value}";
+        var indexPath = Path.Combine(_root, "workstation", "evidence", "_vault", $"{vaultId}.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(indexPath)!);
+        await File.WriteAllTextAsync(indexPath, invalidIndex);
+        var logger = new RecordingLogger<FileEvidenceArtifactStore>();
+        var store = new FileEvidenceArtifactStore(_root, logger);
+
+        var identity = await store.TryGetVaultIdentityAsync(vaultId, Request.TenantId!, Request.Scope!);
+
+        identity.Should().BeNull();
+        (await File.ReadAllTextAsync(indexPath)).Should().Be(invalidIndex);
+        logger.Entries.Should().NotBeEmpty();
+        logger.Entries.Should().OnlyContain(entry =>
+            entry.Exception == null
+            && !entry.Message.Contains(_root, StringComparison.Ordinal)
+            && !entry.Message.Contains("private-evidence-contents", StringComparison.Ordinal));
+    }
 
     [Fact]
     public async Task NearLimitArtifact_RetainsExactBytesAndDigestAfterRestart()

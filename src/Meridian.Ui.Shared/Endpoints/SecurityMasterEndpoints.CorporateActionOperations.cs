@@ -36,6 +36,7 @@ public static partial class SecurityMasterEndpoints
         JsonSerializerOptions jsonOptions)
     {
         MapCashDividendAttestationEndpoints(group, jsonOptions);
+        MapCorporateActionCalendarEndpoints(group, jsonOptions);
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
             CorporateActionIngestRequest? request,
             HttpContext context,
@@ -512,6 +513,11 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ICorporateActionOperationsService service,
             CancellationToken ct) =>
+            request.EvidenceKind == CorporateActionDeadlinePolicy.EvidenceKind &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.ResolveCorporateActionTerms) &&
+                !EndpointAuthorization.HasPermission(context, UserPermission.RecordCorporateActionElection)
+                ? EndpointHelpers.Forbidden()
+                :
             await ExecuteScopedCaseCommandAsync(
                 caseId, request.CaseId, request.TenantId, request.CompanyId, context,
                 trusted => service.AddEvidenceAsync(request with
