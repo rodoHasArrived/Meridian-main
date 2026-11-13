@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Core.Config;
 using Meridian.Application.Services;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Wizard.Core;
 
 namespace Meridian.Application.Wizard.Steps;
@@ -15,13 +16,16 @@ public sealed class ReviewConfigurationStep : IWizardStep
 {
     private readonly TextWriter _output;
     private readonly TextReader _input;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
 
     public WizardStepId StepId => WizardStepId.ReviewConfiguration;
 
-    public ReviewConfigurationStep(TextWriter output, TextReader input)
+    public ReviewConfigurationStep(TextWriter output, TextReader input,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         _output = output;
         _input = input;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     public async Task<WizardStepResult> ExecuteAsync(WizardContext context, CancellationToken ct)
@@ -30,7 +34,7 @@ public sealed class ReviewConfigurationStep : IWizardStep
         _output.WriteLine("Step 9: Review Configuration");
         _output.WriteLine("----------------------------------------");
 
-        var config = BuildConfiguration(context);
+        var config = ProviderConfigurationCredentialGuard.Prepare(BuildConfiguration(context), _ownershipPolicy);
         context.FinalConfig = config;
 
         var json = JsonSerializer.Serialize(config, AppConfigJsonOptions.Write);

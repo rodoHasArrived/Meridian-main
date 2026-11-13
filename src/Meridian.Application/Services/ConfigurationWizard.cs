@@ -7,6 +7,7 @@ using Meridian.Application.Wizard;
 using Meridian.Application.Wizard.Core;
 using Meridian.Application.Wizard.Metadata;
 using Meridian.Application.Wizard.Steps;
+using Meridian.Application.ProviderRouting;
 using Meridian.Storage;
 using Meridian.Storage.Archival;
 using Serilog;
@@ -25,6 +26,7 @@ public sealed class ConfigurationWizard
     private readonly AutoConfigurationService _autoConfig;
     private readonly TextWriter _output;
     private readonly TextReader _input;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -34,11 +36,13 @@ public sealed class ConfigurationWizard
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public ConfigurationWizard(TextWriter? output = null, TextReader? input = null)
+    public ConfigurationWizard(TextWriter? output = null, TextReader? input = null,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         _autoConfig = new AutoConfigurationService();
         _output = output ?? Console.Out;
         _input = input ?? Console.In;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     /// <summary>
@@ -50,7 +54,7 @@ public sealed class ConfigurationWizard
         {
             PrintHeader();
 
-            var coordinator = WizardWorkflowFactory.CreateInteractive(_autoConfig, _output, _input);
+            var coordinator = WizardWorkflowFactory.CreateInteractive(_autoConfig, _output, _input, _ownershipPolicy);
             var context = new WizardContext();
 
             await coordinator.RunAsync(context, WizardStepId.DetectProviders, ct);
@@ -156,7 +160,7 @@ public sealed class ConfigurationWizard
 
         // Step 2: Generate config
         PrintLine("\n[2/4] Generating configuration...");
-        var config = autoResult.Config;
+        var config = ProviderConfigurationCredentialGuard.Prepare(autoResult.Config, _ownershipPolicy);
         PrintLine($"  Data source: {config.DataSource}");
         PrintLine($"  Symbols: {string.Join(", ", (config.Symbols ?? []).Select(s => s.Symbol))}");
         PrintLine($"  Storage: {config.Storage?.Profile ?? "default"}");
@@ -195,6 +199,7 @@ public sealed class ConfigurationWizard
 
         // Step 4: Save config
         PrintLine("\n[4/4] Saving configuration...");
+        config = ProviderConfigurationCredentialGuard.Prepare(config, _ownershipPolicy);
         var configPath = Path.Combine("config", "appsettings.json");
         var configDir = Path.GetDirectoryName(configPath);
         if (!string.IsNullOrEmpty(configDir) && !Directory.Exists(configDir))
@@ -202,8 +207,10 @@ public sealed class ConfigurationWizard
 
         if (File.Exists(configPath))
         {
+            var retainedJson = await File.ReadAllTextAsync(configPath, ct).ConfigureAwait(false);
+            ProviderConfigurationCredentialGuard.ValidateJson(retainedJson, _ownershipPolicy);
             var backupPath = configPath + $".backup-{DateTime.Now:yyyyMMdd-HHmmss}";
-            File.Copy(configPath, backupPath, overwrite: true);
+            await AtomicFileWriter.WriteAsync(backupPath, retainedJson, ct).ConfigureAwait(false);
             PrintLine($"  Backed up existing config to: {backupPath}");
         }
 
@@ -271,13 +278,16 @@ public sealed class ConfigurationWizard
 
     private void SaveConfiguration(AppConfig config, string path)
     {
-        WriteConfiguration(config, path);
+        WriteConfiguration(config, path, ownershipPolicy: _ownershipPolicy);
         _log.Information("Configuration saved to {Path}", path);
     }
 
-    internal static void WriteConfiguration(AppConfig config, string path, CancellationToken ct = default)
+    internal static void WriteConfiguration(AppConfig config, string path, CancellationToken ct = default,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
-        var json = JsonSerializer.Serialize(config, JsonOptions);
+        var snapshot = ProviderConfigurationCredentialGuard.Prepare(config,
+            ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment());
+        var json = JsonSerializer.Serialize(snapshot, JsonOptions);
         var dir = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             Directory.CreateDirectory(dir);

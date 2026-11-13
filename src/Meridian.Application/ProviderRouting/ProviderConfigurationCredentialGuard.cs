@@ -1,12 +1,11 @@
 using System.Text.Json;
-using Meridian.Application.ProviderRouting;
 using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 
-namespace Meridian.Ui.Shared.Services;
+namespace Meridian.Application.ProviderRouting;
 
-/// <summary>Prevents workstation configuration writes from persisting provider secrets outside the owned vault.</summary>
-internal static class ProviderConfigurationCredentialGuard
+/// <summary>Prevents supported configuration persistence from writing provider secrets outside the owned vault.</summary>
+public static class ProviderConfigurationCredentialGuard
 {
     private static readonly HashSet<string> CredentialFields = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -16,23 +15,44 @@ internal static class ProviderConfigurationCredentialGuard
 
     private static readonly HashSet<string> CredentialEnvironmentKeys = ProviderCredentialCatalog.All
         .SelectMany(provider => provider.RequiredFields)
+        .Where(field => CredentialFields.Contains(field.Name))
         .SelectMany(field => field.EnvironmentNames)
         .Concat(["NYSE_API_KEY", "NYSE_API_SECRET", "NYSE_CLIENT_ID"])
         .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     public static AppConfig Prepare(AppConfig candidate, ProviderCredentialOwnershipPolicy policy)
     {
+        ArgumentNullException.ThrowIfNull(candidate);
+        ArgumentNullException.ThrowIfNull(policy);
         if (!policy.RequireExplicitOwnership)
             return candidate;
 
-        // Inspect the final snapshot inside the configuration update lease. A secret-free partial
-        // request must not re-publish credentials retained in another section or extension object.
+        // A secret-free partial request must not re-publish credentials retained in another
+        // section or extension object. Inspect the complete snapshot, including retained fields.
         using var document = JsonSerializer.SerializeToDocument(candidate, AppConfigJsonOptions.Write);
-        if (ContainsCredentials(document.RootElement))
-            throw new ProviderConfigurationCredentialException();
+        Validate(document.RootElement, policy);
         // Extension objects and provider settings use mutable dictionaries. Retain an owned copy
         // of exactly the validated snapshot, including when SaveAsync waits for another writer.
         return document.RootElement.Deserialize<AppConfig>(AppConfigJsonOptions.Read)!;
+    }
+
+    public static void Validate(JsonElement candidate, ProviderCredentialOwnershipPolicy policy)
+    {
+        if (policy.RequireExplicitOwnership && ContainsCredentials(candidate))
+            throw new ProviderConfigurationCredentialException();
+    }
+
+    /// <summary>Validates an existing serialized snapshot before it is copied or published.</summary>
+    public static void ValidateJson(string json, ProviderCredentialOwnershipPolicy policy)
+    {
+        if (!policy.RequireExplicitOwnership)
+            return;
+        using var candidate = JsonDocument.Parse(json, new JsonDocumentOptions
+        {
+            AllowTrailingCommas = true,
+            CommentHandling = JsonCommentHandling.Skip
+        });
+        Validate(candidate.RootElement, policy);
     }
 
     private static bool ContainsCredentials(JsonElement root)
@@ -48,26 +68,15 @@ internal static class ProviderConfigurationCredentialGuard
                 return true;
             if (IsProvider(property.Name) && ProviderHasCredentials(property.Value))
                 return true;
-            if (Same(property.Name, "Backfill") && TryProperty(property.Value, "Providers", out var backfill)
-                && ProviderMapHasCredentials(backfill))
+            if (Same(property.Name, "Backfill") && AnyProperty(property.Value, "Providers", ProviderMapHasCredentials))
                 return true;
             if (Same(property.Name, "Providers") && ProviderMapHasCredentials(property.Value))
                 return true;
-            if (Same(property.Name, "DataSources") && TryProperty(property.Value, "Sources", out var sources)
-                && sources.ValueKind == JsonValueKind.Array && sources.EnumerateArray().Any(ContainsCredentials))
+            if (Same(property.Name, "DataSources") && AnyProperty(property.Value, "Sources",
+                    sources => sources.ValueKind == JsonValueKind.Array && sources.EnumerateArray().Any(ContainsCredentials)))
                 return true;
-            if (Same(property.Name, "ProviderModules") && TryProperty(property.Value, "Modules", out var modules)
-                && modules.ValueKind == JsonValueKind.Object)
-            {
-                foreach (var module in modules.EnumerateObject())
-                {
-                    // Credentials in this model are environment variable NAMES, not secret values.
-                    // Provider Settings, in contrast, may contain legacy literal credential fields.
-                    if (IsProvider(module.Name) && TryProperty(module.Value, "Settings", out var settings)
-                        && ProviderHasCredentials(settings))
-                        return true;
-                }
-            }
+            if (Same(property.Name, "ProviderModules") && AnyProperty(property.Value, "Modules", ModuleMapHasCredentials))
+                return true;
         }
         return false;
     }
@@ -80,6 +89,12 @@ internal static class ProviderConfigurationCredentialGuard
         => provider.ValueKind == JsonValueKind.Object && provider.EnumerateObject()
             .Any(field => CredentialFields.Contains(field.Name) && HasValue(field.Value));
 
+    private static bool ModuleMapHasCredentials(JsonElement modules)
+        // Credentials in this model are environment variable NAMES, not secret values.
+        // Provider Settings, in contrast, may contain legacy literal credential fields.
+        => modules.ValueKind == JsonValueKind.Object && modules.EnumerateObject()
+            .Any(module => IsProvider(module.Name) && AnyProperty(module.Value, "Settings", ProviderHasCredentials));
+
     private static bool IsCredentialPath(string[] path)
         => CredentialFields.Contains(path[^1]) &&
             ((path.Length == 2 && IsProvider(path[0])) ||
@@ -91,32 +106,26 @@ internal static class ProviderConfigurationCredentialGuard
 
     private static bool HasValue(JsonElement value)
         => value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
-            && (value.ValueKind != JsonValueKind.String || !string.IsNullOrWhiteSpace(value.GetString()));
+            && (value.ValueKind != JsonValueKind.String ||
+                (!string.IsNullOrWhiteSpace(value.GetString()) && !IsEnvironmentReference(value.GetString()!)));
 
-    private static bool TryProperty(JsonElement value, string name, out JsonElement found)
-    {
-        if (value.ValueKind == JsonValueKind.Object)
-        {
-            foreach (var property in value.EnumerateObject())
-            {
-                if (Same(property.Name, name))
-                {
-                    found = property.Value;
-                    return true;
-                }
-            }
-        }
-        found = default;
-        return false;
-    }
+    // Preserve documented references as references; never accept a literal/default value embedded
+    // inside an interpolation expression as an alternative route for storing a credential.
+    private static bool IsEnvironmentReference(string value)
+        => value.StartsWith("${", StringComparison.Ordinal) && value.EndsWith('}')
+            && CredentialEnvironmentKeys.Contains(value[2..^1]);
+
+    private static bool AnyProperty(JsonElement value, string name, Func<JsonElement, bool> predicate)
+        => value.ValueKind == JsonValueKind.Object && value.EnumerateObject()
+            .Any(property => Same(property.Name, name) && predicate(property.Value));
 
     private static bool Same(string first, string second) => string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>Safe refusal without echoing submitted credential values or configuration content.</summary>
-internal sealed class ProviderConfigurationCredentialException : InvalidOperationException
+public sealed class ProviderConfigurationCredentialException : InvalidOperationException
 {
     public ProviderConfigurationCredentialException() : base(
-        "Provider credentials cannot be saved in application configuration. Use Settings > Manage owned credentials for the retained tenant and account. Remove legacy plaintext provider credentials through the reviewed migration or purge workflow before saving other settings.")
+        "Provider credentials cannot be saved in application configuration. Use Settings > Manage owned credentials for the retained tenant and account. For legacy plaintext, complete an explicit migration and purge before production or during reviewed offline maintenance. The original configuration was not changed.")
     { }
 }

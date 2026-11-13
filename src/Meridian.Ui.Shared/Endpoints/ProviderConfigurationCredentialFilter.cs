@@ -1,4 +1,4 @@
-using Meridian.Ui.Shared.Services;
+using Meridian.Application.ProviderRouting;
 using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;

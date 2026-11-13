@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Backfill;
 using Meridian.Core.Config;
 using Meridian.Core.IO;
@@ -38,6 +39,7 @@ public sealed class ConfigStore
     private static readonly TimeSpan WriteLockTimeout = TimeSpan.FromSeconds(30);
     // Resolved per use so loads after logging bootstrap reach the configured sinks.
     private static Serilog.ILogger Log => LoggingSetup.ForContext<ConfigStore>();
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
 
     /// <summary>
     /// Gets the path to the configuration file.
@@ -48,17 +50,16 @@ public sealed class ConfigStore
     /// Creates a new ConfigStore with the default configuration path resolution.
     /// </summary>
     public ConfigStore()
-    {
-        ConfigPath = ResolvePath(null);
-    }
+        : this(null) { }
 
     /// <summary>
     /// Creates a new ConfigStore with a custom configuration path.
     /// </summary>
     /// <param name="configPath">Full or relative path to the configuration file.</param>
-    public ConfigStore(string? configPath)
+    public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         ConfigPath = ResolvePath(configPath);
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     private static string ResolvePath(string? configPath)
@@ -194,15 +195,19 @@ public sealed class ConfigStore
     /// </summary>
     public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default)
     {
+        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
-        await SaveCoreAsync(cfg, ct).ConfigureAwait(false);
+        await SaveCoreAsync(snapshot, ct).ConfigureAwait(false);
     }
 
     private async Task SaveCoreAsync(AppConfig cfg, CancellationToken ct)
     {
+        // Both whole-document saves and every read-modify-write reach this final check.
+        // Keep raw legacy reads available so explicit migration/purge can remove the fields.
+        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
         try
         {
-            var json = JsonSerializer.Serialize(cfg, AppConfigJsonOptions.Write);
+            var json = JsonSerializer.Serialize(snapshot, AppConfigJsonOptions.Write);
             var dir = Path.GetDirectoryName(ConfigPath);
             if (!string.IsNullOrEmpty(dir))
             {
@@ -258,7 +263,13 @@ public sealed class ConfigStore
             root["FeatureCapabilities"] = section;
 
             var output = root.ToJsonString(AppConfigJsonOptions.Write);
+            using var candidate = JsonDocument.Parse(output);
+            ProviderConfigurationCredentialGuard.Validate(candidate.RootElement, _ownershipPolicy);
             await AtomicFileWriter.WriteAsync(ConfigPath, output, ct).ConfigureAwait(false);
+        }
+        catch (ProviderConfigurationCredentialException)
+        {
+            throw;
         }
         catch (OperationCanceledException)
         {

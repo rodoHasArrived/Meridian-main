@@ -13,14 +13,13 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class ConfigStore
 {
     private readonly CoreConfigStore _core;
-    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
+    internal CoreConfigStore CoreStore => _core;
 
     public ConfigStore() : this(GetWebDefaultPath()) { }
 
     public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
-        _core = new CoreConfigStore(configPath);
-        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
+        _core = new CoreConfigStore(configPath, ownershipPolicy);
     }
 
     public string ConfigPath => _core.ConfigPath;
@@ -36,30 +35,19 @@ public sealed class ConfigStore
     public System.Threading.Tasks.Task SaveAsync(
         Meridian.Core.Config.AppConfig cfg,
         CancellationToken ct)
-    {
-        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
-        return _core.SaveAsync(snapshot, ct);
-    }
+        => _core.SaveAsync(cfg, ct);
 
     /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
     public System.Threading.Tasks.Task<T> UpdateAsync<T>(
         Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
         CancellationToken ct = default)
-        => _core.UpdateAsync(current =>
-        {
-            var (candidate, result) = update(current);
-            return (ProviderConfigurationCredentialGuard.Prepare(candidate, _ownershipPolicy), result);
-        }, ct);
+        => _core.UpdateAsync(update, ct);
 
     /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
     public System.Threading.Tasks.Task UpdateAsync(
         Func<Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig> update,
         CancellationToken ct = default)
-        => _core.UpdateAsync(current =>
-        {
-            var candidate = update(current);
-            return ProviderConfigurationCredentialGuard.Prepare(candidate, _ownershipPolicy);
-        }, ct);
+        => _core.UpdateAsync(update, ct);
 
     public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
         => _core.TryLoadProviderMetrics();

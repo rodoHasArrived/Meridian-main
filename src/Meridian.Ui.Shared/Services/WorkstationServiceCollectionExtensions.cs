@@ -328,7 +328,7 @@ public static class WorkstationServiceCollectionExtensions
         services.AddDefaultProviderSetupHandlers();
         services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         services.TryAddSingleton<ProviderRuntimeCredentialMutationGuard>(sp => new(
-            new Meridian.Application.UI.ConfigStore(sp.GetRequiredService<ConfigStore>().ConfigPath),
+            sp.GetRequiredService<ConfigStore>().CoreStore,
             sp.GetRequiredService<ProviderCredentialOwnershipPolicy>(),
             sp.GetService<IProviderRuntimeCredentialApplier>(), sp.GetService<ProviderRuntimeCredentialApplicationTracker>()));
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
@@ -336,7 +336,7 @@ public static class WorkstationServiceCollectionExtensions
         // These runtimes do not carry a trusted tenant/connection per import, statement or Plaid item.
         // Keep them legacy-only until that ownership is propagated through their full workflows.
         services.TryAddSingleton<LegacyProviderRuntimeCredentialStore>(sp => new(
-            new Meridian.Application.UI.ConfigStore(sp.GetRequiredService<ConfigStore>().ConfigPath),
+            sp.GetRequiredService<ConfigStore>().CoreStore,
             sp.GetRequiredService<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(),
             sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
         services.TryAddKeyedSingleton<Meridian.DataIntegration.Credentials.IProviderCredentialStore>(

@@ -6,6 +6,7 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.Services;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
+using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Domain;
 using Meridian.Domain.Reconciliation;
 using Meridian.Contracts.Operations;
@@ -43,7 +44,9 @@ internal static class CommandServiceRegistration
         services.TryAddSingleton(cfg);
         services.TryAddSingleton(log);
         services.TryAddSingleton(configService);
-        services.TryAddSingleton(configStore);
+        services.AddProviderCredentialOwnershipPolicy();
+        services.TryAddSingleton(sp => new ConfigStore(configStore.ConfigPath,
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
         services.TryAddSingleton(storageOptions);
         var configuration = CompositionConfiguration.Resolve(services);
         services.TryAddSingleton(configuration);
@@ -140,7 +143,8 @@ internal static class CommandServiceRegistration
             sp.GetRequiredService<IStatementReconciliationCheckpointStore>()));
         services.AddSingleton<ICliCommand>(sp => new ConfigPresetCommand(
             sp.GetRequiredService<AutoConfigurationService>(),
-            sp.GetRequiredService<ILogger>()));
+            sp.GetRequiredService<ILogger>(),
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>()));
         services.AddSingleton<ICliCommand>(sp => new QueryCommand(
             sp.GetRequiredService<HistoricalDataQueryService>(),
             sp.GetRequiredService<ILogger>()));
