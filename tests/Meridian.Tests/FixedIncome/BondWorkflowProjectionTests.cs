@@ -8,6 +8,25 @@ namespace Meridian.Tests.FixedIncome;
 
 public sealed class BondWorkflowProjectionTests
 {
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public void MultiPeriodPaymentLagKeepsActiveAccrualSeparateFromPriorEarnedCoupon(int signedCoupon)
+    {
+        var schedule = ScheduleGenerator.Generate(ScheduleSpec.IssueAnchoredForward(new(2026, 1, 1), new(2028, 1, 1), ScheduleTenor.Years(1)) with
+        { PaymentLagBusinessDays = 2, PaymentAdjustment = new(BusinessDayConvention.Unadjusted, BusinessDayCalendars.WeekendsOnly) });
+        schedule.Succeeded.Should().BeTrue();
+        var terms = Terms() with { CouponRate = signedCoupon / 100m };
+        var date = new DateOnly(2027, 1, 4);
+        var rows = BondWorkflowProjection.Project(schedule, terms, new(2026, 1, 1));
+        rows.First().PaymentDate.Should().Be(new DateOnly(2027, 1, 5));
+        var deferred = rows.Where(flow => flow.AccrualEnd <= date && flow.PaymentDate > date).Sum(flow => flow.Interest);
+        deferred.Should().Be(signedCoupon);
+        BondWorkflowProjection.Accrued(schedule, terms, date).Should().BeApproximately(signedCoupon * 3m / 360m, 0.000000000001m);
+        BondWorkflowProjection.LegacyAccrued(schedule, terms, date).Should().Be(signedCoupon);
+        BondWorkflowProjection.Accrued(schedule, terms, new(2027, 1, 1)).Should().Be(0m);
+    }
+
     [Fact]
     public void SignedFixedCouponAndAccruedRemainNegative()
     {

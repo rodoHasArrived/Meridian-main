@@ -17,7 +17,8 @@ public sealed record BondWorkflowProjectionTerms(string CouponKind, decimal Coup
 /// <summary>New signed-cash kernel. No clock, persistence, ledger or legacy-arithmetic dependency.</summary>
 public static class BondWorkflowProjection
 {
-    public const string ModelVersion = "bond-workflow-cash-v1";
+    public const string LegacyModelVersion = "bond-workflow-cash-v1";
+    public const string ModelVersion = "bond-workflow-cash-v2";
 
     public static IReadOnlyList<BondWorkflowCashFlow> Project(ScheduleGenerationResult schedule,
         BondWorkflowProjectionTerms terms, DateOnly from, Func<DateOnly, BondWorkflowFixing>? fixing = null,
@@ -95,8 +96,18 @@ public static class BondWorkflowProjection
 
     public static decimal Accrued(ScheduleGenerationResult schedule, BondWorkflowProjectionTerms terms,
         DateOnly settlement, Func<DateOnly, BondWorkflowFixing>? fixing = null, Func<DateOnly, BondWorkflowFixing>? inflation = null)
+        => AccruedCore(schedule, terms, settlement, legacyPaymentDateSelection: false, fixing, inflation);
+
+    public static decimal LegacyAccrued(ScheduleGenerationResult schedule, BondWorkflowProjectionTerms terms,
+        DateOnly settlement, Func<DateOnly, BondWorkflowFixing>? fixing = null, Func<DateOnly, BondWorkflowFixing>? inflation = null)
+        => AccruedCore(schedule, terms, settlement, legacyPaymentDateSelection: true, fixing, inflation);
+
+    private static decimal AccruedCore(ScheduleGenerationResult schedule, BondWorkflowProjectionTerms terms,
+        DateOnly settlement, bool legacyPaymentDateSelection, Func<DateOnly, BondWorkflowFixing>? fixing,
+        Func<DateOnly, BondWorkflowFixing>? inflation)
     {
-        var period = schedule.Periods.FirstOrDefault(p => p.AccrualStart < settlement && p.PaymentDate > settlement);
+        var period = schedule.Periods.FirstOrDefault(p => p.AccrualStart < settlement
+            && (legacyPaymentDateSelection ? p.PaymentDate > settlement : p.AccrualEnd > settlement));
         if (period is null)
             return 0m;
         var end = settlement < period.AccrualEnd ? settlement : period.AccrualEnd;

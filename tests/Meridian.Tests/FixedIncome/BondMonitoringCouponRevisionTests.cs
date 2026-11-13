@@ -96,10 +96,11 @@ public sealed class BondMonitoringCouponRevisionTests
             // Use the real signed-cash kernel, including daily compounding and contractual cap/floor.
             var flows = BondWorkflowProjection.Project(schedule, terms, Today,
                 date => new(Rate, ObserveElapsedFixings && date <= Today, "SyntheticOvernightSource"));
-            return Task.FromResult<BondWorkflowResult?>(new(Security, "USD", BondWorkflowProjection.ModelVersion,
+            return Task.FromResult<BondWorkflowResult?>(new(Security, "USD", BondWorkflowModelVersions.Current,
                 request.Context with { SecurityVersion = 1 }, request.OriginalFace, request.OriginalFace, 0m,
                 null, null, 0m, null, null, null, null, null, null, null, flows,
-                [new("ForwardCurveContent", "overnight", ContentSha256: Sha256Digest.ComputeUtf8(Rate.ToString(CultureInfo.InvariantCulture)))], [], []));
+                [new("ForwardCurveContent", "overnight", ContentSha256: Sha256Digest.ComputeUtf8(Rate.ToString(CultureInfo.InvariantCulture))),
+                    new("CalculationModel", BondWorkflowModelVersions.Current)], [], []));
         }
         public Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,
             CancellationToken ct = default) => CalculateAsync(request, ct);

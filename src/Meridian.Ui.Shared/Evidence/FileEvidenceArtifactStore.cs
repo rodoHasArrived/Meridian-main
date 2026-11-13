@@ -1962,19 +1962,19 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be deserialized.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be deserialized ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (IOException ex)
         {
             // A locked or transiently unreadable file must skip this entry, not fail the
             // whole vault listing.
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be read.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be read ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault index '{IndexPath}' could not be accessed.", indexPath);
+            _logger.LogWarning("Evidence vault index could not be accessed ({FailureType}).", ex.GetType().Name);
             return null;
         }
     }

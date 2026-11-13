@@ -34,7 +34,7 @@ export interface FactorPaydownPreview {
     priorFactor: string;
     newFactor: string;
     principalPaydown: string;
-    lots: { expectedLot: { lotId: string; acquisition?: { bondIncome?: Record<string, unknown> | null } | null }; principal: string; transactionBasisAfter: string; functionalBasisAfter: string }[];
+    lots: { expectedLot: { lotId: string; acquisition?: { bondIncome?: (Record<string, unknown> & { accrualPolicyVersion?: string | null }) | null } | null }; principal: string; transactionBasisAfter: string; functionalBasisAfter: string }[];
   };
   components: Record<string, string>;
 }

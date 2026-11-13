@@ -11,6 +11,8 @@ public sealed record BondWorkflowRequest(Guid SecurityId, BondCalculationContext
     decimal Fees = 0m, BondWorkflowPriceBasis PriceBasis = BondWorkflowPriceBasis.NominalClean,
     decimal RateShiftBps = 0m, decimal SpreadShiftBps = 0m)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ModelVersion { get; init; }
     public Guid? QuoteObservationId { get; init; }
     public Guid? PriceSelectionReceiptId { get; init; }
     public string? AccountId { get; init; }
@@ -58,6 +60,13 @@ public sealed record BondWorkflowResult(Guid SecurityId, string Currency, string
     public bool SettlementIndexIsObserved { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public decimal? ContractualAccruedInterest { get; init; }
+    /// <summary>Fully earned coupon economics before their contractual payment dates, not bank-clearing status.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? DeferredCouponInterest { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? HasDetachedCoupon { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? HasPaidActiveCoupon { get; init; }
     public string YieldBasis { get; init; } = "AnnualEffective";
     public string? QuoteSource { get; init; }
     public BondQuoteCategory? QuoteCategory { get; init; }
@@ -84,6 +93,14 @@ public interface IBondWorkflowService
     Task<BondWorkflowResult?> CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default);
     Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,
         CancellationToken ct = default);
+    Task<BondWorkflowResult?> ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default)
+        => Task.FromException<BondWorkflowResult?>(new NotSupportedException("This workflow source does not support retained-version replay."));
+}
+
+public static class BondWorkflowModelVersions
+{
+    public const string Legacy = "bond-workflow-v1";
+    public const string Current = "bond-workflow-v2";
 }
 
 public sealed record BondWorkflowRateObservation(string IndexName, DateOnly Date, decimal Value,

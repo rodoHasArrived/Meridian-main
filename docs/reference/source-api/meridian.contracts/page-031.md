@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingRulePackReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.AccountingRulePackReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs#L18).
+
+```csharp
+public sealed record AccountingRulePackReferenceDto(string RulePackId, string RulePackVersion, string? SelectedRuleId = null, string? SelectedRuleVersion = null);
+```
+
 ## AccountingRulesStudioDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingRulesStudioDto</code>. Kind: `record`.
@@ -724,14 +734,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:36](../
 
 ```csharp
 public sealed record ClosePlanTemplateDto(Guid TemplateId, int Version, string Name, Guid SourceWorkflowId, Guid SourceLedgerBookId, string SourcePeriodId, Guid FundAccountId, string FundProfileId, string SourceAccountingPolicyId, string SourceAccountingPolicyVersion, MaterialityPolicyDto MaterialityPolicy, ClosePreparationCalendarDto Calendar, IReadOnlyList<ClosePlanTemplateTaskDto> Tasks, DateTimeOffset CapturedAtUtc, string CapturedBy, IReadOnlyList<ClosePreparationHistoryDto> History);
-```
-
-## ClosePlanTemplateTaskDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L26).
-
-```csharp
-public sealed record ClosePlanTemplateTaskDto(CloseTaskConfigurationDto Configuration, DateOnly SourceDueDate, CloseDeadlineRuleDto DeadlineRule);
 ```

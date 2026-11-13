@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingDifferenceAssignmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L81).
+
+```csharp
+public sealed record OnboardingDifferenceAssignmentDto(string DifferenceKey, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds, string ActorId, DateTimeOffset RecordedAtUtc, int DataRevision);
+```
+
 ## OnboardingDifferenceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceDto</code>. Kind: `record`.
@@ -555,14 +565,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1359](..
 
 ```csharp
 public sealed record OperationsCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, OperationsGateKeyDto? Gate, string? RouteHint);
-```
-
-## OperationsCloseReadinessComponentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1348](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1348).
-
-```csharp
-public sealed record OperationsCloseReadinessComponentDto(string Key, string Label, int Score, int Weight, bool IsReady, string Severity, string? BlockingReason, OperationsGateKeyDto? Gate, string? RouteHint);
 ```

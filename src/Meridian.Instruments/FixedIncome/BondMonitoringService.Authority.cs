@@ -33,6 +33,14 @@ public sealed partial class BondMonitoringService
         }
         else if (request.MarketWatch is not null)
             throw new InvalidOperationException("Retained rating/factor watch requires tenant market-store authority.");
+        var active = request.Obligations.Where(row => row.IsCurrentHolding).ToArray();
+        foreach (var obligation in active)
+        {
+            var models = obligation.Inputs.Where(input => input.Kind == "CalculationModel").ToArray();
+            if (obligation.ModelVersion is not (BondWorkflowModelVersions.Legacy or BondWorkflowModelVersions.Current)
+                || models.Length != 1 || models[0].Key != obligation.ModelVersion)
+                throw new InvalidOperationException("Monitoring obligations require one exact supported retained workflow model and matching CalculationModel input; refresh ambiguous or unsupported source evidence explicitly.");
+        }
         var authoritative = new Dictionary<string, (Guid Security, string Kind, DateOnly Due, decimal Amount, string Currency, string Model)>();
         foreach (var group in snapshot.Positions.Where(row => row.Bond is not null && row.SecurityId is { } id && id != Guid.Empty)
             .GroupBy(row => row.SecurityId!.Value))
@@ -41,8 +49,12 @@ public sealed partial class BondMonitoringService
             var face = rows.Sum(row => row.IsShort ? -Math.Abs(row.Bond!.OriginalFace) : row.Bond!.OriginalFace);
             if (face == 0m)
                 continue;
-            var result = await bonds.CalculateAsync(new(group.Key, context, Math.Abs(face)), ct).ConfigureAwait(false);
-            if (result is null || result.IsBlocked || rows.Select(row => row.Currency).Distinct().Count() != 1
+            var versions = active.Where(row => row.SecurityId == group.Key).Select(row => row.ModelVersion).Distinct(StringComparer.Ordinal).ToArray();
+            if (versions.Length != 1)
+                throw new InvalidOperationException("Each held security requires one unambiguous retained workflow model for monitoring revalidation; missing or mixed versions require an explicit refreshed plan.");
+            var result = await bonds.CalculateAsync(new(group.Key, context, Math.Abs(face)) { ModelVersion = versions[0] }, ct).ConfigureAwait(false);
+            if (result is null || result.IsBlocked || result.ModelVersion != versions[0]
+                || rows.Select(row => row.Currency).Distinct().Count() != 1
                 || result.Currency != rows[0].Currency || result.CurrentFace != Math.Abs(rows.Sum(row => row.IsShort ? -Math.Abs(row.Bond!.CurrentFace) : row.Bond!.CurrentFace)))
                 throw new InvalidOperationException("Retained bond economics do not reproduce accepted account holdings for monitoring capture.");
             foreach (var flow in result.CashFlows)
@@ -62,7 +74,6 @@ public sealed partial class BondMonitoringService
                 }
             }
         }
-        var active = request.Obligations.Where(row => row.IsCurrentHolding).ToArray();
         if (active.Length != authoritative.Count || active.Any(row => !authoritative.TryGetValue(row.ObligationId, out var value)
             || row.SecurityId != value.Security || row.FlowType != value.Kind || row.DueDate != value.Due || row.Amount != value.Amount
             || row.Currency != value.Currency || row.ModelVersion != value.Model

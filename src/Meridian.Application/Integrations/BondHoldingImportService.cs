@@ -28,7 +28,52 @@ public sealed class BondHoldingImportService(IProviderIntegrationManifestStore m
             ?? throw new KeyNotFoundException("Account was not found in the authenticated scope.");
         _ = await store.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException("Integration connection was not found in the authenticated scope.");
+        var run = await store.GetSyncRunAsync(request.SyncRunId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("A complete retained source run is required for a full snapshot.");
+        if (run.SyncRunId != request.SyncRunId || run.ConnectionId != request.ConnectionId
+            || run.Capability is not (ProviderCapabilityKindDto.Holdings or ProviderCapabilityKindDto.Positions)
+            || run.CompletedAt is null || run.Status is not (ProviderIntegrationProcessingStatusDto.Validated
+                or ProviderIntegrationProcessingStatusDto.Quarantined or ProviderIntegrationProcessingStatusDto.Loaded
+                or ProviderIntegrationProcessingStatusDto.Published))
+            throw new InvalidOperationException("A completed holding source run in the requested scope is required.");
+        // Quarantine replay contains selected rejects, not the original statement's complete population.
+        if (run.SourceSyncRunId is not null)
+            throw new InvalidOperationException("A quarantine replay subset cannot establish a full snapshot; ingest the complete corrected statement in a new source run.");
         var staged = await store.ListStagingRecordsAsync(request.SyncRunId, ct).ConfigureAwait(false);
+        var quarantined = await store.ListQuarantinedRecordsAsync(request.SyncRunId, ct).ConfigureAwait(false);
+        if (run.RecordsReceived != (long)run.RecordsAccepted + run.RecordsQuarantined
+            || staged.Any(s => s.SyncRunId != request.SyncRunId || s.ConnectionId != request.ConnectionId || s.Capability != run.Capability)
+            || quarantined.Any(q => q.SyncRunId != request.SyncRunId || q.ConnectionId != request.ConnectionId || q.Capability != run.Capability)
+            || staged.Count != run.RecordsAccepted || quarantined.Count != run.RecordsQuarantined)
+            throw new InvalidOperationException("Retained staging and quarantine do not reproduce the completed source population.");
+        var unresolved = new List<QuarantinedRecordDto>();
+        var otherAccountQuarantine = new List<QuarantinedRecordDto>();
+        foreach (var row in quarantined)
+        {
+            if (await ProvesDifferentAccountAsync(row.MappedRecord, row.ValidationErrors, request.AccountId, ct).ConfigureAwait(false))
+                otherAccountQuarantine.Add(row);
+            else
+                unresolved.Add(row);
+        }
+        if (run.Issues.Where(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical)
+            .Except(otherAccountQuarantine.SelectMany(row => row.ValidationErrors)).Any())
+        {
+            // Source/page errors need not create a rejected row. They cannot prove a complete statement.
+            if (unresolved.Count == 0)
+                throw new InvalidOperationException("A full snapshot requires a complete source fetch without unresolved critical run issues.");
+        }
+        if (unresolved.Count != 0)
+        {
+            var decisions = await store.ListQuarantineDecisionsAsync(request.SyncRunId, ct).ConfigureAwait(false);
+            var quarantineReviewed = unresolved.All(q => decisions.Any(d => d.SyncRunId == request.SyncRunId
+                && d.ConnectionId == request.ConnectionId && d.QuarantineRecordId == q.QuarantineRecordId
+                && !string.IsNullOrWhiteSpace(d.ReviewedBy)));
+            // Review/ignore/cash/replay-request decisions classify rejected source rows; they do not
+            // supply the missing accepted position economics or merge a replay with the original run.
+            throw new InvalidOperationException(quarantineReviewed
+                ? "Quarantine review decisions do not establish complete holdings; ingest the complete corrected statement in a new source run."
+                : "A full snapshot cannot omit unresolved quarantined holdings for this account or rows with unknown account identity.");
+        }
         var handoffs = await store.ListReconciliationHandoffRecordsAsync(request.ConnectionId, ct).ConfigureAwait(false);
         var reviewed = handoffs.Where(h => h.SyncRunId == request.SyncRunId && h.ConnectionId == request.ConnectionId
             && Guid.TryParse(h.InternalAccountId, out var id) && id == request.AccountId).ToArray();
@@ -37,12 +82,9 @@ public sealed class BondHoldingImportService(IProviderIntegrationManifestStore m
             && reviewed.Any(h => h.StagingRecordId == s.StagingRecordId)).OrderBy(s => s.StagingRecordId, StringComparer.Ordinal).ToArray();
         if (rows.Length == 0)
             throw new InvalidOperationException("No reviewed holding population is retained for this account and run.");
-        var unreviewed = staged.Where(s => s.ConnectionId == request.ConnectionId
-            && s.Capability is ProviderCapabilityKindDto.Holdings or ProviderCapabilityKindDto.Positions)
-            .Where(s => Guid.TryParse(Read(s.MappedRecord, "accountId"), out var targetAccount) && targetAccount == request.AccountId
-                && !rows.Any(r => r.StagingRecordId == s.StagingRecordId));
-        if (unreviewed.Any())
-            throw new InvalidOperationException("A full snapshot cannot omit unreviewed rows for this account.");
+        foreach (var row in staged.Where(s => !rows.Any(r => r.StagingRecordId == s.StagingRecordId)))
+            if (!await ProvesDifferentAccountAsync(row.MappedRecord, row.ValidationWarnings, request.AccountId, ct).ConfigureAwait(false))
+                throw new InvalidOperationException("A full snapshot cannot omit unreviewed rows for this account or rows with unknown account identity.");
         var lines = new List<CustodianPositionLineDto>();
         var evidence = new List<string>();
         foreach (var row in rows)
@@ -92,6 +134,41 @@ public sealed class BondHoldingImportService(IProviderIntegrationManifestStore m
             $"integration:{request.ConnectionId}:{request.SyncRunId}", sourceHash, SupersedesBatchId: request.SupersedesBatchId);
         return await management.IngestCustodianStatementAsync(new(request.BatchId, request.AccountId,
             request.AsOfDate, request.ConnectionId, "reviewed-integration-bond-v1", null, lines, actor, Authority: authority), ct).ConfigureAwait(false);
+    }
+
+    private async Task<bool> ProvesDifferentAccountAsync(JsonElement? source, IReadOnlyList<ValidationIssueDto> issues,
+        Guid accountId, CancellationToken ct)
+    {
+        if (source is not { } mapped)
+            return false;
+        var declarations = new HashSet<Guid>();
+        foreach (var path in new[] { "accountId", "internalAccountId", "account.internalAccountId" })
+        {
+            var value = mapped;
+            var present = true;
+            foreach (var part in path.Split('.'))
+            {
+                if (value.ValueKind != JsonValueKind.Object)
+                    return false;
+                if (!value.TryGetProperty(part, out value))
+                {
+                    present = false;
+                    break;
+                }
+            }
+            if (!present)
+                continue;
+            if (value.ValueKind != JsonValueKind.String || !Guid.TryParse(value.GetString(), out var declared))
+                return false;
+            declarations.Add(declared);
+        }
+        if (declarations.Count != 1 || declarations.Contains(accountId)
+            || issues.Any(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical
+                && issue.TargetField is "accountId" or "internalAccountId" or "account.internalAccountId" or "account"))
+            return false;
+        var otherAccountId = declarations.Single();
+        var retained = await accounts.GetAccountAsync(otherAccountId, ct).ConfigureAwait(false);
+        return retained?.AccountId == otherAccountId;
     }
 
     private static string? Read(JsonElement root, string path)

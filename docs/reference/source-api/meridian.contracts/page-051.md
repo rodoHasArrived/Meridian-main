@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuthoritativeScopeAssignment
+
+Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
+
+One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
+
+```csharp
+public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
+| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |
+
 ## FundProfileOwnership
 
 Qualified name: <code>Meridian.Contracts.Tenancy.FundProfileOwnership</code>. Kind: `record`.
@@ -758,14 +777,4 @@ One disclosed simulation assumption or detected data-quality issue for a backtes
 
 ```csharp
 public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
-```
-
-## BooksBeforeBrokerReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L63).
-
-```csharp
-public sealed record BooksBeforeBrokerReadinessDto(bool IsBooksBeforeBrokerMode, bool CanStageBrokerAction, string ExpectedBrokerAction, string BrokerInstructionSummary, IReadOnlyList<string> RequiredApprovals, IReadOnlyList<string> Blockers, IReadOnlyList<string> EvidenceIds);
 ```

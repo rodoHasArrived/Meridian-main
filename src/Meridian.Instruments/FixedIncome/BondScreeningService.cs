@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -140,28 +141,76 @@ public sealed class BondScreeningService(IBondReferenceService reference, IBondM
         if (lifecycle.MaturityDate < protectedThrough)
             return false;
         var dates = new List<DateOnly>();
-        if (lifecycle.CallDate is { } scalar)
-            dates.Add(scalar);
+        var expiredDiscreteDates = new HashSet<DateOnly>();
         var declaredCalls = bond.CallSchedule is { ValueKind: JsonValueKind.Array } schedule && schedule.GetArrayLength() > 0;
         if (declaredCalls)
         {
+            var entries = new List<(JsonElement Terms, DateOnly Start)>();
             foreach (var entry in bond.CallSchedule!.Value.EnumerateArray())
             {
-                DateOnly? date = null;
-                foreach (var name in new[] { "exerciseDate", "callDate", "date", "windowStart" })
-                    if (entry.ValueKind == JsonValueKind.Object && entry.TryGetProperty(name, out var value)
-                        && value.ValueKind == JsonValueKind.String && DateOnly.TryParseExact(value.GetString(), "yyyy-MM-dd", out var parsed))
-                    { date = parsed; break; }
+                if (!TryReadExerciseDate(entry, out var date, "exerciseDate", "callDate", "date", "windowStart"))
+                { gaps.Add(new(bond.SecurityId, "A declared call entry has invalid or conflicting eligibility dates; call protection is unverified.")); return false; }
                 if (date is null)
                 { gaps.Add(new(bond.SecurityId, "A declared call entry lacks a supported eligibility date; call protection is unverified.")); return false; }
-                dates.Add(date.Value);
+                entries.Add((entry, date.Value));
+            }
+            var ordered = entries.OrderBy(entry => entry.Start).ToArray();
+            for (var index = 0; index < ordered.Length; index++)
+            {
+                var (entry, start) = ordered[index];
+                if (!TryReadExerciseDate(entry, out var declaredEnd, "callEndDate", "windowEnd", "endDate"))
+                { gaps.Add(new(bond.SecurityId, "A declared call entry has invalid or conflicting end dates; call protection is unverified.")); return false; }
+                var style = entry.TryGetProperty("exerciseStyle", out var styleValue) && styleValue.ValueKind == JsonValueKind.String
+                    ? styleValue.GetString() : null;
+                if (style is not ("European" or "Bermudan"))
+                {
+                    // An elapsed continuous/unknown start does not establish that its right expired.
+                    dates.Add(start);
+                    continue;
+                }
+                if (bond.ScheduleConventions?.BusinessDayConvention is not (null or "Unadjusted"))
+                { gaps.Add(new(bond.SecurityId, "Adjusted discrete call dates require retained calendar resolution; call protection is unverified.")); return false; }
+                var end = declaredEnd
+                    ?? (index + 1 < ordered.Length && ordered[index + 1].Start > start
+                        ? ordered[index + 1].Start.AddDays(-1) : lifecycle.MaturityDate);
+                if (end < start || !BondExerciseEconomics.TryExerciseDates(entry, start, end, style,
+                        lifecycle.PaymentFrequency, out var exercises, out _))
+                { gaps.Add(new(bond.SecurityId, "The declared discrete call dates cannot be resolved; call protection is unverified.")); return false; }
+                foreach (var exercise in exercises)
+                    if (exercise <= query.AsOf)
+                        expiredDiscreteDates.Add(exercise);
+                    else if (exercise <= lifecycle.MaturityDate)
+                        dates.Add(exercise);
             }
         }
+        // The lifecycle summary may repeat an expired discrete exercise. An unmatched scalar
+        // remains conservative evidence of eligibility, rather than an assumed expired right.
+        if (lifecycle.CallDate is { } scalar && !expiredDiscreteDates.Contains(scalar))
+            dates.Add(scalar);
         if (!lifecycle.IsCallable && !declaredCalls && dates.Count == 0)
+            return true;
+        if (declaredCalls && dates.Count == 0)
             return true;
         if (dates.Count == 0)
         { gaps.Add(new(bond.SecurityId, "Callable terms do not establish an earliest eligible call date.")); return false; }
         return dates.Min() > protectedThrough;
+    }
+
+    private static bool TryReadExerciseDate(JsonElement entry, out DateOnly? date, params string[] names)
+    {
+        date = null;
+        if (entry.ValueKind != JsonValueKind.Object)
+            return false;
+        foreach (var name in names)
+        {
+            if (!entry.TryGetProperty(name, out var value) || value.ValueKind == JsonValueKind.Null)
+                continue;
+            if (value.ValueKind != JsonValueKind.String || !DateOnly.TryParseExact(value.GetString(), "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed) || date is { } prior && prior != parsed)
+                return false;
+            date = parsed;
+        }
+        return true;
     }
 
     private static BondScreeningQuery Normalize(BondScreeningQuery query)

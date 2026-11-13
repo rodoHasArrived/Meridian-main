@@ -1,9 +1,13 @@
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Identity.Auth;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Http;
+using NSubstitute;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
@@ -59,6 +63,32 @@ public sealed class TrustedActionOriginTests
 
         resolved.Should().Be(OperationsActionOriginDto.AutomationAssistant);
         OperationsOriginGuard.IsHumanOperator(resolved).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task PostingCandidate_ClaimingHumanOriginCannotPromoteAnApiKeyOrDeclaredAutomation(bool apiKey)
+    {
+        var trustedOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(
+            apiKey ? ApiKeyPrincipal() : InteractiveSession(),
+            apiKey ? OperationsActionOriginDto.HumanOperator : OperationsActionOriginDto.AutomationAssistant);
+        var builder = Substitute.For<IAccountingPostingCandidateWriteBuilder>();
+        var journal = Substitute.For<ILedgerJournalStore>();
+        var service = new AccountingPostingCandidatePostService(builder, journal);
+        var request = new PostPostingRuleJournalCandidateRequestDto(
+            new PostingRuleJournalCandidateRequestDto("fund", "CustodianInterestAccrual", 100m, "USD",
+                new(2026, 11, 13), "untrusted-body-actor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow,
+                "Synthetic approved candidate"), "resolved-actor", "retained-independent-approval", ActionOrigin: trustedOrigin);
+
+        var error = await service.Invoking(candidate => candidate.PostCandidateAsync(request))
+            .Should().ThrowAsync<HumanOperatorRequiredException>();
+
+        trustedOrigin.Should().Be(OperationsActionOriginDto.AutomationAssistant);
+        error.Which.Action.Should().Be("post generated accounting posting candidates");
+        error.Which.Message.Should().Be("Reviewed automation cannot post generated accounting posting candidates; a human operator approval is required.");
+        builder.ReceivedCalls().Should().BeEmpty("origin denial precedes candidate construction and authority resolution");
+        journal.ReceivedCalls().Should().BeEmpty("denied automation cannot read or append posting authority");
     }
 
     [Fact]

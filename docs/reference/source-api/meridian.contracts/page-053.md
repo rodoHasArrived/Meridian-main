@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataUploadTemplateFieldDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateFieldDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L43).
+
+Template-field metadata used by the browser and desktop shells for source-file preparation.
+
+```csharp
+public sealed record DataUploadTemplateFieldDto(string Name, string Label, bool Required, string Example, string Description);
+```
+
 ## DataUploadValidationIssueDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.DataUploadValidationIssueDto</code>. Kind: `record`.
@@ -741,24 +753,3 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:324](../../.
 ```csharp
 public sealed record EvidenceSlaPolicyDto(string PolicyId, string EvidenceKind, string WorkflowKind, int FreshnessMinutes, EvidenceValidationSeverityDto BreachSeverity, bool RequiredForAssurance, string Description);
 ```
-
-## EvidenceStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L6).
-
-```csharp
-public enum EvidenceStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L8) |  |
-| <code>Ready = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L9) |  |
-| <code>ReviewRequired = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L10) |  |
-| <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L11) |  |
-| <code>Stale = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L12) |  |
-| <code>Missing = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L13) |  |

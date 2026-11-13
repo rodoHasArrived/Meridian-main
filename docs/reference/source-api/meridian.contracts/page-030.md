@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Sha256DigestComparison
+
+Qualified name: <code>Meridian.Contracts.Integrity.Sha256DigestComparison</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Integrity/Sha256Digest.cs:238](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L238).
+
+Outcome of comparing two SHA-256 digests via Sha256Digest.Compare.
+
+```csharp
+public enum Sha256DigestComparison
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Match = 0</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:241](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L241) | Both digests are well-formed and denote the same bytes. |
+| <code>Mismatch = 1</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:244](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L244) | Both digests are well-formed and denote different bytes — a genuine mismatch. |
+| <code>MalformedLeft = 2</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:247](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L247) | The left digest is not a well-formed SHA-256 value; no comparison was performed. |
+| <code>MalformedRight = 3</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:250](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L250) | The right digest is not a well-formed SHA-256 value; no comparison was performed. |
+| <code>MalformedBoth = 4</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:253](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L253) | Neither digest is a well-formed SHA-256 value; no comparison was performed. |
+
 ## AccountingActionAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingActionAuditEventDto</code>. Kind: `record`.
@@ -788,13 +810,3 @@ Enum declarations:
 | <code>PercentageOfSourceAmount = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:70](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L70) |  |
 | <code>AllocationResidual = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:71](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L71) |  |
 | <code>LotMutationComponent = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:78](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L78) | Resolves to the lot-mutation component the formula id names (for example lot.principal, lot.basisRelieved, lot.realizedGain, lot.realizedLoss) supplied by the governed lot instruction behind the dry run; a component that resolves to zero generates no line. Never derivable from the event amount alone. |
-
-## AccountingRulePackReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingRulePackReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/AccountingBookContextDtos.cs#L18).
-
-```csharp
-public sealed record AccountingRulePackReferenceDto(string RulePackId, string RulePackVersion, string? SelectedRuleId = null, string? SelectedRuleVersion = null);
-```

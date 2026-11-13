@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** Instruments / Accounting and Ledger
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-13
 **Direction:** three-stage browser/shared-service expansion, preserving retained model history and reviewed activation boundaries
 
 ## Outcome and boundaries
@@ -52,6 +52,15 @@ index or prospective reset treatment. `bond-coupon-recognition-v1` separately pr
 receivable/payable accrual and retained cash clearing through the canonical accounting event spine,
 period locks and atomic posting boundary. Preview/review fingerprints are revalidated before
 preparation or posting. Deployment does not adopt a book policy or execute customer transactions.
+
+Current analytical workflows pin `bond-workflow-v2`, separating active-period accrual from earlier
+earned coupons awaiting payment. Retained v1 requests replay v1 even when their original request
+omitted the model selector; risk scenarios and monitoring revalidation retain the selected model.
+Booked income uses this separation only with the explicitly adopted and acquisition-captured
+`bond-income-accrual-v2` subpolicy. Legacy elections, actual acquisition facts and historical
+receipt/reversal arithmetic remain unchanged. Full-snapshot imports require complete source
+populations, including quarantine and failed-page evidence; replay subsets cannot imply a flat or
+complete account. The browser exposes an intraday UTC cutoff without advancing it on quote selection.
 
 ## Delivery and acceptance
 

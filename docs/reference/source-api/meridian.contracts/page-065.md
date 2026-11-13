@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResolveReconciliationBreakRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1035](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1035).
+
+Request to resolve or dismiss a break with audit metadata.
+
+```csharp
+public sealed record ResolveReconciliationBreakRequest(string BreakId, ReconciliationBreakQueueStatus Status, string ResolvedBy, string ResolutionNote, string OperatorRationale, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
 ## ResolveSecurityMasterMappings
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResolveSecurityMasterMappings</code>. Kind: `record`.
@@ -591,19 +603,3 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 ```csharp
 public sealed record SecurityMasterManualChangeApprovalPostureDto(string PolicyKey, OperationsGateKeyDto Gate, string Route, string RequiredPermission, int RequiredDistinctApprovals, bool RequiresIndependentReviewer, string EvidenceRequirement, string Status, int ManualChangeCount, int UnapprovedManualChangeCount, string Summary);
 ```
-
-## SecurityMasterOpenLotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterOpenLotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:357](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L357).
-
-```csharp
-public sealed record SecurityMasterOpenLotDto(Guid SecurityId, string PortfolioId, string RunId, string? AccountScopeId, string? AccountScopeDisplayName, string? VehicleScopeId, string? VehicleScopeDisplayName, string LotId, string Symbol, DateTimeOffset TradeDate, DateTimeOffset? SettleDate, decimal OriginalQuantity, decimal CurrentQuantity, decimal? OriginalFace, decimal? CurrentFace, decimal? FactorAdjustedQuantity, decimal? FactorAdjustedFace, decimal CostBasis, decimal EntryPrice, decimal? UnrealizedPnl, string Currency, string LotStatus, string SourceSystem, string? SourceRecordId, DateTimeOffset AsOfUtc, string? SourceUpdatedBy, string? SourceReason, bool IsLongTerm, string? Notes)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:389](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L389) | True when the positive lot quantity represents a short position. |

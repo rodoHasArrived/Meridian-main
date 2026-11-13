@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpsertJournalEntryTemplateRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.UpsertJournalEntryTemplateRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:648](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L648).
+
+```csharp
+public sealed record UpsertJournalEntryTemplateRequest(string FundProfileId, JournalEntryTemplateDto Template, string Actor, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, Guid? LedgerBookId = null, string? TenantId = null);
+```
+
 ## UpsertPostingRuleRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.UpsertPostingRuleRequest</code>. Kind: `record`.
@@ -1071,25 +1081,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;OperationEvidenceReference&gt; Evidence { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:102](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L102) |  |
 | <code>public IReadOnlyList&lt;OperationalCaseRecoveryAttempt&gt; RecoveryAttempts { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:103](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L103) |  |
 | <code>public VerifiedOperationOutcome? TerminalOutcome { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:104](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L104) |  |
-
-## OperationalCaseRecoveryAttempt
-
-Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:44](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L44).
-
-```csharp
-public sealed record OperationalCaseRecoveryAttempt
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string RecoveryActionId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:46](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L46) |  |
-| <code>public required int Attempt { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:47](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L47) |  |
-| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:48](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L48) |  |
-| <code>public DateTimeOffset? CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:49](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L49) |  |
-| <code>public required string Result { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:50](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L50) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:51](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L51) |  |
-| <code>public IReadOnlyList&lt;string&gt; ArtifactIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:52](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L52) |  |

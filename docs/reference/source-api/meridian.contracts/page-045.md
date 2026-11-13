@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleDirection
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L8).
+
+Which end of the schedule the regular grid is generated from.
+
+```csharp
+public enum ScheduleDirection
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
+| <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |
+
 ## ScheduleFailure
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure</code>. Kind: `record`.
@@ -981,13 +1000,3 @@ Enum declarations:
 | <code>Approved</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L10) |  |
 | <code>Superseded</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L11) |  |
 | <code>Retired</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L12) |  |
-
-## SecurityAssetProfileTermsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L104).
-
-```csharp
-public sealed record SecurityAssetProfileTermsDto(string CustomProfileId, int ProfileVersion, IReadOnlyDictionary<string, JsonElement> ProfileFields, SecurityAssetProfileApprovalMetadataDto ProfileApproval, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```

@@ -22,6 +22,10 @@ reconciles model settlement cash and index ratios to the accepted mark.
 `BondWorkflowService` prices the explicit signed fixed/floating/overnight/indexed model and preserves
 legacy dispatch. Account planning, collection monitoring, risk and sequential performance consume
 accepted holdings and retained inputs; accounting amortization is excluded from market attribution.
+New workflow v2 requests explicitly pin their model; old null-selector v1 receipts replay v1.
+Risk scenarios reuse the selected baseline request/version, and monitoring verifies each retained
+obligation's exact model evidence. Screening drops expired verified European/Bermudan exercises;
+continuous, ambiguous and unresolved calendar-adjusted rights remain conservative or unverified.
 See [bond operations and limits](../../docs/operators/bond-workflows.md).
 
 Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing

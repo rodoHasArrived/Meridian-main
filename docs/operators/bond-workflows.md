@@ -2,7 +2,7 @@
 title: Bond workflows
 status: active
 owner: core-team
-reviewed: 2026-11-12
+reviewed: 2026-11-13
 audience: operators
 ---
 
@@ -62,6 +62,13 @@ tenant/company scope. Use account routes for account-specific pricing or retaine
    canonical statement intake: the reviewed-row bridge requires a nonempty reviewed population and
    never infers a flat account from missing staged rows.
 
+Full-snapshot acceptance also checks the completed source run, its staging and quarantine counts,
+and unresolved account attribution. Reviewing, ignoring or requesting replay of a rejected row
+does not supply its missing holding economics. A replay containing only former rejects cannot
+replace the complete statement: ingest and review the complete corrected population in a new run.
+Only positively identified, authenticated other-account rows can be excluded from this account's
+completeness check. Transport or pagination failures remain blockers.
+
 The workflow-v2 catalog now offers manifest revision 3 with optional explicit family terms for
 reviewed source evidence. Exact revision-2 mappings and replay remain available. Staging these
 fields does not publish Security Master terms: canonical reference changes retain their own
@@ -84,9 +91,22 @@ agency-specific rating labels. Reference knowledge-time limitations and missing 
 visible; an absent rating is not an assumed grade. Compare each bond's own quote at the same original
 face and settlement, keeping incompatible currencies separate.
 
+Call protection considers future European and Bermudan exercise dates relative to the screening
+date. An expired discrete exercise does not remain an eligible call. Continuous rights, unmatched
+summary dates and unsupported or calendar-dependent grids keep conservative eligibility or an
+explicit coverage gap. Eligibility never establishes that an issuer has issued a call notice.
+
 Retain quote category (evaluated valuation, reported trade, indicative or executable quote), clean/dirty
 basis, unit, source, observation/publication time, original settlement, optional size/expiry and
 provider yield/convention. Imported yield remains distinct from Meridian's calculated yield.
+Set **Economic date and time (UTC)** to the intended intraday cutoff. Selecting a retained quote
+keeps both the economic cutoff and the independent knowledge cutoff unchanged; a quote observed
+after the economic cutoff remains unavailable. Comparison and original settlement remain dates.
+New calculations use `bond-workflow-v2`. Its contractual accrued interest covers the active accrual
+period; `deferredCouponInterest` separately retains fully earned coupons awaiting their contractual
+payment dates. Invoice accrued interest includes the transferred entitlement and any ex-coupon
+adjustment. Retained `bond-workflow-v1` results replay their original calculation version, including
+older requests that did not contain an explicit model pin.
 An existing price-selection receipt remains the pricing authority: pair it only with matching typed
 source, observation time, value and unit. A matching number alone is insufficient. New selections carrying quotation evidence also require the exact clean/dirty convention, per-100 basis, settlement date and `quote.settlementBasis`; import matching typed metadata before replay. Expired liquidity
 is flagged. Settlement normalization needs retained curve coverage and a uniquely calibrated spread;
@@ -270,6 +290,7 @@ Adopt these separately on an owned US GAAP amortized-cost book. Example governed
 {
   "bondIncome": {
     "modelVersion": "bond-income-us-gaap-v1",
+    "accrualPolicyVersion": "bond-income-accrual-v2",
     "floaterPolicy": "AcquisitionIndex",
     "capitalizeEligibleDirectCosts": true,
     "recognizeObservedIndexation": true,
@@ -298,6 +319,21 @@ when capitalization is elected. Expense and tax items do not become amortizable 
 amortization, discount accretion and observed indexation remain distinct; principal is not disposal
 income. Floating policy explicitly chooses `AcquisitionIndex` or `ProspectiveReset`. Qualifying
 callable-premium treatment uses supported preset calls for amortization, not actual exercise/cash.
+
+The explicit `bond-income-accrual-v2` subpolicy is captured in the retained acquisition facts as
+well as the book policy. It separates active-period accrual from earlier fully earned, unpaid
+coupons, so a payment lag cannot subtract the same coupon twice from clean carrying value.
+Receivables and payables retain their separate signed obligations. Native payment rounding is
+recognized at the obligation boundary, with any rounding adjustment retained separately from
+active-period income. Purchased opening interest remains an evidenced acquisition balance.
+Omitting the subpolicy preserves legacy arithmetic; new legacy-policy preparation in an unsafe
+overlapping payment-lag window requires policy review. Changing a book setting does not rewrite
+an existing lot's acquisition election, prior receipts or reversal authority.
+An acquisition that also transfers earlier fully earned, unpaid coupons requires reviewed opening
+entitlement allocation; a net purchased-interest total cannot establish separate gross rights.
+Advance payment before an accrual period ends remains a booked-income coverage gap. Available
+market valuation and cash forecasts remain usable. A v2 frozen income schedule can reach the
+declared final payment date, including its retained calendar adjustment; later dates are not guessed.
 
 Completed coupons round once at the security/account obligation's native currency boundary, then
 allocate the rounded amount across authoritative entitled lots by residual fractions and stable lot

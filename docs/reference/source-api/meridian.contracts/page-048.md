@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterSchemaVersions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L87).
+
+Back-compatibility facade over the per-family schema-version types. Historically all Security Master payload families shared this one constants class, which let an economic-terms version leak into asset-specific-terms acceptance checks; the authoritative definitions now live on AssetSpecificTermsSchema and EconomicTermsSchema. Prefer those in new code.
+
+```csharp
+public static class SecurityMasterSchemaVersions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int LegacyAssetSpecificTerms = AssetSpecificTermsSchema.Legacy;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L89) |  |
+| <code>public const int EconomicTerms = EconomicTermsSchema.Current;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L90) |  |
+| <code>public const int CustomAssetProfileTerms = AssetSpecificTermsSchema.CustomAssetProfile;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L91) |  |
+| <code>public const int DefaultAssetSpecificTerms = AssetSpecificTermsSchema.Default;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:94](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L94) |  |
+| <code>public static bool IsAcceptedAssetSpecificTermsVersion(int schemaVersion, bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L97) |  |
+| <code>public static IReadOnlyList&lt;int&gt; AcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L101) |  |
+| <code>public static string DescribeAcceptedAssetSpecificTermsVersions(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L105) |  |
+
 ## SecurityOptionRight
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityOptionRight</code>. Kind: `enum`.
@@ -917,22 +941,3 @@ Declared public members:
 | <code>public static IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt; Derive(SecurityProjectionRecord record);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L158) | The links the record&#x27;s terms state, in a stable order. |
 | <code>public static IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt; Derive(SecurityDetailDto detail);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:165](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L165) | The links the detail&#x27;s terms state, in a stable order. |
 | <code>public static Guid LinkId(Guid securityId, SecurityUnderlyingRole role, Guid? target, string? reference, SecurityUnderlyingLinkSource source);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:332](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L332) | A deterministic link id from the edge&#x27;s identity (security, role, target or reference text, source), so re-deriving or re-declaring the same edge upserts rather than duplicates. |
-
-## SecurityUnderlyingLinkDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L49).
-
-One edge of the underlying graph: SecurityId depends on UnderlyingSecurityId in Role. A link whose target is not a Security Master record carries the Reference text the terms named (a CDS reference entity, an index name, a structured note&#x27;s free-text underlying) and a null target; the graph records the dependency and reports it as a gap until the reference is resolved.
-
-```csharp
-public sealed record SecurityUnderlyingLinkDto(Guid LinkId, Guid SecurityId, SecurityUnderlyingRole Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, SecurityUnderlyingLinkSource Source, string? Notes, string CreatedBy, DateTimeOffset CreatedAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L64) | True when the link names a Security Master record as its target. |
-| <code>public bool IsActiveAt(DateTimeOffset asOfUtc) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L67) | True when the link is valid at asOfUtc. |

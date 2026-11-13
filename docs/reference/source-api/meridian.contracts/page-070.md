@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValuationFreshnessPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L16).
+
+Read-only impact preview; no draft, approval, schedule, or journal is retained.
+
+```csharp
+public sealed record ValuationFreshnessPreviewDto(string PolicyVersion, int AssessedPositionCount, int BlockedPositionCount, int AffectedValuationCount, IReadOnlyList<MarkFreshnessAssessmentDto> Positions, DateTimeOffset EvaluatedAtUtc);
+```
+
 ## VersionedReportTemplateIdDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.VersionedReportTemplateIdDto</code>. Kind: `record`.
@@ -558,14 +570,4 @@ Per-strategy cross-mode comparison group used by strategy and trading surfaces.
 
 ```csharp
 public sealed record WorkstationModeComparisonGroup(string StrategyName, IReadOnlyList<WorkstationModeComparisonRun> Modes);
-```
-
-## WorkstationModeComparisonRun
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L103).
-
-```csharp
-public sealed record WorkstationModeComparisonRun(string RunId, string Mode, string Status, decimal? NetPnl, decimal? TotalReturn, WorkstationRunDrillInLinks DrillIn);
 ```

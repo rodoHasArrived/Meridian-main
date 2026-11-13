@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountReconciliationResultDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:145](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L145).
+
+```csharp
+public sealed record AccountReconciliationResultDto(Guid ResultId, Guid ReconciliationRunId, string CheckLabel, bool IsMatch, string Category, string Status, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string Reason, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SupersededByResultId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? ResolvedAt = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore] public bool IsOpenBreak =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:161](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L161) | Shared active-blocker contract; original check outcomes remain historical evidence. |
+
 ## AccountReconciliationRunDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationRunDto</code>. Kind: `record`.
@@ -646,16 +662,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:134](../.
 
 ```csharp
 public sealed record ExpireOwnershipLinkRequest(Guid OwnershipLinkId, DateTimeOffset EffectiveTo, string ExpiredBy, string? Notes = null);
-```
-
-## FundAccountsDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundAccountsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:554](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L554).
-
-Fund-level grouping of accounts by type.
-
-```csharp
-public sealed record FundAccountsDto(Guid FundId, IReadOnlyList<AccountSummaryDto> CustodianAccounts, IReadOnlyList<AccountSummaryDto> BankAccounts, IReadOnlyList<AccountSummaryDto> BrokerageAccounts, IReadOnlyList<AccountSummaryDto> OtherAccounts);
 ```

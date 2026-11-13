@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityUnderlyingLinkDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L49).
+
+One edge of the underlying graph: SecurityId depends on UnderlyingSecurityId in Role. A link whose target is not a Security Master record carries the Reference text the terms named (a CDS reference entity, an index name, a structured note&#x27;s free-text underlying) and a null target; the graph records the dependency and reports it as a gap until the reference is resolved.
+
+```csharp
+public sealed record SecurityUnderlyingLinkDto(Guid LinkId, Guid SecurityId, SecurityUnderlyingRole Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, SecurityUnderlyingLinkSource Source, string? Notes, string CreatedBy, DateTimeOffset CreatedAt)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L64) | True when the link names a Security Master record as its target. |
+| <code>public bool IsActiveAt(DateTimeOffset asOfUtc) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L67) | True when the link is valid at asOfUtc. |
+
 ## SecurityUnderlyingLinkSource
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource</code>. Kind: `enum`.
@@ -794,15 +813,3 @@ Declared public members:
 | <code>public string? ExpectedRefreshCadence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L76) |  |
 | <code>public int? DefaultMaxDaysStale { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L77) |  |
 | <code>public string? OperatorMetadata { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/DataVendorEntitlement.cs#L78) |  |
-
-## UpsertOtcCollateralAgreementRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L158).
-
-Creates (CollateralAgreementId null) or amends a collateral agreement under a master agreement.
-
-```csharp
-public sealed record UpsertOtcCollateralAgreementRequest(Guid? CollateralAgreementId, Guid MasterAgreementId, string Currency, decimal ThresholdOurs, decimal ThresholdTheirs, decimal MinimumTransferAmount, decimal? IndependentAmount, decimal? RoundingAmount, string ValuationFrequency, IReadOnlyList<OtcEligibleCollateralDto> EligibleCollateral, DateOnly EffectiveDate, DateOnly? TerminationDate = null, string? Notes = null, string? UpdatedBy = null);
-```

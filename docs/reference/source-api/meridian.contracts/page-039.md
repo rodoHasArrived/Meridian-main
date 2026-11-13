@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SchemaField
+
+Qualified name: <code>Meridian.Contracts.Schema.SchemaField</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Schema/EventSchema.cs:74](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L74).
+
+Schema field definition.
+
+```csharp
+public sealed class SchemaField
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:80](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L80) | Gets or sets the field name. |
+| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = &quot;string&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:86](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L86) | Gets or sets the field data type. |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:92](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L92) | Gets or sets the field description. |
+| <code>[JsonPropertyName(&quot;nullable&quot;)] public bool Nullable { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:98](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L98) | Gets or sets a value indicating whether the field can be null. |
+| <code>[JsonPropertyName(&quot;defaultValue&quot;)] public object? DefaultValue { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:104](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L104) | Gets or sets the default value for the field. |
+| <code>[JsonPropertyName(&quot;validRange&quot;)] public FieldValidRange? ValidRange { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:110](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L110) | Gets or sets the valid range constraints for the field. |
+| <code>[JsonPropertyName(&quot;enumValues&quot;)] public string[]? EnumValues { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:116](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L116) | Gets or sets the allowed enum values for the field. |
+| <code>[JsonPropertyName(&quot;format&quot;)] public string? Format { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:122](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L122) | Gets or sets the format specification (e.g., &quot;date-time&quot;, &quot;uuid&quot;). |
+| <code>[JsonPropertyName(&quot;example&quot;)] public object? Example { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:128](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L128) | Gets or sets an example value for documentation. |
+| <code>[JsonPropertyName(&quot;exchangeSpecific&quot;)] public bool ExchangeSpecific { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:134](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L134) | Gets or sets a value indicating whether this field is exchange-specific. |
+| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:140](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L140) | Gets or sets additional notes about the field. |
+
 ## AcceptCorporateActionSourceProposalRequestDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.AcceptCorporateActionSourceProposalRequestDto</code>. Kind: `record`.
@@ -667,15 +695,3 @@ Declared public members:
 | <code>public static void EnsureProjectionMatchesCaseScope(CorporateActionCaseAccountingProjectionDto projection, CorporateActionCaseScopeDto scope);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:370](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L370) | The stored case scope and the spine-bound projection must name the same ledger book, period, basis, fund, and currency; posting must never bridge two scopes. |
 | <code>public static void EnsureIndependentOfPreparer(CorporateActionCaseAccountingProjectionDto projection, string actor);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:386](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L386) | Maker-checker: the approving or posting operator must not be the preparer. |
 | <code>public static void EnsureApprovalAuthorizesPosting(CorporateActionCaseAccountingApprovalDto? approval, CorporateActionCaseAccountingProjectionDto projection, string actor);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:403](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L403) | Posting requires an active approval that binds the exact current projection, and the posting operator must be the approving operator so the spine&#x27;s approval evidence retains one attested maker-checker act. |
-
-## CorporateActionCaseAccountingPostingDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPostingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L76).
-
-Immutable record of one durable corporate-action posting. The journal identity, ledger book, period, balanced amounts, currency, and Posted status are retained exactly as the Asset Accounting Event Spine committed them; corrections add reversal, rebook, or restatement lineage through the spine rather than mutating this record.
-
-```csharp
-public sealed record CorporateActionCaseAccountingPostingDto(Guid PostingId, Guid CaseId, Guid ProjectionId, Guid ApprovalId, Guid JournalEntryId, Guid LedgerBookId, Guid PeriodId, string AccountingBasis, string Currency, decimal TotalDebits, decimal TotalCredits, string PostingStatus, Guid? TaxLotMutationBatchId, string PostedBy, DateTimeOffset PostedAtUtc);
-```

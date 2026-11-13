@@ -11,6 +11,7 @@ namespace Meridian.Contracts.Accounting.Lots;
 public static class BondIncomeCalculator
 {
     public const string ModelVersion = "bond-income-us-gaap-v1";
+    public const string SeparatedAccrualPolicyVersion = "bond-income-accrual-v2";
     private const decimal Quantum = 0.000000000001m;
 
     public static BondIncomePolicyDto ReadPolicy(AccountingPolicyDto policy)
@@ -23,6 +24,7 @@ public static class BondIncomeCalculator
         var value = element.Deserialize<BondIncomePolicyDto>(new JsonSerializerOptions(JsonSerializerDefaults.Web))
             ?? throw new ArgumentException("The book bond-income policy is empty.");
         if (value.ModelVersion != ModelVersion || !Enum.IsDefined(value.FloaterPolicy)
+            || value.AccrualPolicyVersion is not (null or SeparatedAccrualPolicyVersion)
             || !element.EnumerateObject().Any(p => p.Name.Equals("floaterPolicy", StringComparison.OrdinalIgnoreCase))
             || element.EnumerateObject().Any(p => p.Name.Equals("bookedTargetPrecisionVersion", StringComparison.OrdinalIgnoreCase)
                 && (p.Value.ValueKind != JsonValueKind.String || p.Value.GetString() != BondIncomeBookedPrecision.PolicyVersion)))
@@ -33,6 +35,7 @@ public static class BondIncomeCalculator
     public static void ValidateAcquisition(BondIncomeAcquisitionDto value, decimal retainedCost)
     {
         if (value.KnownAt == default || value.KnownAt.Offset != TimeSpan.Zero || value.CleanConsideration <= 0m
+            || value.AccrualPolicyVersion is not (null or SeparatedAccrualPolicyVersion)
             || value.IndexRatio <= 0m || value.Fees is null || value.Evidence is null || value.Evidence.Count == 0
             || value.Evidence.Any(e => !RetainedEvidenceIdentityValidator.IsComplete(e)))
             throw new ArgumentException("Bond income requires retained reviewed acquisition cost, index ratio and knowledge cutoff.");
@@ -55,10 +58,14 @@ public static class BondIncomeCalculator
         var acquisition = lot.Acquisition.BondIncome
             ?? throw new ArgumentException("The authoritative lot has no reviewed bond-income acquisition facts.");
         ValidateAcquisition(acquisition, lot.Acquisition.TransactionCostBasis);
+        if (acquisition.AccrualPolicyVersion != instruction.Policy.AccrualPolicyVersion)
+            throw new ArgumentException("Income accrual policy must match the immutable acquisition adoption; existing lots require reviewed opening reconciliation before a new policy.");
         if (lot.Acquisition.Direction != OpenLotDirection.Long || lot.Acquisition.QuantityBasis != LotQuantityBasis.Face
             || lot.Acquisition.FaceValueTerms is not { } face || lot.Version <= 0 || lot.OpenQuantity <= 0m
             || instruction.LedgerBookId != lot.LedgerBookId || instruction.AcquisitionDate != lot.AcquiredDate
-            || instruction.ThroughDate <= lot.AcquiredDate || instruction.KnownAt < acquisition.KnownAt
+            || instruction.ThroughDate < lot.AcquiredDate
+            || instruction.ThroughDate == lot.AcquiredDate && instruction.Policy.AccrualPolicyVersion != SeparatedAccrualPolicyVersion
+            || instruction.KnownAt < acquisition.KnownAt
             || instruction.KnownAt.Offset != TimeSpan.Zero || instruction.Policy.ModelVersion != ModelVersion
             || !Enum.IsDefined(instruction.Policy.FloaterPolicy) || instruction.PaymentsPerYear is not (1 or 2 or 4 or 12)
             || string.IsNullOrWhiteSpace(instruction.AccountingPolicyId) || string.IsNullOrWhiteSpace(instruction.AccountingPolicyVersion))
@@ -75,6 +82,16 @@ public static class BondIncomeCalculator
         ValidateProjection(instruction.AcquisitionProjection, lot.SecurityId);
         ValidateProjection(instruction.CurrentProjection, lot.SecurityId);
         ValidateProjection(instruction.AmortizationProjection, lot.SecurityId, allowEmpty: true);
+        if (instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion
+            && new[] { instruction.AcquisitionProjection, instruction.CurrentProjection, instruction.AmortizationProjection }
+                .Concat(instruction.Resets.Select(reset => reset.Projection)).Any(projection => projection.ModelVersion != BondWorkflowModelVersions.Current
+                    || projection.ContractualAccruedInterest is null || projection.DeferredCouponInterest is null))
+            throw new ArgumentException("Separated coupon accrual requires retained v2 workflow projections with active and deferred interest evidence.");
+        if (instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion
+            && (instruction.AcquisitionProjection.HasPaidActiveCoupon == true || instruction.AmortizationProjection.HasPaidActiveCoupon == true
+                || instruction.CurrentProjection.CashFlows.Any(flow => flow.Interest != 0m && flow.PaymentDate <= instruction.ThroughDate
+                    && instruction.ThroughDate < flow.AccrualEnd)))
+            throw new ArgumentException("Early-paid coupons with unearned accrual require reviewed advance-payment accounting.");
         if (instruction.CurrentProjection.CashFlows.Any(f => f.PaymentDate > lot.AcquiredDate
                 && f.PaymentDate <= instruction.ThroughDate && f.IsForecast))
             throw new ArgumentException("Recognized coupon income requires observed inputs for elapsed contractual coupons.");
@@ -82,6 +99,12 @@ public static class BondIncomeCalculator
         var share = lot.OpenQuantity / lot.OriginalQuantity;
         var originalCost = lot.Acquisition.TransactionCostBasis;
         var initialClean = originalCost;
+        // The v2 clean recurrence starts with raw active-period accrual. The separately booked
+        // purchased invoice can include native-cash rounding; its amount still governs coupon
+        // ownership income, without becoming a fictitious premium or discount on clean cost.
+        var initialAccrued = instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion
+            && instruction.PurchasedCouponTail is null
+            ? instruction.AcquisitionProjection.ContractualAccruedInterest!.Value : instruction.AcquisitionAccruedInterest;
         if (instruction.PurchasedCouponTail is { } purchasedTail
             && (lot.OpenQuantity != lot.OriginalQuantity || instruction.AcquisitionAccruedInterest != BondIncomeCouponRounding.AllocatedCash(
                     lot.TaxLotRecordId, instruction, purchasedTail.PaymentDate, purchasedTail.AccrualStart)))
@@ -89,15 +112,15 @@ public static class BondIncomeCalculator
         var calibration = CalibrationFlows(instruction, instruction.AcquisitionProjection.CashFlows,
             lot.AcquiredDate, initialClean, lot.OriginalQuantity);
         var yield = BondIncomePeriodMath.Solve(calibration, lot.AcquiredDate, initialClean,
-            instruction.AcquisitionAccruedInterest, instruction.AcquisitionProjection, instruction);
+            initialAccrued, instruction.AcquisitionProjection, instruction);
         var certificate = BondIncomePeriodMath.Certificate(calibration, lot.AcquiredDate, initialClean,
-            instruction.AcquisitionAccruedInterest, instruction.AcquisitionProjection, instruction);
+            initialAccrued, instruction.AcquisitionProjection, instruction);
         var currentYield = yield;
         var activeFlows = instruction.AcquisitionProjection.CashFlows;
         var previousDate = lot.AcquiredDate;
         var clean = initialClean;
         var opening = instruction.AcquisitionProjection;
-        var openingAccrued = instruction.AcquisitionAccruedInterest;
+        var openingAccrued = initialAccrued;
         var events = instruction.Resets.Select(r => (r.Date, Reset: (BondIncomeResetDto?)r))
             .Concat(instruction.Policy.AmortizeQualifyingCallablePremium
                 ? instruction.Calls.Where(c => c.Date > lot.AcquiredDate && c.Date <= instruction.ThroughDate
@@ -155,29 +178,36 @@ public static class BondIncomeCalculator
             : BondIncomeCouponRounding.EarnedFlows(instruction)).Sum(f => f.Interest) * share;
         var completedCoupon = instruction.CouponCashAllocations is null ? completedRawCoupon
             : BondIncomeCouponRounding.CompletedCash(lot.TaxLotRecordId, instruction);
-        var coupon = completedCoupon + ((instruction.TerminalEntitlement is null ? instruction.CurrentAccruedInterest : 0m)
-            - instruction.AcquisitionAccruedInterest) * share;
+        var deferred = BondIncomeCouponRounding.DeferredEarnedFlows(instruction).Sum(flow => flow.Interest) * share;
+        var coupon = completedCoupon + deferred + ((instruction.TerminalEntitlement is null ? instruction.CurrentAccruedInterest : 0m)
+            - BondIncomeCouponRounding.PurchasedIncomeOffset(instruction)) * share;
         var amortization = Round(baseline - (originalCost - postedPrincipal) * share);
         var capitalized = instruction.Fees.Where(f => f.Treatment == BondIncomeFeeTreatment.EligibleDirectAcquisitionCost).Sum(f => f.Amount) * share;
         var expense = instruction.Fees.Where(f => f.Treatment == BondIncomeFeeTreatment.Expense).Sum(f => f.Amount) * share;
         var tax = instruction.Fees.Where(f => f.Treatment == BondIncomeFeeTreatment.WithholdingTax).Sum(f => f.Amount) * share;
-        var accrued = Round(instruction.CurrentAccruedInterest * share);
+        var currentAccrued = instruction.CurrentAccruedInterest * share;
+        var deferredFlows = BondIncomeCouponRounding.DeferredEarnedFlows(instruction);
+        var receivable = Round(Math.Max(currentAccrued, 0m) + deferredFlows.Sum(flow => Math.Max(flow.Interest, 0m)) * share);
+        var payable = Round(Math.Max(-currentAccrued, 0m) + deferredFlows.Sum(flow => Math.Max(-flow.Interest, 0m)) * share);
         if (instruction.AccountingYieldCertificate is { } retainedCertificate && retainedCertificate != certificate)
             throw new ArgumentException("The retained accounting yield certificate differs from canonical recomputation.");
         var components = new List<BondIncomeJournalComponentDto>();
-        AddSigned(components, accrued >= 0m ? "InterestReceivable" : "InterestPayable", accrued, true);
-        AddSigned(components, "CouponIncome", -accrued, true);
+        AddSigned(components, "InterestReceivable", receivable, true);
+        AddSigned(components, "InterestPayable", -payable, true);
+        AddSigned(components, "CouponIncome", payable - receivable, true);
         var movement = closing - lot.OpenTransactionCostBasis;
         AddSigned(components, "BondCarryingValue", movement, true);
         AddSigned(components, "AmortizationAndIndexationIncome", -movement, true);
         return new(ModelVersion, instruction.Policy.FloaterPolicy, Round(instruction.ZeroCoupon ? currentYield
                 : (decimal)Math.Pow((double)(1m + currentYield), instruction.PaymentsPerYear) - 1m),
             lot.OpenTransactionCostBasis, closing, Round(coupon), amortization, Round(indexation), Round(principalDue * share),
-            Round(capitalized), Round(expense), Round(tax), Math.Max(accrued, 0m), Math.Max(-accrued, 0m), components)
+            Round(capitalized), Round(expense), Round(tax), receivable, payable, components)
         {
             CumulativeIncomeFromDate = lot.AcquiredDate,
             AccountingYieldCertificate = certificate,
             CouponCashRoundingAdjustment = Round(completedCoupon - completedRawCoupon),
+            PurchasedAccruedRoundingAdjustment = instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion
+                ? Round((initialAccrued - BondIncomeCouponRounding.PurchasedIncomeOffset(instruction)) * share) : null,
             BookedTarget = BondIncomeBookedPrecision.Targets(closing, Round(closing * lot.Acquisition.AcquisitionFxRateToFunctional))
         };
     }
@@ -317,13 +347,19 @@ public static class BondIncomeCalculator
     private static IReadOnlyList<BondWorkflowCashFlow> CalibrationFlows(BondIncomeInstructionDto instruction,
         IReadOnlyList<BondWorkflowCashFlow> flows, DateOnly from, decimal carrying, decimal originalFace)
     {
+        // At an observed reset, previously earned deferred coupons are already separate AR/P.
+        // Keep their real cash dates in retained projections; they do not calibrate clean basis again.
+        if (instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion && from > instruction.AcquisitionDate)
+            flows = flows.Where(flow => !(flow.Interest != 0m && flow.AccrualEnd <= from && flow.PaymentDate > from))
+                .Concat(flows.Where(flow => flow.Interest != 0m && flow.AccrualEnd <= from && flow.PaymentDate > from && flow.Principal != 0m)
+                    .Select(flow => flow with { Interest = 0m })).ToArray();
         if (!instruction.Policy.AmortizeQualifyingCallablePremium)
             return flows;
         var next = instruction.Calls.FirstOrDefault(c => c.Date > from);
         if (next is null)
             return flows;
         var atCall = flows.Where(f => f.PaymentDate == next.Date && f.AccrualStart < f.AccrualEnd).ToArray();
-        if (atCall.Length == 0 && !instruction.ZeroCoupon)
+        if (instruction.Policy.AccrualPolicyVersion != SeparatedAccrualPolicyVersion && atCall.Length == 0 && !instruction.ZeroCoupon)
             throw new ArgumentException("Callable-premium accounting requires a supported coupon-boundary call date.");
         var outstanding = flows.Where(f => f.PaymentDate <= next.Date).GroupBy(f => f.PaymentDate)
             .OrderBy(g => g.Key).LastOrDefault()?.Min(f => f.OutstandingPrincipal) ?? originalFace;
@@ -332,6 +368,12 @@ public static class BondIncomeCalculator
         var redemption = outstanding * ratio * next.PricePer100 / 100m;
         if (carrying <= redemption)
             return flows;
+        if (instruction.Policy.AccrualPolicyVersion == SeparatedAccrualPolicyVersion
+            && flows.Any(flow => flow.Interest != 0m && (flow.AccrualEnd <= next.Date && next.Date < flow.PaymentDate
+                || flow.PaymentDate <= next.Date && next.Date < flow.AccrualEnd)))
+            throw new ArgumentException("Qualifying callable-premium amortization cannot omit deferred coupon rights or an early-paid unearned tail at the call boundary.");
+        if (atCall.Length == 0 && !instruction.ZeroCoupon)
+            throw new ArgumentException("Callable-premium accounting requires a supported coupon-boundary call date.");
         // A call changes the accounting amortization horizon, not actual ownership or cash.
         // Rolling still consumes the contractual schedule; this synthetic redemption is only
         // used in the effective-yield calibration and is never emitted as a payment.

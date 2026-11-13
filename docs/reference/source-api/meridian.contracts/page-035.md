@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalActivityRoutes
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:8](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L8).
+
+Builds private capital activity and evidence navigation routes with escaped scope identifiers.
+
+```csharp
+public static class PrivateCapitalActivityRoutes
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Build(string fundProfileId, string fundEventId, string? capitalAccountId = null, string? investorId = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:13](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L13) |  |
+| <code>public static string BuildCapitalAccountSubledgerRoute(string fundProfileId, Guid? ledgerBookId, string capitalAccountId, string? investorId = null, string? currency = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:38](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L38) |  |
+| <code>public static string BuildCapitalAccountWorkbenchRoute(string fundProfileId, Guid? ledgerBookId, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:69](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L69) |  |
+| <code>public static string BuildReportOutputRoute(string fundProfileId, Guid? ledgerBookId, string reportOutputId, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:110](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L110) |  |
+| <code>public static string BuildFundEventRecordRoute(string fundProfileId, Guid? ledgerBookId, string fundEventId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:147](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L147) |  |
+| <code>public static string BuildFundEventCommandCenterRoute(string fundProfileId, Guid? ledgerBookId, string fundEventId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:166](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L166) |  |
+| <code>public static string BuildEvidenceRoute(string fundEventId) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:185](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L185) |  |
+| <code>public static string BuildPaymentIntentEvidenceRoute(string paymentIntentId) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:194](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L194) |  |
+| <code>public static string BuildPaymentIntentWorkbenchRoute(string fundProfileId, Guid? ledgerBookId, string paymentIntentId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:203](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L203) |  |
+| <code>public static string? BuildApprovalRoute(string fundProfileId, Guid journalEntryId, string? approvalId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:222](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L222) |  |
+
 ## PrivateCapitalBankObservationImportResultDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalBankObservationImportResultDto</code>. Kind: `record`.
@@ -691,13 +718,3 @@ Declared public members:
 | <code>[JsonIgnore] public ClosePlanPreparationLineageDto? Preparation { get; init; }</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:246](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L246) |  |
 | <code>public IReadOnlyList&lt;CloseTaskConfigurationDto&gt; TaskConfigurations { get; init; } = TaskConfigurations??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:248](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L248) |  |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:251](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L251) |  |
-
-## UpsertJournalEntryTemplateRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.UpsertJournalEntryTemplateRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:648](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L648).
-
-```csharp
-public sealed record UpsertJournalEntryTemplateRequest(string FundProfileId, JournalEntryTemplateDto Template, string Actor, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null, string? CompanyId = null, IReadOnlyList<string>? ReportGroupPrincipalIds = null, Guid? LedgerBookId = null, string? TenantId = null);
-```

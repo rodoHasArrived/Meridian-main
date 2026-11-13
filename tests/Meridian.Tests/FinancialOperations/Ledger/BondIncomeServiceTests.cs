@@ -7,6 +7,8 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Contracts.Calendars;
+using Meridian.Instruments.FixedIncome;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
@@ -17,6 +19,129 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 
 public sealed class BondIncomeServiceTests
 {
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public async Task EarlyPaidCouponKeepsMarketInvoiceAvailableButBookAdvanceTailRefuses(int coupon)
+    {
+        var f = new Fixture(separatedAccrual: true, declaredCoupon: coupon, earlyPayment: true);
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(f.Lot.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(f.Security.ToDetail());
+        query.GetByIdAsync(f.Lot.SecurityId, Arg.Any<CancellationToken>()).Returns(f.Security.ToDetail());
+        var workflow = new BondWorkflowService(query, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]));
+        var service = new BondIncomeService(f.Lots, f.Positions, f.Securities, f.Policies, workflow);
+        var date = new DateOnly(2027, 12, 31);
+        var at = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var market = (await workflow.CalculateAsync(new(f.Lot.SecurityId, new(at, date, at))))!;
+        market.IsBlocked.Should().BeFalse();
+        market.AccruedInterest.Should().Be(0m);
+        market.HasPaidActiveCoupon.Should().BeTrue();
+        var prepare = () => service.PreviewAsync(f.Request with { ThroughDate = date, KnownAt = at });
+        await prepare.Should().ThrowAsync<InvalidOperationException>().WithMessage("*advance-payment accounting*book-income*");
+        await f.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public async Task ActualWorkflowLagAndExCouponInvoiceKeepHeldIncomeAndCanonicalParBasisSeparate(int coupon)
+    {
+        var f = new Fixture(exCoupon: true, separatedAccrual: true, declaredCoupon: coupon);
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetRecordedByIdAsOfAsync(f.Lot.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(f.Security.ToDetail());
+        query.GetByIdAsync(f.Lot.SecurityId, Arg.Any<CancellationToken>()).Returns(f.Security.ToDetail());
+        var workflow = new BondWorkflowService(query, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]));
+        var service = new BondIncomeService(f.Lots, f.Positions, f.Securities, f.Policies, workflow);
+        var sameDay = await service.PreviewAsync(f.Request with { ThroughDate = f.Lot.AcquiredDate });
+        sameDay.Income.CouponIncome.Should().Be(0m);
+        sameDay.Income.BookedTarget!.BookedTransactionTarget.Should().Be(100m);
+        var request = f.Request with { ThroughDate = new(2026, 1, 2), KnownAt = new(2026, 1, 6, 0, 0, 0, TimeSpan.Zero) };
+        var lag = await service.PreviewAsync(request);
+        lag.Instruction.BondIncome!.AcquisitionProjection.HasDetachedCoupon.Should().BeFalse();
+        lag.Instruction.BondIncome.AmortizationProjection.HasDetachedCoupon.Should().BeTrue();
+        lag.Instruction.BondIncome.CurrentAccruedInterest.Should().BeApproximately(coupon / 365m, 0.000000000001m);
+        lag.Income.CouponIncome.Should().BeApproximately(coupon + coupon / 365m, 0.000000000001m);
+        lag.Income.BookedTarget!.BookedTransactionTarget.Should().Be(100m);
+        OpenLotAmortization.Project(lag.Instruction).TransactionMovement.Should().Be(0m);
+        var paid = await service.PreviewAsync(request with { ThroughDate = new(2026, 1, 5) });
+        paid.Income.CouponIncome.Should().BeApproximately(coupon + coupon * 4m / 365m, 0.000000000001m);
+        paid.Income.BookedTarget!.BookedTransactionTarget.Should().Be(100m);
+        BondIncomeCouponRounding.DeferredEarnedFlows(paid.Instruction.BondIncome!).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public async Task AdoptedSeparatedAccrualPreviewKeepsParBasisAndSignedEarnedDeferredCouponAcrossPayment(int coupon)
+    {
+        var f = new Fixture(separatedAccrual: true);
+        await ConfigureLaggedWorkflowAsync(f, coupon);
+        var request = f.Request with { ThroughDate = new(2026, 1, 6), KnownAt = new(2026, 1, 12, 0, 0, 0, TimeSpan.Zero) };
+        var lag = await f.Service.PreviewAsync(request);
+        lag.Income.CouponIncome.Should().BeApproximately(coupon + coupon * 5m / 365m, 0.000000000001m);
+        lag.Instruction.BondIncome!.CurrentAccruedInterest.Should().Be(coupon * 5m / 365m);
+        lag.Income.BookedTarget!.BookedTransactionTarget.Should().Be(100m);
+        OpenLotAmortization.Project(lag.Instruction).TransactionMovement.Should().Be(0m);
+        lag.Instruction.BondIncome.CouponCashAllocations.Should().BeEmpty("no future holder pool is assumed before payment");
+        var paid = await f.Service.PreviewAsync(request with { ThroughDate = new(2026, 1, 11) });
+        paid.Income.CouponIncome.Should().BeApproximately(coupon + coupon * 10m / 365m, 0.000000000001m);
+        paid.Income.BookedTarget!.BookedTransactionTarget.Should().Be(100m);
+        BondIncomeCouponRounding.DeferredEarnedFlows(paid.Instruction.BondIncome!).Should().BeEmpty();
+        await f.Workflow.Received().CalculateIncomeScheduleAsync(Arg.Is<BondWorkflowRequest>(input =>
+            input.ModelVersion == BondWorkflowModelVersions.Current), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>());
+        await f.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task LegacyPaymentLagPreparationRequiresPolicyReview_AndNewBookModeCannotRewriteOldAcquisition()
+    {
+        var legacy = new Fixture();
+        await ConfigureLaggedWorkflowAsync(legacy, 5m);
+        var prepare = () => legacy.Service.PreviewAsync(legacy.Request with
+        { ThroughDate = new(2026, 1, 6), KnownAt = new(2026, 1, 12, 0, 0, 0, TimeSpan.Zero) });
+        await prepare.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Legacy coupon accrual*policy*opening authority*");
+        var current = new Fixture(separatedAccrual: true);
+        current.Lot = current.Lot with
+        {
+            Acquisition = current.Lot.Acquisition! with
+            { BondIncome = current.Lot.Acquisition.BondIncome! with { AccrualPolicyVersion = null } }
+        };
+        var mismatch = () => current.Service.PreviewAsync(current.Request);
+        await mismatch.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable acquisition*opening*policy*");
+        current.Workflow.ReceivedCalls().Should().BeEmpty();
+        JsonSerializer.Serialize(legacy.Lot.Acquisition!.BondIncome).Should().NotContain("AccrualPolicyVersion");
+    }
+
+    private static async Task ConfigureLaggedWorkflowAsync(Fixture f, decimal coupon)
+    {
+        var seed = (await f.Service.PreviewAsync(f.Request)).Instruction.BondIncome!.AcquisitionProjection;
+        var first = seed.CashFlows[0] with { PaymentDate = new(2026, 1, 11), Interest = coupon };
+        var second = seed.CashFlows[1] with { PaymentDate = new(2027, 1, 11), Interest = coupon };
+        f.Workflow.CalculateIncomeScheduleAsync(Arg.Any<BondWorkflowRequest>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            var request = call.Arg<BondWorkflowRequest>();
+            var date = request.Context.SettlementDate!.Value;
+            var part = date >= new DateOnly(2026, 1, 1) && date < new DateOnly(2027, 1, 1)
+                ? (date.DayNumber - new DateOnly(2026, 1, 1).DayNumber) / 365m : 0m;
+            var deferred = date >= first.AccrualEnd && date < first.PaymentDate ? coupon : 0m;
+            var legacy = request.ModelVersion == BondWorkflowModelVersions.Legacy;
+            var active = legacy && deferred != 0m ? deferred : coupon * part;
+            return seed with
+            {
+                ModelVersion = request.ModelVersion!,
+                Context = request.Context,
+                CashFlows = new[] { first, second }.Where(flow => flow.PaymentDate > date).ToArray(),
+                AccruedInterest = active + (legacy ? 0m : deferred),
+                ContractualAccruedInterest = active,
+                DeferredCouponInterest = legacy ? null : deferred,
+                SettlementAccrualFraction = part,
+                SettlementPeriodAccrualFraction = 1m,
+                SettlementAccrualPeriodUnits = part,
+                SettlementPeriodUnits = 1m
+            };
+        });
+    }
+
     [Fact]
     public async Task AdoptedIncomeCandidateKeepsActualOwnedCarryingAccountAndLotScopeBeforeReview()
     {
@@ -496,16 +621,20 @@ public sealed class BondIncomeServiceTests
         public IAccountingPolicyService Policies { get; } = Substitute.For<IAccountingPolicyService>();
         public IBondWorkflowService Workflow { get; } = Substitute.For<IBondWorkflowService>();
         public LedgerBookRecord Book { get; }
+        public SecurityProjectionRecord Security { get; }
         public LedgerTaxLotRecord Lot { get; set; }
         public Guid AccountId { get; } = Guid.NewGuid();
         public BookPositionDto Position { get; set; }
         public BondIncomeFloaterPolicy FloaterPolicy { get; set; } = BondIncomeFloaterPolicy.AcquisitionIndex;
+        public string? AccrualPolicyVersion { get; }
         public string InputHash { get; set; } = new string('a', 64);
         public BondIncomePreviewRequestDto Request { get; }
         public BondIncomeService Service { get; }
 
-        public Fixture(bool exCoupon = false, decimal initialCost = 100m)
+        public Fixture(bool exCoupon = false, decimal initialCost = 100m, bool separatedAccrual = false, decimal? declaredCoupon = null,
+            bool earlyPayment = false)
         {
+            AccrualPolicyVersion = separatedAccrual ? BondIncomeCalculator.SeparatedAccrualPolicyVersion : null;
             var date = new DateOnly(2025, 1, 1);
             var at = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
             var securityId = Guid.NewGuid();
@@ -515,9 +644,36 @@ public sealed class BondIncomeServiceTests
                 "SYNTHETIC", JsonSerializer.SerializeToElement(new { paymentFrequency = "Annual", dayCountConvention = "ACT/365F" }),
                 exCoupon ? JsonSerializer.SerializeToElement(new { assetClassTermsVersion = 5, bondWorkflow = new { exCouponBusinessDays = 5 } }) : JsonSerializer.SerializeToElement(new { }),
                 JsonSerializer.SerializeToElement(new { }), 1, at, null, [], []);
+            if (declaredCoupon is { } rate)
+                security = security with
+                {
+                    AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+                    {
+                        assetClassTermsVersion = exCoupon ? 5 : 2,
+                        issueDate = "2025-01-01",
+                        maturity = earlyPayment ? "2028-01-01" : "2027-01-01",
+                        couponType = "Fixed",
+                        couponRate = rate,
+                        dayCount = "ACT/365F",
+                        par = 100m,
+                        paymentFrequency = "Annual",
+                        scheduleConventions = new
+                        {
+                            accrualAdjusted = false,
+                            couponRateUnit = "Percent",
+                            couponCashBasis = "DayCount",
+                            paymentLagBusinessDays = earlyPayment ? 0 : 2,
+                            businessDayConvention = earlyPayment ? "Preceding" : "Unadjusted",
+                            paymentCalendars = new[] { "WEEKENDS" }
+                        },
+                        bondWorkflow = new { exCouponBusinessDays = exCoupon ? 5 : 0 }
+                    })
+                };
+            Security = security;
             var lotEvidence = Evidence("lot", "OpenLotAcquisition", lotId.ToString("D"), new string('a', 64));
             var termsEvidence = Evidence("terms", "SecurityMasterProjection", securityId.ToString("D"), OpenLotAmortization.SecurityHash(security));
-            var profile = new BondIncomeAcquisitionDto(at, initialCost, 0m, 1m, [], [lotEvidence, termsEvidence]);
+            var profile = new BondIncomeAcquisitionDto(at, initialCost, 0m, 1m, [], [lotEvidence, termsEvidence])
+            { AccrualPolicyVersion = AccrualPolicyVersion };
             var acquisition = new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, initialCost, initialCost, date,
                 new(100m, 1m, BondAmortizationMethod.NoAmortization, null), [lotEvidence])
             { BondIncome = profile };
@@ -547,9 +703,10 @@ public sealed class BondIncomeServiceTests
                     {
                         bondIncome = new BondIncomePolicyDto(BondIncomeCalculator.ModelVersion, FloaterPolicy, true, true, true,
                         "Income:BondAmortization")
+                        { AccrualPolicyVersion = AccrualPolicyVersion }
                     }), at));
             Workflow.CalculateIncomeScheduleAsync(Arg.Any<BondWorkflowRequest>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
-                .Returns(call => new BondWorkflowResult(securityId, "USD", "bond-workflow-v1",
+                .Returns(call => new BondWorkflowResult(securityId, "USD", call.ArgAt<BondWorkflowRequest>(0).ModelVersion ?? BondWorkflowModelVersions.Legacy,
                     call.ArgAt<BondWorkflowRequest>(0).Context, 100m, 100m, 0m, null, null, 0m, null, null, null, null,
                     null, null, null,
                     [new BondWorkflowCashFlow(new(2026, 1, 1), date, new(2026, 1, 1), 5m, 0m, 100m, 1m, false, [])
@@ -557,7 +714,13 @@ public sealed class BondIncomeServiceTests
                      new BondWorkflowCashFlow(new(2027, 1, 1), new(2026, 1, 1), new(2027, 1, 1), 5m, 100m, 0m, 1m, false, [])
                         { AccrualFraction = 1m, PeriodUnits = 1m }],
                     [new("SecurityTerms", securityId.ToString("D"), 1, InputHash)], [], [])
-                { SettlementIndexRatio = 1m, SettlementIndexIsObserved = true, ContractualAccruedInterest = 0m });
+                {
+                    SettlementIndexRatio = 1m,
+                    SettlementIndexIsObserved = true,
+                    ContractualAccruedInterest = 0m,
+                    DeferredCouponInterest = separatedAccrual ? 0m : null,
+                    HasDetachedCoupon = separatedAccrual ? false : null
+                });
             Request = new(Book.LedgerBookId, lotId, new(2026, 1, 1), new(2026, 1, 2, 0, 0, 0, TimeSpan.Zero), AccountId);
             Service = new(Lots, Positions, Securities, Policies, Workflow);
 

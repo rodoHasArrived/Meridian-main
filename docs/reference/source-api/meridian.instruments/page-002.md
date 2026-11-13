@@ -294,7 +294,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Instruments.FixedIncome.BondScreeningService</code>. Kind: `class`.
 
-Source: [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:11](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L11).
+Source: [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:12](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L12).
 
 Bounded combined screening over the existing reference keyset pages and retained agency observations.
 
@@ -306,9 +306,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int MaximumSourcePages = 16;</code> | [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:14](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L14) |  |
-| <code>public const int SourcePageSize = 100;</code> | [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:15](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L15) |  |
-| <code>public async Task&lt;BondScreeningPageDto&gt; ScreenAsync(string tenantId, BondScreeningQuery query, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:19](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L19) |  |
+| <code>public const int MaximumSourcePages = 16;</code> | [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:15](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L15) |  |
+| <code>public const int SourcePageSize = 100;</code> | [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:16](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L16) |  |
+| <code>public async Task&lt;BondScreeningPageDto&gt; ScreenAsync(string tenantId, BondScreeningQuery query, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondScreeningService.cs:20](../../../../src/Meridian.Instruments/FixedIncome/BondScreeningService.cs#L20) |  |
 
 ## BondWorkflowService
 
@@ -326,9 +326,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string ModelVersion = &quot;bond-workflow-v1&quot;;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:17](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L17) |  |
-| <code>public Task&lt;BondWorkflowResult?&gt; CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:19](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L19) |  |
-| <code>public Task&lt;BondWorkflowResult?&gt; CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:22](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L22) |  |
+| <code>public const string ModelVersion = BondWorkflowModelVersions.Current;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:17](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L17) |  |
+| <code>public const string LegacyModelVersion = BondWorkflowModelVersions.Legacy;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:18](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L18) |  |
+| <code>public Task&lt;BondWorkflowResult?&gt; CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:20](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L20) |  |
+| <code>public Task&lt;BondWorkflowResult?&gt; CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:23](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L23) |  |
+| <code>public async Task&lt;BondWorkflowResult?&gt; ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs:26](../../../../src/Meridian.Instruments/FixedIncome/BondWorkflowService.cs#L26) |  |
 
 ## FileBondCalculationPolicy
 

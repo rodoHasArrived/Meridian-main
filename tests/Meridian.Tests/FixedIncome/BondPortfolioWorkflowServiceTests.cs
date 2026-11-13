@@ -155,6 +155,28 @@ public sealed class BondPortfolioWorkflowServiceTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RiskPinsSelectedBaselineVersionBeforeScenariosAndUnquotedFallback(bool dirtyMismatch)
+    {
+        var calls = new List<BondWorkflowRequest>();
+        var result = await RiskService([Holding(SecurityId, 100m)], calls,
+            selectedVersion: BondWorkflowModelVersions.Legacy, dirtyMismatch: dirtyMismatch).CalculateAsync(Scope, new(Context));
+
+        calls[0].ModelVersion.Should().BeNull("the first baseline may select the service default");
+        calls.Skip(1).Should().OnlyContain(request => request.ModelVersion == BondWorkflowModelVersions.Legacy);
+        calls.Should().HaveCount(dirtyMismatch ? 6 : 5);
+        var retained = result.Positions.Should().ContainSingle().Which;
+        retained.CalculationRequest!.ModelVersion.Should().Be(BondWorkflowModelVersions.Legacy);
+        if (dirtyMismatch)
+        {
+            calls.Skip(1).Should().OnlyContain(request => request.CleanPricePer100 == null
+                && request.QuoteSettlementDate == null && request.ConfirmationEvidenceReference == null);
+            retained.QuoteAuthority.Should().BeNull();
+        }
+    }
+
+    [Theory]
     [InlineData("factor")]
     [InlineData("currency")]
     public async Task OffsettingOriginalFaceCannotHideContradictoryHoldingEconomics(string conflict)
@@ -237,7 +259,7 @@ public sealed class BondPortfolioWorkflowServiceTests
 
     private static BondPortfolioRiskService RiskService(IReadOnlyList<CustodianPositionLineDto> rows,
         List<BondWorkflowRequest> calls, bool missingCs01 = false, long referenceVersion = 7,
-        IReadOnlyDictionary<Guid, string>? currencies = null)
+        IReadOnlyDictionary<Guid, string>? currencies = null, string? selectedVersion = null, bool dirtyMismatch = false)
     {
         var source = Substitute.For<IAccountBondHoldingsSource>();
         source.GetHoldingsAsync(AccountId, Arg.Any<DateOnly>(), Arg.Any<DateTimeOffset?>(), Arg.Any<CancellationToken>())
@@ -249,6 +271,10 @@ public sealed class BondPortfolioWorkflowServiceTests
             var request = info.Arg<BondWorkflowRequest>();
             calls.Add(request);
             var model = Model(request, currencies?.GetValueOrDefault(request.SecurityId) ?? "USD");
+            if (selectedVersion is not null)
+                model = model with { ModelVersion = request.ModelVersion ?? selectedVersion };
+            if (dirtyMismatch && request.CleanPricePer100 is not null)
+                model = model with { OriginalDirtyConsideration = model.OriginalDirtyConsideration + 1m };
             return Task.FromResult<BondWorkflowResult?>(missingCs01 ? model with { Cs01 = null } : model);
         });
         var refs = Substitute.For<IBondReferenceService>();

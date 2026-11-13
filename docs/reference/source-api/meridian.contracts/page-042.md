@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DefineSecurityCurveRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.DefineSecurityCurveRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L91).
+
+Defines a curve identity. The key is unique, ignoring case, and is write-once.
+
+```csharp
+public sealed record DefineSecurityCurveRequest(string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string? CreatedBy = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L104) |  |
+
 ## EconomicTermsSchema
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EconomicTermsSchema</code>. Kind: `class`.
@@ -874,22 +892,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;SecurityMasterReportingReference?&gt; GetReportingReferenceByIdentifierAsOfAsync(SecurityIdentifierKind identifierKind, string identifierValue, string? provider, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L10) |  |
-
-## ISecurityMasterRuntimeStatus
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs#L8).
-
-Exposes whether Security Master-backed query workflows are currently available. This lets workstation surfaces degrade gracefully instead of treating missing infrastructure as an unknown lookup miss.
-
-```csharp
-public interface ISecurityMasterRuntimeStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsAvailable { get; }</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs#L10) |  |
-| <code>string AvailabilityDescription { get; }</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs#L12) |  |

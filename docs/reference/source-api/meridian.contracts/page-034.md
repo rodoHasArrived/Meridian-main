@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPeriodPnlSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodPnlSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:440](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L440).
+
+```csharp
+public sealed record LedgerPeriodPnlSummaryDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal? PeriodOnPeriodVariance, int OpenBreakCount, LedgerPeriodSignoffStatusDto SignoffStatus, DateTimeOffset CompletedAt, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> RevenueLines, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> ExpenseLines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", decimal RealizedRevenue = 0m, decimal RealizedExpenses = 0m, decimal RealizedNetIncome = 0m, decimal AccrualAdjustmentRevenue = 0m, decimal AccrualAdjustmentExpenses = 0m, decimal AccrualBasisAdjustmentNetImpact = 0m, IReadOnlyList<LedgerPeriodTrialBalanceLineDto>? AccrualAdjustmentLines = null);
+```
+
 ## LedgerPeriodQuery
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodQuery</code>. Kind: `record`.
@@ -750,30 +760,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; FundEventRecords { get; init; } = FundEventRecords??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:432](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L432) |  |
 | <code>public IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; CapitalAccountSubledgers { get; init; } = CapitalAccountSubledgers??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:435](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L435) |  |
 | <code>public IReadOnlyList&lt;PaymentIntentWorkflowDto&gt; PaymentIntents { get; init; } = PaymentIntents??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:438](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L438) |  |
-
-## PrivateCapitalActivityRoutes
-
-Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalActivityRoutes</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:8](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L8).
-
-Builds private capital activity and evidence navigation routes with escaped scope identifiers.
-
-```csharp
-public static class PrivateCapitalActivityRoutes
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Build(string fundProfileId, string fundEventId, string? capitalAccountId = null, string? investorId = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:13](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L13) |  |
-| <code>public static string BuildCapitalAccountSubledgerRoute(string fundProfileId, Guid? ledgerBookId, string capitalAccountId, string? investorId = null, string? currency = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:38](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L38) |  |
-| <code>public static string BuildCapitalAccountWorkbenchRoute(string fundProfileId, Guid? ledgerBookId, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:69](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L69) |  |
-| <code>public static string BuildReportOutputRoute(string fundProfileId, Guid? ledgerBookId, string reportOutputId, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:110](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L110) |  |
-| <code>public static string BuildFundEventRecordRoute(string fundProfileId, Guid? ledgerBookId, string fundEventId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:147](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L147) |  |
-| <code>public static string BuildFundEventCommandCenterRoute(string fundProfileId, Guid? ledgerBookId, string fundEventId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:166](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L166) |  |
-| <code>public static string BuildEvidenceRoute(string fundEventId) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:185](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L185) |  |
-| <code>public static string BuildPaymentIntentEvidenceRoute(string paymentIntentId) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:194](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L194) |  |
-| <code>public static string BuildPaymentIntentWorkbenchRoute(string fundProfileId, Guid? ledgerBookId, string paymentIntentId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:203](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L203) |  |
-| <code>public static string? BuildApprovalRoute(string fundProfileId, Guid journalEntryId, string? approvalId);</code> | [src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs:222](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalActivityRoutes.cs#L222) |  |

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ICapitalAccountWorkbenchService
+
+Qualified name: <code>Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1118](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1118).
+
+Builds a capital account workbench filtered by fund, book, event, investor, and currency.
+
+```csharp
+public interface ICapitalAccountWorkbenchService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CapitalAccountWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1120](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1120) |  |
+
 ## IConsolidationDraftGuard
 
 Qualified name: <code>Meridian.Contracts.Ledger.IConsolidationDraftGuard</code>. Kind: `interface`.
@@ -740,14 +758,4 @@ Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:263](../../../../src/Me
 
 ```csharp
 public sealed record LedgerPeriodDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate, LedgerPeriodStatusDto Status, DateTimeOffset OpenedAt, DateTimeOffset? ClosedAt, long Version, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
-```
-
-## LedgerPeriodPnlSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodPnlSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:440](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L440).
-
-```csharp
-public sealed record LedgerPeriodPnlSummaryDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal? PeriodOnPeriodVariance, int OpenBreakCount, LedgerPeriodSignoffStatusDto SignoffStatus, DateTimeOffset CompletedAt, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> RevenueLines, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> ExpenseLines, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", decimal RealizedRevenue = 0m, decimal RealizedExpenses = 0m, decimal RealizedNetIncome = 0m, decimal AccrualAdjustmentRevenue = 0m, decimal AccrualAdjustmentExpenses = 0m, decimal AccrualBasisAdjustmentNetImpact = 0m, IReadOnlyList<LedgerPeriodTrialBalanceLineDto>? AccrualAdjustmentLines = null);
 ```

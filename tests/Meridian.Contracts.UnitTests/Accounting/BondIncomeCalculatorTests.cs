@@ -10,6 +10,273 @@ namespace Meridian.Contracts.UnitTests.Accounting;
 
 public sealed class BondIncomeCalculatorTests
 {
+    [Fact]
+    public void OpposingAlreadyEarnedAcquisitionCouponsCannotHideInsideZeroDeferredAggregate()
+    {
+        var f = new Fixture();
+        var lot = f.Lot with
+        {
+            Acquisition = f.Lot.Acquisition with
+            {
+                BondIncome = f.Lot.Acquisition.BondIncome! with
+                { AccrualPolicyVersion = BondIncomeCalculator.SeparatedAccrualPolicyVersion }
+            }
+        };
+        var positive = f.Flow(new(2026, 1, 2), 5m, 0m) with { AccrualStart = new(2023, 1, 1), AccrualEnd = new(2024, 1, 1) };
+        var negative = f.Flow(new(2026, 1, 3), -5m, 0m) with { AccrualStart = new(2024, 1, 1), AccrualEnd = f.AcquisitionDate };
+        var projection = f.Projection([positive, negative, f.Flow(new(2027, 1, 1), 0m, 100m)]) with
+        { ModelVersion = BondWorkflowModelVersions.Current, ContractualAccruedInterest = 0m, DeferredCouponInterest = 0m };
+        var input = f.Instruction with
+        {
+            Policy = f.Instruction.Policy with
+            { AccrualPolicyVersion = BondIncomeCalculator.SeparatedAccrualPolicyVersion },
+            AcquisitionProjection = projection,
+            CurrentProjection = projection,
+            AmortizationProjection = projection
+        };
+        var action = () => BondIncomeCalculator.Project(lot, input);
+        action.Should().Throw<ArgumentException>().WithMessage("*explicit purchased-coupon separation*");
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public void V2AcquisitionCashRoundingDoesNotBecomePremiumAmortizationAtPar(int coupon)
+    {
+        var f = new Fixture(coupon: coupon);
+        var date = new DateOnly(2025, 7, 2);
+        var raw = coupon * 182m / 365m;
+        var purchased = LedgerCurrencyRounding.RoundCurrency(raw, "USD");
+        var evidence = f.Lot.Acquisition.Evidence.Select(item => item with { EffectiveDate = date }).ToArray();
+        var lot = f.Lot with
+        {
+            AcquiredDate = date,
+            Acquisition = f.Lot.Acquisition with
+            {
+                HoldingPeriodStartDate = date,
+                Evidence = evidence,
+                BondIncome = f.Lot.Acquisition.BondIncome! with
+                {
+                    PurchasedAccruedInterest = purchased,
+                    KnownAt = new(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                    Evidence = evidence,
+                    AccrualPolicyVersion = BondIncomeCalculator.SeparatedAccrualPolicyVersion
+                }
+            }
+        };
+        var opening = f.Instruction.AcquisitionProjection with
+        {
+            ModelVersion = BondWorkflowModelVersions.Current,
+            Context = f.Instruction.AcquisitionProjection.Context with { SettlementDate = date },
+            AccruedInterest = purchased,
+            ContractualAccruedInterest = raw,
+            DeferredCouponInterest = 0m,
+            SettlementAccrualFraction = 182m / 365m,
+            SettlementPeriodAccrualFraction = 1m,
+            SettlementAccrualPeriodUnits = 182m / 365m,
+            SettlementPeriodUnits = 1m
+        };
+        var ending = f.Instruction.CurrentProjection with
+        {
+            ModelVersion = BondWorkflowModelVersions.Current,
+            ContractualAccruedInterest = 0m,
+            DeferredCouponInterest = 0m
+        };
+        var input = f.Instruction with
+        {
+            AcquisitionDate = date,
+            AcquisitionAccruedInterest = purchased,
+            Evidence = evidence,
+            Policy = f.Instruction.Policy with { AccrualPolicyVersion = BondIncomeCalculator.SeparatedAccrualPolicyVersion },
+            AcquisitionProjection = opening,
+            CurrentProjection = ending,
+            AmortizationProjection = ending
+        };
+        var result = BondIncomeCalculator.Project(lot, input);
+        result.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000000001m);
+        result.PremiumDiscountIncome.Should().BeApproximately(0m, 0.00000000001m);
+        result.EffectiveAnnualYield.Should().BeApproximately(coupon / 100m, 0.000000000001m);
+        result.CouponIncome.Should().Be(coupon - purchased);
+        lot.Acquisition.BondIncome!.PurchasedAccruedInterest.Should().Be(purchased);
+        result.PurchasedAccruedRoundingAdjustment.Should().Be(decimal.Round(raw - purchased, 12, MidpointRounding.ToEven));
+        var acquisitionDay = input with
+        {
+            ThroughDate = date,
+            CurrentAccruedInterest = raw,
+            CurrentProjection = opening,
+            AmortizationProjection = opening,
+            CouponCashAllocations = []
+        };
+        var acquired = BondIncomeCalculator.Project(lot, acquisitionDay);
+        acquired.CouponIncome.Should().Be(0m, "rounded seller invoice cannot create income on acquisition");
+        acquired.PurchasedAccruedRoundingAdjustment.Should().Be(0m);
+        BondIncomeCouponRounding.EarnedSides(lot.TaxLotRecordId, acquisitionDay).Should().Be((0m, 0m));
+        var next = date.AddDays(1);
+        var nextActive = coupon * 183m / 365m;
+        var nextProjection = opening with
+        {
+            Context = opening.Context with { SettlementDate = next },
+            ContractualAccruedInterest = nextActive,
+            AccruedInterest = LedgerCurrencyRounding.RoundCurrency(nextActive, "USD"),
+            SettlementAccrualFraction = 183m / 365m,
+            SettlementAccrualPeriodUnits = 183m / 365m
+        };
+        var nextInput = acquisitionDay with
+        {
+            ThroughDate = next,
+            CurrentAccruedInterest = nextActive,
+            CurrentProjection = nextProjection,
+            AmortizationProjection = nextProjection
+        };
+        var nextResult = BondIncomeCalculator.Project(lot, nextInput);
+        nextResult.CouponIncome.Should().BeApproximately(coupon / 365m, 0.000000000001m);
+        nextResult.PurchasedAccruedRoundingAdjustment.Should().Be(0m);
+        nextResult.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000000001m);
+    }
+
+    [Theory]
+    [InlineData("5")]
+    [InlineData("-5")]
+    [InlineData("1.235")]
+    [InlineData("-1.235")]
+    public void SeparatedPaymentLagIncomeKeepsParBasisAndEarnedCoupon_ThenRoundsOnlyAtPayment(string couponText)
+    {
+        var coupon = decimal.Parse(couponText, System.Globalization.CultureInfo.InvariantCulture);
+        var (lot, input) = LaggedIncome(coupon, coupon, new(2026, 1, 6));
+        var lag = BondIncomeCalculator.Project(lot, input);
+        lag.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000000001m);
+        lag.PremiumDiscountIncome.Should().BeApproximately(0m, 0.00000000001m);
+        lag.CouponIncome.Should().BeApproximately(coupon + coupon * 5m / 365m, 0.000000000001m);
+        lag.CouponCashRoundingAdjustment.Should().Be(0m);
+        var sides = BondIncomeCouponRounding.EarnedSides(lot.TaxLotRecordId, input);
+        (sides.Receivable - sides.Payable).Should().Be(lag.CouponIncome);
+        var paidDate = new DateOnly(2026, 1, 11);
+        var paidActive = coupon * 10m / 365m;
+        var paidProjection = input.CurrentProjection with
+        {
+            Context = input.CurrentProjection.Context with { SettlementDate = paidDate },
+            AccruedInterest = paidActive,
+            ContractualAccruedInterest = paidActive,
+            DeferredCouponInterest = 0m,
+            SettlementAccrualFraction = 10m / 365m,
+            SettlementAccrualPeriodUnits = 10m / 365m
+        };
+        var paidInputs = input with
+        {
+            ThroughDate = paidDate,
+            CurrentAccruedInterest = paidActive,
+            CurrentProjection = paidProjection,
+            AmortizationProjection = paidProjection
+        };
+        var flow = paidInputs.CurrentProjection.CashFlows[0];
+        paidInputs = paidInputs with
+        {
+            CouponCashAllocations = [BondIncomeCouponRounding.Allocate(flow.PaymentDate,
+            flow.AccrualStart, flow.AccrualEnd, "USD", [new(lot.TaxLotRecordId, lot.Version, 100m, coupon, 0m)])]
+        };
+        var paid = BondIncomeCalculator.Project(lot, paidInputs);
+        var native = LedgerCurrencyRounding.RoundCurrency(coupon, "USD");
+        paid.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000000001m);
+        paid.CouponIncome.Should().BeApproximately(native + coupon * 10m / 365m, 0.000000000001m);
+        paid.CouponCashRoundingAdjustment.Should().Be(native - coupon);
+        BondIncomeCouponRounding.DeferredEarnedFlows(paidInputs).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void OpposingDeferredAndActiveCouponsKeepSeparateReceivableAndPayableTargets()
+    {
+        var (lot, input) = LaggedIncome(5m, -5m, new(2026, 1, 6));
+        var result = BondIncomeCalculator.Project(lot, input);
+        var sides = BondIncomeCouponRounding.EarnedSides(lot.TaxLotRecordId, input);
+        sides.Receivable.Should().Be(5m);
+        sides.Payable.Should().BeApproximately(5m * 5m / 365m, 0.000000000001m);
+        result.InterestReceivable.Should().Be(sides.Receivable);
+        result.InterestPayable.Should().Be(sides.Payable);
+        var unknown = input with
+        {
+            CurrentProjection = input.CurrentProjection with
+            { CashFlows = [input.CurrentProjection.CashFlows[0] with { IsForecast = true }, input.CurrentProjection.CashFlows[1]] }
+        };
+        var refuse = () => BondIncomeCalculator.Project(lot, unknown);
+        refuse.Should().Throw<ArgumentException>().WithMessage("*observed fully earned*");
+        var callOverhang = () => BondIncomeCalculator.Project(lot, input with { Calls = [new(new(2026, 1, 6), 90m)] });
+        callOverhang.Should().Throw<ArgumentException>().WithMessage("*cannot omit deferred coupon rights*");
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public void ProspectiveResetDoesNotCalibrateCleanBasisWithAlreadyEarnedDeferredCoupon(int coupon)
+    {
+        var (lot, input) = LaggedIncome(coupon, coupon, new(2026, 1, 6));
+        var resetDate = new DateOnly(2026, 1, 1);
+        var reset = input.CurrentProjection with
+        {
+            Context = input.CurrentProjection.Context with { SettlementDate = resetDate },
+            AccruedInterest = coupon,
+            ContractualAccruedInterest = 0m,
+            DeferredCouponInterest = coupon,
+            SettlementAccrualFraction = 0m,
+            SettlementAccrualPeriodUnits = 0m
+        };
+        input = input with
+        {
+            Policy = input.Policy with { FloaterPolicy = BondIncomeFloaterPolicy.ProspectiveReset },
+            Resets = [new(resetDate, reset)]
+        };
+        var result = BondIncomeCalculator.Project(lot, input);
+        result.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000000001m);
+        result.EffectiveAnnualYield.Should().BeApproximately(coupon / 100m, 0.000000000001m);
+        input.Resets[0].Projection.CashFlows[0].Interest.Should().Be(coupon);
+        input.Resets[0].Projection.CashFlows[0].PaymentDate.Should().Be(new DateOnly(2026, 1, 11));
+    }
+
+    private static (OpenLotDto Lot, BondIncomeInstructionDto Input) LaggedIncome(decimal firstCoupon,
+        decimal secondCoupon, DateOnly through)
+    {
+        var f = new Fixture();
+        var lot = f.Lot with
+        {
+            Acquisition = f.Lot.Acquisition with
+            {
+                BondIncome = f.Lot.Acquisition.BondIncome! with
+                { AccrualPolicyVersion = BondIncomeCalculator.SeparatedAccrualPolicyVersion }
+            }
+        };
+        var first = f.Flow(new(2026, 1, 11), firstCoupon, 0m) with { AccrualStart = new(2025, 1, 1), AccrualEnd = new(2026, 1, 1) };
+        var second = f.Flow(new(2027, 1, 11), secondCoupon, 100m) with { AccrualStart = new(2026, 1, 1), AccrualEnd = new(2027, 1, 1) };
+        var opening = f.Projection([first, second]) with
+        {
+            ModelVersion = BondWorkflowModelVersions.Current,
+            ContractualAccruedInterest = 0m,
+            DeferredCouponInterest = 0m
+        };
+        var part = (through.DayNumber - new DateOnly(2026, 1, 1).DayNumber) / 365m;
+        var active = secondCoupon * part;
+        var deferred = through < first.PaymentDate ? firstCoupon : 0m;
+        var ending = opening with
+        {
+            Context = opening.Context with { SettlementDate = through },
+            AccruedInterest = active + deferred,
+            ContractualAccruedInterest = active,
+            DeferredCouponInterest = deferred,
+            SettlementAccrualFraction = part,
+            SettlementPeriodAccrualFraction = 1m,
+            SettlementAccrualPeriodUnits = part,
+            SettlementPeriodUnits = 1m
+        };
+        return (lot, f.Instruction with
+        {
+            ThroughDate = through,
+            Policy = f.Instruction.Policy with { AccrualPolicyVersion = BondIncomeCalculator.SeparatedAccrualPolicyVersion },
+            AcquisitionProjection = opening,
+            CurrentProjection = ending,
+            AmortizationProjection = ending,
+            CurrentAccruedInterest = active,
+            CouponCashAllocations = []
+        });
+    }
+
     [Theory]
     [InlineData("1.25")]
     [InlineData("-1.25")]

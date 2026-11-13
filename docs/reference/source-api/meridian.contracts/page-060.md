@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperatorSurfaceVisitDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperatorSurfaceVisitDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs#L10).
+
+The signed-in operator&#x27;s visits to one workstation surface, such as the reconciliation break queue (C3). PreviousVisitAt is the baseline for &quot;since your last visit&quot; markers. Recording a visit returns the visit it replaced and the time it recorded. Reading returns the last recorded visit as PreviousVisitAt and leaves VisitedAt null, because a read records nothing.
+
+```csharp
+public sealed record OperatorSurfaceVisitDto(string Surface, DateTimeOffset? PreviousVisitAt, DateTimeOffset? VisitedAt);
+```
+
 ## OperatorTriageAction
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorTriageAction</code>. Kind: `enum`.
@@ -691,16 +703,4 @@ Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:95
 
 ```csharp
 public sealed record PreparerAttestationRevocationDto(Guid CommandId, Guid ReceiptId, long Revision, string Actor, DateTimeOffset RecordedAt, string Reason);
-```
-
-## PreparerEvidenceAcknowledgmentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs#L23).
-
-An immutable assertion and its original declaration alongside a dated applicability assessment.
-
-```csharp
-public sealed record PreparerEvidenceAcknowledgmentDto(PreparerAttestationReceiptDto Receipt, SinglePrincipalDeclarationDto OriginalDeclaration, PreparerAttestationRevocationDto? Revocation, string Applicability);
 ```

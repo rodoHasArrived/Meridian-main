@@ -15,7 +15,10 @@ Bond details retain the existing analytics panel and add original-face purchase 
 all-model cash flows, retained quote selection, separate provider and Meridian yields,
 partial metric coverage, rate/spread shocks and account-owned saved comparisons. All amounts
 come from the shared workflow API; decimal input text is preserved, and edits abort stale
-calculations. Combined bond screening uses bounded server pages and agency-specific ratings;
+calculations. Purchase/comparison economics use an explicit UTC date and time, captured in
+the input for repeatable retries; retained quote selection leaves economic and knowledge
+cutoffs unchanged. Settlement and reference screening retain their date-only meaning.
+Combined bond screening uses bounded server pages and agency-specific ratings;
 reference knowledge-time limitations remain visible. Retained market observations can be
 inspected or imported with source evidence, and capability checks separate configuration,
 entitlement and verification evidence.

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidProductDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidProductDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:15](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L15).
+
+```csharp
+public enum PlaidProductDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Auth</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:17](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L17) |  |
+| <code>Identity</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:18](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L18) |  |
+| <code>Transactions</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:19](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L19) |  |
+| <code>Investments</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:20](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L20) |  |
+| <code>Transfer</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:21](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L21) |  |
+
 ## PlaidPublicTokenExchangeRequest
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidPublicTokenExchangeRequest</code>. Kind: `record`.
@@ -628,31 +648,3 @@ Declared public members:
 | <code>int FromSchemaVersion { get; }</code> | [src/Meridian.Contracts/Schema/ISchemaUpcaster.cs:25](../../../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs#L25) | The schema version this upcaster reads from (e.g., &quot;1&quot;, &quot;1.0.0&quot;). |
 | <code>int ToSchemaVersion { get; }</code> | [src/Meridian.Contracts/Schema/ISchemaUpcaster.cs:30](../../../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs#L30) | The schema version this upcaster writes to (the current version of T). |
 | <code>T? Upcast(string json);</code> | [src/Meridian.Contracts/Schema/ISchemaUpcaster.cs:38](../../../../src/Meridian.Contracts/Schema/ISchemaUpcaster.cs#L38) | Converts a raw JSON element that was serialised under FromSchemaVersion into an instance of the current domain type T. |
-
-## SchemaField
-
-Qualified name: <code>Meridian.Contracts.Schema.SchemaField</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:74](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L74).
-
-Schema field definition.
-
-```csharp
-public sealed class SchemaField
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:80](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L80) | Gets or sets the field name. |
-| <code>[JsonPropertyName(&quot;type&quot;)] public string Type { get; set; } = &quot;string&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:86](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L86) | Gets or sets the field data type. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:92](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L92) | Gets or sets the field description. |
-| <code>[JsonPropertyName(&quot;nullable&quot;)] public bool Nullable { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:98](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L98) | Gets or sets a value indicating whether the field can be null. |
-| <code>[JsonPropertyName(&quot;defaultValue&quot;)] public object? DefaultValue { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:104](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L104) | Gets or sets the default value for the field. |
-| <code>[JsonPropertyName(&quot;validRange&quot;)] public FieldValidRange? ValidRange { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:110](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L110) | Gets or sets the valid range constraints for the field. |
-| <code>[JsonPropertyName(&quot;enumValues&quot;)] public string[]? EnumValues { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:116](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L116) | Gets or sets the allowed enum values for the field. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public string? Format { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:122](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L122) | Gets or sets the format specification (e.g., &quot;date-time&quot;, &quot;uuid&quot;). |
-| <code>[JsonPropertyName(&quot;example&quot;)] public object? Example { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:128](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L128) | Gets or sets an example value for documentation. |
-| <code>[JsonPropertyName(&quot;exchangeSpecific&quot;)] public bool ExchangeSpecific { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:134](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L134) | Gets or sets a value indicating whether this field is exchange-specific. |
-| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:140](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L140) | Gets or sets additional notes about the field. |

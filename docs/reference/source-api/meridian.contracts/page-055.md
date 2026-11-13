@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerTone
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerTone</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L6).
+
+```csharp
+public enum FinancialRecordExplorerTone : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Default</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L8) |  |
+| <code>Success</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L9) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L10) |  |
+| <code>Danger</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L11) |  |
+| <code>Info</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L12) |  |
+
 ## FirstRunStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FirstRunStatusDto</code>. Kind: `record`.
@@ -626,21 +646,3 @@ Request to build a preview of a governed report pack for one fund profile.
 ```csharp
 public sealed record FundReportPackPreviewRequestDto(string FundProfileId, GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance, DateTimeOffset? AsOf = null, string? Currency = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null);
 ```
-
-## FundReportPackProvenanceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackProvenanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:562](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L562).
-
-Source lineage captured with a generated governed report pack.
-
-```csharp
-public sealed record FundReportPackProvenanceDto(IReadOnlyList<string> RelatedRunIds, int JournalEntryCount, int LedgerEntryCount, int TrialBalanceLineCount, int ReconciliationRunCount, int OpenReconciliationBreakCount, int SecurityResolvedCount, int SecurityMissingCount, IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers, string SourceSnapshotHash, int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion, string? DataProvenanceToken = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;RetainedLedgerAmountDto&gt;? LedgerAmounts { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:578](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L578) | Explicit retained amount identities. Legacy label-only manifests cannot prove an amount. |

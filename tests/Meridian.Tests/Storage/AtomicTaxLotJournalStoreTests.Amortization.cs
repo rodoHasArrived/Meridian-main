@@ -925,6 +925,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public bool FactorPool { get; }
         public decimal? IncomeIndexRatio { get; }
         public decimal IncomePurchasedAccrued { get; }
+        public string? IncomeAccrualPolicyVersion { get; }
         public Guid IncomeAccountId { get; private set; }
         public IBondIncomeService? IncomeAuthority { get; set; }
         public IBondCouponRecognitionService? CouponAuthority { get; set; }
@@ -934,7 +935,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         private AmortFixture(PostgresTestServer server, LedgerJournalStoreOptions options,
             PostgresSecurityMasterStore securities, PostgresAssetOperationsProjectionStore positions,
             AccountingBasisKindDto accountingBasis, Guid? organizationId, bool factorPool, decimal? incomeIndexRatio = null,
-            decimal incomePurchasedAccrued = 0m)
+            decimal incomePurchasedAccrued = 0m, string? incomeAccrualPolicyVersion = null)
         {
             _server = server;
             Options = options;
@@ -945,6 +946,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             FactorPool = factorPool;
             IncomeIndexRatio = incomeIndexRatio;
             IncomePurchasedAccrued = incomePurchasedAccrued;
+            IncomeAccrualPolicyVersion = incomeAccrualPolicyVersion;
             if (incomeIndexRatio is not null)
                 IncomeAuthority = NSubstitute.Substitute.For<IBondIncomeService>();
             Store = Restart();
@@ -967,7 +969,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public static async Task<AmortFixture> CreateAsync(bool premium,
             AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Primary, Guid? organizationId = null,
             bool factorPool = false, BondAmortizationMethod factorAmortization = BondAmortizationMethod.NoAmortization,
-            bool declaredEconomics = false, decimal? incomeIndexRatio = null, decimal incomePurchasedAccrued = 0m)
+            bool declaredEconomics = false, decimal? incomeIndexRatio = null, decimal incomePurchasedAccrued = 0m,
+            string? incomeAccrualPolicyVersion = null)
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING");
             var options = new LedgerJournalStoreOptions
@@ -990,7 +993,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync();
                 await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync();
                 var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId, factorPool,
-                    incomeIndexRatio, incomePurchasedAccrued)
+                    incomeIndexRatio, incomePurchasedAccrued, incomeAccrualPolicyVersion)
                 { SecuritySchema = securityOptions.Schema };
                 await fixture.SeedAsync(premium, factorAmortization, declaredEconomics);
                 return fixture;
@@ -1109,6 +1112,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 {
                     BondIncome = new(source.RetainedAtUtc, basis, IncomePurchasedAccrued, ratio, [],
                     [source, AmortSecurityEvidence(Security)])
+                    { AccrualPolicyVersion = IncomeAccrualPolicyVersion }
                 };
             var batchId = Guid.NewGuid();
             account ??= IncomeIndexRatio is null ? AmortAccount : AmortAccount with { FinancialAccountId = IncomeAccountId.ToString("D") };

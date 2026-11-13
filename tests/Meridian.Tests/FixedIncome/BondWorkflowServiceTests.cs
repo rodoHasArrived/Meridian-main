@@ -14,6 +14,163 @@ public sealed class BondWorkflowServiceTests
     private static readonly DateTimeOffset AsOf = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public async Task ExerciseWithEarnedDeferredCouponMarksOnlyExerciseUnavailableAndKeepsBaseCashFlows()
+    {
+        var bond = Bond();
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["assetClassTermsVersion"] = 3;
+        terms["isCallable"] = true;
+        terms["callDate"] = "2027-01-01";
+        terms["callSchedule"] = new[] { new { callDate = "2027-01-01", callPrice = 100m,
+            exerciseStyle = "European", priceBasis = "PercentOfPar" } };
+        terms["scheduleConventions"] = new
+        {
+            accrualAdjusted = false,
+            couponRateUnit = "Percent",
+            couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" },
+            paymentLagBusinessDays = 2
+        };
+        var result = (await Service(bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) })
+            .CalculateAsync(new(Id, Context(), CleanPricePer100: 100m)))!;
+        result.IsBlocked.Should().BeFalse();
+        result.ExerciseScenarios.Should().ContainSingle(exercise => exercise.Kind == "Call",
+            string.Join("; ", result.Issues.Select(issue => issue.Reason)));
+        result.ExerciseScenarios.Single(exercise => exercise.Kind == "Call").Issue.Should().Be("DelayedCouponEntitlementUnsupported");
+        result.CashFlows.Should().Contain(flow => flow.AccrualEnd == new DateOnly(2027, 1, 1)
+            && flow.PaymentDate == new DateOnly(2027, 1, 5) && flow.Interest == 5m);
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public async Task ExerciseOnEarlyCouponPaymentDoesNotAddThePaidCouponAsAccruedAgain(int rate)
+    {
+        var bond = Bond(rate);
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["assetClassTermsVersion"] = 3;
+        terms["maturity"] = "2029-01-01";
+        terms["isCallable"] = true;
+        terms["callDate"] = "2027-12-31";
+        terms["callSchedule"] = new[] { new { callDate = "2027-12-31", callPrice = 100m,
+            exerciseStyle = "European", priceBasis = "PercentOfPar" } };
+        terms["scheduleConventions"] = new
+        {
+            accrualAdjusted = false,
+            couponRateUnit = "Percent",
+            couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" },
+            businessDayConvention = "Preceding"
+        };
+        var result = (await Service(bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) })
+            .CalculateAsync(new(Id, Context(), CleanPricePer100: 100m)))!;
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Issues.Select(issue => issue.Reason)));
+        result.ExerciseScenarios.Should().ContainSingle(exercise => exercise.Kind == "Call",
+            string.Join("; ", result.Issues.Select(issue => issue.Reason)));
+        var call = result.ExerciseScenarios.Single(exercise => exercise.Kind == "Call");
+        call.Issue.Should().BeNull();
+        // One coupon at one year, then coupon plus par one day before two years. Adding the
+        // already-paid active coupon again would move this yield by roughly 2.5 percentage points.
+        call.Yield.Should().BeApproximately(rate / 100m, .0002m);
+    }
+
+    [Fact]
+    public async Task OnlyCurrentFrozenIncomeCanReachTheRetainedLaggedFinalCashDate()
+    {
+        var bond = Bond();
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["scheduleConventions"] = new
+        {
+            accrualAdjusted = false,
+            couponRateUnit = "Percent",
+            couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" },
+            paymentLagBusinessDays = 2
+        };
+        var service = Service(bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) });
+        var date = new DateOnly(2028, 1, 4);
+        var at = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var request = new BondWorkflowRequest(Id, new(at, date, at));
+        var income = (await service.CalculateIncomeScheduleAsync(request, new(2026, 1, 1)))!;
+        income.IsBlocked.Should().BeFalse(string.Join("; ", income.Issues.Select(issue => issue.Reason)));
+        income.CashFlows.Should().BeEmpty();
+        var after = (await service.CalculateIncomeScheduleAsync(request with { Context = new(at.AddDays(1), date.AddDays(1), at.AddDays(1)) }, new(2026, 1, 1)))!;
+        after.Issues.Should().Contain(issue => issue.Code == "SettlementOutsideLife");
+        (await service.CalculateAsync(request))!.Issues.Should().Contain(issue => issue.Code == "SettlementOutsideLife");
+        (await service.CalculateIncomeScheduleAsync(request with { ModelVersion = BondWorkflowModelVersions.Legacy }, new(2026, 1, 1)))!
+            .Issues.Should().Contain(issue => issue.Code == "SettlementOutsideLife");
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public async Task EarlyPaidActiveCouponIsExcludedFromPurchaserInvoiceAndRetainsBookBoundaryEvidence(int rate)
+    {
+        var bond = Bond(rate);
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["scheduleConventions"] = new
+        {
+            accrualAdjusted = false,
+            couponRateUnit = "Percent",
+            couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" },
+            businessDayConvention = "Preceding"
+        };
+        var service = Service(bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) });
+        var date = new DateOnly(2027, 12, 31);
+        var at = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var request = new BondWorkflowRequest(Id, new(at, date, at));
+        var result = (await service.CalculateAsync(request))!;
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Issues.Select(issue => issue.Reason)));
+        result.AccruedInterest.Should().Be(0m);
+        result.HasPaidActiveCoupon.Should().BeTrue();
+        result.CashFlows.Should().BeEmpty();
+        var old = (await service.CalculateAsync(request with { ModelVersion = BondWorkflowModelVersions.Legacy }))!;
+        old.AccruedInterest.Should().Be(0m);
+        old.HasPaidActiveCoupon.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public async Task PaymentLagSeparatesActiveAndDeferredInvoiceInterest_AndLegacyReceiptPinsItsOriginalArithmetic(int rate)
+    {
+        var bond = Bond(rate);
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["scheduleConventions"] = new
+        {
+            accrualAdjusted = false,
+            couponRateUnit = "Percent",
+            couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" },
+            paymentLagBusinessDays = 2
+        };
+        bond = bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
+        var service = Service(bond);
+        var date = new DateOnly(2027, 1, 4);
+        var at = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var request = new BondWorkflowRequest(Id, new(at, date, at), CleanPricePer100: 100m);
+        var current = (await service.CalculateAsync(request))!;
+        current.IsBlocked.Should().BeFalse(string.Join("; ", current.Issues.Select(issue => issue.Reason)));
+        current.ModelVersion.Should().Be(BondWorkflowModelVersions.Current);
+        current.ContractualAccruedInterest.Should().BeApproximately(rate * 3m / 360m, 0.000000000001m);
+        current.DeferredCouponInterest.Should().Be(rate);
+        current.AccruedInterest.Should().Be(Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(rate + rate * 3m / 360m, "USD"));
+        current.Request!.ModelVersion.Should().Be(BondWorkflowModelVersions.Current);
+        var paidDate = new DateOnly(2027, 1, 5);
+        var paid = (await service.CalculateAsync(request with { Context = new(at.AddDays(1), paidDate, at.AddDays(1)) }))!;
+        paid.DeferredCouponInterest.Should().Be(0m);
+        paid.ContractualAccruedInterest.Should().BeApproximately(rate * 4m / 360m, 0.000000000001m);
+        var legacy = (await service.CalculateAsync(request with { ModelVersion = BondWorkflowModelVersions.Legacy }))!;
+        legacy.ContractualAccruedInterest.Should().Be(rate);
+        legacy.DeferredCouponInterest.Should().BeNull();
+        var oldReceipt = legacy with { Request = legacy.Request! with { ModelVersion = null } };
+        var replay = await service.ReplayAsync(oldReceipt);
+        JsonSerializer.Serialize(replay).Should().Be(JsonSerializer.Serialize(oldReceipt));
+        JsonSerializer.Serialize(oldReceipt.Request).Should().NotContain("ModelVersion");
+    }
+
+    [Fact]
     public async Task RetainedNegativeCouponsProduceCashAndUniqueYieldWithoutPretendingCurveCoverage()
     {
         var service = Service(Bond(-2m));
@@ -273,7 +430,9 @@ public sealed class BondWorkflowServiceTests
         result.IsBlocked.Should().BeFalse(string.Join("; ", result.Issues.Select(issue => issue.Reason)));
         result.ContractualAccruedInterest.Should().HaveValue();
         Math.Sign(result.ContractualAccruedInterest!.Value).Should().Be(Math.Sign(rate));
-        (result.ContractualAccruedInterest - result.AccruedInterest).Should().Be(rate);
+        (Meridian.Contracts.Ledger.LedgerCurrencyRounding.RoundCurrency(result.ContractualAccruedInterest!.Value, "USD")
+            - result.AccruedInterest).Should().Be(rate);
+        result.HasDetachedCoupon.Should().BeTrue();
     }
 
     private static BondCalculationContext Context() => new(AsOf, new DateOnly(2026, 1, 1), AsOf);

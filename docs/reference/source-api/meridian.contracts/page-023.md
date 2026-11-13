@@ -611,7 +611,7 @@ public sealed record BondWatchObservationDto(string ObservationId, Guid Security
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowCashFlow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:33](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L33).
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:35](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L35).
 
 All cash is absolute transaction currency on the requested original face.
 
@@ -623,9 +623,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal Total =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:37](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L37) |  |
-| <code>public decimal? AccrualFraction { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:38](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L38) |  |
-| <code>public decimal? PeriodUnits { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:39](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L39) |  |
+| <code>public decimal Total =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:39](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L39) |  |
+| <code>public decimal? AccrualFraction { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:40](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L40) |  |
+| <code>public decimal? PeriodUnits { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L41) |  |
 
 ## BondWorkflowDiscountedFlow
 
@@ -643,7 +643,7 @@ public sealed record BondWorkflowDiscountedFlow(decimal Amount, decimal TimeInYe
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowExerciseResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:22](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L22).
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L24).
 
 ```csharp
 public sealed record BondWorkflowExerciseResult(string Kind, DateOnly ExerciseDate, decimal RedemptionPrice, decimal? Yield, string? Issue, DateOnly? LatestNoticeDate);
@@ -673,7 +673,7 @@ public sealed record BondWorkflowInflationConvention(string IndexName, decimal B
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowIssue</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:25](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L25).
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L27).
 
 ```csharp
 public sealed record BondWorkflowIssue(string Operation, string Code, string Reason, bool BlocksCalculation = false);

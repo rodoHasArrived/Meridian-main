@@ -46,6 +46,8 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
         var adopted = BondIncomeCalculator.ReadPolicy(await policies.ResolvePolicyAsync(new(book.AccountingBasis,
             acquiredDate, book.AccountingPolicyId, book.FundProfileId, book.FundStructureNodeId,
             PolicyVersion: book.AccountingPolicyVersion), ct).ConfigureAwait(false));
+        if (acquisition.AccrualPolicyVersion != adopted.AccrualPolicyVersion)
+            throw new InvalidOperationException("The acquisition must capture the authoritative book's explicitly adopted coupon-accrual policy.");
         if (!adopted.CapitalizeEligibleDirectCosts && acquisition.Fees.Any(f =>
             f.Treatment == BondIncomeFeeTreatment.EligibleDirectAcquisitionCost && f.Amount != 0m))
             throw new InvalidOperationException("The authoritative book policy has not adopted direct-cost capitalization.");
@@ -69,7 +71,7 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
         if (lot.LedgerBookId != book.LedgerBookId || lot.Acquisition.Direction != OpenLotDirection.Long
             || retained.Account.AccountType != Meridian.Ledger.LedgerAccountType.Asset
             || lot.Acquisition.FunctionalCurrency != book.BaseCurrency
-            || request.ThroughDate <= lot.AcquiredDate || request.KnownAt < acquisition.KnownAt)
+            || request.ThroughDate < lot.AcquiredDate || request.KnownAt < acquisition.KnownAt)
             throw new InvalidOperationException("Bond income requires an eligible performing long asset lot in this book/date scope.");
         if (!Guid.TryParseExact(retained.Account.FinancialAccountId, "D", out var financialAccountId)
             || financialAccountId != request.AccountId
@@ -92,6 +94,12 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
             book.AccountingPolicyId, book.FundProfileId, book.FundStructureNodeId,
             PolicyVersion: book.AccountingPolicyVersion), ct).ConfigureAwait(false);
         var policy = BondIncomeCalculator.ReadPolicy(policyRecord);
+        if (policy.AccrualPolicyVersion != acquisition.AccrualPolicyVersion)
+            throw new InvalidOperationException("The immutable acquisition has not adopted this book accrual-policy version; reconcile and review the opening before changing policy.");
+        var separatedAccrual = policy.AccrualPolicyVersion == BondIncomeCalculator.SeparatedAccrualPolicyVersion;
+        if (!separatedAccrual && request.ThroughDate == lot.AcquiredDate)
+            throw new InvalidOperationException("Legacy income preparation requires a recognition date after acquisition.");
+        var workflowModel = separatedAccrual ? BondWorkflowModelVersions.Current : BondWorkflowModelVersions.Legacy;
         var security = await securities.GetProjectionAsync(lot.SecurityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Versioned Security Master terms are unavailable.");
         var securityEvidence = acquisition.Evidence.LastOrDefault(e => e.SubjectType == "SecurityMasterProjection"
@@ -114,7 +122,8 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
             ?? throw new InvalidOperationException("The authoritative acquisition has no face/factor units.");
         var originalFace = lot.OriginalQuantity / face.BookedFactor;
         BondWorkflowRequest ScheduleRequest(DateOnly asOf, DateOnly settle, DateTimeOffset cutoff) => new(lot.SecurityId,
-            new(new DateTimeOffset(asOf.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), settle, cutoff, security.Version), originalFace);
+            new(new DateTimeOffset(asOf.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), settle, cutoff, security.Version), originalFace)
+        { ModelVersion = workflowModel };
         async Task<BondWorkflowResult> Frozen(DateOnly asOf, DateOnly settle, DateTimeOffset cutoff, DateOnly freeze)
         {
             var value = await workflow.CalculateIncomeScheduleAsync(ScheduleRequest(asOf, settle, cutoff), freeze, ct).ConfigureAwait(false)
@@ -126,12 +135,20 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
         var acquired = await Frozen(lot.AcquiredDate, lot.AcquiredDate, acquisition.KnownAt, lot.AcquiredDate).ConfigureAwait(false);
         var current = await Frozen(request.ThroughDate, lot.AcquiredDate, request.KnownAt, request.ThroughDate).ConfigureAwait(false);
         var currentAtDate = await Frozen(request.ThroughDate, request.ThroughDate, request.KnownAt, request.ThroughDate).ConfigureAwait(false);
+        if (separatedAccrual && (acquired.HasPaidActiveCoupon == true || currentAtDate.HasPaidActiveCoupon == true))
+            throw new InvalidOperationException("Early-paid coupons with an unearned accrual tail require reviewed advance-payment accounting before book-income preparation.");
+        if (!separatedAccrual && current.CashFlows.Any(flow => flow.Interest != 0m && flow.AccrualEnd <= request.ThroughDate
+                && flow.PaymentDate > request.ThroughDate)
+            && current.CashFlows.Any(flow => flow.AccrualStart <= request.ThroughDate && request.ThroughDate < flow.AccrualEnd))
+            throw new InvalidOperationException("Legacy coupon accrual cannot prepare a multi-period payment-lag window; review bond-income-accrual-v2 policy and acquisition opening authority.");
         var hasExCoupon = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(security.AssetSpecificTerms) >= 5
             && security.AssetSpecificTerms.TryGetProperty("bondWorkflow", out var workflowTerms)
             && SecurityTermReader.ReadDecimal(workflowTerms, "exCouponBusinessDays") is > 0m;
         if (hasExCoupon && (acquired.ContractualAccruedInterest is null || currentAtDate.ContractualAccruedInterest is null))
             throw new InvalidOperationException("Held ex-coupon accounting requires retained contractual accrual distinct from purchaser invoice accrual.");
-        if (hasExCoupon && acquired.ContractualAccruedInterest != acquired.AccruedInterest)
+        if (hasExCoupon && separatedAccrual && acquired.HasDetachedCoupon is null)
+            throw new InvalidOperationException("Separated ex-coupon accounting requires explicit retained per-obligation detachment evidence.");
+        if (hasExCoupon && (separatedAccrual ? acquired.HasDetachedCoupon == true : acquired.ContractualAccruedInterest != acquired.AccruedInterest))
             throw new InvalidOperationException("An acquisition inside its ex-coupon window requires retained opening entitlement reconciliation before accounting-income adoption.");
         await BondIncomeEntitlementHistoryGuard.RequireAsync(lots, security, current, lot, request.AccountId,
             request.ThroughDate, ct).ConfigureAwait(false);
@@ -164,7 +181,8 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
                     var parFace = holderLot.OriginalQuantity * LedgerTaxLotFaceValueTerms.LedgerLotParBasis / holderLot.BookedFactor!.Value;
                     var peerRequest = new BondWorkflowRequest(lot.SecurityId,
                         new(new DateTimeOffset(request.ThroughDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
-                            holderLot.AcquiredDate, request.KnownAt, security.Version), parFace);
+                            holderLot.AcquiredDate, request.KnownAt, security.Version), parFace)
+                    { ModelVersion = workflowModel };
                     entitlement = await workflow.CalculateIncomeScheduleAsync(peerRequest, request.ThroughDate, ct).ConfigureAwait(false);
                     if (entitlement is null || entitlement.IsBlocked || entitlement.Inputs.Count == 0
                         || entitlement.SecurityId != lot.SecurityId || entitlement.Currency != security.Currency

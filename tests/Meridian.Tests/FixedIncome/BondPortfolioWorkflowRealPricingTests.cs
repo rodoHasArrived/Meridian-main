@@ -82,6 +82,9 @@ public sealed class BondPortfolioWorkflowRealPricingTests
         widened.PresentValue.Should().NotBeNull();
         (sign * widened.PresentValue!.Value).Should().BeLessThan(sign * position.PresentValue!.Value);
         workflow.Calls.Should().HaveCount(5);
+        workflow.Calls.Skip(1).Should().OnlyContain(call => call.ModelVersion == workflow.Results[0].ModelVersion);
+        position.CalculationRequest!.ModelVersion.Should().Be(workflow.Results[0].ModelVersion);
+        position.CalculationRequest.Should().Be(workflow.Results[0].Request);
         workflow.Calls.Should().OnlyContain(call => call.OriginalFace == 1000m && call.CleanPricePer100 == 103.125m
             && call.QuoteSettlementDate == snapshot.AsOfDate && call.AccountId == scope.AccountId
             && call.ConfirmationEvidenceReference != null && call.ConfirmationEvidenceReference.Contains(batch.ToString("D"), StringComparison.Ordinal)

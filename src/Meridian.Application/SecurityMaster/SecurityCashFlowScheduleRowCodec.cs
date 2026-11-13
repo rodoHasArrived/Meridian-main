@@ -92,7 +92,10 @@ internal static class SecurityCashFlowScheduleRowCodec
                 reason = "Interest segments require contiguous original-period coverage, nonnegative economics and consistent opening/closing factors; zero principal and factor must occur together without interest.";
                 return false;
             }
-            try { total = checked(total + segment.UnroundedInterestAmount); }
+            try
+            {
+                total = checked(total + segment.UnroundedInterestAmount);
+            }
             catch (OverflowException)
             {
                 reason = "Interest segment totals exceed the supported monetary range.";

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsCloseReadinessComponentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1348](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1348).
+
+```csharp
+public sealed record OperationsCloseReadinessComponentDto(string Key, string Label, int Score, int Weight, bool IsReady, string Severity, string? BlockingReason, OperationsGateKeyDto? Gate, string? RouteHint);
+```
+
 ## OperationsCloseReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessDto</code>. Kind: `record`.
@@ -707,16 +717,4 @@ Sets (or, with a null or empty scope, clears) the signed-in operator&#x27;s defa
 
 ```csharp
 public sealed record OperatorScopePreferenceSaveRequest(OperatingScopeValuesDto? DefaultScope);
-```
-
-## OperatorSurfaceVisitDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperatorSurfaceVisitDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs#L10).
-
-The signed-in operator&#x27;s visits to one workstation surface, such as the reconciliation break queue (C3). PreviousVisitAt is the baseline for &quot;since your last visit&quot; markers. Recording a visit returns the visit it replaced and the time it recorded. Reading returns the last recorded visit as PreviousVisitAt and leaves VisitedAt null, because a read records nothing.
-
-```csharp
-public sealed record OperatorSurfaceVisitDto(string Surface, DateTimeOffset? PreviousVisitAt, DateTimeOffset? VisitedAt);
 ```

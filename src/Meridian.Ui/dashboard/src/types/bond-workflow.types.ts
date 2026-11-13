@@ -3,6 +3,7 @@ import type { PortfolioCashLadder } from "./portfolio-cash-ladder.types";
 
 export interface BondWorkflowRequest {
   securityId: string;
+  modelVersion?: string | null;
   context: BondCalculationContext;
   originalFace: BondDecimal;
   cleanPricePer100?: BondDecimal | null;
@@ -27,6 +28,10 @@ export interface BondWorkflowResult {
   currentFace: BondDecimal | null;
   accruedInterest: BondDecimal | null;
   contractualAccruedInterest?: BondDecimal | null;
+  /** Fully earned coupon economics before their contractual payment date; not bank-clearing status. */
+  deferredCouponInterest?: BondDecimal | null;
+  hasDetachedCoupon?: boolean | null;
+  hasPaidActiveCoupon?: boolean | null;
   cleanConsideration: BondDecimal | null;
   dirtyConsideration: BondDecimal | null;
   fees: BondDecimal;
@@ -99,13 +104,14 @@ export interface BondMonitoringSnapshot {
 export interface BondIncomePreviewRequest { ledgerBookId: string; taxLotRecordId: string; throughDate: string; knownAt: string }
 export interface BondIncomePreview {
   ledgerBookId: string; taxLotRecordId: string; fingerprint: string;
-  instruction?: { bondIncome?: { currentProjection: { currency: string }; accountingPolicyId: string; accountingPolicyVersion: string } | null };
+  instruction?: { bondIncome?: { currentProjection: { currency: string }; accountingPolicyId: string; accountingPolicyVersion: string; policy?: { accrualPolicyVersion?: string | null } } | null };
   income: {
     modelVersion: string; floaterPolicy: "AcquisitionIndex" | "ProspectiveReset";
     effectiveAnnualYield: BondDecimal; openingCarryingBasis: BondDecimal; closingCarryingBasis: BondDecimal;
     couponIncome: BondDecimal; premiumDiscountIncome: BondDecimal; indexationIncome: BondDecimal;
     scheduledPrincipal: BondDecimal; capitalizedFees: BondDecimal; expensedFees: BondDecimal;
     withholdingTax: BondDecimal; interestReceivable: BondDecimal; interestPayable: BondDecimal;
+    purchasedAccruedRoundingAdjustment?: BondDecimal | null;
     totalAccountingIncome: BondDecimal;
     journalComponents: Array<{ component: string; debit: BondDecimal; credit: BondDecimal }>;
   };

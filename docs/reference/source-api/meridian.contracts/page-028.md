@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RecordMarginSnapshotRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.RecordMarginSnapshotRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:355](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L355).
+
+Request to record or upsert a margin snapshot for an account.
+
+```csharp
+public sealed record RecordMarginSnapshotRequest(Guid AccountId, DateTimeOffset EffectiveAt, string Currency, MarginModelTypeDto MarginType, MarginCallStatusDto MarginCallStatus = MarginCallStatusDto.None, decimal? InitialMargin = null, decimal? MaintenanceMargin = null, decimal? ExcessLiquidity = null, decimal? BuyingPower = null, decimal? SpecialMemorandumAccount = null, decimal? LoanBalance = null, decimal? DebitBalance = null, decimal? CreditBalance = null, decimal? CollateralValue = null, decimal? MarginableSecuritiesValue = null, decimal? NonMarginableSecuritiesValue = null, decimal? MarginUtilization = null, int MissingRequirementCount = 0, int MissingCollateralClassificationCount = 0, int ConcentrationLimitBreachCount = 0, bool IsLiveAccount = false, bool ApprovedForLiveMargin = false, IReadOnlyList<MarginRequirementDto>? Requirements = null, IReadOnlyList<string>? Warnings = null, string? ProviderId = null, string? ExternalAccountId = null, DateTimeOffset? RecordedAt = null, DateTimeOffset? FreshUntil = null, string? AgreementEvidencePath = null, string? SnapshotEvidencePath = null, string? CorrelationId = null);
+```
+
 ## ReplaceOwnershipLinkRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.ReplaceOwnershipLinkRequest</code>. Kind: `record`.
@@ -698,22 +710,3 @@ Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:259
 ```csharp
 public sealed record ProviderIntegrationManifestDto(string ManifestId, int ManifestVersion, string ProviderId, string DisplayName, IntegrationTypeDto IntegrationType, string Environment, ProviderIntegrationAuthConfigDto Auth, IReadOnlyList<ProviderCapabilityDto> Capabilities, IReadOnlyList<EndpointDefinitionDto> Endpoints, IReadOnlyList<FieldMappingDto> FieldMappings, SyncScheduleDto Sync, IReadOnlyList<ValidationRuleDto> ValidationRules, ProviderIntegrationActivationPolicyDto Activation, ProviderIntegrationActivationStateDto State, string CreatedBy, DateTimeOffset CreatedAt, string? ApprovedBy, DateTimeOffset? ApprovedAt, string? ChangeReason);
 ```
-
-## ProviderIntegrationManifestIdentity
-
-Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationManifestIdentity</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:29](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L29).
-
-Canonical snapshot hashing shared by persistence and ingestion/replay.
-
-```csharp
-public static class ProviderIntegrationManifestIdentity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ProviderIntegrationManifestReferenceDto Create(ProviderIntegrationManifestDto manifest);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:44](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L44) |  |
-| <code>public static bool Matches(ProviderIntegrationManifestReferenceDto? left, ProviderIntegrationManifestReferenceDto? right) =&gt; …;</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:59](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L59) |  |

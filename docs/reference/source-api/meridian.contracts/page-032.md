@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosePlanTemplateTaskDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ClosePlanTemplateTaskDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:26](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L26).
+
+```csharp
+public sealed record ClosePlanTemplateTaskDto(CloseTaskConfigurationDto Configuration, DateOnly SourceDueDate, CloseDeadlineRuleDto DeadlineRule);
+```
+
 ## ClosePostingBalanceDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ClosePostingBalanceDto</code>. Kind: `record`.
@@ -704,21 +714,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;AccountingConfigurationWorkspaceDto?&gt; GetAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1179](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1179) |  |
 | <code>Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1186](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1186) |  |
-
-## ICapitalAccountWorkbenchService
-
-Qualified name: <code>Meridian.Contracts.Ledger.ICapitalAccountWorkbenchService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1118](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1118).
-
-Builds a capital account workbench filtered by fund, book, event, investor, and currency.
-
-```csharp
-public interface ICapitalAccountWorkbenchService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CapitalAccountWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1120](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1120) |  |

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreparerEvidenceAcknowledgmentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs#L23).
+
+An immutable assertion and its original declaration alongside a dated applicability assessment.
+
+```csharp
+public sealed record PreparerEvidenceAcknowledgmentDto(PreparerAttestationReceiptDto Receipt, SinglePrincipalDeclarationDto OriginalDeclaration, PreparerAttestationRevocationDto? Revocation, string Applicability);
+```
+
 ## PrivateCapitalCloseCockpitApprovalDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitApprovalDto</code>. Kind: `record`.
@@ -708,29 +720,3 @@ Enum declarations:
 | <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:472](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L472) |  |
 | <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:473](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L473) |  |
 | <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:474](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L474) |  |
-
-## ReconciliationCalibrationSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:995](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L995).
-
-Operator-facing calibration summary for the reconciliation break queue.
-
-```csharp
-public sealed record ReconciliationCalibrationSummaryDto(DateTimeOffset AsOf, ReconciliationCalibrationStatusDto Status, string Summary, int TotalBreakCount, int ActiveBreakCount, int OpenBreakCount, int InReviewBreakCount, int ResolvedBreakCount, int DismissedBreakCount, int CriticalOpenBreakCount, int PendingSignoffCount, int SignedOffCount, int MissingCalibrationMetadataCount, IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int BreakCountTrend { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1011](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1011) |  |
-| <code>public decimal AutoMatchRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1012](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1012) |  |
-| <code>public decimal T0ClosureRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1013](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1013) |  |
-| <code>public int BreakCountAlertThreshold { get; init; } = 25;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1014](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1014) |  |
-| <code>public decimal AutoMatchRateAlertThreshold { get; init; } = 0.85m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1015](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1015) |  |
-| <code>public decimal T0ClosureRateAlertThreshold { get; init; } = 0.90m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1016](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1016) |  |
-| <code>public bool BreakCountAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1017](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1017) |  |
-| <code>public bool AutoMatchRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1018](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1018) |  |
-| <code>public bool T0ClosureRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1019](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1019) |  |

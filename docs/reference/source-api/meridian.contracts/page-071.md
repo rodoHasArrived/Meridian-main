@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationModeComparisonRun
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationModeComparisonRun</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L103).
+
+```csharp
+public sealed record WorkstationModeComparisonRun(string RunId, string Mode, string Status, decimal? NetPnl, decimal? TotalReturn, WorkstationRunDrillInLinks DrillIn);
+```
+
 ## WorkstationPlotToolFocusPointPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolFocusPointPayload</code>. Kind: `record`.
@@ -549,14 +559,4 @@ Typed payload returned by GET /api/workstation/strategy.
 
 ```csharp
 public sealed record WorkstationStrategyPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationStrategyRunCard> Runs, IReadOnlyList<WorkstationModeComparisonGroup> Comparisons, IReadOnlyList<WorkstationTimelineCard> Timeline, WorkstationStrategyWorkspaceSummary Workspace, WorkstationPlotToolPayload? PlotTool = null);
-```
-
-## WorkstationStrategyRunCard
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyRunCard</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L77).
-
-```csharp
-public sealed record WorkstationStrategyRunCard(string Id, string StrategyName, string Engine, string Mode, string Status, string Dataset, string Window, string Pnl, string Sharpe, string LastUpdated, string Notes, string? PromotionState, string? LedgerReference, string? PortfolioId, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationRunDrillInLinks DrillIn, BiasDisclosureDto? BiasDisclosure = null, decimal? MaxDrawdown = null, IReadOnlyList<decimal>? TrendValues = null, IReadOnlyList<string>? TrendDates = null, string? SearchText = null);
 ```

@@ -72,12 +72,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Candidate);
 
-        if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
-        {
-            throw new HumanOperatorRequiredException(
-                "post generated accounting posting candidates",
-                "Generated accounting posting candidates require a human-operator action origin before append.");
-        }
+        OperationsOriginGuard.RequireHumanOperator(request.ActionOrigin, "post generated accounting posting candidates");
 
         var journalStore = _journalStore
             ?? throw new InvalidOperationException("Generated accounting posting candidates cannot be posted because no Postgres-backed ledger journal store is configured.");

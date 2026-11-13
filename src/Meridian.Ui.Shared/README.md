@@ -21,6 +21,10 @@ The shared bond account endpoints bind account-owned book/tenant/company scope, 
 comparisons, project collection exceptions into governed casework, and keep preview/preparation apart
 from posting. Performance imports read exact accepted vault documents; current cash/FX authority is
 reverified before consumption. See [routes, typed source JSON and book policy](../../docs/operators/bond-workflows.md).
+Lifecycle close-lock replay derives its action from the matched retained transition and rechecks
+the authoritative hard-closed period. Evidence-index warnings retain operation and failure type,
+without raw scoped paths or parser exceptions. Explorer dimension filters include the retained
+intercompany agreement GUID.
 
 `BondProviderIntakeService` connects operator-triggered bond ISIN/CUSIP discovery to OpenFIGI without
 resolving ambiguous candidates, and typed FRED intake to the retained market-input service. Exact

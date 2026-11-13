@@ -22,6 +22,8 @@ public sealed record BondIncomePolicyDto(
     string? AmortizationIncomeAccountPath = null)
 {
     public string BookedTargetPrecisionVersion => BondIncomeBookedPrecision.PolicyVersion;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccrualPolicyVersion { get; init; }
 }
 
 public sealed record BondIncomeFeeDto(string SourceReference, decimal Amount,
@@ -30,7 +32,11 @@ public sealed record BondIncomeFeeDto(string SourceReference, decimal Amount,
 /// <summary>Reviewed acquisition facts retained on the authoritative lot, never supplied to a preview.</summary>
 public sealed record BondIncomeAcquisitionDto(DateTimeOffset KnownAt, decimal CleanConsideration,
     decimal PurchasedAccruedInterest, decimal IndexRatio, IReadOnlyList<BondIncomeFeeDto> Fees,
-    IReadOnlyList<RetainedEvidenceIdentityDto> Evidence);
+    IReadOnlyList<RetainedEvidenceIdentityDto> Evidence)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccrualPolicyVersion { get; init; }
+}
 
 /// <summary>A retained frozen-index schedule at an observed contractual reset.</summary>
 public sealed record BondIncomeResetDto(DateOnly Date, BondWorkflowResult Projection);
@@ -109,6 +115,9 @@ public sealed record BondIncomeResultDto(
     public decimal CarryingBasisMovement => ClosingCarryingBasis - OpeningCarryingBasis;
     /// <summary>Allocated native coupon cash less raw completed coupon economics.</summary>
     public decimal CouponCashRoundingAdjustment { get; init; }
+    /// <summary>Raw purchased-accrual baseline less its actual invoice at the purchased coupon's native boundary.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? PurchasedAccruedRoundingAdjustment { get; init; }
     public BondIncomeBookedTargetDto? BookedTarget { get; init; }
     /// <summary>Uniqueness certificate for accounting period allocation, distinct from a market cash IRR.</summary>
     public string AccountingYieldCertificate { get; init; } = "dated-sign-change-bracket-v1";

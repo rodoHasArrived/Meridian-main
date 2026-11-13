@@ -6892,6 +6892,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondWorkflowModelVersions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FixedIncome.BondWorkflowObservation"
     },
     {
@@ -62784,7 +62790,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "1ebc9fdbe4fc5f3310d2ac7a7de208a1889529269320b9eac849d72eed60fc0d",
+  "fingerprint": "157ad9366b77f8aefed8d28381a3e5a7d2df9803c4ca1c6bcf23371dec13ac76",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69724,6 +69730,12 @@
       "id": "contract:Meridian.Contracts.FixedIncome.BondWorkflowMetric",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FixedIncome.BondWorkflowMetric"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FixedIncome.BondWorkflowModelVersions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FixedIncome.BondWorkflowModelVersions"
     },
     {
       "classification": "record",
@@ -91993,10 +92005,10 @@
   ],
   "summary": {
     "contract_references": 3991,
-    "contract_set_memberships": 5006,
-    "edges": 10431,
+    "contract_set_memberships": 5007,
+    "edges": 10432,
     "foreign_keys": 181,
     "logical_references": 6,
-    "nodes": 5066
+    "nodes": 5067
   }
 }

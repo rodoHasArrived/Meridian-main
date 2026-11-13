@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionOperationException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionOperationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:820](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L820).
+
+Represents a corporate action operation failure with a stable machine-readable problem code.
+
+```csharp
+public class CorporateActionOperationException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionOperationException(string code, string message) : base(message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:822](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L822) |  |
+| <code>public string Code { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:828](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L828) |  |
+
 ## CorporateActionPayloadFieldDescriptor
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionPayloadFieldDescriptor</code>. Kind: `record`.
@@ -896,21 +915,3 @@ A request to declare a link; the link id is derived from the security, role and 
 ```csharp
 public sealed record DeclareSecurityUnderlyingLinkRequest(Guid SecurityId, SecurityUnderlyingRole Role, Guid? UnderlyingSecurityId, string? Reference, decimal? Weight, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Notes, string? CreatedBy = null);
 ```
-
-## DefineSecurityCurveRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.DefineSecurityCurveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L91).
-
-Defines a curve identity. The key is unique, ignoring case, and is write-once.
-
-```csharp
-public sealed record DefineSecurityCurveRequest(string CurveKey, SecurityCurveKind Kind, string Currency, string? IndexName, string? Tenor, string DayCount, SecurityCurveInterpolation Interpolation, string Source, string? Description, string? CreatedBy = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCurves.cs#L104) |  |

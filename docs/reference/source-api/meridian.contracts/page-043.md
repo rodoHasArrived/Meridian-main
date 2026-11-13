@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityMasterRuntimeStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs#L8).
+
+Exposes whether Security Master-backed query workflows are currently available. This lets workstation surfaces degrade gracefully instead of treating missing infrastructure as an unknown lookup miss.
+
+```csharp
+public interface ISecurityMasterRuntimeStatus
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsAvailable { get; }</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs#L10) |  |
+| <code>string AvailabilityDescription { get; }</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterRuntimeStatus.cs#L12) |  |
+
 ## ISecurityMasterService
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityMasterService</code>. Kind: `interface`.
@@ -820,22 +839,3 @@ What an exposure snapshot was computed from, besides the master and collateral a
 ```csharp
 public sealed record OtcExposureSnapshotInputsDto(long NettingSetVersion, IReadOnlyList<OtcExposureInputVersionDto> Contracts, IReadOnlyList<OtcExposureInputVersionDto> CollateralBalances, IReadOnlyList<Guid> NettingSetsUnderAgreement, DateTimeOffset KnowledgeAsOf = default, IReadOnlyList<Guid>? Securities = null);
 ```
-
-## OtcExposureSnapshotStatus
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureSnapshotStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L123).
-
-Whether every considered contract was valued and no gate blocked the credit support computation.
-
-```csharp
-public enum OtcExposureSnapshotStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Complete</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L125) |  |
-| <code>Incomplete</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L126) |  |

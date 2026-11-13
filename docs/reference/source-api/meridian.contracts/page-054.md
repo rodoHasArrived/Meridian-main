@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L6).
+
+```csharp
+public enum EvidenceStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L8) |  |
+| <code>Ready = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L9) |  |
+| <code>ReviewRequired = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L10) |  |
+| <code>Blocked = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L11) |  |
+| <code>Stale = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L12) |  |
+| <code>Missing = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L13) |  |
+
 ## EvidenceSubjectDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceSubjectDto</code>. Kind: `record`.
@@ -634,23 +655,3 @@ Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:54](.
 ```csharp
 public sealed record FinancialRecordExplorerSummaryItemDto(string Label, string Value, string Detail = "", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
 ```
-
-## FinancialRecordExplorerTone
-
-Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerTone</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L6).
-
-```csharp
-public enum FinancialRecordExplorerTone : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Default</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L8) |  |
-| <code>Success</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L9) |  |
-| <code>Warning</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L10) |  |
-| <code>Danger</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L11) |  |
-| <code>Info</code> | [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L12) |  |

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundReportPackProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:562](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L562).
+
+Source lineage captured with a generated governed report pack.
+
+```csharp
+public sealed record FundReportPackProvenanceDto(IReadOnlyList<string> RelatedRunIds, int JournalEntryCount, int LedgerEntryCount, int TrialBalanceLineCount, int ReconciliationRunCount, int OpenReconciliationBreakCount, int SecurityResolvedCount, int SecurityMissingCount, IReadOnlyList<FundReportPackLineagePointerDto> LineagePointers, string SourceSnapshotHash, int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion, string? DataProvenanceToken = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;RetainedLedgerAmountDto&gt;? LedgerAmounts { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:578](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L578) | Explicit retained amount identities. Legacy label-only manifests cannot prove an amount. |
+
 ## FundReportPackSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundReportPackSnapshotDto</code>. Kind: `record`.
@@ -710,24 +728,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Buy = 0</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L19) |  |
 | <code>Sell = 1</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L20) |  |
-
-## InvestmentAccountingTransactionKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.InvestmentAccountingTransactionKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L6).
-
-```csharp
-public enum InvestmentAccountingTransactionKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Trade = 0</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L8) |  |
-| <code>Dividend = 1</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L9) |  |
-| <code>Fee = 2</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L10) |  |
-| <code>Accrual = 3</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L11) |  |
-| <code>CorporateAction = 4</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L12) |  |
-| <code>BrokerReconciliation = 5</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L13) |  |

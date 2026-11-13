@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationalCaseRecoveryAttempt
+
+Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseRecoveryAttempt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:44](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L44).
+
+```csharp
+public sealed record OperationalCaseRecoveryAttempt
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string RecoveryActionId { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:46](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L46) |  |
+| <code>public required int Attempt { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:47](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L47) |  |
+| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:48](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L48) |  |
+| <code>public DateTimeOffset? CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:49](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L49) |  |
+| <code>public required string Result { get; init; }</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:50](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L50) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:51](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L51) |  |
+| <code>public IReadOnlyList&lt;string&gt; ArtifactIds { get; init; } = [];</code> | [src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs:52](../../../../src/Meridian.Contracts/Operations/OperationalCaseHistoryContracts.cs#L52) |  |
+
 ## OperationalCaseRetry
 
 Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseRetry</code>. Kind: `record`.
@@ -823,23 +845,3 @@ Declared public members:
 | <code>public static PlaidOptions Default =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:54](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L54) |  |
 | <code>public bool CanVerifyWebhooks =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:70](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L70) | True when an ES256 public key is configured for verifying the Plaid-Verification header on inbound webhooks. When false the webhook route fails closed: an unverifiable callback is refused rather than recorded, because the payload hash a webhook carries authenticates nothing when the caller supplies the payload. |
 | <code>public bool AllowsTransferCreation =&gt; …;</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:72](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L72) |  |
-
-## PlaidProductDto
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidProductDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:15](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L15).
-
-```csharp
-public enum PlaidProductDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Auth</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:17](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L17) |  |
-| <code>Identity</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:18](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L18) |  |
-| <code>Transactions</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:19](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L19) |  |
-| <code>Investments</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:20](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L20) |  |
-| <code>Transfer</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:21](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L21) |  |

@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InvestmentAccountingTransactionKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.InvestmentAccountingTransactionKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L6).
+
+```csharp
+public enum InvestmentAccountingTransactionKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Trade = 0</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L8) |  |
+| <code>Dividend = 1</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L9) |  |
+| <code>Fee = 2</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L10) |  |
+| <code>Accrual = 3</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L11) |  |
+| <code>CorporateAction = 4</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L12) |  |
+| <code>BrokerReconciliation = 5</code> | [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L13) |  |
+
 ## InvestmentAccountingTransactionLabPreviewDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.InvestmentAccountingTransactionLabPreviewDto</code>. Kind: `record`.
@@ -637,14 +658,4 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:62](../../../../sr
 
 ```csharp
 public sealed record OnboardingCriteriaRevisionDto(int DataRevision, OnboardingCriteriaDto Criteria, string ActorId, DateTimeOffset RecordedAtUtc);
-```
-
-## OnboardingDifferenceAssignmentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L81).
-
-```csharp
-public sealed record OnboardingDifferenceAssignmentDto(string DifferenceKey, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds, string ActorId, DateTimeOffset RecordedAtUtc, int DataRevision);
 ```

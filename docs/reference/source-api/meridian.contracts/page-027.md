@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementDetailDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:58](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L58).
+
+```csharp
+public sealed record IntercompanyAgreementDetailDto(Guid AgreementId, long AggregateVersion, string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly AsOf, IntercompanyAgreementStatusDto EffectiveStatus, int? LatestApprovedVersion, IntercompanyAgreementRevisionDto? ApplicableRevision, IReadOnlyList<IntercompanyAgreementProposalDto> Proposals, IReadOnlyList<IntercompanyAgreementRevisionDto> Revisions, IReadOnlyList<IntercompanyAgreementAuditDto> History, IntercompanyAgreementCapabilitiesDto Capabilities);
+```
+
 ## IntercompanyAgreementDraftDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto</code>. Kind: `record`.
@@ -686,16 +696,4 @@ Request to append or upsert an account-scoped sync history entry.
 
 ```csharp
 public sealed record RecordAccountSyncHistoryRequest(Guid AccountId, string Capability, AccountSyncStatusDto Status, AccountProviderLinkStatusDto ProviderLinkStatus = AccountProviderLinkStatusDto.Linked, string? ProviderId = null, string? ExternalAccountId = null, DateTimeOffset? AttemptedAt = null, DateTimeOffset? CompletedAt = null, DateTimeOffset? FreshUntil = null, AccountSyncFailureKindDto FailureKind = AccountSyncFailureKindDto.None, string? FailureMessage = null, string? CorrelationId = null, string? RequestedBy = null, string? RawEvidencePath = null, string? ProjectionEvidencePath = null, int SecurityMissingCount = 0, IReadOnlyList<string>? Warnings = null);
-```
-
-## RecordMarginSnapshotRequest
-
-Qualified name: <code>Meridian.Contracts.FundStructure.RecordMarginSnapshotRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:355](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L355).
-
-Request to record or upsert a margin snapshot for an account.
-
-```csharp
-public sealed record RecordMarginSnapshotRequest(Guid AccountId, DateTimeOffset EffectiveAt, string Currency, MarginModelTypeDto MarginType, MarginCallStatusDto MarginCallStatus = MarginCallStatusDto.None, decimal? InitialMargin = null, decimal? MaintenanceMargin = null, decimal? ExcessLiquidity = null, decimal? BuyingPower = null, decimal? SpecialMemorandumAccount = null, decimal? LoanBalance = null, decimal? DebitBalance = null, decimal? CreditBalance = null, decimal? CollateralValue = null, decimal? MarginableSecuritiesValue = null, decimal? NonMarginableSecuritiesValue = null, decimal? MarginUtilization = null, int MissingRequirementCount = 0, int MissingCollateralClassificationCount = 0, int ConcentrationLimitBreachCount = 0, bool IsLiveAccount = false, bool ApprovedForLiveMargin = false, IReadOnlyList<MarginRequirementDto>? Requirements = null, IReadOnlyList<string>? Warnings = null, string? ProviderId = null, string? ExternalAccountId = null, DateTimeOffset? RecordedAt = null, DateTimeOffset? FreshUntil = null, string? AgreementEvidencePath = null, string? SnapshotEvidencePath = null, string? CorrelationId = null);
 ```

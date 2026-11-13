@@ -87,6 +87,8 @@ public sealed class BondPortfolioRiskService(IAccountBondHoldingsSource holdings
                 var baseline = await bonds.CalculateAsync(calculation, ct).ConfigureAwait(false);
                 if (baseline is null)
                 { issues.Add($"Security {group.Key} is unavailable."); continue; }
+                // Retain the selected arithmetic before any fallback or scenario can resolve a newer default.
+                calculation = (baseline.Request ?? calculation) with { ModelVersion = baseline.ModelVersion };
                 if (quoteAuthority is not null && !baseline.IsBlocked
                     && (baseline.OriginalDirtyConsideration is not { } modeledDirty
                         || LedgerCurrencyRounding.RoundCurrency(modeledDirty, baseline.Currency)
@@ -98,6 +100,7 @@ public sealed class BondPortfolioRiskService(IAccountBondHoldingsSource holdings
                     baseline = await bonds.CalculateAsync(calculation, ct).ConfigureAwait(false);
                     if (baseline is null)
                     { issues.Add($"Security {group.Key} is unavailable."); continue; }
+                    calculation = (baseline.Request ?? calculation) with { ModelVersion = baseline.ModelVersion };
                 }
                 var localIssues = baseline.Issues.Select(row => row.Code + ": " + row.Reason).ToList();
                 if (quoteIssue is not null)

@@ -24,6 +24,12 @@ later cash and typed reversals verify the original entitlement, source allocatio
 native journal history. Unreconciled manual coupon accounting blocks further clearing. Exact
 canonical noncash amortization remains distinct from coupon recognition and cash consumption.
 
+Explicit acquisition-captured accrual v2 separates the active period from earlier unpaid earned
+coupons, retains purchased-interest rounding adjustments at their native boundary and keeps clean
+EIR recurrence independent of receivable/payable balances. Legacy preparation refuses unsafe lag
+windows without reinterpreting prior instructions or reversal authority. Generated posting always
+uses the canonical human-origin gate before storage and the existing independent approval checks.
+
 `AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
 default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
 candidate through existing accounting authority, checks the declared receivable/income account

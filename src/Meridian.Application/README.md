@@ -15,6 +15,9 @@ last_reviewed: 2026-11-12
 reconciliation handoffs into the account statement authority. It rejects omitted unreviewed rows,
 unresolved identities, mismatched dates/currencies and cost-derived marks. The versioned fixed-income
 workflow template adds explicit terms and nested bond holdings without changing retained v1 manifests.
+Full-snapshot admission verifies completed source counts, quarantine and failed-page evidence.
+Unknown account attribution and unreviewed accepted rows block; an other-account exclusion requires
+exact authenticated identity. A rejected-row replay does not supply a complete corrected statement.
 See [bond import and account workflows](../../docs/operators/bond-workflows.md).
 
 The W14 cash-dividend lane is a separate preparer-attestation path, not an exception inside

@@ -14,7 +14,8 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
     IBondWorkflowObservationSource? observations = null, IBondCalculationPolicy? policy = null,
     IBondWorkflowQuoteSource? quotes = null, ISecurityMasterPricingService? pricing = null) : IBondWorkflowService
 {
-    public const string ModelVersion = "bond-workflow-v1";
+    public const string ModelVersion = BondWorkflowModelVersions.Current;
+    public const string LegacyModelVersion = BondWorkflowModelVersions.Legacy;
 
     public Task<BondWorkflowResult?> CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default)
         => CalculateCoreAsync(request, null, ct);
@@ -22,10 +23,23 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
     public Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,
         CancellationToken ct = default) => CalculateCoreAsync(request, freezeIndexAt, ct);
 
+    public async Task<BondWorkflowResult?> ReplayAsync(BondWorkflowResult retained, CancellationToken ct = default)
+    {
+        if (retained.Request is not { } request || retained.ModelVersion is not (ModelVersion or LegacyModelVersion)
+            || request.ModelVersion is { } pinned && pinned != retained.ModelVersion)
+            throw new ArgumentException("Retained workflow replay requires its original request and exact supported model version.");
+        var replay = await CalculateCoreAsync(request with { ModelVersion = retained.ModelVersion }, retained.FrozenIndexAt, ct).ConfigureAwait(false);
+        // Historical v1 requests omitted their version. The receipt selects the arithmetic while
+        // its original request bytes remain untouched in the replayed result.
+        return replay is null ? null : replay with { Request = retained.Request };
+    }
+
     private async Task<BondWorkflowResult?> CalculateCoreAsync(BondWorkflowRequest request, DateOnly? freezeIndexAt, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Context);
+        var modelVersion = request.ModelVersion ?? ModelVersion;
+        var legacyAccrual = modelVersion == LegacyModelVersion;
         var context = request.Context with
         {
             SettlementDate = request.Context.SettlementDate ?? DateOnly.FromDateTime(request.Context.AsOf.UtcDateTime),
@@ -40,17 +54,19 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
         {
             new("SecurityTerms", security.SecurityId.ToString("D"), security.Version,
                 Sha256Digest.ComputeUtf8(security.CommonTerms.GetRawText() + "\n" + security.AssetSpecificTerms.GetRawText())),
-            new("CalculationModel", ModelVersion), new("CashFlowModel", BondWorkflowProjection.ModelVersion),
+            new("CalculationModel", modelVersion), new("CashFlowModel", legacyAccrual ? BondWorkflowProjection.LegacyModelVersion : BondWorkflowProjection.ModelVersion),
             new("PricingModel", BondWorkflowPricing.ModelVersion), new("CurvePolicy", "signed-positive-discount-v1")
         };
-        var originalRequest = request;
+        var originalRequest = legacyAccrual ? request : request with { ModelVersion = modelVersion };
         if (freezeIndexAt is { } frozenDate)
             inputs.Add(new("IncomeProjectionPolicy", "FrozenIndex:" + frozenDate.ToString("yyyy-MM-dd")));
         var issues = new List<BondWorkflowIssue>();
-        BondWorkflowResult Block(string code, string reason) => new(request.SecurityId, security.Currency, ModelVersion,
+        BondWorkflowResult Block(string code, string reason) => new(request.SecurityId, security.Currency, modelVersion,
             context, request.OriginalFace, null, null, null, null, request.Fees, null, null, null, null,
             null, null, null, [], inputs, [new("Projection", code, reason, true)], [])
         { Request = originalRequest with { Context = context } };
+        if (modelVersion is not (ModelVersion or LegacyModelVersion))
+            return Block("UnsupportedModelVersion", "Choose the current workflow model or an exact retained legacy version.");
         if (context.AsOf == default || context.AsOf.Offset != TimeSpan.Zero || context.KnownAt?.Offset != TimeSpan.Zero
             || request.OriginalFace <= 0m || request.Fees < 0m || request.CleanPricePer100 < 0m
             || !Enum.IsDefined(request.PriceBasis))
@@ -134,7 +150,11 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             var settlement = context.SettlementDate!.Value;
             var quoteDate = request.QuoteSettlementDate ?? settlement;
             var first = settlement < quoteDate ? settlement : quoteDate;
-            if (first < terms.IssueDate || settlement > terms.MaturityDate || quoteDate > terms.MaturityDate
+            var lastIncomeDate = !legacyAccrual && freezeIndexAt is not null
+                ? schedule.Periods.Max(period => period.PaymentDate) : terms.MaturityDate!.Value;
+            if (lastIncomeDate < terms.MaturityDate)
+                lastIncomeDate = terms.MaturityDate.Value;
+            if (first < terms.IssueDate || settlement > lastIncomeDate || quoteDate > lastIncomeDate
                 || freezeIndexAt is null && (settlement == terms.MaturityDate || quoteDate == terms.MaturityDate))
                 return Block("SettlementOutsideLife", "Both settlement dates must be inside the retained bond life.");
             var raw = security.AssetSpecificTerms;
@@ -302,9 +322,16 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                     return Block("UnexplainedFactorMovement", "Dated factor changes must reconcile to dated contractual principal cash.");
             }
             var flows = BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation);
-            var accrued = BondWorkflowProjection.Accrued(schedule, ProjectionTerms(settlement), settlement, Fixing, Inflation);
-            var contractualAccrued = accrued;
-            var quoteAccrued = BondWorkflowProjection.Accrued(schedule, ProjectionTerms(quoteDate), quoteDate, Fixing, Inflation);
+            bool PaidActiveCoupon(DateOnly date) => kind != "ZeroCoupon" && (kind == "Floating" || terms.CouponRate is not (null or 0m))
+                && schedule.Periods.Any(period => period.AccrualStart < date && period.PaymentDate <= date && date < period.AccrualEnd);
+            decimal ActiveAccrued(DateOnly date) => legacyAccrual
+                ? BondWorkflowProjection.LegacyAccrued(schedule, ProjectionTerms(date), date, Fixing, Inflation)
+                : BondWorkflowProjection.Accrued(schedule, ProjectionTerms(date), date, Fixing, Inflation);
+            decimal Deferred(DateOnly date) => legacyAccrual ? 0m : flows.Where(f => f.AccrualEnd <= date && f.PaymentDate > date).Sum(f => f.Interest);
+            var contractualAccrued = ActiveAccrued(settlement);
+            var deferredCoupon = Deferred(settlement);
+            var accrued = (legacyAccrual || !PaidActiveCoupon(settlement) ? contractualAccrued : 0m) + deferredCoupon;
+            var quoteAccrued = (legacyAccrual || !PaidActiveCoupon(quoteDate) ? ActiveAccrued(quoteDate) : 0m) + Deferred(quoteDate);
             var currentFace = request.OriginalFace * Factor(settlement);
             var quoteFace = request.OriginalFace * Factor(quoteDate);
             var settlementIndex = inflation is null ? new BondWorkflowFixing(1m, true, "contract")
@@ -332,9 +359,11 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             { dirty = clean; clean = dirty - quoteAccrued; }
             if (request.CleanPricePer100 is null)
                 issues.Add(new("SettlementPreview", "QuoteMissing", "Select a retained quote or enter an explicit clean price to calculate purchase cash and yield."));
-            BondWorkflowCashFlow[] Entitled(IReadOnlyList<BondWorkflowCashFlow> source, DateOnly date, out decimal detachedCoupon)
+            BondWorkflowCashFlow[] Entitled(IReadOnlyList<BondWorkflowCashFlow> source, DateOnly date, out decimal detachedCoupon,
+                out bool detachedAny)
             {
                 detachedCoupon = 0m;
+                detachedAny = false;
                 var rows = source.Where(f => f.PaymentDate > date).ToArray();
                 if (Number(block, "exCouponBusinessDays") is not { } days || days == 0m)
                     return rows;
@@ -346,13 +375,14 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                 for (var i = 0; i < rows.Length; i++)
                     if (rows[i].Interest != 0m && date >= calendar.AddBusinessDays(rows[i].PaymentDate, -(int)days))
                     {
+                        detachedAny = true;
                         detachedCoupon += rows[i].Interest;
                         rows[i] = rows[i] with { Interest = 0m };
                     }
                 return rows;
             }
-            var entitled = Entitled(flows, settlement, out var settlementDetached);
-            var quoteEntitled = Entitled(flows, quoteDate, out var quoteDetached);
+            var entitled = Entitled(flows, settlement, out var settlementDetached, out var hasDetachedCoupon);
+            var quoteEntitled = Entitled(flows, quoteDate, out var quoteDetached, out _);
             accrued -= settlementDetached;
             quoteAccrued -= quoteDetached;
             clean = request.CleanPricePer100 * quoteFace * quoteRatio / 100m;
@@ -395,7 +425,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                             throw new ArgumentException("CreditSpreadScenarioUnavailable: no retained calibrated spread establishes the scenario baseline.");
                     }
                     applyScenario = true;
-                    entitled = Entitled(BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation), settlement, out _);
+                    entitled = Entitled(BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation), settlement, out _, out _);
                     var baseline = Discounted(entitled, settlement, discount, request.RateShiftBps / 10_000m,
                         date => PillarShift(request.RatePillars, date) / 10_000m);
                     var risk = BondWorkflowPricing.Risk(baseline, (spread ?? 0m) + request.SpreadShiftBps / 10_000m);
@@ -405,12 +435,12 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                     duration = risk.Duration;
                     // Rate DV01 reprojects future floating coupons; CS01 changes discount spread only.
                     additionalRateBps = -1m;
-                    var downFlows = Entitled(BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation), settlement, out _);
+                    var downFlows = Entitled(BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation), settlement, out _, out _);
                     var down = BondWorkflowPricing.PresentValue(Discounted(downFlows, settlement, discount,
                         (request.RateShiftBps - 1m) / 10_000m, date => PillarShift(request.RatePillars, date) / 10_000m),
                         (spread ?? 0m) + request.SpreadShiftBps / 10_000m);
                     additionalRateBps = 1m;
-                    var upFlows = Entitled(BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation), settlement, out _);
+                    var upFlows = Entitled(BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation), settlement, out _, out _);
                     var up = BondWorkflowPricing.PresentValue(Discounted(upFlows, settlement, discount,
                         (request.RateShiftBps + 1m) / 10_000m, date => PillarShift(request.RatePillars, date) / 10_000m),
                         (spread ?? 0m) + request.SpreadShiftBps / 10_000m);
@@ -494,7 +524,10 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                     else
                     {
                         var exerciseTerms = ProjectionTerms(exercise.ExerciseDate);
-                        var accruedOnExercise = BondWorkflowProjection.Accrued(schedule, exerciseTerms, exercise.ExerciseDate, Fixing, Inflation);
+                        var accruedOnExercise = legacyAccrual
+                            ? BondWorkflowProjection.LegacyAccrued(schedule, exerciseTerms, exercise.ExerciseDate, Fixing, Inflation)
+                            : PaidActiveCoupon(exercise.ExerciseDate) ? 0m
+                                : BondWorkflowProjection.Accrued(schedule, exerciseTerms, exercise.ExerciseDate, Fixing, Inflation);
                         var ratio = inflation is null ? 1m : BondWorkflowProjection.IndexRatio(exercise.ExerciseDate, inflation, Inflation).Value;
                         ratio = Math.Max(ratio, inflation?.RedemptionFloorRatio ?? ratio);
                         var redemption = request.OriginalFace * Factor(exercise.ExerciseDate) * ratio * exercise.RedemptionPrice / 100m;
@@ -516,7 +549,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             if (raw.TryGetProperty("isCallable", out var callable) && callable.ValueKind == JsonValueKind.True
                 && exerciseResults.All(e => e.Kind != "Call"))
             { worst = null; issues.Add(new("YieldToWorst", "CallScheduleMissing", "Callable bonds require complete retained fixed-price exercise terms.")); }
-            return new(security.SecurityId, security.Currency, ModelVersion, context, request.OriginalFace, currentFace,
+            return new(security.SecurityId, security.Currency, modelVersion, context, request.OriginalFace, currentFace,
                 roundedAccrued, roundedClean, roundedDirty, roundedFees, roundedDirty + roundedFees, pv, yield,
                 spread, dv01, cs01, duration, entitled, inputs.Distinct().ToArray(), issues, metrics)
             {
@@ -526,7 +559,11 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                 ExerciseScenarios = exerciseResults,
                 SettlementIndexRatio = settlementIndex.Value,
                 SettlementIndexIsObserved = settlementIndex.IsObserved,
-                ContractualAccruedInterest = Round(contractualAccrued),
+                ContractualAccruedInterest = legacyAccrual ? Round(contractualAccrued)
+                    : decimal.Round(contractualAccrued, 12, MidpointRounding.ToEven),
+                DeferredCouponInterest = legacyAccrual ? null : decimal.Round(deferredCoupon, 12, MidpointRounding.ToEven),
+                HasDetachedCoupon = legacyAccrual ? null : hasDetachedCoupon,
+                HasPaidActiveCoupon = legacyAccrual ? null : PaidActiveCoupon(settlement),
                 ProviderYield = selectedQuote?.Input.Quote?.ProviderYield,
                 ProviderYieldConvention = selectedQuote?.Input.Quote?.ProviderYieldConvention,
                 YieldBasis = kind is "Floating" or "InflationLinked" ? "NominalForecastCashFlowAnnualEffective" : "AnnualEffective",

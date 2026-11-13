@@ -25,7 +25,7 @@ export function BondWorkflowPanel({ securityId, calculate = calculateBondWorkflo
 
 function WorkflowInputs({ securityId, calculate }: { securityId: string; calculate: typeof calculateBondWorkflow }) {
   const id = useId();
-  const [date, setDate] = useState(today);
+  const [economicTime, setEconomicTime] = useState(() => new Date().toISOString().slice(0, 19));
   const [settlement, setSettlement] = useState(today);
   const [quoteDate, setQuoteDate] = useState(today);
   const [face, setFace] = useState("10000");
@@ -61,8 +61,10 @@ function WorkflowInputs({ securityId, calculate }: { securityId: string; calcula
     event.preventDefault(); active.current?.abort();
     const controller = new AbortController(); active.current = controller;
     setError(null); setResult(null); setRows([]);
+    const asOf = utcInstantFromLocalInput(economicTime);
     if (![face, fees, rateShift, spreadShift].every((value) => DECIMAL_LITERAL.test(value.trim()))
-      || !date || !settlement || !quoteDate || Number(face) <= 0 || Number(fees) < 0
+      || !Number.isFinite(Date.parse(asOf)) || !settlement || !quoteDate || Number(face) <= 0 || Number(fees) < 0
+      || (knownAt && !Number.isFinite(Date.parse(utcInstantFromLocalInput(knownAt))))
       || (price.trim() !== "" && (!DECIMAL_LITERAL.test(price.trim()) || Number(price) < 0))) {
       setError("Enter valid dates, positive original face, and decimal price, fees and shifts."); return;
     }
@@ -77,7 +79,7 @@ function WorkflowInputs({ securityId, calculate }: { securityId: string; calcula
       setError("Enter up to nine comparison rows as security ID, clean price. Each row needs its own price."); return;
     }
     const request: BondWorkflowRequest = {
-      securityId, context: { asOf: `${date}T00:00:00Z`, settlementDate: settlement, ...(knownAt ? { knownAt: utcInstantFromLocalInput(knownAt) } : {}) },
+      securityId, context: { asOf, settlementDate: settlement, ...(knownAt ? { knownAt: utcInstantFromLocalInput(knownAt) } : {}) },
       originalFace: face.trim(), cleanPricePer100: price.trim() || null, quoteSettlementDate: quoteDate,
       fees: fees.trim(), priceBasis, rateShiftBps: rateShift.trim(), spreadShiftBps: spreadShift.trim(),
       quoteObservationId, priceSelectionReceiptId: selectionReceiptId.trim() || null, accountId: pricingAccountId.trim() || null,
@@ -110,7 +112,7 @@ function WorkflowInputs({ securityId, calculate }: { securityId: string; calcula
     <CardContent className="space-y-4">
       <form onSubmit={submit} aria-label="Bond workflow inputs" className="space-y-3">
         <FormGrid columns={3}>
-          <FormRow label="Economic date (UTC)" labelFor={`${id}-date`}><Input id={`${id}-date`} type="date" value={date} onChange={(e) => edit(() => setDate(e.target.value))} required /></FormRow>
+          <FormRow label="Economic date and time (UTC)" labelFor={`${id}-date`} hint={<span id={`${id}-economic-help`}>Enter UTC. Quotes observed after this instant remain unavailable. Selecting a quote keeps this cutoff unchanged.</span>}><Input id={`${id}-date`} type="datetime-local" step="1" aria-describedby={`${id}-economic-help`} value={economicTime} onChange={(e) => edit(() => setEconomicTime(e.target.value))} required /></FormRow>
           <FormRow label="Comparison settlement" labelFor={`${id}-settle`}><Input id={`${id}-settle`} type="date" value={settlement} onChange={(e) => edit(() => setSettlement(e.target.value))} required /></FormRow>
           <FormRow label="Original quote settlement" labelFor={`${id}-quote`}><Input id={`${id}-quote`} type="date" value={quoteDate} onChange={(e) => edit(() => setQuoteDate(e.target.value))} required /></FormRow>
           <FormRow label="Original face amount" labelFor={`${id}-face`}><Input id={`${id}-face`} inputMode="decimal" value={face} onChange={(e) => edit(() => setFace(e.target.value))} /></FormRow>
@@ -134,7 +136,7 @@ function WorkflowInputs({ securityId, calculate }: { securityId: string; calcula
         <Button type="submit" disabled={pending}>{pending ? "Calculating bonds…" : "Calculate purchase and comparison"}</Button>
       </form>
       <BondMarketInputsPanel key={`${securityId}-${pricingAccountId}`} securityId={securityId} accountId={pricingAccountId} onQuoteSelected={(observation) => edit(() => { setQuoteObservationId(observation.observationId); setPrice(""); setSelectionReceiptId(""); if (observation.input.quote) setQuoteDate(observation.input.quote.settlementDate); })} />
-      <BondScreeningPanel key={`screen-${date}-${knownAt}`} asOf={date} knownAtUtc={knownAt ? utcInstantFromLocalInput(knownAt) : undefined} currentSecurityId={securityId} onCandidate={(candidate) => edit(() => { setComparisons((current) => current.split(/\r?\n/).some((line) => line.split(",")[0].trim() === candidate) ? current : `${current}${current.trim() ? "\n" : ""}${candidate}, `); setComparisonOpen(true); setComparisonFocusVersion((version) => version + 1); })} />
+      <BondScreeningPanel key={`screen-${economicTime.slice(0, 10)}-${knownAt}`} asOf={economicTime.slice(0, 10)} knownAtUtc={knownAt ? utcInstantFromLocalInput(knownAt) : undefined} currentSecurityId={securityId} onCandidate={(candidate) => edit(() => { setComparisons((current) => current.split(/\r?\n/).some((line) => line.split(",")[0].trim() === candidate) ? current : `${current}${current.trim() ? "\n" : ""}${candidate}, `); setComparisonOpen(true); setComparisonFocusVersion((version) => version + 1); })} />
       {error ? <StatusBanner tone="danger" role="alert" title="Calculation unavailable" detail={error} /> : null}
       {rows.length > 1 ? <div className="overflow-x-auto"><table className="w-full text-left text-sm">
         <caption className="sr-only">Bond comparison at common original face and settlement; amounts remain in each currency</caption>

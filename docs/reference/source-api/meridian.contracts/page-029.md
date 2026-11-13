@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationManifestIdentity
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationManifestIdentity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:29](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L29).
+
+Canonical snapshot hashing shared by persistence and ingestion/replay.
+
+```csharp
+public static class ProviderIntegrationManifestIdentity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ProviderIntegrationManifestReferenceDto Create(ProviderIntegrationManifestDto manifest);</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:44](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L44) |  |
+| <code>public static bool Matches(ProviderIntegrationManifestReferenceDto? left, ProviderIntegrationManifestReferenceDto? right) =&gt; …;</code> | [src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs:59](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationManifestIdentity.cs#L59) |  |
+
 ## ProviderIntegrationManifestReferenceDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationManifestReferenceDto</code>. Kind: `record`.
@@ -641,25 +660,3 @@ Declared public members:
 | <code>public static string? Normalize(string? value) =&gt; …;</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:168](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L168) | Returns the canonical lowercase form of a well-formed digest, or null when value is not a well-formed digest. Use this to repair non-canonical input at an ingest boundary instead of rejecting it deeper in the stack. |
 | <code>public static Sha256DigestComparison Compare(string? left, string? right);</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:175](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L175) | Compares two digests in constant time, distinguishing a malformed input from a genuine mismatch. |
 | <code>public static bool FixedEquals(string? left, string? right) =&gt; …;</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:204](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L204) | Returns true only when both digests are well-formed and denote the same bytes. Prefer Compare where the caller can report a malformed digest separately from a mismatch. |
-
-## Sha256DigestComparison
-
-Qualified name: <code>Meridian.Contracts.Integrity.Sha256DigestComparison</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Integrity/Sha256Digest.cs:238](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L238).
-
-Outcome of comparing two SHA-256 digests via Sha256Digest.Compare.
-
-```csharp
-public enum Sha256DigestComparison
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Match = 0</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:241](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L241) | Both digests are well-formed and denote the same bytes. |
-| <code>Mismatch = 1</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:244](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L244) | Both digests are well-formed and denote different bytes — a genuine mismatch. |
-| <code>MalformedLeft = 2</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:247](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L247) | The left digest is not a well-formed SHA-256 value; no comparison was performed. |
-| <code>MalformedRight = 3</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:250](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L250) | The right digest is not a well-formed SHA-256 value; no comparison was performed. |
-| <code>MalformedBoth = 4</code> | [src/Meridian.Contracts/Integrity/Sha256Digest.cs:253](../../../../src/Meridian.Contracts/Integrity/Sha256Digest.cs#L253) | Neither digest is a well-formed SHA-256 value; no comparison was performed. |

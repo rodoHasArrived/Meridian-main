@@ -271,13 +271,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:31](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L31).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:33](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L33).
 
 Reviewed acquisition facts retained on the authoritative lot, never supplied to a preview.
 
 ```csharp
-public sealed record BondIncomeAcquisitionDto(DateTimeOffset KnownAt, decimal CleanConsideration, decimal PurchasedAccruedInterest, decimal IndexRatio, IReadOnlyList<BondIncomeFeeDto> Fees, IReadOnlyList<RetainedEvidenceIdentityDto> Evidence);
+public sealed record BondIncomeAcquisitionDto(DateTimeOffset KnownAt, decimal CleanConsideration, decimal PurchasedAccruedInterest, decimal IndexRatio, IReadOnlyList<BondIncomeFeeDto> Fees, IReadOnlyList<RetainedEvidenceIdentityDto> Evidence)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccrualPolicyVersion { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:38](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L38) |  |
 
 ## BondIncomeAcquisitionOwnership
 
@@ -348,17 +354,18 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const string ModelVersion = &quot;bond-income-us-gaap-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:13](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L13) |  |
-| <code>public static BondIncomePolicyDto ReadPolicy(AccountingPolicyDto policy);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:16](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L16) |  |
-| <code>public static void ValidateAcquisition(BondIncomeAcquisitionDto value, decimal retainedCost);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:33](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L33) |  |
-| <code>public static BondIncomeResultDto Project(OpenLotDto lot, BondIncomeInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:48](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L48) |  |
-| <code>public static OpenLotAmortizationProjectionDto ProjectCanonical(OpenLotAmortizationInstructionDto inputs);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:185](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L185) |  |
-| <code>public static IReadOnlyList&lt;BondIncomeCallDto&gt; ReadQualifyingCalls(SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:286](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L286) |  |
+| <code>public const string SeparatedAccrualPolicyVersion = &quot;bond-income-accrual-v2&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:14](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L14) |  |
+| <code>public static BondIncomePolicyDto ReadPolicy(AccountingPolicyDto policy);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:17](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L17) |  |
+| <code>public static void ValidateAcquisition(BondIncomeAcquisitionDto value, decimal retainedCost);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:35](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L35) |  |
+| <code>public static BondIncomeResultDto Project(OpenLotDto lot, BondIncomeInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:51](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L51) |  |
+| <code>public static OpenLotAmortizationProjectionDto ProjectCanonical(OpenLotAmortizationInstructionDto inputs);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:215](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L215) |  |
+| <code>public static IReadOnlyList&lt;BondIncomeCallDto&gt; ReadQualifyingCalls(SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs:316](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCalculator.cs#L316) |  |
 
 ## BondIncomeCallDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeCallDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:37](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L37).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:43](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L43).
 
 ```csharp
 public sealed record BondIncomeCallDto(DateOnly Date, decimal PricePer100);
@@ -415,17 +422,19 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string ModelVersion = &quot;bond-income-coupon-allocation-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:25](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L25) |  |
 | <code>public const string TerminalEntitlementModelVersion = &quot;bond-terminal-entitlement-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:26](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L26) |  |
-| <code>public static IReadOnlyList&lt;BondWorkflowCashFlow&gt; EarnedFlows(BondIncomeInstructionDto income);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:28](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L28) |  |
-| <code>public static (decimal Receivable, decimal Payable) EarnedSides(Guid lotId, BondIncomeInstructionDto income, decimal openShare = 1m);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:41](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L41) |  |
-| <code>public static BondIncomeCouponAllocationDto Allocate(DateOnly paymentDate, DateOnly accrualStart, DateOnly accrualEnd, string currency, IReadOnlyList&lt;BondIncomeCouponLotAllocationDto&gt; inputs);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:52](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L52) |  |
-| <code>public static decimal AllocatedCash(Guid lotId, BondIncomeInstructionDto income, DateOnly paymentDate, DateOnly accrualStart);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:75](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L75) |  |
-| <code>public static decimal CompletedCash(Guid lotId, BondIncomeInstructionDto income);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:92](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L92) |  |
+| <code>public static decimal PurchasedIncomeOffset(BondIncomeInstructionDto income);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:28](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L28) |  |
+| <code>public static IReadOnlyList&lt;BondWorkflowCashFlow&gt; DeferredEarnedFlows(BondIncomeInstructionDto income);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:40](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L40) |  |
+| <code>public static IReadOnlyList&lt;BondWorkflowCashFlow&gt; EarnedFlows(BondIncomeInstructionDto income);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:51](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L51) |  |
+| <code>public static (decimal Receivable, decimal Payable) EarnedSides(Guid lotId, BondIncomeInstructionDto income, decimal openShare = 1m);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:64](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L64) |  |
+| <code>public static BondIncomeCouponAllocationDto Allocate(DateOnly paymentDate, DateOnly accrualStart, DateOnly accrualEnd, string currency, IReadOnlyList&lt;BondIncomeCouponLotAllocationDto&gt; inputs);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:77](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L77) |  |
+| <code>public static decimal AllocatedCash(Guid lotId, BondIncomeInstructionDto income, DateOnly paymentDate, DateOnly accrualStart);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:100](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L100) |  |
+| <code>public static decimal CompletedCash(Guid lotId, BondIncomeInstructionDto income);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs:117](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs#L117) |  |
 
 ## BondIncomeFeeDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeFeeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:27](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L27).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:29](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L29).
 
 ```csharp
 public sealed record BondIncomeFeeDto(string SourceReference, decimal Amount, BondIncomeFeeTreatment Treatment, RetainedEvidenceIdentityDto Evidence);
@@ -470,7 +479,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeInstructionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:43](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L43).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:49](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L49).
 
 Server-prepared, immutable calculation inputs. This is not posting authority; the canonical posting boundary resolves and locks its lot, book, position and Security Master again.
 
@@ -482,17 +491,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BondIncomeCouponAllocationDto&gt;? CouponCashAllocations { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:70](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L70) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondIncomeBookedTargetDto? BookedTarget { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:72](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L72) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondIncomeTerminalEntitlementDto? TerminalEntitlement { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:74](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L74) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondIncomePurchasedCouponTailDto? PurchasedCouponTail { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:76](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L76) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingYieldCertificate { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:78](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L78) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BondIncomeCouponAllocationDto&gt;? CouponCashAllocations { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:76](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L76) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondIncomeBookedTargetDto? BookedTarget { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:78](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L78) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondIncomeTerminalEntitlementDto? TerminalEntitlement { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:80](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L80) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondIncomePurchasedCouponTailDto? PurchasedCouponTail { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:82](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L82) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingYieldCertificate { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:84](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L84) |  |
 
 ## BondIncomeJournalComponentDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeJournalComponentDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:120](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L120).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:129](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L129).
 
 Named economic legs to map through a governed book rule pack; not executable journals.
 
@@ -504,7 +513,7 @@ public sealed record BondIncomeJournalComponentDto(string Component, decimal Deb
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeOperatorFingerprintReviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:146](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L146).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:155](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L155).
 
 Acceptance of an exact prepared calculation, never independent journal approval.
 
@@ -529,12 +538,13 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string BookedTargetPrecisionVersion =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:24](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L24) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccrualPolicyVersion { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:26](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L26) |  |
 
 ## BondIncomePreparationArtifactDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomePreparationArtifactDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:136](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L136).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:145](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L145).
 
 ```csharp
 public sealed record BondIncomePreparationArtifactDto(string TenantId, string CompanyId, Guid AccountId, Guid LedgerBookId, Guid PeriodId, Guid EventId, long EventVersion, string PreviewFingerprint, OpenLotAmortizationInstructionDto Instruction)
@@ -544,14 +554,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:140](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L140) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondCouponRecognitionInstructionDto? CouponRecognition { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:142](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L142) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:149](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L149) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondCouponRecognitionInstructionDto? CouponRecognition { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:151](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L151) |  |
 
 ## BondIncomePreparationRequestDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomePreparationRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:133](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L133).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:142](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L142).
 
 ```csharp
 public sealed record BondIncomePreparationRequestDto(BondIncomePreviewRequestDto Request, string ExpectedFingerprint, Guid? PeriodId = null);
@@ -561,7 +571,7 @@ public sealed record BondIncomePreparationRequestDto(BondIncomePreviewRequestDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomePreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:125](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L125).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:134](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L134).
 
 ```csharp
 public sealed record BondIncomePreviewDto(Guid LedgerBookId, Guid TaxLotRecordId, string Fingerprint, OpenLotAmortizationInstructionDto Instruction, BondIncomeResultDto Income, AssetLotMutationInstructionDto LotMutation)
@@ -571,14 +581,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AssetAccountingPostingCandidateDto? PreparedCandidate { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:129](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L129) |  |
-| <code>public BondIncomePreparationArtifactDto? PreparedArtifact { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:130](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L130) |  |
+| <code>public AssetAccountingPostingCandidateDto? PreparedCandidate { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:138](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L138) |  |
+| <code>public BondIncomePreparationArtifactDto? PreparedArtifact { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:139](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L139) |  |
 
 ## BondIncomePreviewRequestDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:122](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L122).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:131](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L131).
 
 ```csharp
 public sealed record BondIncomePreviewRequestDto(Guid LedgerBookId, Guid TaxLotRecordId, DateOnly ThroughDate, DateTimeOffset KnownAt, Guid AccountId = default);
@@ -607,7 +617,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:84](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L84).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:90](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L90).
 
 A separately booked, fully purchased coupon; its actual cash date and rights remain retained.
 
@@ -619,7 +629,7 @@ public sealed record BondIncomePurchasedCouponTailDto(string ModelVersion, Guid 
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeResetDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:36](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L36).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:42](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L42).
 
 A retained frozen-index schedule at an observed contractual reset.
 
@@ -631,7 +641,7 @@ public sealed record BondIncomeResetDto(DateOnly Date, BondWorkflowResult Projec
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:89](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L89).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:95](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L95).
 
 Signed transaction-currency changes, separate from cash settlement or market P&amp;L.
 
@@ -643,13 +653,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DateOnly CumulativeIncomeFromDate { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:107](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L107) | Coupon, premium/discount and indexation income are cumulative from this date. |
-| <code>public decimal CarryingBasisMovement =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:109](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L109) | The incremental movement from the current authoritative carrying basis. |
-| <code>public decimal CouponCashRoundingAdjustment { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:111](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L111) | Allocated native coupon cash less raw completed coupon economics. |
-| <code>public BondIncomeBookedTargetDto? BookedTarget { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:112](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L112) |  |
-| <code>public string AccountingYieldCertificate { get; init; } = &quot;dated-sign-change-bracket-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:114](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L114) | Uniqueness certificate for accounting period allocation, distinct from a market cash IRR. |
-| <code>public decimal? BookedCarryingBasisMovement =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:115](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L115) |  |
-| <code>public decimal TotalAccountingIncome =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:116](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L116) |  |
+| <code>public DateOnly CumulativeIncomeFromDate { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:113](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L113) | Coupon, premium/discount and indexation income are cumulative from this date. |
+| <code>public decimal CarryingBasisMovement =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:115](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L115) | The incremental movement from the current authoritative carrying basis. |
+| <code>public decimal CouponCashRoundingAdjustment { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:117](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L117) | Allocated native coupon cash less raw completed coupon economics. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? PurchasedAccruedRoundingAdjustment { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:120](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L120) | Raw purchased-accrual baseline less its actual invoice at the purchased coupon&#x27;s native boundary. |
+| <code>public BondIncomeBookedTargetDto? BookedTarget { get; init; }</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:121](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L121) |  |
+| <code>public string AccountingYieldCertificate { get; init; } = &quot;dated-sign-change-bracket-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:123](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L123) | Uniqueness certificate for accounting period allocation, distinct from a market cash IRR. |
+| <code>public decimal? BookedCarryingBasisMovement =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:124](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L124) |  |
+| <code>public decimal TotalAccountingIncome =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:125](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L125) |  |
 
 ## BondIncomeScheduledPrincipal
 
@@ -738,7 +749,7 @@ public sealed record BondIncomeTerminalCouponReceiptDto(Guid TaxLotRecordId, str
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:81](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L81).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:87](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L87).
 
 ```csharp
 public sealed record BondIncomeTerminalEntitlementDto(string ModelVersion, DateOnly PrincipalDate);

@@ -157,10 +157,11 @@ public sealed class BondMonitoringMarketWatchTests : IDisposable
     private sealed class Bonds(string? priorDependency = null) : IBondWorkflowService
     {
         public Task<BondWorkflowResult?> CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default) =>
-            Task.FromResult<BondWorkflowResult?>(new(Security, "USD", "synthetic", request.Context with { SecurityVersion = 1 }, 2000m, 2000m,
+            Task.FromResult<BondWorkflowResult?>(new(Security, "USD", BondWorkflowModelVersions.Current, request.Context with { SecurityVersion = 1 }, 2000m, 2000m,
                 0m, null, null, 0m, null, null, null, null, null, null, null,
                 [new(Today.AddDays(30), Today, Today.AddDays(30), 10m, 0m, 2000m, 1m, false, [])],
-                new BondCalculationInput[] { new("SecurityTerms", "terms", 1, Sha256Digest.ComputeUtf8("terms")) }
+                new BondCalculationInput[] { new("SecurityTerms", "terms", 1, Sha256Digest.ComputeUtf8("terms")),
+                    new("CalculationModel", BondWorkflowModelVersions.Current) }
                     .Concat(priorDependency is null ? [] : new BondCalculationInput[]
                         { new("Observation", "prior-factor", ContentSha256: priorDependency) }).ToArray(), [], []));
         public Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,

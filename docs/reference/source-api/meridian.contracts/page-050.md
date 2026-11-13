@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpsertOtcCollateralAgreementRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L158).
+
+Creates (CollateralAgreementId null) or amends a collateral agreement under a master agreement.
+
+```csharp
+public sealed record UpsertOtcCollateralAgreementRequest(Guid? CollateralAgreementId, Guid MasterAgreementId, string Currency, decimal ThresholdOurs, decimal ThresholdTheirs, decimal MinimumTransferAmount, decimal? IndependentAmount, decimal? RoundingAmount, string ValuationFrequency, IReadOnlyList<OtcEligibleCollateralDto> EligibleCollateral, DateOnly EffectiveDate, DateOnly? TerminationDate = null, string? Notes = null, string? UpdatedBy = null);
+```
+
 ## UpsertOtcCollateralBalanceRequest
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcCollateralBalanceRequest</code>. Kind: `record`.
@@ -893,22 +905,3 @@ Enum declarations:
 | <code>Warning</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:110](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L110) |  |
 | <code>Error</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:111](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L111) |  |
 | <code>Blocker</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:112](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L112) |  |
-
-## AuthoritativeScopeAssignment
-
-Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
-
-One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
-
-```csharp
-public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
-| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |

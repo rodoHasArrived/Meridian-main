@@ -25,6 +25,29 @@ public static class BondIncomeCouponRounding
     public const string ModelVersion = "bond-income-coupon-allocation-v1";
     public const string TerminalEntitlementModelVersion = "bond-terminal-entitlement-v1";
 
+    public static decimal PurchasedIncomeOffset(BondIncomeInstructionDto income)
+    {
+        if (income.Policy.AccrualPolicyVersion != BondIncomeCalculator.SeparatedAccrualPolicyVersion
+            || income.PurchasedCouponTail is not null || income.TerminalEntitlement is not null)
+            return income.AcquisitionAccruedInterest;
+        var period = income.AcquisitionProjection.CashFlows.SingleOrDefault(flow => flow.AccrualStart < income.AcquisitionDate
+            && income.AcquisitionDate < flow.AccrualEnd);
+        return period is not null && period.PaymentDate <= income.ThroughDate
+            ? income.AcquisitionAccruedInterest : income.AcquisitionProjection.ContractualAccruedInterest
+                ?? throw new ArgumentException("Separated earned coupon income requires raw retained acquisition accrual.");
+    }
+
+    public static IReadOnlyList<BondWorkflowCashFlow> DeferredEarnedFlows(BondIncomeInstructionDto income)
+    {
+        if (income.Policy.AccrualPolicyVersion != BondIncomeCalculator.SeparatedAccrualPolicyVersion || income.TerminalEntitlement is not null)
+            return [];
+        var flows = income.CurrentProjection.CashFlows.Where(flow => flow.Interest != 0m
+            && flow.PaymentDate > income.ThroughDate && flow.AccrualEnd <= income.ThroughDate).ToArray();
+        if (flows.Any(flow => flow.IsForecast))
+            throw new ArgumentException("Recognized deferred coupon income requires observed fully earned obligation evidence.");
+        return flows;
+    }
+
     public static IReadOnlyList<BondWorkflowCashFlow> EarnedFlows(BondIncomeInstructionDto income)
     {
         var flows = income.CurrentProjection.CashFlows.Where(f => f.PaymentDate > income.AcquisitionDate && f.Interest != 0m).ToArray();
@@ -42,11 +65,13 @@ public static class BondIncomeCouponRounding
     {
         var cash = EarnedFlows(income).GroupBy(f => (f.PaymentDate, f.AccrualStart))
             .Select(g => AllocatedCash(lotId, income, g.Key.PaymentDate, g.Key.AccrualStart)).ToArray();
+        var deferred = DeferredEarnedFlows(income);
+        var purchasedOffset = PurchasedIncomeOffset(income) * openShare;
         var accrued = income.TerminalEntitlement is null ? income.CurrentAccruedInterest * openShare : 0m;
-        return (decimal.Round(cash.Sum(c => Math.Max(c, 0m)) + Math.Max(accrued, 0m)
-                - Math.Max(income.AcquisitionAccruedInterest, 0m) * openShare, 12, MidpointRounding.ToEven),
-            decimal.Round(cash.Sum(c => Math.Max(-c, 0m)) + Math.Max(-accrued, 0m)
-                - Math.Max(-income.AcquisitionAccruedInterest, 0m) * openShare, 12, MidpointRounding.ToEven));
+        return (decimal.Round(cash.Sum(c => Math.Max(c, 0m)) + deferred.Sum(flow => Math.Max(flow.Interest, 0m)) * openShare + Math.Max(accrued, 0m)
+                - Math.Max(purchasedOffset, 0m), 12, MidpointRounding.ToEven),
+            decimal.Round(cash.Sum(c => Math.Max(-c, 0m)) + deferred.Sum(flow => Math.Max(-flow.Interest, 0m)) * openShare + Math.Max(-accrued, 0m)
+                - Math.Max(-purchasedOffset, 0m), 12, MidpointRounding.ToEven));
     }
 
     public static BondIncomeCouponAllocationDto Allocate(DateOnly paymentDate, DateOnly accrualStart,

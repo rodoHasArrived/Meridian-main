@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementMappingProfileDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L19).
+
+Declarative statement mapping profile shared with workstation clients.
+
+```csharp
+public sealed record StatementMappingProfileDto(int SchemaVersion, string ProfileId, string DisplayName, string Format, StatementMappingProfileCsvOptionsDto? Csv, string? Culture, IReadOnlyList<string>? DateFormats, IReadOnlyList<StatementMappingProfileFieldDto> Fields, IReadOnlyList<StatementMappingProfileActivityCodeDto> ActivityCodes, string? LastAcceptedFingerprint, bool IsBuiltIn, string? Notes);
+```
+
 ## StatementMappingProfileFieldDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileFieldDto</code>. Kind: `record`.
@@ -633,16 +645,4 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:38](../../../.
 
 ```csharp
 public sealed record StpStateTransition(Guid InstructionId, StpProcessingState State, DateTimeOffset AtUtc, string Detail, string? BreakQueueReason = null);
-```
-
-## StrategyBriefingAlert
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingAlert</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L59).
-
-Actionable alert shown on the strategy briefing surface.
-
-```csharp
-public sealed record StrategyBriefingAlert(string AlertId, string Title, string Summary, string Tone, string? RunId = null, string? ActionLabel = null);
 ```

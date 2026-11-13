@@ -684,7 +684,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var idempotent = await TryBuildIdempotentLifecycleResultAsync(fundProfileId, draft, request, ct).ConfigureAwait(false);
         if (idempotent is not null)
         {
-            if (request.Action == JournalEntryLifecycleActionDto.LockAfterClose)
+            if (idempotent.Transition.Action == JournalEntryLifecycleActionDto.LockAfterClose)
             {
                 RequireAuthoritativeHardClosedPeriod(request, serverPeriodIsHardClosed);
             }

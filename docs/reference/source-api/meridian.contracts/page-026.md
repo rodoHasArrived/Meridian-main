@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundAccountsDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.FundAccountsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:554](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L554).
+
+Fund-level grouping of accounts by type.
+
+```csharp
+public sealed record FundAccountsDto(Guid FundId, IReadOnlyList<AccountSummaryDto> CustodianAccounts, IReadOnlyList<AccountSummaryDto> BankAccounts, IReadOnlyList<AccountSummaryDto> BrokerageAccounts, IReadOnlyList<AccountSummaryDto> OtherAccounts);
+```
+
 ## FundOperatingSliceDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.FundOperatingSliceDto</code>. Kind: `record`.
@@ -559,14 +571,4 @@ Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:95](.
 
 ```csharp
 public sealed class IntercompanyAgreementConflictException(string message) : IntercompanyAgreementValidationException(message);
-```
-
-## IntercompanyAgreementDetailDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs:58](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAgreementDtos.cs#L58).
-
-```csharp
-public sealed record IntercompanyAgreementDetailDto(Guid AgreementId, long AggregateVersion, string Code, string Name, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, IntercompanyAgreementTypeDto AgreementType, string Currency, DateOnly AsOf, IntercompanyAgreementStatusDto EffectiveStatus, int? LatestApprovedVersion, IntercompanyAgreementRevisionDto? ApplicableRevision, IReadOnlyList<IntercompanyAgreementProposalDto> Proposals, IReadOnlyList<IntercompanyAgreementRevisionDto> Revisions, IReadOnlyList<IntercompanyAgreementAuditDto> History, IntercompanyAgreementCapabilitiesDto Capabilities);
 ```

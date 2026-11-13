@@ -19,6 +19,10 @@ curve-definition opt-in; omitted policy retains legacy nonnegative admission and
 
 `BondWorkflow*`, `BondPerformance*`, `BondIncome*` and coupon-recognition contracts keep signed
 analytical cash, observed transactions, accounting-income instructions and posting receipts distinct.
+Workflow v2 pins active accrual separately from deferred earned coupons; literal v1 replay keeps
+its original fields and arithmetic. The nullable `bond-income-accrual-v2` subpolicy is explicitly
+captured at acquisition, preserving old policy bytes when absent. Purchased opening interest,
+raw earning targets and native obligation-boundary rounding remain separate, including signed sides.
 See the [operator workflow and source schemas](../../docs/operators/bond-workflows.md).
 
 Terminal principal retains exact earned-coupon receipts or an actual acquisition-opening authority

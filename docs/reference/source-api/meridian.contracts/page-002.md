@@ -68,7 +68,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondIncomePreparationEvidenceStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:149](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L149).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:158](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L158).
 
 ```csharp
 public interface IBondIncomePreparationEvidenceStore
@@ -78,14 +78,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;RetainedEvidenceIdentityDto&gt; RetainAsync(BondIncomePreparationArtifactDto artifact, string actor, DateTimeOffset preparedAtUtc, bool mustExist, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:151](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L151) |  |
-| <code>Task VerifyAsync(RetainedEvidenceIdentityDto expected, OpenLotAmortizationInstructionDto instruction, Guid periodId, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:153](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L153) |  |
+| <code>Task&lt;RetainedEvidenceIdentityDto&gt; RetainAsync(BondIncomePreparationArtifactDto artifact, string actor, DateTimeOffset preparedAtUtc, bool mustExist, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:160](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L160) |  |
+| <code>Task VerifyAsync(RetainedEvidenceIdentityDto expected, OpenLotAmortizationInstructionDto instruction, Guid periodId, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:162](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L162) |  |
 
 ## IBondIncomeService
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.IBondIncomeService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:157](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L157).
+Source: [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:166](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L166).
 
 ```csharp
 public interface IBondIncomeService
@@ -95,10 +95,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task VerifyPreparedSourceAsync(OpenLotAmortizationInstructionDto instruction, EconomicEventReferenceDto economicEvent, Guid periodId, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:159](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L159) |  |
-| <code>Task RequireAcquisitionPolicyAsync(Guid ledgerBookId, DateOnly acquiredDate, BondIncomeAcquisitionDto acquisition, decimal retainedCost, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:162](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L162) |  |
-| <code>Task&lt;BondIncomePreviewDto&gt; PreviewAsync(BondIncomePreviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:164](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L164) |  |
-| <code>Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:166](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L166) | Rebuilds from server authorities and refuses stale review before returning canonical input. |
+| <code>Task VerifyPreparedSourceAsync(OpenLotAmortizationInstructionDto instruction, EconomicEventReferenceDto economicEvent, Guid periodId, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:168](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L168) |  |
+| <code>Task RequireAcquisitionPolicyAsync(Guid ledgerBookId, DateOnly acquiredDate, BondIncomeAcquisitionDto acquisition, decimal retainedCost, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:171](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L171) |  |
+| <code>Task&lt;BondIncomePreviewDto&gt; PreviewAsync(BondIncomePreviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:173](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L173) |  |
+| <code>Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs:175](../../../../src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs#L175) | Rebuilds from server authorities and refuses stale review before returning canonical input. |
 
 ## IOpenLotBackfillStore
 

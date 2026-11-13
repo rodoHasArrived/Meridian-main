@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcExposureSnapshotStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcExposureSnapshotStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L123).
+
+Whether every considered contract was valued and no gate blocked the credit support computation.
+
+```csharp
+public enum OtcExposureSnapshotStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Complete</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:125](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L125) |  |
+| <code>Incomplete</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L126) |  |
+
 ## OtcMarginCallAction
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMarginCallAction</code>. Kind: `enum`.
@@ -754,22 +773,3 @@ Enum declarations:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>CalendarCoverageExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L70) | A calendar was asked about a date outside its declared coverage. |
-
-## ScheduleDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L8).
-
-Which end of the schedule the regular grid is generated from.
-
-```csharp
-public enum ScheduleDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
-| <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |

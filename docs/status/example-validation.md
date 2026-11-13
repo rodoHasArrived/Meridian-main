@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12104 |
-| Valid | 11604 |
+| Total code blocks | 12105 |
+| Valid | 11605 |
 | Invalid | 0 |
 | Skipped | 500 |
 
@@ -20,7 +20,7 @@
 | `(none)` | 119 | 0 | 0 | 119 |
 | `bash` | 270 | 270 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 11229 | 11229 | 0 | 0 |
+| `csharp` | 11230 | 11230 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -230,8 +230,8 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-043.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-044.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-045.md` | 57 |
-| `docs/reference/source-api/meridian.contracts/page-046.md` | 53 |
-| `docs/reference/source-api/meridian.contracts/page-047.md` | 50 |
+| `docs/reference/source-api/meridian.contracts/page-046.md` | 50 |
+| `docs/reference/source-api/meridian.contracts/page-047.md` | 53 |
 | `docs/reference/source-api/meridian.contracts/page-048.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-049.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-050.md` | 50 |
@@ -256,7 +256,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-069.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-070.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-071.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-072.md` | 15 |
+| `docs/reference/source-api/meridian.contracts/page-072.md` | 16 |
 | `docs/reference/source-api/meridian.core/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |

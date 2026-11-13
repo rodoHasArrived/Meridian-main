@@ -91,10 +91,11 @@ public sealed class AccountBondIncomePlanningTests
         public Task<BondWorkflowResult?> CalculateAsync(BondWorkflowRequest request, CancellationToken ct = default)
         {
             LastRequest = request;
-            return Task.FromResult<BondWorkflowResult?>(new(Security, "USD", "synthetic-verified", request.Context with { SecurityVersion = 1 },
+            return Task.FromResult<BondWorkflowResult?>(new(Security, "USD", BondWorkflowModelVersions.Current, request.Context with { SecurityVersion = 1 },
                 request.OriginalFace, CurrentFace, 0m, null, null, 0m, null, null, null, null, null, null, null,
                 [new(Start.AddDays(30), Start, Start.AddDays(30), 10m, 2000m, 0m, 1m, false, [])],
-                [new("SecurityTerms", Security.ToString("D"), 1, Sha256Digest.ComputeUtf8("terms"))], [], []));
+                [new("SecurityTerms", Security.ToString("D"), 1, Sha256Digest.ComputeUtf8("terms")),
+                    new("CalculationModel", BondWorkflowModelVersions.Current)], [], []));
         }
         public Task<BondWorkflowResult?> CalculateIncomeScheduleAsync(BondWorkflowRequest request, DateOnly freezeIndexAt,
             CancellationToken ct = default) => CalculateAsync(request, ct);

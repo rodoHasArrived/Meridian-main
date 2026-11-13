@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionCaseAccountingPostingDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingPostingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L76).
+
+Immutable record of one durable corporate-action posting. The journal identity, ledger book, period, balanced amounts, currency, and Posted status are retained exactly as the Asset Accounting Event Spine committed them; corrections add reversal, rebook, or restatement lineage through the spine rather than mutating this record.
+
+```csharp
+public sealed record CorporateActionCaseAccountingPostingDto(Guid PostingId, Guid CaseId, Guid ProjectionId, Guid ApprovalId, Guid JournalEntryId, Guid LedgerBookId, Guid PeriodId, string AccountingBasis, string Currency, decimal TotalDebits, decimal TotalCredits, string PostingStatus, Guid? TaxLotMutationBatchId, string PostedBy, DateTimeOffset PostedAtUtc);
+```
+
 ## CorporateActionCaseAccountingProjectionDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto</code>. Kind: `record`.
@@ -796,22 +808,3 @@ Declared public members:
 | <code>public CorporateActionNotFoundException(string resourceType, Guid resourceId) : base(CorporateActionProblemCodes.NotFound, $&quot;{resourceType} &#x27;{resourceId:D}&#x27; was not found.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:836](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L836) |  |
 | <code>public string ResourceType { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:843](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L843) |  |
 | <code>public Guid ResourceId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:844](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L844) |  |
-
-## CorporateActionOperationException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionOperationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:820](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L820).
-
-Represents a corporate action operation failure with a stable machine-readable problem code.
-
-```csharp
-public class CorporateActionOperationException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionOperationException(string code, string message) : base(message);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:822](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L822) |  |
-| <code>public string Code { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:828](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L828) |  |

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunPromotionState
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:50](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L50).
+
+Promotion-oriented readiness signal derived from the current run state.
+
+```csharp
+public enum StrategyRunPromotionState : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:52](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L52) |  |
+| <code>RequiresCompletion</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:53](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L53) |  |
+| <code>CandidateForPaper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:54](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L54) |  |
+| <code>CandidateForLive</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:55](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L55) |  |
+| <code>LiveManaged</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:56](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L56) |  |
+
 ## StrategyRunPromotionSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionSummary</code>. Kind: `record`.
@@ -613,16 +635,4 @@ Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24](../../..
 
 ```csharp
 public sealed record ValidateLedgerDraft(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ValuationFreshnessPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ValuationFreshnessPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs#L16).
-
-Read-only impact preview; no draft, approval, schedule, or journal is retained.
-
-```csharp
-public sealed record ValuationFreshnessPreviewDto(string PolicyVersion, int AssessedPositionCount, int BlockedPositionCount, int AffectedValuationCount, IReadOnlyList<MarkFreshnessAssessmentDto> Positions, DateTimeOffset EvaluatedAtUtc);
 ```
