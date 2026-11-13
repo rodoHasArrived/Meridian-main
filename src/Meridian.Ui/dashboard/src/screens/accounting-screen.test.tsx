@@ -5231,8 +5231,15 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Collector")).toBeInTheDocument();
   });
 
-  it("renders multi-asset reference data source coverage after selecting a security", async () => {
+  it("renders reference coverage using authoritative identifiers and currency after selecting a security", async () => {
     const user = userEvent.setup();
+    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => ({
+      securityId,
+      displayName: "Reviewed reference instrument",
+      status: "Active",
+      classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Isin", primaryIdentifierValue: "FR0000000001" },
+      economicDefinition: { currency: "EUR", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" }
+    }));
 
     await renderAccountingScreen(data, "/accounting/security-master");
 
@@ -5244,7 +5251,9 @@ describe("AccountingScreen", () => {
     expect(await screen.findByRole("heading", { name: "Multi-asset reference data" })).toBeInTheDocument();
     expect(api.getReferenceDataWorkbenchCoverage).toHaveBeenCalledWith(expect.objectContaining({
       securityId: "22222222-2222-2222-2222-222222222222",
-      primaryIdentifierValue: "AAPL"
+      primaryIdentifierKind: "Isin",
+      primaryIdentifierValue: "FR0000000001",
+      currency: "EUR"
     }));
 
     const table = screen.getByRole("treegrid", {
