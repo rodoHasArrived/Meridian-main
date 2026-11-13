@@ -51,8 +51,23 @@ internal static class SecurityFlatCodecGenerator
             var shape = Shape(binding);
             source.Append('\n');
             source.Append("    private static SecurityKind DecodeGenerated").Append(binding.AssetClass)
-                .Append("(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json")
-                .Append(binding.VersionedSchedules ? ", SecurityVersionedTermDecoding versionedTerms)\n" : ")\n");
+                .Append("(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json");
+            if (DecodesVersionedTerms(binding))
+            {
+                source.Append(", SecurityVersionedTermDecoding versionedTerms");
+            }
+
+            if (binding.Inputs.HasFlag(SecurityCodecInputs.EconomicSchedules))
+            {
+                source.Append(", SecurityEconomicScheduleValidation economicSchedules");
+            }
+
+            if (binding.Inputs.HasFlag(SecurityCodecInputs.ResolvedTermsDocument))
+            {
+                source.Append(", JsonElement terms");
+            }
+
+            source.Append(")\n");
             source.Append("        => SecurityKind.New").Append(binding.AssetClass).Append("(new ").Append(shape.TermsType.Name).Append("(\n");
             for (var f = 0; f < shape.Fields.Length; f++)
             {
@@ -106,18 +121,24 @@ internal static class SecurityFlatCodecGenerator
             var shape = Shape(binding);
             source.Append('\n');
             source.Append("    let write").Append(binding.AssetClass).Append(" (schemaVersion: int) ");
+            if (binding.VersionedSchedules || binding.WritesConventionsFlag)
+            {
+                source.Append("(writesScheduleConventions: bool) ");
+            }
+
             if (binding.VersionedSchedules)
             {
-                source.Append("(writesScheduleConventions: bool) (writesCallPutSchedules: bool) ");
+                source.Append("(writesCallPutSchedules: bool) ");
             }
 
             source.Append("(terms: ").Append(shape.TermsType.Name).Append(") : string =\n");
             var indent = binding.VersionedSchedules ? "        let payload =\n            " : "        JsonSerializer.Serialize(\n            ";
             source.Append(indent).Append("{| schemaVersion = schemaVersion");
-            var memberIndent = binding.VersionedSchedules ? "\n               " : "\n               ";
+            const string memberIndent = "\n               ";
             foreach (var row in binding.Members.Where(static row => row.Key is not null && !row.DecodeOnly))
             {
-                source.Append(memberIndent).Append(row.Key).Append(" = ").Append(WriteExpression(binding, shape, row));
+                var written = WriteExpression(binding, shape, row);
+                source.Append(memberIndent).Append(row.Key).Append(written.StartsWith('\n') ? " =" : " = ").Append(written);
             }
 
             if (!binding.VersionedSchedules)
@@ -202,6 +223,26 @@ internal static class SecurityFlatCodecGenerator
 
     private static string WriteExpression(SecurityClassCodecBinding binding, ClassShape shape, SecurityTermBinding row)
     {
+        if (row.WriteExpression is not null)
+        {
+            return row.WriteExpression;
+        }
+
+        if (row.Items is { } items)
+        {
+            var source = row.WriteVia ?? throw new InvalidOperationException($"{binding.AssetClass} list {row.Key} names no property.");
+            var entry = new StringBuilder();
+            entry.Append("\n                    terms.").Append(source);
+            entry.Append("\n                    |> List.map (fun entry ->\n                        {| ");
+            for (var i = 0; i < items.Count; i++)
+            {
+                entry.Append(i == 0 ? "" : "\n                           ")
+                    .Append(items[i].Key).Append(" = entry.").Append(items[i].Member);
+            }
+
+            return entry.Append(" |})").ToString();
+        }
+
         if (row.WriteVia is not null)
         {
             return $"terms.{row.WriteVia}";
@@ -242,6 +283,10 @@ internal static class SecurityFlatCodecGenerator
 
     private sealed record ClassShape(Type TermsType, FieldShape[] Fields);
 
+    /// <summary>Whether the decode takes the row's versioned-term decoding.</summary>
+    private static bool DecodesVersionedTerms(SecurityClassCodecBinding binding)
+        => binding.VersionedSchedules || binding.Inputs.HasFlag(SecurityCodecInputs.VersionedTerms);
+
     private static ClassShape Shape(SecurityClassCodecBinding binding)
     {
         var unionCase = FSharpType.GetUnionCases(typeof(SecurityKind), null)
@@ -249,14 +294,18 @@ internal static class SecurityFlatCodecGenerator
                         ?? throw new InvalidOperationException($"SecurityKind has no case {binding.AssetClass}.");
         var termsType = unionCase.GetFields().Single().PropertyType;
         var fields = FSharpType.GetRecordFields(termsType, null)
-            .Select(static field =>
+            .Select(field =>
             {
                 var optional = IsOption(field.PropertyType);
                 var moduleType = optional ? field.PropertyType.GetGenericArguments()[0] : field.PropertyType;
                 var rateConvention = optional && moduleType == typeof(RateConventionTerms);
-                return optional && !rateConvention
+                // An optional module other than the rate convention is built whole by a module row.
+                var builtWhole = binding.Members.Any(row => row.Path == field.Name);
+                return optional && !rateConvention && !builtWhole
                     ? throw new InvalidOperationException($"{field.Name} is an optional module the generator has no rule for.")
-                    : new FieldShape(field.Name, moduleType, FSharpType.GetRecordFields(moduleType, null), rateConvention);
+                    : new FieldShape(field.Name, moduleType,
+                        FSharpType.IsRecord(moduleType, null) ? FSharpType.GetRecordFields(moduleType, null) : [],
+                        rateConvention);
             })
             .ToArray();
         foreach (var row in binding.Members)
@@ -272,9 +321,11 @@ internal static class SecurityFlatCodecGenerator
                 continue;
             }
 
-            if (row.WriteOnly && binding.Members.All(module => module.Path != parts[0]))
+            if (row.WriteOnly && binding.Members.All(reader =>
+                    reader.WriteOnly || (reader.Path != parts[0] && reader.Path != row.Path)))
             {
-                throw new InvalidOperationException($"{binding.AssetClass} writes {row.Key} from {row.Path}, but no module row reads {parts[0]}.");
+                throw new InvalidOperationException(
+                    $"{binding.AssetClass} writes {row.Key} from {row.Path}, but no module row of {parts[0]} and no decode row of {row.Path} reads it.");
             }
 
             if (parts.Length != 2

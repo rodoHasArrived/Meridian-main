@@ -1388,7 +1388,7 @@ because it is stored as the wrong JSON kind or under a case-variant key (every r
 `ExerciseStyle` is not `exerciseStyle`; the variant is refused whether or not the canonical key sits
 beside it, because a readable canonical value only means the record loads while the variant is
 dropped without trace) — and, for bonds, coupon structure the canonical codec does
-not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
+not read. `ToBondCouponStructure` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
 `stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
 is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside
 `couponType: "Fixed"` as surely as one with no `couponType` at all — and so are legacy nested
