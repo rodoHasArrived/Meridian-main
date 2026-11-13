@@ -2205,7 +2205,7 @@ what a governed pack adds (`W11-PACK-001`):
 | Term schema and editors | One schema per asset class, typed conventions, schema-driven browser and WPF editors | Content-hashed pack version that records keep for life |
 | Lot units and cash-flow behavior | Owned by the class descriptor | Unchanged; carried into the pack |
 | Lifecycle events | Typed corporate-action families per event type | Declared per pack, with validations |
-| Projections and storage | Nine of eleven writers declarative | Writers bound to the pack version |
+| Projections and storage | Ten of eleven pre-registry writers declarative (Option stays specialized); 30 descriptors, every catalog class projected | Writers bound to the pack version |
 | Valuation methods | Not carried | Declared methods with an approved default |
 | Accounting rules | Not carried | Bindings to posting rules and journal templates |
 | Reporting taxonomy | Not carried | Classification used by report packs |
