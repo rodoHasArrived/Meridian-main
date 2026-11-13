@@ -307,3 +307,34 @@ The configuration-reference producer now emits the notice required by the existi
 rules. Its focused regression generates the reference through the real producer and verifies the
 actual rule accepts it and rejects an output with the header removed. All five producer tests pass,
 and the generated file passes the scoped rules check with zero errors. The rule itself is unchanged.
+
+### Compatibility and exact agreement-filter follow-up
+
+The follow-up to `e65826817330fb3d10beb094b45052744df1856e` routes intercompany optional-text
+normalization and canonical JSON fingerprints through shared primitives. Optional blank terms,
+meaningful internal whitespace and lowercase retained command/review hashes remain unchanged.
+CSV and IB Flex imports reuse digest-byte computation while preserving uppercase row checksums,
+UTF-8 and serialized row/element bytes, source-file hash casing, duplicate keys and null rejection.
+
+Financial Record Explorer agreement ID/version filters now match the bound detail fields exactly,
+including saved views. Version `1` cannot match `10`; unrelated text cannot admit a row with another
+or missing agreement. Both agreement dimensions appear in the shared reader's filter choices.
+The dashboard source-contract correction checks the actual Security Master projection owner,
+the compatibility entrypoint's function/type re-exports and the screen's schedules-view binding.
+Production browser behavior and existing budgets are unchanged.
+
+The frozen local follow-up passed 126 main-suite cases and 17 fund-structure cases, with zero
+failures or skips. These scopes include all twelve new cases: seven reader-filter, two persisted
+statement-checksum and three agreement-rule cases. The targeted browser slice passed 76 cases,
+including all 31 design-system contract cases; TypeScript and ESLint passed. Formatting passed
+for all seven changed C# files. The maintained local `verify-workflows` lane completed 2,345 cases
+with zero failures/errors and 16 existing skips, using real PowerShell 7.7 and isolated Pillow 13
+with the approved actionlint/ShellCheck tools. Independent source reviews passed. Counts describe
+their own revisions and overlapping scopes; they are not cumulative totals.
+
+On the published `e658268` head, the CodeQL gate reported **No new alerts in code changed** after
+the 36-alert storage/lifecycle repair, and Windows Desktop Build passed. The earlier native
+`7798dc2b18` runs retain their separate 2,778/2,778 full-WPF and 60/60 atomic-writer evidence.
+These hosted results do not validate the unpublished follow-up. Fresh required hosted checks on
+the next published head remain the merge authority; no security alert or required check was
+suppressed or bypassed.

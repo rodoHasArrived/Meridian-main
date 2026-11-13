@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Application
@@ -62,6 +62,9 @@ preserve posted versions; semantic bases follow effective chronology rather than
 lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 Main composition supplies that authority through a deferred factory, and journal validation and
 transactional writer interfaces resolve to the same durable ledger singleton.
+`IntercompanyAgreementRules` uses the shared optional-text normalizer and SHA-256 helper while
+preserving trimmed optional terms, meaningful internal whitespace and lowercase canonical JSON
+fingerprints for retained commands and reviews.
 
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation

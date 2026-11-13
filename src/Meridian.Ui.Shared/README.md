@@ -6,10 +6,15 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui.Shared
+
+Financial Record Explorer agreement ID and version filters compare the bound `Agreement` and
+`Agreement version` detail fields exactly, including saved-view dimension filters. Version `1`
+does not admit version `10`, and unrelated evidence text cannot supply a missing agreement identity.
+The shared reader exposes both agreement dimensions in its filter choices.
 
 All ten storage handlers that require `StorageOptions` resolve them explicitly from the request's
 server service scope; missing registration fails before filesystem access. Request bodies cannot

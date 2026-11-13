@@ -697,10 +697,12 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     private static string Hash(string input)
         => HashBytes(Encoding.UTF8.GetBytes(input));
 
-    // Deliberately NOT routed through Sha256Digest (which lowercases): these hashes become
-    // persisted per-row identities on CanonicalStatementRow, so changing the casing would
-    // detach retained statement rows from their identities (#2691).
-    private static string HashBytes(byte[] input) => Convert.ToHexString(SHA256.HashData(input));
+    // Preserve uppercase persisted per-row identities while sharing digest computation.
+    private static string HashBytes(byte[] input)
+    {
+        ArgumentNullException.ThrowIfNull(input, "source");
+        return Convert.ToHexString(Sha256Digest.ComputeBytes(input));
+    }
 
     private static bool IsSupportedStatementSource(string source) =>
         string.Equals(source, "samplebroker", StringComparison.OrdinalIgnoreCase) ||

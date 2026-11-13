@@ -6,10 +6,15 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.DataIntegration
+
+CSV and IB Flex statement imports share SHA-256 byte computation while retaining uppercase row
+checksums and duplicate identities. UTF-8 encoding, CSV row and unformatted XML element bytes,
+source-file hash casing and null rejection retain their existing contracts; retained imports remain
+discoverable under the same duplicate keys.
 
 `IProviderVerificationHistoryReader` projects existing verification audit events for an exact
 tenant, connection, external account and environment. It exposes only recording time and pass/fail,

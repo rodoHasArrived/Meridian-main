@@ -11686,6 +11686,7 @@ Meridian-main
 │   │   ├── GovernanceSharedDataAccessServiceTests.cs
 │   │   ├── InMemoryFundStructureServiceTests.cs
 │   │   ├── InMemoryFundStructureServiceTests.ScheduleCharacterization.cs
+│   │   ├── IntercompanyAgreementRulesTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── LedgerGroupingRulesTests.cs
 │   │   └── Meridian.FundStructure.Tests.csproj
@@ -12996,6 +12997,7 @@ Meridian-main
 │   │   │   ├── StatementCurrencyCatalogEvidenceTests.cs
 │   │   │   ├── StatementFixtureScenarioTests.cs
 │   │   │   ├── StatementImportAndMatchingTests.cs
+│   │   │   ├── StatementRowChecksumCompatibilityTests.cs
 │   │   │   ├── StatementRunComparisonEvidenceTests.cs
 │   │   │   ├── StatementRunMatchArtifactUpgradeTests.cs
 │   │   │   ├── StatementRunMatcherGroupTests.cs
@@ -13742,6 +13744,7 @@ Meridian-main
 │   │   │   ├── FileAccountingAuditChainTests.cs
 │   │   │   ├── FileFundProfileTenancyRegistryTests.cs
 │   │   │   ├── FileOnboardingWorkspaceStoreTests.cs
+│   │   │   ├── FinancialRecordExplorerAgreementFilterTests.cs
 │   │   │   ├── FinancialRecordExplorerTermsObligationsDetailTests.cs
 │   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs

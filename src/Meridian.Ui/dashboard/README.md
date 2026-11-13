@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui/dashboard
@@ -17,6 +17,8 @@ or mutation authority. Accounting Security Master selection/search state belongs
 `accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
 instrument-passport projections belong to `accounting-screen.security-projections.ts`.
 The existing view-model entrypoint re-exports their public contracts for current callers.
+The design-system source contract checks the projection owner, those re-exports and the screen's
+schedules-view binding together.
 The existing four fixed-number and one signed-money formatting ratchet allowances follow their
 unchanged declarations into the projections module; aggregate ceilings remain unchanged.
 The Settings typography allowance likewise follows the unchanged JSX: 16 occurrences remain in
