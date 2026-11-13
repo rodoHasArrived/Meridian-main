@@ -49,6 +49,7 @@ public static class IntercompanyAgreementEndpoints
         {
             var query = new IntercompanyAgreementQueryDto(entityId, agreementType, status, asOf, knownAtUtc, cursor, pageSize ?? 50);
             var result = await Service(http).ListAsync(Context(http), query, http.RequestAborted).ConfigureAwait(false);
+            var reviewEntities = await AttestationEntitiesAsync(http, result.Items).ConfigureAwait(false);
             var canCreate = CanMutate(http);
             if (canCreate && entityId.HasValue)
             {
@@ -57,7 +58,7 @@ public static class IntercompanyAgreementEndpoints
             }
             return Results.Json(result with
             {
-                Items = result.Items.Select(detail => ReadCapabilities(http, detail)).ToArray(),
+                Items = result.Items.Select(detail => ReadCapabilities(http, detail, reviewEntities)).ToArray(),
                 CanCreate = canCreate,
                 ReferencePostingSupported = http.RequestServices.GetService<IIntercompanyAgreementPostingAuthority>() is not null
                     && string.Equals(http.RequestServices.GetService<IConfiguration>()?["MERIDIAN_INTERCOMPANY_REFERENCE_AUTHORING_ENABLED"]
@@ -65,14 +66,17 @@ public static class IntercompanyAgreementEndpoints
                         "true", StringComparison.OrdinalIgnoreCase)
             }, jsonOptions);
         }).WithName("ListIntercompanyAgreements")
-            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
+            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.ManageCompliance,
+                UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
 
         group.MapGet("/{id:guid}", async (Guid id, HttpContext http, DateOnly? asOf, DateTimeOffset? knownAtUtc) =>
         {
             var detail = await Service(http).GetAsync(Context(http), id, asOf, knownAtUtc, http.RequestAborted).ConfigureAwait(false);
-            return detail is null ? Results.NotFound() : Results.Json(ReadCapabilities(http, detail), jsonOptions);
+            return detail is null ? Results.NotFound() : Results.Json(ReadCapabilities(http, detail,
+                await AttestationEntitiesAsync(http, [detail]).ConfigureAwait(false)), jsonOptions);
         }).WithName("GetIntercompanyAgreement")
-            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
+            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.ManageCompliance,
+                UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
 
         group.MapGet("/{id:guid}/versions/{version:int}", async (Guid id, int version, HttpContext http) =>
         {
@@ -80,14 +84,16 @@ public static class IntercompanyAgreementEndpoints
             var revision = detail?.Revisions.SingleOrDefault(item => item.AgreementVersion == version);
             return revision is null ? Results.NotFound() : Results.Json(revision, jsonOptions);
         }).WithName("GetIntercompanyAgreementVersion")
-            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
+            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.ManageCompliance,
+                UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
 
         group.MapGet("/{id:guid}/history", async (Guid id, HttpContext http) =>
         {
             var detail = await Service(http).GetAsync(Context(http), id, ct: http.RequestAborted).ConfigureAwait(false);
             return detail is null ? Results.NotFound() : Results.Json(detail.History, jsonOptions);
         }).WithName("GetIntercompanyAgreementHistory")
-            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
+            .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.ManageCompliance,
+                UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
 
         group.MapGet("/{id:guid}/journal-lines", async (Guid id, Guid ledgerBookId, DateOnly? asOf,
             string? cursor, int? pageSize, HttpContext http) =>
@@ -124,15 +130,15 @@ public static class IntercompanyAgreementEndpoints
             .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
 
         group.MapPost("", async (IntercompanyAgreementCommandDto command, HttpContext http) =>
-            Results.Json(await Service(http).CreateAsync(Context(http), command, http.RequestAborted).ConfigureAwait(false), jsonOptions))
+            Results.Json(await ReadResultAsync(http, await Service(http).CreateAsync(Context(http), command, http.RequestAborted).ConfigureAwait(false)), jsonOptions))
             .WithName("CreateIntercompanyAgreement")
             .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.AdminMaintenance);
         group.MapPost("/{id:guid}/proposals", async (Guid id, IntercompanyAgreementCommandDto command, HttpContext http) =>
-            Results.Json(await Service(http).CreateProposalAsync(Context(http), RouteCommand(command, id), http.RequestAborted).ConfigureAwait(false), jsonOptions))
+            Results.Json(await ReadResultAsync(http, await Service(http).CreateProposalAsync(Context(http), RouteCommand(command, id), http.RequestAborted).ConfigureAwait(false)), jsonOptions))
             .WithName("CreateIntercompanyAgreementProposal")
             .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.AdminMaintenance);
         group.MapPut("/{id:guid}/proposals/{proposalId:guid}", async (Guid id, Guid proposalId, IntercompanyAgreementCommandDto command, HttpContext http) =>
-            Results.Json(await Service(http).SaveDraftAsync(Context(http), RouteCommand(command, id, proposalId), http.RequestAborted).ConfigureAwait(false), jsonOptions))
+            Results.Json(await ReadResultAsync(http, await Service(http).SaveDraftAsync(Context(http), RouteCommand(command, id, proposalId), http.RequestAborted).ConfigureAwait(false)), jsonOptions))
             .WithName("SaveIntercompanyAgreementDraft")
             .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.AdminMaintenance);
 
@@ -146,6 +152,10 @@ public static class IntercompanyAgreementEndpoints
                         OperationsOriginGuard.RequireHumanOperator(
                             EndpointAuthorization.ResolveTrustedActionOrigin(http, OperationsActionOriginDto.HumanOperator),
                             "review intercompany agreement terms");
+                    if (command.ExternalReview is not null && !EndpointAuthorization.HasPermission(http, UserPermission.ManageCompliance))
+                        return EndpointHelpers.Forbidden();
+                    if (command.ExternalReview is not null)
+                        http.Items[HttpContextIntercompanyAgreementAccessAuthority.RequiredPermissionKey] = UserPermission.ManageCompliance;
                     var service = Service(http);
                     var trusted = RouteCommand(command, id, proposalId);
                     var context = Context(http);
@@ -156,9 +166,11 @@ public static class IntercompanyAgreementEndpoints
                         "reject" => service.RejectAsync(context, trusted, http.RequestAborted),
                         _ => service.WithdrawAsync(context, trusted, http.RequestAborted)
                     };
-                    return Results.Json(await task.ConfigureAwait(false), jsonOptions);
+                    return Results.Json(await ReadResultAsync(http, await task.ConfigureAwait(false)), jsonOptions);
                 }).WithName("IntercompanyAgreement" + transition)
-                .RequireAnyPermission(UserPermission.ManageFundStructure, UserPermission.AdminMaintenance);
+                .RequireAnyPermission(transition is "approve" or "reject"
+                    ? [UserPermission.ManageFundStructure, UserPermission.ManageCompliance, UserPermission.AdminMaintenance]
+                    : [UserPermission.ManageFundStructure, UserPermission.AdminMaintenance]);
         }
     }
 
@@ -174,11 +186,36 @@ public static class IntercompanyAgreementEndpoints
     private static bool CanMutate(HttpContext http)
         => EndpointAuthorization.HasAnyPermission(http, UserPermission.ManageFundStructure, UserPermission.AdminMaintenance);
 
-    private static IntercompanyAgreementDetailDto ReadCapabilities(HttpContext http, IntercompanyAgreementDetailDto detail)
-        => CanMutate(http) ? detail : detail with
+    private static IntercompanyAgreementDetailDto ReadCapabilities(HttpContext http, IntercompanyAgreementDetailDto detail,
+        IReadOnlySet<Guid> reviewEntities)
+    {
+        var canAttest = !EndpointAuthorization.IsNonSessionPrincipal(http)
+            && EndpointAuthorization.HasPermission(http, UserPermission.ManageCompliance)
+            && detail.Capabilities.CanAttestExternalReview && reviewEntities.Contains(detail.PartyOneId) && reviewEntities.Contains(detail.PartyTwoId);
+        return CanMutate(http) ? detail with { Capabilities = detail.Capabilities with { CanAttestExternalReview = canAttest } }
+            : detail with
+            {
+                Capabilities = new(false, false, false, false, false, false, false,
+                    "Fund-structure management permission is required to change agreement terms.")
+                { CanAttestExternalReview = canAttest }
+            };
+    }
+
+    private static async Task<IntercompanyAgreementCommandResultDto> ReadResultAsync(HttpContext http, IntercompanyAgreementCommandResultDto result)
+    {
+        var entities = await AttestationEntitiesAsync(http, [result.Detail, result.Receipt.Detail]).ConfigureAwait(false);
+        return result with
         {
-            Capabilities = new(false, false, false, false, false, false, false, "Fund-structure management permission is required to change agreement terms.")
+            Detail = ReadCapabilities(http, result.Detail, entities),
+            Receipt = result.Receipt with { Detail = ReadCapabilities(http, result.Receipt.Detail, entities) }
         };
+    }
+
+    private static Task<IReadOnlySet<Guid>> AttestationEntitiesAsync(HttpContext http, IEnumerable<IntercompanyAgreementDetailDto> details)
+        => EndpointAuthorization.HasPermission(http, UserPermission.ManageCompliance)
+            ? EndpointAuthorization.AuthorizeScopedManyAsync(http, UserPermission.ManageCompliance, AccessScopeKindDto.LegalEntity,
+                details.SelectMany(detail => new[] { detail.PartyOneId, detail.PartyTwoId }).Distinct().ToArray(), http.RequestAborted)
+            : Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
 
     private static IntercompanyAgreementCommandDto RouteCommand(IntercompanyAgreementCommandDto command, Guid agreementId, Guid? proposalId = null)
     {

@@ -11,6 +11,17 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+`IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
+`/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.
+Authenticated scope, retained evidence and existing legal read authority remain server-owned.
+External-review evidence verifies accepted immutable documents, separately from the attesting
+operator. The close-readiness companion does not become a blocker. See
+[the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
+
+The obligation endpoint alone formats embedded schedule decimals as exact strings. The canonical
+balance-schedule serializer and its evidence fingerprint are unchanged; this response formatting
+does not create a second schedule authority.
+
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
 entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)

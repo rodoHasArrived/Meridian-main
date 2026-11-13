@@ -79,6 +79,8 @@ public static partial class LedgerEndpoints
                     TenantId = tenant.TenantId!,
                     CompanyId = string.Equals(tenant.CompanyId, "all", StringComparison.OrdinalIgnoreCase) ? null : tenant.CompanyId,
                     ApprovedBy = actor,
+                    PreparedBy = request.Attribution.ReviewMode == LegacyIntercompanyReviewModeDto.OperatorReviewed
+                        ? actor : request.Attribution.PreparedBy,
                     ApprovedAt = previous?.ApprovedAt ?? DateTimeOffset.UtcNow
                 };
                 return Results.Json(await store.AppendAsync(attribution, request.ExpectedPreviousAttributionId,

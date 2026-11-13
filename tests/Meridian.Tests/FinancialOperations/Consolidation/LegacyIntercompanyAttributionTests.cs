@@ -4,6 +4,8 @@ using Meridian.Contracts.Ledger;
 using Meridian.Storage.FundStructure;
 using Meridian.Storage.Ledger;
 using Meridian.Ledger;
+using Meridian.Contracts.Tenancy;
+using System.Text.Json;
 using Moq;
 using Fixture = Meridian.Tests.FinancialOperations.Consolidation.ConsolidationServiceTests.Fixture;
 
@@ -85,6 +87,145 @@ public sealed class LegacyIntercompanyAttributionTests
         Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(next, null, [fact]));
         Assert.Same(next, Assert.Single(LegacyIntercompanyAttributionRules.Resolve([fact, next])));
     }
+
+    [Fact]
+    public void ExplicitOperatorReviewRetainsRationaleWithoutClaimingIndependentApproval()
+    {
+        var (_, _, fact) = Setup();
+        var reviewed = fact with
+        {
+            ApprovedBy = fact.PreparedBy,
+            ReviewMode = LegacyIntercompanyReviewModeDto.OperatorReviewed,
+            ReviewRationale = "Reviewed the exact retained source and approved legal revision."
+        };
+        LegacyIntercompanyAttributionRules.ValidateAppend(reviewed, null, []);
+        Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(reviewed with { ReviewRationale = null }, null, []));
+        Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(reviewed with { ReviewMode = (LegacyIntercompanyReviewModeDto)99 }, null, []));
+        Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(reviewed with { PreparedBy = "another operator" }, null, []));
+    }
+
+    [Fact]
+    public void ReviewedRevocationRetractsOnlyLatestAssertionWithoutRestoringPredecessor()
+    {
+        var (_, _, first) = Setup();
+        var corrected = first with
+        {
+            AttributionId = Guid.NewGuid(),
+            Revision = 2,
+            PreviousAttributionId = first.AttributionId,
+            IntercompanyTransactionId = "corrected-transaction"
+        };
+        LegacyIntercompanyAttributionRules.ValidateAppend(corrected, first.AttributionId, [first]);
+        var revoked = Revoke(corrected);
+        LegacyIntercompanyAttributionRules.ValidateAppend(revoked, corrected.AttributionId, [first, corrected]);
+        Assert.Empty(LegacyIntercompanyAttributionRules.Resolve([first, corrected, revoked]));
+        var anotherLine = first with { AttributionId = Guid.NewGuid(), LineId = Guid.NewGuid() };
+        Assert.Same(anotherLine, Assert.Single(LegacyIntercompanyAttributionRules.Resolve([first, corrected, revoked, anotherLine])));
+        // All approval assertions, including the retraction, remain inspectable in the retained history.
+        Assert.False(first.Revoked);
+        Assert.False(corrected.Revoked);
+        Assert.True(revoked.Revoked);
+    }
+
+    [Fact]
+    public void RevocationRequiresLatestActivePredecessorAndExplicitReviewedRationale()
+    {
+        var (_, _, first) = Setup();
+        var revoked = Revoke(first);
+        Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(revoked, null, []));
+        Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(revoked, null, [first]));
+        Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(
+            revoked with { ReviewRationale = null }, first.AttributionId, [first]));
+        Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(
+            Revoke(revoked), revoked.AttributionId, [first, revoked]));
+    }
+
+    [Fact]
+    public void RevocationCannotAlterSourceLegalConfigurationOrTransactionPins()
+    {
+        var (_, _, first) = Setup();
+        var revoked = Revoke(first);
+        foreach (var altered in new[]
+        {
+            revoked with { SourceLineDigest = new string('b', 64) },
+            revoked with { AccountingArrangementId = Guid.NewGuid() },
+            revoked with { AccountingArrangementRevisionId = Guid.NewGuid() },
+            revoked with { AccountBindingRevisionId = Guid.NewGuid() },
+            revoked with { ChartAccountNodeId = "another-account" },
+            revoked with { IntercompanyTransactionId = "another-transaction" },
+            revoked with { IntercompanyAgreementId = Guid.NewGuid() },
+            revoked with { IntercompanyAgreementVersion = first.IntercompanyAgreementVersion + 1 },
+            revoked with { IntercompanyAgreementPayloadHash = new string('b', 64) },
+            revoked with { TenantId = "another-tenant" },
+            revoked with { CompanyId = "another-company" }
+        })
+            Assert.Throws<InvalidOperationException>(() => LegacyIntercompanyAttributionRules.ValidateAppend(altered, first.AttributionId, [first]));
+    }
+
+    [Fact]
+    public async Task RevocationAfterProfileSupersessionStillRequiresExactUnchangedPostedSource()
+    {
+        var (fixture, validator, first) = Setup(superseded: true);
+        var original = fixture.Records[Fixture.FirstBookId][0].Entry;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => validator.ValidateAsync(first));
+        var revoked = Revoke(first);
+        // Releasing an invalid assertion does not depend on that old arrangement still being effective.
+        await using (await validator.AcquireAuthorityLeaseAsync(revoked))
+            await validator.ValidateAsync(revoked);
+        Assert.Same(original, fixture.Records[Fixture.FirstBookId][0].Entry);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => validator.ValidateAsync(revoked with { SourceLineDigest = new string('b', 64) }));
+    }
+
+    [Fact]
+    public async Task FileStoreRetainsReviewedRevocationAcrossRestartAndExactRetryAfterProfileChange()
+    {
+        var (_, validator, first) = Setup(superseded: true);
+        var directory = Path.Combine(Path.GetTempPath(), "meridian-revocation-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "attributions.json");
+            // Retained attribution was reviewed before the profile's later supersession.
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize<IReadOnlyList<LegacyIntercompanyAttributionDto>>([first],
+                LegacyIntercompanyAttributionJsonContext.Default.IReadOnlyListLegacyIntercompanyAttributionDto));
+            var tenants = Mock.Of<IFundScopeTenantAccessor>(tenant => tenant.ResolveCallerTenant() == first.TenantId);
+            var store = new FileLegacyIntercompanyAttributionStore(path, tenants, validator);
+            var revoked = Revoke(first);
+            var saved = await store.AppendAsync(revoked, first.AttributionId);
+            Assert.Equal(saved, await store.AppendAsync(revoked, first.AttributionId));
+            var restarted = new FileLegacyIntercompanyAttributionStore(path, tenants, validator);
+            Assert.Empty(await restarted.ListAsync(first.LedgerBookId));
+            var history = await restarted.HistoryAsync(first.LedgerBookId);
+            Assert.Equal(2, history.Count);
+            Assert.Equal(first, history[0]);
+            Assert.Equal(revoked, history[1]);
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
+    [Fact]
+    public void RevocationFlagIsOmittedFromRetainedNonRevokedJson()
+    {
+        var (_, _, first) = Setup();
+        var original = JsonSerializer.Serialize(first, LegacyIntercompanyAttributionJsonContext.Default.LegacyIntercompanyAttributionDto);
+        Assert.DoesNotContain("\"revoked\"", original);
+        var revoked = JsonSerializer.Serialize(Revoke(first), LegacyIntercompanyAttributionJsonContext.Default.LegacyIntercompanyAttributionDto);
+        Assert.Contains("\"revoked\":true", revoked);
+    }
+
+    private static LegacyIntercompanyAttributionDto Revoke(LegacyIntercompanyAttributionDto previous) => previous with
+    {
+        AttributionId = Guid.NewGuid(),
+        Revision = previous.Revision + 1,
+        PreviousAttributionId = previous.AttributionId,
+        Revoked = true,
+        ReviewMode = LegacyIntercompanyReviewModeDto.OperatorReviewed,
+        PreparedBy = "controller",
+        ApprovedBy = "controller",
+        ApprovedAt = previous.ApprovedAt.AddMinutes(1),
+        EvidenceReference = "evidence:reviewed-revocation",
+        ReviewRationale = "Retract the exact retained assertion after review."
+    };
 
     private static (Fixture, LegacyIntercompanyAttributionValidator, LegacyIntercompanyAttributionDto) Setup(Guid? agreementCounterparty = null, bool superseded = false,
         Guid? retainedCanonicalId = null, int retainedCanonicalVersion = 1)
