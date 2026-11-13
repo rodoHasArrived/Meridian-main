@@ -6,8 +6,8 @@
   "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
-    "endpoint_count": 767,
-    "documented_endpoint_count": 767,
+    "endpoint_count": 773,
+    "documented_endpoint_count": 773,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 1024,
     "documented_workstation_contract_count": 1024,
@@ -17,25 +17,25 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:668",
+      "source": "src/Meridian/UiServer.cs:672",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:702",
+      "source": "src/Meridian/UiServer.cs:706",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:756",
+      "source": "src/Meridian/UiServer.cs:760",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:777",
+      "source": "src/Meridian/UiServer.cs:781",
       "documented": true
     },
     {
@@ -1584,6 +1584,42 @@
       "method": "GET",
       "path": "/api/reference-data/equities/by-issuer",
       "source": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs:44",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/execution/orders/preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:18",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/strategy-parity",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:36",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/notifications",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:74",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/notifications/stream",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:84",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution/alert-settings",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:116",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/execution/alert-settings",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:126",
       "documented": true
     },
     {

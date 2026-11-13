@@ -172,12 +172,12 @@ public sealed record SecuritySummaryDto(Guid SecurityId, string AssetClass, Secu
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermBinding</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L44).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L48).
 
 One member of a per-class record and the flat key that carries it.
 
 ```csharp
-public sealed record SecurityTermBinding(string Path, string? Key, SecurityTermRead? Read, string? DecodeExpression = null, string? WriteVia = null, bool DecodeOnly = false);
+public sealed record SecurityTermBinding(string Path, string? Key, SecurityTermRead? Read, string? DecodeExpression = null, string? WriteVia = null, bool DecodeOnly = false, bool WriteOnly = false);
 ```
 
 ## SecurityTermBlocks

@@ -21,6 +21,10 @@ internal sealed class OrderAdmissionPolicy
     private readonly ILiveOrderReadinessGate? _liveReadinessGate;
     private readonly IPortfolioState? _portfolioState;
     private readonly ILogger _logger;
+    private readonly IOrderSessionPolicy? _sessionPolicy;
+    private readonly IOrderMarketReferenceSource? _marketReferences;
+    private readonly IOrderInstrumentCoverageSource? _instrumentCoverage;
+    private readonly TimeProvider _clock;
 
     internal OrderAdmissionPolicy(
         IExecutionGateway gateway,
@@ -29,7 +33,11 @@ internal sealed class OrderAdmissionPolicy
         ISecurityMasterGate? securityMasterGate = null,
         ExecutionOperatorControlService? operatorControls = null,
         ILiveOrderReadinessGate? liveReadinessGate = null,
-        IPortfolioState? portfolioState = null)
+        IPortfolioState? portfolioState = null,
+        IOrderSessionPolicy? sessionPolicy = null,
+        IOrderMarketReferenceSource? marketReferences = null,
+        IOrderInstrumentCoverageSource? instrumentCoverage = null,
+        TimeProvider? clock = null)
     {
         ArgumentNullException.ThrowIfNull(gateway);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -42,6 +50,10 @@ internal sealed class OrderAdmissionPolicy
         _operatorControls = operatorControls;
         _liveReadinessGate = liveReadinessGate;
         _portfolioState = portfolioState;
+        _sessionPolicy = sessionPolicy;
+        _marketReferences = marketReferences;
+        _instrumentCoverage = instrumentCoverage;
+        _clock = clock ?? TimeProvider.System;
     }
 
     /// <summary>
@@ -77,7 +89,8 @@ internal sealed class OrderAdmissionPolicy
     /// </summary>
     internal async Task<OrderAdmissionDecision> EvaluatePreflightAsync(
         PreparedOrderAdmission prepared,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool observationOnly = false)
     {
         if (!ValidatedOrder.TryCreate(prepared.SafeRequest, out var validated, out var errors))
         {
@@ -101,6 +114,15 @@ internal sealed class OrderAdmissionPolicy
 
         var usesFaceValue = resolved.Sizing is OrderSizing.FaceValuePercentageOfPar;
         var riskRequest = resolved.ToRiskRequest();
+        if (safeRequest.SessionIntent == OrderSessionIntent.QueueNextSession && _gateway is PaperTradingGateway)
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
+                new OrderAdmissionRefusal("The local paper simulator does not support next-session queuing.",
+                    "market session", "QUEUED_SESSION_UNSUPPORTED"));
+        if (await EvaluateSessionAsync(safeRequest, ct).ConfigureAwait(false) is { Status: "blocked" } session)
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null,
+                new OrderAdmissionRefusal(session.Message, "market session", session.Code));
+        if (await EvaluateMarketReferenceAsync(safeRequest, ct).ConfigureAwait(false) is { } quoteRefusal)
+            return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, null, quoteRefusal);
         var placementGate = BrokerageOrderPlacementGate.Evaluate(_configuration, _gateway.GatewayId, _executionMode);
         if (!placementGate.IsAllowed)
         {
@@ -111,7 +133,7 @@ internal sealed class OrderAdmissionPolicy
         LiveOrderReadinessDecision? readiness = null;
         if (_executionMode is ExecutionMode.Live)
         {
-            readiness = await EvaluateLiveOrderReadinessAsync(prepared, ct).ConfigureAwait(false);
+            readiness = await EvaluateLiveOrderReadinessAsync(prepared, ct, observationOnly).ConfigureAwait(false);
             if (!readiness.IsApproved)
             {
                 return new OrderAdmissionDecision(riskRequest, usesFaceValue, null, readiness,
@@ -123,7 +145,7 @@ internal sealed class OrderAdmissionPolicy
             }
         }
 
-        var controlDecision = EvaluateDispatchControls(prepared);
+        var controlDecision = _operatorControls?.EvaluateOrder(prepared.ControlRequest, _portfolioState, prepared.RunId, observationOnly);
         if (controlDecision is { IsApproved: false })
         {
             return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness,
@@ -158,6 +180,35 @@ internal sealed class OrderAdmissionPolicy
     internal string? EvaluateBrokerageNotionalLimit(GatewayResolvedOrder order) =>
         EvaluateBrokerageNotionalLimit(() => OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(order));
 
+    internal Task<OrderCheck?> EvaluateSessionAsync(OrderRequest request, CancellationToken ct) =>
+        _sessionPolicy is null ? Task.FromResult<OrderCheck?>(null) : EvaluateSessionCoreAsync(request, ct);
+
+    internal async Task<OrderAdmissionRefusal?> EvaluateMarketReferenceAsync(OrderRequest request, CancellationToken ct) =>
+        await RequiresMarketReferenceAsync(request, ct).ConfigureAwait(false) ? EvaluateMarketReference(request) : null;
+
+    internal async Task<OrderAdmissionRefusal?> EvaluateDispatchMarketChecksAsync(OrderRequest request, CancellationToken ct)
+    {
+        var requiresReference = await RequiresMarketReferenceAsync(request, ct).ConfigureAwait(false);
+        if (await EvaluateSessionAsync(request, ct).ConfigureAwait(false) is { Status: "blocked" } session)
+            return new(session.Message, "market session", session.Code);
+        // Read the quote after the asynchronous session check so it cannot age during that wait.
+        return requiresReference ? EvaluateMarketReference(request) : null;
+    }
+
+    private Task<bool> RequiresMarketReferenceAsync(OrderRequest request, CancellationToken ct) =>
+        _instrumentCoverage?.IsUsdEquityAsync(request, ct) ?? Task.FromResult(false);
+
+    private OrderAdmissionRefusal? EvaluateMarketReference(OrderRequest request)
+    {
+        var reference = _marketReferences?.GetReference(request.Symbol, request.Side);
+        var now = _clock.GetUtcNow();
+        return reference is null || reference.Price <= 0m || reference.ObservedAt > now || now - reference.ObservedAt >= TimeSpan.FromSeconds(30)
+            ? new("A fresh executable-side equity quote is required before routing.", "market reference", "REFERENCE_UNAVAILABLE") : null;
+    }
+
+    private async Task<OrderCheck?> EvaluateSessionCoreAsync(OrderRequest request, CancellationToken ct) =>
+        await _sessionPolicy!.EvaluateAsync(request, ct).ConfigureAwait(false);
+
     /// <summary>Used under the caller's reservation gate for placements and amendments.</summary>
     internal string? EvaluateBrokerageNotionalLimit(OrderRequest request) =>
         EvaluateBrokerageNotionalLimit(() => OrderRiskSizingPolicy.ResolveBrokerageOrderNotional(request));
@@ -187,7 +238,8 @@ internal sealed class OrderAdmissionPolicy
 
     private async Task<LiveOrderReadinessDecision> EvaluateLiveOrderReadinessAsync(
         PreparedOrderAdmission prepared,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool observationOnly = false)
     {
         if (string.IsNullOrWhiteSpace(prepared.RunId))
         {
@@ -202,7 +254,7 @@ internal sealed class OrderAdmissionPolicy
         }
 
         var request = prepared.SafeRequest;
-        var decision = await _liveReadinessGate.EvaluateAsync(new LiveOrderReadinessRequest(
+        var readinessRequest = new LiveOrderReadinessRequest(
             RunId: prepared.RunId.Trim(),
             BrokerName: prepared.BrokerName,
             Symbol: request.Symbol,
@@ -212,7 +264,11 @@ internal sealed class OrderAdmissionPolicy
             StrategyId: request.StrategyId,
             Actor: prepared.Actor,
             CorrelationId: prepared.CorrelationId,
-            FundAccountId: request.FundAccountId), ct).ConfigureAwait(false);
+            FundAccountId: request.FundAccountId);
+        var decision = observationOnly
+            ? (_liveReadinessGate as ILiveOrderReadinessPreview)?.Observe(readinessRequest)
+                ?? LiveOrderReadinessDecision.Rejected("Live readiness is unassessed: refresh the account's readiness evidence before previewing.")
+            : await _liveReadinessGate.EvaluateAsync(readinessRequest, ct).ConfigureAwait(false);
 
         if (!decision.IsApproved)
         {

@@ -6,6 +6,85 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InMemoryAccountingMigrationRunWorkerPlanStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingMigrationRunWorkerPlanStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L39).
+
+Stores accounting migration worker plans in process memory.
+
+```csharp
+public sealed class InMemoryAccountingMigrationRunWorkerPlanStore : IAccountingMigrationRunWorkerPlanWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;AccountingMigrationRunWorkerPlanDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, AccountingMigrationRunKindDto? kind = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:43](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L43) |  |
+| <code>public Task&lt;AccountingMigrationRunWorkerPlanDto?&gt; GetAsync(string planId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:62](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L62) |  |
+| <code>public Task&lt;AccountingMigrationRunWorkerPlanDto&gt; UpsertAsync(AccountingMigrationRunWorkerPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:74](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L74) |  |
+
+## InMemoryAccountingProductionCertificationProfileStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingProductionCertificationProfileStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L31).
+
+Stores accounting production certification profiles in process memory.
+
+```csharp
+public sealed class InMemoryAccountingProductionCertificationProfileStore : IAccountingProductionCertificationProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AccountingProductionCertificationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L35) |  |
+| <code>public Task&lt;AccountingProductionCertificationProfileDto&gt; UpsertAsync(AccountingProductionCertificationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:47](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L47) |  |
+
+## InMemoryAccountingTenantAdministrationProfileStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAccountingTenantAdministrationProfileStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:29](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L29).
+
+Stores tenant accounting administration profiles in process memory.
+
+```csharp
+public sealed class InMemoryAccountingTenantAdministrationProfileStore : IAccountingTenantAdministrationProfileStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AccountingTenantAdministrationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L33) |  |
+| <code>public Task&lt;AccountingTenantAdministrationProfileDto&gt; UpsertAsync(AccountingTenantAdministrationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:43](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L43) |  |
+
+## InMemoryAutomatedJournalScheduleStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAutomatedJournalScheduleStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:152](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L152).
+
+In-memory source for deterministic tests and lightweight composition.
+
+```csharp
+public sealed class InMemoryAutomatedJournalScheduleStore : IAutomatedJournalScheduleStore, IAutomatedJournalScheduleStatusSource, Meridian.Application.Composition.INonProductionOnlyService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;AutomatedJournalScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:161](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L161) |  |
+| <code>public Task&lt;AutomatedJournalScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:174](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L174) |  |
+| <code>public Task&lt;AutomatedJournalScheduleWorkItem&gt; SaveAsync(AutomatedJournalScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:187](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L187) |  |
+| <code>public async Task&lt;AutomatedJournalScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? tenantId = null, string? companyId = null, string? entityId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:227](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L227) |  |
+
 ## InMemoryDailyValuationPortfolioSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryDailyValuationPortfolioSource</code>. Kind: `class`.
@@ -498,7 +577,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1502](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1502).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1537](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1537).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -510,7 +589,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1504](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1504) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1539](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1539) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -878,73 +957,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:15](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L15) |  |
-
-## LedgerAmountProvenanceService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerAmountProvenanceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs:9](../../../../src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs#L9).
-
-Reads only explicitly retained, scoped amount links. Labels never establish provenance.
-
-```csharp
-public sealed class LedgerAmountProvenanceService(IGovernanceReportPackRepository? reportPackRepository, IReconciliationBreakQueueRepository? breakQueueRepository = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[Obsolete(&quot;Authoritative provenance requires authenticated tenant/company scope and a retained amount id.&quot;)] public Task&lt;LedgerAmountProvenanceDetailDto?&gt; GetAsync(Guid reportId, string scopeKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs:14](../../../../src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs#L14) |  |
-| <code>public async Task&lt;LedgerAmountProvenanceDetailDto?&gt; GetAsync(Guid reportId, string scopeKey, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs:20](../../../../src/Meridian.Ui.Shared/Services/LedgerAmountProvenanceService.cs#L20) |  |
-
-## LedgerBookOrdering
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerBookOrdering</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerBookOrdering.cs:24](../../../../src/Meridian.Ui.Shared/Services/LedgerBookOrdering.cs#L24).
-
-The canonical order of ledger books: by display name, with a stable id tie-break. This lives on the API seam, and the books route applies it before serving, because the order decides which book a freshly opened surface scopes itself to — and therefore which period and whose figures an operator is shown. When each client sorted the store&#x27;s response for itself, the browser and the desktop could open the same governed ledger on different books. Sorting here rather than in each client is not merely deduplication. The comparison is StringComparer.OrdinalIgnoreCase over names and Guid order over ids, and neither is reproducible in a browser: JavaScript has no simple-uppercase mapping (toUpperCase applies full case mapping, so it expands &quot;ß&quot; to &quot;SS&quot; and folds &quot;ᾀ&quot; nowhere near .NET&#x27;s &quot;ᾈ&quot;), its case data is a different Unicode version from the runtime&#x27;s, and Guid orders by .NET&#x27;s byte groups rather than by the textual form. A faithful client-side re-implementation was not available to be written; one authoritative ordering, computed once and consumed as sent, is.
-
-```csharp
-public static class LedgerBookOrdering
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;LedgerBookDto&gt; Sort(IEnumerable&lt;LedgerBookDto&gt;? books) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerBookOrdering.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerBookOrdering.cs#L27) |  |
-
-## LedgerClientReportDocumentPackage
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerClientReportDocumentPackage</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L10).
-
-The complete binary primary-document pair rendered from one immutable ledger report pack. Construction is all-or-nothing: callers do not receive a package unless both documents were rendered successfully and contain bytes.
-
-```csharp
-public sealed record LedgerClientReportDocumentPackage(byte[] Pdf, byte[] Workbook);
-```
-
-## LedgerClientReportExportService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerClientReportExportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:23](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L23).
-
-Shared, DI-resolved seam that turns a governed ledger report pack into client-grade delivery artifacts (branded PDF + multi-sheet XLSX) plus the retained hash/provenance manifest. It uses the composition root&#x27;s registered ILedgerReportBinaryRenderer — the QuestPDF/ClosedXML renderer once AddFinancialReportDocumentRenderer is wired — so both the browser workstation and the WPF desktop consume one export path rather than each re-rendering deliverables. The renderer is optional so lightweight hosts that never registered it still degrade to the dependency-free plain-text fallback instead of failing to construct.
-
-```csharp
-public sealed class LedgerClientReportExportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerClientReportExportService(ILedgerReportBinaryRenderer? renderer = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:27](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L27) |  |
-| <code>public bool HasClientGradeRenderer =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:33](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L33) | True when a client-grade binary renderer is wired (not the plain-text fallback). |
-| <code>public LedgerClientReportDocumentPackage BuildClientDocumentPackage(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L40) | Renders the atomic PDF/XLSX primary-document pair for a governed client package from the exact supplied report pack. Both documents flow through the same composition-root renderer; if either render fails or returns no bytes, no package is returned. |
-| <code>public IReadOnlyList&lt;LedgerReportPackArtifact&gt; BuildClientDeliverables(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:60](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L60) | Builds the scheduled-export delivery artifacts (manifest + one artifact per declared format) for reportPack, rendering PDF/XLSX through the wired renderer. |

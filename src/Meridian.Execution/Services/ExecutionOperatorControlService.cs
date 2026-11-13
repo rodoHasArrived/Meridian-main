@@ -194,7 +194,6 @@ public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
     {
         lock (_lock)
         {
-            PurgeExpiredOverridesLocked(DateTimeOffset.UtcNow);
             return BuildSnapshotLocked();
         }
     }
@@ -450,16 +449,21 @@ public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
     /// <summary>
     /// Evaluates a new order against the current operator controls.
     /// </summary>
-    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null)
+    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null) =>
+        EvaluateOrder(request, portfolioState, runId, observationOnly: false);
+
+    public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId, bool observationOnly)
     {
         ArgumentNullException.ThrowIfNull(request);
 
         lock (_lock)
         {
             var now = DateTimeOffset.UtcNow;
-            PurgeExpiredOverridesLocked(now);
+            if (!observationOnly)
+                PurgeExpiredOverridesLocked(now);
 
             var forceBlock = _manualOverrides.Values.FirstOrDefault(overrideEntry =>
+                (overrideEntry.ExpiresAt is null || overrideEntry.ExpiresAt > now) &&
                 string.Equals(overrideEntry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
                 OverrideMatchesTarget(overrideEntry, ManualOverrideTarget.ForOrder(request, runId)));
 
@@ -927,6 +931,7 @@ public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
             DefaultMaxPositionSize: _defaultMaxPositionSize,
             SymbolPositionLimits: new Dictionary<string, decimal>(_symbolPositionLimits, StringComparer.OrdinalIgnoreCase),
             ManualOverrides: _manualOverrides.Values
+                .Where(static entry => entry.ExpiresAt is null || entry.ExpiresAt > DateTimeOffset.UtcNow)
                 .OrderByDescending(static entry => entry.CreatedAt)
                 .ToArray(),
             AsOf: DateTimeOffset.UtcNow,
@@ -957,6 +962,9 @@ public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
         {
             return null;
         }
+
+        if (overrideEntry.ExpiresAt is { } expiresAt && expiresAt <= DateTimeOffset.UtcNow)
+            return null;
 
         if (!string.Equals(overrideEntry.Kind, requiredKind, StringComparison.OrdinalIgnoreCase))
         {

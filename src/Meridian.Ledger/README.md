@@ -129,6 +129,24 @@ This layer should model ledger behavior and accounting evidence without owning U
 
 ## Important workflows
 
+Backtesting, paper portfolios, durable execution fills and direct-lending journals resolve posting
+accounts through `IChartOfAccounts` and the immutable `StandardChartOfAccounts` role registry.
+Account types and symbol requirements are explicit; an unknown role is rejected. `GetDefinition`
+provides name/type metadata without inventing a financial account or bypassing posting-scope checks.
+Existing names and scopes remain compatible with retained journals and `LedgerAccounts` balance
+lookups. Loan roles preserve their historical classification, instrument symbol and loan-account
+scope; cash uses the same role as trading. The hierarchical `ChartOfAccounts` remains a reporting rollup.
+
+`SecurityTradePostingProjector` supplies the common opening, closing, commission, financing,
+short-collateral and variation-margin line economics. Callers retain exact opening/closing quantities,
+execution values and relieved long basis or original short proceeds; crossing zero retains both
+legs. New short openings and covers use `Short Securities Payable`, while gains and losses use the
+retained carrying value even for breakeven or partial closes. The kernel never selects lots or
+reconstructs basis from an average quote or realized result. `TradeFillAccountingEvidence` carries
+these facts, source costs, collateral and financial-account scope from the paper lot mutation into
+the durable fill event. Old retained events and journals keep their historical shapes during retry;
+this convergence does not rewrite posted history or supply missing basis authority.
+
 Use this module for books, ledger behavior, reconciliation evidence, and accounting workflow support.
 `ChartOfAccounts` supports customizable colon-delimited account hierarchies such as
 `Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for

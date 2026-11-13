@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAccountType
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerAccountType.cs:4](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L4).
+
+Classifies a ledger account under standard double-entry accounting categories.
+
+```csharp
+public enum LedgerAccountType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Asset</code> | [src/Meridian.Ledger/LedgerAccountType.cs:7](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L7) | Resources owned (cash, long securities positions). |
+| <code>Liability</code> | [src/Meridian.Ledger/LedgerAccountType.cs:10](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L10) | Obligations owed (margin debt to broker). |
+| <code>Equity</code> | [src/Meridian.Ledger/LedgerAccountType.cs:13](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L13) | Net worth / owner&#x27;s initial capital. |
+| <code>Revenue</code> | [src/Meridian.Ledger/LedgerAccountType.cs:16](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L16) | Inflows that increase equity (realized gains, dividends, short rebates). |
+| <code>Expense</code> | [src/Meridian.Ledger/LedgerAccountType.cs:19](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L19) | Outflows that decrease equity (commissions, margin interest, realized losses). |
+
+## LedgerBalancePoint
+
+Qualified name: <code>Meridian.Ledger.LedgerBalancePoint</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerBalancePoint.cs:7](../../../../src/Meridian.Ledger/LedgerBalancePoint.cs#L7).
+
+Running-balance checkpoint for an account after a journal entry is applied. Useful for reconstructing account history during backtests and portfolio analytics.
+
+```csharp
+public sealed record LedgerBalancePoint(DateTimeOffset Timestamp, Guid JournalEntryId, string Description, decimal Debit, decimal Credit, decimal Balance, JournalEntryMetadata Metadata);
+```
+
 ## LedgerBookKey
 
 Qualified name: <code>Meridian.Ledger.LedgerBookKey</code>. Kind: `record`.
@@ -961,34 +995,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const int CurrentProceedsAllocationVersion = 1;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs:11](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs#L11) | Retained convention for the current sign-preserving proceeds allocator. |
 | <code>public static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input) =&gt; …;</code> | [src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs:13](../../../../src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs#L13) |  |
-
-## LedgerTaxLotReliefSelection
-
-Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefSelection</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerTaxLotReliefSelection.cs:35](../../../../src/Meridian.Ledger/LedgerTaxLotReliefSelection.cs#L35).
-
-Quantity, proceeds, and cost relieved from one tax lot. UnitCost is the effective per-share cost used to relieve the shares: each lot&#x27;s own recorded unit cost for lot-discrete methods (FIFO/LIFO/HIFO/SpecificId), or the unit cost implied by the rounded pooled basis (CostBasis / QuantityRelieved) for LedgerTaxLotReliefMethod.AverageCost. Reporting the implied unit cost keeps a realized-gain row consistent with its cost basis instead of showing a raw lot cost against a pooled basis. For a repeating pooled average the implied unit cost is the nearest per-share value to the rounded basis; CostBasis is always the authoritative amount.
-
-```csharp
-public sealed record LedgerTaxLotReliefSelection(LedgerTaxLot Lot, decimal QuantityRelieved, decimal CostBasis, decimal UnitCost, decimal Proceeds, decimal RealizedGainOrLoss, TaxCharacter TaxCharacter, int HoldingPeriodDays, bool HoldingPeriodExtendedByWashSale);
-```
-
-## LedgerValidationException
-
-Qualified name: <code>Meridian.Ledger.LedgerValidationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/LedgerValidationException.cs:8](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L8).
-
-Thrown when a ledger entry or journal entry fails double-entry bookkeeping validation rules.
-
-```csharp
-public sealed class LedgerValidationException : MeridianException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerValidationException(string message) : base(message);</code> | [src/Meridian.Ledger/LedgerValidationException.cs:11](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L11) |  |
-| <code>public LedgerValidationException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Ledger/LedgerValidationException.cs:14](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L14) |  |

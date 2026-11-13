@@ -1,3 +1,4 @@
+import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -161,6 +162,7 @@ import {
 } from "./settings-provider-integration";
 
 interface SettingsScreenProps {
+  fundAccountId?: string | null;
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
   strategy?: StrategyWorkspaceResponse | null;
@@ -488,6 +490,7 @@ function inferSettingsTaskView({
 }
 
 export function SettingsScreen({
+  fundAccountId,
   session,
   overview,
   strategy = null,
@@ -2342,6 +2345,7 @@ export function SettingsScreen({
       <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
 
       {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}
+      {showPreferencesSection ? <ExecutionAlertSettingsPanel accountId={fundAccountId} /> : null}
 
       {showAccessSection ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">

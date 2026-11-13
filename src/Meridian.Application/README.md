@@ -24,6 +24,15 @@ scope and explicit unavailable capabilities. Generic posting delegates validated
 its specialized authority instead of reacquiring the same fences. See
 [the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
 
+`DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
+`LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
+account roles resolve through the shared `IChartOfAccounts` registry while preserving historical
+account names, instrument symbols and loan account scope. The outbox produces the same economic
+lines as authoritative posting, including reversal, principal receipt, amortization and restructuring.
+Unknown roles, unbalanced projections, missing required amounts and negative source amounts fail
+before posting or draft creation. Public compatibility line helpers use registry definitions without
+inventing a posting scope; zero-line filtering cannot discard a malformed monetary component.
+
 Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
 Provider requests and coverage checkpoints retain the original symbol identities.
 
@@ -470,6 +479,10 @@ still require integration; external editors do not honor the sidecar transaction
 providers; only entirely legacy provider families retain the store's permitted environment fallback. Missing records remain unconfigured;
 partial or deliberately removed fields cannot be filled from legacy configuration or another credential
 source. Unmanaged provider types retain their legacy resolver. Storage failures propagate to callers.
+
+Symbol-management composition passes the selected credential resolver to both OpenFIGI clients.
+Hosted mapping, discovery and search resolve that authority for each request, including credential
+rotation and deletion, rather than retaining a configuration or environment key at construction.
 
 The scope-bound `StoredProviderCredentialResolver` constructor accepts an `IScopedProviderCredentialStore`
 and trusted `ProviderCredentialScope`. It resolves only that tenant, connection, external account and

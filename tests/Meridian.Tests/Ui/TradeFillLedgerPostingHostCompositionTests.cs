@@ -144,6 +144,51 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
     }
 
     [Fact]
+    public async Task AddTradeFillLedgerPosting_RefusesNewLegacyEventsAndRetainsMissingVersionOneEvidence()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "trade-fill-current-evidence",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var context = new TradeFillLedgerPostingContext("current-evidence-book",
+            Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid());
+        var primaryStore = new WalTradeFillPostingStore(new TradeFillPostingStoreOptions(root, context),
+            NullLogger<WalTradeFillPostingStore>.Instance);
+        var fallbackStore = new AtomicTradeFillHandoffFailureStore(new TradeFillHandoffFailureStoreOptions(root, context));
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddLogging();
+            services.AddSingleton<ISecurityValidationGateService, NullSecurityValidationGateService>();
+            services.AddTradeFillLedgerPosting(context,
+                _ => new UnexpectedTradeFillLedgerPostingTarget(), _ => primaryStore, _ => fallbackStore);
+            await using var provider = services.BuildServiceProvider();
+            var consumer = provider.GetRequiredService<LedgerPostingConsumer>();
+            var legacy = new TradeExecutedEvent(Guid.NewGuid(), "unknown-lot-context", "AAPL", OrderSide.Buy,
+                10m, 100m, 0m, 0m, 0m, DateTimeOffset.UtcNow);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => consumer.PublishAsync(legacy));
+            (await primaryStore.LoadPendingAsync()).Should().BeEmpty();
+
+            var current = legacy with { AccountingEvidenceVersion = 1 };
+            await consumer.PublishAsync(current);
+
+            (await primaryStore.LoadPendingAsync()).Should().ContainSingle(posting =>
+                posting.TradeEvent == current && posting.TradeEvent.AccountingEvidence == null);
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(root, recursive: true);
+            }
+            catch
+            {
+                // Best-effort test cleanup.
+            }
+        }
+    }
+
+    [Fact]
     public async Task AddBrokerageExecution_ExactPostingPrerequisites_ReplaysFallbackThroughOrderManager()
     {
         var root = Path.Combine(
