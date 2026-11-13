@@ -102,9 +102,12 @@ public sealed class ProviderRuntimeCredentialServiceTests : IDisposable
     public async Task RuntimeBinding_RoundTripsWithSourceGeneratedConfigSerialization()
     {
         var store = await SetupAsync();
-        await new ProviderRuntimeCredentialService(Config, store).BindAsync("alpaca", "owned", "tenant-a");
+        var bound = await new ProviderRuntimeCredentialService(Config, store).BindAsync("alpaca", "owned", "tenant-a");
         Config.LoadRequired().ProviderConnections!.RuntimeCredentials.Should().ContainSingle()
-            .Which.Should().Be(new ProviderRuntimeCredentialBinding("alpaca", "tenant-a", "owned"));
+            .Which.Should().Be(bound);
+        bound.ExternalAccountId.Should().Be("account-a");
+        bound.Environment.Should().Be("paper");
+        bound.SelectionId.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]

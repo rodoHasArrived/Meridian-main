@@ -22,6 +22,17 @@ empty search. It never consumes best-effort autocomplete cache entries; swallowe
 failures cannot become authoritative candidate evidence. The browser discovery journey currently
 uses Alpaca's fixed-income filter and stages identity evidence for review without approving terms.
 
+Runtime credential selection pins the retained tenant, connection, external account and environment.
+Reusing a removed connection ID cannot retarget a host binding; historical selections without those
+pins require explicit rebinding. Asynchronous runtime application publishes success only while the
+exact selection and owner still match, including intervening selection changes back to the same account.
+Production selection changes, operator credential edits/removal and bound connection deletion/disable
+serialize with runtime application and require `StopAndDrainAsync` authority before mutation. The
+default host has no such authority and refuses these changes with a maintenance conflict. A capable
+host must stop new dispatches, drain in-flight work and dispose captured-key instances; failure or
+cancellation leaves application pending. Provider-owned conditional OAuth rotation retains its
+scope/generation CAS path so an in-flight refresh can finish while an operator's change drains.
+
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
 use the scoped retained date population before pagination and bind cursors to the range revision.
@@ -192,13 +203,16 @@ ineligible for preparer draft checks; no ledger, approval or posting authority i
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
 commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
 it revalidates one retained tenant/connection/account/environment under the configuration lease before
-reading the scoped vault. Owned, ambiguous or dangling selections never fall back. Entirely legacy
-families retain their prior policy. Host selection requires provider reconstruction; credential editing
+reading the scoped vault. Owned, ambiguous or dangling selections never fall back.
+`ProviderCredentialOwnershipPolicy` requires explicit ownership in production and packaged/customer
+workstation compositions, including posture declarations added after feature registration. Entirely
+legacy families retain their prior policy only in unflagged development compositions. Host selection requires provider reconstruction; credential editing
 does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
 Legacy setup refuses a retained runtime binding even when its connection or ownership marker is
 missing. `LegacyProviderRuntimeCredentialStore` guards runtimes that do not yet carry trusted
 tenant/connection identity: every vault read and mutation requires readable configuration and an
-entirely legacy provider family under the configuration lease. Owned families remain unavailable to
+entirely legacy provider family under the configuration lease. Production and distributed workstations
+refuse these unowned execution paths even before a family has retained an owner. Owned families remain unavailable to
 these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
 Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
 mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;

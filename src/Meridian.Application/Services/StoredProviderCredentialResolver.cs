@@ -16,6 +16,8 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     private readonly IProviderCredentialResolver _fallback;
     private readonly ProviderCredentialScope? _scope;
     private readonly UI.ConfigStore? _configStore;
+    private readonly ProviderRouting.ProviderCredentialOwnershipPolicy _ownershipPolicy =
+        ProviderRouting.ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
 
     public StoredProviderCredentialResolver(
         IProviderCredentialStore credentialStore,
@@ -27,9 +29,11 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 
     /// <summary>Resolves host defaults from the current retained configuration at provider construction.</summary>
     public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore,
-        IProviderCredentialResolver fallback, UI.ConfigStore configStore) : this(credentialStore, fallback)
+        IProviderCredentialResolver fallback, UI.ConfigStore configStore,
+        ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback)
     {
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
+        _ownershipPolicy = ownershipPolicy ?? ProviderRouting.ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     /// <summary>
@@ -57,6 +61,9 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         {
             if (_scope is not null)
                 throw new InvalidOperationException("Scoped credentials require a catalog-managed provider.");
+            if (_ownershipPolicy.RequireExplicitOwnership &&
+                (AttributeCredentialResolver.GetAttributes(providerType).Count > 0 || configuredValues?.Count > 0))
+                throw new ProviderCredentialOwnershipRequiredException();
             return _fallback.CreateContext(providerType, configuredValues);
         }
 
@@ -161,6 +168,8 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     {
         var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
             _configStore.LoadRequired(), providerId));
+        if (scope is null && _ownershipPolicy.ProhibitsLegacy(providerId))
+            throw new ProviderCredentialOwnershipRequiredException();
         var stored = scope is null
             ? await _credentialStore.ReadForProviderAsync(providerId, ct).ConfigureAwait(false)
             : await (_credentialStore as IScopedProviderCredentialStore

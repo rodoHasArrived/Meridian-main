@@ -11,10 +11,15 @@ namespace Meridian.Application.ProviderRouting;
 public sealed class ProviderConnectionService
 {
     private readonly UI.ConfigStore _store;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
+    private readonly ProviderRuntimeCredentialMutationGuard _mutationGuard;
 
-    public ProviderConnectionService(UI.ConfigStore store)
+    public ProviderConnectionService(UI.ConfigStore store, ProviderCredentialOwnershipPolicy? ownershipPolicy = null,
+        ProviderRuntimeCredentialMutationGuard? mutationGuard = null)
     {
         _store = store;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
+        _mutationGuard = mutationGuard ?? new(store, _ownershipPolicy);
     }
 
     public Task<IReadOnlyList<ProviderConnectionDto>> GetConnectionsAsync(CancellationToken ct = default)
@@ -79,6 +84,9 @@ public sealed class ProviderConnectionService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ProviderFamilyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DisplayName);
 
+        using var mutation = !request.Enabled && request.ConnectionId is not null
+            ? await AcquireRemovalLeaseAsync(request.ConnectionId, tenantId, ct).ConfigureAwait(false) : null;
+        mutation?.ReleaseConfigurationLease();
         return await _store.UpdateRequiredAsync(cfg =>
         {
             var section = ProviderRoutingConfigExtensions.GetSection(cfg);
@@ -163,8 +171,27 @@ public sealed class ProviderConnectionService
         return DeleteInternalAsync(connectionId, tenantId.Trim(), ct);
     }
 
+    private async Task<ProviderRuntimeCredentialMutationGuard.MutationLease?> AcquireRemovalLeaseAsync(string connectionId, string? tenantId, CancellationToken ct)
+    {
+        if (!_ownershipPolicy.RequireExplicitOwnership)
+            return null;
+        var matches = (_store.LoadRequired().ProviderConnections?.Connections ?? [])
+            .Where(connection => string.Equals(connection.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (matches.Length == 0)
+            return null;
+        if (matches.Length != 1 || matches[0].TenantId != tenantId)
+            throw new InvalidOperationException("Connection ownership does not match the authorized tenant.");
+        var connection = matches[0];
+        if (!_ownershipPolicy.ProhibitsLegacy(connection.ProviderFamilyId) || connection.TenantId is null)
+            return null;
+        return await _mutationGuard.AcquireForConnectionAsync(connection.ProviderFamilyId,
+            connection.ConnectionId, connection.TenantId, ct).ConfigureAwait(false);
+    }
+
     private async Task<bool> DeleteInternalAsync(string connectionId, string? tenantId, CancellationToken ct)
     {
+        using var mutation = await AcquireRemovalLeaseAsync(connectionId, tenantId, ct).ConfigureAwait(false);
+        mutation?.ReleaseConfigurationLease();
         return await _store.UpdateRequiredAsync(cfg =>
         {
             var section = ProviderRoutingConfigExtensions.GetSection(cfg);
@@ -194,6 +221,9 @@ public sealed class ProviderConnectionService
                 ProviderConnections = section with
                 {
                     Connections = connections.ToArray(),
+                    RuntimeCredentials = _ownershipPolicy.RequireExplicitOwnership
+                        ? section.RuntimeCredentials?.Where(binding => !string.Equals(binding.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)).ToArray()
+                        : section.RuntimeCredentials,
                     OwnershipRequiredProviders = removedOwners.Length == 0 ? section.OwnershipRequiredProviders
                         : (section.OwnershipRequiredProviders ?? []).Concat(removedOwners).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
                     Bindings = bindings,

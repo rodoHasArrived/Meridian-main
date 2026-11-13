@@ -14,7 +14,8 @@ last_reviewed: 2026-10-02
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
 `ProviderConnectionsConfig.RuntimeCredentials` holds optional explicit host defaults keyed by
-canonical provider and retained tenant/connection identity. It is additive and omitted when absent;
+canonical provider and retained tenant/connection/account/environment identity, with an opaque selection ID.
+Application refuses historical unpinned selections until an explicit rebind. It is omitted when absent;
 Application owns validation and resolution. It contains no secrets and confers no verification.
 `OwnershipRequiredProviders` retains the boundary when an owned connection is removed, so even
 deletion before host selection cannot implicitly reactivate provider-wide fallback.

@@ -8,7 +8,8 @@ namespace Meridian.Application.ProviderRouting;
 /// Contains runtimes that do not yet carry authenticated connection ownership. Every vault access
 /// rechecks that the provider family is entirely legacy while holding the configuration lease.
 /// </summary>
-public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore)
+public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore,
+    ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     : IProviderCredentialStore, ILegacyProviderCredentialImporter
 {
     public string VaultPath => credentialStore.VaultPath;
@@ -74,8 +75,10 @@ public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore
         RequireLegacy(config, providerId);
     }
 
-    private static void RequireLegacy(AppConfig config, string providerId)
+    private void RequireLegacy(AppConfig config, string providerId)
     {
+        if ((ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment()).ProhibitsLegacy(providerId))
+            throw new ProviderCredentialOwnershipRequiredException();
         ProviderCredentialScope? scope;
         try
         {

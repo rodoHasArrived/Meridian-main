@@ -319,6 +319,10 @@ public static class ProviderEndpoints
                 {
                     result = await setupService.ConfigureForConnectionAsync(req, connectionIds[0]!, tenant.TenantId!, actor, context.RequestAborted).ConfigureAwait(false);
                 }
+                catch (ProviderRuntimeCredentialQuiescenceException error)
+                {
+                    return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
+                }
                 catch (UnauthorizedAccessException)
                 {
                     return EndpointHelpers.Forbidden();

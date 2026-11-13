@@ -11,7 +11,6 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
-
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
 entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
 and returns exact decimal strings. Curve definition/history/publication and curve valuation retain
@@ -37,6 +36,16 @@ Alpaca's fixed-income filter and authoritative error propagation, and exposes mo
 separately for candidate staging. The browser stages the reviewed identity through the existing
 retained asset-information upload; discovery never supplies approved economic terms. Tests use
 synthetic fixtures; live provider behavior remains untested.
+
+Production and packaged/customer workstation credential setup and compatibility routes require
+explicit retained connection ownership. Provider-wide status cannot claim readiness from unassigned
+secrets; selected-connection status and mutations use the scoped vault. Legacy execution/module
+adapters refuse unowned credentials in these compositions, while unflagged development retains its
+legacy compatibility policy. Bound production operator mutations require proven runtime stop/drain;
+the default host returns an actionable maintenance conflict before changing credentials or ownership.
+Provider-owned conditional refresh remains scope/generation checked and can finish during drain.
+See [credential operations](../../docs/operators/provider-credentials.md).
+
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source

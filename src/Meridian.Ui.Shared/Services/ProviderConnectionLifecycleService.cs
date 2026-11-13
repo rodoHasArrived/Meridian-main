@@ -28,6 +28,8 @@ public sealed partial class ProviderConnectionLifecycleService
     private readonly IProviderSetupRegistry _setupRegistry;
     private readonly ILogger<ProviderConnectionLifecycleService> _logger;
     private readonly ProviderCredentialScope? _ownershipScope;
+    private readonly Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy _ownershipPolicy;
+    private readonly Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard _mutationGuard;
     private readonly ConcurrentDictionary<(string ProviderId, ProviderCredentialScope Scope), IAccountingSystemConnectionVerifier> _boundAccountingVerifiers = new();
 
     public ProviderConnectionLifecycleService(
@@ -37,15 +39,20 @@ public sealed partial class ProviderConnectionLifecycleService
         IHttpClientFactory? httpClientFactory = null,
         IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null,
         IProviderSetupRegistry? setupRegistry = null,
-        ProviderCredentialScope? ownershipScope = null)
+        ProviderCredentialScope? ownershipScope = null,
+        Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null,
+        Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null)
     {
         ArgumentNullException.ThrowIfNull(credentialStore);
         _ownershipScope = ownershipScope;
+        _ownershipPolicy = ownershipPolicy ?? Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
         _rootCredentialStore = credentialStore;
         var selectedStore = ownershipScope is null ? credentialStore : new ScopedCredentialStore(
             credentialStore as IScopedProviderCredentialStore ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."), ownershipScope);
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
-        _credentialStore = new OwnershipGuardedCredentialStore(selectedStore, AcquireOwnershipLeaseAsync);
+        _mutationGuard = mutationGuard ?? new(new Meridian.Application.UI.ConfigStore(configStore.ConfigPath), _ownershipPolicy);
+        _credentialStore = new OwnershipGuardedCredentialStore(selectedStore, AcquireOwnershipLeaseAsync, AcquireMutationOwnershipLeaseAsync,
+            providerId => _ownershipScope is null && _ownershipPolicy.ProhibitsLegacy(providerId));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
         _accountingSystemProviders = accountingSystemProviders?.ToArray() ?? [];
@@ -54,7 +61,7 @@ public sealed partial class ProviderConnectionLifecycleService
 
     private ProviderConnectionLifecycleService(ProviderConnectionLifecycleService owner, ProviderCredentialScope scope)
         : this(owner._rootCredentialStore, owner._configStore, owner._logger, owner._httpClientFactory,
-            owner._accountingSystemProviders, owner._setupRegistry, scope)
+            owner._accountingSystemProviders, owner._setupRegistry, scope, owner._ownershipPolicy, owner._mutationGuard)
     {
         // ForConnection creates a lifecycle per request. Retain adapter instances across those
         // requests so each connection's refresh-token gate continues to serialize exchanges.

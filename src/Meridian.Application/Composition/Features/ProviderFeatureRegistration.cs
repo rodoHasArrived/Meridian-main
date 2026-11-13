@@ -21,6 +21,7 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.AddProviderCredentialOwnershipPolicy();
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Register credential resolver
         services.AddSingleton<IProviderCredentialResolver>(sp =>
@@ -30,9 +31,11 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
             var credentialStore = sp.GetService<IProviderCredentialStore>();
             var configStore = sp.GetRequiredService<ConfigStore>();
             if (credentialStore is not null)
-                return new StoredProviderCredentialResolver(credentialStore, fallback, configStore);
+                return new StoredProviderCredentialResolver(credentialStore, fallback, configStore,
+                    sp.GetRequiredService<ProviderCredentialOwnershipPolicy>());
             var config = File.Exists(configStore.ConfigPath) ? configStore.LoadRequired() : configStore.Load();
-            if (ProviderOwnershipRules.AnyScopedOwnership(config.ProviderConnections))
+            if (sp.GetRequiredService<ProviderCredentialOwnershipPolicy>().RequireExplicitOwnership ||
+                ProviderOwnershipRules.AnyScopedOwnership(config.ProviderConnections))
                 throw new InvalidOperationException("Owned provider runtime credentials require a credential vault.");
             return fallback;
         });
