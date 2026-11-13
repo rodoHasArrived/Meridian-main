@@ -5,6 +5,7 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Intercompany;
+using Meridian.Identity.Auth;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Http;
@@ -32,6 +33,34 @@ internal static class IntercompanyP1P2ServiceRegistration
     }
 }
 
+/// <summary>Operation-specific reporting grants; authoring or compliance access never grants accounting observations.</summary>
+internal sealed class IntercompanyLedgerReadPermissionScope : IDisposable
+{
+    private readonly HttpContext _http;
+    private readonly bool _hadPrevious;
+    private readonly object? _previous;
+
+    private IntercompanyLedgerReadPermissionScope(HttpContext http)
+    {
+        _http = http;
+        _hadPrevious = http.Items.TryGetValue(HttpContextIntercompanyAgreementAccessAuthority.RequiredPermissionKey, out _previous);
+        http.Items[HttpContextIntercompanyAgreementAccessAuthority.RequiredPermissionKey] =
+            new[] { UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports };
+    }
+
+    internal static IntercompanyLedgerReadPermissionScope? TryEnter(HttpContext http) =>
+        EndpointAuthorization.HasAnyPermission(http, UserPermission.ViewLedgerReports,
+            UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance) ? new(http) : null;
+
+    public void Dispose()
+    {
+        if (_hadPrevious)
+            _http.Items[HttpContextIntercompanyAgreementAccessAuthority.RequiredPermissionKey] = _previous;
+        else
+            _http.Items.Remove(HttpContextIntercompanyAgreementAccessAuthority.RequiredPermissionKey);
+    }
+}
+
 /// <summary>Advisory context is resolved at the selected close period end, with current operator access.</summary>
 internal sealed class IntercompanyCloseAdvisorySource(IServiceProvider services) : IIntercompanyCloseAdvisorySource
 {
@@ -49,6 +78,9 @@ internal sealed class IntercompanyCloseAdvisorySource(IServiceProvider services)
         if (journals is null || monitor is null || ownership is null || http is null
             || scope.LedgerBookId is not { } bookId || !Guid.TryParse(scope.PeriodId, out var periodId)
             || string.IsNullOrWhiteSpace(tenantId) || string.IsNullOrWhiteSpace(companyId))
+            return Unknown();
+        using var reportAccess = IntercompanyLedgerReadPermissionScope.TryEnter(http);
+        if (reportAccess is null)
             return Unknown();
         var caller = HttpContextWorkstationTenantContextAccessor.Resolve(http);
         if (caller.Actor is null || caller.TenantId != tenantId || caller.CompanyId != companyId)

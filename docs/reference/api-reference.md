@@ -1420,7 +1420,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs](..
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
 | `/api/ledger/intercompany/obligations` | GET | `async (string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, int? expiryHorizonDays, Guid? entityId, HttpContext http) => …` | `Results.Problem`; `Results.BadRequest`; `Results.Json` | — | [L22](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs#L22) |
-| `/api/fund-structure/intercompany-agreements/{id}/schedule` | GET | `async (Guid id, DateOnly? asOf, int? version, Guid? proposalId, HttpContext http) => …` | `Results.BadRequest`; `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L53](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs#L53) |
+| `/api/fund-structure/intercompany-agreements/{id}/schedule` | GET | `async (Guid id, DateOnly? asOf, int? version, Guid? proposalId, HttpContext http) => …` | `Results.BadRequest`; `Results.Problem`; `Results.NotFound`; `Results.Json` | — | [L56](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs#L56) |
 
 ### IntercompanyOperationsEndpoints
 

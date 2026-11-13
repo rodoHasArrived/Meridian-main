@@ -14,6 +14,8 @@ last_reviewed: 2026-11-13
 `IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
 `/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.
 Authenticated scope, retained evidence and existing legal read authority remain server-owned.
+Both the monitor and close companion require ledger-report permission and reporting grants for
+every observed entity; legal authoring or compliance grants alone cannot authorize accounting reads.
 External-review evidence verifies accepted immutable documents, separately from the attesting
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).

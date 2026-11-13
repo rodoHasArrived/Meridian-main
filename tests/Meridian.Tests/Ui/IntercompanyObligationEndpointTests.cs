@@ -48,6 +48,27 @@ public sealed class IntercompanyObligationEndpointTests
     }
 
     [Fact]
+    public async Task DirectMonitorUsesReportingGrantScopeInsteadOfComplianceOrAuthoringScope()
+    {
+        var monitor = new Mock<IIntercompanyObligationMonitorService>();
+        Microsoft.AspNetCore.Http.IHttpContextAccessor? accessor = null;
+        monitor.Setup(x => x.EvaluateAsync(It.IsAny<IntercompanyAgreementCallContext>(), It.IsAny<string>(),
+            It.IsAny<IntercompanyObligationMonitorRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() =>
+            {
+                var required = Assert.IsAssignableFrom<IReadOnlyCollection<UserPermission>>(
+                    accessor!.HttpContext!.Items[Meridian.Ui.Shared.Services.HttpContextIntercompanyAgreementAccessAuthority.RequiredPermissionKey]);
+                Assert.Equal(new[] { UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports }, required);
+                return Observation();
+            });
+        await using var app = await AppAsync(monitor.Object,
+            permissions: UserPermission.ViewLedgerReports | UserPermission.ManageCompliance);
+        accessor = app.Services.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>();
+        var response = await app.GetTestClient().GetAsync($"/api/ledger/intercompany/obligations?ledgerBookId={BookId:D}&asOf=2026-11-13");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task SameTenantDifferentCompanyBookIsDeniedBeforeMonitor()
     {
         var monitor = new Mock<IIntercompanyObligationMonitorService>(MockBehavior.Strict);
@@ -202,6 +223,7 @@ public sealed class IntercompanyObligationEndpointTests
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
+        builder.Services.AddHttpContextAccessor();
         if (monitor is not null)
             builder.Services.AddSingleton(monitor);
         if (legal is not null)

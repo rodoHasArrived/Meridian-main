@@ -1979,7 +1979,7 @@
     {
       "method": "GET",
       "path": "/api/fund-structure/intercompany-agreements/{id:guid}/schedule",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:53",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:56",
       "documented": true
     },
     {

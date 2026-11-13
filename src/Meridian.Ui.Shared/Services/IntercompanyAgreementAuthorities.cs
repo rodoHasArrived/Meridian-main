@@ -46,6 +46,21 @@ public sealed class HttpContextIntercompanyAgreementAccessAuthority(
                 AccessScopeKindDto.LegalEntity, ids, ct).ConfigureAwait(false);
             return ids.IsSubsetOf(reviewedEntities);
         }
+        if (http.Items.TryGetValue(RequiredPermissionKey, out required)
+            && required is IReadOnlyCollection<UserPermission> alternativePermissions)
+        {
+            if (EndpointAuthorization.HasPermission(http, UserPermission.AdminMaintenance))
+                return true;
+            var allowedEntities = new HashSet<Guid>();
+            foreach (var alternative in alternativePermissions.Distinct())
+            {
+                if (!EndpointAuthorization.HasPermission(http, alternative))
+                    continue;
+                allowedEntities.UnionWith(await EndpointAuthorization.AuthorizeScopedManyAsync(http, alternative,
+                    AccessScopeKindDto.LegalEntity, ids, ct).ConfigureAwait(false));
+            }
+            return ids.IsSubsetOf(allowedEntities);
+        }
         if (EndpointAuthorization.HasPermission(http, UserPermission.AdminMaintenance))
             return true;
         var permission = new[] { UserPermission.ManageFundStructure, UserPermission.ManageDirectLending,

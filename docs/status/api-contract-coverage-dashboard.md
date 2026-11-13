@@ -226,7 +226,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/reconciliation/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:436` |
 | `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:297` |
 | `GET` | `/api/fund-structure/entities/{entityId:guid}/timeline` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:34` |
-| `GET` | `/api/fund-structure/intercompany-agreements/{id:guid}/schedule` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:53` |
+| `GET` | `/api/fund-structure/intercompany-agreements/{id:guid}/schedule` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:56` |
 | `GET` | `/api/funds/{fundId:guid}/accounts` | Documented | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:137` |
 | `GET` | `/api/health` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:48` |
 | `GET` | `/api/health/detailed` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:223` |

@@ -1826,7 +1826,7 @@
                                         </DataGrid.Columns>
                                     </DataGrid>
                                     <Expander Header="Intercompany advisories — separate from close requirements" Margin="0,12,0,0">
-                                        <TextBox Text="{Binding IntercompanyAdvisoryText}" IsReadOnly="True" TextWrapping="Wrap"
+                                        <TextBox Text="{Binding IntercompanyAdvisoryText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
                                                  AcceptsReturn="True" MinHeight="70" MaxHeight="220" VerticalScrollBarVisibility="Auto"
                                                  AutomationProperties.Name="Nonblocking intercompany close advisories" />
                                     </Expander>

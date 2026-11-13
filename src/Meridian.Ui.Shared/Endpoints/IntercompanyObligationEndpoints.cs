@@ -39,6 +39,9 @@ public static class IntercompanyObligationEndpoints
                     || fundProfileId is not null && fundProfileId != book.FundProfileId
                     || entityId.HasValue && entityId != book.FundStructureNodeId)
                     return EndpointHelpers.Forbidden();
+                using var reportAccess = IntercompanyLedgerReadPermissionScope.TryEnter(http);
+                if (reportAccess is null)
+                    return EndpointHelpers.Forbidden();
                 var observation = await service.EvaluateAsync(new(scope.TenantId!, scope.Actor!), scope.CompanyId,
                     new(book.FundProfileId, bookId, asOf, expiryHorizonDays ?? 30, entityId), http.RequestAborted);
                 return Results.Json(observation, monitorContext.IntercompanyObligationMonitorDto);
