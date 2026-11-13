@@ -6,10 +6,42 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui.Shared
+
+Financial Record Explorer agreement ID and version filters compare the bound `Agreement` and
+`Agreement version` detail fields exactly, including saved-view dimension filters. Version `1`
+does not admit version `10`, and unrelated evidence text cannot supply a missing agreement identity.
+The shared reader exposes both agreement dimensions in its filter choices.
+
+All ten storage handlers that require `StorageOptions` resolve them explicitly from the request's
+server service scope; missing registration fails before filesystem access. Request bodies cannot
+supply the storage root, and tier migration rejects a source outside that configured root.
+Financial posting adapters construct trusted
+commands with server-derived actor, scope and origin while retaining reviewed evidence. Undefined
+origin values downgrade to nonhuman authority and cannot post a reviewed human candidate.
+Manual journal lifecycle requests are constructed with all fifteen contract fields, replacing actor,
+tenant/company, report principals and origin with server-resolved authority. The action resolver
+admits eight defined actions: Validate requires ledger read permission, while Submit, Approve,
+Reject, Post, Reverse, Rebook and LockAfterClose require certification permission. Undefined actions
+are refused before service invocation; the supplied actor remains a separate audit assertion.
+The combined storage and posting-authority regression slice passed 136 of 136 cases with zero
+skips, including all 25 new lifecycle cases and all 37 storage endpoint and migration cases.
+Unavailable fund-registry diagnostics retain the failure type without fund identities or exception
+payloads; tenant lookup and downstream authorization retain their existing responsibilities.
+The legacy reporting query context exposes its conversion to the Reporting-owned contract so
+the host facade can use the leaf read-model assembly without duplicating scope mappings.
+
+Large workspace implementations have explicit responsibility seams: `FundReportArtifactRenderer`
+owns deterministic branding and JSON/CSV/XLSX/HTML/PDF rendering, while
+`FundOperationsWorkspaceReadService` retains scope, authoritative reads and governed report
+coordination. `ReportingScheduleStore.cs` owns schedule persistence and compatibility adapters;
+`ReportingScheduleService` owns execution orchestration. Workstation route registration is split
+into operations-continuity, reconciliation and Security Master read modules, retaining the same
+route order, tenant-scoped group and per-route authorization. These seams preserve public contracts
+and do not create another source of financial or workflow authority.
 
 `SecurityMasterEndpoints.CashDividendAttestation` exposes the bounded, default-off regular USD
 dividend-declaration workspace. Commands derive the case, tenant/company, actor and capabilities
@@ -50,10 +82,21 @@ cannot attach verified rate evidence. Observed fixings become forecasts only thr
 assumption. Treasury constant-maturity yields require an externally reviewed construction and
 explicit discount factors; the endpoint does not bootstrap them implicitly.
 
-Recurring fixed-income accrual reads explicit admission from the shared catalog (Bond only) and
-passes its quote convention to the shared bridge. Daily holding windows split on changes to the complete lot, including unit,
-multiplier and carrying inputs. Non-bond classes and factored lots remain blocked until their
-accounting behavior is supported; the bridge itself uses explicit lot exposure instead of par 100.
+Recurring fixed-income accrual admission follows the catalog's `SupportsRecurringFixedIncomeAccrual`
+capability, currently Bond and StructuredCredit calculated fixed-rate schedules. A `FactorAmortizing`
+descriptor requires retained interest segments even when its current factor is one.
+Versioned interest segments retain the principal and factor that earned each coupon
+portion. The scoped ledger history read supplies daily `FaceValueLot` holdings from the coupon
+start, including closing disposals and the last interest day before a full principal paydown.
+The bridge applies each lot's open share and factor once; cumulative coupon rounding ties across
+accounting windows. Missing face terms, incomplete history, and source/lot factor disagreement
+block the calculation. The result is an approval draft, with principal cash movements excluded.
+The typed calculation captures a retained v5 receipt using the selected security version and
+passes that same projection to the bridge without another source read. Its receipt hash and model
+survive in the draft's structured recurring source evidence and evidence links across restart.
+External, floating and declared-schedule posting gates remain. Catalog admission does not resolve
+a missing rate unit: an undeclared non-zero Bond coupon still blocks, and a declared schedule
+remains outside posting until its existing evidence-retention and journal-identity gates are met.
 
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
@@ -926,6 +969,13 @@ This module owns cross-surface operator-facing projection types and shared endpo
 compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, and
 `src/Meridian.Wpf`.
 
+Leaf reporting comparisons, access-policy evaluation, journal disposal-tax reads, partners-capital
+reads, retained ledger-population replay, and amount binding compile in
+[`Meridian.Reporting.ReadModels`](../Meridian.Reporting.ReadModels/README.md). Their existing
+source paths and public namespaces remain stable, and Ui.Shared forwards their public identities.
+That assembly depends only on Contracts, Ledger, Reporting, and Storage.Accounting; it can build
+without endpoint or workstation orchestration. The larger cross-domain workflows remain here.
+
 ## Key folders and files
 
 - `Services/HostStartupEscalation` - the rule a host uses to decide whether a fault raised while
@@ -970,6 +1020,12 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
+
+`GET /api/config` requires configuration-read permission and masks every configured backfill
+provider credential in a cloned response projection. Persisted credentials remain unchanged.
+Connection services use the injected `IHttpClientFactory` for credential verification and OAuth
+exchanges; manually constructed instances can inspect local status without a factory, but cannot
+silently create an unconfigured network client.
 
 The seeded development launcher identifies its host through the `/readyz`
 `x-meridian-dev-session` response header. `StatusEndpoints` captures `MERIDIAN_DEV_SESSION`

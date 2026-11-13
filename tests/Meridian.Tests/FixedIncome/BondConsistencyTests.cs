@@ -362,10 +362,10 @@ public sealed class BondConsistencyTests
             .Returns(call => Task.FromResult(retained.GetValueOrDefault(call.Arg<string>())));
         var service = CashFlows(security, receipts: receipts);
         var current = (await service.CaptureProjectionAsync(security.SecurityId, StructuredCashFlowScenario.Base, new(date)))!;
-        current.ModelVersion.Should().Be("bond-cash-flow-context-v4");
+        current.ModelVersion.Should().Be("bond-cash-flow-context-v5");
         current.Projection.BlockedReason.Should().BeNull();
         current.Projection.Schedule.Should().NotBeEmpty();
-        current.Projection.Schedule.Should().OnlyContain(row => row.RowVersion == 1);
+        current.Projection.Schedule.Should().OnlyContain(row => row.RowVersion == 2);
         current.Projection.Schedule[0].InterestAmount.Should().Be(0.4212m);
         var legacyProjection = current.Projection;
         if (historicalModel == SecurityMasterCashFlowService.LegacyContextCalculationVersion)

@@ -677,7 +677,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingScheduleStore</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:163](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L163).
+Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:163](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L163).
 
 Persists reporting schedules, execution authority, and legacy schedule recovery evidence.
 
@@ -689,16 +689,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FileReportingScheduleStore(ReportingScheduleStoreOptions options, ILogger&lt;FileReportingScheduleStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:182](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L182) |  |
-| <code>public IReadOnlyList&lt;ReportingScheduleRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:195](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L195) |  |
-| <code>public void Save(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:205](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L205) |  |
-| <code>public void Upsert(ReportingScheduleRecordDto schedule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L236) |  |
-| <code>public void Upsert(ReportingScheduleRecordDto schedule, DateTimeOffset? expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L239) |  |
-| <code>public bool Delete(string tenantId, string companyId, string scheduleId, DateTimeOffset expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:303](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L303) |  |
-| <code>public bool HasLegacySchedules(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:337](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L337) |  |
-| <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyScheduleInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:346](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L346) |  |
-| <code>public string ExportLegacySchedule(string scheduleId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:372](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L372) |  |
-| <code>public ReportingLegacyArchiveReceipt ArchiveLegacySnapshot(ReportAccessQueryContext recoveryAuthority, string reason);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs:392](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs#L392) |  |
+| <code>public FileReportingScheduleStore(ReportingScheduleStoreOptions options, ILogger&lt;FileReportingScheduleStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:182](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L182) |  |
+| <code>public IReadOnlyList&lt;ReportingScheduleRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:195](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L195) |  |
+| <code>public void Save(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:205](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L205) |  |
+| <code>public void Upsert(ReportingScheduleRecordDto schedule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:236](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L236) |  |
+| <code>public void Upsert(ReportingScheduleRecordDto schedule, DateTimeOffset? expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L239) |  |
+| <code>public bool Delete(string tenantId, string companyId, string scheduleId, DateTimeOffset expectedUpdatedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:303](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L303) |  |
+| <code>public bool HasLegacySchedules(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:337](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L337) |  |
+| <code>public IReadOnlyList&lt;ReportingLegacyStateInventoryEntry&gt; ListLegacyScheduleInventory(ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:346](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L346) |  |
+| <code>public string ExportLegacySchedule(string scheduleId, ReportAccessQueryContext recoveryAuthority);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:372](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L372) |  |
+| <code>public ReportingLegacyArchiveReceipt ArchiveLegacySnapshot(ReportAccessQueryContext recoveryAuthority, string reason);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:392](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L392) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.OperationalAuthority.cs#L7).
 
@@ -911,7 +911,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:305](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L305).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:316](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L316).
 
 Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled charges whose period end falls inside the accrual window, in one draft. Each scheduled period belongs to exactly one window, so an asset&#x27;s life is depreciated once. Units-of-production assets need period output that the register does not hold, so they block the occurrence.
 
@@ -923,17 +923,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:307](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L307) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:310](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L310) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:312](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L312) |  |
+| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:318](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L318) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:323](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L323) |  |
 
 ## FixedIncomeAccrualCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedIncomeAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:358](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L358).
+Source: [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:19](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L19).
 
-Coupon accrual and premium/discount amortization for one bond position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
+Coupon accrual and premium/discount amortization for one Bond or StructuredCredit position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
 
 ```csharp
 public sealed class FixedIncomeAccrualCalculation(IRecurringJournalCalculationInputs inputs, ISecurityMasterAmortizationLedgerBridge? bridge = null, ISecurityMasterCashFlowService? cashFlows = null, ISecurityMasterQueryService? securities = null) : IRecurringJournalCalculation
@@ -943,11 +943,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:364](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L364) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:367](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L367) |  |
-| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:369](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L369) |  |
-| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:373](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L373) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:375](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L375) |  |
+| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:25](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L25) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:28](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L28) |  |
+| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:30](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L30) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:34](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L34) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:36](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L36) |  |
 
 ## FundAccountCloseReadinessService
 
@@ -973,7 +973,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FundExpenseAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:279](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L279).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:290](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L290).
 
 Straight-line accrual of an annual fund expense over the accrual window. Terms: annualAmount, yearBasisDays. Input: expenseId.
 
@@ -985,6 +985,6 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fund-expense-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:281](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L281) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:283](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L283) |  |
-| <code>public Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:285](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L285) |  |
+| <code>public const string CalculationKind = &quot;fund-expense-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:292](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L292) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:294](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L294) |  |
+| <code>public Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:296](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L296) |  |

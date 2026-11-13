@@ -11,7 +11,8 @@ public sealed record ReportAccessQueryContext(
     string? TenantId = null,
     bool RequireBoundScope = false)
 {
-    internal ReportingAccessQueryContext ToReportingContext() =>
+    /// <summary>Converts the compatibility context to the Reporting-owned query contract.</summary>
+    public ReportingAccessQueryContext ToReportingContext() =>
         new(ActorPrincipalId, GroupPrincipalIds, CompanyId, HasGlobalOverride, TenantId, RequireBoundScope);
 }
 

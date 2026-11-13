@@ -10,7 +10,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.SecurityMaster;
 
-public sealed class StructuredCashFlowScheduleRowVersionTests
+public sealed partial class StructuredCashFlowScheduleRowVersionTests
 {
     private static readonly DateTimeOffset AsOf = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
@@ -24,14 +24,14 @@ public sealed class StructuredCashFlowScheduleRowVersionTests
             var receipt = await service.CaptureProjectionAsync(Security().SecurityId, StructuredCashFlowScenario.Base,
                 new BondCalculationContext(AsOf));
 
-            receipt!.ModelVersion.Should().Be("bond-cash-flow-context-v4");
+            receipt!.ModelVersion.Should().Be("bond-cash-flow-context-v5");
             receipt.Projection.BlockedReason.Should().BeNull();
             receipt.Projection.Schedule.Should().HaveCount(2);
-            receipt.Projection.Schedule.Should().OnlyContain(row => row.RowVersion == 1 &&
+            receipt.Projection.Schedule.Should().OnlyContain(row => row.RowVersion == 2 &&
                 row.InterestMeasuredFrom != null && row.InterestMeasuredTo != null);
             var path = Path.Combine(directory, receipt.ContentSha256 + ".json");
             var json = await File.ReadAllTextAsync(path);
-            json.Should().Contain("\"RowVersion\":1").And.Contain("\"InterestMeasuredFrom\":\"2026-01-01\"");
+            json.Should().Contain("\"RowVersion\":2").And.Contain("\"InterestMeasuredFrom\":\"2026-01-01\"");
 
             var restarted = Service(new FileSecurityCashFlowReceiptStore(directory));
             var replay = await restarted.ReplayProjectionAsync(receipt.ContentSha256);
@@ -50,32 +50,48 @@ public sealed class StructuredCashFlowScheduleRowVersionTests
     [InlineData("bond-cash-flow-context-v1")]
     [InlineData("bond-cash-flow-context-v2")]
     [InlineData("bond-cash-flow-context-v3")]
-    public async Task FrozenLegacyRowReceiptsReplayWithoutChangingStoredBytes(string model)
+    [InlineData("bond-cash-flow-context-v4")]
+    public async Task LiteralHistoricalRowsReplayWithoutChangingStoredBytes(string model)
     {
         var directory = Path.Combine(Path.GetTempPath(), "cash-flow-legacy-" + Guid.NewGuid().ToString("N"));
         try
         {
             var store = new FileSecurityCashFlowReceiptStore(directory);
-            var receipt = await Service(store).CaptureProjectionAsync(Security().SecurityId,
-                StructuredCashFlowScenario.Base, new BondCalculationContext(AsOf));
-            receipt!.Projection.BlockedReason.Should().BeNull();
-            receipt.Projection.Schedule.Should().HaveCount(2);
-            var legacy = Rehash(receipt with
-            {
-                ModelVersion = model,
-                Projection = SecurityCashFlowScheduleRowCodec.Legacy(receipt.Projection)
-            });
+            // Literal historical output, independent of the current calculation and row codec.
+            // A change to today's formula cannot silently regenerate these expectations.
+            const string legacyRows = """
+                [{"PeriodDate":"2027-01-01T00:00:00+00:00","PrincipalAmount":0,"InterestAmount":5.00,"Factor":1},
+                 {"PeriodDate":"2028-01-01T00:00:00+00:00","PrincipalAmount":100,"InterestAmount":5.00,"Factor":0}]
+                """;
+            const string versionOneRows = """
+                [{"PeriodDate":"2027-01-01T00:00:00+00:00","PrincipalAmount":0,"InterestAmount":5.00,"Factor":1,"RowVersion":1,"InterestMeasuredFrom":"2026-01-01","InterestMeasuredTo":"2027-01-01"},
+                 {"PeriodDate":"2028-01-01T00:00:00+00:00","PrincipalAmount":100,"InterestAmount":5.00,"Factor":0,"RowVersion":1,"InterestMeasuredFrom":"2027-01-01","InterestMeasuredTo":"2028-01-01"}]
+                """;
+            var rows = JsonSerializer.Deserialize<List<StructuredCashFlowScheduleEntry>>(
+                model == "bond-cash-flow-context-v4" ? versionOneRows : legacyRows)!;
+            var security = Security();
+            var source = new SecurityCashFlowSourceDto(security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet,
+                AsOf, false, null, null);
+            var terms = StructuredCashFlowTermsResolver.Resolve(security);
+            var projection = new StructuredCashFlowProjectionDto(security.SecurityId, source.SourceKind,
+                StructuredCashFlowScenario.Base, AsOf, rows, StructuredCashFlowStaleness.Fresh, AsOf,
+                terms.FactorSchedule, terms);
+            var legacy = Rehash(new SecurityCashFlowCalculationReceipt(model, security, source,
+                StructuredCashFlowScenario.Base, new BondCalculationContext(AsOf, SecurityVersion: security.Version),
+                [], projection, string.Empty));
             await store.RetainAsync(legacy);
             var path = Path.Combine(directory, legacy.ContentSha256 + ".json");
             var originalBytes = await File.ReadAllBytesAsync(path);
             var originalJson = await File.ReadAllTextAsync(path);
-            originalJson.Should().NotContain("RowVersion").And.NotContain("InterestMeasured");
+            originalJson.Should().NotContain("InterestSegments");
+            if (model != "bond-cash-flow-context-v4")
+                originalJson.Should().NotContain("RowVersion").And.NotContain("InterestMeasured");
 
             var replay = await Service(new FileSecurityCashFlowReceiptStore(directory)).ReplayProjectionAsync(legacy.ContentSha256);
 
             replay!.BlockedReason.Should().BeNull();
             replay.Schedule.Should().Equal(legacy.Projection.Schedule);
-            replay.Schedule.Should().OnlyContain(row => row.RowVersion == 0 && row.InterestMeasuredFrom == null);
+            replay.Schedule.Should().OnlyContain(row => row.RowVersion == (model == "bond-cash-flow-context-v4" ? 1 : 0));
             (await File.ReadAllBytesAsync(path)).Should().Equal(originalBytes);
         }
         finally { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
@@ -145,22 +161,22 @@ public sealed class StructuredCashFlowScheduleRowVersionTests
             StructuredCashFlowScenario.Base, AsOf, [], LegSchedules:
             [new("receive", CashFlowLegRateKind.Fixed, CashFlowLegDirection.Receive, [row])]);
 
-        SecurityCashFlowScheduleRowCodec.HasSupportedRows(projection, current: false).Should().BeFalse();
+        SecurityCashFlowScheduleRowCodec.HasSupportedRows(projection, rowVersion: 0).Should().BeFalse();
         var current = SecurityCashFlowScheduleRowCodec.Current(projection);
-        SecurityCashFlowScheduleRowCodec.HasSupportedRows(current, current: true).Should().BeTrue();
-        current.LegSchedules!.Single().Schedule.Single().RowVersion.Should().Be(1);
+        SecurityCashFlowScheduleRowCodec.HasSupportedRows(current, rowVersion: 2).Should().BeTrue();
+        current.LegSchedules!.Single().Schedule.Single().RowVersion.Should().Be(2);
         var legacy = SecurityCashFlowScheduleRowCodec.Legacy(current);
-        SecurityCashFlowScheduleRowCodec.HasSupportedRows(legacy, current: false).Should().BeTrue();
-        SecurityCashFlowScheduleRowCodec.HasSupportedRows(legacy, current: true).Should().BeFalse();
+        SecurityCashFlowScheduleRowCodec.HasSupportedRows(legacy, rowVersion: 0).Should().BeTrue();
+        SecurityCashFlowScheduleRowCodec.HasSupportedRows(legacy, rowVersion: 2).Should().BeFalse();
         legacy.LegSchedules!.Single().Schedule.Single().InterestMeasuredFrom.Should().BeNull();
     }
 
     private static SecurityCashFlowCalculationReceipt Rehash(SecurityCashFlowCalculationReceipt receipt)
         => receipt with { ContentSha256 = SecurityMasterCashFlowService.ReceiptHash(receipt) };
 
-    private static SecurityMasterCashFlowService Service(ISecurityCashFlowReceiptStore receipts)
+    private static SecurityMasterCashFlowService Service(ISecurityCashFlowReceiptStore receipts, SecurityDetailDto? security = null)
     {
-        var security = Security();
+        security ??= Security();
         var source = Substitute.For<ISecurityMasterCashFlowStore>();
         source.GetSourceAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(
             new SecurityCashFlowSourceDto(security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, AsOf, false, null, null));

@@ -755,17 +755,23 @@ describe("dashboard design-system contract", () => {
     const screen = readAccountingScreen();
     const securityMasterPanels = readAccountingSecurityMasterPanels();
     const viewModel = readAccountingViewModel();
+    const securityProjections = readRepositoryFile("src/Meridian.Ui/dashboard/src/screens/accounting-screen.security-projections.ts");
 
     expect(screen).toContain('from "@/screens/accounting-screen.security-master-panels"');
+    expect(screen).toContain("view={securityMaster.schedulesView}");
     expect(securityMasterPanels).toContain("export function SecuritySchedulesPanel");
     expect(securityMasterPanels).toContain("<DenseDataTable");
     expect(securityMasterPanels).toContain("<ToolbarStrip");
     expect(securityMasterPanels).toContain("<EntitySummary");
     expect(viewModel).toContain("buildSecuritySchedulesViewState");
     expect(viewModel).toContain("SecuritySchedulesViewState");
-    expect(viewModel).toContain("Cash-flow and factor schedules");
-    expect(viewModel).toContain("statusAnnouncement");
-    expect(viewModel).toContain("emptyText");
+    expect(viewModel).toMatch(/export\s+\{[^}]*\bbuildSecuritySchedulesViewState\b[^}]*\}\s+from "\.\/accounting-screen\.security-projections";/);
+    expect(viewModel).toMatch(/export\s+type\s+\{[^}]*\bSecuritySchedulesViewState\b[^}]*\}\s+from "\.\/accounting-screen\.security-projections";/);
+    expect(securityProjections).toContain("export function buildSecuritySchedulesViewState");
+    expect(securityProjections).toContain("export interface SecuritySchedulesViewState");
+    expect(securityProjections).toContain("Cash-flow and factor schedules");
+    expect(securityProjections).toContain("statusAnnouncement");
+    expect(securityProjections).toContain("emptyText");
   });
 
   it("keeps evidence semantic states aligned across browser, WPF, docs, and screenshot gates", () => {

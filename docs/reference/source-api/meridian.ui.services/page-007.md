@@ -33,7 +33,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.HealthUpdateEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:390](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L390).
+Source: [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:399](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L399).
 
 Supplies updated provider-health snapshots to health-change subscribers.
 
@@ -45,7 +45,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public List&lt;ProviderHealthData&gt; Providers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:392](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L392) |  |
+| <code>public List&lt;ProviderHealthData&gt; Providers { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/ProviderHealthService.cs:401](../../../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs#L401) |  |
 
 ## HeatmapLevel
 

@@ -133,7 +133,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationContext</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:21](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L21).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:19](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L19).
 
 Everything one calculated recurring occurrence may read. The accrual window is the inclusive date range this occurrence owns: it starts the day after the previous occurrence (or at the start of the covering accounting period for the first occurrence) and ends on the effective date, so consecutive occurrences never accrue the same day twice.
 
@@ -145,18 +145,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DateOnly RequireWindowStart() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:33](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L33) | The first day of the accrual window; fails closed when the period has no start date. |
-| <code>public int WindowDays =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:38](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L38) | Inclusive number of days in the accrual window. |
-| <code>public decimal RequireParameter(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:41](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L41) | A numeric schedule term. Terms are never defaulted: a missing term blocks the draft. |
-| <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:46](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L46) |  |
-| <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:51](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L51) |  |
-| <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:55](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L55) | An explicit day-count year basis; the accrual refuses to guess one. |
+| <code>public DateOnly RequireWindowStart() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:31](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L31) | The first day of the accrual window; fails closed when the period has no start date. |
+| <code>public int WindowDays =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:36](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L36) | Inclusive number of days in the accrual window. |
+| <code>public decimal RequireParameter(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:39](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L39) | A numeric schedule term. Terms are never defaulted: a missing term blocks the draft. |
+| <code>public string RequireInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:44](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L44) |  |
+| <code>public string? OptionalInput(string name) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:49](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L49) |  |
+| <code>public int RequireYearBasisDays();</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:53](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L53) | An explicit day-count year basis; the accrual refuses to guess one. |
 
 ## RecurringJournalCalculationResult
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RecurringJournalCalculationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:66](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L66).
 
 The outcome of a posting calculation: a balanced draft for human approval, or a recorded reason why this occurrence has nothing to post.
 
@@ -168,7 +168,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:70](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L70) |  |
+| <code>public static RecurringJournalCalculationResult NothingDue(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:68](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L68) |  |
 
 ## RecurringJournalPeriodAuthority
 
@@ -217,7 +217,7 @@ Declared public members:
 | <code>public bool SupportsCalculation(string kind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:24](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L24) | Whether a calculated template of this kind can be run by this host. |
 | <code>public IReadOnlyList&lt;string&gt; MissingCalculationInputs(JournalTemplateCalculation calculation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:27](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L27) | The inputs a calculated template of this kind must state and does not. |
 | <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduledRunResult&gt;&gt; RunDueAsync(DateTimeOffset now, string? tenant = null, string? company = null, bool scopeSpecified = false, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:32](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L32) |  |
-| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:309](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L309) |  |
+| <code>public async Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs:313](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs#L313) |  |
 
 ## RecurringJournalSubjectAuthority
 
@@ -288,7 +288,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportAccessPolicyEvaluator</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L21).
+Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L22).
 
 Compatibility adapter for Reporting-owned access policy normalization and evaluation.
 
@@ -300,11 +300,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ReportAccessPolicyDto Normalize(ReportAccessPolicyDto? policy, string? defaultOwnerPrincipalId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L23) |  |
-| <code>public static IReadOnlyList&lt;string&gt; Validate(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L26) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportAccessPolicyDto? policy, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:29](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L29) |  |
-| <code>public static ReportAccessEvaluationDto Evaluate(ReportingOutputManifest manifest, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:32](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L32) |  |
-| <code>public static string BuildSummary(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:35](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L35) |  |
+| <code>public static ReportAccessPolicyDto Normalize(ReportAccessPolicyDto? policy, string? defaultOwnerPrincipalId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L24) |  |
+| <code>public static IReadOnlyList&lt;string&gt; Validate(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L27) |  |
+| <code>public static ReportAccessEvaluationDto Evaluate(ReportAccessPolicyDto? policy, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:30](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L30) |  |
+| <code>public static ReportAccessEvaluationDto Evaluate(ReportingOutputManifest manifest, ReportAccessQueryContext? context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:33](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L33) |  |
+| <code>public static string BuildSummary(ReportAccessPolicyDto? policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:36](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L36) |  |
 
 ## ReportAccessQueryContext
 
@@ -315,6 +315,12 @@ Source: [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:6](../..
 ```csharp
 public sealed record ReportAccessQueryContext(string? ActorPrincipalId = null, IReadOnlyList<string>? GroupPrincipalIds = null, string? CompanyId = null, bool HasGlobalOverride = false, string? TenantId = null, bool RequireBoundScope = false)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingAccessQueryContext ToReportingContext() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportAccessPolicyEvaluator.cs#L15) | Converts the compatibility context to the Reporting-owned query contract. |
 
 ## ReportAmountBindingBuilder
 

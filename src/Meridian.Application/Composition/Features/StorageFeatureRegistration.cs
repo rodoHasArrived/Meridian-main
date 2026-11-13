@@ -46,7 +46,7 @@ using Meridian.Entities.FundStructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Instruments.Commodities;
@@ -255,9 +255,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 () => sp.GetService<IInstrumentPositionProjectionStore>());
             services.AddSingleton<Func<IConsolidationPostingAuthority?>>(sp =>
                 () => sp.GetService<IConsolidationPostingAuthority>());
+            services.AddSingleton<Func<IIntercompanyAgreementPostingAuthority?>>(sp =>
+                () => sp.GetService<IIntercompanyAgreementPostingAuthority>());
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.TryAddSingleton<ILedgerSecurityEntitlementInventory>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
             services.AddSingleton(sp => new DurableAutomatedJournalPoster(
