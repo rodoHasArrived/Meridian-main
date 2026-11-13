@@ -2164,6 +2164,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
     },
     {
@@ -2728,6 +2734,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostAttestedCashDividendPostingCandidateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
     },
     {
@@ -3101,6 +3113,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.CashFlows.CashFlowRecastPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto"
     },
     {
       "kind": "contract-set-member",
@@ -6748,6 +6766,156 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCallContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCapabilitiesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementForbiddenException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementListDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementNotFoundException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementQueryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementReviewPayloadDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTermsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto"
     },
     {
@@ -8584,6 +8752,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAgreementDimensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerBookDto"
     },
     {
@@ -9592,6 +9766,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.OperationArtifactReference"
     },
     {
@@ -9707,6 +9887,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Operations.OperationsOriginGuard"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary"
     },
     {
       "kind": "contract-set-member",
@@ -10390,7 +10576,55 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AttestCorporateActionCashDividendRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendReconciliationAccountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendReconciliationSupportDto"
     },
     {
       "kind": "contract-set-member",
@@ -10403,6 +10637,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -10541,6 +10781,78 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendEligibilityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto"
     },
     {
       "kind": "contract-set-member",
@@ -11117,6 +11429,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport"
     },
     {
       "kind": "contract-set-member",
@@ -11704,6 +12034,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto"
     },
     {
@@ -12023,6 +12359,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassNames"
     },
     {
       "kind": "contract-set-member",
@@ -12724,6 +13066,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterOptions"
     },
     {
@@ -13114,6 +13462,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto"
     },
     {
@@ -13181,24 +13535,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult"
     },
     {
       "kind": "contract-set-member",
@@ -13445,6 +13781,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Services.IGovernanceSharedDataAccessService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Services.IIntercompanyAgreementAccessAuthority"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Services.IIntercompanyAgreementEvidenceAuthority"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Services.IIntercompanyAgreementService"
     },
     {
       "kind": "contract-set-member",
@@ -13804,6 +14158,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.AccrualCalculationResultDto"
     },
     {
@@ -14081,6 +14441,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.CashSyncWindow"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -15484,6 +15850,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountApprovalClassification"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto"
     },
     {
@@ -16600,6 +16972,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationProofExportDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationRevocationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitApprovalDto"
     },
     {
@@ -17093,6 +17495,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationTaxonomyValue"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.RecordPreparerAttestationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -17830,6 +18238,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.RevokePreparerAttestationRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.RunAttributionSummary"
     },
     {
@@ -18221,6 +18635,48 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SettlementInstruction"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationSubjectSnapshotDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto"
     },
     {
       "kind": "contract-set-member",
@@ -20086,6 +20542,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
     },
     {
@@ -20645,6 +21107,12 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.PositionEconomicStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.PostAttestedCashDividendPostingCandidateRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -22085,6 +22553,156 @@
       "label": "",
       "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCallContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCapabilitiesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementForbiddenException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementListDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementNotFoundException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementQueryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementReviewPayloadDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTermsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException"
     },
     {
       "kind": "contract-set-member",
@@ -24112,6 +24730,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAgreementDimensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerBookDto"
     },
     {
@@ -25180,7 +25804,55 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AttestCorporateActionCashDividendRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendReconciliationAccountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendReconciliationSupportDto"
     },
     {
       "kind": "contract-set-member",
@@ -25193,6 +25865,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -25331,6 +26009,78 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendEligibilityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto"
     },
     {
       "kind": "contract-set-member",
@@ -25907,6 +26657,24 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport"
     },
     {
       "kind": "contract-set-member",
@@ -26494,6 +27262,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto"
     },
     {
@@ -26813,6 +27587,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassNames"
     },
     {
       "kind": "contract-set-member",
@@ -27514,6 +28294,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterOptions"
     },
     {
@@ -27904,6 +28690,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto"
     },
     {
@@ -27971,24 +28763,6 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:security-master-contracts",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult"
     },
     {
       "kind": "contract-set-member",
@@ -30046,6 +30820,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventSpineDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
     },
     {
@@ -30149,6 +30929,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPostingCandidateRequestDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto"
     },
     {
       "kind": "contract-reference",
@@ -30927,6 +31713,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostAttestedCashDividendPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PostAttestedCashDividendPostingCandidateRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
       "target": "contract:Meridian.Contracts.AssetOperations.JournalPostingStatusDto"
     },
@@ -30989,6 +31787,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
       "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
     },
     {
       "kind": "contract-reference",
@@ -31227,6 +32031,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowContract",
       "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowStream"
     },
@@ -31367,6 +32177,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowResult",
       "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowEvidence"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowRun",
+      "target": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto"
     },
     {
       "kind": "contract-reference",
@@ -34557,6 +35373,174 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandResultDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandResultDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementConflictException",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCapabilitiesDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTermsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementForbiddenException",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementListDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementNotFoundException",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementQueryDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementQueryDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementReviewPayloadDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto",
       "target": "contract:Meridian.Contracts.FundStructure.FundStructureSharedDataAccessDto"
     },
@@ -35969,6 +36953,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto"
     },
     {
       "kind": "contract-reference",
@@ -39357,6 +40347,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AttestCorporateActionCashDividendRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.AttestCorporateActionCashDividendRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionTerms"
     },
@@ -39365,6 +40367,42 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIncomeComponent"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto"
     },
     {
       "kind": "contract-reference",
@@ -39448,6 +40486,150 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingOptionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendEligibilityDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendEligibilityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionProcessingCaseDto"
     },
     {
@@ -40299,6 +41481,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto"
     },
@@ -40625,6 +41819,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
     },
     {
       "kind": "contract-reference",
@@ -41559,24 +42759,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
-      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
-      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegDirection"
     },
@@ -41997,6 +43179,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto",
+      "target": "contract:Meridian.Contracts.Workstation.LedgerAmountScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.AccrualCalculationResultDto",
       "target": "contract:Meridian.Contracts.Workstation.AccrualInputSnapshotDto"
     },
@@ -42167,6 +43355,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.CashSyncWindow",
       "target": "contract:Meridian.Contracts.Workstation.CashSyncSourceAvailability"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
       "kind": "contract-reference",
@@ -42489,6 +43683,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.EvidenceGraphDto",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.EvidenceManifestDto",
       "target": "contract:Meridian.Contracts.Workstation.EvidenceDocumentDto"
     },
@@ -42569,6 +43769,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.EvidencePacketDto",
       "target": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.EvidencePacketDto",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto"
     },
     {
       "kind": "contract-reference",
@@ -44147,6 +45353,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto",
       "target": "contract:Meridian.Contracts.Workstation.GovernanceReportPackStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.LedgerAmountProofDto",
+      "target": "contract:Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto"
     },
     {
       "kind": "contract-reference",
@@ -45855,6 +47067,48 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PreparerAttestationReceiptDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PreparerAttestationReceiptDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationRevocationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitApprovalDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsApprovalStateDto"
     },
@@ -46559,6 +47813,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.ReconciliationTaxonomySnapshot",
       "target": "contract:Meridian.Contracts.Workstation.ReconciliationTaxonomyValue"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.RecordPreparerAttestationRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
     {
       "kind": "contract-reference",
@@ -47679,6 +48939,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.RevokePreparerAttestationRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.RunAttributionSummary",
       "target": "contract:Meridian.Contracts.Workstation.StrategyRunMode"
     },
@@ -48215,6 +49481,48 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterWorkstationDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityEconomicDefinitionSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto",
+      "target": "contract:Meridian.Contracts.Workstation.PreparerAttestationRevocationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto",
+      "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto"
     },
     {
       "kind": "contract-reference",
@@ -51101,6 +52409,167 @@
       "label": "",
       "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
       "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows"
+    },
+    {
+      "constraint": "intercompany_agreement_snapshot_pointer",
+      "kind": "foreign-key",
+      "label": "tenant_id, agreement_id, aggregate_version",
+      "source": "database:fund_structure.intercompany_agreement",
+      "target": "database:fund_structure.intercompany_agreement_snapshot"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_aggregate_version_check on fund_structure.intercompany_agreement",
+      "target": "database:fund_structure.intercompany_agreement.aggregate_version"
+    },
+    {
+      "constraint": "intercompany_agreement_audit_tenant_id_agreement_id_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, agreement_id",
+      "source": "database:fund_structure.intercompany_agreement_audit",
+      "target": "database:fund_structure.intercompany_agreement"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_audit_sequence_number_check on fund_structure.intercompany_agreement_audit",
+      "target": "database:fund_structure.intercompany_agreement_audit.sequence_number"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_audit_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_audit",
+      "target": "database:fund_structure.intercompany_agreement.agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_audit_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_audit",
+      "target": "database:fund_structure.intercompany_agreement.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_audit_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_audit",
+      "target": "database:fund_structure.intercompany_agreement_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_command_rece_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_command_receipt",
+      "target": "database:fund_structure.intercompany_agreement.agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_command_rece_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_command_receipt",
+      "target": "database:fund_structure.intercompany_agreement.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_command_rece_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_command_receipt",
+      "target": "database:fund_structure.intercompany_agreement_pkey"
+    },
+    {
+      "constraint": "intercompany_agreement_command_rece_tenant_id_agreement_id_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, agreement_id",
+      "source": "database:fund_structure.intercompany_agreement_command_receipt",
+      "target": "database:fund_structure.intercompany_agreement"
+    },
+    {
+      "constraint": "intercompany_agreement_revision_tenant_id_agreement_id_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, agreement_id",
+      "source": "database:fund_structure.intercompany_agreement_revision",
+      "target": "database:fund_structure.intercompany_agreement"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_revision_agreement_version_check on fund_structure.intercompany_agreement_revision",
+      "target": "database:fund_structure.intercompany_agreement_revision.agreement_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_revision_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_revision",
+      "target": "database:fund_structure.intercompany_agreement.agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_revision_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_revision",
+      "target": "database:fund_structure.intercompany_agreement.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_revision_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_revision",
+      "target": "database:fund_structure.intercompany_agreement_pkey"
+    },
+    {
+      "constraint": "intercompany_agreement_snapshot_tenant_id_agreement_id_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, agreement_id",
+      "source": "database:fund_structure.intercompany_agreement_snapshot",
+      "target": "database:fund_structure.intercompany_agreement"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_aggregate_version_check on fund_structure.intercompany_agreement_snapshot",
+      "target": "database:fund_structure.intercompany_agreement_snapshot.aggregate_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_pointer on fund_structure.intercompany_agreement",
+      "target": "database:fund_structure.intercompany_agreement_snapshot.aggregate_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_pointer on fund_structure.intercompany_agreement",
+      "target": "database:fund_structure.intercompany_agreement_snapshot.agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_pointer on fund_structure.intercompany_agreement",
+      "target": "database:fund_structure.intercompany_agreement_snapshot.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_pointer on fund_structure.intercompany_agreement",
+      "target": "database:fund_structure.intercompany_agreement_snapshot_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_snapshot",
+      "target": "database:fund_structure.intercompany_agreement.agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_snapshot",
+      "target": "database:fund_structure.intercompany_agreement.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_snapshot_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_snapshot",
+      "target": "database:fund_structure.intercompany_agreement_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_agreement_tenant_id_check on fund_structure.intercompany_agreement",
+      "target": "database:fund_structure.intercompany_agreement.tenant_id"
     },
     {
       "declared": true,
@@ -54306,6 +55775,259 @@
       "target": "database:security_master.securities_pkey"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_declaration_histor_payload_hash_check on security_master.cash_dividend_attestation_declaration_history",
+      "target": "database:security_master.cash_dividend_attestation_declaration_history.payload_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_declaration_history_revision_check on security_master.cash_dividend_attestation_declaration_history",
+      "target": "database:security_master.cash_dividend_attestation_declaration_history.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_declarations_check on security_master.cash_dividend_attestation_declarations",
+      "target": "database:security_master.cash_dividend_attestation_declarations.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_declarations_check on security_master.cash_dividend_attestation_declarations",
+      "target": "database:security_master.cash_dividend_attestation_declarations.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_declarations_payload_hash_check on security_master.cash_dividend_attestation_declarations",
+      "target": "database:security_master.cash_dividend_attestation_declarations.payload_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_declarations_principal_id_check on security_master.cash_dividend_attestation_declarations",
+      "target": "database:security_master.cash_dividend_attestation_declarations.principal_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_declarations_revision_check on security_master.cash_dividend_attestation_declarations",
+      "target": "database:security_master.cash_dividend_attestation_declarations.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_event_alia_source_evidence_hash_check on security_master.cash_dividend_attestation_event_aliases",
+      "target": "database:security_master.cash_dividend_attestation_event_aliases.source_evidence_hash"
+    },
+    {
+      "constraint": "cash_dividend_attestation_postings_attestation_id_fkey",
+      "kind": "foreign-key",
+      "label": "attestation_id",
+      "source": "database:security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.cash_dividend_attestations"
+    },
+    {
+      "constraint": "cash_dividend_attestation_postings_projection_id_fkey",
+      "kind": "foreign-key",
+      "label": "projection_id",
+      "source": "database:security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "constraint": "cash_dividend_attestation_postings_case_id_fkey",
+      "kind": "foreign-key",
+      "label": "case_id",
+      "source": "database:security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.corporate_action_processing_cases"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_postings_attestation_id_fkey on security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.cash_dividend_attestations.attestation_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_postings_attestation_id_fkey on security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.cash_dividend_attestations_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_postings_case_id_fkey on security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.corporate_action_processing_cases.case_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_postings_case_id_fkey on security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.corporate_action_processing_cases_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_postings_payload_hash_check on security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.cash_dividend_attestation_postings.payload_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_postings_projection_id_fkey on security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.corporate_action_case_accounting_projections.projection_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_postings_projection_id_fkey on security_master.cash_dividend_attestation_postings",
+      "target": "database:security_master.corporate_action_case_accounting_projections_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_reservatio_economic_fingerprint_check on security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.cash_dividend_attestation_reservations.economic_fingerprint"
+    },
+    {
+      "constraint": "cash_dividend_attestation_reservations_case_id_fkey",
+      "kind": "foreign-key",
+      "label": "case_id",
+      "source": "database:security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.corporate_action_processing_cases"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_reservations_budget_month_check on security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.cash_dividend_attestation_reservations.budget_month"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_reservations_case_id_fkey on security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.corporate_action_processing_cases.case_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_reservations_case_id_fkey on security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.corporate_action_processing_cases_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_reservations_check on security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.cash_dividend_attestation_reservations.gross_usd"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_reservations_check on security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.cash_dividend_attestation_reservations.whole_event_gross_usd"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestation_reservations_gross_usd_check on security_master.cash_dividend_attestation_reservations",
+      "target": "database:security_master.cash_dividend_attestation_reservations.gross_usd"
+    },
+    {
+      "constraint": "cash_dividend_attestations_reservation_id_fkey",
+      "kind": "foreign-key",
+      "label": "reservation_id",
+      "source": "database:security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestation_reservations"
+    },
+    {
+      "constraint": "cash_dividend_attestations_projection_id_fkey",
+      "kind": "foreign-key",
+      "label": "projection_id",
+      "source": "database:security_master.cash_dividend_attestations",
+      "target": "database:security_master.corporate_action_case_accounting_projections"
+    },
+    {
+      "constraint": "cash_dividend_attestations_case_id_fkey",
+      "kind": "foreign-key",
+      "label": "case_id",
+      "source": "database:security_master.cash_dividend_attestations",
+      "target": "database:security_master.corporate_action_processing_cases"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_bound_case_version_check on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestations.bound_case_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_case_id_fkey on security_master.cash_dividend_attestations",
+      "target": "database:security_master.corporate_action_processing_cases.case_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_case_id_fkey on security_master.cash_dividend_attestations",
+      "target": "database:security_master.corporate_action_processing_cases_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_check on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestations.voided_at"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_check on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestations.voided_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_declaration_revision_check on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestations.declaration_revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_payload_hash_check on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestations.payload_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_projection_hash_check on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestations.projection_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_projection_id_fkey on security_master.cash_dividend_attestations",
+      "target": "database:security_master.corporate_action_case_accounting_projections.projection_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_projection_id_fkey on security_master.cash_dividend_attestations",
+      "target": "database:security_master.corporate_action_case_accounting_projections_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_reservation_id_fkey on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestation_reservations.reservation_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.cash_dividend_attestations_reservation_id_fkey on security_master.cash_dividend_attestations",
+      "target": "database:security_master.cash_dividend_attestation_reservations_pkey"
+    },
+    {
       "constraint": "cash_transaction_loan_id_fkey",
       "kind": "foreign-key",
       "label": "loan_id",
@@ -57391,6 +59113,36 @@
       "kind": "contains",
       "label": "",
       "source": "schema:fund_structure",
+      "target": "database:fund_structure.intercompany_agreement"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.intercompany_agreement_audit"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.intercompany_agreement_command_receipt"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.intercompany_agreement_revision"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.intercompany_agreement_snapshot"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
       "target": "database:fund_structure.investment_portfolio"
     },
     {
@@ -57932,6 +59684,42 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.cap_floor_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.cash_dividend_attestation_declaration_history"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.cash_dividend_attestation_declarations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.cash_dividend_attestation_event_aliases"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.cash_dividend_attestation_postings"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.cash_dividend_attestation_reservations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.cash_dividend_attestations"
     },
     {
       "kind": "contains",
@@ -58703,7 +60491,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "0c56545a744ee6a54e5b41740593195b014a1a07566347695683d523c36f0cbc",
+  "fingerprint": "ed5752c8a043197bacf2e356f5d7e64679a33a375529e240f1919dcb13a80a60",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60918,6 +62706,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.AssetAccountingPreparerAttestationDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.AssetAccountingStageEvidenceDto"
@@ -61482,6 +63276,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.AssetOperations.PostAttestedCashDividendPostingCandidateRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.PostAttestedCashDividendPostingCandidateRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.AssetOperations.PostedJournalImpactDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.PostedJournalImpactDto"
@@ -61857,6 +63657,12 @@
       "id": "contract:Meridian.Contracts.CashFlows.CashFlowRecastPolicy",
       "kind": "contract-type",
       "label": "Meridian.Contracts.CashFlows.CashFlowRecastPolicy"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.CashFlows.ContractualCashFlowAttestationContextDto"
     },
     {
       "classification": "record",
@@ -65501,6 +67307,156 @@
       "label": "Meridian.Contracts.FundStructure.IngestCustodianStatementRequest"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementActionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementAuditDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCallContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementCallContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCapabilitiesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementCapabilitiesDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementCommandDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementCommandReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementCommandResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementCommandResultDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementConflictException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementConflictException"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementDraftDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementEvidenceDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementForbiddenException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementForbiddenException"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementJournalLinesDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementListDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementListDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementNotFoundException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementNotFoundException"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementProposalDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementProposalStateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementProposalStateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementQueryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementQueryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementReviewPayloadDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementReviewPayloadDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTermsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementTermsDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementTypeDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAgreementValidationException"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto",
       "kind": "contract-type",
@@ -67337,6 +69293,12 @@
       "label": "Meridian.Contracts.Ledger.LedgerAdjustmentApprovalStatusDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerAgreementDimensions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerAgreementDimensions"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.LedgerBookDto",
       "kind": "contract-type",
@@ -68345,6 +70307,12 @@
       "label": "Meridian.Contracts.Operations.IOperationalCaseHistoryStore"
     },
     {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Operations.OperationArtifactReference",
       "kind": "contract-type",
@@ -68463,6 +70431,12 @@
       "id": "contract:Meridian.Contracts.Operations.OperationsOriginGuard",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Operations.OperationsOriginGuard"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary"
     },
     {
       "classification": "record",
@@ -69143,10 +71117,58 @@
       "label": "Meridian.Contracts.SecurityMaster.AttachCorporateActionAccountingProjectionRequestDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AttestCorporateActionCashDividendRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AttestCorporateActionCashDividendRequestDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CashDividendAccountRoleBindingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CashDividendReconciliationAccountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CashDividendReconciliationAccountDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CashDividendReconciliationSupportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CashDividendReconciliationSupportDto"
     },
     {
       "classification": "enum",
@@ -69159,6 +71181,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegRateKind",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto"
     },
     {
       "classification": "class",
@@ -69297,6 +71325,78 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.CorporateActionCaseTransitionResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationPolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationPolicy"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationResultDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendAttestationValidation"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendCaseFactsDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendDecisionAuthorityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendEligibilityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendEligibilityDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CorporateActionCashDividendWorkspaceDto"
     },
     {
       "classification": "dto",
@@ -69873,6 +71973,24 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport"
     },
     {
       "classification": "service_contract",
@@ -70458,6 +72576,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto"
@@ -70779,6 +72903,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassNames",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassNames"
     },
     {
       "classification": "catalog",
@@ -71477,6 +73607,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityMasterImportRequest"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterLedgerSymbol"
+    },
+    {
       "classification": "configuration",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterOptions",
       "kind": "contract-type",
@@ -71867,6 +74003,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityValidationWorkflowDto"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto",
       "kind": "contract-type",
@@ -71937,24 +74079,6 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerLine"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
-    },
-    {
-      "classification": "result",
-      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult"
     },
     {
       "classification": "record",
@@ -72201,6 +74325,24 @@
       "id": "contract:Meridian.Contracts.Services.IGovernanceSharedDataAccessService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Services.IGovernanceSharedDataAccessService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Services.IIntercompanyAgreementAccessAuthority",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Services.IIntercompanyAgreementAccessAuthority"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Services.IIntercompanyAgreementEvidenceAuthority",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Services.IIntercompanyAgreementEvidenceAuthority"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Services.IIntercompanyAgreementService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Services.IIntercompanyAgreementService"
     },
     {
       "classification": "service_contract",
@@ -72558,6 +74700,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.AccountingPreparerAttestationDisclosureDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.AccrualCalculationResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.AccrualCalculationResultDto"
@@ -72837,6 +74985,12 @@
       "id": "contract:Meridian.Contracts.Workstation.CashSyncWindow",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.CashSyncWindow"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto"
     },
     {
       "classification": "dto",
@@ -74237,6 +76391,12 @@
       "label": "Meridian.Contracts.Workstation.InvestmentAccountingTrialBalanceImpactDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.LedgerAmountApprovalClassification",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.LedgerAmountApprovalClassification"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto",
       "kind": "contract-type",
@@ -75354,6 +77514,36 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PreparerAttestationEvidenceProjectionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PreparerAttestationProofExportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PreparerAttestationProofExportDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PreparerAttestationReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PreparerAttestationReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PreparerAttestationRevocationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PreparerAttestationRevocationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PreparerEvidenceAcknowledgmentDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitApprovalDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitApprovalDto"
@@ -75849,6 +78039,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ReconciliationTaxonomyValue",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ReconciliationTaxonomyValue"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.RecordPreparerAttestationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.RecordPreparerAttestationRequestDto"
     },
     {
       "classification": "dto",
@@ -76583,6 +78779,12 @@
       "label": "Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.RevokePreparerAttestationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.RevokePreparerAttestationRequestDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Workstation.RunAttributionSummary",
       "kind": "contract-type",
@@ -76977,6 +79179,48 @@
       "id": "contract:Meridian.Contracts.Workstation.SettlementInstruction",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SettlementInstruction"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SinglePrincipalAttestationPolicy"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SinglePrincipalAttestationScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationSubjectSnapshotDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SinglePrincipalAttestationSubjectSnapshotDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SinglePrincipalAttestationWorkspaceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SinglePrincipalDeclarationDto"
     },
     {
       "classification": "record",
@@ -79747,6 +81991,136 @@
       "kind": "database-table",
       "label": "fund_structure.fund_structure_tenant_quarantine",
       "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement",
+      "kind": "database-table",
+      "label": "fund_structure.intercompany_agreement",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement.aggregate_version",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement.aggregate_version"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement.agreement_id",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement.agreement_id"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement.tenant_id",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement.tenant_id"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_aggregate_version_check on fund_structure.intercompany_agreement",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_aggregate_version_check on fund_structure.intercompany_agreement"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_audit",
+      "kind": "database-table",
+      "label": "fund_structure.intercompany_agreement_audit",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_audit.sequence_number",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_audit.sequence_number"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_audit_sequence_number_check on fund_structure.intercompany_agreement_audit",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_audit_sequence_number_check on fund_structure.intercompany_agreement_audit"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_audit_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_audit",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_audit_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_audit"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_command_rece_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_command_receipt",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_command_rece_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_command_receipt"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_command_receipt",
+      "kind": "database-table",
+      "label": "fund_structure.intercompany_agreement_command_receipt",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_pkey",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_pkey"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_revision",
+      "kind": "database-table",
+      "label": "fund_structure.intercompany_agreement_revision",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_revision.agreement_version",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_revision.agreement_version"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_revision_agreement_version_check on fund_structure.intercompany_agreement_revision",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_revision_agreement_version_check on fund_structure.intercompany_agreement_revision"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_revision_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_revision",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_revision_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_revision"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot",
+      "kind": "database-table",
+      "label": "fund_structure.intercompany_agreement_snapshot",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot.aggregate_version",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_snapshot.aggregate_version"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot.agreement_id",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_snapshot.agreement_id"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot.tenant_id",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_snapshot.tenant_id"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot_aggregate_version_check on fund_structure.intercompany_agreement_snapshot",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_snapshot_aggregate_version_check on fund_structure.intercompany_agreement_snapshot"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot_pkey",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_snapshot_pkey"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot_pointer on fund_structure.intercompany_agreement",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_snapshot_pointer on fund_structure.intercompany_agreement"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_snapshot_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_snapshot",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_snapshot_tenant_id_agreement_id_fkey on fund_structure.intercompany_agreement_snapshot"
+    },
+    {
+      "id": "database:fund_structure.intercompany_agreement_tenant_id_check on fund_structure.intercompany_agreement",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_agreement_tenant_id_check on fund_structure.intercompany_agreement"
     },
     {
       "id": "database:fund_structure.investment_portfolio",
@@ -83207,6 +85581,277 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.cash_dividend_attestation_declaration_histor_payload_hash_check on security_master.cash_dividend_attestation_declaration_history",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declaration_histor_payload_hash_check on security_master.cash_dividend_attestation_declaration_history"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declaration_history",
+      "kind": "database-table",
+      "label": "security_master.cash_dividend_attestation_declaration_history",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declaration_history.payload_hash",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declaration_history.payload_hash"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declaration_history.revision",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declaration_history.revision"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declaration_history_revision_check on security_master.cash_dividend_attestation_declaration_history",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declaration_history_revision_check on security_master.cash_dividend_attestation_declaration_history"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations",
+      "kind": "database-table",
+      "label": "security_master.cash_dividend_attestation_declarations",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations.company_id",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations.company_id"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations.payload_hash",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations.payload_hash"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations.principal_id",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations.principal_id"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations.revision",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations.revision"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations.tenant_id",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations.tenant_id"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations_check on security_master.cash_dividend_attestation_declarations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations_check on security_master.cash_dividend_attestation_declarations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations_payload_hash_check on security_master.cash_dividend_attestation_declarations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations_payload_hash_check on security_master.cash_dividend_attestation_declarations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations_principal_id_check on security_master.cash_dividend_attestation_declarations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations_principal_id_check on security_master.cash_dividend_attestation_declarations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_declarations_revision_check on security_master.cash_dividend_attestation_declarations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_declarations_revision_check on security_master.cash_dividend_attestation_declarations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_event_alia_source_evidence_hash_check on security_master.cash_dividend_attestation_event_aliases",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_event_alia_source_evidence_hash_check on security_master.cash_dividend_attestation_event_aliases"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_event_aliases",
+      "kind": "database-table",
+      "label": "security_master.cash_dividend_attestation_event_aliases",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_event_aliases.source_evidence_hash",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_event_aliases.source_evidence_hash"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_postings",
+      "kind": "database-table",
+      "label": "security_master.cash_dividend_attestation_postings",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_postings.payload_hash",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_postings.payload_hash"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_postings_attestation_id_fkey on security_master.cash_dividend_attestation_postings",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_postings_attestation_id_fkey on security_master.cash_dividend_attestation_postings"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_postings_case_id_fkey on security_master.cash_dividend_attestation_postings",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_postings_case_id_fkey on security_master.cash_dividend_attestation_postings"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_postings_payload_hash_check on security_master.cash_dividend_attestation_postings",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_postings_payload_hash_check on security_master.cash_dividend_attestation_postings"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_postings_projection_id_fkey on security_master.cash_dividend_attestation_postings",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_postings_projection_id_fkey on security_master.cash_dividend_attestation_postings"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservatio_economic_fingerprint_check on security_master.cash_dividend_attestation_reservations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservatio_economic_fingerprint_check on security_master.cash_dividend_attestation_reservations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations",
+      "kind": "database-table",
+      "label": "security_master.cash_dividend_attestation_reservations",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations.budget_month",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations.budget_month"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations.economic_fingerprint",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations.economic_fingerprint"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations.gross_usd",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations.gross_usd"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations.reservation_id",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations.reservation_id"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations.whole_event_gross_usd",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations.whole_event_gross_usd"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations_budget_month_check on security_master.cash_dividend_attestation_reservations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations_budget_month_check on security_master.cash_dividend_attestation_reservations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations_case_id_fkey on security_master.cash_dividend_attestation_reservations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations_case_id_fkey on security_master.cash_dividend_attestation_reservations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations_check on security_master.cash_dividend_attestation_reservations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations_check on security_master.cash_dividend_attestation_reservations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations_gross_usd_check on security_master.cash_dividend_attestation_reservations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations_gross_usd_check on security_master.cash_dividend_attestation_reservations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestation_reservations_pkey",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestation_reservations_pkey"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations",
+      "kind": "database-table",
+      "label": "security_master.cash_dividend_attestations",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations.attestation_id",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations.attestation_id"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations.bound_case_version",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations.bound_case_version"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations.declaration_revision",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations.declaration_revision"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations.payload_hash",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations.payload_hash"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations.projection_hash",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations.projection_hash"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations.voided_at",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations.voided_at"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations.voided_by",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations.voided_by"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_bound_case_version_check on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_bound_case_version_check on security_master.cash_dividend_attestations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_case_id_fkey on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_case_id_fkey on security_master.cash_dividend_attestations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_check on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_check on security_master.cash_dividend_attestations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_declaration_revision_check on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_declaration_revision_check on security_master.cash_dividend_attestations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_payload_hash_check on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_payload_hash_check on security_master.cash_dividend_attestations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_pkey",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_pkey"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_projection_hash_check on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_projection_hash_check on security_master.cash_dividend_attestations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_projection_id_fkey on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_projection_id_fkey on security_master.cash_dividend_attestations"
+    },
+    {
+      "id": "database:security_master.cash_dividend_attestations_reservation_id_fkey on security_master.cash_dividend_attestations",
+      "kind": "database-object",
+      "label": "security_master.cash_dividend_attestations_reservation_id_fkey on security_master.cash_dividend_attestations"
+    },
+    {
       "id": "database:security_master.cash_sweep_projection",
       "kind": "database-table",
       "label": "security_master.cash_sweep_projection",
@@ -86003,11 +88648,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3725,
-    "contract_set_memberships": 4697,
-    "edges": 9754,
-    "foreign_keys": 162,
+    "contract_references": 3814,
+    "contract_set_memberships": 4826,
+    "edges": 10050,
+    "foreign_keys": 174,
     "logical_references": 6,
-    "nodes": 4735
+    "nodes": 4889
   }
 }

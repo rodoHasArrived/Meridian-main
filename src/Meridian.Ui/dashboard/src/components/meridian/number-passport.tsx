@@ -1,4 +1,7 @@
 import type { LedgerAmountProof } from "@/types/ledger-amount-proof";
+import type { PreparerAttestationEvidenceProjection } from "@/types/preparer-attestation-evidence";
+import { PreparerAttestationEvidence } from "@/components/meridian/preparer-attestation-evidence";
+import { AccountingPreparerAttestation } from "@/components/meridian/accounting-preparer-attestation";
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSelectedRecordDto
@@ -13,7 +16,8 @@ export interface NumberPassportItem {
 export function NumberPassport(props: ({
   explorer: FinancialRecordExplorerDto;
   record: FinancialRecordExplorerSelectedRecordDto;
-} | { proof: LedgerAmountProof; title: string }) & { inline?: boolean }) {
+} | { proof: LedgerAmountProof; title: string }) & { inline?: boolean; preparerAttestations?: PreparerAttestationEvidenceProjection | null;
+  sourceJournalEntryIds?: string[] }) {
   const items = "proof" in props
     ? buildLedgerAmountPassportItems(props.proof)
     : buildNumberPassportItems(props.explorer, props.record);
@@ -29,6 +33,9 @@ export function NumberPassport(props: ({
       <span className="block break-words tabular-nums">{item.value}</span>
       <span className="block text-muted-foreground">{item.detail}</span>
     </span>)}</span>
+    {"proof" in props ? <AccountingPreparerAttestation proof={props.proof} sourceJournalEntryIds={props.sourceJournalEntryIds} inline /> : null}
+    <PreparerAttestationEvidence projection={props.preparerAttestations}
+      expectedScope={"proof" in props ? props.proof.scope : undefined} inline />
   </span>;
 
   return (
@@ -43,6 +50,9 @@ export function NumberPassport(props: ({
           </div>
         ))}
       </dl>
+      {"proof" in props ? <AccountingPreparerAttestation proof={props.proof} sourceJournalEntryIds={props.sourceJournalEntryIds} /> : null}
+      <PreparerAttestationEvidence projection={props.preparerAttestations}
+        expectedScope={"proof" in props ? props.proof.scope : undefined} />
     </section>
   );
 }

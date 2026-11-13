@@ -76,6 +76,10 @@ internal static class LedgerLineDimensionSetFields
             yield return new LedgerDimensionField("instrumentId", dimensions.InstrumentId.Value.ToString("D"));
         if (dimensions.PositionId is not null)
             yield return new LedgerDimensionField("positionId", dimensions.PositionId.Value.ToString("D"));
+        if (dimensions.IntercompanyAgreementId is not null)
+            yield return new LedgerDimensionField("intercompanyAgreementId", dimensions.IntercompanyAgreementId.Value.ToString("D"));
+        if (dimensions.IntercompanyAgreementVersion is not null)
+            yield return new LedgerDimensionField("intercompanyAgreementVersion", dimensions.IntercompanyAgreementVersion.Value.ToString(CultureInfo.InvariantCulture));
 
         foreach (var (name, getValue) in TrailingStringFields)
         {
@@ -119,6 +123,7 @@ internal static class LedgerLineDimensionSetFields
                 .Append(dimensions.PositionId.Value.ToString("D", CultureInfo.InvariantCulture));
         }
 
-        return builder.ToString();
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(
+            builder.ToString(), dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e");
     }
 }

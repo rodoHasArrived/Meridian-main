@@ -56,7 +56,8 @@ public sealed record AssetAccountingCandidateAuthorityContext(
     long ExpectedPeriodVersion,
     string RulePackId,
     string RulePackVersion,
-    long SecurityVersion = 0);
+    long SecurityVersion = 0,
+    string? CanonicalInstrumentSymbol = null);
 
 public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
@@ -332,6 +333,20 @@ public sealed partial class AccountingPostingCandidateService :
 
             var amount = Math.Abs(line.Amount);
             var account = new LedgerAccount(chartNode.AccountName, accountType);
+            if (authority?.CanonicalInstrumentSymbol is { } canonicalSymbol)
+            {
+                if (!string.IsNullOrWhiteSpace(chartNode.Symbol) && !TextEquals(chartNode.Symbol, canonicalSymbol)
+                    || !string.IsNullOrWhiteSpace(chartNode.FinancialAccountId) && !TextEquals(chartNode.FinancialAccountId, line.Dimensions?.AccountId))
+                {
+                    issues.Add(Issue("posting-candidate.canonical-instrument-mapping-mismatch",
+                        AccountingConfigurationValidationSeverityDto.Critical,
+                        $"Generated posting line '{line.LineId}' conflicts with its authoritative security or financial-account mapping.",
+                        line.LineId, "Use chart mappings consistent with the retained Security Master and book position."));
+                    continue;
+                }
+                account = new LedgerAccount(chartNode.AccountName, accountType, canonicalSymbol,
+                    line.Dimensions?.AccountId);
+            }
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
             {
                 if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)
@@ -949,6 +964,9 @@ public sealed partial class AccountingPostingCandidateService :
         }
 
         var issues = new List<PostingRuleJournalCandidateIssueDto>();
+        AddMismatch(issues, authority.CanonicalInstrumentSymbol is null ||
+            string.Equals(authority.CanonicalInstrumentSymbol, request.InstrumentSymbol, StringComparison.Ordinal),
+            "posting-candidate.asset-authority-symbol-mismatch", "The candidate symbol must be the retained server-resolved Security Master ticker.", "instrumentSymbol");
         AddMismatch(issues, authority.EventKind == eventKind, "posting-candidate.asset-authority-kind-mismatch", "Resolved asset-event kind must match the canonical source-event type.", "sourceEventType");
         AddMismatch(issues, authority.EventId != Guid.Empty && request.SourceEventId == authority.EventId && request.EconomicEvent?.EventId == authority.EventId, "posting-candidate.asset-authority-event-mismatch", "Resolved asset-event identity must match the posting request.", "sourceEventId");
         AddMismatch(issues, authority.EventVersion > 0 && request.EconomicEvent?.EventVersion == authority.EventVersion, "posting-candidate.asset-authority-event-version-mismatch", "Resolved source-event version must match the typed economic event.", "economicEvent.eventVersion");
@@ -1032,8 +1050,9 @@ public sealed partial class AccountingPostingCandidateService :
         var provenance =
             $"security-master:{securityIdToken};server-resolved:true;approved:true;status:{status};version:{authority.SecurityVersion};currency:{currency.Trim().ToUpperInvariant()}";
         var referenceApproval = status == SecurityStatusDto.Active ? "security-master-active" : "security-master-reviewed";
+        var lineageSymbol = authority.CanonicalInstrumentSymbol ?? "asset-spine";
         var lineage =
-            $"asset-spine:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:{referenceApproval}:{securityIdToken}:security-status:{status}:{provenance}";
+            $"{lineageSymbol}:{securityIdToken}:ledger-map:asset-spine:{authority.RulePackId}:{authority.RulePackVersion}:{securityIdToken}:sm-approval:{referenceApproval}:{securityIdToken}:security-status:{status}:{provenance}";
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         if (entry.Metadata.Tags is { } existing)
         {
@@ -1050,7 +1069,7 @@ public sealed partial class AccountingPostingCandidateService :
             entry.Timestamp,
             entry.Description,
             entry.Lines,
-            entry.Metadata with { Tags = tags });
+            entry.Metadata with { Tags = tags, Symbol = authority.CanonicalInstrumentSymbol ?? entry.Metadata.Symbol });
     }
 
     private static bool IsBareReferenceFor(
@@ -1739,6 +1758,8 @@ public sealed partial class AccountingPostingCandidateService :
         ValidateOptionalDimension(typed.CapitalAccountId, candidate?.CapitalAccountId, "capitalAccountId", issues);
         ValidateOptionalDimension(typed.InstrumentId, candidate?.InstrumentId, "instrumentId", issues);
         ValidateOptionalDimension(typed.PositionId, candidate?.PositionId, "positionId", issues);
+        ValidateOptionalDimension(typed.IntercompanyAgreementId, candidate?.IntercompanyAgreementId, "intercompanyAgreementId", issues);
+        ValidateOptionalDimension(typed.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture), candidate?.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture), "intercompanyAgreementVersion", issues);
         ValidateOptionalDimension(typed.TaxLotId, candidate?.TaxLotId, "taxLotId", issues);
         ValidateOptionalDimension(typed.CostCenterId, candidate?.CostCenterId, "costCenterId", issues);
         ValidateOptionalDimension(typed.CounterpartyId, candidate?.CounterpartyId, "counterpartyId", issues);

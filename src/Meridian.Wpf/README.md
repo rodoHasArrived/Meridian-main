@@ -6,10 +6,61 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Wpf
+
+The Evidence Workbench reads the shared single-principal declaration and retained preparer-assertion
+history through `EvidenceWorkbenchApiClient.GetAttestationsAsync`. Its scope panel preserves
+"Attested by preparer — not independently reviewed", source provenance, actor, exact subject revision
+and hashes, and reasoned revocations after declaration withdrawal. Current support is explicitly
+unassessed; these rows never grant approval, posting, close or release authority. Permission failures
+clear prior rows and remain unavailable rather than reading as zero assertions. Native interaction and
+`EvidenceWorkbenchViewModelTests` require Windows. The desktop also offers the browser's explicit
+declaration enable/withdraw, exact-source inspection, preparer acknowledgment and corrective
+self-revocation commands through the same endpoints. Reasons and the canonical responsibility
+confirmation bind an inspected document; changing document or scope clears confirmation. Uncertain
+responses retain the same command identity for retry, while a definite refusal requires fresh
+authority and source inspection. These controls stay default-off and never alter economic approvals.
+Focused command coverage lives in `EvidenceWorkbenchAttestationActionTests.cs`.
+The workbench and amount-proof drawer also display the shared packet-specific preparer-evidence
+projection: receipt/task counts, exact original disclosures, source provenance and dated applicability
+remain separate from amount readiness and Verified Coverage. Unsupported projection versions remain
+unavailable. A selected history row can read its original retained JSON proof after withdrawal or
+revocation; current correction state remains visibly separate from those frozen operands.
+
+The Security passport cash-flow scenario panel offers a separate `ATTEST-DRAFT-CHECK` over an
+explicitly retained or loaded Security run. It reads the server's exact run revision, hash,
+original preparer and listed checks; preview calculations and edited scenario parameters are never
+attestation operands. Recording requires the dedicated draft capability, a current v2 declaration,
+a reason and the canonical non-posting confirmation. Own corrective revocation uses the separate
+Security modification capability and remains available when recording is disabled or source support
+is unavailable. Original receipts and revocations stay visible. Declaration administration opens the
+existing Evidence Workbench. `PreparerDraftCheckViewModelTests` covers retained-target isolation,
+v2 reaffirmation, action-specific permissions and exact uncertain retries.
+
+Security Master's Corporate Actions tab also exposes the bounded C2 workspace for regular mandatory
+USD cash dividends. An operator selects an existing processing case, explicitly inspects the exact
+server projection, manages its separate book declaration with the returned account-role binding,
+records a preparer attestation, then separately confirms governed posting. The server owns the
+related-event and calendar-month limits, eligibility, selected book, permissions, period/evidence
+checks and journal calculation. Native controls send the exact returned case version, projection,
+declaration revision and evidence hash; they never calculate amounts or substitute ordinary approval.
+Default-off policy and missing capabilities disable new actions. Stale refusals require refresh;
+uncertain outcomes retain the original command for exact retry. `CashDividendAttestationViewModelTests`
+covers these contracts and delayed-response isolation. The amount-proof drawer renders the shared
+accounting preparer classification separately from task history, preserves its canonical disclosure,
+and shows unknown or foreign support as unavailable without granting ordinary approval or coverage.
+Native compilation can be checked with Windows targeting on another OS; executing the WPF controls
+and Windows test assembly still requires the Windows Desktop runtime.
+
+Fund Operations includes an Agreements tab over the shared `IntercompanyAgreementWorkspace` and
+API client. It supports entity/date filters, draft terms, evidence, independent review, revision
+comparison and advisory source-line drill-through. Server capabilities control mutations and stale
+responses preserve local edits. The desktop surface does not maintain its own agreement store or
+posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
+native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
@@ -1061,6 +1112,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-WPF -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |

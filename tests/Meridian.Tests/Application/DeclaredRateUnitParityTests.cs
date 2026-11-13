@@ -148,7 +148,7 @@ public sealed class DeclaredRateUnitParityTests
     }
 
     [Fact]
-    public async Task V2NegativeDepositReceipt_ReplaysItsRetainedZeroFloor_WhileV3BlocksNewCalculations()
+    public async Task V2NegativeDepositReceipt_ReplaysItsRetainedZeroFloor_WhileCurrentModelBlocksNewCalculations()
     {
         var security = Deposit(-0.005m);
         var source = new SecurityCashFlowSourceDto(security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet,
@@ -167,12 +167,12 @@ public sealed class DeclaredRateUnitParityTests
             NullLogger<SecurityMasterCashFlowService>.Instance, receiptStore: receipts);
         var current = (await service.CaptureProjectionAsync(security.SecurityId, StructuredCashFlowScenario.Base,
             new BondCalculationContext(Cutoff, KnownAt: Cutoff)))!;
-        current.ModelVersion.Should().Be("bond-cash-flow-context-v3");
+        current.ModelVersion.Should().Be("bond-cash-flow-context-v5");
         current.Projection.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
         current.Projection.Schedule.Should().BeEmpty();
 
         // Exact v2 output: four contractual dates, principal at maturity, and the old zero floor.
-        var oldProjection = current.Projection with
+        var oldProjection = SecurityCashFlowScheduleRowCodec.Legacy(current.Projection with
         {
             Schedule = Enumerable.Range(1, 4).Select(quarter => new StructuredCashFlowScheduleEntry(
                 new DateTimeOffset(Issue.AddMonths(quarter * 3).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
@@ -180,11 +180,11 @@ public sealed class DeclaredRateUnitParityTests
             BlockedReason = null,
             Blocker = null,
             InputManifest = current.Projection.InputManifest!.Select(input => input.Kind == "CalculationModel"
-                ? input with { Key = SecurityMasterCashFlowService.PreviousContextCalculationVersion } : input).ToArray()
-        };
+                ? input with { Key = SecurityMasterCashFlowService.UnifiedEconomicsContextCalculationVersion } : input).ToArray()
+        });
         var old = current with
         {
-            ModelVersion = SecurityMasterCashFlowService.PreviousContextCalculationVersion,
+            ModelVersion = SecurityMasterCashFlowService.UnifiedEconomicsContextCalculationVersion,
             Projection = oldProjection,
             ContentSha256 = string.Empty
         };

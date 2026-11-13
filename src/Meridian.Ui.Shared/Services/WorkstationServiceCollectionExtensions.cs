@@ -85,6 +85,8 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null)
     {
+        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport,
+            CorporateActionCashDividendReconciliationSupport>();
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         services.TryAddSingleton<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>();
         services.AddHostedService(sp => sp.GetRequiredService<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>());
@@ -153,6 +155,14 @@ public static class WorkstationServiceCollectionExtensions
         // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
         // request each time, so singleton accounting guards can consume it without capturing a scope.
         services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+        // Agreement writes require durable tenant-partitioned authority. An unconfigured local
+        // fund-structure graph must not silently become a production agreement registry.
+        if (services.Any(static descriptor => descriptor.ServiceType == typeof(Meridian.Storage.FundStructure.IIntercompanyAgreementStore)))
+        {
+            services.TryAddSingleton<IIntercompanyAgreementAccessAuthority, HttpContextIntercompanyAgreementAccessAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementEvidenceAuthority, WorkstationIntercompanyAgreementEvidenceAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementService, IntercompanyAgreementService>();
+        }
         // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
         // otherwise HTTP scope must take precedence over any ambient background authority.
         services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
@@ -1251,7 +1261,8 @@ public static class WorkstationServiceCollectionExtensions
                 ResolveWorkstationDataDirectory(sp),
                 logger,
                 sp.GetService<IReconciliationSlaPolicyProvider>(),
-                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>());
+                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>(),
+                preparerAttestationReferences: sp.GetRequiredService<Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier>());
         });
         services.TryAddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
             new StatementReconciliationCaseworkHandoffService(

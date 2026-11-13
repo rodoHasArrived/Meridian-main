@@ -40,14 +40,14 @@ export function currencySymbol(code?: string | null): string {
 
 /**
  * Coerce a value (number or money-ish string like `"(1,234.00)"`) to a Number.
- * Returns `NaN` when the input is blank or unparseable. Accounting parentheses are read as
- * negative so a round-tripped statement string parses back to its signed value.
+ * Returns `NaN` when the input is blank or unparseable. Accounting parentheses and trailing
+ * minus signs are read as negative so a statement string retains its signed value.
  */
 export function toNumber(value: number | string | null | undefined): number {
   if (value == null || value === "") return NaN;
   if (typeof value === "number") return value;
   const s = String(value).trim();
-  const neg = /^\(.*\)$/.test(s); // accounting parentheses = negative
+  const neg = /^\(.*\)$/.test(s) || /[-−]$/.test(s);
   const cleaned = s.replace(/[(),\s]/g, "").replace(/[^0-9.−-]/g, "").replace(/−/g, "-");
   const n = parseFloat(cleaned);
   if (Number.isNaN(n)) return NaN;

@@ -172,6 +172,7 @@ import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } 
 import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { Select } from "@/components/ui/select";
+import { IntercompanyAgreementsPanel } from "@/screens/accounting-screen.intercompany-agreements";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -2232,6 +2233,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showConfiguration ? (
         <AccountingConfigurationPanel view={configuration} />
+      ) : null}
+
+      {sectionVisibility.showConfiguration ? (
+        <IntercompanyAgreementsPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment, search])} initialEntityId={closeWorkflowQuery.entityId ?? ""} initialAgreementId={new URLSearchParams(search).get("agreementId")} initialLedgerBookId={new URLSearchParams(search).get("ledgerBookId") ?? undefined} />
       ) : null}
 
       {sectionVisibility.showConfiguration ? (

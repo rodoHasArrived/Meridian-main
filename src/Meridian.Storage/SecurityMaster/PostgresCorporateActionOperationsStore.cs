@@ -24,10 +24,13 @@ public sealed partial class PostgresCorporateActionOperationsStore : ICorporateA
     };
 
     private readonly SecurityMasterOptions _options;
+    private readonly Meridian.Storage.Ledger.ITransactionalLedgerJournalStore? _cashDividendLedgerStore;
 
-    public PostgresCorporateActionOperationsStore(SecurityMasterOptions options)
+    public PostgresCorporateActionOperationsStore(SecurityMasterOptions options,
+        Meridian.Storage.Ledger.ITransactionalLedgerJournalStore? cashDividendLedgerStore = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _cashDividendLedgerStore = cashDividendLedgerStore;
     }
 
     public async Task<CorporateActionSourceProposalDto> RecordSourceProposalAsync(

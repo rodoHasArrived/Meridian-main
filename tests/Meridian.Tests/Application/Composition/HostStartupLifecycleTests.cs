@@ -19,6 +19,7 @@ using Meridian.Storage.MoneyMarket;
 using Meridian.Storage.Tenancy;
 using Meridian.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Serilog.Core;
@@ -33,6 +34,69 @@ namespace Meridian.Tests.Application.Composition;
 [Collection("Sequential")]
 public sealed class HostStartupLifecycleTests
 {
+    [Theory]
+    [InlineData(ExecutableProfile.UtilityCommand, true)]
+    [InlineData(ExecutableProfile.DesktopCollector, false)]
+    public async Task CreateAsync_DatabasePlanRunsOnlyInOwningHostBeforeCutoverAndWorkers(
+        ExecutableProfile profile,
+        bool ownsDatabaseInitialization)
+    {
+        using var environment = HostStartupTestEnvironment.Enable();
+        using var artifacts = TestArtifactDirectory.Create($"{nameof(HostStartupLifecycleTests)}-database-plan-{profile}");
+        var configPath = await WriteConfigAsync(artifacts.RootPath);
+        var events = new List<string>();
+        var readiness = new Mock<ITenantCutoverReadinessCheck>();
+        readiness.Setup(check => check.InspectAsync(It.IsAny<CancellationToken>()))
+            .Callback(() => events.Add("cutover"))
+            .ReturnsAsync(new TenantCutoverReadiness([]));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        await using var startup = await CreateAsync(profile, configPath, services =>
+        {
+            services.RemoveAll<DatabaseStartupStep>();
+            services.AddSingleton(new DatabaseStartupStep("probe", [], (_, cancellationToken, _) =>
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                events.Add("database");
+                return Task.CompletedTask;
+            }));
+            services.AddSingleton(readiness.Object);
+            services.AddSingleton<IHostedService>(new CallbackHostedService(() => events.Add("worker")));
+        }, timeout.Token);
+
+        if (ownsDatabaseInitialization)
+            events.Should().Equal("database", "cutover", "worker");
+        else
+            events.Should().Equal("cutover", "worker");
+    }
+
+    [Fact]
+    public async Task CreateForUtilityAsync_DatabasePlanFailurePreventsCutoverAndWorkerStartup()
+    {
+        using var environment = HostStartupTestEnvironment.Enable();
+        using var artifacts = TestArtifactDirectory.Create($"{nameof(HostStartupLifecycleTests)}-database-plan-failure");
+        var configPath = await WriteConfigAsync(artifacts.RootPath);
+        var probe = new RecordingHostedService();
+        var readiness = new Mock<ITenantCutoverReadinessCheck>();
+        var failure = new InvalidOperationException("database plan sentinel");
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        var thrown = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await using var _ = await HostStartup.CreateForUtilityAsync(configPath, services =>
+            {
+                services.RemoveAll<DatabaseStartupStep>();
+                services.AddSingleton(new DatabaseStartupStep("probe", [], (_, _, _) => Task.FromException(failure)));
+                services.AddSingleton(readiness.Object);
+                services.AddSingleton<IHostedService>(probe);
+            }, timeout.Token);
+        });
+
+        thrown.Should().BeSameAs(failure);
+        readiness.Verify(check => check.InspectAsync(It.IsAny<CancellationToken>()), Times.Never);
+        probe.StartCount.Should().Be(0);
+    }
+
     [Theory]
     [InlineData(ExecutableProfile.HeadlessCollector)]
     [InlineData(ExecutableProfile.HeadlessBackfill)]
@@ -669,6 +733,17 @@ public sealed class HostStartupLifecycleTests
         DesktopBackfill,
         EtlCommand,
         UtilityCommand
+    }
+
+    private sealed class CallbackHostedService(Action onStart) : IHostedService
+    {
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            onStart();
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
     private sealed class RecordingHostedService : IHostedService

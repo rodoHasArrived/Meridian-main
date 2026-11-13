@@ -520,7 +520,7 @@ model, StructuredNote's accounting treatment).
 D10 recommendations as the decisions, and sequenced the remaining code as follow-up pull requests
 after the close-out pull request merges. Recorded in the review's
 [owner decisions](../../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
-Remaining work, none of it started:
+At the time of the owner decision, the follow-up items were:
 
 - **S3-E record contraction**, one field group at a time, each with its own replay-compatibility
   proof, including module homes for the residual complement listed above.
@@ -609,3 +609,58 @@ from one binding table (`SecurityAssetTermsCodecBindings`): the decode arm in
 `SecurityFlatCodecGenerationTests`. Behaviour is unchanged. Twelve classes remain hand-written:
 four need a module-level row kind, five need the structural codecs named in the table, and
 three have bespoke decodes. See the review record for the split.
+
+## Accrual and accounting follow-through — 2026-11-12
+
+The S3-E contraction above is already complete and retains its per-group replay proofs. Accrual
+windows now read shared lot exposure and the declared quote convention; recurring admission
+remains Bond only, with unsupported factored lots refused. Empty blocked projections report
+their block before checking for an empty schedule. Cash-flow context v4 stores row version 1
+and measured accrual dates; frozen v0 serialization preserves v1–v3 receipts.
+
+The unused whole-coupon helper and direct corporate-action poster have been removed from
+production. Golden cases for historical corporate-action defects remain in test fixtures.
+StructuredNote uses the existing governed daily-valuation workflow with an explicit FVTPL
+template, source-mark evidence and approval; it remains outside coupon accrual accounting.
+
+The canonical principal-only call/put mode binds reviewed full long-lot quantities and bases to
+a retained disposal instruction. Approval, period checks and atomic disposal govern lot closure
+and journal posting together. Interest, make-whole and short redemptions remain blocked on this
+path pending their own allocation support.
+
+
+## Unit-safe amortization and pool accrual — 2026-11-12
+
+The follow-up removes the cost-basis service's assumed quantity unit. Amortization targets
+economic face per recorded quantity, with separate factor adjustments and explicit rejection
+of incompatible lot units. Decimal face-unit costs and retained exact monetary basis survive
+relief without ten-place unit rounding.
+
+Calculated fixed-rate Bond and StructuredCredit consumers accept typed daily holdings and
+row-2 interest segments. Dated factors and explicit principal reconcile before projection;
+source reference principal and pre-paydown held face scale interest exactly once. A scoped
+read retains acquisition/disposal history and the final interest day when a full paydown
+closes a lot. Recurring output remains an approval-bound accrual draft, excluding principal cash. The typed
+path captures one version-pinned v5 projection; its receipt hash and model persist in the
+structured recurring source evidence and survive draft restart without a source reread.
+
+Context v5 retains these segments. Contexts v1–v3 keep row 0 and v4 keeps row 1, including
+frozen JSON, hashes and arithmetic. Declared schedules, external/provider schedules, floating
+economics, negative interest, stale sources and unsupported synthetic sinkers retain their gates.
+Positive legacy Bond coupons still require a resolvable rate unit; this change does not add a
+new Bond rate-unit declaration or lift the declared-schedule posting gate. StructuredCredit
+uses its existing governed scalar unit declaration. Consumer admission is not proof that
+every retained record satisfies these existing conditions.
+
+Validation on the integrated branch: the .NET 10 build of `tests/Meridian.Tests/Meridian.Tests.csproj`
+passed with `EnableWindowsTargeting=true`; 569 focused tests passed with zero skips, with Docker
+PostgreSQL enabled. The filter covers cost-basis/relief precision, the source projector and bridge,
+context receipt versions, historical lot reconstruction, recurring journal calculations/lifecycle,
+draft intake, rate-unit parity and catalog coverage. The database regression executes governed
+paydowns and a same-day disposal, restarts the store, and verifies final-day entitlement and scope.
+An additional 122 lot-adapter, schedule-equality, compatibility and ledger-gate tests passed
+with zero skips. A separate read-only agent financial review found no unresolved findings
+after corrections.
+Changed-file whitespace formatting passed. Maintained documentation generation converged; the
+repository inventory and test coverage report were refreshed. Hosted checks remain the merge
+authority. No migration or historical journal rewrite is introduced.

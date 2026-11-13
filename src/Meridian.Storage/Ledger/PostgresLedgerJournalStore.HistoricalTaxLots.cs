@@ -51,6 +51,23 @@ public sealed partial class PostgresLedgerJournalStore
         DateOnly effectiveDate,
         CancellationToken ct)
     {
+        var (lots, mutations) = await ReadAssetScopedTaxLotHistoryAsync(connection, transaction, ledgerBookId,
+            securityId, bookPositionId, effectiveDate, ct).ConfigureAwait(false);
+        var histories = mutations.ToLookup(static mutation => mutation.TaxLotRecordId);
+        return lots.Select(lot => HistoricalTaxLotQuantity.Project(
+                lot, histories[lot.TaxLotRecordId].ToArray(), effectiveDate))
+            .Where(static lot => lot.OpenQuantity > 0m).ToArray();
+    }
+
+    private async Task<(IReadOnlyList<LedgerTaxLotRecord> Lots, IReadOnlyList<DatedTaxLotQuantityMutation> Mutations)> ReadAssetScopedTaxLotHistoryAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid bookPositionId,
+        DateOnly effectiveDate,
+        CancellationToken ct)
+    {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -103,10 +120,7 @@ public sealed partial class PostgresLedgerJournalStore
 
         var mutations = await ReadDatedLotQuantitiesAsync(connection, transaction, ledgerBookId,
             lots.Select(static lot => lot.TaxLotRecordId).ToArray(), ct).ConfigureAwait(false);
-        var histories = mutations.ToLookup(static mutation => mutation.TaxLotRecordId);
-        return lots.Select(lot => HistoricalTaxLotQuantity.Project(
-                lot, histories[lot.TaxLotRecordId].ToArray(), effectiveDate))
-            .Where(static lot => lot.OpenQuantity > 0m).ToArray();
+        return (lots, mutations);
     }
 
     private async Task<IReadOnlyList<DatedTaxLotQuantityMutation>> ReadDatedLotQuantitiesAsync(
