@@ -591,12 +591,20 @@ const NUMBERED_COMPOUND_HEADS = new Set([
   "class", "day", "form", "fy", "level", "mid", "phase", "post", "pre", "rule", "section", "series",
   "step", "tier", "top", "type", "year"
 ]);
+// A "Latency" term followed by a clock time or "Never": latency is a duration. Line-anchored, so
+// "Latency / Last Response", "P99 LATENCY" and "Latency statistics: …" pass.
+const LATENCY_NOT_DURATION_PATTERN = /^latency\n(?:never|[a-z]{3} \d{1,2}, \d{1,2}:\d{2}(?: [ap]m)?(?: utc)?)$/gim;
+// Placeholders standing in for optional context: an undeclared basis printed as a failure, or a
+// missing harness fixture behind the saved-views notice.
+const UNAVAILABLE_PLACEHOLDER_PATTERN = /\b(?:basis|saved views) unavailable\b/gi;
 export const CAPTURE_CONTENT_ISSUE_KINDS = [
   "opaque-identifier",
   "singular-count-plural-noun",
   "api-path",
   "internal-term",
   "slug-identifier",
+  "latency-not-duration",
+  "unavailable-placeholder",
   "disabled-primary-without-reason",
   "status-contradiction"
 ];
@@ -632,6 +640,12 @@ export function isSlugIdentifier(token) {
  *     which keeps the path under "Technical details".
  *   - internal-term: "lane", "payload", "mutation", "caller-visible".
  *   - slug-identifier: a slug-shaped record identifier (see isSlugIdentifier).
+ *   - latency-not-duration: a line reading just "Latency" followed by a line holding a clock time
+ *     ("Jul 13, 06:55 PM UTC") or "Never". Latency is a duration; a last-response time belongs
+ *     under its own label. Recorded as "Latency: <value>".
+ *   - unavailable-placeholder: "Basis unavailable" or "Saved views unavailable". An undeclared
+ *     basis is stated as "Not declared by source"; the saved-views notice in a capture means the
+ *     harness is missing a fixture.
  *   - disabled-primary-without-reason: a disabled primary button with no title or description
  *     saying why. Passed in by the caller, which reads it from the DOM.
  *   - status-contradiction: the status bar says "up to date" while the page's posture strip says
@@ -669,6 +683,12 @@ export function findCaptureContentIssues(text, { unexplainedDisabledActions = []
     if (isSlugIdentifier(match[0])) {
       record("slug-identifier", match[0]);
     }
+  }
+  for (const match of content.matchAll(LATENCY_NOT_DURATION_PATTERN)) {
+    record("latency-not-duration", match[0].replace(/\n/g, ": "));
+  }
+  for (const match of content.matchAll(UNAVAILABLE_PLACEHOLDER_PATTERN)) {
+    record("unavailable-placeholder", match[0]);
   }
   for (const label of unexplainedDisabledActions) {
     record("disabled-primary-without-reason", String(label || "(unlabelled button)"));
@@ -715,7 +735,9 @@ export function describeCaptureContentIssues(captureName, issues) {
   const more = issues.length > 5 ? `; and ${issues.length - 5} more` : "";
   return `Capture ${captureName} renders ${issues.length} operator-copy issue(s) in its main content: ${shown}${more}. `
     + "Name records by display name and keep identifiers and request paths in technical details; use pluralizeCount "
-    + "for counts; write for operators, not about the system; give a disabled primary button a disabledReason. "
+    + "for counts; write for operators, not about the system; give a disabled primary button a disabledReason; "
+    + "show latency only as a duration; state an undeclared basis as 'Not declared by source'; a 'Saved views "
+    + "unavailable' notice in a capture means a missing fixture. "
     + "A route that cannot comply yet lists the kind with a reason under allowedContentIssues in the route catalog.";
 }
 

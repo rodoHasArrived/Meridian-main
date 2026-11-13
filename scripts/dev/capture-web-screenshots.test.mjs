@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  CAPTURE_CONTENT_ISSUE_KINDS,
   captureRouteWithRetries,
   collectAllowedContentIssueKinds,
   createCaptureApiTracker,
@@ -695,6 +696,66 @@ test("a status bar that contradicts the page's freshness is reported", () => {
     [{ kind: "status-contradiction", excerpt: contradiction }]
   );
   assert.deepEqual(findCaptureContentIssues("Portfolio", { statusContradictions: [] }), []);
+});
+
+test("a Latency term followed by a clock time or Never is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Plaid\nLatency\nNever\nAlpaca paper\nLatency\nJul 13, 06:55 PM UTC\nYahoo Finance\nLatency\nnever"),
+    [
+      { kind: "latency-not-duration", excerpt: "Latency: Never" },
+      { kind: "latency-not-duration", excerpt: "Latency: Jul 13, 06:55 PM UTC" }
+    ]
+  );
+});
+
+test("a reported latency, its sentinel and other latency labels are not reported", () => {
+  const clean = [
+    "Latency\n18ms p50",
+    "Latency\nLatency not reported",
+    "LATENCY\n—",
+    "Latency / Last Response\nNever",
+    "P99 LATENCY\n12ms",
+    "Last successful evidence\nNever",
+    "Latency statistics: The requested Meridian data is unavailable."
+  ];
+  for (const text of clean) {
+    assert.deepEqual(findCaptureContentIssues(text), [], text);
+  }
+});
+
+test("an unavailable placeholder for an undeclared basis or saved views is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Basis\nBasis unavailable\nSaved views unavailable. You can continue reviewing this table.\nBasis unavailable"),
+    [
+      { kind: "unavailable-placeholder", excerpt: "Basis unavailable" },
+      { kind: "unavailable-placeholder", excerpt: "Saved views unavailable" }
+    ]
+  );
+});
+
+test("a declared-by-source basis and other unavailable notices are not reported as placeholders", () => {
+  const clean = ["Basis\nNot declared by source", "Audit trail unavailable", "Entity name unavailable", "Timestamp unavailable"];
+  for (const text of clean) {
+    assert.deepEqual(findCaptureContentIssues(text), [], text);
+  }
+});
+
+test("the latency and placeholder rules are known kinds that a capture excuses only with a reason", () => {
+  for (const kind of ["latency-not-duration", "unavailable-placeholder"]) {
+    assert.ok(CAPTURE_CONTENT_ISSUE_KINDS.includes(kind), kind);
+    assert.deepEqual([...collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind, reason: "Contract gap." }] })], [kind]);
+    assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind }] }).size, 0);
+    assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind, reason: "  " }] }).size, 0);
+  }
+  assert.deepEqual(
+    CAPTURE_CONTENT_ISSUE_KINDS.slice(CAPTURE_CONTENT_ISSUE_KINDS.indexOf("slug-identifier"), CAPTURE_CONTENT_ISSUE_KINDS.indexOf("slug-identifier") + 3),
+    ["slug-identifier", "latency-not-duration", "unavailable-placeholder"]
+  );
+  const message = describeCaptureContentIssues("web-data-workspace", [{ kind: "latency-not-duration", excerpt: "Latency: Never" }]);
+  assert.match(message, /latency-not-duration "Latency: Never"/);
+  assert.match(message, /show latency only as a duration/);
+  assert.match(message, /Not declared by source/);
+  assert.match(message, /missing fixture/);
 });
 
 test("a count of one before a plural noun is reported", () => {

@@ -189,8 +189,10 @@ An independent cash-flow calculation blocker (including `NegativeInterestUnsuppo
 even when the record's declared exercise dates resolved successfully.
 
 Data overview leads with provider health and scoped retained verification events before backfill
-work. Verification probes are discrete observations, not uptime; absent, pending or malformed
-history is explicit. Backfill coverage cells retain execution state and requested dates without
+work. A provider card's "Latency" is a reported duration or "Latency not reported", never a
+response time; the provider table's "Trust / last good" column (`latencyOrLastGoodText`) falls back
+to the last successful or verified time. Verification probes are discrete observations, not uptime;
+absent, pending or malformed history is explicit. Backfill coverage cells retain execution state and requested dates without
 asserting that every market session is complete. Settings overview is a setup checklist based on
 loaded connection and session evidence, with default browser preferences counted as valid.
 Shared chart alternatives retain exact source values through the table workbench. Complete server
@@ -562,6 +564,9 @@ not been recorded.
   - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
     measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
+  - *Basis*: a strip prints the basis its figures share once, and "Not declared by source"
+    when the source declares none (`metricBasisValue`). Cards omit an undeclared basis; the
+    figure passport says "Basis not declared by source" (`metricBasisLabel`).
   - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
     assistive technology. Staleness is decided per payload: a payload whose own reload failed
@@ -867,7 +872,7 @@ disagree:
   posture, unverified provenance, workspace data that did not load, degraded host), so a page
   cannot read `All sources current` while the pill warns about the same sources.
 - **Status bar** (footer): Sync, plus the pill's worst issue when the state needs review or is
-  blocked.
+  blocked, with a count of the rest (`+5 more issues`).
 
 Rules worth knowing when adding a signal:
 
@@ -889,10 +894,14 @@ Workspace routes open on their own job: the route heading leads, the workspace K
 and the sidebar is the only sub-route navigation (Trading, Portfolio, Strategy and Data no longer
 repeat it as an in-page tab strip; Data's Backfill queue has its own sidebar entry). Off the Trading
 overview the brokerage recovery panel is one blocked-state row with a Review link to the full panel,
-and nothing once evidence reconciles. The sidebar pins `Today` (the Daily Control Tower) above the
-seven workspaces and shows per-workspace attention counts from `selectDailyControlTowerQueueItems`,
-the same selection the Control Tower lists; each count is part of its link's accessible name and the
-badge sits beside the link so the visible label stays in the name.
+and nothing once evidence reconciles. With no fund account in scope and a brokerage environment that
+is known and not live, the panel and row are a neutral setup state with a "Choose account" action;
+a live, unknown or failed state keeps the blocked row. The sidebar pins `Today` (the Daily Control
+Tower) above the seven workspaces and shows per-workspace attention counts from
+`selectDailyControlTowerQueueItems`, the same selection the Control Tower lists as its Finance queue
+(above the Operator inbox); each count is part of its link's accessible name, the badge sits beside
+the link so the visible label stays in the name, and the link's tooltip names the unit
+(`3 items from Accounting in Today's finance queue`).
 
 ## Purpose
 
@@ -2158,8 +2167,8 @@ of workflow continuity, trust posture, linked context, and timestamped evidence.
 is a shell-level Home location rather than an eighth workspace: none of the seven root workspace
 items is marked current (the pinned sidebar `Today` entry is), the breadcrumb heading reads
 `Today`, and the operating-context copy identifies the Daily Control Tower instead
-of falling back to Trading. Before the combined finance queue is shown, operators choose an
-operating scope or explicitly opt into cross-scope review.
+of falling back to Trading. It lists the combined finance queue (the items the sidebar badges
+count) and, below it, the operator triage inbox from the shared host; each states what it counts.
 The landing model
 now prioritizes the finance sequence Today, Exceptions, Close, Reconciliation, Ledger, Reports,
 Evidence, and Data Health before non-finance surfaces. Decision drivers emphasize the finance
