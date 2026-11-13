@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Integrity;
 using Meridian.Storage;
+using Meridian.Storage.Interfaces;
 using Meridian.Storage.Services;
 
 namespace Meridian.Tests.Storage;
@@ -248,7 +249,7 @@ public sealed partial class StorageCatalogServiceTests
         gate.SetResult();
         var outcomes = await Task.WhenAll(writes).WaitAsync(TimeSpan.FromSeconds(10));
 
-        outcomes.Should().ContainSingle(exception => exception is null);
+        outcomes.Should().ContainSingle(exception => exception == null);
         outcomes.Should().ContainSingle(exception => exception is InvalidOperationException);
         var restarted = NewCatalog();
         await restarted.InitializeAsync();
