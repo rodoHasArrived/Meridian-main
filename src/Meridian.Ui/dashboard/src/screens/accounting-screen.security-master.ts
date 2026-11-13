@@ -309,6 +309,10 @@ export function useSecurityMasterViewModel(
   const identityGenerationRef = useRef(0);
   const conflictGenerationRef = useRef(0);
   const conflictResolvingIdRef = useRef<string | null>(null);
+  const selectedSearchResult = useMemo(
+    () => selectedSecurityId ? selectedEntry ?? (services.getDetail ? null : results?.find((entry) => entry.securityId === selectedSecurityId) ?? null) : null,
+    [results, selectedSecurityId, selectedEntry, services.getDetail]
+  );
   const resetReferenceDataCoverage = useCallback(() => {
     setReferenceDataCoverage(null);
     setReferenceDataCoverageLoading(false);
@@ -424,10 +428,6 @@ export function useSecurityMasterViewModel(
     let cancelled = false;
     setCorporateActionsLoading(true);
     setCorporateActionsError(null);
-    setReferenceDataCoverage(null);
-    setReferenceDataCoverageLoading(true);
-    setReferenceDataCoverageError(null);
-    setSelectedReferenceDataEndpointId(null);
     setTrustSnapshotLoading(true);
     setTrustSnapshotError(null);
     setInstrumentPassportLoading(true);
@@ -435,25 +435,6 @@ export function useSecurityMasterViewModel(
     setTradingParametersLoading(true);
     setTradingParametersError(null);
 
-    const selectedSearchResult = results?.find((entry) => entry.securityId === selectedSecurityId) ?? null;
-
-    drillInServices.getReferenceDataCoverage(buildReferenceDataWorkbenchSeed(selectedSecurityId, selectedSearchResult))
-      .then((coverage) => {
-        if (!cancelled) {
-          setReferenceDataCoverage(coverage);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setReferenceDataCoverage(null);
-          setReferenceDataCoverageError(describeApiError(err, "Reference data workbench failed to load."));
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setReferenceDataCoverageLoading(false);
-        }
-      });
     drillInServices.getCorporateActions(selectedSecurityId)
       .then((rows) => {
         if (!cancelled) {
@@ -529,7 +510,35 @@ export function useSecurityMasterViewModel(
     return () => {
       cancelled = true;
     };
-  }, [active, selectedSecurityId, drillInServices, resetReferenceDataCoverage, results]);
+  }, [active, selectedSecurityId, drillInServices, resetReferenceDataCoverage]);
+
+  useEffect(() => {
+    resetReferenceDataCoverage();
+    if (!active || !selectedSecurityId) return;
+
+    // The full-detail loader owns instrument context when available. Older callers without
+    // that loader may use an exact search row, but never synthesize context for a missing row.
+    if (!selectedSearchResult) {
+      setReferenceDataCoverageLoading(detailLoading);
+      setReferenceDataCoverageError(detailError);
+      return;
+    }
+
+    let cancelled = false;
+    setReferenceDataCoverageLoading(true);
+    drillInServices.getReferenceDataCoverage(buildReferenceDataWorkbenchSeed(selectedSecurityId, selectedSearchResult))
+      .then((coverage) => {
+        if (!cancelled) setReferenceDataCoverage(coverage);
+      })
+      .catch((err) => {
+        if (!cancelled)
+          setReferenceDataCoverageError(describeApiError(err, "Reference data workbench failed to load."));
+      })
+      .finally(() => {
+        if (!cancelled) setReferenceDataCoverageLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [active, selectedSecurityId, selectedSearchResult, detailLoading, detailError, drillInServices, resetReferenceDataCoverage]);
 
   const updateQuery = useCallback((nextQuery: string) => {
     setQuery(nextQuery);
@@ -673,10 +682,6 @@ export function useSecurityMasterViewModel(
   const identityView = useMemo(
     () => buildSecurityIdentityDrillInState(identity),
     [identity]
-  );
-  const selectedSearchResult = useMemo(
-    () => selectedSecurityId ? selectedEntry ?? (services.getDetail ? null : results?.find((entry) => entry.securityId === selectedSecurityId) ?? null) : null,
-    [results, selectedSecurityId, selectedEntry, services.getDetail]
   );
   const corporateActionRows = useMemo(
     () => buildCorporateActionRows(corporateActions, selectedCorporateActionId),
