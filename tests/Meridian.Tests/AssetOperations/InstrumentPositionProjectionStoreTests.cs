@@ -98,11 +98,18 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
         var source = original.ProjectionLineage!;
         var date = source.ProjectionAsOfDate.AddDays(10);
         var preparedEvent = source.TriggerEvent with { EventId = Guid.NewGuid(), EffectiveDate = date };
-        var preparedLineage = source with { ProjectionRunId = Guid.NewGuid(), ProjectionAsOfDate = date,
-            GeneratedAtUtc = source.GeneratedAtUtc.AddDays(10), TriggerEvent = preparedEvent };
+        var preparedLineage = source with
+        {
+            ProjectionRunId = Guid.NewGuid(),
+            ProjectionAsOfDate = date,
+            GeneratedAtUtc = source.GeneratedAtUtc.AddDays(10),
+            TriggerEvent = preparedEvent
+        };
         await store.UpsertAsync(projection.InstrumentRoles.Single(), original with
         {
-            Version = original.Version + 1, CurrentEconomicState = null, ProjectionLineage = preparedLineage
+            Version = original.Version + 1,
+            CurrentEconomicState = null,
+            ProjectionLineage = preparedLineage
         }, null, original.Version, InstrumentPositionProjectionFixture.Approval);
 
         var retained = await store.GetSecurityAsync(original.SecurityId);

@@ -200,11 +200,19 @@ public sealed partial class WorkstationEndpointsTests
         var lot = inputs.ExpectedLot with
         {
             OpenFunctionalCostBasis = nonUnitFx ? inputs.ExpectedLot.OpenFunctionalCostBasis : inputs.ExpectedLot.OpenTransactionCostBasis,
-            Acquisition = inputs.ExpectedLot.Acquisition with { AcquisitionCurrency = crossCurrency ? "EUR" : "USD", AcquisitionFxRateToFunctional = nonUnitFx ? 1.1m : 1m,
-                FunctionalCostBasis = nonUnitFx ? inputs.ExpectedLot.Acquisition.FunctionalCostBasis : inputs.ExpectedLot.Acquisition.TransactionCostBasis }
+            Acquisition = inputs.ExpectedLot.Acquisition with
+            {
+                AcquisitionCurrency = crossCurrency ? "EUR" : "USD",
+                AcquisitionFxRateToFunctional = nonUnitFx ? 1.1m : 1m,
+                FunctionalCostBasis = nonUnitFx ? inputs.ExpectedLot.Acquisition.FunctionalCostBasis : inputs.ExpectedLot.Acquisition.TransactionCostBasis
+            }
         };
-        inputs = inputs with { Security = security, ExpectedLot = lot,
-            SecurityEvidence = inputs.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) } };
+        inputs = inputs with
+        {
+            Security = security,
+            ExpectedLot = lot,
+            SecurityEvidence = inputs.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) }
+        };
         if (adoptedIncome)
             lot = lot with
             {
@@ -242,17 +250,22 @@ public sealed partial class WorkstationEndpointsTests
         securities.GetProjectionAsync(lot.SecurityId, Arg.Any<CancellationToken>()).Returns(inputs.Security);
         var dimensions = new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-1", AccountId: "account-1",
             CostCenterId: "fixed-income", PortfolioId: "portfolio-1", CounterpartyId: "issuer-1", BookId: lot.LedgerBookId.ToString("D"), InstrumentId: lot.SecurityId)
-            { PositionId = lot.BookPositionId };
+        { PositionId = lot.BookPositionId };
         var origin = new EconomicEventReferenceDto(Guid.NewGuid(), "Trade", 1, lot.AcquiredDate, inputs.SecurityEvidence.RetainedAtUtc,
             "custodian", "original-acquisition")
-        { SecurityId = lot.SecurityId, BookPositionId = lot.BookPositionId,
-            RetainedEvidence = lot.Acquisition.Evidence, EvidenceLinks = lot.Acquisition.Evidence.Select(item => item.EvidenceUri).ToArray() };
+        {
+            SecurityId = lot.SecurityId,
+            BookPositionId = lot.BookPositionId,
+            RetainedEvidence = lot.Acquisition.Evidence,
+            EvidenceLinks = lot.Acquisition.Evidence.Select(item => item.EvidenceUri).ToArray()
+        };
         var originalLineage = new ProjectionLineageDto(Guid.NewGuid(), null, "acquisition", "1", "1", "base", lot.AcquiredDate,
             origin.OccurredAtUtc, origin.SourceDomain, origin.SourceEntityId, origin)
         { BookPositionId = lot.BookPositionId, RetainedEvidence = lot.Acquisition.Evidence, EvidenceLinks = origin.EvidenceLinks };
         var role = new InstrumentRoleDto(Guid.NewGuid(), lot.SecurityId, "fund-alpha", "Fund", InstrumentRoleKinds.Holder,
             InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, lot.AcquiredDate,
-            OriginEvent: origin, EvidenceLinks: origin.EvidenceLinks) { RetainedEvidence = lot.Acquisition.Evidence };
+            OriginEvent: origin, EvidenceLinks: origin.EvidenceLinks)
+        { RetainedEvidence = lot.Acquisition.Evidence };
         var originalState = new PositionEconomicStateDto(Guid.NewGuid(), lot.BookPositionId, lot.AcquiredDate, "USD", 1,
             Quantity: lot.OpenQuantity, CarryingAmount: lot.OpenFunctionalCostBasis, SourceEvent: origin, EvidenceLinks: origin.EvidenceLinks)
         { ProjectionLineage = originalLineage, RetainedEvidence = lot.Acquisition.Evidence };
@@ -260,7 +273,8 @@ public sealed partial class WorkstationEndpointsTests
             lot.SecurityId, role.RoleId, new AccountingBookContextDto(lot.LedgerBookId, "fund-alpha", ownerId, FundStructureNodeKindDto.Fund,
                 "GAAP", "USD", AccountingBasisKindDto.Gaap, "amort-policy", "1", periodId, dimensions),
             BookPositionSides.Long, "Active", lot.AcquiredDate, CurrentEconomicState: originalState, OriginEvent: origin,
-            ProjectionLineage: originalLineage, EvidenceLinks: origin.EvidenceLinks) { RetainedEvidence = lot.Acquisition.Evidence };
+            ProjectionLineage: originalLineage, EvidenceLinks: origin.EvidenceLinks)
+        { RetainedEvidence = lot.Acquisition.Evidence };
         await positions.UpsertAsync(role, position, originalState, 0,
             new AssetOperationsWriteApprovalDto("source-reviewer", "evidence://approved-acquisition", "Reviewed acquisition source", now));
         books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>()).Returns([

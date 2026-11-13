@@ -208,8 +208,10 @@ public static partial class LedgerEndpoints
             var evidence = lot.Acquisition.Evidence.Concat([request.SecurityEvidence, request.EventEvidence]).Distinct().ToArray();
             var dimensions = (position.BookContext.Dimensions ?? new LedgerDimensionSetDto()) with
             {
-                FundId = book.FundProfileId, BookId = ledgerBookId.ToString("D"),
-                InstrumentId = lot.SecurityId, PositionId = lot.BookPositionId
+                FundId = book.FundProfileId,
+                BookId = ledgerBookId.ToString("D"),
+                InstrumentId = lot.SecurityId,
+                PositionId = lot.BookPositionId
             };
             var now = DateTimeOffset.UtcNow;
             var economicEvent = new EconomicEventReferenceDto(eventId, AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.DepreciationAmortization),
@@ -229,7 +231,8 @@ public static partial class LedgerEndpoints
                 item.ModelVersion != lineage.ModelVersion || !AssetAccountingSourcePayloadEquals(item.RetainedEvidence, evidence)))
                 throw new InvalidOperationException("The retained amortization occurrence has different source evidence or calculation authority.");
             var sourceAlreadyRetained = retainedSources.Length != 0;
-            if (sourceAlreadyRetained) lineage = retainedSources[0];
+            if (sourceAlreadyRetained)
+                lineage = retainedSources[0];
             instruction = instruction with { ExpectedBookPositionVersion = sourceAlreadyRetained ? position.Version : checked(position.Version + 1) };
             preview = preview with { Instruction = instruction };
             var scope = new AssetAccountingEventScopeDto(lot.SecurityId, instruction.Security.Version, lot.BookPositionId,

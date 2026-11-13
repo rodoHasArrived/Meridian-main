@@ -116,7 +116,8 @@ public sealed partial class WorkstationEndpointsTests
         public Task<AssetAccountingEventAppendResult> AppendAsync(AssetAccountingEventSpineDto projection, long expectedSpineVersion,
             long expectedBookPositionVersion, CancellationToken ct = default)
         {
-            if (_interrupt && projection.SpineVersion == 2) { _interrupt = false; throw new InvalidOperationException("Synthetic interruption after retained Expected occurrence."); }
+            if (_interrupt && projection.SpineVersion == 2)
+            { _interrupt = false; throw new InvalidOperationException("Synthetic interruption after retained Expected occurrence."); }
             return inner.AppendAsync(projection, expectedSpineVersion, expectedBookPositionVersion, ct);
         }
     }

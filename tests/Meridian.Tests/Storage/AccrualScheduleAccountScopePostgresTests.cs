@@ -71,7 +71,7 @@ public sealed class AccrualScheduleAccountScopePostgresTests
                 await database.JournalStore.SaveLedgerBookAsync(book, ct);
                 var period = await database.JournalStore.SavePeriodAsync(new(Guid.NewGuid(), book.LedgerBookId,
                     2026, 10, "October", new(2026, 10, 1), new(2026, 10, 31), "Open", now, null, 0)
-                    { MutationActor = "period-controller" }, 0, ct: ct);
+                { MutationActor = "period-controller" }, 0, ct: ct);
                 var input = new AccrualScheduleInput("scoped-fee", fund, book.LedgerBookId, entityId.ToString("D"), "USD",
                     RecurringJournalCadence.Monthly, new(2026, 10, 1), new(2026, 10, 1), "125.00", "Expense:Fees", LedgerAccountType.Expense,
                     "Liability:Accruals", LedgerAccountType.Liability, "Reviewed accrual", [new("source", "retained://fees", "Accrual", "Terms", now, "custodian", EvidenceVersion: 1)],
