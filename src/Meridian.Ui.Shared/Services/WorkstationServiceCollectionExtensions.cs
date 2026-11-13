@@ -123,7 +123,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ConfigStore>(sp =>
         {
             var core = sp.GetRequiredService<Meridian.Application.UI.ConfigStore>();
-            return new ConfigStore(core.ConfigPath);
+            return new ConfigStore(core.ConfigPath, sp.GetRequiredService<ProviderCredentialOwnershipPolicy>());
         });
 
         // The UI coordinator is a read-model façade over the core coordinator. Reuse the

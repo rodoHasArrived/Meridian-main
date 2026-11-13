@@ -1,6 +1,7 @@
 // Thin wrapper around the core ConfigStore that provides the web dashboard default path.
 // New code should reference Meridian.Application.UI.ConfigStore directly when possible.
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
+using Meridian.Application.ProviderRouting;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -12,12 +13,14 @@ namespace Meridian.Ui.Shared.Services;
 public sealed class ConfigStore
 {
     private readonly CoreConfigStore _core;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
 
     public ConfigStore() : this(GetWebDefaultPath()) { }
 
-    public ConfigStore(string? configPath)
+    public ConfigStore(string? configPath, ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         _core = new CoreConfigStore(configPath);
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     public string ConfigPath => _core.ConfigPath;
@@ -33,19 +36,30 @@ public sealed class ConfigStore
     public System.Threading.Tasks.Task SaveAsync(
         Meridian.Core.Config.AppConfig cfg,
         CancellationToken ct)
-        => _core.SaveAsync(cfg, ct);
+    {
+        var snapshot = ProviderConfigurationCredentialGuard.Prepare(cfg, _ownershipPolicy);
+        return _core.SaveAsync(snapshot, ct);
+    }
 
     /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
     public System.Threading.Tasks.Task<T> UpdateAsync<T>(
         Func<Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)> update,
         CancellationToken ct = default)
-        => _core.UpdateAsync(update, ct);
+        => _core.UpdateAsync(current =>
+        {
+            var (candidate, result) = update(current);
+            return (ProviderConfigurationCredentialGuard.Prepare(candidate, _ownershipPolicy), result);
+        }, ct);
 
     /// <summary>Read-modify-write under the configuration lock; see the core store for the contract.</summary>
     public System.Threading.Tasks.Task UpdateAsync(
         Func<Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig> update,
         CancellationToken ct = default)
-        => _core.UpdateAsync(update, ct);
+        => _core.UpdateAsync(current =>
+        {
+            var candidate = update(current);
+            return ProviderConfigurationCredentialGuard.Prepare(candidate, _ownershipPolicy);
+        }, ct);
 
     public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics()
         => _core.TryLoadProviderMetrics();

@@ -25,6 +25,7 @@ public static class ConfigEndpoints
     public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Configuration");
+        group.AddEndpointFilter(new ProviderConfigurationCredentialFilter());
         var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
 
         // SEC-001: configuration reads expose masked secrets and provider wiring, so every route in

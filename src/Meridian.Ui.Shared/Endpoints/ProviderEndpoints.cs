@@ -78,6 +78,7 @@ public static class ProviderEndpoints
     public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Providers");
+        group.AddEndpointFilter(new ProviderConfigurationCredentialFilter());
         group.RequireWorkstationTenantScope();
 
         // Get all data sources
