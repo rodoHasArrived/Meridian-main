@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreflightCheckResult
+
+Qualified name: <code>Meridian.Application.Services.PreflightCheckResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:797](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L797).
+
+Result of a single pre-flight check.
+
+```csharp
+public readonly record struct PreflightCheckResult(string Name, PreflightCheckStatus Status, string Message, string? Remediation, IReadOnlyDictionary<string, object>? Details)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PreflightCheckResult Passed(string name, string message, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:805](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L805) |  |
+| <code>public static PreflightCheckResult Warning(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:808](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L808) |  |
+| <code>public static PreflightCheckResult Failed(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:811](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L811) |  |
+
+## PreflightCheckStatus
+
+Qualified name: <code>Meridian.Application.Services.PreflightCheckStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:818](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L818).
+
+Status of a pre-flight check.
+
+```csharp
+public enum PreflightCheckStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Passed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:820](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L820) |  |
+| <code>Warning</code> | [src/Meridian.Application/Services/PreflightChecker.cs:821](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L821) |  |
+| <code>Failed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:822](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L822) |  |
+
+## PreflightConfig
+
+Qualified name: <code>Meridian.Application.Services.PreflightConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:744](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L744).
+
+Configuration for pre-flight checks.
+
+```csharp
+public sealed record PreflightConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double MinDiskSpaceGb { get; init; } = 1.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:747](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L747) | Minimum required disk space in GB. |
+| <code>public double WarnDiskSpaceGb { get; init; } = 5.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:750](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L750) | Disk space warning threshold in GB. |
+| <code>public double MinMemoryMb { get; init; } = 256;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:753](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L753) | Minimum required memory in MB. |
+| <code>public double WarnMemoryMb { get; init; } = 512;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:756](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L756) | Memory warning threshold in MB. |
+| <code>public int NetworkTimeoutMs { get; init; } = 5000;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:759](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L759) | Network connectivity check timeout in milliseconds. |
+| <code>public bool CheckNetworkConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:762](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L762) | Whether to check basic network connectivity (DNS, HTTP endpoints). |
+| <code>public bool CheckProviderConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:765](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L765) | Whether to check provider endpoint connectivity. |
+| <code>public static PreflightConfig Default =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:767](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L767) |  |
+
+## PreflightException
+
+Qualified name: <code>Meridian.Application.Services.PreflightException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/PreflightChecker.cs:828](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L828).
+
+Exception thrown when pre-flight checks fail.
+
+```csharp
+public sealed class PreflightException : Exception
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PreflightResult Result { get; }</code> | [src/Meridian.Application/Services/PreflightChecker.cs:830](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L830) |  |
+| <code>public PreflightException(string message, PreflightResult result) : base(message);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:832](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L832) |  |
+
 ## PreflightResult
 
 Qualified name: <code>Meridian.Application.Services.PreflightResult</code>. Kind: `record struct`.
@@ -887,7 +971,7 @@ Source: [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService
 Guards every local fund operation before reading or mutating retained snapshots.
 
 ```csharp
-public sealed class TenantGuardedLocalFundStructureService(IFundStructureService inner, LocalTenantMigrationGate gate) : INonProductionOnlyService, IFundStructureService
+public sealed class TenantGuardedLocalFundStructureService(IFundStructureService inner, LocalTenantMigrationGate gate) : INonProductionOnlyService, IFundStructureService, IEntityLifecycleProjectionSink
 ```
 
 Declared public members:
@@ -895,27 +979,28 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public bool RefusesUnattributedAccess =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:11](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L11) |  |
-| <code>public Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:13](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L13) |  |
-| <code>public Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:16](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L16) |  |
-| <code>public Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:19](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L19) |  |
-| <code>public Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:22](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L22) |  |
-| <code>public Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:25](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L25) |  |
-| <code>public Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:28](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L28) |  |
-| <code>public Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:31](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L31) |  |
-| <code>public Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:34](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L34) |  |
-| <code>public Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:37](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L37) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:40](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L40) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:43](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L43) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:46](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L46) |  |
-| <code>public Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:49](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L49) |  |
-| <code>public Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:52](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L52) |  |
-| <code>public Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:55](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L55) |  |
-| <code>public Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:58](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L58) |  |
-| <code>public Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:61](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L61) |  |
-| <code>public Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:64](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L64) |  |
-| <code>public Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:67](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L67) |  |
-| <code>public Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:70](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L70) |  |
-| <code>public Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:73](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L73) |  |
+| <code>public Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:13](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L13) |  |
+| <code>public Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:22](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L22) |  |
+| <code>public Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:25](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L25) |  |
+| <code>public Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:28](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L28) |  |
+| <code>public Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:31](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L31) |  |
+| <code>public Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:34](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L34) |  |
+| <code>public Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:37](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L37) |  |
+| <code>public Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:40](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L40) |  |
+| <code>public Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:43](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L43) |  |
+| <code>public Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:46](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L46) |  |
+| <code>public Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:49](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L49) |  |
+| <code>public Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:52](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L52) |  |
+| <code>public Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:55](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L55) |  |
+| <code>public Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:58](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L58) |  |
+| <code>public Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:61](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L61) |  |
+| <code>public Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:64](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L64) |  |
+| <code>public Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:67](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L67) |  |
+| <code>public Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:70](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L70) |  |
+| <code>public Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:73](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L73) |  |
+| <code>public Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:76](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L76) |  |
+| <code>public Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:79](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L79) |  |
+| <code>public Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs:82](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundStructureService.cs#L82) |  |
 
 ## ConfigStore
 
@@ -987,99 +1072,3 @@ Declared public members:
 | <code>public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:536](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L536) | Gets connection health snapshot. |
 | <code>public async Task&lt;(DetailedHealthReport? Report, string? Error)&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:570](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L570) | Gets detailed health report (async). |
 | <code>public static IReadOnlyList&lt;BackfillProviderInfo&gt; GetBackfillProviderInfo();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:591](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L591) | Gets the list of available backfill providers (static info). |
-
-## IWizardStep
-
-Qualified name: <code>Meridian.Application.Wizard.Core.IWizardStep</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Wizard/Core/IWizardStep.cs:9](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L9).
-
-Contract that every wizard step must implement. Steps are independent units: each one reads from and writes to WizardContext, then returns a WizardStepResult that tells the WizardCoordinator what to do next.
-
-```csharp
-public interface IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>WizardStepId StepId { get; }</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:12](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L12) | The unique identifier of this step in the workflow graph. |
-| <code>Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:19](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L19) | Executes the step. Implementations should not throw for user-facing cancellations — return WizardStepResult.Cancelled instead. |
-
-## WizardContext
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardContext.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L11).
-
-Mutable bag of state threaded through all wizard steps. Each step reads from it, updates it, and the coordinator persists it across calls.
-
-```csharp
-public sealed class WizardContext
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;AutoConfigurationService.DetectedProvider&gt; DetectedProviders { get; set; } = Array.Empty&lt;AutoConfigurationService.DetectedProvider&gt;();</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L16) | Providers detected from environment variables. |
-| <code>public UseCase? SelectedUseCase { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:22](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L22) | Use-case chosen by the user in SelectUseCaseStep. |
-| <code>public DataSourceSelection? DataSource { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:25](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L25) | Data-source selection assembled by ConfigureDataSourceStep. |
-| <code>public SymbolConfig[]? Symbols { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:28](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L28) | Symbol list assembled by ConfigureSymbolsStep. |
-| <code>public StorageConfig? Storage { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:31](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L31) | Storage config assembled by ConfigureStorageStep. |
-| <code>public BackfillConfig? Backfill { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:34](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L34) | Backfill config assembled by ConfigureBackfillStep. |
-| <code>public AppConfig? FinalConfig { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:39](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L39) | The assembled application config, available after ReviewConfigurationStep. |
-| <code>public string? SavedConfigPath { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:42](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L42) | File path where configuration was saved by SaveConfigurationStep. |
-| <code>public Dictionary&lt;string, object&gt; Metadata { get; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:50](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L50) | Open bag for steps to exchange information that does not fit a typed property. Keys are step-specific strings; values must be serialisable. |
-| <code>public bool IsCancelled { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:55](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L55) | When true the coordinator stops execution immediately. |
-| <code>public T? GetMeta&lt;T&gt;(string key) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:60](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L60) | Gets a typed metadata value set by a previous step, or the default if not present. |
-| <code>public void SetMeta&lt;T&gt;(string key, T value) where T : notnull =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:64](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L64) | Stores a typed metadata value. |
-
-## WizardCoordinator
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardCoordinator</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L12).
-
-Orchestrates execution of a wizard step graph. Steps are registered via AddStep; transitions are declared via AddTransition. Call RunAsync to execute the graph from the entry step.
-
-```csharp
-public sealed class WizardCoordinator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardCoordinator AddStep(IWizardStep step);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L19) | Registers a step implementation. |
-| <code>public WizardCoordinator AddTransition(WizardStepId from, WizardStepId to, Func&lt;WizardContext, bool&gt;? condition = null);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:26](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L26) | Adds a directed transition between two steps. |
-| <code>public async Task&lt;WizardContext&gt; RunAsync(WizardContext context, WizardStepId entryStep, CancellationToken ct = default);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:37](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L37) | Runs the step graph starting at entryStep and returns the final WizardContext after all steps have been executed. |
-
-## WizardStepId
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepId</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepId.cs:7](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L7).
-
-Identifies each discrete step in the configuration wizard workflow. Steps form a directed graph; transitions are declared in WizardTransition.
-
-```csharp
-public enum WizardStepId : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DetectProviders</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L9) |  |
-| <code>CredentialGuidance</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:10](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L10) |  |
-| <code>SelectUseCase</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L11) |  |
-| <code>ConfigureDataSource</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L12) |  |
-| <code>ValidateCredentials</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L13) |  |
-| <code>ConfigureSymbols</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:14](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L14) |  |
-| <code>ConfigureStorage</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L15) |  |
-| <code>ConfigureBackfill</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L16) |  |
-| <code>ReviewConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:17](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L17) |  |
-| <code>SaveConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L18) |  |
-| <code>Summary</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L19) |  |

@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CloseReadinessSubjectSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CloseReadinessSubjectSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:11](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L11).
+
+Proves the declared close subject from retained account membership and ledger-book ownership.
+
+```csharp
+public sealed class CloseReadinessSubjectSource(ILedgerBookService? books = null, IAccountQueryService? accounts = null) : ICloseReadinessSubjectSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;CloseReadinessSubjectDto?&gt; GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L15) |  |
+
+## CollateralCall
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralCall</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L31).
+
+```csharp
+public sealed record CollateralCall(string Counterparty, decimal Amount, string Reason, DateTimeOffset CreatedAt);
+```
+
+## CollateralExposureService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralExposureService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:64](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L64).
+
+Builds collateral exposure snapshots and evaluates counterparty thresholds using configured haircuts.
+
+```csharp
+public sealed class CollateralExposureService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CollateralExposureService();</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:69](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L69) |  |
+| <code>public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:75](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L75) |  |
+| <code>public void UpsertHaircutRule(HaircutRule rule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:96](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L96) |  |
+| <code>public IReadOnlyList&lt;ExposureSnapshot&gt; BuildSnapshots(IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L99) |  |
+| <code>public IReadOnlyList&lt;ThresholdBreach&gt; EvaluateBreaches(IReadOnlyList&lt;ExposureSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:169](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L169) |  |
+
 ## CollateralIngestionBuffer
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CollateralIngestionBuffer</code>. Kind: `class`.
@@ -868,56 +918,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:51](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L51) |  |
-
-## DividendAccrualPosition
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DividendAccrualPosition</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:29](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L29).
-
-One held position eligible for dividend accrual production.
-
-```csharp
-public sealed record DividendAccrualPosition(string Symbol, decimal Quantity, Guid? SecurityId = null, string? FinancialAccountId = null, DateTimeOffset? PositionAsOfUtc = null, IReadOnlyList<JournalEvidenceReference>? PositionEvidenceReferences = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;JournalEvidenceReference&gt; PositionEvidenceReferences { get; init; } = PositionEvidenceReferences??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L37) |  |
-
-## Dk1PromotionTrustEvidenceProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.Dk1PromotionTrustEvidenceProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:8](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L8).
-
-Uses the retained DK1 packet selected by the source run as promotion trust evidence.
-
-```csharp
-public sealed class Dk1PromotionTrustEvidenceProvider : IPromotionTrustEvidenceProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Dk1PromotionTrustEvidenceProvider(Dk1TrustGateReadinessService readiness, Dk1TrustGateReadinessOptions options);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L13) |  |
-| <code>public async Task&lt;PromotionTrustEvidence?&gt; GetEvidenceAsync(StrategyRunEntry run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:21](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L21) |  |
-
-## Dk1TrustGateReadinessOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.Dk1TrustGateReadinessOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:7](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L7).
-
-```csharp
-public sealed record Dk1TrustGateReadinessOptions(string AutomationRoot, TimeSpan? PromotionEvidenceMaximumAge = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static Dk1TrustGateReadinessOptions Default { get; } = new (Path.Combine(&quot;artifacts&quot;, &quot;provider-validation&quot;, &quot;_automation&quot;));</code> | [src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs:11](../../../../src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs#L11) |  |

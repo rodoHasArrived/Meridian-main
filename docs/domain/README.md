@@ -24,6 +24,8 @@ Start with:
 - [Operational Evidence Graph](operational-evidence-graph.md)
 - [Account Oversight Evidence](account-oversight-evidence.md)
 - [Account and Book Scopes](account-and-book-scopes.md)
+- [Intercompany Agreements and Entity Lifecycle](intercompany-agreements-and-entity-lifecycle.md)
+
 - [Intercompany Agreements](intercompany-agreements.md)
 - [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)

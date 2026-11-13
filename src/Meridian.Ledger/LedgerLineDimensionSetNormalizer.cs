@@ -32,7 +32,12 @@ internal static class LedgerLineDimensionSetNormalizer
         {
             PositionId = dimensions.PositionId,
             IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
-            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+            AccountingArrangementId = TextPrimitives.NormalizeOptional(dimensions.AccountingArrangementId),
+            AccountingArrangementRevisionId = TextPrimitives.NormalizeOptional(dimensions.AccountingArrangementRevisionId),
+            ChartAccountNodeId = TextPrimitives.NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = TextPrimitives.NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = TextPrimitives.NormalizeOptional(dimensions.IntercompanyTransactionId)
         };
 
         return HasAnyCanonical(canonical) ? canonical : null;

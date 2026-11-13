@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditTrailExportLimitException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExportLimitException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:9](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L9).
+
+```csharp
+public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
+```
+
+## AutomatedJournalDividendPositionResolution
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDividendPositionResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L12).
+
+Authoritative position history resolved for one dividend cycle.
+
+```csharp
+public sealed record AutomatedJournalDividendPositionResolution(IReadOnlyList<DividendAccrualPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L17) |  |
+
+## AutomatedJournalDraftIntakeDisposition
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeDisposition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:68](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L68).
+
+One event the intake did not turn into a new draft, with the reason it was skipped.
+
+```csharp
+public enum AutomatedJournalDraftIntakeDisposition
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ProjectionFailed = 0</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:70](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L70) |  |
+| <code>ExistingDraftReady = 1</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:71](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L71) |  |
+| <code>ExistingDraftNeedsFix = 2</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:72](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L72) |  |
+| <code>ExistingDraftRejected = 3</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:73](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L73) |  |
+| <code>ExistingDraftGoverned = 4</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L74) |  |
+| <code>ExistingDraftTerminal = 5</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:75](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L75) |  |
+| <code>ExistingDraftReassessmentRequired = 6</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:76](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L76) |  |
+
 ## AutomatedJournalDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeRequest</code>. Kind: `record`.
@@ -889,53 +941,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:13](../../../../src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs#L13) |  |
-
-## CloseReadinessSubjectSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CloseReadinessSubjectSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:11](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L11).
-
-Proves the declared close subject from retained account membership and ledger-book ownership.
-
-```csharp
-public sealed class CloseReadinessSubjectSource(ILedgerBookService? books = null, IAccountQueryService? accounts = null) : ICloseReadinessSubjectSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;CloseReadinessSubjectDto?&gt; GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L15) |  |
-
-## CollateralCall
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralCall</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L31).
-
-```csharp
-public sealed record CollateralCall(string Counterparty, decimal Amount, string Reason, DateTimeOffset CreatedAt);
-```
-
-## CollateralExposureService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralExposureService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:64](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L64).
-
-Builds collateral exposure snapshots and evaluates counterparty thresholds using configured haircuts.
-
-```csharp
-public sealed class CollateralExposureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CollateralExposureService();</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:69](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L69) |  |
-| <code>public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:75](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L75) |  |
-| <code>public void UpsertHaircutRule(HaircutRule rule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:96](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L96) |  |
-| <code>public IReadOnlyList&lt;ExposureSnapshot&gt; BuildSnapshots(IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L99) |  |
-| <code>public IReadOnlyList&lt;ThresholdBreach&gt; EvaluateBreaches(IReadOnlyList&lt;ExposureSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:169](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L169) |  |

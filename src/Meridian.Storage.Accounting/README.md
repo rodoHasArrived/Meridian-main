@@ -6,7 +6,7 @@ module_id: SRC-STORAGE-ACCOUNTING
 path: src/Meridian.Storage.Accounting
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Storage.Accounting
@@ -30,6 +30,13 @@ through linked compile items; schema versions, SQL migrations and output paths r
 - Other linked business store folders are enumerated explicitly in the project file.
 
 ## Important workflows
+
+Linked intercompany and entity adapters retain approved legal-agreement pins, immutable lifecycle
+and account-role history, book-control activation receipts, counterpart proposal intent and
+consolidation/FX authority through the financial commit. This assembly mints the internal Contracts
+structure-read proof while retaining its live ownership lease. See the
+[implementation sequence](../../docs/engineering/plans/intercompany-entity-controls.md) and
+[operator procedure](../../docs/operators/intercompany-entity-controls.md).
 
 Rebuild all consumers when changing assembly ownership. See
 [boundary extractions](../../docs/architecture/review-boundary-extractions.md) for the compatibility

@@ -11,6 +11,18 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Intercompany contracts retain immutable agreement terms, lifecycle timelines, source proposal facts,
+stable account-role bindings, approved FX sets and exact legacy-attribution digests. New optional
+ledger dimensions omit null fields to preserve legacy evidence hashes. Consolidation evidence pins
+participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
+See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
+
 `SecurityMasterLedgerSymbol` resolves a dated, unambiguous active ticker that the existing native
 lineage grammar can represent. It supplies server-owned instrument context for new non-lot
 corporate-action candidates; it grants no approval and accepts no caller authority.
@@ -2110,6 +2122,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

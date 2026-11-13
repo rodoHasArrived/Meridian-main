@@ -156,7 +156,8 @@ public sealed class PrivateCapitalAuthorityPostgresTests
         await fixture.PostAsync(await fixture.FundingAsync(call, "a", "receipt-2", 35_000m));
         await fixture.PostAsync(await fixture.FundingAsync(call, "b", "receipt-3", 40_000m));
 
-        using var restartedTarget = new DurableLedgerPostingTarget(new PostgresLedgerJournalStore(fixture.Database.Options));
+        using var restartedTarget = new DurableLedgerPostingTarget(new PostgresLedgerJournalStore(fixture.Database.Options,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities));
         (await restartedTarget.PostAsync(first)).WasAppended.Should().BeFalse();
         var retained = await fixture.Capital.GetCallAsync(fixture.Scope, "call-a");
         retained!.Lines.Sum(x => x.IssuedAmount).Should().Be(100_000m);
@@ -497,7 +498,9 @@ public sealed class PrivateCapitalAuthorityPostgresTests
             (await snapshot.ExecuteScalarAsync()).Should().Be(1L);
         // The old snapshot cannot see this inserted and approved successor row.
         await fixture.ApproveRevisionAsync("a", 2, 50m, new(2026, 5, 20));
-        var append = () => fixture.Database.JournalStore.AppendAsync(connection, transaction, fixture.Issuance(call, "a"));
+        var write = fixture.Issuance(call, "a");
+        await using var authority = await fixture.Database.JournalStore.AcquirePostingAuthorityAsync(connection, transaction, [write]);
+        var append = () => fixture.Database.JournalStore.AppendAsync(connection, transaction, write);
         await append.Should().ThrowAsync<LedgerValidationException>().WithMessage("*transaction isolation*");
         await transaction.RollbackAsync();
         (await fixture.Capital.ListPostingReceiptsAsync(fixture.Scope)).Should().BeEmpty();
@@ -516,6 +519,7 @@ public sealed class PrivateCapitalAuthorityPostgresTests
         {
             await connection.OpenAsync();
             await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+            await using var authority = await fixture.Database.JournalStore.AcquirePostingAuthorityAsync(connection, transaction, [write]);
             await fixture.Database.JournalStore.AppendAsync(connection, transaction, write);
             await transaction.RollbackAsync();
         }
@@ -697,7 +701,8 @@ public sealed class PrivateCapitalAuthorityPostgresTests
 
         public async Task PostAsync(LedgerJournalEntryWrite write)
         {
-            using var target = new DurableLedgerPostingTarget(new PostgresLedgerJournalStore(Database.Options));
+            using var target = new DurableLedgerPostingTarget(new PostgresLedgerJournalStore(Database.Options,
+                postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities));
             await target.PostAsync(write);
         }
 

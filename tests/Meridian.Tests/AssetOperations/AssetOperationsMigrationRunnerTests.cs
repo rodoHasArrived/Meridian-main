@@ -330,7 +330,7 @@ public sealed class AssetOperationsDatabaseFactAttribute : FactAttribute
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
+        if (!string.IsNullOrWhiteSpace(PostgresTestServer.ResolveExternalConnectionString(ConnectionStringVariable)))
         {
             return;
         }

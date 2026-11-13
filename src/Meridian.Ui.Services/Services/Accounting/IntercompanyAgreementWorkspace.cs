@@ -78,7 +78,8 @@ public sealed class IntercompanyAgreementWorkspace : ObservableObject, IDisposab
     public string EntityFilter { get => _entity; set => ChangeScope(ref _entity, value); }
     public string AsOf { get => _asOf; set => ChangeScope(ref _asOf, value); }
     public IntercompanyAgreementDetailDto? SelectedRow { get => _selectedRow; set { SetProperty(ref _selectedRow, value); NotifyCommands(); } }
-    public IntercompanyAgreementDetailDto? Detail { get => _detail; private set { SetProperty(ref _detail, value); NotifyCommands(); } }
+    public IntercompanyAgreementDetailDto? Detail { get => _detail; private set { SetProperty(ref _detail, value); OnPropertyChanged(nameof(MigrationWarnings)); NotifyCommands(); } }
+    public string MigrationWarnings => string.Join(Environment.NewLine, Detail?.MigrationWarnings ?? []);
     public IntercompanyAgreementRevisionDto? SelectedRevision
     {
         get => _selectedRevision;

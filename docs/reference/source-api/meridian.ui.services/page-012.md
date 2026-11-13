@@ -6,6 +6,99 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AnalysisExportService
+
+Qualified name: <code>Meridian.Ui.Services.Services.AnalysisExportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:17](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L17).
+
+Analysis export service that provides export operations, format queries, aggregation options, and templates. Uses ApiClientService directly for all API communication.
+
+```csharp
+public sealed class AnalysisExportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AnalysisExportService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:20](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L20) |  |
+| <code>public event EventHandler&lt;ExportProgressEventArgs&gt;? ProgressChanged;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:22](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L22) |  |
+| <code>public async Task&lt;AnalysisExportResult&gt; ExportAsync(AnalysisExportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:46](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L46) |  |
+| <code>public async Task&lt;ExportFormatsResult&gt; GetAvailableFormatsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:61](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L61) |  |
+| <code>public Task&lt;List&lt;AggregationOption&gt;&gt; GetAggregationOptionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:96](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L96) |  |
+| <code>public async Task&lt;QualityReportResult&gt; GenerateQualityReportAsync(QualityReportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:104](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L104) |  |
+| <code>public async Task&lt;AnalysisExportResult&gt; ExportOrderFlowAsync(OrderFlowExportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:128](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L128) |  |
+| <code>public async Task&lt;AnalysisExportResult&gt; ExportIntegrityEventsAsync(IntegrityExportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:154](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L154) |  |
+| <code>public async Task&lt;ResearchPackageResult&gt; CreateResearchPackageAsync(ResearchPackageOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:179](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L179) |  |
+| <code>public Task&lt;List&lt;ExportTemplate&gt;&gt; GetExportTemplatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:208](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L208) |  |
+
+## AnomalyEvent
+
+Qualified name: <code>Meridian.Ui.Services.Services.AnomalyEvent</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:169](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L169).
+
+Describes a detected symbol anomaly with severity and structured diagnostic details.
+
+```csharp
+public sealed class AnomalyEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:171](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L171) |  |
+| <code>public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:172](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L172) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:173](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L173) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:174](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L174) |  |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:175](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L175) |  |
+| <code>public DateTime DetectedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:176](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L176) |  |
+| <code>public Dictionary&lt;string, object&gt; Details { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:177](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L177) |  |
+
+## BackendInstallationInfo
+
+Qualified name: <code>Meridian.Ui.Services.Services.BackendInstallationInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:40](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L40).
+
+Records the installed backend executable and installation time.
+
+```csharp
+public sealed class BackendInstallationInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ExecutablePath { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:42](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L42) |  |
+| <code>public DateTime InstalledAtUtc { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:43](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L43) |  |
+
+## BackendRuntimeInfo
+
+Qualified name: <code>Meridian.Ui.Services.Services.BackendRuntimeInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:49](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L49).
+
+Records backend process identity, launch arguments, working directory, and shutdown token.
+
+```csharp
+public sealed class BackendRuntimeInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int ProcessId { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:51](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L51) |  |
+| <code>public DateTime StartedAtUtc { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:52](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L52) |  |
+| <code>public string? ExecutablePath { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:53](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L53) |  |
+| <code>public string? WorkingDirectory { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:54](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L54) |  |
+| <code>public string[] Arguments { get; init; } = [];</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:55](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L55) |  |
+| <code>public string? ShutdownToken { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:56](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L56) |  |
+
 ## BackendServiceManagerBase
 
 Qualified name: <code>Meridian.Ui.Services.Services.BackendServiceManagerBase</code>. Kind: `class`.
@@ -1085,94 +1178,3 @@ Enum declarations:
 | <code>FreeWithAccount</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:646](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L646) |  |
 | <code>LimitedFree</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:647](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L647) |  |
 | <code>Premium</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:648](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L648) |  |
-
-## QualityAlert
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityAlert</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:107](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L107).
-
-Tracks a symbol quality alert, its severity, and acknowledgement details.
-
-```csharp
-public sealed class QualityAlert
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L109) |  |
-| <code>public string AlertType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:110](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L110) |  |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:111](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L111) |  |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:112](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L112) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:113](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L113) |  |
-| <code>public string Details { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:114](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L114) |  |
-| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:115](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L115) |  |
-| <code>public bool IsAcknowledged { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:116](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L116) |  |
-| <code>public DateTime? AcknowledgedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:117](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L117) |  |
-| <code>public string? AcknowledgedBy { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:118](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L118) |  |
-
-## QualityArchiveStore
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityArchiveStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:40](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L40).
-
-JSON file-backed archive store using %LOCALAPPDATA%\Meridian\quality-archive.json. Stores data as Dictionary&lt;symbol -&gt; Dictionary&lt;date string -&gt; score&gt;&gt;. Thread-safe using concurrent dictionary wrapper.
-
-```csharp
-public sealed class QualityArchiveStore : IQualityArchiveStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QualityArchiveStore(ILogger&lt;QualityArchiveStore&gt; logger);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:54](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L54) |  |
-| <code>public Task RecordAsync(string symbol, DateOnly date, double completenessScore, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:80](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L80) | Records a daily quality score, updating in-memory cache and persisting to disk. |
-| <code>public Task&lt;IReadOnlyList&lt;DailyQualityRecord&gt;&gt; GetHistoryAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:103](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L103) | Retrieves historical records for a symbol within a date range. |
-| <code>public Task&lt;IReadOnlyList&lt;string&gt;&gt; GetSymbolsAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:129](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L129) | Gets all tracked symbols. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:204](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L204) |  |
-
-## QualityCheckResult
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityCheckResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:183](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L183).
-
-Reports a quality check&#x27;s score, issues, recommendations, and execution time.
-
-```csharp
-public sealed class QualityCheckResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:185](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L185) |  |
-| <code>public double Score { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:186](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L186) |  |
-| <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:187](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L187) |  |
-| <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:188](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L188) |  |
-| <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:189](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L189) |  |
-
-## QualityCompletenessReport
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityCompletenessReport</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:97](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L97).
-
-Groups overall completeness with breakdowns by data type and date.
-
-```csharp
-public sealed class QualityCompletenessReport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double OverallCompleteness { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:99](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L99) |  |
-| <code>public Dictionary&lt;string, double&gt; ByDataType { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:100](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L100) |  |
-| <code>public Dictionary&lt;string, double&gt; ByDate { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:101](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L101) |  |

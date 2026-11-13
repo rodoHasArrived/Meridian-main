@@ -940,6 +940,15 @@ public sealed partial class AccountingConfigurationService
             ProjectId: FirstText(overlay.ProjectId, baseDimensions?.ProjectId))
         {
             PositionId = overlay.PositionId ?? baseDimensions?.PositionId,
+            AccountingArrangementId = overlay.AccountingArrangementId is not null || overlay.AccountingArrangementRevisionId is not null
+                ? overlay.AccountingArrangementId : baseDimensions?.AccountingArrangementId,
+            AccountingArrangementRevisionId = overlay.AccountingArrangementId is not null || overlay.AccountingArrangementRevisionId is not null
+                ? overlay.AccountingArrangementRevisionId : baseDimensions?.AccountingArrangementRevisionId,
+            ChartAccountNodeId = overlay.ChartAccountNodeId is not null || overlay.AccountBindingRevisionId is not null
+                ? overlay.ChartAccountNodeId : baseDimensions?.ChartAccountNodeId,
+            AccountBindingRevisionId = overlay.ChartAccountNodeId is not null || overlay.AccountBindingRevisionId is not null
+                ? overlay.AccountBindingRevisionId : baseDimensions?.AccountBindingRevisionId,
+            IntercompanyTransactionId = FirstText(overlay.IntercompanyTransactionId, baseDimensions?.IntercompanyTransactionId),
             IntercompanyAgreementId = overlay.IntercompanyAgreementId.HasValue || overlay.IntercompanyAgreementVersion.HasValue
                 ? overlay.IntercompanyAgreementId : baseDimensions?.IntercompanyAgreementId,
             IntercompanyAgreementVersion = overlay.IntercompanyAgreementId.HasValue || overlay.IntercompanyAgreementVersion.HasValue

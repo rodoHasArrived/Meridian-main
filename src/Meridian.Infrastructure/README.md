@@ -14,7 +14,9 @@ last_reviewed: 2026-11-11
 Gap inventory preserves date-only records as calendar dates before attempting timestamp parsing.
 Actual timestamp records still use their UTC date, regardless of the collector host's time zone.
 
-HTTP resilience applies a fresh timeout to each attempt inside the total operation budget.
+Standalone HTTP resilience applies a fresh timeout to each attempt inside the total operation budget.
+Historical requests keep bounded network attempts while quota and `Retry-After` waits remain
+cancellable by the caller or provider disposal, without consuming an HTTP deadline.
 Quota responses (HTTP 429) pass straight through to provider handling, retaining `Retry-After`
 for the quota-aware backfill scheduler; they are neither generic retries nor circuit-breaker
 failures. Caller cancellation is also excluded from circuit-breaker failures.
@@ -34,6 +36,18 @@ Alpaca streaming trade deduplication keys on trade id and venue as well as symbo
 The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
 
 `RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
+
+Historical HTTP requests use the base provider as their retry owner. Each send attempt acquires
+capacity, including retries; the named-client retry policy yields to these requests. The network
+attempt timeout starts after quota acquisition, so waiting for pacing or a cooldown does not
+consume the request's network timeout. Throttling
+responses publish a cooldown even when returned to the caller, and `Retry-After` delays subsequent
+attempts. Twelve Data history, symbol search and corporate actions share the `api-requests` budget
+for the same API credential; different credentials and vendor quota groups retain separate budgets.
+Provider disposal does not discard a shared budget. Credential values are hashed in registry keys.
+This coordinates the existing request-count limit; weighted vendor credits and daily entitlements
+are not modeled, and other provider families retain their existing capability budgets.
+These paths use synthetic regression tests; live provider compatibility remains live-untested.
 
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
@@ -192,6 +206,10 @@ and trade-update reconnects share the resolved credential snapshot and its retai
 Corporate-action adapters receive the resolved context explicitly, while legacy direct construction
 still supports environment lookup. `ProviderFactoryCredentialIsolationTests` exercises actual
 adapter construction and outbound request credentials across rotation, deletion and owner scopes.
+
+Hosted OpenFIGI resolution/search and Polygon corporate-action requests resolve the selected
+credential owner for outbound requests. Rotation takes effect on the next request; a deleted or
+incomplete selected record cannot borrow a key from configuration, environment or another owner.
 
 Tracked HTTP clients resolve circuit-breaker callbacks through their owning service provider.
 Each named breaker is a provider-local singleton, retaining state across requests and handler

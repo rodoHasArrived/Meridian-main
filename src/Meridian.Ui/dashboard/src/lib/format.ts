@@ -343,6 +343,13 @@ export function formatUtcMonthYear(date: Date): string {
 
 const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
 
+/** Currency metadata for authoring a governed policy; the server validates its own precision. */
+export function currencyMinorUnitPrecision(currency: string): number {
+  const normalized = currency.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(normalized)) return 2;
+  return new Intl.NumberFormat(FORMAT_LOCALE, { style: "currency", currency: normalized }).resolvedOptions().maximumFractionDigits ?? 2;
+}
+
 /**
  * A date or time in a layout the fixed helpers above do not cover, through one pinned-locale
  * Intl.DateTimeFormat per option set, e.g. `formatDateTime(date, { month: "short", day: "numeric",

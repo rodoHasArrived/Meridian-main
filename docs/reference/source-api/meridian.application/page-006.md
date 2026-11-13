@@ -6,6 +6,82 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BestOfBreedProviderSelector
+
+Qualified name: <code>Meridian.Application.ProviderRouting.BestOfBreedProviderSelector</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:21](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L21).
+
+Selects provider routes using configured capability, preference, and availability evidence.
+
+```csharp
+public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BestOfBreedProviderSelector(ProviderRoutingService routingService, IProviderConnectionHealthSource healthSource, ConfigStore store, IDataQualityService? dataQualityService = null);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:34](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L34) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:46](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L46) |  |
+| <code>public Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:49](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L49) |  |
+
+## IBestOfBreedProviderSelector
+
+Qualified name: <code>Meridian.Application.ProviderRouting.IBestOfBreedProviderSelector</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:11](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L11).
+
+Selects a provider route for a request, including tenant-scoped routing.
+
+```csharp
+public interface IBestOfBreedProviderSelector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:13](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L13) |  |
+| <code>Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:14](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L14) |  |
+
+## IProviderFamilyCatalogService
+
+Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:504](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L504).
+
+Exposes the provider-family adapters available to routing.
+
+```csharp
+public interface IProviderFamilyCatalogService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:506](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L506) |  |
+| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:508](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L508) |  |
+
+## IProviderRuntimeCredentialApplier
+
+Qualified name: <code>Meridian.Application.ProviderRouting.IProviderRuntimeCredentialApplier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:19](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L19).
+
+Opt-in seam that recycles a provider&#x27;s running instances under a changed host binding. Hosts without an in-process recycle keep the default, which never activates anything hot.
+
+```csharp
+public interface IProviderRuntimeCredentialApplier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ProviderRuntimeCredentialApplyOutcome&gt; ApplyAsync(ProviderRuntimeCredentialBinding binding, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:21](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L21) |  |
+
 ## KernelCriticalSeverityAlertThresholds
 
 Qualified name: <code>Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds</code>. Kind: `record`.
@@ -1016,86 +1092,3 @@ Declared public members:
 | <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:69](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L69) | Runs BEFORE the projection rebuild (Order = 10) and coverage invalidation (Order = 20): both must observe the merged canonical terms, not the pre-merge definition. |
 | <code>public SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:72](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L72) |  |
 | <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:75](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L75) |  |
-
-## CanonicalRegistryCoverageSource
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CanonicalRegistryCoverageSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:12](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L12).
-
-Coverage source exposing every canonical symbol the canonicalization spine knows about. These symbols entered the registry through real usage (streaming enrichment, resolver learning, seeding), so any of them without a validated security-master record is a live coverage gap. Returns an empty set when no registry is available.
-
-```csharp
-public sealed class CanonicalRegistryCoverageSource : ISecurityCoverageSymbolSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CanonicalRegistryCoverageSource(ICanonicalSymbolRegistry? registry = null);</code> | [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:16](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L16) |  |
-| <code>public string SourceName =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:21](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L21) |  |
-| <code>public Task&lt;IReadOnlyCollection&lt;string&gt;&gt; GetActiveSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs:23](../../../../src/Meridian.Application/SecurityMaster/CanonicalRegistryCoverageSource.cs#L23) |  |
-
-## CanonicalSymbolRegistryMigrationService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CanonicalSymbolRegistryMigrationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:17](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L17).
-
-Idempotently imports both legacy symbol-mapping stores into the canonical registry. Legacy inputs are intentionally retained as comparison and rollback sources.
-
-```csharp
-public sealed class CanonicalSymbolRegistryMigrationService : IHostedService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CanonicalSymbolRegistryMigrationService(ConfigStore configStore, ICanonicalSymbolRegistry registry, ISymbolRegistryService registryStore, ILogger&lt;CanonicalSymbolRegistryMigrationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:30](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L30) |  |
-| <code>public async Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:44](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L44) |  |
-| <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs:97](../../../../src/Meridian.Application/SecurityMaster/CanonicalSymbolRegistryMigrationService.cs#L97) |  |
-
-## ContractualCashFlowPreviewService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.ContractualCashFlowPreviewService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:12](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L12).
-
-Adapts retained product facts to the shared calculation contract without mutating them.
-
-```csharp
-public sealed class ContractualCashFlowPreviewService(ISecurityMasterQueryService securities, ISecurityMasterCashFlowService sources, ISecurityCurveStore? curveStore = null, IBusinessDayCalendarSource? calendars = null, IDirectLendingService? loans = null, IExerciseNoticeVerifier? noticeVerifier = null) : IContractualCashFlowPreviewService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewSecurityAsync(Guid securityId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L20) |  |
-| <code>public async Task&lt;ContractualCashFlowResult?&gt; PreviewLoanAsync(Guid loanId, ContractualCashFlowRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:42](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L42) |  |
-| <code>public static ContractualCashFlowContract FromSecurity(SecurityDetailDto security);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:121](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L121) |  |
-| <code>public static ContractualCashFlowContract FromLoan(DirectLendingTermsDto terms, LoanServicingStateDto servicing);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs:244](../../../../src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs#L244) |  |
-
-## FileBondExerciseNoticeStore
-
-Qualified name: <code>Meridian.Application.SecurityMaster.CashFlow.FileBondExerciseNoticeStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:14](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L14).
-
-Governed exercise-notice evidence: one write-once JSON record per notice under the security, a single decision by a different actor, and verification that a selected scenario exercise restates exactly what an approved notice says. Nothing here posts a redemption. Writers hold an in-process gate and a per-notice lock file, so two hosts sharing the storage root cannot both record under one identity or decide the same notice twice.
-
-```csharp
-public sealed class FileBondExerciseNoticeStore(StorageOptions options, TimeProvider? timeProvider = null) : IBondExerciseNoticeStore, IExerciseNoticeVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BondExerciseNoticeDto&gt; RecordAsync(BondExerciseNoticeDto notice, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:20](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L20) |  |
-| <code>public async Task&lt;BondExerciseNoticeDto?&gt; GetAsync(Guid securityId, Guid noticeId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:47](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L47) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BondExerciseNoticeDto&gt;&gt; ListAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:56](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L56) |  |
-| <code>public async Task&lt;BondExerciseNoticeDto&gt; DecideAsync(Guid securityId, Guid noticeId, bool approve, string actor, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:69](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L69) |  |
-| <code>public async Task&lt;ExerciseNoticeVerification&gt; VerifyAsync(Guid securityId, SelectedCashFlowExercise selection, DateTimeOffset knowledgeCutoff, ContractualExerciseEntry? entry, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs:98](../../../../src/Meridian.Application/SecurityMaster/CashFlow/FileBondExerciseNoticeStore.cs#L98) |  |
