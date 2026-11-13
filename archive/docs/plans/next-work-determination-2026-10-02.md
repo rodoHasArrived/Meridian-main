@@ -6,7 +6,7 @@
 **Owner:** core-team
 **Reviewed:** 2026-10-02
 **Baseline:** `main` at `021966720e518bb76403e91b2810481a32561f0a`
-**Supersedes:** [2026-09-27](next-work-determination-2026-09-27.md), and the 2026-09-28 and
+**Supersedes:** [2026-09-27](../../../docs/product/plans/next-work-determination-2026-09-27.md), and the 2026-09-28 and
 2026-09-29 determinations proposed in still-open
 [#3012](https://github.com/rodoHasArrived/Meridian-main/pull/3012) and
 [#3030](https://github.com/rodoHasArrived/Meridian-main/pull/3030)

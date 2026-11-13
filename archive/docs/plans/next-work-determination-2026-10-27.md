@@ -7,7 +7,7 @@
 **Reviewed:** 2026-10-27
 **Baseline:** `origin/main` at `4fb27518f844f383ce3e9217005c399d2d21f229` (2026-10-27 15:04 UTC)
 **Supersedes:** the ranking carried by the merged
-[2026-10-25 determination](next-work-determination-2026-10-25.md), whose bar is **not** met —
+[2026-10-25 determination](../../../docs/product/plans/next-work-determination-2026-10-25.md), whose bar is **not** met —
 `v0.1.0-rc.2` is not tagged and the signing secrets have not been refused. It does not supersede
 the five unmerged determinations #3207, #3223, #3249, #3259 and #3264, which the process section
 addresses.

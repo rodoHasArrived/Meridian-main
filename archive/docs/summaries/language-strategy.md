@@ -9,10 +9,10 @@ This is the 2026-01-30 strategy snapshot. Its C++ phases, native project tree, t
 performance multipliers are proposals, not the current delivery plan or measured release results.
 Preserve the dated implementation notes below when using them as design history.
 
-For current work, use the [Engineering index](../engineering/README.md),
-[F# source README](../../src/Meridian.FSharp/README.md),
-[browser workstation source README](../../src/Meridian.Ui/README.md), and
-[roadmap registry](../roadmap/README.md). The shipped source includes C# services, F# rule kernels,
+For current work, use the [Engineering index](../../../docs/engineering/README.md),
+[F# source README](../../../src/Meridian.FSharp/README.md),
+[browser workstation source README](../../../src/Meridian.Ui/README.md), and
+[roadmap registry](../../../docs/roadmap/README.md). The shipped source includes C# services, F# rule kernels,
 a React/TypeScript browser workstation, and the WPF desktop lane. The proposed
 `Meridian.Native` and `Meridian.Native.Interop` projects below are not present in the source tree.
 
@@ -723,7 +723,7 @@ Use this explicit rule when deciding which language to use for a new component:
    - the logic does not depend deeply on existing DI/service infrastructure.
 3. **Use C# first** for host orchestration, provider integration, storage, UI, web, scheduling, retries, metrics, or other service-heavy workflows.
 
-For the full repo-specific guidance, including the `Pipeline/Transforms.fs` classification and the F# pilot selection rule, see [F# Decision Rule for Meridian](../development/fsharp-decision-rule.md).
+For the full repo-specific guidance, including the `Pipeline/Transforms.fs` classification and the F# pilot selection rule, see [F# Decision Rule for Meridian](../../../docs/development/fsharp-decision-rule.md).
 
 ---
 
@@ -772,4 +772,4 @@ public class OrderBookBenchmarks
 
 **Document Owner:** Architecture Team
 **Review Cycle:** Quarterly
-**See Also:** [Architecture](../architecture/overview.md) | [Production Status](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/production-status.md) | [Why This Architecture](../architecture/why-this-architecture.md)
+**See Also:** [Architecture](../../../docs/architecture/overview.md) | [Production Status](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/status/production-status.md) | [Why This Architecture](../../../docs/architecture/why-this-architecture.md)

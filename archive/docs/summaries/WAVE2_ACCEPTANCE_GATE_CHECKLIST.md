@@ -8,8 +8,8 @@
 
 This document preserves the Wave 2 gate definition and implementation snapshot from 2026-05-08.
 The partial-implementation labels below describe that review, not current delivery state. Use the
-[maintained test guide](WAVE2_ACCEPTANCE_TESTS.md) for runnable commands and the
-[roadmap registry](../roadmap/README.md) for milestone acceptance.
+[maintained test guide](../../../docs/testing/WAVE2_ACCEPTANCE_TESTS.md) for runnable commands and the
+[roadmap registry](../../../docs/roadmap/README.md) for milestone acceptance.
 
 ---
 
@@ -323,7 +323,7 @@ OperatorInbox_OverallStatusReflectsBlockingGates
 
 ## Related Documents
 
-- [`docs/testing/WAVE2_ACCEPTANCE_TESTS.md`](WAVE2_ACCEPTANCE_TESTS.md) - Full test suite documentation
-- [`docs/plans/paper-trading-cockpit-reliability-sprint.md`](../plans/paper-trading-cockpit-reliability-sprint.md) - Original gate definitions
-- [roadmap/README.md](../roadmap/README.md) - Wave 2 roadmap context
+- [`docs/testing/WAVE2_ACCEPTANCE_TESTS.md`](../../../docs/testing/WAVE2_ACCEPTANCE_TESTS.md) - Full test suite documentation
+- [`docs/plans/paper-trading-cockpit-reliability-sprint.md`](../../../docs/plans/paper-trading-cockpit-reliability-sprint.md) - Original gate definitions
+- [roadmap/README.md](../../../docs/roadmap/README.md) - Wave 2 roadmap context
 

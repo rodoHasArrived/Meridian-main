@@ -79,7 +79,7 @@ AI_WORKFLOW_REFERENCE_FILES = (
     PROMPTS_README,
     GITHUB_PROMPTS_README,
     COPILOT_GUIDE,
-    "docs/ai/copilot/ai-sync-workflow.md",
+    "archive/docs/summaries/ai-sync-workflow.md",
     "docs/prompts/automation-prompts.md",
 )
 WORKFLOW_REFERENCE_PATTERN = re.compile(

@@ -1430,7 +1430,6 @@ Meridian-main
 │   │   │   ├── operational-evidence-context.md
 │   │   │   └── README.md
 │   │   ├── copilot
-│   │   │   ├── ai-sync-workflow.md
 │   │   │   ├── contract-policy.mirror.json
 │   │   │   └── instructions.md
 │   │   ├── exports
@@ -1959,7 +1958,6 @@ Meridian-main
 │   │   └── workflows-overview.md
 │   ├── integrations
 │   │   ├── fsharp-integration.md
-│   │   ├── language-strategy.md
 │   │   ├── lean-integration.md
 │   │   ├── README.md
 │   │   └── tastytrade-endpoint-coverage.md
@@ -2010,14 +2008,7 @@ Meridian-main
 │   │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   │   ├── certification-unblock-verification-2026-10-12.md
 │   │   │   ├── next-work-determination-2026-09-27.md
-│   │   │   ├── next-work-determination-2026-10-02.md
-│   │   │   ├── next-work-determination-2026-10-04.md
-│   │   │   ├── next-work-determination-2026-10-05.md
-│   │   │   ├── next-work-determination-2026-10-16.md
-│   │   │   ├── next-work-determination-2026-10-20.md
-│   │   │   ├── next-work-determination-2026-10-24.md
 │   │   │   ├── next-work-determination-2026-10-25.md
-│   │   │   ├── next-work-determination-2026-10-27.md
 │   │   │   ├── next-work-determination-2026-11-01.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
@@ -3318,7 +3309,6 @@ Meridian-main
 │   │   ├── w10-amount-provenance.md
 │   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
-│   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
 │   │   ├── WAVE2_ACCEPTANCE_TESTS.md
 │   │   └── workflow-consolidation-2026-10-28.md
 │   ├── DEPENDENCIES.md
@@ -4954,7 +4944,6 @@ Meridian-main
 │   │   ├── desktop-dev.ps1
 │   │   ├── desktop-workflows.json
 │   │   ├── desktop_screen_blueprint_checklist.py
-│   │   ├── diagnose-uwp-xaml.ps1
 │   │   ├── generate-desktop-user-manual.ps1
 │   │   ├── generate-dk1-pilot-parity-packet.ps1
 │   │   ├── install-git-hooks.sh
@@ -8553,7 +8542,6 @@ Meridian-main
 │   │   │   │   │   │   └── ticks.ts
 │   │   │   │   │   ├── data
 │   │   │   │   │   │   ├── add-provider-drawer.tsx
-│   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
 │   │   │   │   │   │   ├── concrete.ts
 │   │   │   │   │   │   ├── edit-provider-drawer.tsx
 │   │   │   │   │   │   ├── editable-cell.test.tsx
@@ -8697,7 +8685,6 @@ Meridian-main
 │   │   │   │   │   │   ├── reporting-hub.tsx
 │   │   │   │   │   │   ├── reporting-lineage-summary.test.tsx
 │   │   │   │   │   │   ├── reporting-lineage-summary.tsx
-│   │   │   │   │   │   ├── reporting-period-switcher.tsx
 │   │   │   │   │   │   ├── reporting-production-surface.test.tsx
 │   │   │   │   │   │   ├── reporting-production-surface.tsx
 │   │   │   │   │   │   ├── save-view-dialog.test.tsx
@@ -8902,8 +8889,6 @@ Meridian-main
 │   │   │   │   │   ├── design-system-workbench.test.tsx
 │   │   │   │   │   └── design-system-workbench.tsx
 │   │   │   │   ├── features
-│   │   │   │   │   ├── accounting
-│   │   │   │   │   │   └── accountingCloseModels.ts
 │   │   │   │   │   ├── first-run
 │   │   │   │   │   │   ├── activation-progress.test.tsx
 │   │   │   │   │   │   ├── activation-progress.tsx
@@ -8962,7 +8947,6 @@ Meridian-main
 │   │   │   │   │   │   ├── close-preparation.api.test.ts
 │   │   │   │   │   │   ├── close-preparation.api.ts
 │   │   │   │   │   │   ├── contractual-cash-flow.api.ts
-│   │   │   │   │   │   ├── corporate-actions.api.ts
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
@@ -9336,7 +9320,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.test.tsx
 │   │   │   │   │   ├── accounting-screen.prepare-next-period.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-continuity.test.ts
-│   │   │   │   │   ├── accounting-screen.reconciliation-panels.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-queue-utils.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-readiness.tsx
@@ -14552,20 +14535,6 @@ Meridian-main
 │   ├── setup-script-tests.md
 │   └── xunit.runner.json
 ├── tools
-│   ├── actionlint
-│   │   ├── docs
-│   │   │   ├── api.md
-│   │   │   ├── checks.md
-│   │   │   ├── config.md
-│   │   │   ├── install.md
-│   │   │   ├── README.md
-│   │   │   ├── reference.md
-│   │   │   └── usage.md
-│   │   ├── man
-│   │   │   └── actionlint.1
-│   │   ├── .gitignore
-│   │   ├── LICENSE.txt
-│   │   └── README.md
 │   ├── codex
 │   │   ├── _codex-scan-lib.ps1
 │   │   ├── architecture-scan.ps1

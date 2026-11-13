@@ -1,11 +1,11 @@
 {
-  "total_files": 1196,
-  "orphaned_count": 398,
-  "no_heading_count": 233,
+  "total_files": 1178,
+  "orphaned_count": 397,
+  "no_heading_count": 231,
   "stale_count": 0,
-  "todo_count": 332,
+  "todo_count": 311,
   "health_score": 84,
-  "signal_digest": "sha256:e1b07192f96da23d89bdb34cabbb2b9a5c09c2e0e54c57b72ef8abae03075e72",
+  "signal_digest": "sha256:9604e251e394f2771250645e143566846af18c2d7ef397dcb785704b467c6ea5",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -339,7 +339,6 @@
     "docs/ai/claude/CLAUDE.api.md",
     "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
     "docs/ai/claude/CLAUDE.structure.md",
-    "docs/ai/copilot/ai-sync-workflow.md",
     "docs/ai/exports/LLM_CONTEXT.md",
     "docs/ai/model-routing-telemetry.md",
     "docs/development/fund-account-traversal.md",
@@ -637,9 +636,7 @@
     "Meridian Design System/components/trading/OptionChainTable.prompt.md",
     "Meridian Design System/components/trading/OrderTicket.prompt.md",
     "Meridian Design System/components/trading/TimeAndSalesTape.prompt.md",
-    "Meridian Design System/SKILL.md",
-    "tools/actionlint/docs/README.md",
-    "tools/actionlint/docs/reference.md"
+    "Meridian Design System/SKILL.md"
   ],
   "stale_files": [],
   "all_files": [
@@ -1424,13 +1421,6 @@
       "path": "docs/ai/context/README.md",
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/ai/copilot/ai-sync-workflow.md",
-      "has_heading": true,
-      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3031,13 +3021,6 @@
       "stale": false
     },
     {
-      "path": "docs/integrations/language-strategy.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/integrations/lean-integration.md",
       "has_heading": true,
       "todo_count": 1,
@@ -3430,56 +3413,7 @@
       "stale": false
     },
     {
-      "path": "docs/product/plans/next-work-determination-2026-10-02.md",
-      "has_heading": true,
-      "todo_count": 9,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/plans/next-work-determination-2026-10-04.md",
-      "has_heading": true,
-      "todo_count": 4,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/plans/next-work-determination-2026-10-05.md",
-      "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/plans/next-work-determination-2026-10-16.md",
-      "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/plans/next-work-determination-2026-10-20.md",
-      "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/plans/next-work-determination-2026-10-24.md",
-      "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/product/plans/next-work-determination-2026-10-25.md",
-      "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/product/plans/next-work-determination-2026-10-27.md",
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6182,13 +6116,6 @@
     },
     {
       "path": "docs/testing/wave2-cockpit-reliability-evidence-runbook.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/testing/WAVE2_ACCEPTANCE_GATE_CHECKLIST.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -8898,62 +8825,6 @@
     },
     {
       "path": "tests/setup-script-tests.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/docs/api.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/docs/checks.md",
-      "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/docs/config.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/docs/install.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/docs/README.md",
-      "has_heading": false,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/docs/reference.md",
-      "has_heading": false,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/docs/usage.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "tools/actionlint/README.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
