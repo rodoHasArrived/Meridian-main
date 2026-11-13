@@ -690,7 +690,7 @@ describe("App", () => {
     expect(within(evidenceSummary).getByText("Reporting package or evidence")).toBeInTheDocument();
     const accessibilityResults = await axe(container);
     expect(accessibilityResults.violations).toHaveLength(0);
-    await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Today - Meridian"));
   });
 
   it("redirects the legacy overview route to the daily control tower", async () => {
@@ -699,7 +699,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/overview"] });
 
     await waitFor(() => expect(screen.getByRole("heading", { name: "What needs an operator decision now" })).toBeInTheDocument());
-    await waitFor(() => expect(document.title).toBe("Daily Control Tower - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Today - Meridian"));
   });
 
   it("hides workflow continuity on an unrecognized route", async () => {
@@ -852,13 +852,13 @@ describe("App", () => {
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     // Workflow context lives in the scope chip's popover, not in the header row.
     expect(screen.queryByText("Workflow context")).not.toBeInTheDocument();
-    expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
+    expect(screen.queryByText("Import → Validate → Reconcile → Investigate → Approve → Report")).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
 
     await openShellContext(user);
 
     expect(screen.getByText("Current workflow")).toBeInTheDocument();
-    expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
+    expect(screen.getByText("Import → Validate → Reconcile → Investigate → Approve → Report")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Market Data To Paper workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Primary operator workflow steps" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Market data, current workflow step, Waiting" })).toHaveAttribute(

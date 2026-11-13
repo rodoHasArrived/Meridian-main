@@ -2471,7 +2471,7 @@ describe("AccountingScreen", () => {
     expect(within(productionGapChecklist).getByText("Production controls and rollout hardening")).toBeInTheDocument();
     expect(within(productionGapChecklist).getByText("multi-ledger-native-workflows")).toBeInTheDocument();
     expect(within(productionGapChecklist).getByText("workflow.evidence.missing, journal.lifecycle.missing")).toBeInTheDocument();
-    expect(within(productionGapChecklist).getByText("workflow.evidence.missing: Ledger-book workflow evidence is missing for the selected book. -> Retain selected-book workflow evidence before production rollout.")).toBeInTheDocument();
+    expect(within(productionGapChecklist).getByText("workflow.evidence.missing: Ledger-book workflow evidence is missing for the selected book. → Retain selected-book workflow evidence before production rollout.")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting tenant administration readiness controls" })).toBeInTheDocument();
     expect(screen.getAllByText("Reporting groups").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Operator surface").length).toBeGreaterThan(0);
@@ -2505,7 +2505,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Retained accounting migration worker plans" })).toBeInTheDocument();
     expect(screen.getByText("1/1 retained worker plan reconciled")).toBeInTheDocument();
     expect(screen.getByText("Historical journal worker plan retained for primary book.")).toBeInTheDocument();
-    expect(screen.getByText("275 source records -> 275 migrated records | 1 evidence reference")).toBeInTheDocument();
+    expect(screen.getByText("275 source records → 275 migrated records | 1 evidence reference")).toBeInTheDocument();
     expect(api.assessAccountingProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",
@@ -2520,7 +2520,7 @@ describe("AccountingScreen", () => {
       ledgerBookId: "book-primary"
     });
     expect(screen.getAllByText("Trade buy posting").length).toBeGreaterThan(0);
-    expect(screen.getByText("2026-01-01 -> 2026-12-31")).toBeInTheDocument();
+    expect(screen.getByText("2026-01-01 → 2026-12-31")).toBeInTheDocument();
     const ruleInternals = screen.getByText("Rule scope and posting internals").closest("details");
     expect(ruleInternals).not.toHaveAttribute("open");
     expect(within(ruleInternals!).getByText("Scope")).toBeInTheDocument();
@@ -3669,7 +3669,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Manual close adjustment");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("payment:fund-alpha:distribution:manual-je-1");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("$100 USD gross");
-    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("$0 USD opening -> -$100.00 USD ending");
+    expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("$0 USD opening → -$100.00 USD ending");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("2 record issue");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Approval pending");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Submit the fund-event journal for approval");
@@ -4043,16 +4043,16 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/journal-entries");
 
     await user.click(screen.getByRole("button", { name: "Approve" }));
-    expect(await screen.findByText("Approve recorded: Submitted -> Approved")).toBeInTheDocument();
-    expect(screen.getByText("Approve: Submitted -> Approved")).toBeInTheDocument();
+    expect(await screen.findByText("Approve recorded: Submitted → Approved")).toBeInTheDocument();
+    expect(screen.getByText("Approve: Submitted → Approved")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Post" }));
-    expect(await screen.findByText("Post recorded: Approved -> Posted")).toBeInTheDocument();
-    expect(screen.getByText("Post: Approved -> Posted")).toBeInTheDocument();
+    expect(await screen.findByText("Post recorded: Approved → Posted")).toBeInTheDocument();
+    expect(screen.getByText("Post: Approved → Posted")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Reverse" }));
-    expect(await screen.findByText("Reverse recorded: Posted -> Reversed")).toBeInTheDocument();
-    expect(screen.getByText("Reverse: Posted -> Reversed")).toBeInTheDocument();
+    expect(await screen.findByText("Reverse recorded: Posted → Reversed")).toBeInTheDocument();
+    expect(screen.getByText("Reverse: Posted → Reversed")).toBeInTheDocument();
     expect(screen.getAllByText("Reversal for manual-je-1").length).toBeGreaterThan(0);
     expect(screen.getByText("Reversal of manual-je-1")).toBeInTheDocument();
     expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Audit transitions");
@@ -4137,8 +4137,8 @@ describe("AccountingScreen", () => {
 
     await user.click(screen.getByRole("button", { name: "Rebook" }));
 
-    expect(await screen.findByText("Rebook recorded: Posted -> Rebooked")).toBeInTheDocument();
-    expect(screen.getByText("Rebook: Posted -> Rebooked")).toBeInTheDocument();
+    expect(await screen.findByText("Rebook recorded: Posted → Rebooked")).toBeInTheDocument();
+    expect(screen.getByText("Rebook: Posted → Rebooked")).toBeInTheDocument();
     expect(screen.getAllByText("Rebook for manual-je-1").length).toBeGreaterThan(0);
     expect(screen.getByText("Rebook from manual-je-1")).toBeInTheDocument();
     expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Rebook");
@@ -4201,8 +4201,8 @@ describe("AccountingScreen", () => {
 
     await user.click(screen.getByRole("button", { name: "Lock after close" }));
 
-    expect(await screen.findByText("LockAfterClose recorded: Posted -> CloseLocked")).toBeInTheDocument();
-    expect(screen.getByText("LockAfterClose: Posted -> CloseLocked")).toBeInTheDocument();
+    expect(await screen.findByText("LockAfterClose recorded: Posted → CloseLocked")).toBeInTheDocument();
+    expect(screen.getByText("LockAfterClose: Posted → CloseLocked")).toBeInTheDocument();
     expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Locked");
     expect(screen.getByLabelText("Manual journal lifecycle checklist")).toHaveTextContent("Audit transitions");
     expect(api.applyManualJournalEntryLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({
@@ -4394,7 +4394,7 @@ describe("AccountingScreen", () => {
     expect(region).toHaveTextContent("Trace uses 1 fund event(s)");
     expect(region).toHaveTextContent("Statement lineage");
     expect(region).toHaveTextContent("capital-account-ending");
-    expect(region).toHaveTextContent("100.00 -> 125.00");
+    expect(region).toHaveTextContent("100.00 → 125.00");
     expect(region).toHaveTextContent("1 changed-line evidence");
     expect(region).toHaveTextContent("Audit drill-through");
     expect(region).toHaveTextContent("Live in v0.18 slice");
@@ -5439,8 +5439,8 @@ describe("AccountingScreen", () => {
     const conflictSummary = within(screen.getByLabelText("Explorer summary")).getByText("Open conflicts").parentElement;
     expect(conflictSummary).toHaveTextContent("1");
     expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("1 open");
-    expect(screen.getByText("Bloomberg -> security sec-1")).toBeInTheDocument();
-    expect(screen.getByText("Refinitiv -> security sec-2")).toBeInTheDocument();
+    expect(screen.getByText("Bloomberg → security sec-1")).toBeInTheDocument();
+    expect(screen.getByText("Refinitiv → security sec-2")).toBeInTheDocument();
 
     const useBloomberg = screen.getByRole("button", {
       name: "Resolve identifier conflict conflict-1 on identifiers.CUSIP with Bloomberg value sec-1"

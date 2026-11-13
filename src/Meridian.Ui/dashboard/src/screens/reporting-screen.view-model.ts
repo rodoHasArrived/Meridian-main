@@ -1223,7 +1223,7 @@ function buildRestatementChangedLineRow(line: ReportingWorkflowChangedLine, inde
   return {
     id: `${line.lineKey || "line"}-${index}`,
     lineKey: line.lineKey,
-    valueBridge: `${line.previousValue} -> ${line.currentValue}`,
+    valueBridge: `${line.previousValue} → ${line.currentValue}`,
     evidenceLabel: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref: firstEvidence?.route ?? null,
     ariaLabel: `${line.lineKey} changed from ${line.previousValue} to ${line.currentValue} with ${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`

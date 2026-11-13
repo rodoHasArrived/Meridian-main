@@ -1213,7 +1213,7 @@ function ApprovalTimelineRow({ entry }: { entry: OperationsTimelineEntry }) {
         <span className="font-semibold text-foreground">{splitApprovalWords(entry.eventType)}</span>
         <span className="font-mono text-[11px] text-muted-foreground">{formatApprovalDate(entry.occurredAtUtc)}</span>
       </div>
-      <p className="mt-1 text-muted-foreground">{entry.rationale || `${splitApprovalWords(entry.fromState)} -> ${splitApprovalWords(entry.toState)}`}</p>
+      <p className="mt-1 text-muted-foreground">{entry.rationale || `${splitApprovalWords(entry.fromState)} → ${splitApprovalWords(entry.toState)}`}</p>
       <div className="mt-2 text-[11px] text-muted-foreground">Evidence: {entry.references.length}</div>
       <TechnicalDetails label="Audit metadata" className="mt-2">
         <div className="grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">

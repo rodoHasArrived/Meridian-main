@@ -2598,7 +2598,7 @@ function buildParameterDiffRow(
   const key = formatText(item.key);
   const baseValueText = formatText(item.baseValue);
   const targetValueText = formatText(item.targetValue);
-  const valueText = `${baseValueText} -> ${targetValueText}`;
+  const valueText = `${baseValueText} → ${targetValueText}`;
 
   return {
     key,

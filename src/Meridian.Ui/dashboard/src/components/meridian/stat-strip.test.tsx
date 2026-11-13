@@ -216,7 +216,7 @@ describe("StatStrip", () => {
     expect(screen.getByTestId("stat-strip-provenance")).toHaveTextContent(/^Source: Data workspace$/);
   });
 
-  it("states an undeclared basis once for the strip, in non-failure words", () => {
+  it("does not print a basis line when no figure declares one", () => {
     render(
       <StatStrip
         label="Undeclared basis metrics"
@@ -228,15 +228,11 @@ describe("StatStrip", () => {
     );
 
     const strip = screen.getByLabelText("Undeclared basis metrics");
-    const basisTerms = within(strip).getAllByText("Basis", { selector: "dt" });
-    expect(basisTerms).toHaveLength(1);
-    expect(basisTerms[0]!.nextElementSibling).toHaveTextContent(/^Not declared by source$/);
-    expect(within(strip).getAllByText("Not declared by source")).toHaveLength(1);
+    expect(within(strip).queryByText("Basis", { selector: "dt" })).not.toBeInTheDocument();
+    expect(strip).not.toHaveTextContent(/not declared by source/i);
     expect(strip).not.toHaveTextContent(/unavailable/i);
-    expect(within(strip).queryByText(/^Basis not declared by source/)).not.toBeInTheDocument();
-    // The shared value is not self-describing, so each figure is described by term and value.
     for (const value of ["$1", "2"]) {
-      expect(within(strip).getByText(value).closest("dd")).toHaveAccessibleDescription("Basis Not declared by source");
+      expect(within(strip).getByText(value).closest("dd")).not.toHaveAttribute("aria-describedby");
     }
   });
 
@@ -267,7 +263,7 @@ describe("StatStrip", () => {
     }
   });
 
-  it("states each figure's own basis when the bases differ, naming an undeclared one", () => {
+  it("states each declared basis when the bases differ, without repeating an undeclared one", () => {
     render(
       <StatStrip
         label="Mixed basis metrics"
@@ -281,7 +277,7 @@ describe("StatStrip", () => {
     const strip = screen.getByLabelText("Mixed basis metrics");
     expect(within(strip).queryByText("Basis", { selector: "dt" })).not.toBeInTheDocument();
     expect(within(strip).getByText("Posted GAAP book")).toBeInTheDocument();
-    expect(within(strip).getByText("Basis not declared by source")).toBeInTheDocument();
+    expect(within(strip).queryByText("Basis not declared by source")).not.toBeInTheDocument();
     expect(within(strip).getByText("2").closest("dd")).not.toHaveAttribute("aria-describedby");
     expect(strip).not.toHaveTextContent(/unavailable/i);
   });

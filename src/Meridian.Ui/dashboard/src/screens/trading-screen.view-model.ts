@@ -234,6 +234,20 @@ export function useTradingScreenShellViewModel({
   );
 }
 
+/** The broker link in operator words; an unknown state says the status is unavailable. */
+export function describeBrokerConnection(connection: TradingWorkspaceResponse["brokerage"]["connection"] | undefined): string {
+  switch (connection) {
+    case "Connected":
+      return "Online";
+    case "Degraded":
+      return "Degraded";
+    case "Disconnected":
+      return "Offline";
+    default:
+      return "Status unavailable";
+  }
+}
+
 export function buildTradingScreenShellViewModel({
   pathname,
   data,
@@ -254,8 +268,7 @@ export function buildTradingScreenShellViewModel({
   const positionCount = data?.positions.length ?? 0;
   const openOrderCount = data?.openOrders.length ?? 0;
   const fillCount = data?.fills.length ?? 0;
-  const connection = data?.brokerage.connection ?? "Unavailable";
-  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : "None";
+  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : null;
 
   return {
     route: {
@@ -279,10 +292,12 @@ export function buildTradingScreenShellViewModel({
       statusText: activeWorkflowPanel
         ? `${activeLabel} panel open. Press Escape or the close button to return to the trading cockpit.`
         : "No workflow panel open.",
+      // Plain-language posture: the broker link reads as a sentence, and the open panel is only
+      // named while one is open (an always-on "Panel: None" reads like debug output).
       chips: [
         { label: "Positions", value: String(positionCount) },
-        { label: "Connection", value: connection },
-        { label: "Panel", value: activeLabel }
+        { label: "Broker", value: describeBrokerConnection(data?.brokerage.connection) },
+        ...(activeLabel ? [{ label: "Open panel", value: activeLabel }] : [])
       ],
       commands: [
         buildWorkflowCommand("strategy", activeWorkflowPanel),

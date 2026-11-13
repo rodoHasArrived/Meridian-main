@@ -2111,7 +2111,7 @@ describe("accounting-screen view model", () => {
       expectedAmountLabel: "126,250 USD",
       actualAmountLabel: "124,900 USD",
       varianceLabel: "-1,350 USD",
-      factorLabel: "1.000000 -> 0.900000",
+      factorLabel: "1.000000 → 0.900000",
       postingStatusLabel: "Variance review",
       postingStatusTone: "danger",
       selectAriaLabel: "Inspect schedule event Paydown for sec-1 on Nov 15, 2026",
@@ -2140,7 +2140,7 @@ describe("accounting-screen view model", () => {
       { label: "Expected", value: "126,250 USD" },
       { label: "Actual", value: "124,900 USD", tone: "default" },
       { label: "Variance", value: "-1,350 USD", tone: "danger" },
-      { label: "Factor", value: "1.000000 -> 0.900000" }
+      { label: "Factor", value: "1.000000 → 0.900000" }
     ]));
   });
 
@@ -2985,8 +2985,8 @@ describe("accounting-screen view model", () => {
       statusTone: "warning",
       isOpen: true,
       isResolving: true,
-      providerASummary: "Bloomberg -> security sec-1",
-      providerBSummary: "Refinitiv -> security sec-2",
+      providerASummary: "Bloomberg → security sec-1",
+      providerBSummary: "Refinitiv → security sec-2",
       detectedLabel: "Detected Jan 1, 2026",
       fieldLabel: "CUSIP identifier",
       resolutionStatusText: "Resolving identifier conflict conflict-1."

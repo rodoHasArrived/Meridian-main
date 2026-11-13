@@ -2181,7 +2181,7 @@ function buildStrategyBuilderTransitionViewModels(
     const to = cells.get(transition.toCellId) ?? transition.toCellId;
     return {
       ...transition,
-      label: `${from} -> ${to}`,
+      label: `${from} → ${to}`,
       status: hasError ? "blocked" : transition.kind === "loop" ? "warning" : "ready",
       statusLabel: hasError ? "Blocked" : transition.kind === "loop" ? "Guarded loop" : "Ready",
       detail: transition.kind === "loop"

@@ -12,7 +12,7 @@ import {
 import { resolveFigureEvidence, useWorkspaceFigureContext, type FigureSourceKey } from "@/lib/workspace-figure-context";
 import type { MetricFreshness, MetricSnapshot } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { metricBasisLabel, metricBasisValue, presentMetricChange } from "@/lib/metric-context";
+import { hasMetricBasisDetail, metricBasisLabel, metricBasisValue, presentMetricChange } from "@/lib/metric-context";
 import { useId } from "react";
 import { MetricPassport } from "@/components/meridian/metric-passport";
 
@@ -87,10 +87,13 @@ export function StatStrip({
         ? { ...metric, provenance: { ...metric.provenance, source: `${metric.provenance.source} (${dataLabel})` } }
         : metric)
     : stamped;
-  // The basis the figures share is stated once, beside a "Basis" term; an undeclared one reads
-  // "Not declared by source" there. Mixed bases fall back to a standalone line per figure.
+  // The basis the figures share is stated once, beside a "Basis" term. A basis nobody declared is
+  // not repeated on the strip (it said "Not declared by source" on every strip); each figure's
+  // passport still states it. Mixed bases fall back to a line per figure that declares one.
+  const anyBasisDetail = metrics.some(hasMetricBasisDetail);
   const firstBasis = metricBasisValue(metrics[0]!);
-  const sharedBasis = metrics.every(metric => metricBasisValue(metric) === firstBasis) ? firstBasis : null;
+  const basesAgree = metrics.every(metric => metricBasisValue(metric) === firstBasis);
+  const sharedBasis = anyBasisDetail && basesAgree ? firstBasis : null;
   // Each figure is described by the term and its value ("Basis Not declared by source"), since the
   // value alone does not say what it is.
   const sharedBasisDescription = sharedBasis ? `${basisTermId} ${basisId}` : undefined;
@@ -134,7 +137,7 @@ export function StatStrip({
                   {metric.value}
                 </span>
                 <MetricPassport metric={metric} />
-                {!sharedBasis ? <span className="text-xs text-muted-foreground">{metricBasisLabel(metric)}</span> : null}
+                {!basesAgree && hasMetricBasisDetail(metric) ? <span className="text-xs text-muted-foreground">{metricBasisLabel(metric)}</span> : null}
                 {trust.freshnessDetail ? <span className="sr-only">{trust.freshnessDetail}</span> : null}
                 {delta ? (
                   <span className="whitespace-nowrap text-xs text-muted-foreground">{delta}</span>

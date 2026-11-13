@@ -378,7 +378,7 @@ function buildCapitalAccountInvestorAccountRow(
     statusLabel: paymentEvidence.tone === "success" ? account.readinessLabel || account.readiness : "Cash support review",
     statusTone: paymentEvidence.tone === "success" ? capitalAccountReadinessTone(account.readiness) : "warning",
     netActivityLabel: formatCurrencyWithCode(account.netCapitalActivity, account.currency, true),
-    rollForwardLabel: `${formatCurrencyWithCode(account.openingNetActivity, account.currency, true)} opening -> ${formatCurrencyWithCode(account.endingNetActivity, account.currency, true)} ending`,
+    rollForwardLabel: `${formatCurrencyWithCode(account.openingNetActivity, account.currency, true)} opening → ${formatCurrencyWithCode(account.endingNetActivity, account.currency, true)} ending`,
     activityMixLabel: [
       `Contributions ${formatCurrencyWithCode(account.contributions, account.currency)}`,
       `Distributions ${formatCurrencyWithCode(account.distributions, account.currency)}`,
@@ -456,14 +456,14 @@ function buildCapitalAccountRestatementChangedLineRow(
   return {
     id: line.lineKey,
     lineKey: line.lineKey,
-    valueLabel: `${line.previousValue} -> ${line.currentValue}`,
+    valueLabel: `${line.previousValue} → ${line.currentValue}`,
     evidenceLabel: `${formatCount(line.evidenceLinkCount)} changed-line evidence`
   };
 }
 
 function formatCapitalAccountEffectiveWindow(from?: string | null, to?: string | null): string {
   if (from && to) {
-    return `${from} -> ${to}`;
+    return `${from} → ${to}`;
   }
 
   if (from) {

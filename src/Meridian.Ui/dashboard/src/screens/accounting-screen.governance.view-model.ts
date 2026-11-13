@@ -3213,7 +3213,7 @@ function buildAccountingProductionReadinessViewModel(
       ? gap.blockingIssueCodes.join(", ")
       : "No blocking issue codes",
     issueDetailLabel: (gap.issues ?? []).length > 0
-      ? (gap.issues ?? []).map((issue) => `${issue.code}: ${issue.message} -> ${issue.suggestedAction}`).join(" | ")
+      ? (gap.issues ?? []).map((issue) => `${issue.code}: ${issue.message} → ${issue.suggestedAction}`).join(" | ")
       : "No blocking issue details",
     routeLabel: gap.routes.length > 0
       ? gap.routes.join(", ")
@@ -4035,7 +4035,7 @@ function buildAccountingMigrationWorkerPlanRows(plans: AccountingMigrationRunWor
         title: plan.summary?.trim() || plan.planId,
         detail: dimensionScope ? `Dimensions ${dimensionScope}` : "No retained dimension envelope",
         kindLabel: formatMigrationRunKind(plan.kind),
-        countLabel: `${formatCount(plan.sourceRecordCount, "source record")} -> ${formatCount(plan.migratedRecordCount, "migrated record")}`,
+        countLabel: `${formatCount(plan.sourceRecordCount, "source record")} → ${formatCount(plan.migratedRecordCount, "migrated record")}`,
         evidenceLabel: `${plan.evidenceReferences.length} evidence reference${plan.evidenceReferences.length === 1 ? "" : "s"}`,
         scopeLabel: `Tenant ${plan.tenantId?.trim() || "context"} | company ${plan.companyId?.trim() || "context"} | fund ${plan.fundProfileId || "default-fund"} | book ${plan.ledgerBookId || "missing"}`,
         tone: reconciled ? "success" : "danger"
@@ -4606,7 +4606,7 @@ function resolveRulePolicyId(workspace: AccountingConfigurationWorkspace): strin
 
 function formatAccountingRuleCondition(condition: NonNullable<PostingRule["conditions"]>[number]): string {
   const value = condition.secondValue
-    ? `${condition.value ?? "missing"} -> ${condition.secondValue}`
+    ? `${condition.value ?? "missing"} → ${condition.secondValue}`
     : condition.value ?? "present";
   const required = condition.isRequired ? "required" : "optional";
   return `${condition.field} ${condition.operator} ${value} (${required})${condition.description ? ` - ${condition.description}` : ""}`;
@@ -4617,7 +4617,7 @@ function formatAccountingRuleConditionGroup(group: NonNullable<PostingRule["cond
   const conditions = group.conditions.length > 0
     ? group.conditions.map(formatAccountingRuleCondition).join("; ")
     : "no child predicates";
-  return `${group.groupId}: ${group.operator} (${required}) -> ${conditions}${group.description ? ` - ${group.description}` : ""}`;
+  return `${group.groupId}: ${group.operator} (${required}) → ${conditions}${group.description ? ` - ${group.description}` : ""}`;
 }
 
 function formatAccountingRuleFormula(formula: NonNullable<PostingRule["formulas"]>[number]): string {
@@ -4626,7 +4626,7 @@ function formatAccountingRuleFormula(formula: NonNullable<PostingRule["formulas"
 
 function formatAllocationRule(allocation: AllocationRule): string {
   const scope = formatLedgerDimensionSet(allocation.targetDimensions).join(", ");
-  return `${allocation.allocationRuleId}: ${allocation.basis} weight ${allocation.weight}${allocation.formulaId ? ` via ${allocation.formulaId}` : ""}${scope ? ` -> ${scope}` : ""}`;
+  return `${allocation.allocationRuleId}: ${allocation.basis} weight ${allocation.weight}${allocation.formulaId ? ` via ${allocation.formulaId}` : ""}${scope ? ` → ${scope}` : ""}`;
 }
 
 function formatGeneratedPostingLine(line: GeneratedPostingLine): string {

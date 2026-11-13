@@ -233,7 +233,7 @@ export function formatManualJournalLifecycleTransition(
 
   return {
     id: transition.transitionId,
-    title: `${transition.action}: ${transition.fromStatus} -> ${transition.toStatus}`,
+    title: `${transition.action}: ${transition.fromStatus} → ${transition.toStatus}`,
     detail: `${transition.actor} / ${formatDateTimeLabel(transition.recordedAtUtc)}${transition.notes ? ` / ${transition.notes}` : ""}`,
     auditLabel: `Audit ${transition.transitionId}`,
     correlationLabel: transition.correlationId ? `Correlation ${transition.correlationId}` : "No correlation id retained",

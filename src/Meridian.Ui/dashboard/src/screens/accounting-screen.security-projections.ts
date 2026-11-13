@@ -572,7 +572,7 @@ export function buildSecuritySchedulesViewState({
 
 
 export function buildSecurityScheduleDetailViewState(row: SecurityScheduleRowViewModel): SecurityScheduleDetailViewState {
-  const accrualWindow = `${formatSecurityDate(row.accrualStartDate)} -> ${formatSecurityDate(row.accrualEndDate)}`;
+  const accrualWindow = `${formatSecurityDate(row.accrualStartDate)} → ${formatSecurityDate(row.accrualEndDate)}`;
   const varianceTone = scheduleVarianceTone(row.expectedAmount, row.actualAmount, row.postingStatus);
 
   return {
@@ -1444,7 +1444,7 @@ export function formatScheduleFactor(start: number | null, end: number | null): 
 
   const startLabel = start === null ? "—" : start.toFixed(6);
   const endLabel = end === null ? "—" : end.toFixed(6);
-  return `${startLabel} -> ${endLabel}`;
+  return `${startLabel} → ${endLabel}`;
 }
 
 

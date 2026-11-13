@@ -503,10 +503,6 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             <CardDescription>Review discrepancies, evidence, and permitted actions without leaving the queue.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <details className="text-xs text-muted-foreground">
-              <summary className="cursor-pointer">Keyboard shortcuts</summary>
-              <p className="mt-2">With a queue row focused: j/k or arrow keys move between rows; Enter opens evidence; a assigns to you; r opens resolution review; d opens dismissal review. Actions follow the case permissions and require the same rationale as the buttons. Escape returns to the queue.</p>
-            </details>
             <span className="sr-only" aria-live="polite">{reconciliation.statusAnnouncement}</span>
             {reconciliation.loadingText && (
               <p role="status" className="text-sm text-muted-foreground">{reconciliation.loadingText}</p>
@@ -638,7 +634,8 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
           <DialogHeader>
             <DialogTitle id="break-queue-shortcuts-title">Break queue shortcuts</DialogTitle>
             <DialogDescription id="break-queue-shortcuts-description">
-              These keys work while focus is in the break queue, outside text fields.
+              These keys work while focus is in the break queue, outside text fields. Actions follow the case
+              permissions and require the same rationale as the buttons.
             </DialogDescription>
           </DialogHeader>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">

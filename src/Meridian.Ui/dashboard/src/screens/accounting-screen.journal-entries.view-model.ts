@@ -223,7 +223,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     setValidatedDraftSignature(null);
     setSelectedLineId(result.journalEntry.lines[0]?.lineId ?? selectedLineId);
     setLifecycleCorrectionDrafts(generated);
-    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} -> ${result.transition.toStatus}`);
+    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} → ${result.transition.toStatus}`);
     setSavedDraftSignature(buildManualJournalEditableSignature(result.journalEntry));
     setLastSavedAtUtc(result.journalEntry.updatedAtUtc);
     setSaveState("saved");
@@ -1206,7 +1206,7 @@ export function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     effectiveDateLabel: record.effectiveDate,
     netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, true),
     grossActivityLabel: formatCurrencyWithCode(record.grossAmount, record.currency),
-    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, true)} opening -> ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, true)} ending`,
+    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, true)} opening → ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, true)} ending`,
     memoLabel: record.memo || record.journalEntryId,
     referenceLabel: [record.paymentIntentId, record.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || record.journalEntryId,
     paymentEvidenceLabel: paymentEvidence.label,

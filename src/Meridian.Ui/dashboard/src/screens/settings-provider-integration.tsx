@@ -1024,7 +1024,7 @@ export function ProviderIntegrationWorkbenchPanel({
           <div className="grid gap-2 md:grid-cols-2">
             {mappingPreview.length > 0 ? mappingPreview.slice(0, 4).map((mapping) => (
               <div key={`${mapping.capability}-${mapping.sourcePath}-${mapping.targetField}`} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-2 text-[11px] text-muted-foreground">
-                <span className="font-mono text-foreground">{mapping.sourcePath}</span> {" -> "} <span className="font-mono text-foreground">{mapping.targetField}</span> · {mapping.confidence}{mapping.required ? " · required" : ""}
+                <span className="font-mono text-foreground">{mapping.sourcePath}</span> {" → "} <span className="font-mono text-foreground">{mapping.targetField}</span> · {mapping.confidence}{mapping.required ? " · required" : ""}
               </div>
             )) : <p className="text-[11px] text-muted-foreground">No mapping rows for the selected capability.</p>}
           </div>
