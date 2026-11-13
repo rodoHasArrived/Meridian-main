@@ -20,7 +20,7 @@ namespace Meridian.Tests.Ui;
 /// each occurrence drafts its amount once from ledger inputs and consecutive occurrences never
 /// draft the same economics twice.
 /// </summary>
-public sealed class RecurringJournalCalculationTests : IDisposable
+public sealed partial class RecurringJournalCalculationTests : IDisposable
 {
     private const string Fund = "fund-calculated";
     private const string Tenant = "tenant-calculated";
@@ -682,10 +682,9 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     [InlineData("DirectLoan")]
     [InlineData("CertificateOfDeposit")]
     [InlineData("Deposit")]
-    [InlineData("StructuredCredit")]
     [InlineData("StructuredNote")]
     [InlineData("UnknownClass")]
-    public async Task FixedIncome_NonBondClass_BlocksBeforeDrafting(string assetClass)
+    public async Task FixedIncome_UnsupportedClass_BlocksBeforeDrafting(string assetClass)
     {
         await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
             new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position });
@@ -696,7 +695,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
 
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
-        result.Blockers.Should().ContainSingle().Which.Should().Contain("supports Bond only");
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("supports Bond and StructuredCredit only");
         (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
     }
 
@@ -818,7 +817,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         => $"evidence://{intent}/journal/{journalEntryId:D}/ledger-book/{Book:D}/tenant/{Tenant}/company/{Company}";
 
     private async Task SeedAsync(string kind, Dictionary<string, decimal> terms,
-        Dictionary<string, string>? identifiers = null, DateOnly? endsOn = null, LedgerLineDimensionSet? dimensions = null)
+        Dictionary<string, string>? identifiers = null, DateOnly? endsOn = null, LedgerLineDimensionSet? dimensions = null,
+        IReadOnlyList<JournalEvidenceReference>? sourceEvidence = null)
     {
         var store = new FileRecurringJournalStore(Path.Combine(_root, "recurring"));
         await store.InitializeAsync();
@@ -828,7 +828,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         await session.RegisterScheduleAsync(new RecurringJournalSchedule(ScheduleId, TemplateId, new LedgerBookKey(Fund, "Fund"),
             RecurringJournalCadence.Monthly, JanuaryEnd, "controller", Registered, terms, endsOn: endsOn ?? FebruaryEnd,
                 dimensions: dimensions),
-            Scope, [Source()], "controller", 0, Registered);
+            Scope, sourceEvidence ?? [Source()], "controller", 0, Registered);
     }
 
     private static FixedAssetRegisterEntry Asset(Guid id, string name, decimal cost, int months, DateOnly inService)
@@ -838,6 +838,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     private static ISecurityMasterQueryService Securities(string currency, string assetClass)
     {
         var service = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
+        service.Setup(value => value.GetByIdAsOfAsync(SecurityId, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((SecurityDetailDto?)null);
         service.Setup(value => value.GetByIdAsync(SecurityId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new SecurityDetailDto(SecurityId, assetClass, SecurityStatusDto.Active, Ticker, currency, default, default, [], [], 1,
                 Registered, null));
@@ -847,7 +849,9 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     private async Task<Fixture> CreateFixtureAsync(IReconciliationFxRateProvider? rates = null,
         IReadOnlyList<LedgerTaxLot>? lots = null, ISecurityMasterCashFlowService? cashFlows = null,
         IFixedAssetRegister? assets = null, string bondCurrency = "USD",
-        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null, string assetClass = "Bond")
+        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null, string assetClass = "Bond",
+        IReadOnlyList<FaceValueAccrualHolding>? accrualHoldings = null, Exception? accrualReadFailure = null,
+        ISecurityMasterQueryService? securities = null)
     {
         var configuration = new InMemoryAccountingConfigurationStore();
         await configuration.SaveAsync(new AccountingConfigurationWorkspaceDto(Fund, Book,
@@ -872,13 +876,32 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         var configurationService = new AccountingConfigurationService(configuration, audit);
         var drafts = new FileManualJournalEntryDraftStore(Path.Combine(_root, "drafts.json"));
         var journal = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
+        var posted = new List<LedgerJournalEntryRecord>();
+        var postingLookup = journal.As<ILedgerPostingIdentityCollisionLookup>();
+        postingLookup.Setup(value => value.FindPostingIdentityCollisionsAsync(It.IsAny<LedgerPostingIdentity>(), It.IsAny<CancellationToken>()))
+            .Returns((LedgerPostingIdentity _, CancellationToken _) => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(posted.ToArray()));
+        journal.Setup(value => value.GetLedgerBookAsync(Book, It.IsAny<CancellationToken>())).ReturnsAsync(
+            new LedgerBookRecord(Book, Fund, Guid.Parse("11223344-1122-3344-5566-778899aabbcc"),
+                Meridian.Contracts.FundStructure.FundStructureNodeKindDto.Entity, "Calculated accrual book", "USD", Registered, Registered));
+        journal.Setup(value => value.AppendAsync(It.IsAny<LedgerJournalEntryWrite>(), It.IsAny<CancellationToken>()))
+            .Returns((LedgerJournalEntryWrite raw, CancellationToken _) =>
+            {
+                var write = AccountingPostingCommandValidator.NormalizeAndValidate(raw);
+                posted.Add(new(write.Entry, write.AggregateId, write.PeriodId, write.CommandId, write.CorrelationId,
+                    posted.Count + 1, DateTimeOffset.UtcNow, write.AccountingBasis, write.AccountingPolicyId,
+                    write.AccountingPolicyVersion, write.RuleId, write.RuleVersion, write.SourceEventId,
+                    write.SourceJournalEntryId, write.PostingKind, write.AdjustmentApproval));
+                return Task.CompletedTask;
+            });
+        journal.Setup(value => value.GetByPeriodAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns((Guid period, CancellationToken _) => Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(posted.Where(row => row.PeriodId == period).ToArray()));
         journal.Setup(value => value.GetPeriodAsync(January, It.IsAny<CancellationToken>())).ReturnsAsync(Period(January, 1));
         journal.Setup(value => value.GetPeriodAsync(February, It.IsAny<CancellationToken>())).ReturnsAsync(Period(February, 2));
         var store = new FileRecurringJournalStore(Path.Combine(_root, "recurring"));
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configurationService, audit,
-            journalStore: journal.Object, recurringStore: store);
+            securityMasterQueryService: securities ?? Securities(bondCurrency, assetClass), journalStore: journal.Object, recurringStore: store);
         var intake = new AutomatedJournalDraftIntakeService(workbench, drafts, configurationService);
-        var inputs = new LedgerInputs(_ledger, lots ?? [], () => _ledgerReads++, lotsOn);
+        var inputs = new LedgerInputs(_ledger, lots ?? [], () => _ledgerReads++, lotsOn, accrualHoldings, accrualReadFailure);
         var cashFlowService = cashFlows ?? MonthlyCouponCashFlows();
         var runner = new RecurringJournalRunner(store, intake, drafts, new Periods(_closedMonths),
         [
@@ -888,10 +911,10 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new FixedAssetDepreciationCalculation(assets),
             new FixedIncomeAccrualCalculation(inputs,
                 new SecurityMasterAmortizationLedgerBridge(cashFlowService, NullLogger<SecurityMasterAmortizationLedgerBridge>.Instance),
-                cashFlowService, Securities(bondCurrency, assetClass)),
+                cashFlowService, securities ?? Securities(bondCurrency, assetClass)),
             new FxRevaluationCalculation(inputs, rates ?? Rates([]))
         ]);
-        return new(runner, drafts, workbench, inputs);
+        return new(runner, drafts, workbench, inputs, posted);
     }
 
     private static LedgerAccountingPeriod Period(Guid id, int month)
@@ -904,7 +927,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         "fund-terms", "document-vault", Registered.AddDays(-1), "records-controller", ContentHash: new string('b', 64), EvidenceVersion: 1);
 
     private sealed record Fixture(RecurringJournalRunner Runner, FileManualJournalEntryDraftStore Drafts,
-        ManualJournalEntryWorkbenchService Workbench, LedgerInputs Inputs);
+        ManualJournalEntryWorkbenchService Workbench, LedgerInputs Inputs, IReadOnlyList<LedgerJournalEntryRecord> Posted);
 
     private sealed class Periods(HashSet<int> closedMonths) : IRecurringJournalPeriodAuthority
     {
@@ -919,7 +942,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     private sealed class LedgerInputs(DomainLedger ledger, IReadOnlyList<LedgerTaxLot> lots, Action onLedgerRead,
-        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null) : IRecurringJournalCalculationInputs
+        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null,
+        IReadOnlyList<FaceValueAccrualHolding>? accrualHoldings = null, Exception? accrualReadFailure = null) : IRecurringJournalCalculationInputs
     {
         public Task<IReadOnlyLedger> HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct)
         {
@@ -930,6 +954,13 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         public Task<IReadOnlyList<LedgerTaxLot>> ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId,
             Guid? bookPositionId, DateOnly asOf, CancellationToken ct)
             => Task.FromResult(lotsOn?.Invoke(asOf) ?? lots);
+
+        public Task<IReadOnlyList<FaceValueAccrualHolding>> ListAccrualHoldingsAsync(RecurringJournalScope scope,
+            Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct)
+            => accrualReadFailure is not null
+                ? Task.FromException<IReadOnlyList<FaceValueAccrualHolding>>(accrualReadFailure)
+                : Task.FromResult<IReadOnlyList<FaceValueAccrualHolding>>(
+                    (accrualHoldings ?? []).Where(holding => holding.Date >= from && holding.Date <= through).ToArray());
     }
 
     private static TableReconciliationFxRateProvider Rates(IEnumerable<ReconciliationFxQuote> quotes)

@@ -103,6 +103,12 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
   }
 
   const proposal = detail?.proposals.find(item => item.state === "Draft" || item.state === "Submitted");
+  const createDisabledReason = busy ? "Wait for the current agreement request to finish."
+    : loading ? "Wait for the agreement registry to finish loading."
+    : editor ? "Save or cancel the open agreement draft before starting another."
+    : !list ? "Refresh the agreement registry to check whether you can create a draft."
+    : list.canCreate !== true ? "Agreement draft creation is not available for your current access."
+    : null;
   function propose(action: "Amend" | "Terminate") {
     const source = detail!.applicableRevision ?? [...detail!.revisions].filter(item => item.action !== "Terminate" && item.terms.effectiveFrom <= (query.asOf ?? asOf))
       .sort((a, b) => b.terms.effectiveFrom.localeCompare(a.terms.effectiveFrom) || b.agreementVersion - a.agreementVersion)[0];
@@ -126,7 +132,7 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
         </FormGrid>
         <div className="flex flex-wrap gap-2"><Button variant="outline" type="submit" disabled={loading || busy || Boolean(editor)}>Apply agreement filters</Button>
           <Button variant="outline" type="button" disabled={loading || busy || Boolean(editor)} onClick={() => { setDetail(null); setReload(value => value + 1); }}>Refresh agreements</Button>
-          <Button type="button" disabled={busy || loading || Boolean(editor) || list?.canCreate !== true} onClick={() => {
+          <Button type="button" disabled={createDisabledReason !== null} disabledReason={createDisabledReason} onClick={() => {
             setDetail(null); setEditor({ agreementId: crypto.randomUUID(), proposalId: crypto.randomUUID(), mutation: "create", fixedIdentity: false, initial: newAgreementDraft(query.entityId ?? "", query.asOf ?? asOf) });
           }}>New agreement draft</Button></div>
       </form>

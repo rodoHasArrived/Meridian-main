@@ -34,6 +34,11 @@ leases and retains an immutable receipt. Every booked append, including ambient 
 and atomic lot posting, requires a matching posting-authority scope retained through commit.
 Controlled-close authorizations bind an approved draft's economics, evidence and version;
 they permit no edits to posted journals. Unmapped historical periods retain explicit warnings.
+`ListTaxLotAccrualSnapshotsAsync` reads one tenant/book/security/position scope under repeatable
+read. It reconstructs daily open shares and pre-paydown interest factors from retained mutations,
+including the final interest day of a fully paid-down lot. It preserves same-day disposals and
+refuses incomplete quantity histories or missing acquisition face terms. The read does not
+change posted journals, lot facts or current concurrency versions.
 
 Ledger-period reopen and shared instrument-role approval validation reject reserved W14 preparer
 assertion references before governed writes. Instrument-role validation applies to both in-memory

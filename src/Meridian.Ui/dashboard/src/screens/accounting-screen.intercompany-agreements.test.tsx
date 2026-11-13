@@ -60,7 +60,9 @@ describe("IntercompanyAgreementsPanel", () => {
     await screen.findByText("An independent reviewer is required.");
     fireEvent.change(screen.getByLabelText("Review decision rationale"), { target: { value: "Self review" } });
     expect(screen.getByRole("button", { name: "Approve submitted terms" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "New agreement draft" })).toBeDisabled();
+    const create = screen.getByRole("button", { name: "New agreement draft" });
+    expect(create).toBeDisabled();
+    expect(create).toHaveAccessibleDescription("Agreement draft creation is not available for your current access.");
     expect(source.mutateIntercompanyAgreement).not.toHaveBeenCalled();
   });
 
@@ -87,7 +89,26 @@ describe("IntercompanyAgreementsPanel", () => {
     render(<IntercompanyAgreementsPanel services={source} />);
     await screen.findByText("The authoritative registry is offline.");
     expect(screen.queryByText("No authorized agreements match these filters.")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "New agreement draft" })).toBeDisabled();
+    const create = screen.getByRole("button", { name: "New agreement draft" });
+    expect(create).toBeDisabled();
+    expect(create).toHaveAccessibleDescription("Refresh the agreement registry to check whether you can create a draft.");
+  });
+
+  it("explains loading and open-draft blockers and clears the reason when creation becomes available", async () => {
+    const source = services();
+    render(<IntercompanyAgreementsPanel services={source} />);
+    const create = screen.getByRole("button", { name: "New agreement draft" });
+    expect(create).toBeDisabled();
+    expect(create).toHaveAccessibleDescription("Wait for the agreement registry to finish loading.");
+    await waitFor(() => expect(create).toBeEnabled());
+    expect(create).not.toHaveAttribute("aria-describedby");
+    fireEvent.click(create);
+    expect(create).toBeDisabled();
+    expect(create).toHaveAccessibleDescription("Save or cancel the open agreement draft before starting another.");
+    fireEvent.click(screen.getByRole("button", { name: "Discard local changes" }));
+    expect(create).toBeEnabled();
+    expect(create).not.toHaveAttribute("aria-describedby");
+    expect(source.mutateIntercompanyAgreement).not.toHaveBeenCalled();
   });
 
   it("cancels a pending mutation when the session-scoped panel unmounts", async () => {

@@ -167,7 +167,7 @@ public sealed class DeclaredRateUnitParityTests
             NullLogger<SecurityMasterCashFlowService>.Instance, receiptStore: receipts);
         var current = (await service.CaptureProjectionAsync(security.SecurityId, StructuredCashFlowScenario.Base,
             new BondCalculationContext(Cutoff, KnownAt: Cutoff)))!;
-        current.ModelVersion.Should().Be("bond-cash-flow-context-v4");
+        current.ModelVersion.Should().Be("bond-cash-flow-context-v5");
         current.Projection.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
         current.Projection.Schedule.Should().BeEmpty();
 

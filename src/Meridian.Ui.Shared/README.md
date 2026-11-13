@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui.Shared
@@ -73,10 +73,21 @@ cannot attach verified rate evidence. Observed fixings become forecasts only thr
 assumption. Treasury constant-maturity yields require an externally reviewed construction and
 explicit discount factors; the endpoint does not bootstrap them implicitly.
 
-Recurring fixed-income accrual reads explicit admission from the shared catalog (Bond only) and
-passes its quote convention to the shared bridge. Daily holding windows split on changes to the complete lot, including unit,
-multiplier and carrying inputs. Non-bond classes and factored lots remain blocked until their
-accounting behavior is supported; the bridge itself uses explicit lot exposure instead of par 100.
+Recurring fixed-income accrual explicitly admits Bond and StructuredCredit calculated fixed-rate
+schedules. Versioned interest segments retain the principal and factor that earned each coupon
+portion. The scoped ledger history read supplies daily `FaceValueLot` holdings from the coupon
+start, including closing disposals and the last interest day before a full principal paydown.
+The bridge applies each lot's open share and factor once; cumulative coupon rounding ties across
+accounting windows. Missing face terms, incomplete history, and source/lot factor disagreement
+block the calculation. The result is an approval draft, with principal cash movements excluded.
+The typed calculation captures a retained v5 receipt using the selected security version and
+passes that same projection to the bridge without another source read. Its receipt hash and model
+survive in the draft's structured recurring source evidence and evidence links across restart.
+Review and posting compare those exact bytes with the occurrence's independently retained digest;
+changing a receipt and recomputing only the draft digest cannot authorize it.
+External, floating and declared-schedule posting gates remain. Catalog admission does not resolve
+a missing rate unit: an undeclared non-zero Bond coupon still blocks, and a declared schedule
+remains outside posting until its existing evidence-retention and journal-identity gates are met.
 
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review

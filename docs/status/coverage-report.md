@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**10654 / 10654** items documented (**100.0%**) &mdash; Grade: **A**
+**10656 / 10656** items documented (**100.0%**) &mdash; Grade: **A**
 
 ```text
 [====================] 100.0%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 10093 | 10093 | 100.0% | A |
+| Public Classes / Interfaces | 10095 | 10095 | 100.0% | A |
 | API Endpoints | 408 | 408 | 100.0% | A |
 | Configuration Options | 142 | 142 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |

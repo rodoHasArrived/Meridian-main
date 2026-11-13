@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.FinancialOperations
@@ -294,6 +294,9 @@ recurring schedules and templates, exact source evidence, one claim per schedule
 and retained outcome history. A process-independent filesystem lease spans claim, intake and
 completion; retries preserve the deterministic draft identity. Changed definitions block existing
 claims until exact retained definitions are explicitly restored with an actor and reason.
+Calculated source additions also require a write-once evidence digest on the occurrence, retained
+independently of the journal draft. An unpinned pre-existing calculated draft requires trusted
+provenance repair; recovery cannot adopt its contents as authority.
 Initialization is explicit, and missing or corrupt initialized state fails closed. The runtime
 uses the existing PostgreSQL ledger for authoritative periods and governed reopens; the historical
 `FundAdministrationControlService` calendar and lock methods remain in-memory primitives, not

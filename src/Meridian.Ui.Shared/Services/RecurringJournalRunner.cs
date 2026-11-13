@@ -89,7 +89,7 @@ public sealed class RecurringJournalRunner(
                     }
                     var existing = await drafts.GetAsync(definition.Scope.FundProfileId, claim.DraftId, ct,
                         definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false);
-                    if (existing is null && claim.History.Any(h => h.State == RecurringOccurrenceState.Drafted))
+                    if (existing is null && (claim.DraftEvidenceDigest is not null || claim.History.Any(h => h.State == RecurringOccurrenceState.Drafted)))
                         throw new InvalidOperationException("The retained occurrence draft is missing. Restore durable draft state; automatic recreation is refused.");
                     // Amounts are calculated once, when the occurrence first becomes a draft. A
                     // retained draft is authoritative and is never recalculated on retry.
@@ -139,7 +139,27 @@ public sealed class RecurringJournalRunner(
                         } } }]
                         };
                     }
+                    var trustedEvidenceDigest = prepared.Drafts[0].Metadata.Tags![RecurringJournalEvidenceGuard.DigestTag];
+                    var preparedEvidence = RecurringJournalEvidenceGuard.Deserialize(prepared.Drafts[0].Metadata.Tags![RecurringJournalEvidenceGuard.EvidenceTag])
+                        ?? throw new InvalidOperationException("The trusted recurring intake evidence is unavailable.");
+                    var hasCalculatedSources = !definition.Evidence.SequenceEqual(preparedEvidence.SourceEvidence);
+                    if (existing is not null && (claim.DraftEvidenceDigest is not null || hasCalculatedSources))
+                    {
+                        if (claim.DraftEvidenceDigest is null || !Sha256Digest.FixedEquals(claim.DraftEvidenceDigest, trustedEvidenceDigest))
+                            throw new InvalidOperationException("The existing recurring calculation draft has no matching independent claim pin; restore trusted intake provenance before retrying.");
+                    }
                     var admitted = await intake.IntakeDraftsAsync(prepared, ct).ConfigureAwait(false);
+                    if (existing is null && hasCalculatedSources)
+                    {
+                        var saved = await drafts.GetAsync(definition.Scope.FundProfileId, claim.DraftId, ct,
+                            definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false)
+                            ?? throw new InvalidOperationException("The calculated recurring intake did not retain its draft.");
+                        if (saved.RecurringJournalEvidenceJson != prepared.Drafts[0].Metadata.Tags![RecurringJournalEvidenceGuard.EvidenceTag]
+                            || !Sha256Digest.FixedEquals(saved.RecurringJournalEvidenceDigest, trustedEvidenceDigest)
+                            || RecurringJournalEvidenceGuard.Validate(saved) is not null)
+                            throw new InvalidOperationException("The saved recurring draft differs from the trusted calculated intake evidence.");
+                        claim = await session.PinDraftEvidenceAsync(key, trustedEvidenceDigest, ct).ConfigureAwait(false);
+                    }
                     claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.Drafted, null,
                         period.PeriodId, null, null, now, ct).ConfigureAwait(false);
                     var ready = Result(claim, instant, null);
@@ -242,11 +262,16 @@ public sealed class RecurringJournalRunner(
         var scope = definition.Scope;
         var schedule = definition.Schedule.ToSchedule();
         var instant = new DateTimeOffset(claim.EffectiveDate.ToDateTime(schedule.PostingTime), TimeSpan.Zero);
+        // Calculations may retain additional immutable inputs, such as a cash-flow receipt.
+        // Freeze those references in the same recurring provenance document as the schedule's
+        // source evidence so they survive intake, restart, review and posting.
+        var sourceEvidence = definition.Evidence.Concat((calculated?.Metadata.EvidenceReferences ?? [])
+            .Where(reference => !definition.Evidence.Contains(reference)).Distinct()).ToArray();
         var evidence = new RecurringJournalEvidence(claim.OccurrenceKey, claim.DraftId,
             definition.ScheduleId, definition.Version, claim.TemplateDefinition.TemplateId, claim.TemplateDefinition.Version,
             RecurringJournalIdentity.SerializeSchedule(definition), RecurringJournalIdentity.SerializeTemplate(claim.TemplateDefinition),
             scope.FundProfileId, scope.LedgerBookId, scope.EntityId, scope.TenantId, scope.CompanyId,
-            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, definition.Evidence);
+            scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, sourceEvidence);
         var json = RecurringJournalEvidenceGuard.Serialize(evidence);
         var key = $"recurring|{claim.OccurrenceKey}";
         var recurringTags = new Dictionary<string, string>
@@ -255,7 +280,7 @@ public sealed class RecurringJournalRunner(
             [RecurringJournalEvidenceGuard.DigestTag] = Sha256Digest.ComputeUtf8(json)
         };
         var metadata = new JournalEntryMetadata(ActivityType: "RecurringJournal", LedgerBook: schedule.LedgerKey.LedgerBook,
-            EffectiveDate: claim.EffectiveDate, IdempotencyKey: key, EvidenceReferences: definition.Evidence,
+            EffectiveDate: claim.EffectiveDate, IdempotencyKey: key, EvidenceReferences: sourceEvidence,
             Tags: recurringTags);
         if (claim.TemplateDefinition.Template.Calculation is { } calculation)
         {
@@ -273,7 +298,7 @@ public sealed class RecurringJournalRunner(
                 LedgerBook = schedule.LedgerKey.LedgerBook,
                 EffectiveDate = claim.EffectiveDate,
                 IdempotencyKey = key,
-                EvidenceReferences = definition.Evidence,
+                EvidenceReferences = sourceEvidence,
                 Tags = tags
             };
             var calculatedEvent = (calculated?.Event ?? new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate,
@@ -284,7 +309,7 @@ public sealed class RecurringJournalRunner(
                 SourceEventId = claim.OccurrenceKey,
                 EffectiveDate = claim.EffectiveDate,
                 IdempotencyKey = key,
-                EvidenceReferences = definition.Evidence
+                EvidenceReferences = sourceEvidence
             };
             return new(scope.FundProfileId, scope.Currency,
                 // The schedule's dimensions fill whatever the calculation left unset on a line.

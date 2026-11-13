@@ -16,6 +16,10 @@ source provenance on immutable journal legs. Null fields are omitted to preserve
 serialization. Reviewed legacy-attribution sidecars add missing historical identity without editing
 posted legs; consolidation output remains a separate reviewed overlay. See
 [the domain dictionary](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
+Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
+economic face represented by that quantity and retains decimal unit-cost precision; share rounding
+is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each
+split, factor, amortization, capital-return and wash-sale monetary transform.
 
 `JournalEntryMetadata.PreparerAttestation` retains the exact native cash-dividend preparer receipt,
 owner scope and posting fingerprints on the immutable journal for current and frozen report proof.
