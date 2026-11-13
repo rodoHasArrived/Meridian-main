@@ -6,10 +6,18 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Wpf
+
+Protected production and packaged/customer configuration persistence uses the shared provider-secret
+scanner before writing either the primary file or last-known-good copy. Startup also refuses a
+secret-bearing or unparseable retained generation before creating backups, recovery receipts or
+replacement files. Reviewed migration and purge of both generations precedes retry; unflagged
+development keeps its existing invalid-configuration recovery behavior. Owned provider credentials
+remain in the protected vault. Windows persistence, refusal and purge/retry fixtures live in
+`DesktopConfigurationRecoveryServiceTests`.
 
 The retained run ledger page offers an inclusive UTC date filter through the shared strategy-run read service. Clearing the picker restores the complete retained run. Delayed reads from an earlier run or date cannot overwrite the current selection. Journal, trial balance and posting counts use one economic-time cut.
 
