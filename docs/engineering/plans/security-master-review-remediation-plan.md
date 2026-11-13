@@ -120,7 +120,8 @@ Row classification, the WPF provenance composition and migration 062's independe
   give the pack registry an agreed typed purpose or preserve it as informational documentation.
   (Pack registry: informational disposition recorded 2026-11-04. On 2026-11-09 the built-in shared
   coverage was declared and checked, and the candidate overlap rule gained the planned axis; see the
-  D9 disposition in the review. Profile-to-class resolution and term roles remain open.)
+  D9 disposition in the review. Profile-to-class resolution closed in the 2026-11-10 close-out;
+  cash-flow term roles and the resolver's spellings closed 2026-11-13, see the review's D9 leftovers entry.)
 - Verify actual ledger/NAV/risk/client consumption of income, factor, corporate-action and
   unitized-lot capabilities with retained end-to-end examples. Keep override enrichment fields
   separate from economic-term fields.

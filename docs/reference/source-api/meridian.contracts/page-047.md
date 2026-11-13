@@ -813,7 +813,7 @@ public static partial class ScheduleTermsWriteRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1393](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1393).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1494](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1494).
 
 Whether, and how, an asset class takes part in the Security Master accounting slice.
 
@@ -825,15 +825,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1396](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1396) | No disposition is declared: a missing mapping, not a decision. |
-| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1399](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1399) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
-| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1402](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1402) | The class is intentionally outside the slice and must not reach any posting by fallback. |
+| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1497](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1497) | No disposition is declared: a missing mapping, not a decision. |
+| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1500](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1500) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
+| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1503](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1503) | The class is intentionally outside the slice and must not reach any posting by fallback. |
 
 ## SecurityAccountingInstrumentClasses
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1417](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1417).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1518](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1518).
 
 The closed vocabulary of accounting-slice instrument classes a Security Master record can post as. These are the values the Security Master accounting event slice gates on; keeping them here stops producers and that gate drifting on spelling.
 
@@ -845,8 +845,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1420](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1420) | Coupon-bearing and discount fixed income booked against par. |
-| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1423](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1423) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
+| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1521](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1521) | Coupon-bearing and discount fixed income booked against par. |
+| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1524](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1524) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
 
 ## SecurityAliasDto
 

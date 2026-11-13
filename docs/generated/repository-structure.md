@@ -6110,6 +6110,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsSchema.cs
 │   │   │   ├── SecurityCanonicalAssetHomes.cs
 │   │   │   ├── SecurityCashFlowCalculationReceipt.cs
+│   │   │   ├── SecurityCashFlowTermRoles.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityCurves.cs
 │   │   │   ├── SecurityDtos.cs
@@ -12024,6 +12025,7 @@ Meridian-main
 │   │   │   └── VerifiedOperationOutcomeTests.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── CorporateActionElectionCalendarTests.cs
+│   │   │   ├── SecurityCashFlowTermRoleTests.cs
 │   │   │   ├── SecurityListingIdentityTests.cs
 │   │   │   ├── SecurityMasterConflictFieldCategoriesTests.cs
 │   │   │   ├── SecurityMasterConflictRoutingTests.cs
