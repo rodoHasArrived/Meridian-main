@@ -11382,9 +11382,16 @@ Meridian-main
 │   │   │   │   ├── AccountingCloseViewModel.MutationAuthority.cs
 │   │   │   │   ├── AccountingCloseViewModel.WorkflowSelection.cs
 │   │   │   │   ├── AccountingConfigureViewModel.AssetDrafts.cs
+│   │   │   │   ├── AccountingConfigureViewModel.CapitalAccounts.cs
+│   │   │   │   ├── AccountingConfigureViewModel.ChartAndRules.cs
 │   │   │   │   ├── AccountingConfigureViewModel.cs
 │   │   │   │   ├── AccountingConfigureViewModel.EntityConsolidation.cs
+│   │   │   │   ├── AccountingConfigureViewModel.ExternalGl.cs
 │   │   │   │   ├── AccountingConfigureViewModel.GovernedQueues.cs
+│   │   │   │   ├── AccountingConfigureViewModel.ManualJournals.cs
+│   │   │   │   ├── AccountingConfigureViewModel.ProductionReadiness.cs
+│   │   │   │   ├── AccountingConfigureViewModel.Setup.cs
+│   │   │   │   ├── AccountingConfigureViewModel.TenantAdministration.cs
 │   │   │   │   ├── AccountingWorkbenchPresentation.cs
 │   │   │   │   ├── AccountingWorkbenchRow.cs
 │   │   │   │   ├── AuditChainIntegrityViewModel.cs
@@ -11496,10 +11503,16 @@ Meridian-main
 │   │   │   ├── SecurityMasterPresentation.cs
 │   │   │   ├── SecurityMasterViewModel.Assurance.cs
 │   │   │   ├── SecurityMasterViewModel.Authorization.cs
+│   │   │   ├── SecurityMasterViewModel.Conflicts.cs
+│   │   │   ├── SecurityMasterViewModel.CorporateActions.cs
 │   │   │   ├── SecurityMasterViewModel.cs
+│   │   │   ├── SecurityMasterViewModel.EditWorkflow.cs
 │   │   │   ├── SecurityMasterViewModel.Import.cs
+│   │   │   ├── SecurityMasterViewModel.OperatorWorkflow.cs
 │   │   │   ├── SecurityMasterViewModel.PolicyEvidence.cs
+│   │   │   ├── SecurityMasterViewModel.Search.cs
 │   │   │   ├── SecurityMasterViewModel.Sections.cs
+│   │   │   ├── SecurityMasterViewModel.SelectionDetail.cs
 │   │   │   ├── SecurityMasterViewModel.Services.cs
 │   │   │   ├── SecurityMasterViewModel.TextHelpers.cs
 │   │   │   ├── SecurityPassportEditorViewModel.cs

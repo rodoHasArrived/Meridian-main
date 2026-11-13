@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12422 |
-| Valid | 11940 |
+| Total code blocks | 12435 |
+| Valid | 11953 |
 | Invalid | 0 |
 | Skipped | 482 |
 
@@ -19,7 +19,7 @@
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 109 | 0 | 0 | 109 |
 | `bash` | 265 | 265 | 0 | 0 |
-| `csharp` | 11570 | 11570 | 0 | 0 |
+| `csharp` | 11583 | 11583 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -389,11 +389,11 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.wpf/page-008.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-009.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-010.md` | 52 |
-| `docs/reference/source-api/meridian.wpf/page-011.md` | 63 |
+| `docs/reference/source-api/meridian.wpf/page-011.md` | 70 |
 | `docs/reference/source-api/meridian.wpf/page-012.md` | 51 |
 | `docs/reference/source-api/meridian.wpf/page-013.md` | 57 |
 | `docs/reference/source-api/meridian.wpf/page-014.md` | 51 |
-| `docs/reference/source-api/meridian.wpf/page-015.md` | 56 |
+| `docs/reference/source-api/meridian.wpf/page-015.md` | 62 |
 | `docs/reference/source-api/meridian.wpf/page-016.md` | 61 |
 | `docs/reference/source-api/meridian.wpf/page-017.md` | 76 |
 | `docs/reference/source-api/meridian.wpf/page-018.md` | 77 |

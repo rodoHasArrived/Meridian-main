@@ -208,6 +208,13 @@ into child ViewModels, each taking a **non-nullable** dependency set. The option
 falling is the real win; the line count falling is a side effect.
 
 Note that size and coupling genuinely diverge here, which is the point of ordering by coupling.
+(2026-11-13: as a first, behavior-preserving step, `AccountingConfigureViewModel.cs` and
+`SecurityMasterViewModel.cs` were split along their existing partial-class pattern into topic partials
+(setup, tenant administration, production readiness, manual journals, external GL, chart and rules,
+capital accounts; edit workflow, search, selection detail, conflicts, corporate actions, operator
+workflow). That reduces file size only; the child-ViewModel split with non-nullable dependency sets
+described above is still open.)
+
 `SecurityMasterViewModel` is the second-largest file in the table and the *least* coupled of the
 four — 12 constructor parameters, one of them optional. It is a big class, not a tangled one, so it
 belongs in a size-driven pass rather than this one. `MainPageViewModel` is the smallest of the four
