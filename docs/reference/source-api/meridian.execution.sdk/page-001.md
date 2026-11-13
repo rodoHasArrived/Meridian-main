@@ -6,11 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IRiskPreviewValidator
+
+Qualified name: <code>Meridian.Execution.IRiskPreviewValidator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution.Sdk/IRiskValidator.cs:6](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L6).
+
+Observation-only evaluation. Must not reserve capacity or change execution controls.
+
+```csharp
+public interface IRiskPreviewValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;RiskValidationResult&gt; PreviewResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:8](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L8) |  |
+
 ## IRiskValidator
 
 Qualified name: <code>Meridian.Execution.IRiskValidator</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IRiskValidator.cs:8](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L8).
+Source: [src/Meridian.Execution.Sdk/IRiskValidator.cs:14](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L14).
 
 Pre-trade risk validation. Called by the OMS before routing orders to the gateway.
 
@@ -22,8 +40,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;RiskValidationResult&gt; ValidateResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:15](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L15) | Validates a new submission after structural validation and gateway sizing resolution. Existing validators and rules retain their request contract through this adapter. Reservation ownership is identical to ValidateOrderAsync. |
-| <code>Task&lt;RiskValidationResult&gt; ValidateOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:32](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L32) | Validates an order against risk rules. The returned result carries ownership of any capacity a stateful rule reserved while reaching the decision, so the caller can settle it at the routing boundary. Passing the risk gate is not the same as being routed — client-order-id registration, journaling, or gateway submission can still fail afterwards — so committing inside the validator would consume capacity for orders that never reach a venue. See RiskValidationResult.Reservations. |
+| <code>Task&lt;RiskValidationResult&gt; ValidateResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:21](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L21) | Validates a new submission after structural validation and gateway sizing resolution. Existing validators and rules retain their request contract through this adapter. Reservation ownership is identical to ValidateOrderAsync. |
+| <code>Task&lt;RiskValidationResult&gt; ValidateOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:38](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L38) | Validates an order against risk rules. The returned result carries ownership of any capacity a stateful rule reserved while reaching the decision, so the caller can settle it at the routing boundary. Passing the risk gate is not the same as being routed — client-order-id registration, journaling, or gateway submission can still fail afterwards — so committing inside the validator would consume capacity for orders that never reach a venue. See RiskValidationResult.Reservations. |
 
 ## LogSanitizer
 
@@ -47,7 +65,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.RiskValidationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IRiskValidator.cs:36](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L36).
+Source: [src/Meridian.Execution.Sdk/IRiskValidator.cs:42](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L42).
 
 Result of a risk validation check.
 
@@ -59,28 +77,28 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required bool IsApproved { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:57](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L57) | True when the order may route. Fails closed against the rest of its own state. A caller that asserts approval while carrying an RiskRuleSeverity.Error or RiskRuleSeverity.Critical violation — or while asking for governed approval via RequiresApproval — is contradicting itself, and the OMS routes on this property alone. Deriving the conjunction rather than trusting the flag makes those combinations unrepresentable through every construction path, including the object initializers and with expressions this type is built with. Sealing construction behind factories would only cover the paths the factories own. |
-| <code>public string? RejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:65](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L65) |  |
-| <code>public string? Code { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:72](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L72) | Stable SCREAMING_SNAKE identifier for the breach, e.g. ORDER_NOTIONAL_EXCEEDED. Carried alongside RejectReason so audit and operator surfaces can attribute a decision without parsing the rendered sentence. |
-| <code>public decimal? ObservedValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:75](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L75) | What the rule measured, when expressible as a number. |
-| <code>public decimal? LimitValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:78](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L78) | What the rule measured against, when expressible as a number. |
-| <code>public bool RequiresApproval { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:85](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L85) | When true the order was not hard-rejected: it should be (or has been) parked for governed operator approval instead of routed. IsApproved stays false so callers that only check approval fail closed. |
-| <code>public string? EscalationId { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:90](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L90) | Identifier of the parked escalation entry when the order was parked for governed approval. |
-| <code>public IReadOnlyList&lt;string&gt; Warnings { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:96](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L96) | Non-blocking rule breaches surfaced alongside an approved (or rejected) order, e.g. warning-severity rule failures or concentration observe-band notices. |
-| <code>public IReadOnlyList&lt;RiskViolation&gt; Violations { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:112](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L112) | Every breach the evaluation recorded, attributed to the rule that raised it and ordered by severity descending, then by the declaring rule&#x27;s priority ascending. Structured counterpart to Warnings. A rule-level result carries at most its own breach; the aggregate the validator returns carries every rule&#x27;s. Populated on the rejected path too, which is what lets an order ticket show all of an order&#x27;s breaches rather than only the first one that blocked. |
-| <code>public IReadOnlyList&lt;IRiskReservation&gt; Reservations { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:127](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L127) | Capacity a stateful rule reserved while reaching this decision, transferred to the caller. Empty when no rule reserved anything. The caller must settle these exactly once on every path — commit once the order is routed, roll back on any earlier failure. A leaked reservation permanently consumes capacity and eventually blocks every later order. |
-| <code>public string? ConsumedApprovalId { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:140](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L140) | When the approval consumed a one-shot governed release token, its escalation id. The OMS re-arms this approval only when submission provably fails before dispatch or the gateway definitively rejects without routing. Once gateway invocation begins, a fault is ambiguous and the token stays consumed so one operator decision cannot authorize a retry while the first submission may still execute. |
-| <code>public bool IsUnmeasurable { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:147](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L147) | When true the rule refused an order it could not measure rather than measuring a breach. A Critical rule&#x27;s breach halts the desk; its inability to price one order must not, or a stale feed becomes a trading halt. The order is still rejected. |
-| <code>public RiskDecisionKind Decision =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:154](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L154) | The aggregate verdict, derived from IsApproved, RequiresApproval, and whether any breach was recorded — never stored, so it cannot drift from the fields the OMS actually routes on. |
-| <code>public RiskViolation? BlockingViolation =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:165](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L165) | The violation that actually blocked the order. Selected by RiskViolation.IsBlocking rather than by position, so a non-blocking finding that happens to sort first can never be reported as the rejection reason. |
-| <code>public RiskDecisionSummary ToSummary() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:170](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L170) | Compact form for transport back to the submitter. |
-| <code>public void CommitReservations() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:176](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L176) | Keeps every reserved slot — the order routed. Idempotent, so overlapping settlement paths cannot double-count. |
-| <code>public void RollbackReservations() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:182](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L182) | Returns every reserved slot — nothing reached a venue. Idempotent, so overlapping settlement paths cannot double-release. |
-| <code>public static RiskValidationResult Approved() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:230](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L230) |  |
-| <code>public static RiskValidationResult Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:232](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L232) |  |
-| <code>public static RiskValidationResult Unmeasurable(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:240](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L240) | Rejects an order the rule could not value. Fails closed for this order without asserting the ceiling was breached, so a Critical rule does not trip the circuit breaker on a pricing gap. |
-| <code>public static RiskValidationResult ApprovedWithWarnings(params string[] warnings) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:244](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L244) | Approves the order while carrying non-blocking warning flags. |
-| <code>public static RiskValidationResult Escalated(string reason, string? escalationId = null) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:248](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L248) | Marks the order for governed approval rather than hard rejection. |
+| <code>public required bool IsApproved { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:63](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L63) | True when the order may route. Fails closed against the rest of its own state. A caller that asserts approval while carrying an RiskRuleSeverity.Error or RiskRuleSeverity.Critical violation — or while asking for governed approval via RequiresApproval — is contradicting itself, and the OMS routes on this property alone. Deriving the conjunction rather than trusting the flag makes those combinations unrepresentable through every construction path, including the object initializers and with expressions this type is built with. Sealing construction behind factories would only cover the paths the factories own. |
+| <code>public string? RejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:71](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L71) |  |
+| <code>public string? Code { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:78](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L78) | Stable SCREAMING_SNAKE identifier for the breach, e.g. ORDER_NOTIONAL_EXCEEDED. Carried alongside RejectReason so audit and operator surfaces can attribute a decision without parsing the rendered sentence. |
+| <code>public decimal? ObservedValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:81](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L81) | What the rule measured, when expressible as a number. |
+| <code>public decimal? LimitValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:84](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L84) | What the rule measured against, when expressible as a number. |
+| <code>public bool RequiresApproval { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:91](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L91) | When true the order was not hard-rejected: it should be (or has been) parked for governed operator approval instead of routed. IsApproved stays false so callers that only check approval fail closed. |
+| <code>public string? EscalationId { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:96](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L96) | Identifier of the parked escalation entry when the order was parked for governed approval. |
+| <code>public IReadOnlyList&lt;string&gt; Warnings { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:102](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L102) | Non-blocking rule breaches surfaced alongside an approved (or rejected) order, e.g. warning-severity rule failures or concentration observe-band notices. |
+| <code>public IReadOnlyList&lt;RiskViolation&gt; Violations { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:118](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L118) | Every breach the evaluation recorded, attributed to the rule that raised it and ordered by severity descending, then by the declaring rule&#x27;s priority ascending. Structured counterpart to Warnings. A rule-level result carries at most its own breach; the aggregate the validator returns carries every rule&#x27;s. Populated on the rejected path too, which is what lets an order ticket show all of an order&#x27;s breaches rather than only the first one that blocked. |
+| <code>public IReadOnlyList&lt;IRiskReservation&gt; Reservations { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:133](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L133) | Capacity a stateful rule reserved while reaching this decision, transferred to the caller. Empty when no rule reserved anything. The caller must settle these exactly once on every path — commit once the order is routed, roll back on any earlier failure. A leaked reservation permanently consumes capacity and eventually blocks every later order. |
+| <code>public string? ConsumedApprovalId { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:146](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L146) | When the approval consumed a one-shot governed release token, its escalation id. The OMS re-arms this approval only when submission provably fails before dispatch or the gateway definitively rejects without routing. Once gateway invocation begins, a fault is ambiguous and the token stays consumed so one operator decision cannot authorize a retry while the first submission may still execute. |
+| <code>public bool IsUnmeasurable { get; init; }</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:153](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L153) | When true the rule refused an order it could not measure rather than measuring a breach. A Critical rule&#x27;s breach halts the desk; its inability to price one order must not, or a stale feed becomes a trading halt. The order is still rejected. |
+| <code>public RiskDecisionKind Decision =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:160](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L160) | The aggregate verdict, derived from IsApproved, RequiresApproval, and whether any breach was recorded — never stored, so it cannot drift from the fields the OMS actually routes on. |
+| <code>public RiskViolation? BlockingViolation =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:171](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L171) | The violation that actually blocked the order. Selected by RiskViolation.IsBlocking rather than by position, so a non-blocking finding that happens to sort first can never be reported as the rejection reason. |
+| <code>public RiskDecisionSummary ToSummary() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:176](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L176) | Compact form for transport back to the submitter. |
+| <code>public void CommitReservations() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:182](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L182) | Keeps every reserved slot — the order routed. Idempotent, so overlapping settlement paths cannot double-count. |
+| <code>public void RollbackReservations() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:188](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L188) | Returns every reserved slot — nothing reached a venue. Idempotent, so overlapping settlement paths cannot double-release. |
+| <code>public static RiskValidationResult Approved() =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:236](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L236) |  |
+| <code>public static RiskValidationResult Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:238](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L238) |  |
+| <code>public static RiskValidationResult Unmeasurable(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:246](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L246) | Rejects an order the rule could not value. Fails closed for this order without asserting the ceiling was breached, so a Critical rule does not trip the circuit breaker on a pricing gap. |
+| <code>public static RiskValidationResult ApprovedWithWarnings(params string[] warnings) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:250](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L250) | Approves the order while carrying non-blocking warning flags. |
+| <code>public static RiskValidationResult Escalated(string reason, string? escalationId = null) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IRiskValidator.cs:254](../../../../src/Meridian.Execution.Sdk/IRiskValidator.cs#L254) | Marks the order for governed approval rather than hard rejection. |
 
 ## AccountInfo
 
@@ -98,28 +116,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required string AccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:151](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L151) | Account identifier at the broker. |
-| <code>public decimal Equity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:154](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L154) | Total equity value (cash + positions at mark). |
-| <code>public decimal Cash { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:157](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L157) | Available cash balance. |
-| <code>public decimal BuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:160](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L160) | Buying power available for new orders. |
-| <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:163](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L163) | Currency code (e.g., &quot;USD&quot;). |
-| <code>public string Status { get; init; } = &quot;active&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:166](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L166) | Account status (e.g., &quot;active&quot;, &quot;restricted&quot;). |
-| <code>public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:169](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L169) | Timestamp when this info was retrieved. |
-| <code>public decimal? MarginMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:172](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L172) | Provider-reported margin multiplier. One normally indicates a cash account. |
-| <code>public decimal? RegTBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:174](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L174) |  |
-| <code>public decimal? InitialMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:176](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L176) |  |
-| <code>public decimal? MaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:178](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L178) |  |
-| <code>public decimal? LastMaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:180](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L180) |  |
-| <code>public decimal? SpecialMemorandumAccount { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:182](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L182) |  |
-| <code>public decimal? LongMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:184](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L184) |  |
-| <code>public decimal? ShortMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:186](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L186) |  |
-| <code>public decimal? NonMarginableBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:188](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L188) |  |
-| <code>public bool TradingBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:190](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L190) |  |
-| <code>public bool TransfersBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:192](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L192) |  |
-| <code>public bool AccountBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:194](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L194) |  |
-| <code>public bool ShortingEnabled { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:196](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L196) |  |
-| <code>public int? OptionsApprovedLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:198](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L198) |  |
-| <code>public int? OptionsTradingLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:200](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L200) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PreviousCloseEquity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:152](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L152) | Provider-reported equity at the previous regular-session close; absent means unknown. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? EquityEvidenceComplete { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:155](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L155) | Whether the provider reported valid equity evidence, rather than a legacy numeric fallback. |
+| <code>public required string AccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:157](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L157) | Account identifier at the broker. |
+| <code>public decimal Equity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:160](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L160) | Total equity value (cash + positions at mark). |
+| <code>public decimal Cash { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:163](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L163) | Available cash balance. |
+| <code>public decimal BuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:166](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L166) | Buying power available for new orders. |
+| <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:169](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L169) | Currency code (e.g., &quot;USD&quot;). |
+| <code>public string Status { get; init; } = &quot;active&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:172](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L172) | Account status (e.g., &quot;active&quot;, &quot;restricted&quot;). |
+| <code>public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:175](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L175) | Timestamp when this info was retrieved. |
+| <code>public decimal? MarginMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:178](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L178) | Provider-reported margin multiplier. One normally indicates a cash account. |
+| <code>public decimal? RegTBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:180](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L180) |  |
+| <code>public decimal? InitialMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:182](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L182) |  |
+| <code>public decimal? MaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:184](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L184) |  |
+| <code>public decimal? LastMaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:186](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L186) |  |
+| <code>public decimal? SpecialMemorandumAccount { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:188](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L188) |  |
+| <code>public decimal? LongMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:190](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L190) |  |
+| <code>public decimal? ShortMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:192](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L192) |  |
+| <code>public decimal? NonMarginableBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:194](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L194) |  |
+| <code>public bool TradingBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:196](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L196) |  |
+| <code>public bool TransfersBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:198](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L198) |  |
+| <code>public bool AccountBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:200](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L200) |  |
+| <code>public bool ShortingEnabled { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:202](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L202) |  |
+| <code>public int? OptionsApprovedLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:204](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L204) |  |
+| <code>public int? OptionsTradingLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:206](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L206) |  |
 
 ## BracketOrderMetadata
 
@@ -661,7 +681,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerHealthStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:299](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L299).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:305](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L305).
 
 Health check result for a brokerage gateway.
 
@@ -673,13 +693,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required bool IsHealthy { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:302](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L302) | Whether the gateway is healthy and can accept orders. |
-| <code>public bool IsConnected { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:305](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L305) | Whether the connection to the broker is alive. |
-| <code>public bool? IsMarketOpen { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:308](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L308) | Whether the market is currently open for trading. |
-| <code>public string? Message { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:311](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L311) | Human-readable status message. |
-| <code>public DateTimeOffset CheckedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:314](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L314) | Timestamp of the health check. |
-| <code>public static BrokerHealthStatus Healthy(string? message = null) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:316](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L316) |  |
-| <code>public static BrokerHealthStatus Unhealthy(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:319](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L319) |  |
+| <code>public required bool IsHealthy { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:308](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L308) | Whether the gateway is healthy and can accept orders. |
+| <code>public bool IsConnected { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:311](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L311) | Whether the connection to the broker is alive. |
+| <code>public bool? IsMarketOpen { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:314](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L314) | Whether the market is currently open for trading. |
+| <code>public string? Message { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:317](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L317) | Human-readable status message. |
+| <code>public DateTimeOffset CheckedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:320](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L320) | Timestamp of the health check. |
+| <code>public static BrokerHealthStatus Healthy(string? message = null) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:322](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L322) |  |
+| <code>public static BrokerHealthStatus Unhealthy(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:325](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L325) |  |
 
 ## BrokerNotionalMetadata
 
@@ -704,7 +724,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerOrder</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:260](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L260).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:266](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L266).
 
 An open order at the broker.
 
@@ -716,23 +736,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:263](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L263) | Broker-assigned order ID. |
-| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:266](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L266) | Client-assigned order ID. |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:269](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L269) | Ticker symbol. |
-| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:272](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L272) | Order side. |
-| <code>public required OrderType Type { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:275](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L275) | Order type. |
-| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:278](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L278) | Total requested quantity. |
-| <code>public decimal FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:281](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L281) | Quantity filled so far. |
-| <code>public decimal? LimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:284](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L284) | Limit price (if applicable). |
-| <code>public decimal? StopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:287](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L287) | Stop price (if applicable). |
-| <code>public required OrderStatus Status { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:290](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L290) | Current order status. |
-| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:293](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L293) | When the order was created. |
+| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:269](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L269) | Broker-assigned order ID. |
+| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:272](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L272) | Client-assigned order ID. |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:275](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L275) | Ticker symbol. |
+| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:278](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L278) | Order side. |
+| <code>public required OrderType Type { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:281](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L281) | Order type. |
+| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:284](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L284) | Total requested quantity. |
+| <code>public decimal FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:287](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L287) | Quantity filled so far. |
+| <code>public decimal? LimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:290](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L290) | Limit price (if applicable). |
+| <code>public decimal? StopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:293](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L293) | Stop price (if applicable). |
+| <code>public required OrderStatus Status { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:296](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L296) | Current order status. |
+| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:299](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L299) | When the order was created. |
 
 ## BrokerPosition
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:206](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L206).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:212](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L212).
 
 A position held at the broker.
 
@@ -744,21 +764,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? PositionId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:209](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L209) | Stable provider-side identifier for this position. |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:212](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L212) | Ticker symbol. |
-| <code>public string? UnderlyingSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:215](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L215) | Underlying symbol for derivatives; defaults to Symbol for spot assets. |
-| <code>public string? Description { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:218](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L218) | Human-readable description suitable for blotter-style UIs. |
-| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:221](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L221) | Signed quantity (negative for short positions). |
-| <code>public decimal AverageEntryPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:224](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L224) | Average entry price. |
-| <code>public decimal MarketPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:227](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L227) | Current market price. |
-| <code>public decimal MarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:230](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L230) | Market value (absolute quantity * market price). |
-| <code>public decimal UnrealizedPnl { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:233](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L233) | Unrealized P&amp;L. |
-| <code>public string AssetClass { get; init; } = &quot;equity&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:236](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L236) | Asset class (e.g., &quot;equity&quot;, &quot;us_treasury&quot;, &quot;bond&quot;). |
-| <code>public DateOnly? Expiration { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:239](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L239) | Expiration date for derivative positions when available. |
-| <code>public decimal? Strike { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:242](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L242) | Strike price for option positions when available. |
-| <code>public string? Right { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:245](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L245) | Option right or derivative-side classification (e.g., &quot;call&quot;, &quot;put&quot;). |
-| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:248](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L248) | Provider-specific metadata required to manage the position. |
-| <code>public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:254](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L254) | Accrued interest for fixed income positions (bonds, treasuries). Null for non-fixed-income positions. |
+| <code>public string? PositionId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:215](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L215) | Stable provider-side identifier for this position. |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:218](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L218) | Ticker symbol. |
+| <code>public string? UnderlyingSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:221](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L221) | Underlying symbol for derivatives; defaults to Symbol for spot assets. |
+| <code>public string? Description { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:224](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L224) | Human-readable description suitable for blotter-style UIs. |
+| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:227](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L227) | Signed quantity (negative for short positions). |
+| <code>public decimal AverageEntryPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:230](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L230) | Average entry price. |
+| <code>public decimal MarketPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:233](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L233) | Current market price. |
+| <code>public decimal MarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:236](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L236) | Market value (absolute quantity * market price). |
+| <code>public decimal UnrealizedPnl { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:239](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L239) | Unrealized P&amp;L. |
+| <code>public string AssetClass { get; init; } = &quot;equity&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:242](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L242) | Asset class (e.g., &quot;equity&quot;, &quot;us_treasury&quot;, &quot;bond&quot;). |
+| <code>public DateOnly? Expiration { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:245](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L245) | Expiration date for derivative positions when available. |
+| <code>public decimal? Strike { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:248](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L248) | Strike price for option positions when available. |
+| <code>public string? Right { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:251](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L251) | Option right or derivative-side classification (e.g., &quot;call&quot;, &quot;put&quot;). |
+| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:254](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L254) | Provider-specific metadata required to manage the position. |
+| <code>public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:260](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L260) | Accrued interest for fixed income positions (bonds, treasuries). Null for non-fixed-income positions. |
 
 ## BrokerValidationGateOptions
 
@@ -900,7 +920,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Execution.Sdk.ExecutionDiagnostics</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/Models.cs:279](../../../../src/Meridian.Execution.Sdk/Models.cs#L279).
+Source: [src/Meridian.Execution.Sdk/Models.cs:281](../../../../src/Meridian.Execution.Sdk/Models.cs#L281).
 
 Normalized operational diagnostics derived from broker status/reject payloads.
 
@@ -912,12 +932,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? BrokerStatus { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:281](../../../../src/Meridian.Execution.Sdk/Models.cs#L281) |  |
-| <code>public string? BrokerRejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:282](../../../../src/Meridian.Execution.Sdk/Models.cs#L282) |  |
-| <code>public string? RejectCode { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:283](../../../../src/Meridian.Execution.Sdk/Models.cs#L283) |  |
-| <code>public string? Category { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:284](../../../../src/Meridian.Execution.Sdk/Models.cs#L284) |  |
-| <code>public string? Severity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:285](../../../../src/Meridian.Execution.Sdk/Models.cs#L285) |  |
-| <code>public string? RecommendedAction { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:286](../../../../src/Meridian.Execution.Sdk/Models.cs#L286) |  |
+| <code>public string? BrokerStatus { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:283](../../../../src/Meridian.Execution.Sdk/Models.cs#L283) |  |
+| <code>public string? BrokerRejectReason { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:284](../../../../src/Meridian.Execution.Sdk/Models.cs#L284) |  |
+| <code>public string? RejectCode { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:285](../../../../src/Meridian.Execution.Sdk/Models.cs#L285) |  |
+| <code>public string? Category { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:286](../../../../src/Meridian.Execution.Sdk/Models.cs#L286) |  |
+| <code>public string? Severity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:287](../../../../src/Meridian.Execution.Sdk/Models.cs#L287) |  |
+| <code>public string? RecommendedAction { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:288](../../../../src/Meridian.Execution.Sdk/Models.cs#L288) |  |
 
 ## ExecutionMode
 
@@ -938,23 +958,3 @@ Enum declarations:
 | <code>Paper</code> | [src/Meridian.Execution.Sdk/Models.cs:7](../../../../src/Meridian.Execution.Sdk/Models.cs#L7) | Orders are simulated locally (no broker connection). |
 | <code>Live</code> | [src/Meridian.Execution.Sdk/Models.cs:10](../../../../src/Meridian.Execution.Sdk/Models.cs#L10) | Orders are routed to a live broker for real execution. |
 | <code>Simulation</code> | [src/Meridian.Execution.Sdk/Models.cs:13](../../../../src/Meridian.Execution.Sdk/Models.cs#L13) | Orders are simulated using historical replay data. |
-
-## ExecutionOrderMetadataPolicy
-
-Qualified name: <code>Meridian.Execution.Sdk.ExecutionOrderMetadataPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:7](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L7).
-
-Defines server-owned order metadata keys that callers must not use to choose broker accounts or execution-control state.
-
-```csharp
-public static class ExecutionOrderMetadataPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool ContainsClientRejectedServerOwnedKey(IReadOnlyDictionary&lt;string, string&gt;? metadata) =&gt; …;</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:51](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L51) |  |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt;? RemoveClientRejectedServerOwnedKeys(IReadOnlyDictionary&lt;string, string&gt;? metadata) =&gt; …;</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:54](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L54) |  |
-| <code>public static OrderRequest RemoveServerOwnedRoutingKeys(OrderRequest request);</code> | [src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs:58](../../../../src/Meridian.Execution.Sdk/ExecutionOrderMetadataPolicy.cs#L58) |  |

@@ -21,6 +21,9 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// <summary>Key used for the default / backwards-compatible account.</summary>
     public const string DefaultAccountId = "default";
 
+    /// <summary>Identity of this in-memory book; a new portfolio starts a new economic history.</summary>
+    public Guid BookId { get; } = Guid.NewGuid();
+
     private readonly Meridian.Ledger.Ledger? _ledger;
     private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
     private readonly bool _scopeLedgerAccounts;

@@ -896,16 +896,16 @@ OtherSecurity, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, Com
 CryptoCurrency, Cfd, Warrant, FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption,
 CapFloor, StructuredNote.
 
-**Still hand-written (12 classes), and why.**
+**Still hand-written at this entry (12 classes), and why.**
 
-| Classes | What the generator lacks |
+| Classes | What the generator lacked |
 | --- | --- |
 | Deposit, CertificateOfDeposit, CommercialPaper, CashSweep | A module built by a helper or a vocabulary conversion (the scalar call module, the coupon-kind constant, the asset-backed flag, the sweep vehicle and frequency) |
 | Bond, Swap, DirectLoan, StructuredCredit, CommitmentGuarantee | Structural members: coupon structures, schedules, legs, covenants, the declared-schedule containers and their version gating |
 | Equity, InvestmentFund, CustomAsset | A bespoke classification decode, a pinned historical read order, and the verbatim profile document |
 
-The first group needs only a module-level row kind. The second needs the structural codecs
-named in the table. Neither is started.
+The first group needed only a module-level row kind; cohort 2 below adds it. The second needs
+the structural codecs named in the table, and is not started.
 
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 7,006 passed, 1 skipped (the 6,983 before, plus this suite's 23); adjacent suites —
@@ -913,6 +913,41 @@ namespaces — 7,006 passed, 1 skipped (the 6,983 before, plus this suite's 23);
 231 passed; `Meridian.Contracts.UnitTests` — 384 passed. `dotnet format whitespace
 --verify-no-changes` and schema-control verification pass. The full local `bash scripts/ci.sh`
 was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+#### Cohort 2 — the four classes built from helpers — 2026-11-12
+
+Deposit, CertificateOfDeposit, CommercialPaper and CashSweep now have both codec arms generated,
+so 24 of the 32 classes are generated. Three row kinds were added to the binding table, and
+nothing else about it changed:
+
+| Row | Meaning | Used by |
+| --- | --- | --- |
+| `Module` | A whole record field built by a helper expression (the scalar call module from `isCallable` or `callableDate`; the declared-schedule containers) | Deposit, CertificateOfDeposit |
+| `WrittenFrom` | A key the writer takes from a record property, read back by a `Module` row of the same field | Deposit `isCallable`, CertificateOfDeposit `callableDate` |
+| `Converted` | A member read through its own conversion and written from a record property (the asset-backed flag, the sweep vehicle and frequency) | CommercialPaper, CashSweep |
+
+A class can also be flagged as carrying the declared-schedule containers (ADR-024). Its decode
+then takes the versioned-terms decoding, and its writer writes the block and the call and put
+schedules from the version that declares them, exactly as the hand-written arm did. Only
+CertificateOfDeposit uses this so far; Bond and StructuredCredit will when their structural
+members are generated.
+
+To let the generated F# writer use the schedule payload helpers, `SecurityTermsWriteVersion`
+moved unchanged from `Interop.SecurityMaster.fs` into its own file, compiled ahead of the
+generated writer.
+
+The coverage test now excludes read-only schema fields (`AuthoringEnabled` false), which the codec
+never writes. `cashFlowContract`, declared read-only on CertificateOfDeposit since the cohort-1
+entry, is the first such field on a generated class.
+
+Behaviour is unchanged: no golden, corpus or fixture moved, and no existing test changed.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,059 passed, 1 skipped; adjacent suites — 5,145 passed, 134 skipped;
+`Meridian.FSharp.Tests` — 642 passed; `Meridian.Contracts.UnitTests` — 384 passed;
+`Meridian.FundStructure.Tests` — 231 passed. `dotnet format whitespace --verify-no-changes` and
+schema-control verification pass. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
 
 ### ADR-027 stage-3 — the codec-only validation remainder ends — 2026-11-11
 

@@ -38,7 +38,7 @@ public record CleanupHistoryRequest(int? MaxAgeDays = null);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1982](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1982).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1651](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1651).
 
 Request to clear an existing execution manual override.
 
@@ -50,7 +50,7 @@ public sealed record ClearExecutionManualOverrideRequest(string? Reason = null, 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1997](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1997).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1666](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1666).
 
 Legacy request alias preserved for older callers.
 
@@ -190,7 +190,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1972](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1972).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1641](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1641).
 
 Request to create an execution manual override.
 
@@ -212,7 +212,7 @@ public record CreateMaintenanceScheduleRequest(string Name, string? Description 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1987](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1987).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1656](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1656).
 
 Legacy request alias preserved for older callers.
 
@@ -224,7 +224,7 @@ public sealed record CreateManualOverrideCommandRequest(string Kind, string Reas
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1893](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1893).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1562](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1562).
 
 Request to create a new paper trading session.
 
@@ -605,7 +605,7 @@ public record ExecuteMaintenanceRequest(string TaskType, string[]? TargetPaths =
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionAccountSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1867](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1867).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1536](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1536).
 
 Account-level snapshot returned by the execution cockpit.
 
@@ -617,7 +617,7 @@ public sealed record ExecutionAccountSnapshot(decimal Cash, decimal PortfolioVal
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionCircuitBreakerActivationResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1915](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1915).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1584](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1584).
 
 Structured result returned by every Trading write action (cancel, close, pause, etc.). Carries a correlation ID so UI and backend audit logs can be cross-referenced.
 
@@ -629,7 +629,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ExecutionCircuitBreakerActivationResponse From(ExecutionControlSnapshot snapshot, KillSwitchSweepResult sweep) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1924](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1924) |  |
+| <code>public static ExecutionCircuitBreakerActivationResponse From(ExecutionControlSnapshot snapshot, KillSwitchSweepResult sweep) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1593](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1593) |  |
 
 ## ExecutionEndpoints
 
@@ -640,20 +640,32 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:23](../../../../
 REST endpoints for the paper-trading cockpit and execution dashboard. Exposes positions, orders, portfolio state, and gateway controls.
 
 ```csharp
-public static class ExecutionEndpoints
+public static partial class ExecutionEndpoints
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L25) |  |
+| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L27) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs#L14).
+
+```csharp
+public static partial class ExecutionEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs#L14).
+
+```csharp
+public static partial class ExecutionEndpoints
+```
 
 ## ExecutionGatewayHealth
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1885](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1885).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1554](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1554).
 
 Gateway health summary.
 
@@ -665,7 +677,7 @@ public sealed record ExecutionGatewayHealth(string BrokerName, string Mode, bool
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1876](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1876).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1545](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1545).
 
 Full portfolio snapshot including all positions.
 

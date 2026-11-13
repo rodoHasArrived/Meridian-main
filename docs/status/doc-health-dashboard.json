@@ -1,11 +1,11 @@
 {
-  "total_files": 1199,
+  "total_files": 1200,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 84,
-  "signal_digest": "sha256:68ff7ab37dc495e705b8df88b5e343eb7c07b0717a1fe2da650aa8a8a79df63f",
+  "signal_digest": "sha256:ab40d4111ad7453c22534965e9b1cc91e848751f9bb5fec331c0ca0aa89758ab",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2472,6 +2472,13 @@
     },
     {
       "path": "docs/engineering/etl-execution-ownership.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/execution-workflows.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

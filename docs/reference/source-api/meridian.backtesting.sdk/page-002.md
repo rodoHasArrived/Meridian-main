@@ -424,6 +424,50 @@ Enum declarations:
 | <code>YieldSpread</code> | [src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs:29](../../../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs#L29) | Yield-spread carry: expected return = asset yield − risk-free rate. Long high-spread assets; underweight (or skip) low/negative-spread assets. Best for dividend stocks, bond ETFs, REITs, and FX carry pairs. |
 | <code>YieldRotation</code> | [src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs:36](../../../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs#L36) | Yield rotation: ranks assets by yield each period; rotates into the top-quartile yielders and out of the bottom-quartile. Applies an additional momentum tilt when an asset&#x27;s yield has risen (price has compressed) relative to its 20-day average. |
 
+## IBacktestOrderTerminationObserver
+
+Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.IBacktestOrderTerminationObserver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:75](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L75).
+
+A terminal order without a complete fill must release a strategy&#x27;s pending intent.
+
+```csharp
+public interface IBacktestOrderTerminationObserver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void OnOrderTerminated(Guid orderId);</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:77](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L77) |  |
+
+## MovingAverageCrossoverStrategy
+
+Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.MovingAverageCrossoverStrategy</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:4](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L4).
+
+One deterministic long-only decision implementation for replay and paper execution.
+
+```csharp
+public sealed class MovingAverageCrossoverStrategy : BacktestStrategyBase, IBacktestOrderTerminationObserver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Version = &quot;sma-crossover-v1&quot;;</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:6](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L6) |  |
+| <code>public MovingAverageCrossoverStrategy(int fastPeriod = 10, int slowPeriod = 30, long quantity = 10, bool barBased = true);</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:16](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L16) |  |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:27](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L27) |  |
+| <code>public string InputMode =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:28](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L28) |  |
+| <code>public override void OnTrade(Trade trade, IBacktestContext ctx);</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:29](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L29) |  |
+| <code>public override void OnBar(HistoricalBar bar, IBacktestContext ctx);</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:31](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L31) |  |
+| <code>public override void OnOrderFill(FillEvent fill, IBacktestContext ctx);</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:58](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L58) |  |
+| <code>public void OrderTerminated(Guid orderId) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:70](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L70) |  |
+| <code>public void OnOrderTerminated(Guid orderId) =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs:71](../../../../src/Meridian.Backtesting.Sdk/Strategies/MovingAverageCrossoverStrategy.cs#L71) |  |
+
 ## BlackScholesCalculator
 
 Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.BlackScholesCalculator</code>. Kind: `class`.
@@ -824,27 +868,3 @@ Enum declarations:
 | <code>GoodTilCancelled</code> | [src/Meridian.Backtesting.Sdk/Order.cs:16](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L16) |  |
 | <code>ImmediateOrCancel</code> | [src/Meridian.Backtesting.Sdk/Order.cs:17](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L17) |  |
 | <code>FillOrKill</code> | [src/Meridian.Backtesting.Sdk/Order.cs:18](../../../../src/Meridian.Backtesting.Sdk/Order.cs#L18) |  |
-
-## TradeCashFlow
-
-Qualified name: <code>Meridian.Backtesting.Sdk.TradeCashFlow</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:10](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L10).
-
-Cash flow arising from executing a trade (buy or sell).
-
-```csharp
-public sealed record TradeCashFlow(DateTimeOffset Timestamp, decimal Amount, string Symbol, long Quantity, decimal Price, string? AccountId = null) : CashFlowEntry(Timestamp, Amount, AccountId);
-```
-
-## TradeTicket
-
-Qualified name: <code>Meridian.Backtesting.Sdk.TradeTicket</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/TradeTicket.cs:6](../../../../src/Meridian.Backtesting.Sdk/TradeTicket.cs#L6).
-
-Human-readable audit ticket that explains why a trading or asset-event cash movement occurred.
-
-```csharp
-public sealed record TradeTicket(Guid TicketId, DateTimeOffset Timestamp, string ActivityType, string? Symbol, string Narrative, decimal CashImpact, long? Quantity = null, decimal? UnitPrice = null, string? AccountId = null, Guid? OrderId = null, Guid? FillId = null);
-```

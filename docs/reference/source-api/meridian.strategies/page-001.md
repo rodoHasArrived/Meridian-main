@@ -439,7 +439,7 @@ Declared public members:
 | <code>public LiveStrategyCatalog RegisterFallback(LiveStrategyFallbackResolver fallback) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyCatalog.cs:93](../../../../src/Meridian.Strategies/Live/LiveStrategyCatalog.cs#L93) | Registers a fallback consulted (in registration order) when no factory id matches a run. This is how user-authored strategies reach live execution without a hand-written live twin. |
 | <code>public LiveStrategyCatalog RegisterFallback(string? selectorParameterKey, LiveStrategyFallbackResolver fallback);</code> | [src/Meridian.Strategies/Live/LiveStrategyCatalog.cs:104](../../../../src/Meridian.Strategies/Live/LiveStrategyCatalog.cs#L104) | Registers a fallback along with the run parameter whose presence means it owns the run. |
 | <code>public static LiveStrategyCatalog CreateDefault() =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyCatalog.cs:118](../../../../src/Meridian.Strategies/Live/LiveStrategyCatalog.cs#L118) | Creates a catalog pre-populated with the built-in reference strategies. |
-| <code>public bool TryCreate(string strategyId, IReadOnlyDictionary&lt;string, string&gt;? parameters, out ILiveStrategy? strategy, out string? failureReason);</code> | [src/Meridian.Strategies/Live/LiveStrategyCatalog.cs:129](../../../../src/Meridian.Strategies/Live/LiveStrategyCatalog.cs#L129) |  |
+| <code>public bool TryCreate(string strategyId, IReadOnlyDictionary&lt;string, string&gt;? parameters, out ILiveStrategy? strategy, out string? failureReason);</code> | [src/Meridian.Strategies/Live/LiveStrategyCatalog.cs:135](../../../../src/Meridian.Strategies/Live/LiveStrategyCatalog.cs#L135) |  |
 
 ## LiveStrategyCreationContext
 
@@ -579,25 +579,28 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Live.Strategies.MovingAverageCrossoverLiveStrategy</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:12](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L12).
+Source: [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:8](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L8).
 
-Concrete live strategy implementing a classic fast/slow simple-moving-average crossover: enters a long position when the fast average crosses above the slow average and exits when it crosses back below. Prices are taken from live trades (or bar closes when the feed is bar-based). One position per symbol; no shorting.
+Lifecycle wrapper over the same deterministic strategy used by backtests.
 
 ```csharp
-public sealed class MovingAverageCrossoverLiveStrategy : LiveStrategyBase
+public sealed class MovingAverageCrossoverLiveStrategy : LiveStrategyBase, ILiveOrderOutcomeObserver
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CatalogId = &quot;moving-average-crossover&quot;;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:14](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L14) |  |
-| <code>public MovingAverageCrossoverLiveStrategy(string? strategyId = null, int fastPeriod = 10, int slowPeriod = 30, long quantity = 10);</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:29](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L29) | Creates a moving-average crossover strategy. |
-| <code>public override string StrategyId =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:51](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L51) |  |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:54](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L54) |  |
-| <code>public override void OnTrade(Trade trade, IBacktestContext ctx) =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:57](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L57) |  |
-| <code>public override void OnBar(HistoricalBar bar, IBacktestContext ctx) =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:61](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L61) |  |
-| <code>public override void OnOrderFill(FillEvent fill, IBacktestContext ctx);</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:100](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L100) |  |
+| <code>public const string CatalogId = &quot;moving-average-crossover&quot;;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:10](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L10) |  |
+| <code>public MovingAverageCrossoverLiveStrategy(string? strategyId = null, int fastPeriod = 10, int slowPeriod = 30, long quantity = 10) : this(strategyId, fastPeriod, slowPeriod, quantity, barBased : false);</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:14](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L14) |  |
+| <code>public MovingAverageCrossoverLiveStrategy(string? strategyId, int fastPeriod, int slowPeriod, long quantity, bool barBased);</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:17](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L17) |  |
+| <code>public override string StrategyId =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:22](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L22) |  |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:23](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L23) |  |
+| <code>public override void Initialize(IBacktestContext ctx) =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:24](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L24) |  |
+| <code>public override void OnTrade(Trade trade, IBacktestContext ctx) =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:25](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L25) |  |
+| <code>public override void OnBar(HistoricalBar bar, IBacktestContext ctx) =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:26](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L26) |  |
+| <code>public override void OnOrderFill(FillEvent fill, IBacktestContext ctx) =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:27](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L27) |  |
+| <code>public void OnOrderTerminated(Guid orderId, LiveOrderOutcome outcome) =&gt; …;</code> | [src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs:28](../../../../src/Meridian.Strategies/Live/Strategies/MovingAverageCrossoverLiveStrategy.cs#L28) |  |
 
 ## PromotionTrustEvidence
 

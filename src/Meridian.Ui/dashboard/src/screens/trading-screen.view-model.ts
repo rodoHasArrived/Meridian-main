@@ -7,6 +7,7 @@ import {
   buildOrderTicketSubmitDisabledReason
 } from "./trading-screen.order-ticket-text";
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
+import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
@@ -51,6 +52,34 @@ import type {
   TradingRiskState,
   TradingWorkspaceResponse
 } from "@/types";
+
+import {
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  getPromotionEvidenceReferenceKey,
+  getPromotionEvidenceReferenceValue,
+  isLivePromotionTarget,
+  isPromotionEvaluationForRun,
+  parsePromotionEvidenceReferences,
+  selectPromotionEvaluationForRun,
+  trimPromotionGateForm,
+  validatePromotionApproval,
+  validatePromotionRejection,
+  type PromotionGateField,
+  type PromotionGateForm
+} from "./trading-screen.promotion-evidence";
+
+export {
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  livePromotionApprovalChecklist,
+  paperPromotionApprovalChecklist,
+  validatePromotionApproval,
+  validatePromotionRejection
+} from "./trading-screen.promotion-evidence";
+export type { PromotionGateField, PromotionGateForm } from "./trading-screen.promotion-evidence";
 
 export {
   formatReadinessStatusValue,
@@ -3155,7 +3184,10 @@ export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | 
 
 export interface OrderTicketServices {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+  previewOrder?: (request: OrderSubmitRequest, signal?: AbortSignal) => Promise<ServerOrderPreview>;
 }
+
+type OrderSubmissionIdentity = { account: string; id: string };
 
 export interface OrderTicketFieldControl {
   field: OrderTicketField;
@@ -3245,6 +3277,7 @@ export const emptyOrderTicketForm: OrderSubmitRequest = {
 };
 
 const defaultOrderTicketServices: OrderTicketServices = {
+  previewOrder: previewExecutionOrder,
   submitOrder: (request) => workstationApi.submitOrder(request)
 };
 
@@ -3283,6 +3316,41 @@ export function useOrderTicketViewModel({
     setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
   }
   const submittingRef = useRef(false);
+  const unconfirmedSubmissionRef = useRef<OrderSubmissionIdentity | null>(null);
+  const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<OrderSubmissionIdentity | null>(null);
+  const [serverPreview, setServerPreview] = useState<ServerOrderPreview | null>(null);
+  const [serverPreviewError, setServerPreviewError] = useState<string | null>(null);
+  const [serverPreviewLoading, setServerPreviewLoading] = useState(false);
+  const [sessionIntent, setSessionIntent] = useState<SessionIntent>("RegularOnly");
+  const [previewRevision, setPreviewRevision] = useState(0);
+  const [previewNow, setPreviewNow] = useState(Date.now());
+  const draftClientId = useRef<string | null>(null);
+  const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
+  const serverPreviewBlocked = unconfirmedSubmission !== null
+    || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
+  useEffect(() => {
+    setServerPreview(null); setServerPreviewError(null);
+    if (services.previewOrder) setAcknowledged(false);
+    draftClientId.current = null;
+  }, [form, fundAccountId, sessionIntent, services.previewOrder]);
+  useEffect(() => {
+    if (!open || !services.previewOrder || validateOrderTicketForm(form) || !normalizeFundAccountGuid(fundAccountId)) return;
+    const controller = new AbortController();
+    setServerPreviewLoading(true); setServerPreviewError(null);
+    const timer = window.setTimeout(() => {
+      draftClientId.current ??= `meridian-${crypto.randomUUID()}`;
+      void services.previewOrder!({ ...buildOrderSubmitRequest(form, fundAccountId), sessionIntent, clientOrderId: draftClientId.current }, controller.signal)
+        .then((result) => { if (!controller.signal.aborted) { setServerPreview(result); setAcknowledged(false); setPreviewNow(Date.now()); } })
+        .catch((error: unknown) => { if (!controller.signal.aborted) { setServerPreview(null); setServerPreviewError(toErrorMessage(error, "Authoritative preview is unavailable.")); } })
+        .finally(() => { if (!controller.signal.aborted) setServerPreviewLoading(false); });
+    }, 250);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [form, fundAccountId, open, services, sessionIntent, previewRevision]);
+  useEffect(() => {
+    if (!open || !services.previewOrder) return;
+    const timer = window.setInterval(() => setPreviewNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [open, services.previewOrder]);
 
   const resetEditor = useCallback(() => {
     setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
@@ -3383,7 +3451,7 @@ export function useOrderTicketViewModel({
   }, [onOrderAccepted]);
 
   const submitOrderTicket = useCallback(async () => {
-    if (phase === "submitting" || submittingRef.current) {
+    if (phase === "submitting" || submittingRef.current || unconfirmedSubmissionRef.current) {
       return;
     }
 
@@ -3402,6 +3470,14 @@ export function useOrderTicketViewModel({
       return;
     }
 
+    const request = buildOrderSubmitRequest(form, fundAccountId);
+    const clientOrderId = services.previewOrder ? draftClientId.current : null;
+    const submission = clientOrderId && request.fundAccountId ? { account: request.fundAccountId, id: clientOrderId } : null;
+    if (services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
+      setErrorText("Refresh and review the authoritative order checks before submitting.");
+      setAcknowledged(false);
+      return;
+    }
     submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
@@ -3409,8 +3485,15 @@ export function useOrderTicketViewModel({
     setRiskWarnings([]);
     setErrorText(null);
 
+    let refusal: string;
     try {
-      const result = await services.submitOrder(buildOrderSubmitRequest(form, fundAccountId));
+      const result = await services.submitOrder(submission ? { ...request, sessionIntent, clientOrderId: submission.id } : request);
+      if (typeof result?.success !== "boolean") {
+        throw new Error("Meridian did not confirm the order submission outcome.");
+      }
+      if (result.requiresOrderReconciliation) {
+        throw new Error(result.errorMessage ?? "Order submission requires reconciliation.");
+      }
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
@@ -3442,15 +3525,31 @@ export function useOrderTicketViewModel({
         return;
       }
 
-      setPhase("error");
-      setErrorText(result.errorMessage ?? result.reason ?? "Order failed.");
+      refusal = result.errorMessage ?? result.reason ?? "Order failed.";
     } catch (err) {
-      setPhase("error");
-      setErrorText(toErrorMessage(err, "Order submission failed."));
+      const confirmedRefusal = workstationApi.readOrderSubmissionRefusal(err);
+      if (submission && confirmedRefusal === null) {
+        unconfirmedSubmissionRef.current = submission;
+        setUnconfirmedSubmission(submission);
+        setPhase("error");
+        setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Refresh checks before another submission.`);
+        return;
+      }
+      refusal = confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services]);
+
+    if (submission && draftClientId.current === submission.id) {
+      // Retire the refused identity so its journal evidence cannot settle a later attempt.
+      draftClientId.current = null;
+      setServerPreview(null);
+      setAcknowledged(false);
+      setPreviewRevision((value) => value + 1);
+    }
+    setPhase("error");
+    setErrorText(refusal);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
     ...state,
@@ -3462,6 +3561,24 @@ export function useOrderTicketViewModel({
         : null
     },
     preview,
+    serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Refresh checks to inspect its retained outcome; do not resubmit.` : serverPreviewError,
+    serverPreviewLoading, serverPreviewExpired, sessionIntent,
+    setSessionIntent,
+    refreshServerPreview: () => {
+      const submission = unconfirmedSubmissionRef.current;
+      if (!submission) { setPreviewRevision((value) => value + 1); return; }
+      void getJournalOrder(submission.account, submission.id).then((order) => {
+        if (unconfirmedSubmissionRef.current !== submission || order.orderId !== submission.id
+          || !["Filled", "Cancelled", "Rejected", "Expired"].includes(order.status)) return;
+        unconfirmedSubmissionRef.current = null;
+        setUnconfirmedSubmission(null); setForm(emptyOrderTicketForm); setAcknowledged(false);
+        setOrderId(order.orderId); setPhase(order.status === "Filled" ? "submitted" : "error");
+        setErrorText(`Retained outcome for ${order.orderId}: ${order.status}. Review its journal before creating a new order.`);
+        void refreshAfterSettledOutcome();
+      }).catch(() => { /* Absence is not proof that nothing reached the broker. */ });
+    },
+    canSubmit: state.canSubmit && !serverPreviewBlocked,
+    submitDisabledReason: serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason,
     openTicket,
     closeTicket,
     toggleTicket,
@@ -4074,26 +4191,6 @@ function formatQuantity(value: number): string {
   return formatQuantityValue(Math.abs(value), { maxDecimals: 4 });
 }
 
-export type PromotionGateField =
-  | "runId"
-  | "approvedBy"
-  | "approvalReason"
-  | "rejectionReason"
-  | "reviewNotes"
-  | "manualOverrideId"
-  | "evidenceReferences";
-
-export interface PromotionGateForm {
-  runId: string;
-  approvedBy: string;
-  approvalReason: string;
-  rejectionReason: string;
-  reviewNotes: string;
-  manualOverrideId: string;
-  evidenceReferences: string;
-  approvalChecklist: string[];
-}
-
 export type PromotionGatePhase = "idle" | "evaluating" | "approving" | "rejecting";
 export type PromotionOutcomeLevel = "success" | "warning" | "danger";
 
@@ -4194,38 +4291,6 @@ export interface BuildPromotionGateStateOptions {
   evaluation: PromotionEvaluationResult | null;
   history: PromotionRecord[];
 }
-
-export const emptyPromotionGateForm: PromotionGateForm = {
-  runId: "",
-  approvedBy: "",
-  approvalReason: "",
-  rejectionReason: "",
-  reviewNotes: "",
-  manualOverrideId: "",
-  evidenceReferences: "",
-  approvalChecklist: []
-};
-
-export const paperPromotionApprovalChecklist: string[] = [
-  "DK1_TRUST_PACKET_REVIEWED",
-  "RUN_LINEAGE_REVIEWED",
-  "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
-  "RISK_CONTROLS_REVIEWED"
-];
-
-export const livePromotionApprovalChecklist: string[] = [
-  ...paperPromotionApprovalChecklist,
-  "PAPER_VALIDATION_REVIEWED",
-  "RECONCILIATION_EVIDENCE_REVIEWED",
-  "BROKER_EXECUTION_RECONCILIATION_REVIEWED",
-  "ACCOUNTING_RECORDS_REVIEWED",
-  "GOVERNED_REPORTING_REVIEWED",
-  "GOVERNANCE_SIGNOFF_REVIEWED",
-  "EXCEPTION_HANDLING_REVIEWED",
-  "ROLLBACK_KILL_SWITCH_REVIEWED",
-  "AUDIT_RETENTION_REVIEWED",
-  "LIVE_OVERRIDE_REVIEWED"
-];
 
 const defaultPromotionServices: PromotionGateServices = {
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
@@ -4806,132 +4871,6 @@ function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistory
   });
 }
 
-export function validatePromotionApproval(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null
-): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  if (!evaluation) {
-    return "Evaluate gate checks before confirming promotion.";
-  }
-
-  if (!isPromotionEvaluationForRun(evaluation, trimmedForm.runId)) {
-    return `Evaluate gate checks for ${trimmedForm.runId} before confirming promotion.`;
-  }
-
-  if (!evaluation.isEligible) {
-    return evaluation.blockingReasons?.[0] ?? evaluation.reason ?? "Promotion gate is blocked.";
-  }
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.approvalReason) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  const liveTarget = isLivePromotionTarget(evaluation);
-  const requiredChecklist = liveTarget
-    ? livePromotionApprovalChecklist
-    : paperPromotionApprovalChecklist;
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-
-  if (liveTarget) {
-    if (!trimmedForm.manualOverrideId) {
-      return "Live promotion approval requires an active AllowLivePromotion override id.";
-    }
-  }
-
-  const missingEvidence = getMissingPromotionEvidenceReferences(requiredChecklist, evidenceReferences);
-  if (missingEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are incomplete: ${missingEvidence.join(", ")}.`;
-  }
-
-  const invalidEvidence = getInvalidPromotionEvidenceReferences(
-    requiredChecklist,
-    evidenceReferences,
-    trimmedForm.manualOverrideId);
-  if (invalidEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are invalid: ${invalidEvidence.join(", ")}.`;
-  }
-
-  return null;
-}
-
-export function validatePromotionRejection(form: PromotionGateForm): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.rejectionReason) {
-    return "Run id, operator, and rejection reason are required.";
-  }
-
-  return null;
-}
-
-export function buildPromotionApprovalRequest(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null = null
-): ApprovePromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-  const approvalChecklist = evaluation
-    ? buildPromotionApprovalChecklistTokens(evaluation)
-    : trimmedForm.approvalChecklist;
-  return {
-    runId: trimmedForm.runId,
-    approvedBy: trimmedForm.approvedBy,
-    approvalReason: trimmedForm.approvalReason,
-    approvalChecklist: approvalChecklist.length > 0 ? approvalChecklist : undefined,
-    evidenceReferences: evidenceReferences.length > 0 ? evidenceReferences : undefined,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-export function buildPromotionRejectionRequest(form: PromotionGateForm): RejectPromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  return {
-    runId: trimmedForm.runId,
-    reason: trimmedForm.rejectionReason,
-    rejectedBy: trimmedForm.approvedBy,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
-  return {
-    runId: form.runId.trim(),
-    approvedBy: form.approvedBy.trim(),
-    approvalReason: form.approvalReason.trim(),
-    rejectionReason: form.rejectionReason.trim(),
-    reviewNotes: form.reviewNotes.trim(),
-    manualOverrideId: form.manualOverrideId.trim(),
-    evidenceReferences: form.evidenceReferences.trim(),
-    approvalChecklist: form.approvalChecklist
-  };
-}
-
-function selectPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult | null,
-  runId: string
-): PromotionEvaluationResult | null {
-  if (!evaluation || !isPromotionEvaluationForRun(evaluation, runId)) {
-    return null;
-  }
-
-  return evaluation;
-}
-
-function isPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult,
-  runId: string
-): boolean {
-  return Boolean(runId) && evaluation.runId === runId;
-}
-
 function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome {
   return {
     level: result.success ? "success" : "danger",
@@ -5195,75 +5134,6 @@ export function buildPromotionApprovalChecklist(
     ...item,
     ariaLabel: `${item.label}: ${item.status}${item.description ? `. ${item.description}` : ""}`
   }));
-}
-
-function buildPromotionApprovalChecklistTokens(evaluation: PromotionEvaluationResult | null): string[] {
-  return isLivePromotionTarget(evaluation)
-    ? livePromotionApprovalChecklist
-    : paperPromotionApprovalChecklist;
-}
-
-function parsePromotionEvidenceReferences(value: string): string[] {
-  return value
-    .split(/[\n,;]+/u)
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0)
-    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
-}
-
-function getMissingPromotionEvidenceReferences(requiredTokens: string[], evidenceReferences: string[]): string[] {
-  const evidenceKeys = new Set(evidenceReferences.map((reference) => getPromotionEvidenceReferenceKey(reference)));
-  return requiredTokens.filter((token) => !evidenceKeys.has(token));
-}
-
-function getInvalidPromotionEvidenceReferences(
-  requiredTokens: string[],
-  evidenceReferences: string[],
-  manualOverrideId: string
-): string[] {
-  return requiredTokens.flatMap((token) => {
-    const reference = evidenceReferences.find((item) => getPromotionEvidenceReferenceKey(item) === token);
-    if (!reference) {
-      return [];
-    }
-
-    const retainedReference = getPromotionEvidenceReferenceValue(reference);
-    if (!retainedReference) {
-      return [`${token} must include retained evidence after ':'`];
-    }
-
-    if (token === "LIVE_OVERRIDE_REVIEWED" && manualOverrideId && !containsPromotionEvidenceReferenceToken(retainedReference, manualOverrideId)) {
-      return [`${token} must reference active manual override ${manualOverrideId}`];
-    }
-
-    return [];
-  });
-}
-
-function getPromotionEvidenceReferenceKey(reference: string): string {
-  const [key] = reference.split(":", 1);
-  return key.trim().replace(/[ -]/gu, "_").toUpperCase();
-}
-
-function getPromotionEvidenceReferenceValue(reference: string): string {
-  const separatorIndex = reference.indexOf(":");
-  return separatorIndex < 0 ? "" : reference.slice(separatorIndex + 1).trim();
-}
-
-function containsPromotionEvidenceReferenceToken(referenceValue: string, token: string): boolean {
-  if (referenceValue.toLowerCase() === token.toLowerCase()) {
-    return true;
-  }
-
-  return referenceValue
-    .split(/[/\\#?&=,;\s]+/u)
-    .filter((segment) => segment.length > 0)
-    .some((segment) => segment.toLowerCase() === token.toLowerCase());
-}
-
-function isLivePromotionTarget(evaluation: PromotionEvaluationResult | null): boolean {
-  return typeof evaluation?.targetMode === "string" &&
-    evaluation.targetMode.trim().toLowerCase() === "live";
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {

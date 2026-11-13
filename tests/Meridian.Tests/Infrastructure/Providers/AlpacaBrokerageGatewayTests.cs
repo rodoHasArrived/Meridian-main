@@ -1611,6 +1611,9 @@ public sealed partial class AlpacaBrokerageGatewayTests
         activity.CashTransactions.Select(transaction => transaction.TransactionId)
             .Should()
             .BeEquivalentTo("at-start", "inside-window");
+        activity.Cursor!.SourceRecordCount.Should().Be(4, "retrieval evidence counts the provider rows before the half-open filter");
+        activity.Cursor.LastEventId.Should().Be("inside-window");
+        activity.Cursor.HighWatermark.Should().Be(since.AddDays(1));
         activityPaths.Should().ContainSingle();
         activityPaths[0].Should().Contain(
             $"after={Uri.EscapeDataString(since.AddTicks(-1).UtcDateTime.ToString("O"))}",
@@ -1625,8 +1628,10 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var activityPaths = new List<string>();
         var since = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
         var untilExclusive = new DateTimeOffset(2026, 7, 1, 0, 0, 0, TimeSpan.Zero);
+        // Alpaca's descending pages end at the oldest row, while the resume watermark
+        // must identify the newest retained source activity.
         var firstPage = Enumerable.Range(0, 100)
-            .Select(index => BuildActivityResponse($"activity-{index:D3}", since.AddMinutes(index)))
+            .Select(index => BuildActivityResponse($"activity-{index:D3}", since.AddMinutes(100 - index)))
             .ToArray();
         var handler = new CapturingStubHandler(
             request =>
@@ -1651,7 +1656,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
                 return request.RequestUri.Query.Contains("page_token=", StringComparison.Ordinal)
                     ? BuildJson(new[]
                     {
-                        BuildActivityResponse("activity-100", since.AddMinutes(100))
+                        BuildActivityResponse("activity-100", since)
                     })
                     : BuildJson(firstPage);
             });
@@ -1668,9 +1673,22 @@ public sealed partial class AlpacaBrokerageGatewayTests
         activity.Cursor.PageCount.Should().Be(2);
         activity.Cursor.SourceRecordCount.Should().Be(101);
         activity.Cursor.LastEventId.Should().NotBeNullOrWhiteSpace();
+        activity.Cursor.LastEventId.Should().Be("activity-000");
+        activity.Cursor.HighWatermark.Should().Be(since.AddMinutes(100));
         activityPaths.Should().HaveCount(2);
         activityPaths[1].Should().Contain(
             $"page_token={Uri.EscapeDataString("activity-099")}");
+    }
+
+    [Fact]
+    public async Task GetActivitySnapshotAsync_NullPageDoesNotCertifyCompleteEmptyHistory()
+    {
+        var handler = new CapturingStubHandler(_ => { }, request => request.RequestUri?.AbsolutePath == "/v2/account"
+            ? BuildAccountResponse() : request.RequestUri?.AbsolutePath == "/v2/account/activities"
+                ? new StringContent("null", System.Text.Encoding.UTF8, "application/json") : BuildJson(Array.Empty<object>()));
+        await using var sut = CreateSut(handler);
+        var read = () => sut.GetActivitySnapshotAsync("TEST123", DateTimeOffset.Parse("2026-11-10T00:00:00Z"), DateTimeOffset.Parse("2026-11-11T00:00:00Z"));
+        await read.Should().ThrowAsync<InvalidDataException>();
     }
 
     [Fact]

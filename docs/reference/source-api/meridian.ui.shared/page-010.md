@@ -86,6 +86,25 @@ Declared public members:
 | <code>public RiskValidationResult? TryEvaluate(OrderRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:29](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L29) |  |
 | <code>public Task&lt;RiskValidationResult&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:32](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L32) |  |
 
+## EquityOrderSessionPolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.EquityOrderSessionPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:10](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L10).
+
+Session admission for known US equities. Other instruments keep their existing policies.
+
+```csharp
+public sealed class EquityOrderSessionPolicy(ISecurityIdentityQueryService? securities = null, TimeProvider? clock = null) : IOrderSessionPolicy, IOrderInstrumentCoverageSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;bool&gt; IsUsdEquityAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:14](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L14) |  |
+| <code>public async Task&lt;OrderCheck&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:23](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L23) |  |
+
 ## EvidenceVaultAccountingProductionCertificationEvidenceAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Services.EvidenceVaultAccountingProductionCertificationEvidenceAuthority</code>. Kind: `class`.
@@ -106,6 +125,38 @@ Declared public members:
 | <code>public const string DimensionalLanesField = &quot;accounting.certification.dimensional-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:73](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L73) |  |
 | <code>public const string TenantAdministrationLanesField = &quot;accounting.certification.tenant-administration-lanes&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:74](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L74) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;AccountingCertificationEvidenceSource&gt;&gt; ResolveAsync(AccountingCertificationEvidenceResolutionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:76](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L76) |  |
+
+## ExecutionWebhookWorker
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ExecutionWebhookWorker</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs:250](../../../../src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs#L250).
+
+Slow external receivers cannot delay loss monitoring or broker reconciliation.
+
+```csharp
+public sealed class ExecutionWebhookWorker(ExecutionWorkflowWorker workflow, ILogger<ExecutionWebhookWorker> logger) : BackgroundService
+```
+
+## ExecutionWorkflowWorker
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ExecutionWorkflowWorker</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs:17](../../../../src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs#L17).
+
+Reconciliation, loss monitoring, digest scheduling and durable webhook delivery.
+
+```csharp
+public sealed class ExecutionWorkflowWorker(ExecutionJournal journal, ExecutionAlertService alerts, LiveBrokeragePortfolioSyncService sync, IHttpClientFactory clients, ILogger<ExecutionWorkflowWorker> logger, TimeProvider clock, IExecutionGateway? gateway = null, IPortfolioState? portfolio = null, IOrderManager? orders = null, IPaperSessionStore? sessions = null) : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? Scope =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs:26](../../../../src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs#L26) |  |
+| <code>public async Task TickAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs:43](../../../../src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs#L43) |  |
+| <code>public async Task DeliveryTickAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs:94](../../../../src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs#L94) |  |
 
 ## ExposureSnapshot
 
@@ -158,6 +209,22 @@ Declared public members:
 | <code>public FeatureCapabilitySettingsService(CoreConfigStore configStore, IEnumerable&lt;FeatureCapabilityDescriptor&gt;? descriptors = null);</code> | [src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs:15](../../../../src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs#L15) |  |
 | <code>public FeatureCapabilitySettingsResponse Get();</code> | [src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs:23](../../../../src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs#L23) |  |
 | <code>public async Task&lt;FeatureCapabilitySettingsResponse?&gt; SetAsync(string capabilityKey, bool isEnabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs:29](../../../../src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs#L29) |  |
+
+## FeedOrderMarketReferenceSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FeedOrderMarketReferenceSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:59](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L59).
+
+```csharp
+public sealed class FeedOrderMarketReferenceSource(ILiveFeedAdapter? feed = null) : IOrderMarketReferenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OrderMarketReference? GetReference(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs:61](../../../../src/Meridian.Ui.Shared/Services/EquityOrderSessionPolicy.cs#L61) |  |
 
 ## FeeScheduleAccrualEventProducer
 
@@ -901,86 +968,3 @@ Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.c
 ```csharp
 public sealed record FinancialRecordExplorerSavedViewSnapshot(int Version, IReadOnlyList<FinancialRecordExplorerSavedViewRecord> Views, IReadOnlyList<WorkstationPersonalTableViewRecord>? PersonalViews = null);
 ```
-
-## FirstRunExperienceService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FirstRunExperienceService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:11](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L11).
-
-Owns durable first-run, starter-workspace, sample-pack, and activation evidence. UI clients consume this governed state instead of defining onboarding policy locally.
-
-```csharp
-public sealed class FirstRunExperienceService(ConfigStore configStore, DemoTenantProvisioner? demoTenantProvisioner = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SamplePackVersion = &quot;2026.1&quot;;</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:15](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L15) |  |
-| <code>public async Task&lt;FirstRunStatusDto&gt; GetAsync(string username, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:37](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L37) |  |
-| <code>public async Task&lt;FirstRunStatusDto&gt; CompleteAsync(string username, CompleteFirstRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L43) |  |
-| <code>public async Task&lt;FirstRunStatusDto&gt; CompleteOutcomeAsync(string username, string key, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:90](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L90) |  |
-
-## FixedAssetDepreciationCalculation
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:316](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L316).
-
-Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled charges whose period end falls inside the accrual window, in one draft. Each scheduled period belongs to exactly one window, so an asset&#x27;s life is depreciated once. Units-of-production assets need period output that the register does not hold, so they block the occurrence.
-
-```csharp
-public sealed class FixedAssetDepreciationCalculation(IFixedAssetRegister? register = null) : IRecurringJournalCalculation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:318](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L318) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:323](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L323) |  |
-
-## FixedIncomeAccrualCalculation
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FixedIncomeAccrualCalculation</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:19](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L19).
-
-Coupon accrual and premium/discount amortization for one Bond or StructuredCredit position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
-
-```csharp
-public sealed class FixedIncomeAccrualCalculation(IRecurringJournalCalculationInputs inputs, ISecurityMasterAmortizationLedgerBridge? bridge = null, ISecurityMasterCashFlowService? cashFlows = null, ISecurityMasterQueryService? securities = null) : IRecurringJournalCalculation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:25](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L25) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:28](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L28) |  |
-| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:30](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L30) |  |
-| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:34](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L34) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:36](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L36) |  |
-
-## FundAccountCloseReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FundAccountCloseReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:14](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L14).
-
-Builds an account-scoped controller readiness score from provider, ledger, Security Master, reconciliation, and approval/casework evidence.
-
-```csharp
-public sealed class FundAccountCloseReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundAccountCloseReadinessService(IAccountQueryService accounts, ILogger&lt;FundAccountCloseReadinessService&gt; logger, ProviderLedgerReconciliationService? providerLedgerReconciliation = null, IReconciliationBreakQueueRepository? breakQueueRepository = null);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:28](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L28) |  |
-| <code>[Obsolete(&quot;Authoritative close readiness requires an authenticated tenant and company scope. &quot; + &quot;Use GetAsync(Guid, ReconciliationBreakQueueScope, CancellationToken).&quot;)] public Task&lt;FundAccountCloseReadinessDto?&gt; GetAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L43) |  |
-| <code>public async Task&lt;FundAccountCloseReadinessDto?&gt; GetAsync(Guid accountId, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs:54](../../../../src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs#L54) |  |

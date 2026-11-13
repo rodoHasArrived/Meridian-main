@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradeCashFlow
+
+Qualified name: <code>Meridian.Backtesting.Sdk.TradeCashFlow</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/CashFlowEntry.cs:10](../../../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs#L10).
+
+Cash flow arising from executing a trade (buy or sell).
+
+```csharp
+public sealed record TradeCashFlow(DateTimeOffset Timestamp, decimal Amount, string Symbol, long Quantity, decimal Price, string? AccountId = null) : CashFlowEntry(Timestamp, Amount, AccountId);
+```
+
+## TradeTicket
+
+Qualified name: <code>Meridian.Backtesting.Sdk.TradeTicket</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/TradeTicket.cs:6](../../../../src/Meridian.Backtesting.Sdk/TradeTicket.cs#L6).
+
+Human-readable audit ticket that explains why a trading or asset-event cash movement occurred.
+
+```csharp
+public sealed record TradeTicket(Guid TicketId, DateTimeOffset Timestamp, string ActivityType, string? Symbol, string Narrative, decimal CashImpact, long? Quantity = null, decimal? UnitPrice = null, string? AccountId = null, Guid? OrderId = null, Guid? FillId = null);
+```
+
 ## UnavailableMetricJsonConverter
 
 Qualified name: <code>Meridian.Backtesting.Sdk.UnavailableMetricJsonConverter</code>. Kind: `class`.

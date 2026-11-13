@@ -31,6 +31,12 @@ load results and presentation live in `strategy-screen.equity-paths.view-model.t
 view-model entrypoint retains its public exports while both screen entrypoints stay within their
 file-size limits. Curve sampling, reported returns and promotion selection behavior are unchanged.
 
+Trading promotion form normalization, keyed evidence parsing and request validation live in
+`trading-screen.promotion-evidence.ts`; the existing trading view-model entrypoint re-exports its
+public contracts. Gate criteria, retained evidence requirements and command transport are unchanged.
+Reference Data probe payload classification lives in `lib/reference-data-probe.ts`, while the API
+entrypoint keeps transport/probe orchestration and the established public type exports.
+
 The Evidence Workbench's retained-document panel reads shared single-principal declaration,
 source-snapshot and receipt endpoints without development fallback. Evidence acknowledgment is
 default-off and uses explicit grants, a current declaration, a reason and an exact confirmation.
