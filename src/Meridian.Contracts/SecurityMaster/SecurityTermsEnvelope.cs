@@ -700,7 +700,8 @@ public sealed class SecurityTermsFormatUndeclaredException : InvalidOperationExc
         : base(
             payloadKind == JsonValueKind.Object
                 ? $"Asset-specific terms declare no {SecurityTermsEnvelope.FormatKey}; this node no longer infers the payload " +
-                  $"family by shape. Declare {SecurityTermsEnvelope.FormatKey} as one of {string.Join(", ", SecurityTermsFormats.All)} " +
+                  $"family by shape. Declare {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' " +
+                  $"('{SecurityTermsFormats.Economic}' is not accepted on writes) " +
                   "(writers stamp it through SecurityTermsEnvelope.StampDeclaredFormat or StampFlat), or run migration 068 on stored rows."
                 : $"Asset-specific terms are a JSON {payloadKind}, not an object, so they cannot declare {SecurityTermsEnvelope.FormatKey}.")
     {

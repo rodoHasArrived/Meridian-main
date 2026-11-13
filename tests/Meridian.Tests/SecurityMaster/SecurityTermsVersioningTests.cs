@@ -116,6 +116,17 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Fact]
+    public void FormatUndeclaredException_AdvisesOnlyWritableFamilies()
+    {
+        // A write refuses 'economic' (EnsureWritableAsAssetSpecificTerms), so the remediation must not offer it.
+        var message = new SecurityTermsFormatUndeclaredException(JsonValueKind.Object).Message;
+
+        message.Should().Contain($"as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}'")
+            .And.Contain($"'{SecurityTermsFormats.Economic}' is not accepted on writes")
+            .And.NotContain(string.Join(", ", SecurityTermsFormats.All));
+    }
+
+    [Fact]
     public void ResolveFormat_NonObject_IsRefusedPrecisely()
     {
         var resolve = () => SecurityTermsEnvelope.ResolveFormat(Json("[]"));

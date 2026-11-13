@@ -629,7 +629,7 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationScriptTests
 
         foreach (var module in SecurityTermsLegacyEventClassifier.ShapeRuleModules)
         {
-            sql.Should().Contain($"'{module}'", $"an untagged v2 document carrying '{module}' is classified economic by ResolveFormat");
+            sql.Should().Contain($"'{module}'", $"an untagged v2 document carrying '{module}' is classified economic by the legacy event classifier (SecurityTermsLegacyEventClassifier)");
         }
 
         sql.Should().Contain($"asset_specific_terms->>'schemaVersion' = '{SecurityTermsLegacyEventClassifier.ReservedForEconomicTerms}'");

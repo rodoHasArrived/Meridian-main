@@ -757,6 +757,9 @@ public sealed class SecurityValidationServiceTests
         issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
         issue.AffectedFields.Should().Contain($"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}");
         issue.Message.Should().Contain("no longer infers").And.NotContain($"'{SecurityTermsFormats.Flat}'");
+        issue.SuggestedAction.Should().Contain($"'{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}'")
+            .And.Contain($"'{SecurityTermsFormats.Economic}' is not accepted on writes",
+                "the remediation names only the families a write accepts");
         report.HasBlockingIssues.Should().BeTrue("an untagged payload is refused by every live reader");
     }
 

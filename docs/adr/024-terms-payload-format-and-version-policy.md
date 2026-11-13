@@ -148,6 +148,12 @@ stored row, inactive included, as one store-level aggregate
 (`ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync`) pinned row by row to the
 `SecurityTermsEnvelope.GetDeclaredFormat` verdict. The population drains through stamped writes;
 no stored payload is rewritten.
+*2026-11-13 (amendment 2026-11-13 steps 5 and 6, pending human review):* item 5 is implemented —
+live readers dispatch on the declared tag alone, untagged payloads fail with
+`SecurityTermsFormatUndeclaredException`, and the shape rule and reserved version 2 survive only in
+`SecurityTermsLegacyEventClassifier` for event-payload decoding (decision 5). `TX003` and
+`UntaggedTermsPayloadCount` remain as a regression monitor; `TX003` no longer names an inferred
+family.
 
 ## Rationale
 

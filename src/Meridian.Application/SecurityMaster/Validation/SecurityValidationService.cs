@@ -271,7 +271,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     "Asset-specific terms format is missing",
                     $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} is absent; this node no longer infers the payload family by shape, so readers and the projection store refuse the payload.",
                     [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
-                    $"Re-persist the payload through a writer that declares {SecurityTermsEnvelope.FormatKey} as one of {string.Join(", ", SecurityTermsFormats.All)} (SecurityTermsEnvelope.StampDeclaredFormat or StampFlat), or apply migration 068 to stored rows.")
+                    $"Re-persist the payload through a writer that declares {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' (SecurityTermsEnvelope.StampDeclaredFormat or StampFlat; '{SecurityTermsFormats.Economic}' is not accepted on writes), or apply migration 068 to stored rows.")
             ];
         }
 
