@@ -6,6 +6,405 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingCashFlow.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingCashFlow.cs#L10).
+
+Accounting cash-flow helpers for the workstation API surface: workspace and per-run cash-flow summaries and ledger cash balance / variance calculations. Split out of the WorkstationEndpoints core partial.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingWorkspace.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingWorkspace.cs#L16).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs#L18).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.cs#L14).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs#L16).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseChecklistHistory.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseChecklistHistory.cs#L10).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseReadiness.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseReadiness.cs#L18).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs#L48).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CollateralExposure.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CollateralExposure.cs#L14).
+
+Collateral exposure snapshot composition for the workstation API surface: builds the counterparty/product exposure, margin, collateral-call, threshold-breach, and trend view from collateral input rows. When no rows have been ingested the snapshot is honestly empty — fabricated demo rows are never substituted. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the inline collateral route lambda and the shared NormalizeOperatorInboxToken helper remain in core.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CrossScreenCounts.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CrossScreenCounts.cs#L17).
+
+Cross-screen counts (A3): open orders, provider health and open breaks, counted once with CrossScreenCountDefinitions over the same sources the Trading, Data and Accounting workspaces read, so Settings, the shell, every workspace and the WPF desktop show one number.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:51](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L51).
+
+Endpoints for the desktop workstation API surface.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:59](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L59) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs#L12).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs:53](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs#L53).
+
+Data provider workstation helpers: provider record/diagnostic builders, routing-binding and representative-connection/trust selection, provider trust rationale and gate-impact, and provider key/score/timestamp formatting. Split out of the WorkstationEndpoints core partial as a cohesive capability group. Using directives mirror the core header.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataSourceExports.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataSourceExports.cs#L17).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataTableExport.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataTableExport.cs#L11).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploads.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploads.cs#L19).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploadWorkbook.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploadWorkbook.cs#L20).
+
+Onboarding-workbook surface for the Data workspace. This partial adds a genuine multi-sheet .xlsx download (a pure projection of BuildDataUploadTemplateCatalog) and a workbook-scoped upload preview with per-cell and cross-sheet validation. The single-file CSV preview path in the sibling partial is left untouched.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Extensibility.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Extensibility.cs#L15).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs#L13).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FeatureCapabilities.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FeatureCapabilities.cs#L13).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs#L14).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs#L11).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.LedgerExport.cs#L14).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs#L48).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs#L22).
+
+Operator Inbox composition for the workstation API surface: builds the prioritized operator work-item inbox (trading-readiness work items, run-review packets, reconciliation-break work items), continuity metrics, operator navigation routing, and the inbox summary. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the inline inbox route lambda and the shared GetTradingOperatorReadinessAsync / NormalizeOperatorInboxToken helpers remain in core.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs#L16).
+
+The signed-in operator&#x27;s default operating scope (C1). Browser and WPF read it when a session opens with no scope in its link or local storage; only the operator themselves can read or set it.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorSurfaceVisits.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorSurfaceVisits.cs#L16).
+
+The signed-in operator&#x27;s last visit to a workstation surface (C3), the baseline for &quot;since your last visit&quot; markers in the browser and WPF. Only the operator themselves can read or record it.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs#L17).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PlotTool.cs:6](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PlotTool.cs#L6).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs#L12).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ProviderIntegrations.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ProviderIntegrations.cs#L14).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.QueryExecutions.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.QueryExecutions.cs#L15).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs#L20).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs#L11).
+
+Resolves the immutable tenant and company scope used by all reconciliation queue reads and mutations. Queue publication belongs to the authoritative source workflow and never to a workstation read or casework request.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCalibration.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCalibration.cs#L12).
+
+Reconciliation calibration summary sub-helpers for the workstation API surface: auto-match / T0-closure rate math, calibration profile + status derivation, signoff predicates, and value normalization. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the shared BuildReconciliationCalibrationSummary entry (called from core and the Reconciliation partial) remains in core and reaches these helpers across the partial.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCasework.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCasework.cs#L13).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationRegistration.cs#L48).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs#L13).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Routing.cs:5](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Routing.cs#L5).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityCoverage.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityCoverage.cs#L10).
+
+Security Master coverage helpers for the workstation API surface: builds coverage payloads, resolved/missing security references, position-to-security lookups, and coverage review predicates. Split out of the WorkstationEndpoints core partial.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterMapping.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterMapping.cs#L13).
+
+Security Master DTO mapping helpers for the workstation API surface: maps security summary/detail records to workstation DTOs, identity drill-in, and economic-definition summaries, plus asset-class sub-type derivation. Split out of the WorkstationEndpoints core partial.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs#L16).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs#L48).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Session.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Session.cs#L16).
+
+Workstation session bootstrap payload for the API surface: builds the typed session DTO (latest strategy-run digest, workspace summaries) and its display-name / role / environment / workspace mapping helpers. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the inline session route lambda and the shared BuildRunDigest helper remain in core (reached across the partial).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs#L11).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs#L18).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs#L22).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L24).
+
+Strategy Designer and Strategy Engine endpoints for the workstation API surface, split out of the WorkstationEndpoints core partial as a capability group.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyBriefing.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyBriefing.cs#L12).
+
+Strategy run briefing helpers for the workstation API surface: run digests, run and strategy cards, insight feeds, saved comparisons, briefing alerts, what-changed items, drill-in links, timeline/mode-comparison cards, and run-mode parsing. Split out of the WorkstationEndpoints core partial. The shared ResolveModeVariant helper stays in core.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyWorkspace.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyWorkspace.cs#L12).
+
+Strategy workspace payload and compatibility briefing projections for the workstation API.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Stream.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Stream.cs#L18).
+
+Workstation Server-Sent Events stream. Event-driven fan-out: connections subscribe to a topic on the IQuoteStreamBroadcaster, which rebuilds and coalesces each topic&#x27;s snapshot once per change and pushes it to every subscriber. One snapshot build is shared across all subscribers of a topic, and the market-data ingestion hot path is untouched.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StructuredReportingExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StructuredReportingExport.cs#L14).
+
+Structured reporting export helpers for the workstation API surface: CSV/XLSX rendering, metadata/data-dictionary/validation/row-lineage worksheet rows, and export audit headers. Split out of the WorkstationEndpoints core partial as a capability group; the inline export endpoint lambda remains in the core file.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs#L16).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L24).
+
+Trading workspace payload composition for the workstation API surface: builds the live trading payload (positions, orders, fills, risk, brokerage, readiness). When neither the execution layer nor the strategy run read service is registered the builder returns null and the route responds 503 — fabricated fixture data is never served as live. The inline trading route lambda and the shared helpers (GetTradingOperatorReadinessAsync, NormalizeOperatorInboxToken, BuildTradingBrokerageNotes, ResolveLiveMark, ResolveRuntimeRiskDescriptorAsync, BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/FormatPercent) remain in core and are reached across the partial.
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs#L8).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+## WorkstationFundScopeTenantAccessor
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationFundScopeTenantAccessor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:106](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L106).
+
+SEC-005 slice 4c-ii: supplies the storage layer (which must not depend on ASP.NET Core) with the caller&#x27;s server-resolved tenant for the current request, so the Postgres ledger store can apply tenant read predicates without threading a caller-tenant argument through every read method. Depends only on the singleton-safe IHttpContextAccessor (AsyncLocal-backed), so it is safe to inject into the singleton ledger store without a captive scoped dependency. Returns null when the request has no concrete tenant; strict stores reject that unresolved authority.
+
+```csharp
+public sealed class WorkstationFundScopeTenantAccessor : IFundScopeTenantAccessor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkstationFundScopeTenantAccessor(IHttpContextAccessor httpContextAccessor);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:110](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L110) |  |
+| <code>public string? ResolveCallerTenant();</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L116) |  |
+
 ## WorkstationTenantCompanyScopeEndpointFilters
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantCompanyScopeEndpointFilters</code>. Kind: `class`.
@@ -241,7 +640,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.EvidenceManifestFile</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:117](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L117).
+Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:121](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L121).
 
 ```csharp
 public sealed record EvidenceManifestFile(Stream Content, string ContentType, string FileName, DateTimeOffset LastModified);
@@ -407,7 +806,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;EvidenceManifestFile?&gt; TryOpenDocumentContentAsync(string vaultId, string documentId, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs:7](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.AccountCashSource.cs#L7) |  |
 
-Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L123).
+Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:127](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L127).
 
 Retains evidence content, manifests, document reviews, and exports in file-backed storage.
 
@@ -419,9 +818,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:174](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L174) |  |
-| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger, EvidenceStorageQuotaOptions quotaOptions) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest, quotaOptions : quotaOptions);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:179](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L179) |  |
-| <code>public async Task&lt;EvidenceVaultIntakeResponseDto&gt; WriteIntakeArtifactAsync(EvidenceVaultIntakeRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:216](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L216) |  |
+| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:178](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L178) |  |
+| <code>public FileEvidenceArtifactStore(string dataRoot, ILogger&lt;FileEvidenceArtifactStore&gt; logger, EvidenceStorageQuotaOptions quotaOptions) : this(dataRoot, logger, MaxDocumentVerificationBytesPerRequest, quotaOptions : quotaOptions);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L183) |  |
+| <code>public async Task&lt;EvidenceVaultIntakeResponseDto&gt; WriteIntakeArtifactAsync(EvidenceVaultIntakeRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:220](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L220) |  |
 
 Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.DocumentReview.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.DocumentReview.cs#L9).
 
@@ -446,6 +845,18 @@ Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.Models.cs:5](
 ```csharp
 public sealed partial class FileEvidenceArtifactStore
 ```
+
+Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs#L5).
+
+```csharp
+public sealed partial class FileEvidenceArtifactStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;bool&gt; VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256, string tenantId, string scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs:7](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.PinnedDocument.cs#L7) |  |
 
 Source: [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs#L10).
 
@@ -530,11 +941,12 @@ Declared public members:
 | <code>Task&lt;EvidenceVaultIdentityDto?&gt; TryGetVaultIdentityAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:65](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L65) |  |
 | <code>Task&lt;bool&gt; VerifyRetainedContentAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:73](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L73) | Verifies the retained source bytes, not just the manifest or index identity. |
 | <code>Task&lt;EvidenceManifestFile?&gt; TryOpenDocumentContentAsync(string vaultId, string documentId, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:77](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L77) | Opens the exact scoped document bytes after manifest, document and content verification. |
-| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultIdentityDto&gt;&gt; FindByLinkageAsync(EvidenceVaultLookupRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:80](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L80) |  |
-| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt;&gt; ListRequestListsAsync(EvidenceVaultRequestListQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:84](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L84) |  |
-| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:88](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L88) |  |
-| <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:94](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L94) | Legacy unscoped review mutation retained as a fail-closed compatibility shim. |
-| <code>Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:101](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L101) |  |
+| <code>Task&lt;bool&gt; VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256, string tenantId, string scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:81](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L81) | Streams and verifies one exact pinned artifact within the vault&#x27;s configured document limits. |
+| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultIdentityDto&gt;&gt; FindByLinkageAsync(EvidenceVaultLookupRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:84](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L84) |  |
+| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt;&gt; ListRequestListsAsync(EvidenceVaultRequestListQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:88](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L88) |  |
+| <code>Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:92](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L92) |  |
+| <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:98](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L98) | Legacy unscoped review mutation retained as a fail-closed compatibility shim. |
+| <code>Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:105](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L105) |  |
 
 ## IEvidenceContributor
 
@@ -969,31 +1381,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:40](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L40) |  |
-
-## StatementImportEvidenceBridgeRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementImportEvidenceBridgeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L5).
-
-```csharp
-public sealed record StatementImportEvidenceBridgeRequest(string SourceKind, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string ImportedBy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L14) |  |
-| <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L15) |  |
-| <code>public string? WorkflowId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:16](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L16) |  |
-
-## StatementReconciliationReportArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L30).
-
-```csharp
-public sealed record StatementReconciliationReportArtifactDownload(StatementReconciliationReportArtifactDto Descriptor, byte[] Content);
-```

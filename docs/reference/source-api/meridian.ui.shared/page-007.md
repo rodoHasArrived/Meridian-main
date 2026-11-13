@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementImportEvidenceBridgeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementImportEvidenceBridgeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L5).
+
+```csharp
+public sealed record StatementImportEvidenceBridgeRequest(string SourceKind, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string ImportedBy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L14) |  |
+| <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L15) |  |
+| <code>public string? WorkflowId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:16](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L16) |  |
+
+## StatementReconciliationReportArtifactDownload
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportArtifactDownload</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L30).
+
+```csharp
+public sealed record StatementReconciliationReportArtifactDownload(StatementReconciliationReportArtifactDto Descriptor, byte[] Content);
+```
+
 ## StatementReconciliationReportFetchIngestionAuthority
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportFetchIngestionAuthority</code>. Kind: `class`.
@@ -549,6 +577,18 @@ Single compact reason entry shown in workstation surfaces.
 public sealed record ScoreReasonProjection(string Code, double Contribution);
 ```
 
+## IntercompanyOperationsJsonContext
+
+Qualified name: <code>Meridian.Ui.Shared.Serialization.IntercompanyOperationsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Serialization/IntercompanyOperationsJsonContext.cs:21](../../../../src/Meridian.Ui.Shared/Serialization/IntercompanyOperationsJsonContext.cs#L21).
+
+Generated transport metadata for lifecycle and intercompany control operations.
+
+```csharp
+public partial class IntercompanyOperationsJsonContext : JsonSerializerContext;
+```
+
 ## W4AcceptanceFilter
 
 Qualified name: <code>Meridian.Ui.Shared.Services.Acceptance.W4AcceptanceFilter</code>. Kind: `class`.
@@ -700,6 +740,12 @@ Declared public members:
 | <code>public async Task&lt;AccountingRuleTestSuiteResultDto&gt; ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:768](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L768) |  |
 | <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:826](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L826) |  |
 | <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:853](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L853) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs:6](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs#L6).
+
+```csharp
+public sealed partial class AccountingConfigurationService
+```
 
 Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.RuleValidation.cs:17](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.RuleValidation.cs#L17).
 
@@ -936,55 +982,3 @@ Declared public members:
 | <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAsync(AuditTrailExplorerQueryDto? query = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:29](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L29) |  |
 | <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:35](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L35) | HTTP reads authorize each operations source before loading its timeline. |
 | <code>public Task&lt;AuditTrailExplorerResultDto&gt; ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:40](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L40) | Every authorized retained match; the browser/1,000-row browse cap is never an export limit. |
-
-## AuditTrailExportLimitException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExportLimitException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:9](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L9).
-
-```csharp
-public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
-```
-
-## AutomatedJournalDividendPositionResolution
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDividendPositionResolution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L12).
-
-Authoritative position history resolved for one dividend cycle.
-
-```csharp
-public sealed record AutomatedJournalDividendPositionResolution(IReadOnlyList<DividendAccrualPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L17) |  |
-
-## AutomatedJournalDraftIntakeDisposition
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:68](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L68).
-
-One event the intake did not turn into a new draft, with the reason it was skipped.
-
-```csharp
-public enum AutomatedJournalDraftIntakeDisposition
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ProjectionFailed = 0</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:70](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L70) |  |
-| <code>ExistingDraftReady = 1</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:71](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L71) |  |
-| <code>ExistingDraftNeedsFix = 2</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:72](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L72) |  |
-| <code>ExistingDraftRejected = 3</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:73](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L73) |  |
-| <code>ExistingDraftGoverned = 4</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L74) |  |
-| <code>ExistingDraftTerminal = 5</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:75](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L75) |  |
-| <code>ExistingDraftReassessmentRequired = 6</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:76](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L76) |  |

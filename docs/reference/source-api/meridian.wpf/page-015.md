@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondAnalyticsModelOption
+
+Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.BondAnalyticsModelOption</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/SecurityMaster/BondAnalyticsViewModel.cs:228](../../../../src/Meridian.Wpf/ViewModels/SecurityMaster/BondAnalyticsViewModel.cs#L228).
+
+```csharp
+public sealed record BondAnalyticsModelOption(string Version, string Label);
+```
+
 ## BondAnalyticsViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SecurityMaster.BondAnalyticsViewModel</code>. Kind: `class`.
@@ -1891,13 +1901,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;CommandEntry&gt; GetContextualCommands();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1338](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1338) |  |
 | <code>public void OnActivated();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1400](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1400) |  |
 | <code>public void OnDeactivated();</code> | [src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs:1407](../../../../src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs#L1407) |  |
-
-## SymbolStorageItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.SymbolStorageItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/SymbolStorageViewModel.cs#L263).
-
-```csharp
-public sealed record SymbolStorageItem(string Symbol, string SizeText, string FileCountText, double PercentOfTotal, string DateRangeText);
-```

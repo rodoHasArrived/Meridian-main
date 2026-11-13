@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosePublicationReadinessGuard
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ClosePublicationReadinessGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:8](../../../../src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs#L8).
+
+Resolves the shared reader lazily because that reader also consumes workflow state.
+
+```csharp
+public sealed class ClosePublicationReadinessGuard(Func<IFinancialOperationsCommandCenterReadService?> authorityFactory, IWorkstationTenantContextAccessor? tenantAccessor = null, Func<IOperationsReportPackAuthority?>? reportAuthorityFactory = null) : IClosePublicationReadinessGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:13](../../../../src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs#L13) |  |
+
+## CloseReadinessSubjectSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CloseReadinessSubjectSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:11](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L11).
+
+Proves the declared close subject from retained account membership and ledger-book ownership.
+
+```csharp
+public sealed class CloseReadinessSubjectSource(ILedgerBookService? books = null, IAccountQueryService? accounts = null) : ICloseReadinessSubjectSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;CloseReadinessSubjectDto?&gt; GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L15) |  |
+
+## CollateralCall
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CollateralCall</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L31).
+
+```csharp
+public sealed record CollateralCall(string Counterparty, decimal Amount, string Reason, DateTimeOffset CreatedAt);
+```
+
 ## CollateralExposureService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CollateralExposureService</code>. Kind: `class`.
@@ -872,58 +918,3 @@ Declared public members:
 | <code>public async Task&lt;DirectLendingOperationsReadModelDto&gt; GetOperationsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs:29](../../../../src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs#L29) |  |
 | <code>public const decimal SubledgerTieOutTolerance = 0.01m;</code> | [src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs:375](../../../../src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs#L375) | Largest difference treated as rounding between a servicing balance and its control account. |
 | <code>public static IReadOnlyList&lt;DirectLendingOperationsCloseBlockerDto&gt; BuildSubledgerTieOutBlockers(Guid loanId, string facilityName, LoanServicingStateDto servicing, IReadOnlyList&lt;LedgerEntry&gt; generalLedgerLines);</code> | [src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs:384](../../../../src/Meridian.Ui.Shared/Services/DirectLendingOperationsReadService.cs#L384) | Compares a loan&#x27;s servicing balances (the subledger) with the net debit balance of its general-ledger control accounts and reports each difference beyond rounding as a close blocker. A loan with no general-ledger lines is left to the journal-evidence blocker. Differences are warnings, not critical: receipts recorded before payments were split by allocation post to a clearing account and legitimately leave a difference to review. |
-
-## DistributionInvestorInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DistributionInvestorInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:43](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L43).
-
-One investor&#x27;s share of a declared distribution and the capital it is measured against.
-
-```csharp
-public sealed record DistributionInvestorInput(string InvestorId, string CapitalAccountId, decimal ContributedCapital, decimal PreferredReturnAccrued, decimal AmountToDistribute, IReadOnlyList<string>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:51](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L51) |  |
-
-## DividendAccrualPosition
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DividendAccrualPosition</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:29](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L29).
-
-One held position eligible for dividend accrual production.
-
-```csharp
-public sealed record DividendAccrualPosition(string Symbol, decimal Quantity, Guid? SecurityId = null, string? FinancialAccountId = null, DateTimeOffset? PositionAsOfUtc = null, IReadOnlyList<JournalEvidenceReference>? PositionEvidenceReferences = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;JournalEvidenceReference&gt; PositionEvidenceReferences { get; init; } = PositionEvidenceReferences??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L37) |  |
-
-## Dk1PromotionTrustEvidenceProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.Dk1PromotionTrustEvidenceProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:8](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L8).
-
-Uses the retained DK1 packet selected by the source run as promotion trust evidence.
-
-```csharp
-public sealed class Dk1PromotionTrustEvidenceProvider : IPromotionTrustEvidenceProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Dk1PromotionTrustEvidenceProvider(Dk1TrustGateReadinessService readiness, Dk1TrustGateReadinessOptions options);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L13) |  |
-| <code>public async Task&lt;PromotionTrustEvidence?&gt; GetEvidenceAsync(StrategyRunEntry run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:21](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L21) |  |

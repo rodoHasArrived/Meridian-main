@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
@@ -7,6 +8,9 @@ using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Serialization;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -92,7 +96,18 @@ public static class UiEndpoints
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = writeIndented,
-            TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(
+                IntercompanyOperationsJsonContext.Default,
+                IntercompanyAccountingArrangementsJsonContext.Default,
+                FundStructureContractsJsonContext.Default,
+                EntityTimelineJsonContext.Default,
+                IntercompanyAccountContractsJsonContext.Default,
+                LegacyIntercompanyAttributionJsonContext.Default,
+                IntercompanyProposalJsonContext.Default,
+                IntercompanyBalanceScheduleJsonContext.Default,
+                ConsolidationFxJsonContext.Default,
+                ConsolidationTransitionJsonContext.Default,
+                new DefaultJsonTypeInfoResolver())
         };
 
     /// <summary>
@@ -202,6 +217,8 @@ public static class UiEndpoints
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
         app.MapIntercompanyAgreementEndpoints(jsonOptions);
+        app.MapIntercompanyAccountingArrangementEndpoints();
+        app.MapIntercompanyOperationsEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
         app.MapReportingIncomeComparisonEndpoints(jsonOptions);
         app.MapSecureReportingDistributionEndpoints();

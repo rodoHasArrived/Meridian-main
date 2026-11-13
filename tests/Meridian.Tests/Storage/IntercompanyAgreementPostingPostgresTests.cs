@@ -20,7 +20,8 @@ public sealed class IntercompanyAgreementPostingPostgresTests
 
         var authority = new RecordingAuthority(async () =>
             (await database.JournalStore.QueryAsync(new(JournalEntryId: write.Entry.JournalEntryId), ct)).Should().ContainSingle());
-        var store = new PostgresLedgerJournalStore(database.Options, intercompanyAgreementAuthority: () => authority);
+        var store = new PostgresLedgerJournalStore(database.Options,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities, intercompanyAgreementAuthority: () => authority);
         await store.AppendAsync(write, ct);
         authority.Disposed.Should().BeTrue();
         authority.Request!.TenantId.Should().Be("tenant-agreement");
@@ -36,6 +37,7 @@ public sealed class IntercompanyAgreementPostingPostgresTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
         var write = await PrepareAsync(database, ct);
         var first = new PostgresLedgerJournalStore(database.Options,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities,
             intercompanyAgreementAuthority: () => new RecordingAuthority());
         await first.AppendAsync(write, ct);
 
@@ -63,7 +65,8 @@ public sealed class IntercompanyAgreementPostingPostgresTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
         var write = await PrepareAsync(database, ct);
         var authority = new RecordingAuthority();
-        var store = new PostgresLedgerJournalStore(database.Options, intercompanyAgreementAuthority: () => authority);
+        var store = new PostgresLedgerJournalStore(database.Options,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities, intercompanyAgreementAuthority: () => authority);
         await store.AppendAsync(write, ct);
         var forged = IntercompanyAgreementPostingGuardTests.Reverse(write, "cost-center");
         var forgeAppend = () => store.AppendAsync(forged, ct);
@@ -85,6 +88,7 @@ public sealed class IntercompanyAgreementPostingPostgresTests
         var write = await PrepareAsync(database, ct);
         var before = await database.JournalStore.VerifyLedgerEventAuditAsync(ct);
         var store = new PostgresLedgerJournalStore(database.Options,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities,
             intercompanyAgreementAuthority: () => new RefusingAuthority());
         var append = () => store.AppendAsync(write, ct);
         await append.Should().ThrowAsync<LedgerValidationException>().WithMessage("*approved revision changed*");

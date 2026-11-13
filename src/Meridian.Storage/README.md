@@ -16,6 +16,33 @@ XLSX, Parquet or Arrow. It owns format IO, formula-safe spreadsheet escaping and
 interpreting accounting records. Ledger-backed `ExportLedgerAsync` projections are extension methods
 compiled by `Meridian.Storage.Accounting`, keeping the primitives assembly independent of Ledger.
 
+The business adapters in the linked FundStructure and Ledger folders compile into
+`Meridian.Storage.Accounting`; generic storage primitives remain in `Meridian.Storage`.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Reporting cutovers retain immutable previews/receipts in ledger migration 065 and fence activation
+against the ledger append audit head. Migration 066 preserves ordinary/source book uniqueness while
+allowing distinctly named Fund/Primary books only for exact governed consolidation policy pairs.
+
+Intercompany storage retains append-only account-role revisions, atomic source-journal proposal
+intent, approved FX revisions and legacy-attribution sidecars over exact immutable journal digests.
+PostgreSQL supplies authority leases through financial commit; file stores provide durable local/demo
+parity without a production or cross-process fencing claim. Migration keeps old journal/evidence
+bytes and refuses unresolved history. See [the operator procedure](../../docs/operators/intercompany-entity-controls.md).
+
+Entity lifecycle history uses immutable tenant-bound timeline revisions and authority leases.
+Ledger migration 061 initializes existing books in `LegacyWarning` and stamps new books
+`Enforced` at insertion. Activation recomputes migration preflight while holding its authority
+leases and retains an immutable receipt. Every booked append, including ambient transactions
+and atomic lot posting, requires a matching posting-authority scope retained through commit.
+Controlled-close authorizations bind an approved draft's economics, evidence and version;
+they permit no edits to posted journals. Unmapped historical periods retain explicit warnings.
+
 JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
 retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
 the current buffer. Failed flushes restore their batches and retain the buffer. Parquet filenames
@@ -1708,6 +1735,10 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |
 | `W10-JRNL-001` | Durable recurring journal schedules and draft runner |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

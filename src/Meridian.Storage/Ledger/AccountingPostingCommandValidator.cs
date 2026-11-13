@@ -232,12 +232,22 @@ public static class AccountingPostingCommandValidator
         var validKeys = entry.Lines.SelectMany(line => new[]
         {
             $"lineDimensions.{line.EntryId:N}.intercompanyAgreementId",
-            $"lineDimensions.{line.EntryId:N}.intercompanyAgreementVersion"
+            $"lineDimensions.{line.EntryId:N}.intercompanyAgreementVersion",
+            $"lineDimensions.{line.EntryId:N}.accountingArrangementId",
+            $"lineDimensions.{line.EntryId:N}.accountingArrangementRevisionId",
+            $"lineDimensions.{line.EntryId:N}.chartAccountNodeId",
+            $"lineDimensions.{line.EntryId:N}.accountBindingRevisionId",
+            $"lineDimensions.{line.EntryId:N}.intercompanyTransactionId"
         }).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var key in tags.Keys)
             if (key.StartsWith("lineDimensions.", StringComparison.OrdinalIgnoreCase) &&
                 (key.EndsWith(".intercompanyAgreementId", StringComparison.OrdinalIgnoreCase) ||
-                 key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase)) && !validKeys.Contains(key))
+                 key.EndsWith(".intercompanyAgreementVersion", StringComparison.OrdinalIgnoreCase) ||
+                 key.EndsWith(".accountingArrangementId", StringComparison.OrdinalIgnoreCase) ||
+                 key.EndsWith(".accountingArrangementRevisionId", StringComparison.OrdinalIgnoreCase) ||
+                 key.EndsWith(".chartAccountNodeId", StringComparison.OrdinalIgnoreCase) ||
+                 key.EndsWith(".accountBindingRevisionId", StringComparison.OrdinalIgnoreCase) ||
+                 key.EndsWith(".intercompanyTransactionId", StringComparison.OrdinalIgnoreCase)) && !validKeys.Contains(key))
                 throw new LedgerValidationException("Agreement line-dimension tags must identify an existing journal line using its canonical line identity.");
     }
 
@@ -776,6 +786,20 @@ public static class AccountingPostingCommandValidator
                         IntercompanyAgreementId = agreementId ?? dimensions?.IntercompanyAgreementId,
                         IntercompanyAgreementVersion = agreementVersion ?? dimensions?.IntercompanyAgreementVersion
                     };
+                var arrangementId = OperationalDimension(tags, prefix, "accountingArrangementId", dimensions?.AccountingArrangementId);
+                var arrangementRevisionId = OperationalDimension(tags, prefix, "accountingArrangementRevisionId", dimensions?.AccountingArrangementRevisionId);
+                var nodeId = OperationalDimension(tags, prefix, "chartAccountNodeId", dimensions?.ChartAccountNodeId);
+                var bindingRevisionId = OperationalDimension(tags, prefix, "accountBindingRevisionId", dimensions?.AccountBindingRevisionId);
+                var transactionId = OperationalDimension(tags, prefix, "intercompanyTransactionId", dimensions?.IntercompanyTransactionId);
+                if (arrangementId is not null || arrangementRevisionId is not null || nodeId is not null || bindingRevisionId is not null || transactionId is not null)
+                    dimensions = (dimensions ?? new LedgerLineDimensionSet()) with
+                    {
+                        AccountingArrangementId = arrangementId,
+                        AccountingArrangementRevisionId = arrangementRevisionId,
+                        ChartAccountNodeId = nodeId,
+                        AccountBindingRevisionId = bindingRevisionId,
+                        IntercompanyTransactionId = transactionId
+                    };
             }
 
             var isReviewedSuccessor = corporateAction is not null && corporateAction.Successors.Any(target =>
@@ -868,6 +892,11 @@ public static class AccountingPostingCommandValidator
             ProjectId: GetLineDimensionTag(tags, prefix, "projectId"))
         {
             PositionId = GetLineDimensionGuidTag(tags, prefix, "positionId"),
+            AccountingArrangementId = GetLineDimensionTag(tags, prefix, "accountingArrangementId"),
+            AccountingArrangementRevisionId = GetLineDimensionTag(tags, prefix, "accountingArrangementRevisionId"),
+            ChartAccountNodeId = GetLineDimensionTag(tags, prefix, "chartAccountNodeId"),
+            AccountBindingRevisionId = GetLineDimensionTag(tags, prefix, "accountBindingRevisionId"),
+            IntercompanyTransactionId = GetLineDimensionTag(tags, prefix, "intercompanyTransactionId"),
             IntercompanyAgreementId = ReadAgreementId(tags, prefix),
             IntercompanyAgreementVersion = ReadAgreementVersion(tags, prefix)
         };
@@ -880,6 +909,14 @@ public static class AccountingPostingCommandValidator
         string prefix,
         string field)
         => tags.TryGetValue(prefix + field, out var value) ? NormalizeOptional(value) : null;
+
+    private static string? OperationalDimension(IReadOnlyDictionary<string, string> tags, string prefix, string field, string? retained)
+    {
+        var supplied = GetLineDimensionTag(tags, prefix, field);
+        if (supplied is not null && retained is not null && !string.Equals(supplied, retained, StringComparison.Ordinal))
+            throw new LedgerValidationException("Accounting profile line-dimension tags conflict with the explicit journal dimensions.");
+        return supplied ?? retained;
+    }
 
     private static Guid? GetLineDimensionGuidTag(
         IReadOnlyDictionary<string, string> tags,
@@ -909,6 +946,11 @@ public static class AccountingPostingCommandValidator
            || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
            || dimensions.InstrumentId.HasValue
            || dimensions.PositionId.HasValue
+           || !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementId)
+           || !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementRevisionId)
+           || !string.IsNullOrWhiteSpace(dimensions.ChartAccountNodeId)
+           || !string.IsNullOrWhiteSpace(dimensions.AccountBindingRevisionId)
+           || !string.IsNullOrWhiteSpace(dimensions.IntercompanyTransactionId)
            || dimensions.IntercompanyAgreementId.HasValue
            || dimensions.IntercompanyAgreementVersion.HasValue
            || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)

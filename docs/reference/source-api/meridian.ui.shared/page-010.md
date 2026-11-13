@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DistributionInvestorInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DistributionInvestorInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:43](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L43).
+
+One investor&#x27;s share of a declared distribution and the capital it is measured against.
+
+```csharp
+public sealed record DistributionInvestorInput(string InvestorId, string CapitalAccountId, decimal ContributedCapital, decimal PreferredReturnAccrued, decimal AmountToDistribute, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:51](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L51) |  |
+
+## DividendAccrualPosition
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DividendAccrualPosition</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:29](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L29).
+
+One held position eligible for dividend accrual production.
+
+```csharp
+public sealed record DividendAccrualPosition(string Symbol, decimal Quantity, Guid? SecurityId = null, string? FinancialAccountId = null, DateTimeOffset? PositionAsOfUtc = null, IReadOnlyList<JournalEvidenceReference>? PositionEvidenceReferences = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;JournalEvidenceReference&gt; PositionEvidenceReferences { get; init; } = PositionEvidenceReferences??[];</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L37) |  |
+
+## Dk1PromotionTrustEvidenceProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.Dk1PromotionTrustEvidenceProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:8](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L8).
+
+Uses the retained DK1 packet selected by the source run as promotion trust evidence.
+
+```csharp
+public sealed class Dk1PromotionTrustEvidenceProvider : IPromotionTrustEvidenceProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Dk1PromotionTrustEvidenceProvider(Dk1TrustGateReadinessService readiness, Dk1TrustGateReadinessOptions options);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L13) |  |
+| <code>public async Task&lt;PromotionTrustEvidence?&gt; GetEvidenceAsync(StrategyRunEntry run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:21](../../../../src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs#L21) |  |
+
 ## Dk1TrustGateReadinessOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.Dk1TrustGateReadinessOptions</code>. Kind: `record`.
@@ -85,6 +140,22 @@ Declared public members:
 | <code>public RiskRuleSeverity Severity =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:26](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L26) |  |
 | <code>public RiskValidationResult? TryEvaluate(OrderRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:29](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L29) |  |
 | <code>public Task&lt;RiskValidationResult&gt; EvaluateAsync(OrderRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs:32](../../../../src/Meridian.Ui.Shared/Services/DrawdownGuardrailRule.cs#L32) |  |
+
+## EntityTimelineService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.EntityTimelineService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:10](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L10).
+
+```csharp
+public sealed class EntityTimelineService(IFundStructureService structures, IEntityLifecycleStore lifecycle, IntercompanyAccountingArrangementService arrangements, ILedgerJournalStore journals, IIntercompanyAgreementService agreements, IEntityTimelineAccessAuthority access)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;EntityTimelineDto&gt; GetAsync(string tenant, Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default, string actor = &quot;entity-timeline&quot;);</code> | [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs:13](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs#L13) |  |
 
 ## EquityOrderSessionPolicy
 
@@ -877,94 +948,3 @@ Declared public members:
 | <code>public FileReportTemplateGovernanceStore(ReportTemplateGovernanceStoreOptions options, ILogger&lt;FileReportTemplateGovernanceStore&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:119](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L119) |  |
 | <code>public IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:128](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L128) |  |
 | <code>public void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:157](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L157) |  |
-
-## FinancialRecordExplorerReadScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerReadScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadScope.cs:35](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadScope.cs#L35).
-
-Which sibling families the caller may see enriched into a financial-record explorer row. The security-instrument explorer&#x27;s rows are the Security Master references a strategy run touched, so a strategy permission admits it — but each row is then decorated with the instrument passport, AssetOperations detail and readiness, posted journal proofs, report-pack usage, and direct-lending operations detail. None of those is a claim the explorer&#x27;s own admission establishes. Each flag mirrors the permissions of the route that serves that family directly, so a caller sees through the explorer exactly what it could fetch head-on and nothing more. All is for callers whose authority is already established: the legacy in-process overloads and tests. Request-serving callers resolve the scope from the caller&#x27;s permissions, and an unreadable family is not loaded at all rather than loaded and discarded.
-
-```csharp
-public sealed record FinancialRecordExplorerReadScope(bool Reporting, bool DirectLending, bool SecurityMaster, bool AssetOperations, bool Strategy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly FinancialRecordExplorerReadScope All = new (Reporting : true, DirectLending : true, SecurityMaster : true, AssetOperations : true, Strategy : true);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadScope.cs:42](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadScope.cs#L42) |  |
-
-## FinancialRecordExplorerReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L15).
-
-```csharp
-public sealed partial class FinancialRecordExplorerReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string LedgerExplorerId = &quot;ledger&quot;;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:17](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L17) |  |
-| <code>public const string PortfolioExplorerId = &quot;portfolio&quot;;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L18) |  |
-| <code>public const string SecurityInstrumentExplorerId = &quot;security-instrument&quot;;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:19](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L19) |  |
-| <code>public const string ReportLineProvenanceExplorerId = &quot;report-line-provenance&quot;;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:20](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L20) |  |
-| <code>public FinancialRecordExplorerReadService(IFinancialRecordExplorerSavedViewStore savedViewStore, StrategyRunReadService? runReadService = null, ReportPackWorkflowService? reportPackWorkflowService = null, ReportPackDeliveryService? reportPackDeliveryService = null, ISecurityMasterWorkbenchQueryService? securityMasterWorkbenchQueryService = null, IAssetOperationsQueryService? assetOperationsQueryService = null, DirectLendingOperationsReadService? directLendingOperationsReadService = null, ILedgerJournalStore? ledgerJournalStore = null, IAssetAccountingEventSpineService? assetAccountingEventSpineService = null, IFundProfileTenancyRegistry? tenancyRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:42](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L42) |  |
-| <code>public static bool IsKnownExplorerId(string explorerId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:66](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L66) |  |
-| <code>public async Task&lt;FinancialRecordExplorerDto?&gt; GetExplorerAsync(string explorerId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:69](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L69) |  |
-| <code>public async Task&lt;FinancialRecordExplorerDto?&gt; GetExplorerAsync(string explorerId, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:74](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L74) |  |
-| <code>public async Task&lt;FinancialRecordExplorerDto?&gt; GetExplorerAsync(string explorerId, string tenantId, FinancialRecordExplorerQueryDto? query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:80](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L80) |  |
-| <code>public async Task&lt;FinancialRecordExplorerDto?&gt; GetExplorerAsync(string explorerId, string tenantId, FinancialRecordExplorerQueryDto? query, FinancialRecordExplorerReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:87](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L87) |  |
-| <code>public async Task&lt;FinancialRecordExplorerDto?&gt; GetExplorerAsync(string explorerId, string tenantId, string? companyId, FinancialRecordExplorerQueryDto? query, FinancialRecordExplorerReadScope scope, ReportAccessQueryContext? reportAccess = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:100](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L100) | The explorer for one tenant, with companyId completing the fund-ownership scope used to choose which strategy run may be its source. Request-serving callers pass both; the in-process overloads above pass no company and fall back to tenant-only ownership. |
-| <code>public async Task&lt;FinancialRecordExplorerSelectedRecordDto?&gt; GetRecordAsync(string explorerId, string recordId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:130](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L130) |  |
-| <code>public async Task&lt;FinancialRecordExplorerSelectedRecordDto?&gt; GetRecordAsync(string explorerId, string recordId, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:136](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L136) |  |
-| <code>public async Task&lt;FinancialRecordExplorerSelectedRecordDto?&gt; GetRecordAsync(string explorerId, string recordId, string tenantId, FinancialRecordExplorerReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:143](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L143) |  |
-| <code>public async Task&lt;FinancialRecordExplorerSelectedRecordDto?&gt; GetRecordAsync(string explorerId, string recordId, string tenantId, string? companyId, FinancialRecordExplorerReadScope scope, ReportAccessQueryContext? reportAccess = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:151](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L151) |  |
-| <code>public async Task&lt;FinancialRecordExplorerSavedViewDto?&gt; SaveViewAsync(string explorerId, FinancialRecordExplorerSavedViewSaveRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:172](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L172) |  |
-| <code>public async Task&lt;FinancialRecordExplorerSavedViewDto?&gt; SaveViewAsync(string explorerId, string tenantId, FinancialRecordExplorerSavedViewSaveRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:178](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L178) |  |
-| <code>public static FinancialRecordExplorerDto BuildReportLineProvenanceExplorer(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; workflowRecords, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null, IReadOnlyList&lt;FinancialRecordExplorerSavedViewDto&gt;? savedViews = null, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:562](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L562) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.InstrumentJournalProof.cs:10](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.InstrumentJournalProof.cs#L10).
-
-```csharp
-public sealed partial class FinancialRecordExplorerReadService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.PreparerAttestation.cs:10](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.PreparerAttestation.cs#L10).
-
-```csharp
-public sealed partial class FinancialRecordExplorerReadService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.SecurityRows.cs:19](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.SecurityRows.cs#L19).
-
-Row, field, proof-action and impact construction for the security-instrument explorer. Split from the read service so the file that composes every explorer stays navigable; the projection rules these apply are documented on FinancialRecordExplorerReadScope.
-
-```csharp
-public sealed partial class FinancialRecordExplorerReadService
-```
-
-## FinancialRecordExplorerSavedViewRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerSavedViewRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:209](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L209).
-
-```csharp
-public sealed record FinancialRecordExplorerSavedViewRecord(string TenantId, string ExplorerId, FinancialRecordExplorerSavedViewDto SavedView);
-```
-
-## FinancialRecordExplorerSavedViewSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerSavedViewSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:214](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L214).
-
-```csharp
-public sealed record FinancialRecordExplorerSavedViewSnapshot(int Version, IReadOnlyList<FinancialRecordExplorerSavedViewRecord> Views, IReadOnlyList<WorkstationPersonalTableViewRecord>? PersonalViews = null);
-```

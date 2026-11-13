@@ -13,6 +13,15 @@ last_reviewed: 2026-11-13
 
 The Strategy Run Ledger Explorer supports an inclusive UTC as-of date, retained in its URL and applied to both trial balance and journal. Clearing the date restores the complete run. Historical mode omits the final-run generic proof explorer so final balances and links cannot appear under a historical scope. Accounting package downloads preserve run, date and selected CSV/Excel/Parquet/Arrow format; packages declare missing lot snapshot evidence explicitly.
 
+Accounting's entity and intercompany view uses shared host contracts for authorized entity history,
+accounting profiles, source-linked proposals, breaks and versioned consolidation. Each accounting
+profile pins a canonical approved legal agreement ID, integer version and payload hash; operators
+configure book/account mappings without copying or editing legal terms. Legal authoring and
+independent approval remain in Accounting Configure's canonical agreement registry. Financial amounts and
+capabilities come from the host. Current draft scope must match the preview before mutation;
+loading, stale, blocked and unavailable states remain visible. See
+[intercompany operations](../../../docs/operators/intercompany-entity-controls.md).
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Accounting Security Master selection/search state belongs to
@@ -2468,6 +2477,8 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

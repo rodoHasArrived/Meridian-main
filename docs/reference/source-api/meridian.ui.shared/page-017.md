@@ -6,6 +6,242 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterExceptionSlaConfig
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionSlaConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:10](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L10).
+
+Per-category SLA configuration for Security Master exceptions.
+
+```csharp
+public sealed record SecurityMasterExceptionSlaConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int IdentifierConflictDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L13) | Days to resolve an identifier conflict before SLA breach. |
+| <code>public int IncompleteRecordDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:16](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L16) | Days to resolve an incomplete security record before SLA breach. |
+| <code>public int NewSecurityUnresolvedDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:19](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L19) | Days to create a new unresolved security before SLA breach. |
+| <code>public int QualityHardBlockDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L22) | Days to resolve a HardBlock data quality violation before SLA breach. |
+| <code>public int QualityErrorDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L25) | Days to resolve an Error data quality violation before SLA breach. |
+| <code>public int QualityWarningDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:28](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L28) | Days to resolve a Warning data quality violation before SLA breach. |
+
+## SecurityMasterReconciliationSlaPolicyProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterReconciliationSlaPolicyProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L13).
+
+Supplies Security Master-specific SLA policies for reconciliation cases, honoring the per-category windows in SecurityMasterExceptionSlaConfig. The configured calendar-day windows are expressed as business-day equivalents so they integrate with the shared ReconciliationSlaCalculator business-hour model (weekends excluded), consistent with the rest of the reconciliation SLA system.
+
+```csharp
+public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliationSlaPolicyProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterReconciliationSlaPolicyProvider(SecurityMasterExceptionSlaConfig? config = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L22) |  |
+| <code>public ReconciliationSlaPolicy? ResolvePolicy(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L25) |  |
+
+## SecurityMasterSecurityReferenceLookup
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:12](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L12).
+
+Adapts Security Master query services to workstation-facing symbol enrichment.
+
+```csharp
+public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLookup
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterSecurityReferenceLookup(ISecurityMasterQueryService queryService);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:16](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L16) |  |
+| <code>public Task&lt;WorkstationSecurityReference?&gt; GetBySymbolAsync(string symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:21](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L21) |  |
+| <code>public async Task&lt;WorkstationSecurityReference?&gt; GetByCanonicalAsync(SecurityReferenceLookupRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs:30](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs#L30) |  |
+
+## SecurityMasterWorkbenchQueryService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterWorkbenchQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs:8](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs#L8).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Conflicts.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Conflicts.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:27](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L27).
+
+Composes the selected-security trust snapshot used by the Security Master workstation. The endpoint is selection-scoped and additive, so the heavier downstream checks only run when the operator explicitly loads or refreshes a security drill-in.
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkbenchQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterWorkbenchQueryService(Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService, ISecurityValidationService validationService, ISecurityMasterConflictService conflictService, ISecurityMasterIngestStatusService ingestStatusService, IStrategyRepository strategyRepository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService, ReportGenerationService reportGenerationService, IReconciliationRunService? reconciliationRunService = null, ISecurityMasterPricingService? pricingService = null, ISecurityMasterCashFlowService? cashFlowService = null, IDataVendorEntitlementService? entitlementService = null, ISecurityMasterDataQualityService? dataQualityService = null, IFundProfileTenancyRegistry? tenancyRegistry = null, IHttpContextAccessor? httpContextAccessor = null, Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, TimeProvider? timeProvider = null, Microsoft.Extensions.Logging.ILogger&lt;SecurityMasterWorkbenchQueryService&gt;? logger = null, ISecurityMasterGovernanceRequirements? governanceRequirements = null);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:46](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L46) |  |
+| <code>public async Task&lt;SecurityMasterTrustSnapshotDto?&gt; GetTrustSnapshotAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:90](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L90) |  |
+| <code>public async Task&lt;InstrumentPassportDto?&gt; GetInstrumentPassportAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:221](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L221) |  |
+| <code>public async Task&lt;SecurityMasterOperatingModelDto?&gt; GetOperatingModelAsync(Guid securityId, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:230](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L230) |  |
+| <code>public async Task&lt;BulkResolveSecurityMasterConflictsResult&gt; BulkResolveConflictsAsync(BulkResolveSecurityMasterConflictsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs:273](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs#L273) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L22).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CallEventType = &quot;Call&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L25) | Schedule-book event type of a declared issuer call date; also the type of the scalar call row. |
+| <code>public const string CallNoticeDeadlineEventType = &quot;CallNoticeDeadline&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:28](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L28) | Schedule-book event type of the last day to give notice for a declared issuer call date. |
+| <code>public const string PutEventType = &quot;Put&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:31](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L31) | Schedule-book event type of a declared holder put date. |
+| <code>public const string PutNoticeDeadlineEventType = &quot;PutNoticeDeadline&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:34](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L34) | Schedule-book event type of the last day to give notice for a declared holder put date. |
+| <code>public const string DeclaredExerciseUnavailableCode = &quot;DeclaredExerciseUnavailable&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:42](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L42) | Blocker code of a declared schedule whose resolution faulted on this node. |
+| <code>public const string DeclaredExerciseUnavailableReason = &quot;The declared call/put schedule could not be evaluated on this node; the service log has the cause.&quot;;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs:45](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs#L45) | The fixed reason shown with DeclaredExerciseUnavailableCode; the fault itself goes to the log only. |
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DownstreamImpact.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DownstreamImpact.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Handoffs.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Handoffs.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.History.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.History.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.InstrumentPassport.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.InstrumentPassport.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Json.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Json.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Lots.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Lots.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.OperatingModel.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.OperatingModel.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ProviderConfidence.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ProviderConfidence.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ReferenceDataControls.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.ReferenceDataControls.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Schedules.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.Schedules.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.TrustPosture.cs:23](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.TrustPosture.cs#L23).
+
+```csharp
+public sealed partial class SecurityMasterWorkbenchQueryService
+```
+
+## SensitiveActionPolicyEngine
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionPolicyEngine</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:34](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L34).
+
+Evaluates sensitive-action policy requirements from the actor, role, MFA, and approval context.
+
+```csharp
+public sealed class SensitiveActionPolicyEngine
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PolicyDecision Evaluate(SensitiveActionType action, AccessContext context);</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:36](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L36) |  |
+
+## SensitiveActionType
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SensitiveActionType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:10](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L10).
+
+```csharp
+public enum SensitiveActionType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RuleEdit</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:12](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L12) |  |
+| <code>BreakClosure</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:13](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L13) |  |
+| <code>PaymentRelease</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:14](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L14) |  |
+| <code>OverrideApproval</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:15](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L15) |  |
+
+## SettlementInstruction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SettlementInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L37).
+
+```csharp
+public sealed record SettlementInstruction(string InstructionId, string AccountId, string Currency, decimal GrossAmount, DateOnly TradeDate, DateOnly SettlementDate, DateTimeOffset CutoffAt, string Status);
+```
+
+## SourceAvailabilityWindow
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SourceAvailabilityWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:3](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L3).
+
+```csharp
+public sealed record SourceAvailabilityWindow(string SourceId, TimeOnly StartLocal, TimeOnly EndLocal, bool IsAvailable);
+```
+
 ## StartupRefusalPreflight
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StartupRefusalPreflight</code>. Kind: `class`.
@@ -417,7 +653,7 @@ public sealed record WorkstationPersonalTableViewRecord(string TenantId, string 
 
 Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:84](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L84).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L86).
 
 Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
 
@@ -429,8 +665,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L86) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1448](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1448) |  |
+| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1485](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1485) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -765,122 +1001,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L12) |  |
 | <code>Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L14) |  |
-
-## IOperatorSurfaceVisitStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorSurfaceVisitStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L11).
-
-Durable per-operator last visit to each workstation surface (C3).
-
-```csharp
-public interface IOperatorSurfaceVisitStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L14) | The last recorded visit, without recording one. |
-| <code>Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L17) | Records a visit now and returns the visit it replaced. |
-
-## IWorkflowActionCatalog
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L8).
-
-Resolves workflow actions into shell page targets for summaries, queues, and UI.
-
-```csharp
-public interface IWorkflowActionCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L10) |  |
-| <code>IReadOnlyList&lt;WorkflowActionDto&gt; GetActions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L12) |  |
-| <code>WorkflowActionDto? ResolveAction(string? actionId);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L14) |  |
-| <code>WorkflowActionDto? ResolveOperatorWorkItem(OperatorWorkItemDto? workItem);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:16](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L16) |  |
-| <code>WorkflowActionDto? ResolveRoute(string? targetRoute);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:18](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L18) |  |
-| <code>string ResolveTargetPageTag(string? actionId, string fallbackPageTag);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:20](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L20) |  |
-
-## IWorkflowDefinitionProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowDefinitionProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L8).
-
-Supplies reusable workstation workflow definitions.
-
-```csharp
-public interface IWorkflowDefinitionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L10) |  |
-
-## IWorkflowPresetStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowPresetStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L8).
-
-Durable store for operator-saved workflow presets.
-
-```csharp
-public interface IWorkflowPresetStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L10) |  |
-| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L12) |  |
-
-## OperatorScopePreferenceRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:141](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L141).
-
-```csharp
-public sealed record OperatorScopePreferenceRecord(string OperatorKey, OperatingScopeValuesDto DefaultScope, DateTimeOffset UpdatedAt);
-```
-
-## OperatorScopePreferenceSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L143).
-
-```csharp
-public sealed record OperatorScopePreferenceSnapshot(int Version, IReadOnlyList<OperatorScopePreferenceRecord> Operators);
-```
-
-## OperatorSurfaceVisitRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:121](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L121).
-
-```csharp
-public sealed record OperatorSurfaceVisitRecord(string OperatorKey, string Surface, DateTimeOffset VisitedAt);
-```
-
-## OperatorSurfaceVisitSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:123](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L123).
-
-```csharp
-public sealed record OperatorSurfaceVisitSnapshot(int Version, IReadOnlyList<OperatorSurfaceVisitRecord> Visits);
-```

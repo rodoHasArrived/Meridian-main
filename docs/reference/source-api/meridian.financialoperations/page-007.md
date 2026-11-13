@@ -6,6 +6,256 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IInternalReconciliationPopulationProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IInternalReconciliationPopulationProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:42](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L42).
+
+Supplies the internal portfolio, cash, and ledger populations that a statement run is reconciled against. This is the seam that connects the (previously file-only) reconciliation workflow to Meridian&#x27;s real books: a production wiring resolves positions/cash/ledger for the fund account and period, while the default EmptyInternalReconciliationPopulationProvider supplies an empty book so imports still run and surface every row as a break until a source is connected.
+
+```csharp
+public interface IInternalReconciliationPopulationProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;InternalReconciliationPopulations&gt; GetPopulationsAsync(InternalReconciliationPopulationContext context, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L44) |  |
+
+## InMemoryStatementReconciliationCheckpointStore
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InMemoryStatementReconciliationCheckpointStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L43).
+
+Retains account reconciliation checkpoints in process.
+
+```csharp
+public sealed class InMemoryStatementReconciliationCheckpointStore : IStatementReconciliationCheckpointStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;StatementReconciliationCheckpoint?&gt; GetAsync(Guid accountId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:46](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L46) |  |
+| <code>public Task UpsertAsync(StatementReconciliationCheckpoint checkpoint, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:49](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L49) |  |
+
+## InMemoryStatementRunRecoveryRepository
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InMemoryStatementRunRecoveryRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:471](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L471).
+
+Maintains statement-run recovery checkpoints in process.
+
+```csharp
+public sealed class InMemoryStatementRunRecoveryRepository : IStatementRunRecoveryRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;StatementRunRecoveryCheckpoint?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:476](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L476) |  |
+| <code>public Task&lt;bool&gt; TryCreateAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:483](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L483) |  |
+| <code>public Task SaveAsync(StatementRunRecoveryCheckpoint checkpoint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:490](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L490) |  |
+
+## InMemoryStatementToleranceProfileProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InMemoryStatementToleranceProfileProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:74](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L74).
+
+Resolves configured statement tolerance profiles from an in-process catalog.
+
+```csharp
+public sealed class InMemoryStatementToleranceProfileProvider : IStatementToleranceProfileProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public InMemoryStatementToleranceProfileProvider(IEnumerable&lt;StatementToleranceProfile&gt;? profiles = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:78](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L78) |  |
+| <code>public ValueTask&lt;StatementToleranceProfile&gt; GetProfileAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs:86](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementToleranceProfiles.cs#L86) |  |
+
+## InternalCashBalance
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalCashBalance</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:955](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L955).
+
+```csharp
+public sealed record InternalCashBalance(string CashBalanceId, string Account, string Currency, decimal Balance, string EvidenceReference, DateOnly AsOfDate) : IStatementMatchItem
+```
+
+## InternalLedgerTransaction
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalLedgerTransaction</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:966](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L966).
+
+```csharp
+public sealed record InternalLedgerTransaction(string TransactionId, string? ExternalTransactionId, string Account, string? SecurityId, string? Currency, DateOnly TradeDate, DateOnly SettlementDate, string TransactionType, decimal Quantity, decimal NetAmount, string EvidenceReference) : IStatementMatchItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:980](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L980) | Unit price in the same currency as the monetary amount, when explicitly available. |
+
+## InternalPortfolioPosition
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalPortfolioPosition</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:940](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L940).
+
+```csharp
+public sealed record InternalPortfolioPosition(string PositionId, string Account, string SecurityId, DateOnly AsOfDate, decimal Quantity, decimal? MarketValue, string EvidenceReference) : IStatementMatchItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal? Price { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs:950](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMatchingEngine.cs#L950) | Unit price in the same currency as the monetary amount, when explicitly available. |
+
+## InternalReconciliationBook
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalReconciliationBook</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L11).
+
+Meridian&#x27;s own view of the positions, cash balances, and ledger transactions that a broker or custodian statement is reconciled against. This is the &quot;internal book&quot; side of a two-sided reconciliation: the sided StatementMatchingEngine compares each statement row against these records instead of against the row&#x27;s own values.
+
+```csharp
+public sealed record InternalReconciliationBook(IReadOnlyList<InternalPortfolioPosition> Positions, IReadOnlyList<InternalCashBalance> CashBalances, IReadOnlyList<InternalLedgerTransaction> Transactions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static InternalReconciliationBook Empty { get; } = new ([], [], []);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:17](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L17) | An internal book with no records. Every statement row reconciles as an unmatched break. |
+| <code>public int RecordCount =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L20) | Total number of internal records available for matching across all three kinds. |
+
+## InternalReconciliationPopulationContext
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalReconciliationPopulationContext</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L10).
+
+Identifies the fund account, external (custodian) account, statement window, and reporting base currency a statement run reconciles against. Passed to IInternalReconciliationPopulationProvider so an implementation can fetch the matching internal portfolio, cash, and ledger populations.
+
+```csharp
+public sealed record InternalReconciliationPopulationContext(string FundAccountId, string ExternalAccountId, DateOnly StatementPeriodStart, DateOnly StatementPeriodEnd, string BaseCurrency)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementAccountingScope? AccountingScope { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L18) | The resolved fund, ledger book, and exact period retained by governed intake. |
+
+## InternalReconciliationPopulations
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.InternalReconciliationPopulations</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L26).
+
+The internal book a statement is reconciled against: portfolio positions, cash balances, and ledger transactions, expressed in the run&#x27;s base currency and shaped for StatementMatchingEngine.
+
+```csharp
+public sealed record InternalReconciliationPopulations(IReadOnlyList<InternalPortfolioPosition> Positions, IReadOnlyList<InternalCashBalance> CashBalances, IReadOnlyList<InternalLedgerTransaction> LedgerTransactions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static InternalReconciliationPopulations Empty { get; } = new ([], [], []);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationPopulations.cs#L32) | An empty internal book. Every statement row then surfaces as an unmatched break. |
+
+## IReconciliationCaseIntakeService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationCaseIntakeService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L58).
+
+Creates reconciliation casework from normalized intake requests and evidence.
+
+```csharp
+public interface IReconciliationCaseIntakeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ReconciliationCaseIntakeResult&gt; IntakeAsync(ReconciliationCaseIntakeRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L60) |  |
+
+## IReconciliationDecisionJournal
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationDecisionJournal</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:118](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L118).
+
+Appends reconciliation decisions and resolution history and reads their retained evidence.
+
+```csharp
+public interface IReconciliationDecisionJournal
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task AppendDecisionAsync(BrokerCustodianMatchDecision decision, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:120](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L120) |  |
+| <code>Task AppendHistoryAsync(ReconciliationResolutionHistoryEntry history, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:121](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L121) |  |
+| <code>Task&lt;IReadOnlyList&lt;BrokerCustodianMatchDecision&gt;&gt; ListDecisionsAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:122](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L122) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationResolutionHistoryEntry&gt;&gt; ListHistoryAsync(string decisionId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:123](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L123) |  |
+
+## IReconciliationFeedAdapter
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationFeedAdapter</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L26).
+
+Reads source feed data into canonical reconciliation records.
+
+```csharp
+public interface IReconciliationFeedAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string SourceSystem { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L28) |  |
+| <code>Task&lt;IReadOnlyList&lt;CanonicalReconciliationFeedRecord&gt;&gt; ReadAsync(string sourcePath, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L30) |  |
+
+## IReconciliationFxRateProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationFxRateProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L15).
+
+Reconciliation-scoped FX seam. Returns the conversion rate from one currency to another as of a business date, or false when no rate is known. The matcher relies on the false result to fail closed: a cross-currency line with no available rate stays in its original currency and surfaces as a break rather than being silently (mis)matched against a base-currency balance.
+
+```csharp
+public interface IReconciliationFxRateProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:17](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L17) |  |
+| <code>bool TryResolveRate(string fromCurrency, string toCurrency, DateOnly asOf, out ReconciliationFxRateResolution resolution);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L24) | Resolves the rate together with the evidence a posting needs: the date of the quote that was used, how it was derived and where it came from. A provider that cannot state those reports no resolution, so a posting never rests on a rate of unknown age or origin. |
+
 ## IReconciliationIngestionScheduler
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationIngestionScheduler</code>. Kind: `interface`.
@@ -627,252 +877,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public NormalizedPosition NormalizePosition(NormalizedPosition input, string baseCurrency, DateTimeOffset runTimestampUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L19) |  |
 | <code>public NormalizedCashEntry NormalizeCashEntry(NormalizedCashEntry input, string baseCurrency, DateTimeOffset runTimestampUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L40) |  |
-
-## ReconciliationOrchestrationResilienceOptions
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationOrchestrationResilienceOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L5).
-
-```csharp
-public sealed record ReconciliationOrchestrationResilienceOptions(int MaxRetries = 3, TimeSpan RetryBaseDelay = default, int MaxInFlightJobs = 32, bool DeadLetterEnabled = true)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan RetryBaseDelay { get; init; } = RetryBaseDelay == default? TimeSpan.FromSeconds(2) : RetryBaseDelay;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L11) |  |
-| <code>public TimeSpan GetRetryDelay(int attempt) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L13) |  |
-| <code>public bool ShouldDeadLetter(int attempt, Exception _) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L16) |  |
-
-## ReconciliationResolutionHistoryEntry
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationResolutionHistoryEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:105](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L105).
-
-```csharp
-public sealed record ReconciliationResolutionHistoryEntry(string HistoryId, string DecisionId, string FromStatus, string ToStatus, string Actor, string Reason, DateTimeOffset OccurredAtUtc, IReadOnlyList<string> EvidenceReferences);
-```
-
-## ReconciliationRolloutTarget
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationRolloutTarget</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationOrchestrationResilience.cs#L19).
-
-```csharp
-public sealed record ReconciliationRolloutTarget(string Client, string Team, string Counterparty);
-```
-
-## ReconciliationRunOrchestrator
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationRunOrchestrator</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationRunOrchestrator.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationRunOrchestrator.cs#L9).
-
-Coordinates daily source capture, normalization, matching, and reconciliation evidence production.
-
-```csharp
-public sealed class ReconciliationRunOrchestrator(IReconciliationIngestionScheduler scheduler, IReadOnlyList<IReconciliationSourceAdapter> adapters, ReconciliationMatchingEngine matchingEngine)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;(ReconciliationRun run, IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence)&gt; RunDailyAsync(DateOnly businessDate, DateTimeOffset runTimestampUtc, string baseCurrency, bool rerun, MatchingTolerances tolerances, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationRunOrchestrator.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationRunOrchestrator.cs#L22) |  |
-| <code>public Task&lt;(ReconciliationRun run, IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence)&gt; RunDailyAsync(DateOnly businessDate, DateTimeOffset runTimestampUtc, string baseCurrency, bool rerun, StatementToleranceProfile toleranceProfile, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationRunOrchestrator.cs:34](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationRunOrchestrator.cs#L34) |  |
-
-## ReconciliationServiceRegistration
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationServiceRegistration</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationServiceRegistration.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationServiceRegistration.cs#L21).
-
-Registers statement reconciliation services and their storage dependencies.
-
-```csharp
-public static class ReconciliationServiceRegistration
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddStatementReconciliationServices(this IServiceCollection services);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationServiceRegistration.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationServiceRegistration.cs#L23) |  |
-| <code>public static IServiceCollection AddStatementReconciliationServices(this IServiceCollection services, string dataRoot);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationServiceRegistration.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationServiceRegistration.cs#L52) |  |
-
-## SecurityLookupKey
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.SecurityLookupKey</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs:213](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationEngineService.cs#L213).
-
-Lookup key for resolving a single security from the Security Master.
-
-```csharp
-public sealed record SecurityLookupKey(SecurityIdentifierKind IdentifierKind, string IdentifierValue, string? Provider = null);
-```
-
-## StatementBreakClassificationRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakClassificationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L52).
-
-Input evidence for a single broker statement break classification.
-
-```csharp
-public sealed record StatementBreakClassificationRequest(StatementBreakClassificationType BreakType, decimal? StatementAmount = null, decimal? InternalAmount = null, decimal? QuantityDelta = null, string? StatementCurrency = null, string? InternalCurrency = null, string Status = "Open", bool IsOptionalMetadata = false, StatementBreakWorkflowPolicy? Policy = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StatementBreakClassificationRequest FromStatementRow(NormalizedStatementRow row);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L63) |  |
-
-## StatementBreakClassificationResult
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakClassificationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:93](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L93).
-
-Classification output stored on a break and consumed by case queue creation.
-
-```csharp
-public sealed record StatementBreakClassificationResult(StatementBreakClassificationType BreakType, ReconciliationBreakSeverity Severity, StatementBreakRecommendedAction RecommendedAction, string RecommendedActionText, bool IsMaterial, bool IsUnresolved, bool ShouldCreateCaseQueueItem, decimal AbsoluteVariance, string WorkflowRationale);
-```
-
-## StatementBreakClassificationType
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakClassificationType</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L9).
-
-Canonical statement reconciliation break types used by broker, custodian, and internal ledger workflows.
-
-```csharp
-public enum StatementBreakClassificationType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>MissingInternalPosition = 0</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L11) |  |
-| <code>MissingBrokerPosition = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L12) |  |
-| <code>PositionQuantityVariance = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L13) |  |
-| <code>CashBalanceVariance = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L14) |  |
-| <code>MissingInternalTransaction = 4</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L15) |  |
-| <code>MissingBrokerTransaction = 5</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L16) |  |
-| <code>TransactionTimingVariance = 6</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:17](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L17) |  |
-| <code>SecurityMappingBreak = 7</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L18) |  |
-| <code>AccountMappingBreak = 8</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L19) |  |
-| <code>CurrencyMismatch = 9</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L20) |  |
-| <code>FeeOrTaxVariance = 10</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L21) |  |
-
-## StatementBreakClassifier
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakClassifier</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:107](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L107).
-
-Assigns canonical break type, materiality-aware severity, and operator guidance for statement reconciliation breaks.
-
-```csharp
-public sealed class StatementBreakClassifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementBreakClassificationResult Classify(StatementBreakClassificationRequest request);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:109](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L109) |  |
-| <code>public static string ToRecommendedActionText(StatementBreakRecommendedAction action) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:219](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L219) |  |
-| <code>public static bool IsUnresolved(string? status) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:229](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L229) |  |
-
-## StatementBreakRecommendedAction
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakRecommendedAction</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L27).
-
-Recommended operator action for a classified statement reconciliation break.
-
-```csharp
-public enum StatementBreakRecommendedAction : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>MapSecurity = 0</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L29) |  |
-| <code>ReviewCashPosting = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L30) |  |
-| <code>InspectLedgerTransaction = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:31](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L31) |  |
-| <code>VerifySettlementDate = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L32) |  |
-| <code>RequestBrokerClarification = 4</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L33) |  |
-
-## StatementBreakRecord
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:250](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L250).
-
-```csharp
-public sealed record StatementBreakRecord(string BreakId, string RunId, string ImportId, string SourceRowHash, StatementBreakClassificationType BreakType, ReconciliationBreakSeverity Severity, StatementBreakRecommendedAction RecommendedAction, decimal AbsoluteVariance, bool IsMaterial, bool IsUnresolved, string Status, string Rationale, DateTimeOffset CreatedAtUtc);
-```
-
-## StatementBreakWorkflowPolicy
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementBreakWorkflowPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L39).
-
-Materiality and workflow settings used to decide severity and whether a break should become casework.
-
-```csharp
-public sealed record StatementBreakWorkflowPolicy(decimal PositionQuantityMateriality = 0.0001m, decimal CashMateriality = 0.01m, decimal TransactionMateriality = 0.01m, decimal FeeOrTaxMateriality = 0.01m, bool CreateCasesForLowSeverityBreaks = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StatementBreakWorkflowPolicy Default { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs:46](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementBreakClassifier.cs#L46) |  |
-
-## StatementCanonicalField
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementCanonicalField</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L5).
-
-```csharp
-public enum StatementCanonicalField
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Account</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L7) |  |
-| <code>SecurityIdentifier</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L8) |  |
-| <code>Quantity</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L9) |  |
-| <code>Price</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L10) |  |
-| <code>CashAmount</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L11) |  |
-| <code>ActivityType</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L12) |  |
-| <code>TradeDate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L13) |  |
-| <code>SettlementDate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L14) |  |
-| <code>Currency</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:15](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L15) |  |
-| <code>FeesCommission</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L16) |  |
-| <code>ExternalTransactionId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:17](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L17) |  |
-| <code>AccountId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L18) |  |
-| <code>ExternalAccountId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L19) |  |
-| <code>SecurityId</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L20) |  |
-| <code>UnresolvedIdentifier</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L21) |  |
-| <code>MarketValue</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L22) |  |
-| <code>Amount</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:23](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L23) |  |
-| <code>ExternalReference</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementMappingProfiles.cs#L24) |  |

@@ -25,8 +25,23 @@ public sealed class StrategyRunLedgerArchiveTests : IDisposable
     private static Meridian.Ledger.Ledger Ledger(decimal amount = 100m)
     {
         var ledger = new Meridian.Ledger.Ledger();
-        ledger.PostLines(Timestamp, "Opening cash",
-            [(LedgerAccounts.Cash, amount, 0m), (LedgerAccounts.RetainedEarnings, 0m, amount)]);
+        var id = Guid.NewGuid();
+        const string description = "Opening cash";
+        var dimensions = new LedgerLineDimensionSet(FundId: "synthetic-fund", EntityId: "synthetic-entity")
+        {
+            AccountingArrangementId = "synthetic-arrangement",
+            AccountingArrangementRevisionId = "synthetic-arrangement-revision-2",
+            ChartAccountNodeId = "synthetic-chart-node",
+            AccountBindingRevisionId = "synthetic-binding-revision-3",
+            IntercompanyTransactionId = "synthetic-intercompany-transaction"
+        };
+        ledger.Post(new(id, Timestamp, description,
+            [
+                new(Guid.NewGuid(), id, Timestamp, LedgerAccounts.Cash, amount, 0m, description, dimensions),
+                new(Guid.NewGuid(), id, Timestamp, LedgerAccounts.RetainedEarnings, 0m, amount, description, dimensions)
+            ],
+            new(ActivityType: "synthetic-capital", LedgerBook: "synthetic-book", IdempotencyKey: $"synthetic:{id:N}",
+                Tags: new Dictionary<string, string> { ["source"] = "synthetic-archive-fixture" })));
         return ledger;
     }
 
@@ -40,7 +55,10 @@ public sealed class StrategyRunLedgerArchiveTests : IDisposable
         retried.Should().Be(reference);
 
         var replayed = await Archive().LoadAsync(reference);
-        replayed.Journal.Should().BeEquivalentTo(ledger.Journal);
+        replayed.Journal.Should().BeEquivalentTo(ledger.Journal, options => options.WithStrictOrdering(),
+            "journal and line identities, metadata and every operational dimension must survive replay");
+        replayed.TrialBalance(lineDimensions: ledger.Journal.Single().Lines[0].Dimensions)
+            .Should().BeEquivalentTo(ledger.TrialBalance(), "replay must rebuild the retained dimensional scope");
         replayed.GetBalanceAsOf(LedgerAccounts.Cash, Timestamp.AddTicks(-1)).Should().Be(0m);
         replayed.GetBalanceAsOf(LedgerAccounts.Cash, Timestamp).Should().Be(100m);
         var candidate = await Archive().SaveAsync("../run-1", Ledger(101m));

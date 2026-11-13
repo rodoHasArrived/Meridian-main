@@ -309,10 +309,11 @@ public sealed class LedgerAnalysisExportTests : IDisposable
     public async Task PortablePackage_RestoresLedgerAndRefusesTamperingBeforeImport()
     {
         var packager = PortableLedgerPackaging.CreatePackager(Path.Combine(_root, "source"));
+        var ledger = CreateLedger();
         var result = await packager.CreatePackageAsync(new()
         {
             Name = "ledger",
-            Ledger = PortableLedgerSnapshot.CapturePayload(CreateLedger()),
+            Ledger = PortableLedgerSnapshot.CapturePayload(ledger),
             OutputDirectory = _root,
             IncludeLoaderScripts = true,
             IncludeDataDictionary = false
@@ -333,6 +334,10 @@ public sealed class LedgerAnalysisExportTests : IDisposable
         }
         var restored = await packager.ReadLedgerAsync(result.PackagePath!);
         restored!.GetBalance(LedgerAccounts.CashAccount("account-a")).Should().Be(100m);
+        restored.Journal.Should().BeEquivalentTo(ledger.Journal, options => options.WithStrictOrdering(),
+            "journal and line identities, metadata and every operational dimension must survive portable replay");
+        restored.TrialBalance(lineDimensions: ledger.Journal.Single().Lines[0].Dimensions)
+            .Should().BeEquivalentTo(ledger.TrialBalance(), "portable replay must rebuild the retained dimensional scope");
         (await packager.ValidatePackageAsync(result.PackagePath!)).IsValid.Should().BeTrue();
         var successfulImport = await packager.ImportPackageAsync(result.PackagePath!, Path.Combine(_root, "verified-import"));
         successfulImport.Success.Should().BeTrue(successfulImport.Error);
@@ -354,9 +359,19 @@ public sealed class LedgerAnalysisExportTests : IDisposable
         var ledger = new Meridian.Ledger.Ledger();
         var id = Guid.NewGuid();
         var time = Start.AddHours(1);
+        var dimensions = new LedgerLineDimensionSet(FundId: "synthetic-fund", EntityId: "synthetic-entity")
+        {
+            AccountingArrangementId = "synthetic-arrangement",
+            AccountingArrangementRevisionId = "synthetic-arrangement-revision-2",
+            ChartAccountNodeId = "synthetic-chart-node",
+            AccountBindingRevisionId = "synthetic-binding-revision-3",
+            IntercompanyTransactionId = "synthetic-intercompany-transaction"
+        };
         ledger.Post(new(id, time, description, [
-            new(Guid.NewGuid(), id, time, LedgerAccounts.CashAccount("account-a"), 100m, 0m, description),
-            new(Guid.NewGuid(), id, time, LedgerAccounts.CapitalAccountFor("account-a"), 0m, 100m, description)]));
+            new(Guid.NewGuid(), id, time, LedgerAccounts.CashAccount("account-a"), 100m, 0m, description, dimensions),
+            new(Guid.NewGuid(), id, time, LedgerAccounts.CapitalAccountFor("account-a"), 0m, 100m, description, dimensions)],
+            new(ActivityType: "synthetic-capital", FinancialAccountId: "account-a", IdempotencyKey: $"synthetic:{id:N}",
+                Tags: new Dictionary<string, string> { ["source"] = "synthetic-portable-fixture" })));
         return ledger;
     }
 
