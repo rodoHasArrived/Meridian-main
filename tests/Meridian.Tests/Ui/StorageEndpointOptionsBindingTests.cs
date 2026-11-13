@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.IO.Compression;
 using System.Text.Json;
 using System.Threading.RateLimiting;
 using FluentAssertions;
@@ -61,6 +62,120 @@ public sealed class StorageEndpointOptionsBindingTests : TempDirectoryTestBase
         Directory.GetFiles(requestedRoot).Should().HaveCount(1);
     }
 
+    [Theory]
+    [InlineData(UiApiRoutes.StorageStats)]
+    [InlineData(UiApiRoutes.StorageHealth)]
+    public async Task StorageRead_ResolvesConfiguredOptionsInsteadOfRequestValues(string route)
+    {
+        var trustedRoot = Path.Combine(TestDataRoot, "trusted");
+        var requestedRoot = Path.Combine(TestDataRoot, "requested");
+        Directory.CreateDirectory(trustedRoot);
+        await WriteCompletedDayAsync(requestedRoot);
+        await using var app = await CreateAppAsync(new StorageOptions { RootPath = trustedRoot });
+        using var client = app.GetTestClient();
+
+        using var response = await client.GetAsync($"{route}?rootPath={Uri.EscapeDataString(requestedRoot)}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("rootPath").GetString().Should().Be(trustedRoot);
+        Directory.GetFiles(requestedRoot).Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task TierMigration_OutsideRootRequestIsRejectedBeforeInvokingTheService()
+    {
+        var trustedRoot = Path.Combine(TestDataRoot, "trusted");
+        var outside = Path.Combine(TestDataRoot, "trusted-other");
+        var name = await WriteCompletedDayAsync(outside);
+        var migration = new Mock<ITierMigrationService>(MockBehavior.Strict);
+        await using var app = await CreateAppAsync(new StorageOptions { RootPath = trustedRoot }, migration.Object);
+        using var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(UiApiRoutes.StorageTiersMigrate,
+            new { TargetTier = "Warm", SourcePath = Path.Combine(outside, name), DeleteSource = true });
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        migration.VerifyNoOtherCalls();
+        File.Exists(Path.Combine(outside, name)).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task TierMigration_ValidNormalizedSourceRetainsPayloadAndDeletesOnlyItsSource()
+    {
+        var root = Path.Combine(TestDataRoot, "trusted");
+        var sourceDirectory = Path.Combine(root, "hot");
+        var name = await WriteCompletedDayAsync(sourceDirectory);
+        var source = Path.Combine(sourceDirectory, name);
+        var expected = await File.ReadAllTextAsync(source);
+        var options = CreateTierOptions(root);
+        await using var app = await CreateAppAsync(options, new TierMigrationService(options));
+        using var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(UiApiRoutes.StorageTiersMigrate,
+            new { TargetTier = "Warm", SourcePath = Path.Combine(sourceDirectory, ".", name), DeleteSource = true });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        body.RootElement.GetProperty("filesProcessed").GetInt32().Should().Be(1);
+        File.Exists(source).Should().BeFalse();
+        await using var file = File.OpenRead(Path.Combine(root, "warm", "hot", name + ".gz"));
+        await using var gzip = new GZipStream(file, CompressionMode.Decompress);
+        using var reader = new StreamReader(gzip);
+        (await reader.ReadToEndAsync()).Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TierMigration_LinkEscapeCannotReadOrDeleteOutsideEvidence(bool directoryLink)
+    {
+        var root = Path.Combine(TestDataRoot, "trusted");
+        var outside = Path.Combine(TestDataRoot, "outside");
+        var name = await WriteCompletedDayAsync(outside);
+        var evidence = Path.Combine(outside, name);
+        var expected = await File.ReadAllTextAsync(evidence);
+        Directory.CreateDirectory(root);
+        var link = Path.Combine(root, directoryLink ? "linked-directory" : "linked-file.jsonl");
+        if (directoryLink)
+            Directory.CreateSymbolicLink(link, outside);
+        else
+            File.CreateSymbolicLink(link, evidence);
+        try
+        {
+            var options = CreateTierOptions(root);
+            await using var app = await CreateAppAsync(options, new TierMigrationService(options));
+            using var client = app.GetTestClient();
+            using var response = await client.PostAsJsonAsync(UiApiRoutes.StorageTiersMigrate,
+                new { TargetTier = "Warm", SourcePath = directoryLink ? Path.Combine(link, name) : link, DeleteSource = true });
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            body.RootElement.GetProperty("success").GetBoolean().Should().BeFalse();
+            body.RootElement.GetProperty("filesProcessed").GetInt32().Should().Be(0);
+            (await File.ReadAllTextAsync(evidence)).Should().Be(expected);
+            Directory.Exists(Path.Combine(root, "warm")).Should().BeFalse();
+        }
+        finally
+        {
+            if (directoryLink)
+                Directory.Delete(link);
+            else
+                File.Delete(link);
+        }
+    }
+
+    private static StorageOptions CreateTierOptions(string root) => new()
+    {
+        RootPath = root,
+        Tiering = new TieringOptions
+        {
+            Enabled = true,
+            Tiers = [new TierConfig { Name = "Warm", Path = Path.Combine(root, "warm"), Format = "jsonl", Compression = CompressionCodec.Gzip }]
+        }
+    };
+
     private static async Task<string> WriteCompletedDayAsync(string root)
     {
         Directory.CreateDirectory(root);
@@ -71,13 +186,13 @@ public sealed class StorageEndpointOptionsBindingTests : TempDirectoryTestBase
         return fileName;
     }
 
-    private static async Task<WebApplication> CreateAppAsync(StorageOptions? options)
+    private static async Task<WebApplication> CreateAppAsync(StorageOptions? options, ITierMigrationService? migration = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Testing" });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(Mock.Of<IStorageSearchService>());
         builder.Services.AddSingleton(Mock.Of<IFileMaintenanceService>());
-        builder.Services.AddSingleton(Mock.Of<ITierMigrationService>());
+        builder.Services.AddSingleton(migration ?? Mock.Of<ITierMigrationService>());
         if (options is not null)
             builder.Services.AddSingleton(options);
         builder.Services.AddRateLimiter(settings => settings.AddPolicy(UiEndpoints.MutationRateLimitPolicy,

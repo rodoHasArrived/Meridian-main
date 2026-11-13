@@ -279,5 +279,31 @@ Diagnostic Windows run `43327730266` passed 2,777 tests and failed one backup DA
 Destination ACL and publication cases passed; the backup retained the same access rules but its
 descriptor was `D:P` instead of the expected `D:PAI`. The repair reapplies the original access
 descriptor to the staged backup after creation, before either live or backup publication. Independent
-review accepted lifecycle and access safety; exact auto-inherited flag preservation remains subject
-to a new Windows execution of the unchanged assertions. This record does not claim that rerun passed.
+review accepted lifecycle and access safety. Subsequent manual and pull-request Windows runs on
+`7798dc2b18` each passed all 2,778 tests with zero failures, including all 60 atomic-writer cases and
+both protected-DACL rows. Smoke publication also passed. These later results verify the repair;
+the earlier 2,777-pass/one-failure diagnostic remains historical evidence.
+
+### Storage and lifecycle authority boundaries
+
+All ten storage handlers that need `StorageOptions` now resolve trusted options from the request's
+server service scope, failing before filesystem access if registration is missing. Tier migration
+rejects out-of-root sources, discovers entries beneath the configured root and rejects symbolic links
+or reparse points. It guards the compression-adjusted target before access and after copying and
+compression finish, before atomic publication, then rechecks both paths before source deletion.
+
+Manual journal lifecycle commands explicitly construct all fifteen contract fields, retaining request
+evidence while deriving actor, tenant/company, report principals and origin from server authority.
+Only eight defined actions are admitted: Validate requires ledger read permission; Submit, Approve,
+Reject, Post, Reverse, Rebook and LockAfterClose require certification permission. Undefined actions
+are refused before service invocation. The supplied actor remains a separate audit assertion.
+
+Both changes passed independent source review. The combined storage and posting-authority slice
+passed 136 of 136 tests with zero skips, including all 25 new lifecycle cases and all 37 storage
+endpoint and migration cases. A fresh CodeQL result remains pending; this record claims no CodeQL
+closure.
+
+The configuration-reference producer now emits the notice required by the existing documentation
+rules. Its focused regression generates the reference through the real producer and verifies the
+actual rule accepts it and rejects an output with the header removed. All five producer tests pass,
+and the generated file passes the scoped rules check with zero errors. The rule itself is unchanged.

@@ -218,8 +218,10 @@ protected DACLs on the replacement as well as its backup.
 
 Windows diagnostic run `43327730266` passed 2,777 tests and failed one backup descriptor
 assertion: the backup retained the same access rules but returned `D:P` instead of `D:PAI`.
-The staged backup now reapplies the original access descriptor after creation and before either
-publication. Exact auto-inherited flag preservation still requires the Windows rerun.
+The backup now reapplies the original access descriptor after creation and before either
+publication. Subsequent manual and pull-request Windows runs on `7798dc2b18` each passed all
+2,778 tests, including all 60 atomic-writer cases and both protected-DACL rows; smoke publication
+also passed. The earlier failed diagnostic remains historical evidence.
 
 `ReplaceAsync` stages and flushes the previous generation in a recovery file created with the
 original DACL, then prepares both live and backup publications. A failure before the live commit
@@ -1272,6 +1274,10 @@ long-retention evidence moving through hot, warm, cold, and archive tiers. Tier 
 copied payload checksums before deleting source evidence when a rollover is configured to move
 rather than copy files, and rejects non-positive parallelism before touching hot-tier or target-tier
 files so operator misconfiguration cannot hang a migration or delete evidence.
+Migration selects source entries through discovery beneath the configured root and rejects symbolic
+links or reparse points instead of trusting lexical containment alone. Rooted guards also check the
+final compression-adjusted destination before access and again after copying and compression finish,
+before atomic publication. Source deletion rechecks both paths after successful target verification.
 `Config/StorageConfigExtensions.cs` keeps the shared AppConfig storage
 section-to-`StorageOptions` mapping in the same project that owns the durable storage option types
 and profile presets.

@@ -6,7 +6,7 @@ using Meridian.Storage.Services;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -22,8 +22,8 @@ public static class StorageEndpoints
         var logger = app.Logger;
         var group = app.MapGroup("").WithTags("Storage");
 
-        // Storage roots are server configuration. Explicit service binding must fail
-        // closed when registration is missing instead of accepting body-supplied options.
+        // Resolve storage authority from the request service scope, never request binding.
+        // A missing registration fails before a handler can inspect or mutate files.
 
         // GET /api/storage/profiles — available storage profile presets
         group.MapGet(UiApiRoutes.StorageProfiles, () =>
@@ -38,8 +38,9 @@ public static class StorageEndpoints
         .WithName("GetStorageProfiles").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/stats — overall storage statistics
-        group.MapGet(UiApiRoutes.StorageStats, ([FromServices] StorageOptions opts) =>
+        group.MapGet(UiApiRoutes.StorageStats, (HttpContext context) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             var rootPath = Path.GetFullPath(opts.RootPath);
             long totalSize = 0;
             int totalFiles = 0;
@@ -83,9 +84,10 @@ public static class StorageEndpoints
         // GET /api/storage/breakdown — breakdown by symbol
         group.MapGet(UiApiRoutes.StorageBreakdown, async (
             IStorageSearchService? searchService,
-            [FromServices] StorageOptions opts,
+            HttpContext context,
             CancellationToken ct) =>
         {
+            _ = context.RequestServices.GetRequiredService<StorageOptions>();
             if (searchService is null)
             {
                 return Results.Json(new { message = "Storage search service not available", breakdown = Array.Empty<object>() }, jsonOptions);
@@ -186,8 +188,9 @@ public static class StorageEndpoints
         .WithName("GetStorageSymbolFiles").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/symbol/{symbol}/path — storage path for a symbol
-        group.MapGet(UiApiRoutes.StorageSymbolPath, (string symbol, [FromServices] StorageOptions opts) =>
+        group.MapGet(UiApiRoutes.StorageSymbolPath, (string symbol, HttpContext context) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             var root = Path.GetFullPath(opts.RootPath);
             var symbolPath = opts.NamingConvention switch
             {
@@ -209,8 +212,9 @@ public static class StorageEndpoints
         .WithName("GetStorageSymbolPath").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/health — storage health summary
-        group.MapGet(UiApiRoutes.StorageHealth, ([FromServices] StorageOptions opts) =>
+        group.MapGet(UiApiRoutes.StorageHealth, (HttpContext context) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             var rootPath = Path.GetFullPath(opts.RootPath);
             var exists = Directory.Exists(rootPath);
             bool writable = false;
@@ -241,8 +245,9 @@ public static class StorageEndpoints
         .WithName("GetStorageHealth").Produces(200).RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage);
 
         // GET /api/storage/cleanup/candidates — files eligible for cleanup
-        group.MapGet(UiApiRoutes.StorageCleanupCandidates, ([FromServices] StorageOptions opts) =>
+        group.MapGet(UiApiRoutes.StorageCleanupCandidates, (HttpContext context) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             var rootPath = Path.GetFullPath(opts.RootPath);
             var candidates = new List<object>();
 
@@ -312,8 +317,9 @@ public static class StorageEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/archive/stats — archive tier statistics
-        group.MapGet(UiApiRoutes.StorageArchiveStats, ([FromServices] StorageOptions opts) =>
+        group.MapGet(UiApiRoutes.StorageArchiveStats, (HttpContext context) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             var rootPath = Path.GetFullPath(opts.RootPath);
             var archivePath = Path.Combine(rootPath, "_archive");
             long archiveSize = 0;
@@ -348,9 +354,10 @@ public static class StorageEndpoints
         // GET /api/storage/catalog — storage catalog summary
         group.MapGet(UiApiRoutes.StorageCatalog, async (
             IStorageSearchService? searchService,
-            [FromServices] StorageOptions opts,
+            HttpContext context,
             CancellationToken ct) =>
         {
+            _ = context.RequestServices.GetRequiredService<StorageOptions>();
             if (searchService is null)
                 return Results.Json(new { message = "Storage search not available" }, jsonOptions);
 
@@ -439,20 +446,39 @@ public static class StorageEndpoints
         // POST /api/storage/tiers/migrate — trigger tier migration
         group.MapPost(UiApiRoutes.StorageTiersMigrate, async (
             ITierMigrationService? tierService,
-            [FromServices] StorageOptions opts,
+            HttpContext context,
             TierMigrateRequest req,
             CancellationToken ct) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             if (tierService is null)
                 return Results.Problem("Tier migration service not available");
 
             if (!Enum.TryParse<StorageTier>(req.TargetTier, ignoreCase: true, out var tier))
                 return Results.BadRequest(new { error = $"Invalid target tier: {req.TargetTier}. Use: Hot, Warm, Cold, Archive" });
 
+            string sourcePath;
+            try
+            {
+                var rootPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(opts.RootPath));
+                sourcePath = Path.GetFullPath(req.SourcePath ?? rootPath);
+                var comparison = OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                var rootPrefix = Path.EndsInDirectorySeparator(rootPath)
+                    ? rootPath : rootPath + Path.DirectorySeparatorChar;
+                if (!string.Equals(sourcePath, rootPath, comparison)
+                    && !sourcePath.StartsWith(rootPrefix, comparison))
+                    return Results.BadRequest(new { error = "SourcePath must stay within the configured storage root." });
+            }
+            catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                return Results.BadRequest(new { error = "SourcePath is not a valid storage path." });
+            }
+
             return await EndpointHelpers.GuardAsync(async () =>
             {
                 var result = await tierService.MigrateAsync(
-                    req.SourcePath ?? opts.RootPath,
+                    sourcePath,
                     tier,
                     new MigrationOptions(DeleteSource: req.DeleteSource),
                     ct);
@@ -518,9 +544,10 @@ public static class StorageEndpoints
 
         // POST /api/storage/convert-parquet — convert completed JSONL files to Parquet
         group.MapPost(UiApiRoutes.StorageConvertParquet, async (
-            [FromServices] StorageOptions opts,
+            HttpContext context,
             CancellationToken ct) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             return await EndpointHelpers.GuardAsync(async () =>
             {
                 var conversionService = new Meridian.Storage.Services.ParquetConversionService(opts);
@@ -542,8 +569,9 @@ public static class StorageEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // GET /api/storage/capacity-forecast — predictive storage capacity warning
-        group.MapGet(UiApiRoutes.StorageCapacityForecast, ([FromServices] StorageOptions opts) =>
+        group.MapGet(UiApiRoutes.StorageCapacityForecast, (HttpContext context) =>
         {
+            var opts = context.RequestServices.GetRequiredService<StorageOptions>();
             var rootPath = Path.GetFullPath(opts.RootPath);
             if (!Directory.Exists(rootPath))
             {

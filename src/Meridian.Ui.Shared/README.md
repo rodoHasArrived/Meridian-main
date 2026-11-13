@@ -11,10 +11,19 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Shared
 
-Storage route options bind explicitly from server services; request bodies cannot supply a
-storage root when service registration is missing. Financial posting adapters construct trusted
+All ten storage handlers that require `StorageOptions` resolve them explicitly from the request's
+server service scope; missing registration fails before filesystem access. Request bodies cannot
+supply the storage root, and tier migration rejects a source outside that configured root.
+Financial posting adapters construct trusted
 commands with server-derived actor, scope and origin while retaining reviewed evidence. Undefined
 origin values downgrade to nonhuman authority and cannot post a reviewed human candidate.
+Manual journal lifecycle requests are constructed with all fifteen contract fields, replacing actor,
+tenant/company, report principals and origin with server-resolved authority. The action resolver
+admits eight defined actions: Validate requires ledger read permission, while Submit, Approve,
+Reject, Post, Reverse, Rebook and LockAfterClose require certification permission. Undefined actions
+are refused before service invocation; the supplied actor remains a separate audit assertion.
+The combined storage and posting-authority regression slice passed 136 of 136 cases with zero
+skips, including all 25 new lifecycle cases and all 37 storage endpoint and migration cases.
 Unavailable fund-registry diagnostics retain the failure type without fund identities or exception
 payloads; tenant lookup and downstream authorization retain their existing responsibilities.
 The legacy reporting query context exposes its conversion to the Reporting-owned contract so
