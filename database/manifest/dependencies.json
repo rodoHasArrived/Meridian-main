@@ -14452,6 +14452,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto"
     },
     {
@@ -14705,6 +14711,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityInterestSupport"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
     },
     {
       "kind": "contract-set-member",
@@ -30418,6 +30430,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto"
     },
     {
@@ -30671,6 +30689,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityInterestSupport"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
     },
     {
       "kind": "contract-set-member",
@@ -46342,6 +46366,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding"
     },
     {
@@ -46823,6 +46853,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecuritySummaryDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
     },
     {
       "kind": "contract-reference",
@@ -65766,7 +65802,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6fc3c8adc7932e16aa34f2c669d8542be39959a0d35a9e17ee362be85f44421b",
+  "fingerprint": "c2a2a7f5d0e4097e5d5b61fd97f457d7f82ef49937a415c399f7fb971d29fcb6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -80268,6 +80304,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityClosePriceSnapshotDto"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCodecInputs",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCodecInputs"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityComparisonPriceDto",
       "kind": "contract-type",
@@ -80524,6 +80566,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityInterestSupport",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityInterestSupport"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityListItemBinding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityListItemBinding"
     },
     {
       "classification": "class",
@@ -96471,11 +96519,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4100,
-    "contract_set_memberships": 5244,
-    "edges": 10925,
+    "contract_references": 4102,
+    "contract_set_memberships": 5248,
+    "edges": 10931,
     "foreign_keys": 199,
     "logical_references": 6,
-    "nodes": 5335
+    "nodes": 5337
   }
 }

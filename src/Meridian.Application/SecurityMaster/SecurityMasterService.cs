@@ -1313,7 +1313,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <summary>
     /// The vocabulary walk inspects the FLAT discriminant keys the canonical serializer writes. A
     /// bond carrying the legacy nested <c>coupon</c> object instead has no flat <c>couponType</c>
-    /// for that walk to see, yet it is lossy in exactly the same way: <c>ToBondTerms</c> has no
+    /// for that walk to see, yet it is lossy in exactly the same way: <c>ToBondCouponStructure</c> has no
     /// nested-coupon fallback, so the record reads as <c>Fixed(couponRate ?? 0)</c> and
     /// re-serializing flattens it to <c>couponType: "Fixed"</c>, dropping the nested index, spread,
     /// and day count. Nothing in this repo writes that shape, but the projection store reads it
@@ -1396,7 +1396,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <summary>
     /// Every flat key that belongs to a coupon STRUCTURE rather than to the bond, in the order a
     /// refusal names them. Which of them survives a round trip is not a property of the key but of
-    /// the arm <c>ToBondTerms</c> selects — see <see cref="CouponArmReads"/> — so the whole set is
+    /// the arm <c>ToBondCouponStructure</c> selects — see <see cref="CouponArmReads"/> — so the whole set is
     /// checked and the arm decides.
     /// </summary>
     private static readonly string[] FlatCouponStructureKeys =
@@ -1406,7 +1406,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     ];
 
     /// <summary>
-    /// The arm <c>ToBondTerms</c> selects for this document. Anything the codec cannot read as a
+    /// The arm <c>ToBondCouponStructure</c> selects for this document. Anything the codec cannot read as a
     /// discriminant — absent, null, a case variant, a non-string token — lands on the same Fixed
     /// default the reader applies (<c>GetOptionalString(json, "couponType") ?? "Fixed"</c>), and so
     /// does an undeclared string, which the read-tolerant arm also decodes as Fixed.
@@ -1418,7 +1418,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     /// <summary>
     /// True when <paramref name="arm"/> reads <paramref name="key"/>, mirroring the arms of
-    /// <c>ToBondTerms</c> exactly. A key the selected arm does not read is not merely ignored: the
+    /// <c>ToBondCouponStructure</c> exactly. A key the selected arm does not read is not merely ignored: the
     /// F# serializer emits its OWN arm's fields and nulls the rest
     /// (<c>Interop.SecurityMaster.assetSpecificTermsJson</c>), so re-serializing deletes it — a
     /// <c>floatingIndex</c> beside <c>couponType: "Fixed"</c> is as gone as one with no discriminant
@@ -1536,7 +1536,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// True when the nested member says exactly what the codec's documented default for the absent
     /// flat key already produces, so re-serializing canonicalizes the JSON shape and loses nothing.
     /// <para>Two members qualify, each against its own type of default. <c>coupon.kind = "Fixed"</c>
-    /// qualifies through <see cref="MissingKeyDefaultFor"/>: <c>ToBondTerms</c> defaults an absent
+    /// qualifies through <see cref="MissingKeyDefaultFor"/>: <c>ToBondCouponStructure</c> defaults an absent
     /// <c>couponType</c> to <c>Fixed</c> and the projection store reads the nested kind as
     /// <c>Fixed</c>, so both codecs already agree. <c>coupon.rate = 0</c> qualifies because an
     /// absent flat rate reads as <c>0m</c> — but only under an arm that actually performs that
@@ -1579,7 +1579,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// True when the canonical codec can actually DECODE <paramref name="key"/> — present,
     /// populated, AND of the JSON kind its declared schema type requires. Presence is not the same
     /// question as readability, and conflating them loses data twice over: <c>couponType: null</c>
-    /// is a present property that <c>ToBondTerms</c> treats as the missing-value default, and
+    /// is a present property that <c>ToBondCouponStructure</c> treats as the missing-value default, and
     /// <c>spreadBps: "N/A"</c> is a populated value that <c>GetOptionalDecimal</c> cannot parse.
     /// Both are invisible to the codec, so neither can stand in for the value it would drop.
     /// </summary>
@@ -1678,7 +1678,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <para>The distinction is the codec's, not the schema's: an optional discriminant whose
     /// missing-key read is <c>None</c> (<c>ParseExerciseStyle</c>, <c>ToEquityClassificationOption</c>)
     /// serializes back as null, while one the codec SUBSTITUTES a declared value for is not cleared
-    /// at all — <c>ToBondTerms</c> reads a null <c>couponType</c> as <c>"Fixed"</c>, which is
+    /// at all — <c>ToBondCouponStructure</c> reads a null <c>couponType</c> as <c>"Fixed"</c>, which is
     /// precisely the rewrite these guards exist to stop. A required field is never clearable: its
     /// reader throws.</para>
     /// </summary>
@@ -1690,7 +1690,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <c>ParseExerciseStyle</c> switches on <c>value?.Trim()</c>, so a stored <c>" American "</c>
     /// decodes to <c>American</c> and re-serializes as the canonical spelling: a lossless
     /// canonicalization, and refusing it would freeze a valid record over whitespace. Every other
-    /// discriminant switches on the raw string (<c>ToBondTerms</c>,
+    /// discriminant switches on the raw string (<c>ToBondCouponStructure</c>,
     /// <c>ToEquityClassificationOption</c>), where padding really does fall through to the
     /// missing-value default and really is lost.
     /// <para>This is a READ question and deliberately not a write one. <c>EnsureDeclaredVocabularies
@@ -1704,7 +1704,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     /// <summary>
     /// The declared value the canonical codec SUBSTITUTES when a discriminant key is absent or null,
-    /// for the one field that substitutes anything: <c>ToBondTerms</c> reads
+    /// for the one field that substitutes anything: <c>ToBondCouponStructure</c> reads
     /// <c>GetOptionalString(json, "couponType") ?? "Fixed"</c>. This mirrors the codec rather than
     /// the schema — the schema declares what a value may BE, not what the reader invents when the
     /// key is gone — so it lives beside the guards that have to reason about the missing-key read.

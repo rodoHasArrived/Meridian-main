@@ -19,6 +19,28 @@ afterEach(() => {
 });
 
 describe("FamilyOfficeScreen", () => {
+  it("retains family scope when applying and clearing the ownership-only historical date", async () => {
+    const user = userEvent.setup();
+    const current = buildFamilyOfficeOverviewFixture();
+    const historical = buildFamilyOfficeOverviewFixture({
+      ownershipGraph: { ...current.ownershipGraph, asOfDate: "2026-01-31" }
+    });
+    getFamilyOfficeOverview.mockResolvedValueOnce(current).mockResolvedValueOnce(historical).mockResolvedValueOnce(current);
+    renderWithRouter(<FamilyOfficeScreen />, { initialEntries: [`/portfolio/family-office?familyOfficeId=${current.familyOfficeId}&pcGroup=strategy`] });
+    await screen.findByLabelText("Family office summary panels");
+    fireEvent.change(screen.getByLabelText("Ownership structure on"), { target: { value: "2026-01-31" } });
+    await user.click(screen.getByRole("button", { name: "Apply structure date" }));
+    await screen.findByText(/Ownership structure as of 2026-01-31/);
+    expect(getFamilyOfficeOverview.mock.calls[1][1]).toBe(current.familyOfficeId);
+    expect(getFamilyOfficeOverview.mock.calls[1][2]).toBe("2026-01-31");
+    expect(screen.getByLabelText("Family office data confidence")).toHaveTextContent(current.asOfDate);
+    expect(screen.queryByText(/Current snapshot only/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Current structure" }));
+    await waitFor(() => expect(getFamilyOfficeOverview).toHaveBeenCalledTimes(3));
+    expect(getFamilyOfficeOverview.mock.calls[2][1]).toBe(current.familyOfficeId);
+    expect(getFamilyOfficeOverview.mock.calls[2][2]).toBeUndefined();
+  });
+
   it("renders an honest not-connected state when no structure is supplied", () => {
     renderWithRouter(<FamilyOfficeScreen entityStructure={null} />, { initialEntries: ["/portfolio/family-office"] });
 

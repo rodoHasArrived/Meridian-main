@@ -132,10 +132,10 @@ export function DepthChart({
       {askPath && <path d={askPath} fill={DOWN} opacity="0.18" />}
       {askPath && <path d={askPath} fill="none" stroke={DOWN} strokeWidth="1.6" />}
 
-      {illustration && illustration.terminalPrice !== null ? <g aria-label={`${illustration.side} snapshot illustration boundary`}>
-        <rect x={Math.min(x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice), x(illustration.terminalPrice))} y={plotT} width={Math.max(2, Math.abs(x(illustration.terminalPrice) - x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice)))} height={plotB - plotT} fill="var(--chart-selection, #315F86)" opacity="0.12" />
-        <line x1={x(illustration.terminalPrice)} x2={x(illustration.terminalPrice)} y1={plotT} y2={plotB} stroke="var(--chart-selection, #315F86)" strokeWidth="2" strokeDasharray="3 3" />
-        <line x1={plotL} x2={plotR} y1={y(Math.min(illustration.quantity, maxDepth))} y2={y(Math.min(illustration.quantity, maxDepth))} stroke="var(--chart-selection, #315F86)" strokeDasharray="6 4" />
+      {illustration && illustration.terminalPrice !== null ? <g role="group" aria-label={`${illustration.side} snapshot illustration boundary`}>
+        <rect x={Math.min(x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice), x(illustration.terminalPrice))} y={plotT} width={Math.max(2, Math.abs(x(illustration.terminalPrice) - x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice)))} height={plotB - plotT} fill="var(--interaction-selected, #496C8F)" opacity="0.12" />
+        <line x1={x(illustration.terminalPrice)} x2={x(illustration.terminalPrice)} y1={plotT} y2={plotB} stroke="var(--interaction-selected, #496C8F)" strokeWidth="2" strokeDasharray="3 3" />
+        <line x1={plotL} x2={plotR} y1={y(Math.min(illustration.quantity, maxDepth))} y2={y(Math.min(illustration.quantity, maxDepth))} stroke="var(--interaction-selected, #496C8F)" strokeDasharray="6 4" />
       </g> : null}
 
       {/* mid / spread */}

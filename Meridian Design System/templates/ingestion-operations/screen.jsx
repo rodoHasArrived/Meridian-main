@@ -103,7 +103,7 @@ function IngestionOperationsScreen() {
                   { key: "window", label: "Window" },
                   { key: "progress", label: "Progress", cell: (r) => (
                     <div style={{ minWidth: 140 }}>
-                      <ProgressBar value={r.progress} showValue variant={STATE_VARIANT[r.state]} size="sm" />
+                      <ProgressBar aria-label={`Progress for job ${r.id}`} value={r.progress} showValue variant={STATE_VARIANT[r.state]} size="sm" />
                     </div>
                   )},
                   { key: "state", label: "State", cell: (r) => <SeverityBadge status={STATE_BADGE[r.state]} label={r.state} /> },

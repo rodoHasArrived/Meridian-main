@@ -58,7 +58,7 @@ public sealed class SecurityMasterSchemaBoundDecodeRatchetTests
     }
 
     [Theory]
-    [InlineData("ToBondTerms")]
+    [InlineData("ToBondCouponStructure")]
     [InlineData("ToCustomAssetKind")]
     [InlineData("ToEquityClassificationOption")]
     [InlineData("ToPreferredTerms")]

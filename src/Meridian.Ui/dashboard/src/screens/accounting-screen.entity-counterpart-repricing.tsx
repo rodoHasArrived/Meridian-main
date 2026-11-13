@@ -31,7 +31,7 @@ export function CounterpartRepricing({ proposal, canManage, onApplied }: {
   return <section className="space-y-3 rounded border border-border p-3" aria-label="Counterpart FX repricing">
     <h5 className="text-sm font-semibold">Explicit foreign-currency draft repricing</h5>
     <p className="text-xs text-muted-foreground">Preview the existing counterpart against a newly approved FX policy. The server preserves its accounts and sides and reprices its original retained source amount. Applying requires access to both books and clears prior draft review.</p>
-    <Button type="button" variant="outline" disabled={!canManage || preview.loading || mutation.busy} onClick={() => { setEnabled(true); preview.refresh(); }}>Preview counterpart FX repricing</Button>
+    <Button type="button" variant="outline" disabled={!canManage || preview.loading || mutation.busy} disabledReason={!canManage ? "Ledger management permission is required to preview repricing." : mutation.busy ? "Wait for the current repricing change to finish." : "Wait for the repricing preview to load."} onClick={() => { setEnabled(true); preview.refresh(); }}>Preview counterpart FX repricing</Button>
     <OperationError error={preview.error} />
     {preview.loading ? <p role="status">Preparing the retained before-and-after counterpart amounts…</p> : null}
     {preview.data && current && proposed ? <div className="space-y-3"><p className="text-sm">Target draft {current.version} · {current.status} · original journal date {current.accountingDate}</p>
@@ -46,7 +46,7 @@ export function CounterpartRepricing({ proposal, canManage, onApplied }: {
       <TechnicalDetails label="Counterpart repricing source and FX authority"><dl className="space-y-2 break-all text-xs"><div><dt>Retained source digest</dt><dd className="font-mono">{proposal.sourceDigest}</dd></div><div><dt>Preview fingerprint</dt><dd className="font-mono">{preview.data.fingerprint}</dd></div>
         {proposed.intercompanyFx ? <><div><dt>Approved rate-set revision</dt><dd>{proposed.intercompanyFx.rateSetId} · {proposed.intercompanyFx.rateSetRevision}</dd></div><div><dt>Policy revision</dt><dd>{proposed.intercompanyFx.policyId} · {proposed.intercompanyFx.policyRevision}</dd></div><div><dt>Configuration hash</dt><dd className="font-mono">{proposed.intercompanyFx.configurationHash}</dd></div></> : null}</dl></TechnicalDetails>
       <form className="space-y-3" onSubmit={(event) => void apply(event)}><fieldset className="space-y-3" disabled={!canManage || mutation.busy}><OperationField label="Counterpart FX repricing reason" value={reason} onChange={setReason} required />
-        <Button type="submit" disabled={!reason.trim()}>Apply repricing and renew review</Button></fieldset></form>
+        <Button type="submit" disabled={!reason.trim()} disabledReason="Enter a reason before applying repricing and renewing review.">Apply repricing and renew review</Button></fieldset></form>
     </div> : null}
     {preview.data && !current ? <p role="alert" className="text-sm text-warning">The server did not return the retained current draft. Repricing cannot be applied without its before-state and version.</p> : null}
     <MutationFeedback state={mutation} />

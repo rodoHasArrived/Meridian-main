@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useLocation } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderWithRouter } from "@/test/render";
 import { CorporateActionCalendarPanel } from "@/screens/corporate-action-calendar";
@@ -17,6 +18,19 @@ const calendar: CorporateActionCalendarPage = { from: "2026-11-12", to: "2026-11
 const receipt = { case: { ...detail.case, version: 2 }, evidence: { evidenceId: "retained-1", caseId: "case-1", evidenceKind: "ElectionDeadline", evidenceReference: "document://notice", metadata: {}, caseVersion: 2, recordedBy: "Operator", recordedAtUtc: "2026-11-12T12:00:00Z" }, replayed: true } satisfies CorporateActionDeadlineMutationResult;
 afterEach(() => vi.resetAllMocks());
 function Location() { const location = useLocation(); return <output aria-label="URL">{location.search}{location.hash}</output>; }
+function QueueFeedbackCalendar() {
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>("case-before");
+  const [rerenders, setRerenders] = useState(0);
+  const navigate = useNavigate();
+  return <>
+    <CorporateActionCalendarPanel scopeKey="tenant-1/company-1" selectedCaseId={selectedCaseId} onCaseSelected={(caseId) => setSelectedCaseId(caseId)} onChanged={vi.fn()} />
+    <button type="button" onClick={() => setSelectedCaseId("case-other")}>Select another queue case</button>
+    <button type="button" onClick={() => setRerenders((value) => value + 1)}>Rerender queue {rerenders}</button>
+    <button type="button" onClick={() => void navigate(-1)}>History back</button>
+    <button type="button" onClick={() => void navigate(1)}>History forward</button>
+    <output aria-label="Selected queue case">{selectedCaseId}</output><Location />
+  </>;
+}
 
 describe("corporate action calendar", () => {
   it("keeps source dates literal, supports a seven-day operating range, and preserves unrelated URL state", () => {
@@ -42,6 +56,39 @@ describe("corporate action calendar", () => {
     expect(screen.getByLabelText("URL")).toHaveTextContent("caCase=case-1");
     expect(screen.getByLabelText("URL")).toHaveTextContent("#queue");
     expect(await screen.findByText(/Case case-1/)).toBeInTheDocument();
+  });
+  it("retains marker evidence through synchronous parent queue feedback and later rerenders", async () => {
+    vi.mocked(api.getCorporateActionCalendar).mockResolvedValue(calendar);
+    vi.mocked(api.getCorporateActionCaseDeadlines).mockImplementation(async (caseId) => ({ ...detail, case: { ...detail.case, caseId } }));
+    const user = userEvent.setup();
+    renderWithRouter(<QueueFeedbackCalendar />, { initialEntries: ["/data/corporate-actions?caFrom=2026-11-12&caTo=2026-11-18&caCase=case-before&fundAccountId=fund-1&other=keep#queue"] });
+    await user.click(await screen.findByRole("button", { name: "Ex-date for ABC on 2026-11-12" }));
+    await screen.findByRole("heading", { name: "Selected date evidence · ABC" });
+    expect(screen.getByLabelText("Selected queue case")).toHaveTextContent("case-1");
+    for (const expected of ["caCase=case-1", "caEvent=event-1", "fundAccountId=fund-1", "other=keep", "#queue"]) expect(screen.getByLabelText("URL")).toHaveTextContent(expected);
+    await user.click(screen.getByRole("button", { name: "Rerender queue 0" }));
+    expect(screen.getByRole("heading", { name: "Selected date evidence · ABC" })).toBeInTheDocument();
+    expect(screen.getByLabelText("URL")).toHaveTextContent("caEvent=event-1");
+  });
+  it("clears marker evidence for an external queue selection and restores URL-owned selection through history", async () => {
+    vi.mocked(api.getCorporateActionCalendar).mockResolvedValue(calendar);
+    vi.mocked(api.getCorporateActionCaseDeadlines).mockImplementation(async (caseId) => ({ ...detail, case: { ...detail.case, caseId } }));
+    const user = userEvent.setup();
+    renderWithRouter(<QueueFeedbackCalendar />, { initialEntries: ["/data/corporate-actions?caFrom=2026-11-12&caTo=2026-11-18&caCase=case-before&other=keep#queue"] });
+    await user.click(await screen.findByRole("button", { name: "Ex-date for ABC on 2026-11-12" }));
+    await screen.findByRole("heading", { name: "Selected date evidence · ABC" });
+    await user.click(screen.getByRole("button", { name: "Select another queue case" }));
+    await waitFor(() => expect(screen.getByLabelText("URL")).toHaveTextContent("caCase=case-other"));
+    expect(screen.getByLabelText("URL")).not.toHaveTextContent("caEvent=");
+    expect(screen.queryByRole("heading", { name: "Selected date evidence · ABC" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "History back" }));
+    await screen.findByRole("heading", { name: "Selected date evidence · ABC" });
+    expect(screen.getByLabelText("Selected queue case")).toHaveTextContent("case-1");
+    expect(screen.getByLabelText("URL")).toHaveTextContent("caEvent=event-1");
+    await user.click(screen.getByRole("button", { name: "History forward" }));
+    await waitFor(() => expect(screen.getByLabelText("Selected queue case")).toHaveTextContent("case-other"));
+    expect(screen.getByLabelText("URL")).not.toHaveTextContent("caEvent=");
+    expect(screen.getByLabelText("URL")).toHaveTextContent("other=keep#queue");
   });
   it("retains an explicit unavailable selection instead of substituting the default queue case", async () => {
     vi.mocked(api.getCorporateActionCalendar).mockResolvedValue(calendar);

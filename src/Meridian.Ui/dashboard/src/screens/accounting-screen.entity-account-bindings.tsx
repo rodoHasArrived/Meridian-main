@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { TextArea } from "@/components/ui/text-area";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import type { AccountingConfigurationWorkspace } from "@/types";
@@ -65,9 +66,9 @@ export function EntityAccountBindings({ scope }: { scope: EntityOperationScope }
       <OperationField label="Account binding effective from" value={effectiveFrom} onChange={setEffectiveFrom} type="date" required />
       <OperationField label="Account binding effective to (exclusive)" value={effectiveTo} onChange={setEffectiveTo} type="date" />
       <OperationField label="Account binding reason" value={reason} onChange={setReason} required />
-      <FormRow label="Historical account names (one per line)" labelFor="intercompany-account-aliases"><textarea id="intercompany-account-aliases" className="min-h-24 w-full rounded border border-border bg-background p-2 text-sm" value={aliases} onChange={(event) => setAliases(event.target.value)} /></FormRow>
-    </FormGrid><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={!node} onClick={() => void assignRole()}>Save chart role</Button>
-      <Button type="submit" disabled={!node || node.intercompanyRole !== role}>Retain account binding revision</Button>
+      <FormRow label="Historical account names (one per line)" labelFor="intercompany-account-aliases"><TextArea id="intercompany-account-aliases" className="min-h-24" value={aliases} onChange={(event) => setAliases(event.target.value)} /></FormRow>
+    </FormGrid><div className="flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={!node} disabledReason="Select a chart account before saving its role." onClick={() => void assignRole()}>Save chart role</Button>
+      <Button type="submit" disabled={!node || node.intercompanyRole !== role} disabledReason={!node ? "Select a chart account before retaining its binding." : "Save the selected chart role before retaining its binding."}>Retain account binding revision</Button>
       <Button type="button" variant="outline" onClick={() => { configuration.refresh(); history.refresh(); }}>Refresh account authority</Button></div>
       {node && node.intercompanyRole !== role ? <p className="text-sm text-warning">Save the selected role to the chart before retaining its account binding.</p> : null}
     </fieldset></form><MutationFeedback state={mutation} />

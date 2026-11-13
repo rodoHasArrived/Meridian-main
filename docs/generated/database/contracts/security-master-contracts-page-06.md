@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 572. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 574. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCouponRateUnit["SecurityCouponRateUnit"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto["SecurityCurveDefinitionDto"] {
         +DateTimeOffset CreatedAt
         +string CreatedBy
@@ -220,6 +222,10 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityInterestSupport["SecurityInterestSupport"] {
         +SecurityCashFlowBlockerDto NegativeInterestBlocker
     }
+    class Meridian_Contracts_SecurityMaster_SecurityListItemBinding["SecurityListItemBinding"] {
+        +string Key
+        +string Member
+    }
     class Meridian_Contracts_SecurityMaster_SecurityListingIdentity["SecurityListingIdentity"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityListingIdentityFinding["SecurityListingIdentityFinding"] {
@@ -412,22 +418,6 @@ classDiagram
         +Guid SecurityId
         +string UpdatedBy
     }
-    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecord["SecurityProjectionRecord"] {
-        +IReadOnlyList~SecurityAliasDto~ Aliases
-        +string AssetClass
-        +JsonElement AssetSpecificTerms
-        +JsonElement CommonTerms
-        +string Currency
-        +string DisplayName
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +IReadOnlyList~SecurityIdentifierDto~ Identifiers
-        +string PrimaryIdentifierKind
-        +string PrimaryIdentifierValue
-        +JsonElement Provenance
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecordExtensions["SecurityProjectionRecordExtensions"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy
@@ -457,5 +447,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
     Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityPriceBasis
-    Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
 ```

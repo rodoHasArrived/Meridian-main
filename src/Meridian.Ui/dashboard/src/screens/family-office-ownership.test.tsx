@@ -57,7 +57,7 @@ describe("faithful ownership relationships", () => {
     const detail = screen.getByRole("region", { name: "Selected legal ownership paths" });
     expect(within(detail).getByText(/percentage unreported/)).toBeInTheDocument();
     expect(within(detail).queryByText(/Advises/)).not.toBeInTheDocument();
-    const node = screen.getByRole("button", { name: "Inspect ownership record Entity C" });
+    const node = screen.getByRole("button", { name: "Entity C Legal entity; Inspect ownership record Entity C" });
     node.focus();
     await userEvent.keyboard("{Enter}");
     expect(node).toHaveAttribute("aria-pressed", "true");

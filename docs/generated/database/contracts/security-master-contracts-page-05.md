@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 8
 
-Objects 321-400 of 572. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 574. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -397,9 +397,11 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding["SecurityClassCodecBinding"] {
         +string AssetClass
+        +SecurityCodecInputs Inputs
         +IReadOnlyList~SecurityTermBinding~ Members
         +bool ReadsResolvedTerms
         +bool VersionedSchedules
+        +bool WritesConventionsFlag
     }
     class Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto["SecurityClosePriceApprovalDto"] {
         +DateTimeOffset ApprovedAt
@@ -451,6 +453,8 @@ classDiagram
         +IReadOnlyList~SecurityClosePriceLineDto~ Lines
         +decimal MaxSourceDispersionPercent
     }
+    class Meridian_Contracts_SecurityMaster_SecurityCodecInputs["SecurityCodecInputs"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto["SecurityComparisonPriceDto"] {
         +decimal? PctDiffFromGoldenCopy
         +decimal Price
@@ -460,8 +464,6 @@ classDiagram
         +SecurityPriceUnit Unit
     }
     class Meridian_Contracts_SecurityMaster_SecurityCouponKind["SecurityCouponKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityCouponRateUnit["SecurityCouponRateUnit"] {
     }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec
@@ -510,6 +512,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityAssetTermsCodecBindings --> Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
+    Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding --> Meridian_Contracts_SecurityMaster_SecurityCodecInputs
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto

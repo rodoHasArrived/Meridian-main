@@ -3,7 +3,7 @@
 // toISOString(), shifting every range back a day for users west of UTC.
 // Preset ranges (MTD/QTD/YTD…) sit beside the calendar because that is how a desk actually picks.
 import React from "react";
-import { toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate.js";
+import { calendarDate, toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -117,6 +117,12 @@ export function DateRangePicker({
   const auto = useUid();
   const base = id || auto;
   const errorId = `${base}-error`;
+  const {
+    "aria-labelledby": labelledBy, "aria-describedby": describedBy,
+    "aria-invalid": invalid, "aria-errormessage": errorMessage,
+    "aria-required": ariaRequired, ...containerProps
+  } = rest;
+  const feedbackIds = [...new Set([...(describedBy || "").split(/\s+/).filter(Boolean), ...(error ? [errorId] : [])])].join(" ") || undefined;
 
   const startD = React.useMemo(() => fromISO(start), [start]);
   const endD = React.useMemo(() => fromISO(end), [end]);
@@ -209,8 +215,8 @@ export function DateRangePicker({
       e.preventDefault();
       setFocusDay(next);
       setHover(toISO(next));
-      const nextMonth = new Date(next.getFullYear(), next.getMonth(), 1);
-      const firstMonth = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+      const nextMonth = calendarDate(next.getFullYear(), next.getMonth(), 1);
+      const firstMonth = calendarDate(cursor.getFullYear(), cursor.getMonth(), 1);
       const lastMonth = addMonths(firstMonth, months - 1);
       if (nextMonth < firstMonth) setCursor(nextMonth);
       else if (nextMonth > lastMonth) setCursor(addMonths(nextMonth, -(months - 1)));
@@ -224,12 +230,12 @@ export function DateRangePicker({
 
   const dow = React.useMemo(() => dowLabels(weekStartsOn), [weekStartsOn]);
   const today = new Date();
-  const prevBlocked = minD && new Date(cursor.getFullYear(), cursor.getMonth(), 0) < minD;
-  const nextBlocked = maxD && new Date(cursor.getFullYear(), cursor.getMonth() + months, 1) > maxD;
+  const prevBlocked = minD && calendarDate(cursor.getFullYear(), cursor.getMonth(), 0) < minD;
+  const nextBlocked = maxD && calendarDate(cursor.getFullYear(), cursor.getMonth() + months, 1) > maxD;
   const summary = start ? `${short(start)} — ${end ? short(end) : "…"}` : null;
 
   return (
-    <div ref={rootRef} {...rest}>
+    <div ref={rootRef} {...containerProps}>
       {label && <span className="mds-dr-label" id={`${base}-label`}>{label}</span>}
       <div className="mds-dr-wrap">
         <div className={`mds-dr-field${error ? " mds-dr-field--error" : ""}${disabled ? " mds-dr-field--disabled" : ""}`}>
@@ -241,10 +247,12 @@ export function DateRangePicker({
             disabled={disabled}
             aria-haspopup="dialog"
             aria-expanded={open}
-            aria-labelledby={label ? `${base}-label ${base}` : undefined}
-            aria-label={!label ? (ariaLabel || "Date range") : undefined}
-            aria-invalid={error ? true : undefined}
-            aria-describedby={error ? errorId : undefined}
+            aria-labelledby={labelledBy || (label ? `${base}-label ${base}` : undefined)}
+            aria-label={!label && !labelledBy ? (ariaLabel || (id ? undefined : "Date range")) : undefined}
+            aria-invalid={error ? true : invalid}
+            aria-describedby={feedbackIds}
+            aria-errormessage={errorMessage}
+            aria-required={ariaRequired}
             onClick={() => (open ? close() : setOpen(true))}
           >{summary || "Select range…"}</button>
           {clearable && start && !disabled && (
