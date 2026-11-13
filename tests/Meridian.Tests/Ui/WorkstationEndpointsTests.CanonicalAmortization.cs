@@ -117,11 +117,16 @@ public sealed partial class WorkstationEndpointsTests
             var command = call.Arg<AssetAccountingPostingCandidateRequestDto>();
             var factorFixture = FactorDraftedCandidate(projected!, command.Actor, command.Description);
             var source = factorFixture.Spine.DraftedCandidate! with { AssetLotMutation = command.LotMutation };
-            return factorFixture with { Spine = factorFixture.Spine with {
-                DraftedCandidate = source, DraftedLotMutation = command.LotMutation,
-                DraftedCandidateFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(source),
-                DraftedLotMutationFingerprint = AssetLotMutationInstructionValidator.Fingerprint(command.LotMutation)
-            } };
+            return factorFixture with
+            {
+                Spine = factorFixture.Spine with
+                {
+                    DraftedCandidate = source,
+                    DraftedLotMutation = command.LotMutation,
+                    DraftedCandidateFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(source),
+                    DraftedLotMutationFingerprint = AssetLotMutationInstructionValidator.Fingerprint(command.LotMutation)
+                }
+            };
         });
         await using var app = await CreateAppAsync(services => { fixture.Register(services); services.AddSingleton(spine); },
             currentUserPermissions: UserPermission.ManageLedgerReports, currentUserCompanyId: "company-alpha", mapLedgerApi: true);
@@ -148,13 +153,26 @@ public sealed partial class WorkstationEndpointsTests
         var inputs = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m, BondAmortizationMethod.StraightLine, null);
         var lot = inputs.ExpectedLot;
         if (adoptedIncome)
-            lot = lot with { Acquisition = lot.Acquisition with { BondIncome = new(
-                DateTimeOffset.UtcNow, lot.Acquisition.TransactionCostBasis, 0m, 1m, [], lot.Acquisition.Evidence) } };
+            lot = lot with
+            {
+                Acquisition = lot.Acquisition with
+                {
+                    BondIncome = new(
+                DateTimeOffset.UtcNow, lot.Acquisition.TransactionCostBasis, 0m, 1m, [], lot.Acquisition.Evidence)
+                }
+            };
         var now = DateTimeOffset.UtcNow;
         var periodId = Guid.NewGuid();
         var eventId = Guid.NewGuid();
-        var evidence = inputs.SecurityEvidence with { EvidenceId = "amort-occurrence", EvidenceUri = "document://amort/occurrence", ContentHashSha256 = new string('d', 64),
-            SubjectType = AssetAccountingEvidenceSubjects.Event, SubjectId = eventId.ToString("D"), EffectiveDate = inputs.AsOfDate };
+        var evidence = inputs.SecurityEvidence with
+        {
+            EvidenceId = "amort-occurrence",
+            EvidenceUri = "document://amort/occurrence",
+            ContentHashSha256 = new string('d', 64),
+            SubjectType = AssetAccountingEvidenceSubjects.Event,
+            SubjectId = eventId.ToString("D"),
+            EffectiveDate = inputs.AsOfDate
+        };
         var request = new PrepareCanonicalAmortizationRequestDto(lot.LedgerBookId, lot.TaxLotRecordId, periodId, 1, AccountingBasisKindDto.Gaap,
             "fund-alpha", inputs.AsOfDate, inputs.SecurityEvidence, evidence, "Assets:Investment", "Income:Amortization");
         var books = Substitute.For<ILedgerBookService>();
@@ -180,7 +198,9 @@ public sealed partial class WorkstationEndpointsTests
     {
         public void Register(IServiceCollection services)
         {
-            services.AddSingleton(Books); services.AddSingleton(Periods); services.AddSingleton(Service);
+            services.AddSingleton(Books);
+            services.AddSingleton(Periods);
+            services.AddSingleton(Service);
             var configuration = Substitute.For<IAccountingConfigurationService>();
             var chart = new[] { "Assets:Investment", "Income:Amortization" }.Select(path => new ChartOfAccountsNodeDto(path, path, path, "Asset")).ToArray();
             configuration.GetWorkspaceAsync(Arg.Any<string>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>(), Arg.Any<string?>(), Arg.Any<string?>())

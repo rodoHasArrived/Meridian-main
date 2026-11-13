@@ -23,7 +23,8 @@ public sealed class BondDiscoveryEndpointsTests
     public async Task Lookup_UsesFixedIncomeProviderAndReturnsStagingPermission(UserPermission permission, bool canStage)
     {
         var provider = Substitute.For<IFilterableSymbolSearchProvider>();
-        provider.Name.Returns("alpaca"); provider.DisplayName.Returns("Alpaca");
+        provider.Name.Returns("alpaca");
+        provider.DisplayName.Returns("Alpaca");
         provider.IsAvailableAsync(Arg.Any<CancellationToken>()).Returns(true);
         provider.SearchAsync("Treasury", 50, "fixed_income", null, Arg.Any<CancellationToken>())
             .Returns(new SymbolSearchResult[]
@@ -70,7 +71,8 @@ public sealed class BondDiscoveryEndpointsTests
     public async Task Lookup_WithUnavailableProviderHasNoCandidates()
     {
         var provider = Substitute.For<ISymbolSearchProvider>();
-        provider.Name.Returns("alpaca"); provider.DisplayName.Returns("Alpaca");
+        provider.Name.Returns("alpaca");
+        provider.DisplayName.Returns("Alpaca");
         provider.IsAvailableAsync(Arg.Any<CancellationToken>()).Returns(false);
         using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
         await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
@@ -86,7 +88,8 @@ public sealed class BondDiscoveryEndpointsTests
     public async Task Lookup_WithProviderFailureReturnsUnavailableInsteadOfEmptyMatches()
     {
         var provider = Substitute.For<IFilterableSymbolSearchProvider>();
-        provider.Name.Returns("alpaca"); provider.DisplayName.Returns("Alpaca");
+        provider.Name.Returns("alpaca");
+        provider.DisplayName.Returns("Alpaca");
         provider.IsAvailableAsync(Arg.Any<CancellationToken>()).Returns(true);
         provider.SearchAsync("Treasury", 50, "fixed_income", null, Arg.Any<CancellationToken>())
             .Returns<Task<IReadOnlyList<SymbolSearchResult>>>(_ => throw new HttpRequestException("Synthetic provider outage"));
@@ -101,12 +104,14 @@ public sealed class BondDiscoveryEndpointsTests
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
-        if (search is not null) builder.Services.AddSingleton(search);
+        if (search is not null)
+            builder.Services.AddSingleton(search);
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
-            if (tenantScoped) context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "bond-discovery-test-tenant";
+            if (tenantScoped)
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "bond-discovery-test-tenant";
             await next();
         });
         app.MapBondDiscoveryEndpoints(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });

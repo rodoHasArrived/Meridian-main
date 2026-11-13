@@ -299,7 +299,8 @@ public sealed class SymbolSearchService : IDisposable
 
         // Cache the response
         ct.ThrowIfCancellationRequested();
-        if (!failOnProviderError) _searchCache.Set(cacheKey, response);
+        if (!failOnProviderError)
+            _searchCache.Set(cacheKey, response);
 
         _log.Information("Symbol search for {Query} returned {Count} results from {Sources} in {ElapsedMs}ms",
             request.Query, deduped.Count, string.Join(", ", sources), sw.ElapsedMilliseconds);

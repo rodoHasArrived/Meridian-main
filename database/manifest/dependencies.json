@@ -9334,6 +9334,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
     },
     {
@@ -9779,6 +9791,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -10649,6 +10667,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -26206,6 +26230,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
     },
     {
@@ -26651,6 +26687,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -27521,6 +27563,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -41019,6 +41067,36 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationProjectionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "target": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationRuleDto",
       "target": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
     },
@@ -41687,6 +41765,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
       "target": "contract:Meridian.Contracts.Ledger.AccountingPolicyRulePackDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "kind": "contract-reference",
@@ -42905,6 +42989,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
       "target": "contract:Meridian.Contracts.Ledger.RuleDryRunResultDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingBasisKindDto"
     },
     {
       "kind": "contract-reference",
@@ -65766,7 +65862,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6fc3c8adc7932e16aa34f2c669d8542be39959a0d35a9e17ee362be85f44421b",
+  "fingerprint": "71ebd63f932d76cfdbad713f9928cb8bf1d0f28ff476f3ff55a998e4e0492d08",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -75151,6 +75247,18 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto"
@@ -75598,6 +75706,12 @@
       "id": "contract:Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.CreateAccountingPolicyRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto"
     },
     {
       "classification": "dto",
@@ -76468,6 +76582,12 @@
       "id": "contract:Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
     },
     {
       "classification": "dto",
@@ -96471,11 +96591,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4100,
-    "contract_set_memberships": 5244,
-    "edges": 10925,
+    "contract_references": 4108,
+    "contract_set_memberships": 5252,
+    "edges": 10941,
     "foreign_keys": 199,
     "logical_references": 6,
-    "nodes": 5335
+    "nodes": 5339
   }
 }

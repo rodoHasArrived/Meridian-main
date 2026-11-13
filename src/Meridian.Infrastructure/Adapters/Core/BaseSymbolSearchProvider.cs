@@ -233,7 +233,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
         if (!HasValidCredentials())
         {
-            if (failOnProviderError) throw new InvalidOperationException("Provider credentials are unavailable.");
+            if (failOnProviderError)
+                throw new InvalidOperationException("Provider credentials are unavailable.");
             return Array.Empty<SymbolSearchResult>();
         }
 
@@ -255,7 +256,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
 
                 Log.Warning("{Provider} search returned {Status} for query {Query}",
                     Name, response.StatusCode, query);
-                if (failOnProviderError) response.EnsureSuccessStatusCode();
+                if (failOnProviderError)
+                    response.EnsureSuccessStatusCode();
                 return Array.Empty<SymbolSearchResult>();
             }
 
@@ -284,7 +286,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         catch (Exception ex)
         {
             Log.Error(ex, "{Provider} search failed for query {Query}", Name, query);
-            if (failOnProviderError) throw;
+            if (failOnProviderError)
+                throw;
             return Array.Empty<SymbolSearchResult>();
         }
     }

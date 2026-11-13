@@ -289,8 +289,14 @@ public sealed class BondAnalyticsEndpointsTests
         var response = await app.GetTestClient().PostAsJsonAsync("/api/reference-data/bonds/settlement-consideration", new
         {
             analytics = new { securityId, context, cleanPrice = "99.123456789012345678", yieldConvention = "NominalPeriodic" },
-            originalFace = "100000", bookedFactor = "1", fees = "25", observedDirtyCash = "100398.46",
-            sourceEvidenceId = "retained-evidence", cashAccountId = "cash", accruedInterestAccountId = "interest", feesAccountId = "fees"
+            originalFace = "100000",
+            bookedFactor = "1",
+            fees = "25",
+            observedDirtyCash = "100398.46",
+            sourceEvidenceId = "retained-evidence",
+            cashAccountId = "cash",
+            accruedInterestAccountId = "interest",
+            feesAccountId = "fees"
         });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -309,8 +315,13 @@ public sealed class BondAnalyticsEndpointsTests
         var response = await app.GetTestClient().PostAsJsonAsync("/api/reference-data/bonds/settlement-consideration", new
         {
             analytics = new { securityId = Guid.NewGuid(), context = new { asOf = "2026-11-13T00:00:00Z" }, cleanPrice = "100" },
-            originalFace = "100000", bookedFactor = "1", fees = "0", observedDirtyCash = "100000",
-            sourceEvidenceId = "evidence", cashAccountId = "cash", accruedInterestAccountId = "interest"
+            originalFace = "100000",
+            bookedFactor = "1",
+            fees = "0",
+            observedDirtyCash = "100000",
+            sourceEvidenceId = "evidence",
+            cashAccountId = "cash",
+            accruedInterestAccountId = "interest"
         });
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
     }
@@ -323,7 +334,8 @@ public sealed class BondAnalyticsEndpointsTests
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(service);
-        if (settlement is not null) builder.Services.AddSingleton(settlement);
+        if (settlement is not null)
+            builder.Services.AddSingleton(settlement);
         var app = builder.Build();
         app.Use(async (context, next) =>
         {

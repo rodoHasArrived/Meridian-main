@@ -91,7 +91,8 @@ public static partial class LedgerEndpoints
         if (!HasLedgerMutationPermission(context) || !TryResolveActor(context, out var actor))
             return EndpointHelpers.Forbidden();
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        if (!HasAccountingPackageTenantScope(tenant)) return EndpointHelpers.Forbidden();
+        if (!HasAccountingPackageTenantScope(tenant))
+            return EndpointHelpers.Forbidden();
         if (request is null || request.LedgerBookId != ledgerBookId || request.TaxLotRecordId == Guid.Empty ||
             request.SecurityEvidence is null || request.EventEvidence is null ||
             !RetainedEvidenceIdentityValidator.IsComplete(request.SecurityEvidence) ||
@@ -111,12 +112,14 @@ public static partial class LedgerEndpoints
         try
         {
             var book = await books.GetBookAsync(ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            if (book is null || book.LedgerBookId != ledgerBookId || book.FundProfileId != request.FundProfileId) return EndpointHelpers.Forbidden();
+            if (book is null || book.LedgerBookId != ledgerBookId || book.FundProfileId != request.FundProfileId)
+                return EndpointHelpers.Forbidden();
             var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
             if (owner is null || owner.FundProfileId != book.FundProfileId || !CloseWorkflowOwnerMatches(owner, tenant))
                 return EndpointHelpers.Forbidden();
             var period = await periods.GetPeriodAsync(request.PeriodId, context.RequestAborted).ConfigureAwait(false);
-            if (period is null || period.LedgerBookId != ledgerBookId) return EndpointHelpers.Forbidden();
+            if (period is null || period.LedgerBookId != ledgerBookId)
+                return EndpointHelpers.Forbidden();
             if (book.AccountingBasis != request.AccountingBasis || period.Version != request.ExpectedPeriodVersion ||
                 period.Status != "Open" || request.AsOfDate < period.StartDate || request.AsOfDate > period.EndDate)
                 return Results.Conflict(new { error = "The accounting basis, open period, occurrence date or period version changed." });
@@ -138,7 +141,8 @@ public static partial class LedgerEndpoints
             {
                 for (var index = 1; request.AsOfDate.AddMonths(index * months) <= end; index++)
                 {
-                    if (index >= 120) return Results.BadRequest(new { error = "Limit schedule previews to 120 occurrences." });
+                    if (index >= 120)
+                        return Results.BadRequest(new { error = "Limit schedule previews to 120 occurrences." });
                     var date = request.AsOfDate.AddMonths(index * months);
                     var row = OpenLotAmortization.Project(instruction with { AsOfDate = date });
                     occurrences.Add(new(date, row.TransactionCostBasis, row.FunctionalCostBasis));
@@ -148,7 +152,7 @@ public static partial class LedgerEndpoints
             var currency = lot.Acquisition.FunctionalCurrency;
             var evidence = lot.Acquisition.Evidence.Concat([request.SecurityEvidence, request.EventEvidence]).Distinct().ToArray();
             var dimensions = new LedgerDimensionSetDto(FundId: book.FundProfileId, BookId: ledgerBookId.ToString("D"), InstrumentId: lot.SecurityId)
-                { PositionId = lot.BookPositionId };
+            { PositionId = lot.BookPositionId };
             var scope = new AssetAccountingEventScopeDto(lot.SecurityId, instruction.Security.Version, lot.BookPositionId,
                 instruction.ExpectedBookPositionVersion, ledgerBookId, request.PeriodId, book.AccountingBasis, book.FundProfileId,
                 tenant.TenantId, tenant.CompanyId, dimensions);
@@ -157,11 +161,12 @@ public static partial class LedgerEndpoints
                 1, request.AsOfDate, request.EventEvidence.RetainedAtUtc, request.EventEvidence.SourceSystem,
                 request.EventEvidence.SourceReference, SourceContentHash: request.EventEvidence.ContentHashSha256,
                 EvidenceLinks: evidence.Select(item => item.EvidenceUri).ToArray())
-                { SecurityId = lot.SecurityId, BookPositionId = lot.BookPositionId, RetainedEvidence = evidence };
+            { SecurityId = lot.SecurityId, BookPositionId = lot.BookPositionId, RetainedEvidence = evidence };
             var lineage = new ProjectionLineageDto(eventId, null, "canonical-lot-amortization", instruction.CalculationVersion!,
                 instruction.CalculationVersion!, "base", request.AsOfDate, now, economicEvent.SourceDomain, economicEvent.SourceEntityId,
                 economicEvent, TermsVersion: instruction.Security.Version.ToString(), TermsHash: OpenLotAmortization.SecurityHash(instruction.Security),
-                EvidenceLinks: economicEvent.EvidenceLinks) { BookPositionId = lot.BookPositionId, RetainedEvidence = evidence };
+                EvidenceLinks: economicEvent.EvidenceLinks)
+            { BookPositionId = lot.BookPositionId, RetainedEvidence = evidence };
             var movement = preview.Projection.FunctionalMovement;
             var amount = Math.Abs(movement);
             var effect = new ProjectedAccountingEffectDto(lineage.ProjectionRunId, lineage.ModelKey, lineage.ModelVersion, request.AsOfDate,

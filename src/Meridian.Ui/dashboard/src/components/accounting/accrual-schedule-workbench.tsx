@@ -48,6 +48,19 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
   const controller = useRef<AbortController | null>(null);
   const canConfigure = registry?.canConfigure === true;
   const locked = busy === "save" || busy === "run" || uncertain;
+  const busyReason = busy === "load" ? "Wait for schedule permissions and retained definitions to finish loading."
+    : busy === "preview" ? "Wait for the accrual schedule preview to finish."
+    : busy === "save" ? "Wait for the reviewed accrual schedule to be retained."
+    : busy === "run" ? "Wait for due occurrence processing and the journal workbench refresh to finish." : null;
+  const permissionReason = !registry ? "Refresh retained schedules to load current permissions and definitions."
+    : !canConfigure ? "Schedule management permission is required to configure accrual schedules or generate due drafts." : null;
+  const recoveryReason = uncertain ? "Retry the same accrual schedule to recover the unconfirmed save before changing inputs or generating drafts." : null;
+  const previewDisabledReason = busyReason ?? permissionReason ?? recoveryReason;
+  const generateDisabledReason = busyReason ?? permissionReason ?? recoveryReason;
+  const retainDisabledReason = busyReason ?? permissionReason
+    ?? (saved ? "This accrual schedule is already retained. Generate due accrual drafts to continue." : null)
+    ?? (preview?.result.occurrences.some(row => !row.isOpen) ? "Resolve the closed-period blockers and preview the schedule again before retaining it." : null)
+    ?? (!confirmed ? "Review the exact amount, accounts, evidence and occurrences, then confirm the review." : null);
   const fundProfileId = scope?.fundProfileId;
   const ledgerBookId = scope?.ledgerBookId;
   const entityId = scope?.entityId;
@@ -110,8 +123,8 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
     <CardContent className="space-y-4">
       {!scope ? <p role="status">Select a fund, ledger book and entity to configure accrual schedules.</p> : <>
         {!registry ? <p role="status">{busy === "load" ? "Loading schedule permissions and definitions…" : "Schedule authority unavailable. Retry to load permissions and retained definitions."}</p> : !canConfigure ? <p role="status">Read only: ManageLedgerReports permission is required to configure schedules or generate due drafts.</p> : null}
-        <Button type="button" variant="outline" disabled={busy !== null} onClick={() => { if (!uncertain) { setPreview(null); setConfirmed(false); setSaved(null); } void load(); }}>Refresh retained schedules</Button>
-        {registry?.schedules.map(row => <article key={row.scheduleId} className="rounded border border-border p-3 text-sm"><p className="break-all font-semibold">{row.scheduleId} · v{row.version}</p><p>{row.description} · {row.cadence} · <LocalDateText value={row.anchorDate} /> to <LocalDateText value={row.endsOn} fallback="No end date" /> · {row.currency}</p><Button type="button" variant="outline" disabled={!canConfigure || busy !== null || uncertain} onClick={() => void run(row.scheduleId, row.version)}>Generate due drafts for {row.scheduleId}</Button></article>)}
+        <Button type="button" variant="outline" disabled={busy !== null} disabledReason={busyReason} onClick={() => { if (!uncertain) { setPreview(null); setConfirmed(false); setSaved(null); } void load(); }}>Refresh retained schedules</Button>
+        {registry?.schedules.map(row => <article key={row.scheduleId} className="rounded border border-border p-3 text-sm"><p className="break-all font-semibold">{row.scheduleId} · v{row.version}</p><p>{row.description} · {row.cadence} · <LocalDateText value={row.anchorDate} /> to <LocalDateText value={row.endsOn} fallback="No end date" /> · {row.currency}</p><Button type="button" variant="outline" disabled={!!generateDisabledReason} disabledReason={generateDisabledReason} onClick={() => void run(row.scheduleId, row.version)}>Generate due drafts for {row.scheduleId}</Button></article>)}
         {registry?.schedules.length === 0 ? <p role="status">No retained accrual schedules for this scope.</p> : null}
         <details><summary className="cursor-pointer font-semibold">Configure a new accrual schedule</summary>
           <form className="mt-3 space-y-3" onSubmit={event => { event.preventDefault(); void prepare(); }}>
@@ -121,7 +134,7 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
                 {([ ["debitAccountType", "Debit account type"], ["creditAccountType", "Credit account type"] ] as const).map(([field, label]) => <FormRow key={field} label={label} labelFor={`${id}-${field}`}><Select id={`${id}-${field}`} value={form[field]} onChange={event => edit(field, event.target.value as AccrualAccountType)}>{accountTypes.map(value => <option key={value}>{value}</option>)}</Select></FormRow>)}
               </FormGrid>
               <RetainedEvidenceFields value={evidence} onChange={value => { edit("scheduleId", form.scheduleId); setEvidence(value); }} />
-              <Button type="submit" disabled={busy !== null}>Preview accrual schedule</Button>
+              <Button type="submit" disabled={!!previewDisabledReason} disabledReason={previewDisabledReason}>Preview accrual schedule</Button>
             </fieldset>
           </form>
         </details>
@@ -134,8 +147,8 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
             maxVisibleRows={null} />
           <Checkbox checked={confirmed} disabled={locked || !!saved} onCheckedChange={setConfirmed}
             label="I reviewed the exact amount, accounts, source evidence and every occurrence." />
-          <Button type="button" disabled={!confirmed || !canConfigure || busy !== null || !!saved || preview.result.occurrences.some(row => !row.isOpen)} onClick={() => void save()}>{uncertain ? "Retry same accrual schedule" : "Retain accrual schedule"}</Button>
-          {saved ? <Button type="button" disabled={busy !== null} onClick={() => void run(saved.scheduleId, saved.version)}>Generate due accrual drafts</Button> : null}
+          <Button type="button" disabled={!!retainDisabledReason} disabledReason={retainDisabledReason} onClick={() => void save()}>{uncertain ? "Retry same accrual schedule" : "Retain accrual schedule"}</Button>
+          {saved ? <Button type="button" disabled={!!generateDisabledReason} disabledReason={generateDisabledReason} onClick={() => void run(saved.scheduleId, saved.version)}>Generate due accrual drafts</Button> : null}
         </section> : null}
         <RecurringJournalQueue key={queueVersion} scope={scope} availableDraftIds={availableDraftIds} onSelectDraft={onSelectDraft} />
       </>}
