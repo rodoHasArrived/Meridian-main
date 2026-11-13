@@ -6280,6 +6280,7 @@ Meridian-main
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── ProviderConnectionsConfig.cs
 │   │   │   ├── ProviderModulesConfig.cs
+│   │   │   ├── ProviderQuotasConfig.cs
 │   │   │   ├── SensitiveKeyRegistry.cs
 │   │   │   ├── SensitiveValueMasker.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
@@ -7114,7 +7115,8 @@ Meridian-main
 │   │   │   │   │   └── DataQualityMonitor.cs
 │   │   │   │   ├── RateLimiting
 │   │   │   │   │   ├── ProviderRateLimitTracker.cs
-│   │   │   │   │   └── RateLimiter.cs
+│   │   │   │   │   ├── RateLimiter.cs
+│   │   │   │   │   └── RequestBudgetConfiguration.cs
 │   │   │   │   ├── SymbolResolution
 │   │   │   │   │   ├── CanonicalRegistrySymbolResolver.cs
 │   │   │   │   │   └── ISymbolResolver.cs
@@ -13243,6 +13245,7 @@ Meridian-main
 │   │   │   │   ├── TwelveDataHistoricalDataProviderTests.cs
 │   │   │   │   ├── TwelveDataSymbolSearchProviderTests.cs
 │   │   │   │   ├── WebSocketProviderBaseTests.cs
+│   │   │   │   ├── WeightedProviderQuotaTests.cs
 │   │   │   │   └── YahooFinanceHistoricalDataProviderTests.cs
 │   │   │   ├── Resilience
 │   │   │   │   ├── HttpResiliencePolicyTests.cs
@@ -14182,6 +14185,7 @@ Meridian-main
 │   │   │   │   └── TradeBuilder.cs
 │   │   │   ├── ActivityCapturingPublisher.cs
 │   │   │   ├── ActivityTestListenerFactory.cs
+│   │   │   ├── AlphaVantageTestBudget.cs
 │   │   │   ├── MarketScenarioBuilder.cs
 │   │   │   ├── PolygonStubClient.cs
 │   │   │   ├── RecordingLogger.cs

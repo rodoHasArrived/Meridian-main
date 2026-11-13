@@ -14,6 +14,11 @@ last_reviewed: 2026-10-02
 `ProviderSearchException` and `ProviderSearchFailure` identify unavailable credentials, transport failures, malformed or
 incomplete responses and throttling for explicit provider lookups. A successful empty search is
 represented by its result rather than a failure category.
+`AppConfig.ProviderQuotas` contains restart-required account quota declarations, without secrets.
+Twelve Data separates per-minute/daily credits, explicit fundamentals entitlement and explicit
+`NoDailyLimit`; Alpha Vantage declares per-minute/daily request capacity and `NoDailyLimit`.
+The explicit boolean survives configuration and desktop DTO round trips; an omitted nullable cap
+would otherwise be indistinguishable from its default. Infrastructure owns vendor charging and resets.
 
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 
@@ -105,8 +110,9 @@ validation pipeline stages, credential placeholder detection, default config-pat
 environment-variable override handling, configuration-template generation, and debounced config
 file hot-reload watching for Application commands, configuration services, WPF setup flows, and
 shared endpoints.
-Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
-compatibility aliases, but they are not accepted configuration inputs.
+Schema generation excludes members with `JsonIgnoreCondition.Always`: those members may remain as
+in-process compatibility aliases. Conditional write omission retains the member's input schema,
+including nullable ownership bindings and account quota declarations.
 `DataSourceKindConverter` resolves the ProviderSdk alias map before enum validation, so `ibkr` and
 `interactive-brokers` load as `DataSourceKind.IB`. Unknown providers, unsupported transport modes,
 and undefined numeric values remain configuration errors.

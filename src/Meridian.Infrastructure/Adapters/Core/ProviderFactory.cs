@@ -42,6 +42,7 @@ public sealed partial class ProviderFactory
     private readonly IProviderCredentialResolver _credentialResolver;
     private readonly ISymbolResolver? _symbolResolver;
     private readonly ILogger _log;
+    private readonly RateLimiterRegistry _quotaRegistry;
 
     public ProviderFactory(
         AppConfig config,
@@ -56,6 +57,7 @@ public sealed partial class ProviderFactory
         _symbolResolver = symbolResolver;
         _services = services;
         _moduleContexts = moduleContexts;
+        _quotaRegistry = (RateLimiterRegistry?)services?.GetService(typeof(RateLimiterRegistry)) ?? RateLimiterRegistry.Shared;
         _log = log ?? LoggingSetup.ForContext<ProviderFactory>();
     }
 
@@ -283,7 +285,7 @@ public sealed partial class ProviderFactory
             enabled: true,
             "TWELVEDATA_API_KEY",
             configuredValue: null,
-            apiKey => new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new TwelveDataHistoricalDataProvider(apiKey: apiKey, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.TwelveData));
 
     internal IHistoricalDataProvider? CreateFinnhubBackfillProvider(FinnhubBackfillConfig? cfg)
         => CreateCredentialGatedBackfillProvider<FinnhubHistoricalDataProvider>(
@@ -305,7 +307,7 @@ public sealed partial class ProviderFactory
             EnabledWhenOptedIn(cfg?.Enabled),
             "ALPHA_VANTAGE_API_KEY",
             cfg?.ApiKey,
-            apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log));
+            apiKey => new AlphaVantageHistoricalDataProvider(apiKey: apiKey, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.AlphaVantage));
 
     internal IHistoricalDataProvider? CreateNasdaqBackfillProvider(NasdaqBackfillConfig? cfg)
     {
@@ -380,14 +382,14 @@ public sealed partial class ProviderFactory
             EnabledWhenOptedIn(cfg?.Enabled),
             "ALPHA_VANTAGE_API_KEY",
             cfg?.ApiKey,
-            apiKey => new AlphaVantageSymbolSearchProvider(apiKey, httpClient: null, log: _log));
+            apiKey => new AlphaVantageSymbolSearchProvider(apiKey, httpClient: null, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.AlphaVantage));
 
     internal ISymbolSearchProvider? CreateTwelveDataSearchProvider()
         => CreateCredentialGatedSearchProvider<TwelveDataHistoricalDataProvider>(
             enabled: true,
             "TWELVEDATA_API_KEY",
             configuredValue: null,
-            apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log));
+            apiKey => new TwelveDataSymbolSearchProvider(apiKey, httpClient: null, log: _log, rateLimiterRegistry: _quotaRegistry, quotaConfig: _config.ProviderQuotas?.TwelveData));
 
     internal ISymbolSearchProvider? CreateNasdaqSearchProvider(NasdaqBackfillConfig? cfg)
         => CreateCredentialGatedSearchProvider<NasdaqDataLinkHistoricalDataProvider>(

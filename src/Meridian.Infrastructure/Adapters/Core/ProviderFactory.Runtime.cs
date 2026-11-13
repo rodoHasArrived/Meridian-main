@@ -5,6 +5,8 @@ using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.AlphaVantage;
+using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.NYSE;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -40,6 +42,14 @@ public sealed partial class ProviderFactory
             .AddInMemoryCollection(configuredValues.Select(value =>
                 new KeyValuePair<string, string?>(value.Name, credentials.Get(value.Name))))
             .Build();
+        // These adapters share the typed account declaration with factory-created history and
+        // search, even when a caller supplied an AppConfig separately from host IConfiguration.
+        if (typeof(TProvider) == typeof(TwelveDataCorporateActionProvider))
+            return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
+                _config.ProviderQuotas?.TwelveData ?? new TwelveDataQuotaConfig());
+        if (typeof(TProvider) == typeof(AlphaVantageCorporateActionProvider))
+            return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials,
+                _config.ProviderQuotas?.AlphaVantage ?? new AlphaVantageQuotaConfig());
         return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials);
     }
 

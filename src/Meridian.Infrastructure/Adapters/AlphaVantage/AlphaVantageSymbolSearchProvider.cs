@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AlphaVantageQuotaConfig = Meridian.Core.Config.AlphaVantageQuotaConfig;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -26,6 +27,12 @@ namespace Meridian.Infrastructure.Adapters.AlphaVantage;
     Description = "Alpha Vantage API key from https://www.alphavantage.co/support/#api-key")]
 public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
 {
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly RequestBudgetConfiguration? _quotaBudget;
+    protected override bool OwnsHttpRetries => true;
+    protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(ApiKey)
+        ? RateLimiter
+        : _rateLimiterRegistry.GetOrCreate(Name, ApiKey, "api-requests", _quotaBudget!);
     public override string Name => "alphavantage";
     public override string DisplayName => "Alpha Vantage";
     public override int Priority => 25;
@@ -40,9 +47,9 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
         "MDC_ALPHA_VANTAGE_API_KEY"
     };
 
-    protected override int MaxRequestsPerWindow => 5;
+    protected override int MaxRequestsPerWindow => _quotaBudget?.Maximum ?? 5;
     protected override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
-    protected override TimeSpan MinRequestDelay => TimeSpan.FromSeconds(12);
+    protected override TimeSpan MinRequestDelay => _quotaBudget?.MinimumDelay ?? TimeSpan.FromSeconds(12);
 
     public override IReadOnlyList<string> SupportedAssetTypes => new[]
     {
@@ -63,9 +70,13 @@ public sealed class AlphaVantageSymbolSearchProvider : BaseSymbolSearchProvider
     public AlphaVantageSymbolSearchProvider(
         string? apiKey = null,
         HttpClient? httpClient = null,
-        ILogger? log = null)
-        : base(apiKey, httpClient, log)
+        ILogger? log = null,
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        AlphaVantageQuotaConfig? quotaConfig = null)
+        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider)
     {
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig);
     }
 
     protected override string BuildSearchUrl(string query, string? assetType, string? exchange)

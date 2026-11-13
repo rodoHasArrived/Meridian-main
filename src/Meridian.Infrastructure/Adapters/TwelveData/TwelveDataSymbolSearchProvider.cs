@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using TwelveDataQuotaConfig = Meridian.Core.Config.TwelveDataQuotaConfig;
 using Meridian.Contracts.Text;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -24,11 +25,12 @@ namespace Meridian.Infrastructure.Adapters.TwelveData;
 public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
 {
     private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly RequestBudgetConfiguration? _quotaBudget;
     protected override bool OwnsHttpRetries => true;
 
     protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(ApiKey)
         ? RateLimiter
-        : _rateLimiterRegistry.GetOrCreate(Name, ApiKey, "api-requests", MaxRequestsPerWindow, RateLimitWindow, MinRequestDelay);
+        : _rateLimiterRegistry.GetOrCreate(Name, ApiKey, "api-requests", _quotaBudget!);
     public override string Name => "twelvedata";
     public override string DisplayName => "Twelve Data";
     public override int Priority => 22;
@@ -43,9 +45,9 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
         "MDC_TWELVEDATA_API_KEY"
     };
 
-    protected override int MaxRequestsPerWindow => 8;
+    protected override int MaxRequestsPerWindow => _quotaBudget?.Maximum ?? 8;
     protected override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
-    protected override TimeSpan MinRequestDelay => TimeSpan.FromMilliseconds(7500);
+    protected override TimeSpan MinRequestDelay => _quotaBudget?.MinimumDelay ?? TimeSpan.FromMilliseconds(7500);
 
     public override IReadOnlyList<string> SupportedAssetTypes => new[]
     {
@@ -78,10 +80,12 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
         string? apiKey = null,
         HttpClient? httpClient = null,
         ILogger? log = null,
-        RateLimiterRegistry? rateLimiterRegistry = null)
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        TwelveDataQuotaConfig? quotaConfig = null)
         : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider)
     {
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
+        _quotaBudget = ProviderQuotaBudgets.TwelveData(quotaConfig);
     }
 
     protected override string BuildSearchUrl(string query, string? assetType, string? exchange)

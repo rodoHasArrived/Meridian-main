@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidationPipelineConfig
+
+Qualified name: <code>Meridian.Core.Config.ValidationPipelineConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/AppConfig.cs:200](../../../../src/Meridian.Core/Config/AppConfig.cs#L200).
+
+Configuration for the F# validation pipeline stage. When enabled, every incoming Meridian.Domain.Events.MarketEvent is validated against the F# Railway-Oriented validators before it is persisted. Events that fail validation are written to the dead-letter sink instead of primary storage.
+
+```csharp
+public sealed record ValidationPipelineConfig(bool Enabled = false, bool UseRealTimeMode = false);
+```
+
+## YahooFinanceConfig
+
+Qualified name: <code>Meridian.Core.Config.YahooFinanceConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:153](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L153).
+
+Yahoo Finance provider configuration.
+
+```csharp
+public sealed record YahooFinanceConfig(bool Enabled = true, int Priority = 10, int RateLimitPerHour = 2000);
+```
+
+## IProviderCredentialStore
+
+Qualified name: <code>Meridian.Core.Contracts.IProviderCredentialStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:7](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L7).
+
+Compatibility contract for provider-module setup. Production implementations must delegate to the encrypted, audited credential vault; no implementation may persist plaintext sidecars.
+
+```csharp
+public interface IProviderCredentialStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:10](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L10) | Persists credential key/value pairs for a provider module. |
+| <code>Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:13](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L13) | Returns all credential key/value pairs stored for a provider module. |
+| <code>async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:20](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L20) | Reads one selected record, preserving an empty retained record; null proves absence. Compatibility stores that cannot prove absence conservatively select their returned record, so missing fields cannot borrow ambient credentials. |
+| <code>Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:24](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L24) | Returns the set of credential key names that have stored (non-empty) values. |
+| <code>Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:27](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L27) | Removes all stored credentials for a provider module. |
+
 ## CurrencyMinorUnits
 
 Qualified name: <code>Meridian.Core.Currency.CurrencyMinorUnits</code>. Kind: `class`.
@@ -971,77 +1017,3 @@ Declared public members:
 | <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static double GetElapsedNanoseconds(long startTimestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:262](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L262) | Gets elapsed time since the specified timestamp in nanoseconds. |
 | <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static DateTimeOffset ToDateTimeOffset(long timestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:273](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L273) | Converts a high-resolution timestamp to a DateTimeOffset. More accurate than DateTimeOffset.UtcNow for relative timing. |
 | <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static DateTimeOffset GetCurrentTime();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:283](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L283) | Gets the current time with high resolution. |
-
-## RawQuoteEvent
-
-Qualified name: <code>Meridian.Core.Performance.RawQuoteEvent</code>. Kind: `struct`.
-
-Source: [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:17](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L17).
-
-Zero-allocation struct representation of a Best-Bid/Offer quote event for the hot path. Uses LayoutKind.Sequential for predictable memory layout in the SpscRingBuffer{T} backing array.
-
-```csharp
-public readonly struct RawQuoteEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public readonly long TimestampTicks;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:25](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L25) | Timestamp as UTC ticks (100-nanosecond intervals since 0001-01-01 UTC, i.e. DateTimeOffset.UtcTicks). Reconstruct the wall-clock time with new DateTimeOffset(TimestampTicks, TimeSpan.Zero). |
-| <code>public readonly int SymbolHash;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:31](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L31) | Pre-computed symbol identifier assigned by SymbolTable.GetOrAdd. Resolve back to the symbol string with SymbolTable.TryGetSymbol. |
-| <code>public readonly decimal BidPrice;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:34](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L34) | Best bid price. |
-| <code>public readonly long BidSize;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:37](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L37) | Best bid size (shares or contracts). |
-| <code>public readonly decimal AskPrice;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:40](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L40) | Best ask price. |
-| <code>public readonly long AskSize;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:43](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L43) | Best ask size (shares or contracts). |
-| <code>public readonly long Sequence;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:46](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L46) | Provider-assigned sequence number for ordering and gap detection. |
-| <code>public RawQuoteEvent(long timestampTicks, int symbolHash, decimal bidPrice, long bidSize, decimal askPrice, long askSize, long sequence);</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:58](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L58) | Creates a new RawQuoteEvent. |
-
-## RawTradeEvent
-
-Qualified name: <code>Meridian.Core.Performance.RawTradeEvent</code>. Kind: `struct`.
-
-Source: [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:16](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L16).
-
-Zero-allocation struct representation of a trade event for the hot path. Uses LayoutKind.Sequential for predictable memory layout in the SpscRingBuffer{T} backing array.
-
-```csharp
-public readonly struct RawTradeEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public readonly long TimestampTicks;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:24](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L24) | Timestamp as UTC ticks (100-nanosecond intervals since 0001-01-01 UTC, i.e. DateTimeOffset.UtcTicks). Reconstruct the wall-clock time with new DateTimeOffset(TimestampTicks, TimeSpan.Zero). |
-| <code>public readonly int SymbolHash;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:30](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L30) | Pre-computed symbol identifier assigned by SymbolTable.GetOrAdd. Resolve back to the symbol string with SymbolTable.TryGetSymbol. |
-| <code>public readonly decimal Price;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:33](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L33) | Execution price of the trade. |
-| <code>public readonly long Size;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:36](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L36) | Number of shares or contracts traded. |
-| <code>public readonly byte Aggressor;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:43](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L43) | Aggressor side encoded as the underlying byte value of Meridian.Contracts.Domain.Enums.AggressorSide: 0 = Unknown, 1 = Buy, 2 = Sell. |
-| <code>public readonly long Sequence;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:46](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L46) | Provider-assigned sequence number for ordering and gap detection. |
-| <code>public RawTradeEvent(long timestampTicks, int symbolHash, decimal price, long size, byte aggressor, long sequence);</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:57](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L57) | Creates a new RawTradeEvent. |
-
-## SpscRingBuffer (generic arity 1)
-
-Qualified name: <code>Meridian.Core.Performance.SpscRingBuffer</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:41](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L41).
-
-Lock-free, single-producer/single-consumer ring buffer backed by a pre-allocated array.
-
-```csharp
-public sealed class SpscRingBuffer<T> where T : struct
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SpscRingBuffer(int capacity);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:59](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L59) | Creates a new ring buffer with a capacity rounded up to the next power of two. |
-| <code>public int Capacity =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:72](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L72) | Gets the actual buffer capacity (the next power of two ≥ the requested capacity). |
-| <code>public int Count { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:78](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L78) | Gets an approximate count of items currently available to read. The value may be stale by the time the caller acts on it. |
-| <code>public bool IsEmpty { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:85](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L85) | Gets whether the buffer currently has no items to read. |
-| <code>public bool IsFull { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:92](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L92) | Gets whether the buffer is currently full. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryWrite(in T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:111](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L111) | Tries to write item into the buffer. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryRead(out T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:139](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L139) | Tries to read the next item from the buffer. |
-| <code>public int DrainTo(Span&lt;T&gt; destination, int maxItems = int.MaxValue);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:162](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L162) | Drains up to maxItems items into destination. |

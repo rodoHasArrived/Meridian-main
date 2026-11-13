@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AlphaVantageQuotaConfig = Meridian.Core.Config.AlphaVantageQuotaConfig;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
@@ -34,15 +35,21 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     private const string ApiBaseUrl = "https://www.alphavantage.co/query";
 
     private readonly string? _apiKey;
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly RequestBudgetConfiguration? _quotaBudget;
+
+    protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(_apiKey)
+        ? RateLimiter
+        : _rateLimiterRegistry.GetOrCreate(Name, _apiKey, "api-requests", _quotaBudget!);
 
     public override string Name => "alphavantage";
     public override string DisplayName => "Alpha Vantage (free tier)";
-    public override string Description => "US equities with unique intraday historical data support. Limited free tier (25 req/day).";
+    public override string Description => "US equities with unique intraday historical data support. Default free profile: 25 requests/day.";
     protected override string HttpClientName => HttpClientNames.AlphaVantageHistorical;
 
     public override int Priority => 25; // Lower priority due to very limited free tier
-    public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(12); // 5 requests/minute = 12 seconds between requests
-    public override int MaxRequestsPerWindow => 5;
+    public override TimeSpan RateLimitDelay => _quotaBudget?.MinimumDelay ?? TimeSpan.FromSeconds(12);
+    public override int MaxRequestsPerWindow => _quotaBudget?.Maximum ?? 5;
     public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
 
     /// <summary>
@@ -58,10 +65,13 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
     /// </summary>
     public static IReadOnlyList<string> SupportedIntervals => new[] { "1min", "5min", "15min", "30min", "60min" };
 
-    public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
+        RateLimiterRegistry? rateLimiterRegistry = null, AlphaVantageQuotaConfig? quotaConfig = null)
+        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("ALPHA_VANTAGE_API_KEY");
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig);
 
         // Add custom User-Agent
         if (!Http.DefaultRequestHeaders.Contains("User-Agent"))

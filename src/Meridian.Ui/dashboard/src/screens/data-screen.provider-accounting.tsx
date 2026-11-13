@@ -30,7 +30,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
               Provider registration and rate limits
             </CardTitle>
             <CardDescription className="mt-2">
-              Current server-owned registration failures, request-window usage, reset posture, and retry guidance.
+              Current server-owned registration failures, quota usage, declared daily limits, reset posture, and retry guidance.
             </CardDescription>
           </div>
           <Button
@@ -80,7 +80,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Current request windows</h3>
+              <h3 className="text-sm font-semibold text-foreground">Current provider quotas</h3>
               <p className="mt-1 text-xs text-muted-foreground">{panel.rateLimitSummary}</p>
             </div>
             <Badge variant="outline">History unavailable</Badge>
@@ -96,8 +96,9 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
                   { id: "provider", label: "Provider / surface", render: (row) => <><strong>{row.provider}</strong><span className="block text-muted-foreground">{row.surface}</span></>, exportValue: (row) => `${row.source.provider}; ${row.source.surface}` },
                   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone}>{row.status}</Badge>, exportValue: (row) => row.source.status },
                   { id: "connection", label: "Connection / reachability", render: (row) => row.connectionPosture, exportValue: (row) => row.connectionPosture },
-                  { id: "requests", label: "Requests", render: (row) => row.requestUsage, exportValue: (row) => row.source.requestsInWindow },
+                  { id: "requests", label: "Quota usage", render: (row) => row.requestUsage, exportValue: (row) => row.requestUsage },
                   { id: "remaining", label: "Remaining", render: (row) => row.remaining, exportValue: (row) => row.source.remainingRequests },
+                  { id: "daily", label: "Daily quota", render: (row) => row.dailyUsage, exportValue: (row) => row.dailyUsage },
                   { id: "reset", label: "Reset countdown", render: (row) => row.resetCountdown, exportValue: (row) => row.source.resetAt },
                   { id: "reason", label: "Failure / reason", render: (row) => row.failureReason, exportValue: (row) => row.source.reason },
                   { id: "retry", label: "Retry posture", render: (row) => row.retryPosture, exportValue: (row) => row.retryPosture }

@@ -106,7 +106,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         });
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(response));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetAdjustedDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 2));
 
@@ -143,7 +143,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
             return JsonResponse(IntradayResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
         var from = ParseExchangeTimestamp("2024-01-02 09:35:00");
         var to = ParseExchangeTimestamp("2024-01-02 09:40:00");
 
@@ -180,7 +180,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(EmptyIntradayResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var bars = await provider.GetIntradayBarsAsync("AAPL", "5min", null, null, cts.Token);
 
@@ -193,7 +193,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         Func<Task> act = () => provider.GetIntradayBarsAsync("AAPL", "5min", null, null, cts.Token);
 
@@ -208,7 +208,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Unsupported intervals should fail before HTTP."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         Func<Task> act = () => provider.GetIntradayBarsAsync("AAPL", "2min", null, null, cts.Token);
 
@@ -229,7 +229,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
             return JsonResponse("""{ "Global Quote": { "01. symbol": "AAPL" } }""");
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var available = await provider.IsAvailableAsync(cts.Token);
 
@@ -248,7 +248,7 @@ public sealed class AlphaVantageHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(RateLimitResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new AlphaVantageHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: AlphaVantageTestBudget.Create());
 
         var available = await provider.IsAvailableAsync(cts.Token);
 

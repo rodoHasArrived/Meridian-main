@@ -6,6 +6,82 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FailoverConfig
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.FailoverConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:740](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L740).
+
+Failover configuration.
+
+```csharp
+public sealed record FailoverConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Enabled { get; init; } = true;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:745](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L745) | Whether failover is enabled. |
+| <code>public string Strategy { get; init; } = &quot;Priority&quot;;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:750](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L750) | Failover strategy: Priority, HealthScore, RoundRobin, Random. |
+| <code>public int MaxFailoverAttempts { get; init; } = 3;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:755](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L755) | Maximum number of failover attempts. |
+| <code>public int CooldownSeconds { get; init; } = 60;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:760](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L760) | Cooldown period in seconds after a source fails. |
+| <code>public FallbackOptions ToOptions();</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:765](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L765) | Converts to internal options format. |
+
+## FallbackOptions
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.FallbackOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:787](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L787).
+
+Fallback options for provider failover.
+
+```csharp
+public sealed record FallbackOptions(bool Enabled, FallbackStrategy Strategy, int MaxAttempts, TimeSpan CooldownPeriod);
+```
+
+## FallbackStrategy
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.FallbackStrategy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:797](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L797).
+
+Fallback strategy for provider selection.
+
+```csharp
+public enum FallbackStrategy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Priority</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:800](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L800) | Priority-based selection (use provider priority). |
+| <code>HealthScore</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:802](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L802) | Health-score-based selection. |
+| <code>RoundRobin</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:804](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L804) | Round-robin selection. |
+| <code>Random</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:806](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L806) | Random selection. |
+
+## HealthCheckConfig
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.HealthCheckConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:177](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L177).
+
+Health check configuration.
+
+```csharp
+public sealed record HealthCheckConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int IntervalSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:182](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L182) | Interval between health checks in seconds. |
+| <code>public int TimeoutSeconds { get; init; } = 10;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:187](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L187) | Timeout for health check requests in seconds. |
+| <code>public int UnhealthyThreshold { get; init; } = 3;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:192](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L192) | Number of consecutive failures before marking unhealthy. |
+| <code>public HealthCheckOptions ToOptions() =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:197](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L197) | Converts to internal options format. |
+
 ## HealthCheckOptions
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.HealthCheckOptions</code>. Kind: `record`.
@@ -1038,95 +1114,3 @@ Snapshot of subscription state for serialization or logging.
 ```csharp
 public sealed record SubscriptionSnapshot(int TotalSubscriptions, int FailedSubscriptions, int RecoveringSubscriptions, IReadOnlyDictionary<string, IReadOnlyList<string>> SymbolsByKind, IReadOnlyList<Subscription> Subscriptions);
 ```
-
-## SubscriptionStatus
-
-Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:29](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L29).
-
-```csharp
-public enum SubscriptionStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:31](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L31) |  |
-| <code>Active = 1</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:32](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L32) |  |
-| <code>Recovering = 2</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:33](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L33) |  |
-| <code>Failed = 3</code> | [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:34](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L34) |  |
-
-## SymbolStateStore (generic arity 1)
-
-Qualified name: <code>Meridian.Infrastructure.Shared.SymbolStateStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:118](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L118).
-
-Default implementation of ISymbolStateStore using ConcurrentDictionary.
-
-```csharp
-public sealed class SymbolStateStore<T>: ISymbolStateStore<T> where T : class
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolStateStore(bool ignoreCase = true);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:128](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L128) | Creates a new symbol state store. |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:135](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L135) |  |
-| <code>public T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:138](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L138) |  |
-| <code>public bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:147](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L147) |  |
-| <code>public void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:159](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L159) |  |
-| <code>public T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:168](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L168) |  |
-| <code>public bool Remove(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:176](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L176) |  |
-| <code>public bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:183](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L183) |  |
-| <code>public bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:195](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L195) |  |
-| <code>public IReadOnlyList&lt;string&gt; GetSymbols();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:202](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L202) |  |
-| <code>public IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:209](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L209) |  |
-| <code>public void Clear();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:216](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L216) |  |
-| <code>public void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:223](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L223) |  |
-| <code>public int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:235](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L235) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:260](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L260) |  |
-
-## TaskSafetyExtensions
-
-Qualified name: <code>Meridian.Infrastructure.Shared.TaskSafetyExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:11](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L11).
-
-Extension methods for safely handling fire-and-forget async operations. Ensures that exceptions from unawaited tasks are observed and logged instead of silently swallowed or causing UnobservedTaskException.
-
-```csharp
-public static class TaskSafetyExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void ObserveException(this Task task, ILogger? logger = null, string? operation = null);</code> | [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:24](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L24) | Observes a fire-and-forget task, ensuring any exception is logged rather than silently swallowed. Use this when a task cannot be awaited (e.g., called from a synchronous method or event handler) but failures must not go unnoticed. |
-| <code>public static void ObserveException(this ValueTask valueTask, ILogger? logger = null, string? operation = null);</code> | [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:44](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L44) | Observes a fire-and-forget ValueTask, ensuring any exception is logged. |
-
-## HttpResponseHandler
-
-Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:14](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L14).
-
-Centralized HTTP response handling to eliminate duplicate error handling code across providers. Handles common HTTP status codes (429, 403, 404, etc.) consistently.
-
-```csharp
-public sealed class HttpResponseHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HttpResponseHandler(string providerName, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:19](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L19) |  |
-| <code>public async Task&lt;HttpResponseResult&gt; HandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action&lt;RateLimitEventArgs&gt;? onRateLimitHit = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:30](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L30) | Handle HTTP response and throw appropriate exceptions for error status codes. Returns result if successful, throws on error (except 404 which returns IsNotFound). |
-| <code>public Task&lt;HttpHandleResult&gt; TryHandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action&lt;RateLimitInfo&gt;? onRateLimitHit = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:65](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L65) | Handle HTTP response without throwing exceptions. Returns a result object with categorized error information. This is the preferred method for use in base provider classes that need to return results rather than throw. |
-| <code>public HttpResponseResult HandleResponse(HttpStatusCode statusCode, string symbol, string dataType, string? errorContent = null);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:125](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L125) | Synchronous version for responses already read. |
-| <code>public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:211](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L211) | Extract Retry-After header value from response. |

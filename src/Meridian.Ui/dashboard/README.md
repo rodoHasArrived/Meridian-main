@@ -52,6 +52,11 @@ Focused validation includes the changed screen/component tests, `fixed-income-ca
 and `node scripts/dev/verify-fixed-income-access.mjs` from the repository root against a running Vite
 server. Browser evidence uses deterministic synthetic API responses, not live provider certification.
 
+The Data provider-accounting table labels quota usage and remaining capacity with the runtime's
+actual unit (weighted credits or requests), and shows declared daily limits and reset policy.
+Legacy responses without daily evidence remain unavailable. Capacity does not imply entitlement
+to a paid endpoint, and current quota state does not claim retained history.
+
 ## Fixed-income and accounting journeys
 
 Security Master exposes **Curves: definitions, pillars and historical versions** before security

@@ -110,6 +110,18 @@ Alpha Vantage provider configuration. Unique capability: Intraday historical dat
 public sealed record AlphaVantageConfig(bool Enabled = true, string? ApiKey = null, int Priority = 25, int RateLimitPerMinute = 5, int RateLimitPerDay = 25);
 ```
 
+## AlphaVantageQuotaConfig
+
+Qualified name: <code>Meridian.Core.Config.AlphaVantageQuotaConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:23](../../../../src/Meridian.Core/Config/ProviderQuotasConfig.cs#L23).
+
+Alpha Vantage conservative free-account limits. The daily cap uses a rolling 24-hour window because the vendor publishes no reset boundary. NoDailyLimit declares an uncapped account.
+
+```csharp
+public sealed record AlphaVantageQuotaConfig(int RequestsPerMinute = 5, int DailyRequests = 25, bool NoDailyLimit = false);
+```
+
 ## AppConfig
 
 Qualified name: <code>Meridian.Core.Config.AppConfig</code>. Kind: `record`.
@@ -126,7 +138,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonExtensionData] public Dictionary&lt;string, System.Text.Json.JsonElement&gt;? AdditionalSections { get; set; }</code> | [src/Meridian.Core/Config/AppConfig.cs:85](../../../../src/Meridian.Core/Config/AppConfig.cs#L85) | Preserves top-level configuration sections this model does not declare (host-level sections such as ApiHost, PaperTrading, Status, and Connectivity) across load/save round-trips, so config mutation paths (data-source/storage/symbol saves) do not silently drop operator-tuned host settings. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ProviderQuotasConfig? ProviderQuotas { get; init; }</code> | [src/Meridian.Core/Config/AppConfig.cs:80](../../../../src/Meridian.Core/Config/AppConfig.cs#L80) | Restart-required vendor quota and entitlement declarations; contains no credentials. |
+| <code>[JsonExtensionData] public Dictionary&lt;string, System.Text.Json.JsonElement&gt;? AdditionalSections { get; set; }</code> | [src/Meridian.Core/Config/AppConfig.cs:89](../../../../src/Meridian.Core/Config/AppConfig.cs#L89) | Preserves top-level configuration sections this model does not declare (host-level sections such as ApiHost, PaperTrading, Status, and Connectivity) across load/save round-trips, so config mutation paths (data-source/storage/symbol saves) do not silently drop operator-tuned host settings. |
 
 ## AppConfigJsonOptions
 
@@ -813,7 +826,7 @@ public sealed record DerivativesConfig(bool Enabled = false, string[]? Underlyin
 
 Qualified name: <code>Meridian.Core.Config.DomainCutoverModeConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:218](../../../../src/Meridian.Core/Config/AppConfig.cs#L218).
+Source: [src/Meridian.Core/Config/AppConfig.cs:222](../../../../src/Meridian.Core/Config/AppConfig.cs#L222).
 
 Serializable cutover mode for a single fund operations domain.
 
@@ -854,25 +867,3 @@ Configuration for a failover rule.
 ```csharp
 public sealed record FailoverRuleConfig(string Id, string PrimaryProviderId, string[] BackupProviderIds, int FailoverThreshold = 3, int RecoveryThreshold = 5, double DataQualityThreshold = 0, double MaxLatencyMs = 0);
 ```
-
-## FeatureCapabilityCatalog
-
-Qualified name: <code>Meridian.Core.Config.FeatureCapabilityCatalog</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:6](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L6).
-
-Lists the declared workstation feature capabilities and their default enablement metadata.
-
-```csharp
-public static class FeatureCapabilityCatalog
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Trading { get; } = [new (&quot;desktop.trading.workspace&quot;, &quot;Trading workspace&quot;, &quot;Trading shell, market feed, order book, position blotter, and run-risk screens.&quot;, true, true), new (&quot;desktop.trading.hours&quot;, &quot;Trading hours&quot;, &quot;Market-session briefing and schedule coverage review in the Trading workspace.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:8](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L8) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Data { get; } = [new (&quot;desktop.data.workspace&quot;, &quot;Data workspace&quot;, &quot;Provider setup, backfill, storage, quality, and data catalog workstation surfaces.&quot;, true, true), new (&quot;desktop.data.security-master&quot;, &quot;Security master&quot;, &quot;Reference-data review, security lifecycle readiness, and vendor-symbol mapping workbench.&quot;, true, false), new (&quot;desktop.data.retention&quot;, &quot;Retention assurance&quot;, &quot;Archive health, storage optimization, and retention-policy assurance surfaces.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:14](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L14) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Settings { get; } = [new (&quot;desktop.settings.workspace&quot;, &quot;Settings workspace&quot;, &quot;Preferences, credentials, diagnostics, service management, notifications, and support surfaces.&quot;, true, true), new (&quot;desktop.settings.capabilities&quot;, &quot;Capability toggles&quot;, &quot;Generated capability-control tab for module-declared desktop feature switches.&quot;, true, true), new (&quot;desktop.settings.workflow-library&quot;, &quot;Workflow library&quot;, &quot;Reusable workflow catalog and action launch surface in Settings.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:21](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L21) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Reporting { get; } = [new (&quot;desktop.reporting.workspace&quot;, &quot;Reporting workspace&quot;, &quot;Governed report-pack review, delivery posture, publication evidence, and line-provenance surfaces.&quot;, true, true), new (&quot;desktop.reporting.review-workbench&quot;, &quot;Reporting review workbench&quot;, &quot;Approval, rejection, publication, restatement, and retained evidence review surfaces.&quot;, true, false), new (&quot;desktop.reporting.delivery-readiness&quot;, &quot;Reporting delivery readiness&quot;, &quot;Schedule due work, delivery blockers, failure evidence, and readiness warnings.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:28](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L28) |  |
-| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; All { get; } = Trading.Concat(Data).Concat(Reporting).Concat(Settings).GroupBy(static capability =&gt; capability.CapabilityKey, StringComparer.OrdinalIgnoreCase).Select(static group =&gt; group.First()).OrderBy(static capability =&gt; capability.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:35](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L35) |  |

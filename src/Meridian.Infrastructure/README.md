@@ -79,9 +79,26 @@ responses publish a cooldown even when returned to the caller, and `Retry-After`
 attempts. Twelve Data history, symbol search and corporate actions share the `api-requests` budget
 for the same API credential; different credentials and vendor quota groups retain separate budgets.
 Provider disposal does not discard a shared budget. Credential values are hashed in registry keys.
-This coordinates the existing request-count limit; weighted vendor credits and daily entitlements
-are not modeled, and other provider families retain their existing capability budgets.
+Twelve Data counts credits: history/search cost one per request, while each dividends and splits
+request costs 20 per symbol. Its default Basic profile allows eight credits per minute and 800
+per UTC day, and refuses fundamentals before HTTP until `FundamentalsEntitled` is explicitly set.
+`ProviderQuotas:TwelveData` declares account limits separately from entitlement; `NoDailyLimit`
+must be explicit for an uncapped paid account. Numeric capacity never grants paid access.
+Alpha Vantage history/search/corporate actions share five requests per minute and a conservative
+25-request rolling 24-hour cap by default; its published daily limit names no reset boundary.
+`ProviderQuotas:AlphaVantage` can declare the actual account limits and `NoDailyLimit`.
+Short and daily admission charge the full cost atomically; cancelled waits charge neither.
+Pacing rounds positive waits up to milliseconds, including nonintegral paid-plan intervals.
+Effective account profiles cannot differ across capabilities sharing a credential and quota group.
+Registry state survives provider recreation/disposal within the process. It is not persisted across
+process restart and cannot coordinate another Meridian process or requests from another application;
+vendor responses remain authoritative. Other provider families retain their existing capability budgets.
 These paths use synthetic regression tests; live provider compatibility remains live-untested.
+
+Vendor references checked 2026-11-13: [Twelve Data credits](https://support.twelvedata.com/en/articles/5615854-credits),
+[dividends](https://twelvedata.com/docs/fundamentals/dividends/),
+[splits](https://twelvedata.com/docs/fundamentals/splits/), and
+[Alpha Vantage support](https://www.alphavantage.co/support/).
 
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 

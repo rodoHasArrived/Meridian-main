@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TwelveDataQuotaConfig = Meridian.Core.Config.TwelveDataQuotaConfig;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -39,19 +40,25 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
     private readonly ICredentialContext? _credentials;
     private readonly RateLimiterRegistry _rateLimiterRegistry;
     private readonly ILogger<TwelveDataCorporateActionProvider> _logger;
+    private readonly TwelveDataQuotaConfig _quotaConfig;
+    private readonly RequestBudgetConfiguration _quotaBudget;
+    private const int FundamentalsCreditCost = 20;
 
     public TwelveDataCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<TwelveDataCorporateActionProvider> logger,
         ICredentialContext? credentials = null,
-        RateLimiterRegistry? rateLimiterRegistry = null)
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        TwelveDataQuotaConfig? quotaConfig = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _quotaConfig = quotaConfig ?? configuration.GetSection("ProviderQuotas:TwelveData").Get<TwelveDataQuotaConfig>() ?? new();
+        _quotaBudget = ProviderQuotaBudgets.TwelveData(_quotaConfig);
     }
 
     public string ProviderId => "twelvedata";
@@ -83,6 +90,11 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                 ticker);
             return CorporateActionFetchResult.Failed("credentials-missing");
         }
+
+        if (!_quotaConfig.FundamentalsEntitled)
+            return CorporateActionFetchResult.Failed("entitlement-unavailable");
+        if (_quotaBudget.Maximum < FundamentalsCreditCost || _quotaBudget.DailyMaximum is < FundamentalsCreditCost)
+            return CorporateActionFetchResult.Failed("quota-capacity-insufficient");
 
         var normalizedSymbol = SymbolNormalization.Normalize(ticker);
         using var client = _httpClientFactory.CreateClient(HttpClientNames.TwelveDataHistorical);
@@ -214,8 +226,8 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                 return null;
 
             var budget = _rateLimiterRegistry.GetOrCreate(
-                ProviderId, apiKey, "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(7500));
-            await budget.WaitForSlotAsync(ct).ConfigureAwait(false);
+                ProviderId, apiKey, "api-requests", _quotaBudget);
+            await budget.WaitForUnitsAsync(FundamentalsCreditCost, ct).ConfigureAwait(false);
             // The selected owner can rotate or delete its credential while waiting.
             // Never send a captured old key after pacing, or charge a different key's quota.
             if (!string.Equals(apiKey, ResolveApiKey(), StringComparison.Ordinal))

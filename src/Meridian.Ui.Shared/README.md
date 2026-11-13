@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
+cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
+
+
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
 entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
 and returns exact decimal strings. Curve definition/history/publication and curve valuation retain

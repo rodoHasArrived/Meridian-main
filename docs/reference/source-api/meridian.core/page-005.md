@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IndexComponents
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexComponents</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:6](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L6).
+
+Components of a market index.
+
+```csharp
+public sealed record IndexComponents(string IndexId, string Name, IndexComponent[] Components, DateTimeOffset LastUpdated, string Source);
+```
+
+## IndexDefinition
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:51](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L51).
+
+Definition of an available index.
+
+```csharp
+public sealed record IndexDefinition(string Id, string Name, string Description);
+```
+
+## IndexSubscribeRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexSubscribeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:60](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L60).
+
+Request to auto-subscribe to index components.
+
+```csharp
+public sealed record IndexSubscribeRequest(string IndexId, int? MaxComponents = null, TemplateSubscriptionDefaults? Defaults = null, bool ReplaceExisting = false, string[]? FilterSectors = null);
+```
+
 ## IndexSubscribeResult
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexSubscribeResult</code>. Kind: `record`.

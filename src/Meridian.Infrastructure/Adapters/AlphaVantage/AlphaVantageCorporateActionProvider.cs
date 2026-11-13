@@ -2,12 +2,14 @@ using System.Globalization;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AlphaVantageQuotaConfig = Meridian.Core.Config.AlphaVantageQuotaConfig;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -38,17 +40,23 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
     private readonly IConfiguration _configuration;
     private readonly ICredentialContext? _credentials;
     private readonly ILogger<AlphaVantageCorporateActionProvider> _logger;
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly RequestBudgetConfiguration _quotaBudget;
 
     public AlphaVantageCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<AlphaVantageCorporateActionProvider> logger,
-        ICredentialContext? credentials = null)
+        ICredentialContext? credentials = null,
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        AlphaVantageQuotaConfig? quotaConfig = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
+        _quotaBudget = ProviderQuotaBudgets.AlphaVantage(quotaConfig ?? configuration.GetSection("ProviderQuotas:AlphaVantage").Get<AlphaVantageQuotaConfig>());
     }
 
     public string ProviderId => "alphavantage";
@@ -94,14 +102,16 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
 
         var normalizedSymbol = SymbolNormalization.Normalize(ticker);
         var url =
-            $"/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={Uri.EscapeDataString(normalizedSymbol)}&outputsize=full&apikey={Uri.EscapeDataString(apiKey)}";
+            $"/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol={Uri.EscapeDataString(normalizedSymbol)}&outputsize=full";
 
         using var client = _httpClientFactory.CreateClient(HttpClientNames.AlphaVantageHistorical);
         client.BaseAddress ??= new Uri("https://www.alphavantage.co/");
 
         try
         {
-            using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await SendAsync(client, url, ct).ConfigureAwait(false);
+            if (response is null)
+                return CorporateActionFetchResult.Failed("credentials-missing");
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
                 var failure = CorporateActionFetchResult.FromHttpFailure(response);
@@ -171,6 +181,29 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
         {
             _logger.LogWarning("Failed to fetch Alpha Vantage corporate actions for {Ticker}.", ticker);
             return CorporateActionFetchResult.FromException(ex);
+        }
+    }
+
+    private async Task<HttpResponseMessage?> SendAsync(HttpClient client, string url, CancellationToken ct)
+    {
+        while (true)
+        {
+            var apiKey = ResolveApiKey();
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return null;
+            var budget = _rateLimiterRegistry.GetOrCreate(ProviderId, apiKey, "api-requests", _quotaBudget);
+            await budget.WaitForSlotAsync(ct).ConfigureAwait(false);
+            if (!string.Equals(apiKey, ResolveApiKey(), StringComparison.Ordinal))
+                continue;
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{url}&apikey={Uri.EscapeDataString(apiKey)}");
+            request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+            var response = await client.SendAsync(request, ct).ConfigureAwait(false);
+            var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _rateLimiterRegistry.TimeProvider);
+            if (retryAfter is { } delay)
+                budget.ApplyCooldown(delay);
+            else if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                budget.ApplyCooldown(TimeSpan.FromMinutes(1));
+            return response;
         }
     }
 

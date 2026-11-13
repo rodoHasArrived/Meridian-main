@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RawQuoteEvent
+
+Qualified name: <code>Meridian.Core.Performance.RawQuoteEvent</code>. Kind: `struct`.
+
+Source: [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:17](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L17).
+
+Zero-allocation struct representation of a Best-Bid/Offer quote event for the hot path. Uses LayoutKind.Sequential for predictable memory layout in the SpscRingBuffer{T} backing array.
+
+```csharp
+public readonly struct RawQuoteEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public readonly long TimestampTicks;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:25](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L25) | Timestamp as UTC ticks (100-nanosecond intervals since 0001-01-01 UTC, i.e. DateTimeOffset.UtcTicks). Reconstruct the wall-clock time with new DateTimeOffset(TimestampTicks, TimeSpan.Zero). |
+| <code>public readonly int SymbolHash;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:31](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L31) | Pre-computed symbol identifier assigned by SymbolTable.GetOrAdd. Resolve back to the symbol string with SymbolTable.TryGetSymbol. |
+| <code>public readonly decimal BidPrice;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:34](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L34) | Best bid price. |
+| <code>public readonly long BidSize;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:37](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L37) | Best bid size (shares or contracts). |
+| <code>public readonly decimal AskPrice;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:40](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L40) | Best ask price. |
+| <code>public readonly long AskSize;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:43](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L43) | Best ask size (shares or contracts). |
+| <code>public readonly long Sequence;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:46](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L46) | Provider-assigned sequence number for ordering and gap detection. |
+| <code>public RawQuoteEvent(long timestampTicks, int symbolHash, decimal bidPrice, long bidSize, decimal askPrice, long askSize, long sequence);</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:58](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L58) | Creates a new RawQuoteEvent. |
+
+## RawTradeEvent
+
+Qualified name: <code>Meridian.Core.Performance.RawTradeEvent</code>. Kind: `struct`.
+
+Source: [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:16](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L16).
+
+Zero-allocation struct representation of a trade event for the hot path. Uses LayoutKind.Sequential for predictable memory layout in the SpscRingBuffer{T} backing array.
+
+```csharp
+public readonly struct RawTradeEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public readonly long TimestampTicks;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:24](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L24) | Timestamp as UTC ticks (100-nanosecond intervals since 0001-01-01 UTC, i.e. DateTimeOffset.UtcTicks). Reconstruct the wall-clock time with new DateTimeOffset(TimestampTicks, TimeSpan.Zero). |
+| <code>public readonly int SymbolHash;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:30](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L30) | Pre-computed symbol identifier assigned by SymbolTable.GetOrAdd. Resolve back to the symbol string with SymbolTable.TryGetSymbol. |
+| <code>public readonly decimal Price;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:33](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L33) | Execution price of the trade. |
+| <code>public readonly long Size;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:36](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L36) | Number of shares or contracts traded. |
+| <code>public readonly byte Aggressor;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:43](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L43) | Aggressor side encoded as the underlying byte value of Meridian.Contracts.Domain.Enums.AggressorSide: 0 = Unknown, 1 = Buy, 2 = Sell. |
+| <code>public readonly long Sequence;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:46](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L46) | Provider-assigned sequence number for ordering and gap detection. |
+| <code>public RawTradeEvent(long timestampTicks, int symbolHash, decimal price, long size, byte aggressor, long sequence);</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:57](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L57) | Creates a new RawTradeEvent. |
+
+## SpscRingBuffer (generic arity 1)
+
+Qualified name: <code>Meridian.Core.Performance.SpscRingBuffer</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:41](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L41).
+
+Lock-free, single-producer/single-consumer ring buffer backed by a pre-allocated array.
+
+```csharp
+public sealed class SpscRingBuffer<T> where T : struct
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SpscRingBuffer(int capacity);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:59](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L59) | Creates a new ring buffer with a capacity rounded up to the next power of two. |
+| <code>public int Capacity =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:72](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L72) | Gets the actual buffer capacity (the next power of two ≥ the requested capacity). |
+| <code>public int Count { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:78](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L78) | Gets an approximate count of items currently available to read. The value may be stale by the time the caller acts on it. |
+| <code>public bool IsEmpty { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:85](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L85) | Gets whether the buffer currently has no items to read. |
+| <code>public bool IsFull { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:92](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L92) | Gets whether the buffer is currently full. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryWrite(in T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:111](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L111) | Tries to write item into the buffer. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryRead(out T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:139](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L139) | Tries to read the next item from the buffer. |
+| <code>public int DrainTo(Span&lt;T&gt; destination, int maxItems = int.MaxValue);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:162](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L162) | Drains up to maxItems items into destination. |
+
 ## SymbolTable
 
 Qualified name: <code>Meridian.Core.Performance.SymbolTable</code>. Kind: `class`.
@@ -813,40 +887,4 @@ Individual component of an index.
 
 ```csharp
 public sealed record IndexComponent(string Symbol, string Name, decimal? Weight = null, string? Sector = null);
-```
-
-## IndexComponents
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexComponents</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:6](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L6).
-
-Components of a market index.
-
-```csharp
-public sealed record IndexComponents(string IndexId, string Name, IndexComponent[] Components, DateTimeOffset LastUpdated, string Source);
-```
-
-## IndexDefinition
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:51](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L51).
-
-Definition of an available index.
-
-```csharp
-public sealed record IndexDefinition(string Id, string Name, string Description);
-```
-
-## IndexSubscribeRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexSubscribeRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:60](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L60).
-
-Request to auto-subscribe to index components.
-
-```csharp
-public sealed record IndexSubscribeRequest(string IndexId, int? MaxComponents = null, TemplateSubscriptionDefaults? Defaults = null, bool ReplaceExisting = false, string[]? FilterSectors = null);
 ```
