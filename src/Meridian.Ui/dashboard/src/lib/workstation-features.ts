@@ -1,6 +1,8 @@
 import { ACCOUNTING_NAVIGATION_ITEMS } from "@/lib/accounting-navigation";
 import { WORKSTATION_ROUTE_CATALOG, marketDataDeskPath, workspacePath, type WorkstationRouteKey } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
+import type { FixedIncomeCapabilityId } from "@/lib/fixed-income-capabilities";
+export { FIXED_INCOME_CAPABILITIES as WORKSTATION_CAPABILITY_TRACES } from "@/lib/fixed-income-capabilities";
 
 export interface WorkstationFeatureDefinition {
   id: string;
@@ -11,6 +13,8 @@ export interface WorkstationFeatureDefinition {
   keywords: readonly string[];
   paletteLabel?: string;
   match?: "exact" | "prefix";
+  /** Trace to service/API/client/action/permission and acceptance evidence. */
+  capabilityIds?: readonly FixedIncomeCapabilityId[];
 }
 
 function feature(
@@ -116,6 +120,11 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
 
 /** Existing deep-link views and useful wired routes outside the primary rail. */
 const FEATURE_SHORTCUTS: readonly WorkstationFeatureDefinition[] = [
+  { id: "accounting-bond-analytics", label: "Bond analytics", description: "Select a bond to calculate price, yield, accrued interest, duration, convexity and DV01.", keywords: ["fixed income", "bond yield", "duration", "convexity", "dv01"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}?tab=evidence&bondAction=analytics`, capabilityIds: ["bond-analytics-migration"] },
+  { id: "accounting-bond-conventions", label: "Bond convention migration", description: "Select a bond, preview convention differences and stage a draft for independent review.", keywords: ["coupon units", "bond migration", "day count", "conventions"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}?tab=evidence&bondAction=migration`, capabilityIds: ["bond-analytics-migration"] },
+  { id: "accounting-bond-ladders", label: "Issuer and maturity ladders", description: "Browse retained bonds by issuer or maturity window, then open instrument details.", keywords: ["bond ladder", "issuer ladder", "maturity ladder", "fixed income"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}#bond-ladders`, capabilityIds: ["issuer-maturity-ladders"] },
+  { id: "accounting-account-forecasts", label: "Account cash forecasts", description: "Select an account-owned ledger book and prepare a cash forecast with retained evidence and dated FX.", keywords: ["account forecast", "dated fx", "account cash", "forecast history"], route: `${WORKSTATION_ROUTE_CATALOG.accountingReconciliation}?oversight=forecast#account-oversight`, capabilityIds: ["account-forecasts-close-prices"] },
+  { id: "accounting-reviewed-close-prices", label: "Reviewed close prices", description: "Select an account-owned ledger book to prepare and review retained close prices.", keywords: ["close price", "account prices", "reviewed prices"], route: `${WORKSTATION_ROUTE_CATALOG.accountingReconciliation}?oversight=prices#account-oversight`, capabilityIds: ["account-forecasts-close-prices"] },
   { id: "data-watchlist", label: "Watchlist", description: "Add symbols and starter packs from the Market Data desk watchlist view.", keywords: ["watch list", "follow symbols", "add ticker"], route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=watchlist` },
   { id: "data-alerts", label: "Price alerts", description: "Create local quote-threshold alerts from the Market Data desk alerts view.", keywords: ["price notification", "quote alert", "price threshold"], route: `${WORKSTATION_ROUTE_CATALOG.dataQuotes}?view=alerts` },
   { id: "strategy-formula-workbench", label: "Formula Workbench", description: "Author cell-based strategy formulas from the Quant Lab formulas tab.", keywords: ["strategy formulas"], route: `${WORKSTATION_ROUTE_CATALOG.strategyQuantLab}?view=formulas` },
