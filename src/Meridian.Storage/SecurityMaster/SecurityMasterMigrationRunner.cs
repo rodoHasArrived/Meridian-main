@@ -75,7 +75,7 @@ public sealed class SecurityMasterMigrationRunner
         // Both locks last through the enclosing migration commit or rollback.
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"lock table {options.Schema}.securities, {options.Schema}.security_identifiers in exclusive mode nowait;";
+        command.CommandText = $"lock table {options.Schema}.securities, {options.Schema}.security_identifiers in access exclusive mode nowait;";
         try
         {
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
@@ -105,9 +105,12 @@ public sealed class SecurityMasterMigrationRunner
     /// Migration 068 rewrites <c>securities.asset_specific_terms</c> to declare <c>termsFormat</c> and
     /// then adds a constraint that refuses an untagged row (ADR-024 amendment 2026-11-13). An upgrade
     /// therefore requires the attestation that no writer built before the stamping change can write
-    /// after the commit, and an exclusive <c>NOWAIT</c> lock on <c>securities</c>, so an active writer
+    /// after the commit, and an <c>ACCESS EXCLUSIVE NOWAIT</c> lock on <c>securities</c>, so an active writer
     /// is a visible refusal rather than a row written untagged between the backfill and the
-    /// constraint. A fresh installation has no rows and needs no attestation.
+    /// constraint. The lock is the one the script's <c>ALTER TABLE ... ADD CONSTRAINT</c> needs: taking
+    /// it up front with <c>NOWAIT</c> means an open reader is also refused immediately, instead of the
+    /// later lock upgrade waiting behind that reader while every new read of <c>securities</c> queues
+    /// behind the migration. A fresh installation has no rows and needs no attestation.
     /// </summary>
     internal static async Task CheckTermsFormatBackfillApplyConditionsAsync(SecurityMasterOptions options,
         string fileName, NpgsqlConnection connection, NpgsqlTransaction transaction, bool isUpgrade,
@@ -124,7 +127,7 @@ public sealed class SecurityMasterMigrationRunner
 
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"lock table {options.Schema}.securities in exclusive mode nowait;";
+        command.CommandText = $"lock table {options.Schema}.securities in access exclusive mode nowait;";
         try
         {
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
@@ -132,7 +135,7 @@ public sealed class SecurityMasterMigrationRunner
         catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.LockNotAvailable)
         {
             throw new InvalidOperationException(
-                "Security Master migration 068 cannot lock the securities table. Stop every Security Master writer before retrying.", exception);
+                "Security Master migration 068 cannot lock the securities table. Stop every Security Master writer and close every open securities reader before retrying.", exception);
         }
 
         command.CommandText = $"select count(*) from (select 1 from {options.Schema}.securities limit 1000001) securities;";

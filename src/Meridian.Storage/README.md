@@ -607,10 +607,11 @@ and `terms_format` alone. Before writing anything it refuses an untagged row tha
 economic, a row whose column disagrees with the 042 shape rule, and a non-object document; it then
 verifies that no untagged row remains and adds `ck_securities_terms_format_declared` (`NOT VALID`,
 then `VALIDATE`), which refuses any row whose `termsFormat` is missing or differs from the column.
-`security_events` stays append-only and untouched; `SecurityMasterSnapshotRegenerationService`
-re-serializes retained snapshots through the replay decoder afterwards. The runner gates an
-upgrade on `SecurityMasterOptions.TermsFormatBackfillLegacyWritersRetired`, a `NOWAIT` exclusive
-lock on `securities`, and a raised command timeout above one million rows. See the
+`security_events` stays append-only and untouched. `SecurityMasterSnapshotRegenerationService`
+re-serializes retained snapshots through the replay decoder. It has no invocation surface yet;
+running it is deferred to a follow-up. The runner gates an upgrade on
+`SecurityMasterOptions.TermsFormatBackfillLegacyWritersRetired`, an `ACCESS EXCLUSIVE NOWAIT`
+lock on `securities` (so open readers are refused as well as writers), and a raised command timeout above one million rows. See the
 [migration procedure](../../docs/operators/security-master-governed-edit-rollout.md#terms-format-backfill-migration-068).
 Migration `048_security_master_listing_mic.sql` adds the nullable `securities.listing_mic` column
 (ISO 10383) beside the free-text `exchange_code`, which is left unchanged. A well-formed

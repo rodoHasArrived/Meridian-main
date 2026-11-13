@@ -221,6 +221,139 @@ public sealed class SecurityMasterTermsFormatBackfillMigrationTests
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task Upgrade_RefusesAnOpenReader_ImmediatelyRatherThanStallingBehindIt()
+    {
+        // The constraint's ALTER TABLE needs ACCESS EXCLUSIVE. The gate takes that lock up front with
+        // NOWAIT, so a plain open reader is a visible refusal instead of a lock upgrade that waits
+        // behind it while every later read of securities queues behind the migration.
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.SeedAsync();
+        await fixture.WriteMigrationAsync(fixture.MigrationSql);
+        var before = await fixture.RowsAsync();
+        var receipts = await fixture.ReceiptsAsync();
+        await using var reader = new NpgsqlConnection(fixture.ConnectionString);
+        await reader.OpenAsync();
+        await using (var readerTransaction = await reader.BeginTransactionAsync())
+        {
+            await using (var command = reader.CreateCommand())
+            {
+                command.Transaction = readerTransaction;
+                command.CommandText = $"select count(*) from {fixture.Schema}.securities;";
+                await command.ExecuteScalarAsync();
+            }
+
+            var migrate = () => fixture.Runner().EnsureMigratedAsync();
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            await migrate.Should().ThrowAsync<InvalidOperationException>().WithMessage("*migration 068 cannot lock the securities table*");
+            stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(20), "NOWAIT refuses at once instead of waiting for the reader");
+            (await fixture.ReceiptsAsync()).Should().Be(receipts);
+            (await fixture.RowsAsync()).Should().Be(before);
+            await readerTransaction.RollbackAsync();
+        }
+
+        await fixture.Runner().EnsureMigratedAsync();
+        (await fixture.UntaggedCountAsync()).Should().Be(0);
+    }
+
+    /// <summary>
+    /// Pins the store's decision-5 count SQL to <see cref="SecurityTermsEnvelope.GetDeclaredFormat"/>
+    /// row by row on real untagged rows, which only a pre-068 schema can still hold: each insert
+    /// moves the count by one exactly when the C# verdict is "undeclared" (absent, null or numeric
+    /// tag, active or inactive), and by zero for a declared string tag.
+    /// </summary>
+    [SecurityMasterDatabaseFact]
+    public async Task UntaggedCount_OnAPre068Schema_MatchesTheDeclaredFormatVerdict_RowByRow()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        (await fixture.ConstraintExistsAsync()).Should().BeFalse();
+        (await fixture.UntaggedCountAsync()).Should().Be(0);
+
+        var rows = new (string Terms, string Status)[]
+        {
+            ("""{"schemaVersion":1,"termsFormat":"flat","shareClass":"Common"}""", "Active"),
+            ("""{"schemaVersion":1,"shareClass":"Common"}""", "Active"),
+            ("""{"schemaVersion":1,"shareClass":"Common"}""", "Inactive"),
+            ("""{"schemaVersion":1,"termsFormat":null,"shareClass":"Common"}""", "Active"),
+            ("""{"schemaVersion":1,"termsFormat":123,"shareClass":"Common"}""", "Active"),
+            ("""{"schemaVersion":1,"termsFormat":123,"shareClass":"Common"}""", "Inactive"),
+            ("""{"schemaVersion":1,"termsFormat":true,"shareClass":"Common"}""", "Active")
+        };
+
+        var expected = 0;
+        for (var index = 0; index < rows.Length; index++)
+        {
+            var (terms, status) = rows[index];
+            var undeclared = SecurityTermsEnvelope.GetDeclaredFormat(Parse(terms)) is null;
+            await fixture.ScalarAsync($$"""
+                insert into {{fixture.Schema}}.securities (security_id, asset_class, status, display_name, currency,
+                    primary_identifier_kind, primary_identifier_value, normalized_primary_identifier_value,
+                    common_terms, asset_specific_terms, provenance, version, schema_version, terms_format, effective_from)
+                values ('{{Guid.NewGuid()}}', 'Equity', '{{status}}', 'Parity row', 'USD', 'Ticker', 'TFP{{index}}', 'TFP{{index}}',
+                    '{}', '{{terms}}', '{}', 1, 1, 'flat', '2026-01-01T00:00:00Z');
+                """);
+            expected += undeclared ? 1 : 0;
+            (await fixture.UntaggedCountAsync()).Should().Be(expected, $"row {index} ({terms}, {status}) is {(undeclared ? "undeclared" : "declared")} in C#");
+        }
+
+        expected.Should().Be(6, "every row but the string-tagged one is undeclared");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task FullWarmRebuildAfterTheUpgrade_OfAnUntaggedEvent_PersistsATaggedRow_AndLeavesTheEventUntouched()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.WriteMigrationAsync(fixture.MigrationSql);
+        var options = fixture.Options;
+        options.PreloadProjectionCache = true;
+        var store = new PostgresSecurityMasterStore(options);
+        var eventStore = new PostgresSecurityMasterEventStore(options);
+        var snapshotStore = new PostgresSecurityMasterSnapshotStore(options);
+
+        var securityId = Guid.NewGuid();
+        const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
+        await store.UpsertProjectionAsync(Projection(securityId, untaggedTerms, version: 1));
+        await fixture.Runner().EnsureMigratedAsync();
+
+        // A retained pre-tag event at a newer version than the row, carrying the untagged terms.
+        var projected = SecurityEconomicDefinitionAdapter.ToEconomicRecord(Projection(securityId, untaggedTerms, version: 2));
+        var economic = projected with { LegacyAssetSpecificTerms = Parse(untaggedTerms) };
+        var @event = SecurityMasterMapping.ToEventEnvelope(economic, "TermsAmended", "codex", "test", null, 1);
+        await eventStore.AppendAsync(securityId, expectedVersion: 0, [@event]);
+        var eventPayloadBefore = await fixture.ScalarAsync(
+            $"select payload::text from {fixture.Schema}.security_events where security_id = '{securityId}'");
+
+        // No checkpoint and an empty cache: RebuildAsync takes the full-warm branch.
+        (await store.GetCheckpointAsync("security_master_cache")).Should().BeNull();
+        var cache = new SecurityMasterProjectionCache();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var orchestrator = new SecurityMasterRebuildOrchestrator(
+            eventStore,
+            store,
+            cache,
+            rebuilder,
+            new SecurityMasterProjectionService(store, cache, rebuilder, NullLogger<SecurityMasterProjectionService>.Instance),
+            options,
+            NullLogger<SecurityMasterRebuildOrchestrator>.Instance,
+            termsCapabilityVerifier: Substitute.For<ISecurityMasterTermsCapabilityVerifier>());
+
+        await orchestrator.RebuildAsync();
+
+        (await store.GetCheckpointAsync("security_master_cache")).Should().NotBeNull("the full warm checkpointed its batch");
+        (await fixture.ScalarAsync($"select version from {fixture.Schema}.securities where security_id = '{securityId}'")).Should().Be("2");
+        using (var persisted = JsonDocument.Parse(await fixture.TermsAsync(securityId)))
+        {
+            SecurityTermsEnvelope.GetDeclaredFormat(persisted.RootElement).Should().Be(SecurityTermsFormats.Flat);
+        }
+
+        var cached = cache.Get(securityId);
+        cached.Should().NotBeNull();
+        SecurityTermsEnvelope.GetDeclaredFormat(cached!.AssetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);
+        (await fixture.ScalarAsync($"select payload::text from {fixture.Schema}.security_events where security_id = '{securityId}'"))
+            .Should().Be(eventPayloadBefore, "security_events is append-only and is never rewritten");
+        (await fixture.UntaggedCountAsync()).Should().Be(0);
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task RebuildAfterTheUpgrade_OfAnUntaggedEvent_PersistsATaggedRow_AndLeavesTheEventUntouched()
     {
         await using var fixture = await Fixture.CreateAsync();

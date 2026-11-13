@@ -1395,7 +1395,10 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     /// slice 9) to the C# declared-format verdict over every stored row. Since migration 068 a
     /// payload with no <c>termsFormat</c> or a non-string tag, active or inactive, is refused by
     /// <c>ck_securities_terms_format_declared</c>, so only stamped rows are stored and the count
-    /// stays at zero, exactly as <c>SecurityTermsEnvelope.GetDeclaredFormat</c> says.
+    /// stays at zero, exactly as <c>SecurityTermsEnvelope.GetDeclaredFormat</c> says. The row-by-row
+    /// parity of the count SQL on real untagged rows (absent, null and numeric tags, active and
+    /// inactive) is pinned on a pre-068 schema by
+    /// <c>SecurityMasterTermsFormatBackfillMigrationTests.UntaggedCount_OnAPre068Schema_MatchesTheDeclaredFormatVerdict_RowByRow</c>.
     /// </summary>
     [SecurityMasterDatabaseFact]
     public async Task CountUntaggedAssetSpecificTerms_MatchesTheDeclaredFormatVerdict_RowByRow()

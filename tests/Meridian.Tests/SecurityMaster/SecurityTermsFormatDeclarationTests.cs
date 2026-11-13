@@ -270,6 +270,81 @@ public sealed class SecurityTermsFormatDeclarationTests
         AssertTaggedFlatRow(row);
     }
 
+    [Fact]
+    public async Task FullWarmRebuild_OfAProjectionOnlySecurityWithAnUntaggedRow_PersistsATaggedRow()
+    {
+        // The full-warm branch (no checkpoint, empty cache) persists BuildWarmSetAsync output, which
+        // folds a projection-only row back through the bare adapter and so keeps its untagged bytes.
+        // SecurityMasterRebuildOrchestrator must declare the family before PersistProjectionBatchAsync,
+        // because migration 068's ck_securities_terms_format_declared refuses an untagged row.
+        var securityId = Guid.NewGuid();
+        const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
+        var stored = Projection(securityId, untaggedTerms);
+
+        var persisted = await FullWarmAsync(stored);
+
+        AssertTaggedFlatRow(persisted.Should().ContainSingle().Subject);
+    }
+
+    [Fact]
+    public async Task FullWarmRebuild_OfAnUntaggedV1Event_PersistsATaggedRow_AndLeavesTheEventUntouched()
+    {
+        var securityId = Guid.NewGuid();
+        const string untaggedTerms = """{"schemaVersion":1,"shareClass":"Common"}""";
+        var stored = Projection(securityId, untaggedTerms);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(stored) with { LegacyAssetSpecificTerms = Parse(untaggedTerms) };
+        var @event = SecurityMasterMapping.ToEventEnvelope(economic, "SecurityCreated", "codex", "test", null, 1) with
+        {
+            GlobalSequence = 1,
+            PayloadVersion = 1,
+            Metadata = Parse("""{"payloadType":"SecurityEconomicDefinition","schemaVersion":1}"""),
+        };
+        var eventPayloadBefore = @event.Payload.GetRawText();
+
+        var persisted = await FullWarmAsync(stored, @event);
+
+        AssertTaggedFlatRow(persisted.Should().ContainSingle().Subject);
+        @event.Payload.GetRawText().Should().Be(eventPayloadBefore, "the stored event is never rewritten");
+    }
+
+    private static async Task<IReadOnlyList<SecurityProjectionRecord>> FullWarmAsync(
+        SecurityProjectionRecord stored, params SecurityMasterEventEnvelope[] events)
+    {
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(stored.SecurityId, Arg.Any<CancellationToken>()).Returns(events);
+        eventStore.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(events.Length == 0 ? 0L : events.Max(e => e.GlobalSequence ?? 0L));
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        snapshotStore.LoadAsync(stored.SecurityId, Arg.Any<CancellationToken>()).Returns((SecuritySnapshotRecord?)null);
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((long?)null);
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { stored });
+        IReadOnlyList<SecurityProjectionRecord>? persisted = null;
+        store.PersistProjectionBatchAsync(Arg.Any<string>(), Arg.Any<long>(),
+                Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                persisted = call.ArgAt<IReadOnlyList<SecurityProjectionRecord>>(2).ToArray();
+                return Task.CompletedTask;
+            });
+        var cache = new SecurityMasterProjectionCache();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var orchestrator = new SecurityMasterRebuildOrchestrator(
+            eventStore,
+            store,
+            cache,
+            rebuilder,
+            new SecurityMasterProjectionService(store, cache, rebuilder, NullLogger<SecurityMasterProjectionService>.Instance),
+            new SecurityMasterOptions { PreloadProjectionCache = true },
+            NullLogger<SecurityMasterRebuildOrchestrator>.Instance,
+            termsCapabilityVerifier: Substitute.For<ISecurityMasterTermsCapabilityVerifier>());
+
+        await orchestrator.RebuildAsync();
+
+        await store.DidNotReceive().UpsertProjectionAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>());
+        persisted.Should().NotBeNull("RebuildAsync took the full-warm branch and persisted its batch");
+        return persisted!;
+    }
+
     private static void AssertTaggedFlatRow(SecurityProjectionRecord row)
     {
         SecurityTermsEnvelope.GetDeclaredFormat(row.AssetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);

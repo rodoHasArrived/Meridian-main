@@ -637,8 +637,9 @@ draining through writes.
    `termsFormat` is missing, not a string, or differs from the column.
    `SecurityMasterMigrationRunner` gates an upgrade with 068 pending, like 062: the
    `TermsFormatBackfillLegacyWritersRetired` attestation (no writer built before step 4 below may
-   write after the commit, since the constraint refuses its untagged rows), an exclusive `NOWAIT`
-   lock on `securities`, and a raised command timeout above one million rows. Because the
+   write after the commit, since the constraint refuses its untagged rows), an `ACCESS EXCLUSIVE
+   NOWAIT` lock on `securities` (the lock the constraint's `ALTER TABLE` needs, so an open reader
+   is refused at once rather than stalling every later read), and a raised command timeout above one million rows. Because the
    constraint refuses untagged rows, the full-warm path of `SecurityMasterRebuildOrchestrator`
    now declares the family on the rows it persists, as the scoped and incremental paths already
    did through `SecurityMasterAggregateRebuilder.RebuildAsync`.
@@ -649,8 +650,11 @@ draining through writes.
    legacy terms in memory, and re-serializes it at its own version and timestamp. The store
    replaces the payload only while the snapshot still holds that version, so a concurrent newer
    snapshot is never overwritten, and a run is idempotent. It is registered beside the projection
-   rebuilder (with a null fallback when Security Master storage is not configured) and has no API
-   route; the operator procedure runs it once after the upgrade.
+   rebuilder (with a null fallback when Security Master storage is not configured). Nothing invokes
+   it yet: there is no API route, CLI verb, hosted service or startup hook. Running it after the
+   upgrade is deferred to a follow-up that adds an invocation surface. Until then, retained
+   snapshots keep their pre-tag terms, and replay still reads them correctly through
+   `FromEconomicPayload`.
 3. **Event replay keeps a frozen legacy classifier.** Once live code stops inferring the family
    (step 5), untagged history is classified only by a frozen legacy classifier keyed by the event's
    `payload_type` and `payload_version` (migration 039). Reserved flat version 2 survives only

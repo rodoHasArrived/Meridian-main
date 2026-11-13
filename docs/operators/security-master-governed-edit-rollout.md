@@ -70,7 +70,8 @@ upgrading an existing schema with 068 pending:
    including import/background workers and WPF desktops, and retire every older binary: after the
    commit an older writer fails every create, amend or deactivation of a custom-asset profile row
    and any other untagged write. Retain the writer inventory and deployment evidence.
-2. Stop every Security Master writer for the migration window.
+2. Stop every Security Master writer for the migration window, and close every long-lived
+   session that reads `securities` (reporting, `psql` sessions, idle-in-transaction connections).
 3. Set `MERIDIAN_SECURITY_MASTER_TERMS_FORMAT_BACKFILL_LEGACY_WRITERS_RETIRED=true` for the
    migration host. It maps to `SecurityMasterOptions.TermsFormatBackfillLegacyWritersRetired` and
    defaults to false. Remove it after the upgrade.
@@ -79,12 +80,21 @@ upgrading an existing schema with 068 pending:
 5. If the migration refuses because untagged rows classify as economic, disagree with their
    `terms_format` column, or are not JSON objects, nothing was rewritten. Re-write each named
    security through the Security Master service (or a scoped rebuild for economic rows) and retry.
-6. After the upgrade, run `ISecurityMasterSnapshotRegenerationService.RegenerateAsync` once on one
-   host. It re-serializes every retained snapshot through the replay decoder, skips a snapshot a
-   concurrent write moved to a newer version, and is safe to repeat.
 
-The runner checks the attestation only when 068 will execute on a populated schema; it always takes
-an exclusive `NOWAIT` lock on `securities`, so an active writer refuses the upgrade immediately.
+Snapshot regeneration (amendment step 4) is not yet an operator step.
+`ISecurityMasterSnapshotRegenerationService.RegenerateAsync` is implemented and registered, but no
+endpoint, CLI verb, hosted service or startup hook invokes it, so it cannot be run from a
+deployment. Running it after the upgrade is deferred until a follow-up adds an invocation surface.
+Until then, retained snapshots keep their pre-tag terms. That does not change reads: replay decodes
+each snapshot through `SecurityMasterMapping.FromEconomicPayload`, which declares the family in
+memory. Once it can be invoked, the job re-serializes every retained snapshot through the replay
+decoder, skips a snapshot that a concurrent write moved to a newer version, and is safe to repeat.
+
+The runner checks the attestation only when 068 will execute on a populated schema. It always takes
+an `ACCESS EXCLUSIVE NOWAIT` lock on `securities`, which is the lock the constraint's `ALTER TABLE`
+needs. An active writer or an open reader therefore refuses the upgrade at once, instead of the
+migration stalling behind that reader while every new read queues behind it. Retry once the named
+sessions are closed.
 The decision-5 count (`SecurityMasterQualityReportDto.UntaggedTermsPayloadCount`) reads zero
 afterwards.
 
