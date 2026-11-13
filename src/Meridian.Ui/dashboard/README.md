@@ -332,6 +332,17 @@ Pure ticket control and invalid-field projections live beside their wording in
 `trading-screen.order-ticket-text.ts`. Definitive order-refusal classification lives in
 `api-errors.ts`; the existing `api.ts` facade retains its named export.
 
+The supported USD-equity order flow also requires a current shared-server preview and operator
+acknowledgement before submission; edits invalidate that preview, and submission rechecks admission.
+An unconfirmed outcome holds the submitted account/client identity until Refresh checks finds a
+terminal retained journal outcome. Orders exposes that journal, notifications link to its evidence,
+Settings Preferences holds account-scoped execution alerts, and Strategy shows retained run
+comparison. These surfaces consume shared services: unknown costs and incomplete comparison remain
+explicit, and agreement grants no promotion authority. See
+[execution workflows](../../../docs/engineering/execution-workflows.md). Focused browser coverage
+lives in `trading-screen.server-preview.test.tsx`, `trading-screen.journal.test.tsx`, and
+`lib/notification-center/execution.test.ts`.
+
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
 
@@ -2346,6 +2357,8 @@ instead of the deterministic fixture; without that config it remains on `quickbo
 Route-provided `fundAccountId`, `ledgerBookId`, `periodId`, and `workflowStatus` now scope the close command center's
 operations-continuity lookup before workflow detail is loaded, preventing a newer unrelated close
 workflow from driving the accounting cockpit when operators open a scoped Accounting route.
+Close-source loading and current daily valuation schedule selection live in
+`accounting-screen.close-sources.ts`; the screen retains rendering and command handling.
 During workstation bootstrap, the shell lets the Accounting route render its own actionable loading
 workspace. That loading view shows the route/workstream being prepared, the Accounting payload groups
 still loading, and links to continuity, entity setup, provider posture, and retained report evidence
