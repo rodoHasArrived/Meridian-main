@@ -407,6 +407,7 @@ public sealed class OrderFillProcessorTests
 
         var incomplete = await oms.PlaceOrderAsync(Request("incomplete", fundAccountId));
         Assert.False(incomplete.Success);
+        Assert.NotNull(incomplete.OrderState);
         Assert.Equal(OrderStatus.Filled, incomplete.OrderState.Status);
         Assert.True((await oms.PlaceOrderAsync(Request("completed-one", null))).Success);
         Assert.True((await oms.PlaceOrderAsync(Request("completed-two", null))).Success);

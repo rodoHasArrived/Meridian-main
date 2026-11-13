@@ -94,8 +94,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.AddSingleton<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>(sp =>
         {
             var configService = sp.GetRequiredService<WpfServices.ConfigService>();
-            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            var resolvedDataRoot = configService.ConfiguredDataRoot;
             return Microsoft.Extensions.Options.Options.Create(new Meridian.QuantScript.QuantScriptOptions
             {
                 DefaultDataRoot = resolvedDataRoot,
@@ -190,16 +189,14 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
         {
             var configService = sp.GetRequiredService<WpfServices.ConfigService>();
-            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-            return new FileOperationalCaseHistoryStore(configService.ResolveDataRoot(config));
+            return new FileOperationalCaseHistoryStore(configService.ConfiguredDataRoot);
         });
         services.AddSingleton<IStrategyRepository>(sp =>
             new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
         services.AddSingleton<PromotionRecordStoreOptions>(sp =>
         {
             var configService = sp.GetRequiredService<WpfServices.ConfigService>();
-            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            var resolvedDataRoot = configService.ConfiguredDataRoot;
             return new PromotionRecordStoreOptions(Path.Combine(resolvedDataRoot, "strategies", "promotions"));
         });
         services.AddSingleton<IPromotionRecordStore, JsonlPromotionRecordStore>();
@@ -209,8 +206,7 @@ public sealed class StrategyFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IReconciliationRunRepository>(sp =>
         {
             var configService = sp.GetRequiredService<WpfServices.ConfigService>();
-            var config = Task.Run(() => configService.LoadConfigAsync()).GetAwaiter().GetResult();
-            var resolvedDataRoot = configService.ResolveDataRoot(config);
+            var resolvedDataRoot = configService.ConfiguredDataRoot;
             return new FileReconciliationRunRepository(
                 Path.Combine(resolvedDataRoot, "workstation"),
                 sp.GetRequiredService<ILogger<FileReconciliationRunRepository>>());

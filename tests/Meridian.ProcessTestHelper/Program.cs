@@ -200,7 +200,7 @@ internal static partial class Program
         Meridian.Core.IO.IAtomicFileWriter writer = stage == "publication-sync"
             ? new PausedStatementPublicationWriter(ready)
             : new AtomicFileWriterAdapter();
-        var store = new Meridian.Infrastructure.Reconciliation.JsonCanonicalStatementStore(root, writer);
+        var store = new Meridian.DataIntegration.Reconciliation.JsonCanonicalStatementStore(root, writer);
         var created = await store.TrySaveImportAsync(import, new StatementStageRows(stage == "mid-write" ? ready : null));
         await File.WriteAllTextAsync(ready, created ? "created" : "duplicate");
         if (stage != "race")
