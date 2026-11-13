@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Execution
@@ -345,15 +345,36 @@ Broker-backed readiness also includes open-order reconciliation: `BrokerageExecu
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
 Ledger posting from trade-fill events is explicit and Security Master gated. `LedgerPostingConsumer`
-retains the trade journal's Investing cash category against its immutable line IDs. Sales report
-actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
-remain separate Operating payments. Reversal preserves the retained category.
-A buy that covers a short books its realized gain or loss the same way a sale does: Securities is
-debited by the short-sale proceeds being relieved (cash paid plus the gain, or less the loss), so a
-flat position leaves no residual Securities balance. A buy-to-cover fill whose two-line trade
-journal was retained before this accounting is replayed against that retained journal, matched
-exactly, so a fill interrupted across the upgrade can post its remaining journals. The retained
-journal is kept as posted; replay never appends the earlier shape and does not correct it.
+and `PaperTradingPortfolio` use Ledger's `SecurityTradePostingProjector` and shared
+`IChartOfAccounts` / `StandardChartOfAccounts` registry for opening/closing trades, financing,
+short collateral, transaction charges and variation-margin fill settlements. The paper lot-book lock
+captures exact per-leg execution values and relieved basis or original short proceeds into immutable
+`TradeFillAccountingEvidence`; a fill crossing zero retains its closing and opening legs separately.
+Commission, fees and explicit slippage charges all reach the expense journal. Contract multipliers,
+face-value percentage pricing and the selected variation-margin model retain their booked scale.
+The consumer checks these facts against the fill, realized result and financial-account scope;
+pooled positions with ambiguous ownership cannot certify another owner's basis. Session records
+retain their accounting evidence version and owner provenance through restart. Version 1 requires
+both captured evidence and an accepted durable accounting handoff; offline paper-only records remain
+version 0. Old unverified positions cannot certify typed closing evidence, even when their execution
+reports can be replayed. These provenance fields do not change the execution report or its canonical
+session hash.
+
+New OMS events carry accounting-evidence version 1. A broker fill without authoritative lot evidence
+remains pending for reconciliation instead of inferring direction or basis from order side or a zero
+realized result. Production `AddTradeFillLedgerPosting` requires the current version on new admission.
+The assembly-internal retained-recovery port accepts historical events only from the exact retained
+accounting scope; original public consumer constructors retain explicit legacy compatibility.
+Value-record equality in the primary WAL and independent handoff store prevents an existing fill
+identity from being reused with changed basis, costs or scope.
+
+New short trades use the same short-securities liability as Backtesting; covers relieve retained
+opening proceeds and recognize the gain or loss, leaving no short liability when flat. Version-0
+retained events still use their historical Securities-based journal shapes. A buy-to-cover fill whose
+two-line trade journal predates cover accounting is compared against that exact retained record so
+an interrupted fill can finish its remaining journals. Replay never appends an obsolete alternative
+or rewrites a retained journal. Trade cash-flow categories bind to immutable line IDs; acquisition
+and disposal cash, financing, and separate Operating transaction charges preserve their source economics.
 For a crash retry whose deterministic journal was already retained before attribution existed,
 the governed target first requires exactly one authoritative identity collision with no
 `cash-flow.*` evidence. Only the new canonical trade group/category tags can be omitted from the
@@ -529,7 +550,8 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests|FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 
