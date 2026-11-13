@@ -6,6 +6,24 @@ This folder contains small utility scripts used to keep Meridian documentation c
 
 If you are new to the project, start here instead of opening individual Python files first.
 
+## Automation ownership
+
+Choose an entrypoint by its contract rather than its filename. The three automation roots
+remain active; similarly named commands can validate different inputs or produce different outputs.
+
+| Location | Responsibility | Entry points and outputs |
+| --- | --- | --- |
+| `scripts/` | Developer-facing launchers and compatibility entrypoints | `scripts/dev/` runs local workflows; public wrappers delegate to maintained implementations. Keep existing entrypoints until their consumers migrate. |
+| `build/python/cli/` | Build and validation orchestration | `buildctl.py` selects builds, test slices, and validation profiles. |
+| `build/scripts/docs/` | Canonical documentation registry validation and generation | Validate `docs/roadmap/data/` and `docs/source/data/`; render their maintained views and registered source README blocks. See the [automation guide](../build/scripts/docs/README.md). |
+| `tools/roadmap/` | Roadmap fixture and evidence contracts | Supports standalone fixture validation and delegates canonical registry validation for repository data. |
+| `tools/source_docs/` | Source-documentation contract fixtures and deterministic views | Maintains its fixture checks and `docs/generated/source/` outputs; it does not replace the canonical source-registry renderer. |
+| `tools/source_reference/`, `tools/schema_control/` | Specialist extraction and schema-control implementations | Public reference and schema commands under `build/scripts/` use these modules. |
+
+Add shared logic to the owning implementation and keep command wrappers thin. Consolidate
+implementations only after their contract tests establish equivalent behavior; preserve distinct
+fixture, evidence, and output contracts.
+
 ## Quick map
 
 - `tools/roadmap/`  

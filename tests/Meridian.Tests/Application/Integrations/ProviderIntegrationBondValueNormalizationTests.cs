@@ -7,6 +7,28 @@ namespace Meridian.Tests.Application.Integrations;
 
 public sealed class ProviderIntegrationBondValueNormalizationTests
 {
+    [Fact]
+    public void ExplicitBondPayload_PreservesExactConsiderationForAnUnregisteredClassification()
+    {
+        var record = JsonNode.Parse("""
+            {"assetClass":"ProviderDebtLabel", "bond":{
+              "originalFace":"9007199254740993", "currentFactor":"1",
+              "quotationConvention":"Per100", "priceBasis":"Clean", "marketValueBasis":"Clean",
+              "accruedInterest":{"amount":"0", "currency":"USD"}},
+             "price":{"amount":"100", "currency":"USD"},
+             "marketValue":{"amount":"9007199254740993", "currency":"USD"}}
+            """)!.AsObject();
+        var issues = new List<ValidationIssueDto>();
+
+        ProviderIntegrationBondValueNormalization.AddValidationIssues(record, issues).Should().BeTrue();
+
+        issues.Should().BeEmpty();
+        var evidence = record["bondValueReconciliation"]!;
+        evidence["providerValue"]!.GetValue<string>().Should().Be("9007199254740993");
+        evidence["normalizedValue"]!.GetValue<string>().Should().Be("9007199254740993");
+        evidence["variance"]!.GetValue<string>().Should().Be("0");
+    }
+
     [Theory]
     [InlineData("Bond", true)]
     [InlineData("bOnD", true)]
@@ -16,7 +38,10 @@ public sealed class ProviderIntegrationBondValueNormalizationTests
     [InlineData("CorporateBond", true)]
     [InlineData("MunicipalBond", true)]
     [InlineData("AssetBackedSecurity", false)]
+    [InlineData("StructuredCredit", false)]
     [InlineData("StructuredNote", false)]
+    [InlineData("CustomAsset", false)]
+    [InlineData("Unrecognized", false)]
     [InlineData("Equity", false)]
     [InlineData(null, false)]
     [InlineData("", false)]
@@ -34,7 +59,8 @@ public sealed class ProviderIntegrationBondValueNormalizationTests
 
             if (applies)
             {
-                issues.Should().ContainSingle(issue => issue.Code == "bond-value.conventions.incomplete");
+                issues.Should().ContainSingle(issue => issue.Code == "bond-value.conventions.incomplete"
+                    && issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
                 record["bondValueReconciliation"]!["status"]!.GetValue<string>().Should().Be("Blocked");
                 record["bondValueReconciliation"]!["normalizedValue"].Should().BeNull();
             }
@@ -63,7 +89,8 @@ public sealed class ProviderIntegrationBondValueNormalizationTests
 
         ProviderIntegrationBondValueNormalization.AddValidationIssues(record, issues).Should().BeTrue();
 
-        issues.Should().ContainSingle(issue => issue.Code == "bond-value.conventions.incomplete");
+        issues.Should().ContainSingle(issue => issue.Code == "bond-value.conventions.incomplete"
+            && issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
         record["bondValueReconciliation"]!["status"]!.GetValue<string>().Should().Be("Blocked");
         record["bondValueReconciliation"]!["normalizedValue"].Should().BeNull();
     }

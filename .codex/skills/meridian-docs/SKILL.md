@@ -13,7 +13,7 @@ archived or superseded material, coordinate with `meridian-archive-organizer`.
 
 ## Use When
 
-Use this skill for documentation work in `D:\Meridian-main`, including:
+Use this skill for documentation work in this repository, including:
 
 - Updating `README.md`, `AGENTS.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, or AI guidance.
 - Reconciling docs with current commands, scripts, routes, tests, packaging, provider flows, or roadmap status.
@@ -65,10 +65,11 @@ Non-trigger examples:
 ## Routing
 
 - Root shims: keep `AGENTS.md` short and point to canonical sources rather than duplicating large sections.
-- Developer workflows: prefer `docs/developer/`, `docs/development/`, and `docs/HELP.md`.
-- Operations and packaging: prefer `docs/operations/`.
-- Status, readiness, and evidence gates: prefer `docs/status/`.
-- Roadmap and planning interpretation: prefer `docs/plans/`.
+- Developer workflows: start in `docs/engineering/` and `docs/start/`; link supporting detail from `docs/development/` and command lookup from `docs/HELP.md`.
+- Operations and packaging: prefer `docs/operators/`.
+- Delivery status: use `docs/roadmap/data/*.yml` and its generated views; release readiness belongs in `docs/product/implementation-todo-list.md`. Keep automation-owned reports at their registered `docs/status/` paths.
+- Plans: use `docs/product/plans/`, `docs/engineering/plans/`, or `docs/engineering/blueprints/` and update the Plans and Blueprints Register.
+- Transitional paths: retain `docs/operations/` and `docs/plans/` only for existing consumers; do not add new durable guidance there or recreate removed `docs/developer/`.
 - Architecture and ownership boundaries: prefer `docs/architecture/`.
 - Generated navigation or AI inventory: prefer `docs/ai/` and the matching build scripts.
 - Deprecated, superseded, or historical material: move or route through `archive/` with traceable references.

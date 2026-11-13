@@ -26,8 +26,5 @@ so project globs do not discover historical profiling projects under `docs/`. Th
 original paths, sizes and SHA-256 hashes alongside the compressed copies. The packet verifier
 checks byte-identical decompression. Historical commands and measurements remain as recorded;
 these snapshots contain original machine-specific references and are not maintained benchmark
-projects. To inspect an original project without restoring a discoverable `.csproj` file:
-
-```sh
-gzip -dc components/packbits/Profile.csproj.gz
-```
+projects. To inspect an original project without restoring a discoverable `.csproj` file,
+run `gzip -dc components/packbits/Profile.csproj.gz`.

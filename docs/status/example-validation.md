@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12458 |
-| Valid | 11976 |
+| Total code blocks | 12456 |
+| Valid | 11974 |
 | Invalid | 0 |
 | Skipped | 482 |
 
@@ -18,8 +18,8 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 109 | 0 | 0 | 109 |
-| `bash` | 266 | 266 | 0 | 0 |
-| `csharp` | 11605 | 11605 | 0 | 0 |
+| `bash` | 265 | 265 | 0 | 0 |
+| `csharp` | 11604 | 11604 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -281,7 +281,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.financialoperations/page-001.md` | 64 |
 | `docs/reference/source-api/meridian.financialoperations/page-002.md` | 62 |
 | `docs/reference/source-api/meridian.financialoperations/page-003.md` | 53 |
-| `docs/reference/source-api/meridian.financialoperations/page-004.md` | 67 |
+| `docs/reference/source-api/meridian.financialoperations/page-004.md` | 66 |
 | `docs/reference/source-api/meridian.financialoperations/page-005.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-007.md` | 50 |
@@ -427,7 +427,6 @@ No invalid code examples found.
 | `docs/testing/evidence/next-work-20261028/release-readiness.md` | 1 |
 | `docs/testing/evidence/w10-615abde9/browser/browser-evidence.md` | 2 |
 | `docs/testing/evidence/w10-615abde9/desktop/desktop-evidence.md` | 1 |
-| `docs/testing/evidence/wal-checksum-2026-10-07/README.md` | 1 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md` | 19 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/dotnet-test-summary.md` | 19 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/component-profiles/dedup/README.md` | 2 |

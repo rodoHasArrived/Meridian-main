@@ -1,6 +1,6 @@
 # Project Dependency Graph
 
-> Generated: 2026-11-13 21:41:33 UTC
+> Generated: 2026-11-13 22:25:48 UTC
 
 ## Summary
 
@@ -207,7 +207,6 @@ graph LR
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Backtesting[Meridian.Backtesting]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
-    Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Application[Meridian.Application]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Storage[Meridian.Storage]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Domain[Meridian.Domain]
@@ -623,7 +622,6 @@ graph LR
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_ProviderSdk[Meridian.ProviderSdk]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Backtesting[Meridian.Backtesting]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Backtesting_Sdk[Meridian.Backtesting.Sdk]
-    Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Application[Meridian.Application]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Storage[Meridian.Storage]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Contracts[Meridian.Contracts]
     Meridian_QuantScript[Meridian.QuantScript] --> Meridian_Domain[Meridian.Domain]
@@ -830,7 +828,6 @@ graph LR
 - Meridian.FundStructure.Tests
 - Meridian.Lifecycle.Tests
 - Meridian.ProcessTestHelper
-- Meridian.QuantScript
 - Meridian.Tests
 - Meridian.Ui.Shared
 
@@ -1678,7 +1675,6 @@ graph LR
 **Path:** `src/Meridian.QuantScript/Meridian.QuantScript.csproj`
 
 **Project References:**
-- Meridian.Application
 - Meridian.Backtesting
 - Meridian.Backtesting.Sdk
 - Meridian.Contracts
