@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetTermsFieldSnapshot
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityAssetTermsFieldSnapshot</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs:25](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs#L25).
+
+A canonical snapshot of every stored key an approved assetSpecificTerms.* field edit would overwrite when ApprovedFieldEditCanonicalMergeHandler merges it. The snapshot is taken at staging and recorded on the revision as its base, then taken again at publish. If the two differ, the canonical field changed after the proposal was drafted, and publishing it would silently overwrite that newer value.
+
+```csharp
+public static class SecurityAssetTermsFieldSnapshot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? Capture(string assetClass, JsonElement assetSpecificTerms, string fieldPath);</code> | [src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs:34](../../../../src/Meridian.Application/SecurityMaster/SecurityAssetTermsFieldSnapshot.cs#L34) | Snapshots the keys fieldPath governs in assetSpecificTerms, or returns null when the path is not one the merge writes (outside the asset-terms namespace, nested deeper than the merge models, or terms that are not a JSON object). |
+
 ## SecurityMasterActiveImportStatus
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus</code>. Kind: `record`.
@@ -1072,22 +1090,3 @@ Declared public members:
 | <code>public const string DesktopEditorSourceSystem = &quot;WPF-UI&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L15) | Source system the WPF Security Master editor stamps on a direct amendment. |
 | <code>public const string WorkstationHttpSourceSystem = &quot;workstation-http&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L18) | Source system the workstation HTTP surface stamps on writes it originates. |
 | <code>public static bool IsOperatorSourceSystem(string? sourceSystem) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteAuthority.cs#L28) | True when sourceSystem names an operator surface. |
-
-## SecurityMasterWriteRefusedException
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWriteRefusedException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L19).
-
-A Security Master create or term amendment refused for what the request asked: terms this node reads but does not write (ADR-024), a missing or malformed term, a vocabulary value, an F# domain validation error, a profile failing catalog validation, or a round-trip guard whose reason names the repair. The message is written for the caller; the direct create and term-amendment routes return it as the 400 Problem Details detail.
-
-```csharp
-public sealed class SecurityMasterWriteRefusedException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterWriteRefusedException(string message) : base(message);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L21) |  |
-| <code>public SecurityMasterWriteRefusedException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L26) |  |

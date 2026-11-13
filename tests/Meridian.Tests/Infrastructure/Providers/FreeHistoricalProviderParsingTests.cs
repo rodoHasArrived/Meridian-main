@@ -50,7 +50,7 @@ public sealed class TwelveDataParsingTests
         using var httpClient = new HttpClient(handler);
         using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
+        var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 3), CancellationToken.None);
 
         bars.Should().HaveCount(3);
         bars.Should().BeInAscendingOrder(b => b.SessionDate);
@@ -65,7 +65,7 @@ public sealed class TwelveDataParsingTests
     }
 
     [Fact]
-    public async Task GetDailyBarsAsync_WhenApiReturnsErrorStatus_ReturnsEmpty()
+    public async Task GetDailyBarsAsync_WhenApiReturnsUnclassifiedErrorStatus_ThrowsProviderException()
     {
         using var handler = new StubHttpMessageHandler(_ =>
             new HttpResponseMessage(HttpStatusCode.OK)
@@ -75,9 +75,9 @@ public sealed class TwelveDataParsingTests
         using var httpClient = new HttpClient(handler);
         using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
+        var act = () => provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
-        bars.Should().BeEmpty();
+        await act.Should().ThrowAsync<DataProviderException>();
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public sealed class TwelveDataParsingTests
         using var httpClient = new HttpClient(handler);
         using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
+        var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 3), CancellationToken.None);
 
         bars.Should().BeEmpty();
     }

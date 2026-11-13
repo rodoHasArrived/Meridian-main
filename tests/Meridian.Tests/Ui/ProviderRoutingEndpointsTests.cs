@@ -354,6 +354,64 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task RoutePreview_DisabledPrimaryCannotRankAboveAnEnabledConnection()
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        await store.SaveAsync(store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+                Connections: [new("disabled", "yahoo", "Disabled", TenantId: "tenant-test", Enabled: false),
+                    new("enabled", "yahoo", "Enabled", TenantId: "tenant-test")],
+                Bindings: [new("disabled-binding", ProviderCapabilityKind.HistoricalBars, "disabled", Priority: 1),
+                    new("enabled-binding", ProviderCapabilityKind.HistoricalBars, "enabled", Priority: 100)])
+        });
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderRoutingPreview,
+            JsonContent(new RoutePreviewRequest(Capability: "HistoricalBars", Symbol: "SPY")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var preview = await ReadAsync<RoutePreviewResponse>(response);
+        preview.IsRoutable.Should().BeTrue();
+        preview.SelectedConnectionId.Should().Be("enabled");
+        preview.Candidates.Should().NotContain(candidate => candidate.ConnectionId == "disabled");
+        preview.SkippedCandidates.Should().Contain("Connection 'disabled' is disabled.");
+        ((HealthyProviderConnectionHealthSource)app.Services.GetRequiredService<IProviderConnectionHealthSource>())
+            .ConnectionIds.Should().NotContain("disabled");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RoutePreview_RejectsDisabledOrProductionGatedFallbacks(bool disabled)
+    {
+        await using var app = await CreateAppAsync();
+        var store = app.Services.GetRequiredService<ApplicationConfigStore>();
+        await store.SaveAsync(store.Load() with
+        {
+            ProviderConnections = new ProviderConnectionsConfig(
+                Connections: [new("primary", "yahoo", "Primary", TenantId: "tenant-test", ProductionReady: false),
+                    new("backup", "yahoo", "Backup", TenantId: "tenant-test", Enabled: !disabled, ProductionReady: disabled)],
+                Bindings: [new("primary-binding", ProviderCapabilityKind.HistoricalBars, "primary", FailoverConnectionIds: ["backup"])])
+        });
+        var health = (HealthyProviderConnectionHealthSource)app.Services.GetRequiredService<IProviderConnectionHealthSource>();
+        health.UnhealthyConnectionIds.Add("primary");
+
+        var response = await app.GetTestClient().PostAsync(UiApiRoutes.ProviderRoutingPreview,
+            JsonContent(new RoutePreviewRequest(Capability: "HistoricalBars", RequireProductionReady: true)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var preview = await ReadAsync<RoutePreviewResponse>(response);
+        preview.IsRoutable.Should().BeFalse();
+        preview.SelectedConnectionId.Should().BeNull();
+        if (disabled)
+        {
+            preview.Candidates.Should().NotContain(candidate => candidate.ConnectionId == "backup");
+            health.ConnectionIds.Should().NotContain("backup");
+        }
+    }
+
+    [Fact]
     public async Task RoutePreview_FailsOverOnlyToFallbacksWhoseOwnScopeMatchesTheRoute()
     {
         await using var app = await CreateAppAsync();

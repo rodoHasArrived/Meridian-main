@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterWriteRefusedException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterWriteRefusedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L19).
+
+A Security Master create or term amendment refused for what the request asked: terms this node reads but does not write (ADR-024), a missing or malformed term, a vocabulary value, an F# domain validation error, a profile failing catalog validation, or a round-trip guard whose reason names the repair. The message is written for the caller; the direct create and term-amendment routes return it as the 400 Problem Details detail.
+
+```csharp
+public sealed class SecurityMasterWriteRefusedException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterWriteRefusedException(string message) : base(message);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L21) |  |
+| <code>public SecurityMasterWriteRefusedException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L26) |  |
+
 ## SecurityProjectionChangeOutcome
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityProjectionChangeOutcome</code>. Kind: `enum`.
@@ -957,23 +976,3 @@ Options for first-time configuration generation.
 ```csharp
 public sealed record FirstTimeConfigOptions(UseCase UseCase = UseCase.Development, SymbolPreset SymbolPreset = SymbolPreset.USMajorIndices, bool EnableBackfill = true, bool EnableCompression = true);
 ```
-
-## GcStats
-
-Qualified name: <code>Meridian.Application.Services.GcStats</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:750](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L750).
-
-Garbage collection statistics.
-
-```csharp
-public sealed class GcStats
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int Gen0 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:752](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L752) |  |
-| <code>public int Gen1 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:753](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L753) |  |
-| <code>public int Gen2 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:754](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L754) |  |

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GcStats
+
+Qualified name: <code>Meridian.Application.Services.GcStats</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:750](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L750).
+
+Garbage collection statistics.
+
+```csharp
+public sealed class GcStats
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int Gen0 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:752](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L752) |  |
+| <code>public int Gen1 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:753](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L753) |  |
+| <code>public int Gen2 { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:754](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L754) |  |
+
 ## IExecutionSimulationOrchestrator
 
 Qualified name: <code>Meridian.Application.Services.IExecutionSimulationOrchestrator</code>. Kind: `interface`.
@@ -981,23 +1001,3 @@ Declared public members:
 | <code>public FundAccountHoldingScopeAssignmentProvider(IFundAccountStore? accounts, IFundProfileTenancyRegistry? tenancy, ILogger&lt;FundAccountHoldingScopeAssignmentProvider&gt; logger);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:34](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L34) |  |
 | <code>public string AuthorityId =&gt; …;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:45](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L45) |  |
 | <code>public async Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:48](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L48) |  |
-
-## LocalTenantMigrationGate
-
-Qualified name: <code>Meridian.Application.Tenancy.LocalTenantMigrationGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:7](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L7).
-
-Refuses unpartitioned local snapshots until their ownership is explicitly migrated.
-
-```csharp
-public sealed class LocalTenantMigrationGate(TenantScopeEnforcementOptions options)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool EnforcesStrictTenancy =&gt; …;</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:9](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L9) |  |
-| <code>public const string RefusalMessage = &quot;Local fund records have no retained tenant attribution and cannot be accessed under strict tenant enforcement. &quot; + &quot;Existing files are retained. Use the supported durable host and reviewed tenant backfill, or explicitly select &quot; + &quot;TenantScopeEnforcement=deployment-boundary only for isolated single-company migration or demo access.&quot;;</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:11](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L11) |  |
-| <code>public Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Func&lt;Task&lt;T&gt;&gt; operation);</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:16](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L16) |  |

@@ -4987,6 +4987,7 @@ Meridian-main
 │   │   ├── preflight_runner.py
 │   │   ├── prepare-dk1-operator-signoff.ps1
 │   │   ├── prepare-next-work-acceptance.ps1
+│   │   ├── ProviderValidationEvidence.ps1
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
@@ -5009,6 +5010,7 @@ Meridian-main
 │   │   ├── validate-workflow-profile.ps1
 │   │   ├── validate-wpf-dev.ps1
 │   │   ├── validate_workstation_cockpit_acceptance_matrix.py
+│   │   ├── verify-fixed-income-access.mjs
 │   │   ├── web-dev.mjs
 │   │   ├── web-dev.test.mjs
 │   │   ├── web-doctor.mjs
@@ -6840,7 +6842,6 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowService.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowService.cs
 │   │   │   ├── OperationsContinuityWorkflowService.PreparedStart.cs
-│   │   │   ├── OperationsContinuityWorkflowService.Projection.cs
 │   │   │   ├── OperationsContinuityWorkflowService.Transitions.cs
 │   │   │   ├── OperationsContinuityWorkflowText.cs
 │   │   │   ├── OperationsLedgerPostingService.cs
@@ -6849,6 +6850,7 @@ Meridian-main
 │   │   │   ├── OperationsWorkflowAuditHashing.cs
 │   │   │   ├── OperationsWorkflowAuditHashJsonContext.cs
 │   │   │   ├── OperationsWorkflowChecklistSnapshots.cs
+│   │   │   ├── OperationsWorkflowReadModelBuilder.cs
 │   │   │   └── PostgresOperationsContinuityStore.cs
 │   │   ├── PrivateCapital
 │   │   │   ├── CommitmentRollForwardCalculator.cs
@@ -7124,6 +7126,7 @@ Meridian-main
 │   │   │   │   ├── BaseHistoricalDataProvider.cs
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
+│   │   │   │   ├── CorporateActionFetchResult.cs
 │   │   │   │   ├── CrossProviderValidator.cs
 │   │   │   │   ├── ICorporateActionProvider.cs
 │   │   │   │   ├── IHistoricalAggregateBarProvider.cs
@@ -7783,7 +7786,6 @@ Meridian-main
 │   │   │   ├── QuantScriptWorkerProtocol.cs
 │   │   │   └── RemoteQuantDataContext.cs
 │   │   ├── GlobalUsings.cs
-│   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── Meridian.QuantScript.csproj
 │   │   ├── QuantScriptOptions.cs
 │   │   ├── QuantScriptServiceCollectionExtensions.cs
@@ -9472,6 +9474,9 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.trading-risk.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── fixed-income-capabilities.test.ts
+│   │   │   │   │   ├── fixed-income-capabilities.ts
+│   │   │   │   │   ├── fixed-income-navigation.ts
 │   │   │   │   │   ├── focus-classes.ts
 │   │   │   │   │   ├── format.test.ts
 │   │   │   │   │   ├── format.ts
@@ -9640,6 +9645,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-period-comparison.tsx
 │   │   │   │   │   ├── accounting-screen.account-cash-cases.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-cash-cases.tsx
+│   │   │   │   │   ├── accounting-screen.account-cash-forecasts.prepare.tsx
 │   │   │   │   │   ├── accounting-screen.account-cash-forecasts.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-cash-forecasts.tsx
 │   │   │   │   │   ├── accounting-screen.account-close-prices.test.tsx
@@ -9792,6 +9798,7 @@ Meridian-main
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.test.ts
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.ts
 │   │   │   │   │   ├── capital-call-notice-action.tsx
+│   │   │   │   │   ├── cash-ladder-screen.projection-evidence.tsx
 │   │   │   │   │   ├── cash-ladder-screen.test.tsx
 │   │   │   │   │   ├── cash-ladder-screen.tsx
 │   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
@@ -12287,123 +12294,6 @@ Meridian-main
 │   │   │   ├── FakeQuantDataContext.cs
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   └── TestPriceSeriesBuilder.cs
-│   │   ├── workers
-│   │   │   └── quant-script
-│   │   │       ├── AssetOperations
-│   │   │       │   └── Migrations
-│   │   │       │       ├── 001_asset_operations.sql
-│   │   │       │       ├── 002_instrument_position_projections.sql
-│   │   │       │       ├── 003_instrument_position_projection_guards.sql
-│   │   │       │       └── 004_asset_accounting_event_spine.sql
-│   │   │       ├── Banking
-│   │   │       │   └── Migrations
-│   │   │       │       ├── 001_banking.sql
-│   │   │       │       ├── 002_bank_transaction_recorded_by.sql
-│   │   │       │       └── 003_payment_intent_integrity.sql
-│   │   │       ├── DirectLending
-│   │   │       │   └── Migrations
-│   │   │       │       ├── 001_direct_lending.sql
-│   │   │       │       ├── 002_direct_lending_projections.sql
-│   │   │       │       ├── 003_direct_lending_accrual_and_event_metadata.sql
-│   │   │       │       ├── 004_direct_lending_event_schema_and_snapshots.sql
-│   │   │       │       ├── 005_direct_lending_operations.sql
-│   │   │       │       ├── 005_direct_lending_workflows.sql
-│   │   │       │       ├── 006_direct_lending_operations_workflow_audit.sql
-│   │   │       │       ├── 006_direct_lending_terms_projection_extended_fields.sql
-│   │   │       │       ├── 006_servicer_statement_intake.sql
-│   │   │       │       ├── 007_direct_lending_command_idempotency.sql
-│   │   │       │       └── 008_direct_lending_pik_accrual.sql
-│   │   │       ├── FundAccounts
-│   │   │       │   └── Migrations
-│   │   │       │       ├── 001_fund_accounts.sql
-│   │   │       │       ├── 002_add_operational_status.sql
-│   │   │       │       ├── 003_fund_account_tenant_column.sql
-│   │   │       │       └── 004_legacy_import_receipts.sql
-│   │   │       ├── FundStructure
-│   │   │       │   └── Migrations
-│   │   │       │       ├── 001_fund_structure.sql
-│   │   │       │       ├── 002_legacy_import_receipts.sql
-│   │   │       │       └── 003_linked_accounts.sql
-│   │   │       ├── IdentityAccess
-│   │   │       │   └── Migrations
-│   │   │       │       └── 001_user_access_assignment.sql
-│   │   │       ├── Ledger
-│   │   │       │   └── Migrations
-│   │   │       │       ├── V_ledger_001__journal_entries.sql
-│   │   │       │       ├── V_ledger_002__accounting_periods.sql
-│   │   │       │       ├── V_ledger_003__ledger_books.sql
-│   │   │       │       ├── V_ledger_004__accounting_basis_policies.sql
-│   │   │       │       ├── V_ledger_005__journal_basis_lineage.sql
-│   │   │       │       ├── V_ledger_006__journal_posting_kind.sql
-│   │   │       │       ├── V_ledger_007__journal_adjustment_approval_metadata.sql
-│   │   │       │       ├── V_ledger_008__closing_entry_posting_kind.sql
-│   │   │       │       ├── V_ledger_008__operations_continuity.sql
-│   │   │       │       ├── V_ledger_009__tax_lot_persistence.sql
-│   │   │       │       ├── V_ledger_010__accounting_configuration.sql
-│   │   │       │       ├── V_ledger_011__accounting_rule_payload.sql
-│   │   │       │       ├── V_ledger_012__accounting_rule_test_cases.sql
-│   │   │       │       ├── V_ledger_013__journal_idempotency_guards.sql
-│   │   │       │       ├── V_ledger_014__journal_leg_dimensions.sql
-│   │   │       │       ├── V_ledger_015__accounting_configuration_ledger_book_scope.sql
-│   │   │       │       ├── V_ledger_016__accounting_configuration_tenant_company_scope.sql
-│   │   │       │       ├── V_ledger_017__accounting_configuration_audit_tenant_scope.sql
-│   │   │       │       ├── V_ledger_018__accounting_audit_fund_lower_index.sql
-│   │   │       │       ├── V_ledger_019__fund_profile_tenancy.sql
-│   │   │       │       ├── V_ledger_020__fund_scope_tenant_columns.sql
-│   │   │       │       ├── V_ledger_021__operations_continuity_tenant_column.sql
-│   │   │       │       ├── V_ledger_022__tenant_lower_indexes.sql
-│   │   │       │       ├── V_ledger_023__journal_as_of_indexes.sql
-│   │   │       │       ├── V_ledger_024__tax_lot_average_cost_method.sql
-│   │   │       │       ├── V_ledger_025__global_posting_command_identity.sql
-│   │   │       │       ├── V_ledger_026__journal_leg_currency.sql
-│   │   │       │       ├── V_ledger_027__atomic_tax_lot_posting.sql
-│   │   │       │       └── V_ledger_028__wash_sale_activation.sql
-│   │   │       ├── MoneyMarket
-│   │   │       │   └── Migrations
-│   │   │       │       └── 001_money_market.sql
-│   │   │       ├── Reporting
-│   │   │       │   └── Migrations
-│   │   │       │       ├── 001_reporting_artifact_blobs.sql
-│   │   │       │       ├── 002_reporting_governance.sql
-│   │   │       │       ├── 003_reporting_distribution.sql
-│   │   │       │       ├── 004_reporting_artifact_catalog_audit.sql
-│   │   │       │       ├── 005_reporting_distribution_hardening.sql
-│   │   │       │       ├── 006_reporting_reconciliation_evidence.sql
-│   │   │       │       ├── 007_reporting_governance_scope_hardening.sql
-│   │   │       │       ├── 008_reporting_governance_format_versions.sql
-│   │   │       │       ├── 009_reporting_reconciliation_evidence_v2.sql
-│   │   │       │       ├── 010_reporting_operational_state.sql
-│   │   │       │       ├── 011_reporting_delivery_run_read_index.sql
-│   │   │       │       ├── 012_reporting_access_grant_artifact_consumption.sql
-│   │   │       │       └── 013_reporting_statement_reconciliation_authority.sql
-│   │   │       └── SecurityMaster
-│   │   │           └── Migrations
-│   │   │               ├── 001_security_master.sql
-│   │   │               ├── 002_security_master_fts.sql
-│   │   │               ├── 003_security_master_corp_actions.sql
-│   │   │               ├── 004_security_master_operator_overrides.sql
-│   │   │               ├── 005_security_master_bond_reference_projection.sql
-│   │   │               ├── 006_security_master_option_reference_projection.sql
-│   │   │               ├── 007_security_master_equity_projection.sql
-│   │   │               ├── 008_security_master_future_projection.sql
-│   │   │               ├── 009_security_master_fxspot_projection.sql
-│   │   │               ├── 010_security_master_swap_projection.sql
-│   │   │               ├── 011_security_master_commodity_projection.sql
-│   │   │               ├── 012_security_master_crypto_projection.sql
-│   │   │               ├── 013_security_master_deposit_projection.sql
-│   │   │               ├── 014_security_master_money_market_fund_projection.sql
-│   │   │               ├── 015_security_master_certificate_of_deposit_projection.sql
-│   │   │               ├── 016_security_master_normalized_identifier_lookup.sql
-│   │   │               ├── 017_security_master_bond_clearwater_lifecycle_fields.sql
-│   │   │               ├── 018_security_master_cashflow_sources.sql
-│   │   │               ├── 019_data_vendor_entitlements.sql
-│   │   │               ├── 020_data_vendor_entitlement_scope_metadata.sql
-│   │   │               ├── 021_security_master_corp_action_lifecycle.sql
-│   │   │               ├── 022_security_master_pricing_hierarchy.sql
-│   │   │               ├── 023_security_master_quality_reports.sql
-│   │   │               ├── 024_security_master_schema_version_column.sql
-│   │   │               ├── 025_security_master_audit_stores.sql
-│   │   │               └── 026_security_master_operator_override_approvals.sql
 │   │   ├── .gitignore
 │   │   ├── BacktestProxyRealismTests.cs
 │   │   ├── ContainedProcessTests.cs
@@ -12655,9 +12545,11 @@ Meridian-main
 │   │   │   │   ├── BestOfBreedProviderSelectorTests.cs
 │   │   │   │   ├── KernelObservabilityServiceTests.cs
 │   │   │   │   ├── ProviderAccountingRuntimeCredentialTests.cs
+│   │   │   │   ├── ProviderFamilyCatalogServiceTests.cs
 │   │   │   │   ├── ProviderIbFlexRuntimeCredentialTests.cs
 │   │   │   │   ├── ProviderModuleRuntimeCredentialTests.cs
 │   │   │   │   ├── ProviderPlaidRuntimeCredentialTests.cs
+│   │   │   │   ├── ProviderRoutingEligibilityTests.cs
 │   │   │   │   ├── ProviderRoutingServiceTests.cs
 │   │   │   │   ├── ProviderRuntimeCredentialRecoveryTests.cs
 │   │   │   │   ├── ProviderRuntimeCredentialServiceTests.cs
@@ -12735,6 +12627,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.Privacy.cs
+│   │   │   ├── OperationsContinuityWorkflowServiceTests.ReadModels.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMasterCashFlowProjectionShapeTests.cs
@@ -12838,6 +12731,7 @@ Meridian-main
 │   │   ├── DataIntegration
 │   │   │   ├── AccountingSystem
 │   │   │   │   ├── QuickBooks
+│   │   │   │   │   ├── QuickBooksCredentialLifecycleTests.cs
 │   │   │   │   │   └── QuickBooksOnlineProviderCredentialConnectionStoreTests.cs
 │   │   │   │   ├── ExternalGlConnectionLifecycleTests.cs
 │   │   │   │   ├── ExternalGlCredentialConcurrencyTests.cs
@@ -13280,6 +13174,8 @@ Meridian-main
 │   │   │   │   ├── BaseSymbolSearchProviderTests.cs
 │   │   │   │   ├── CanonicalRegistrySymbolResolverTests.cs
 │   │   │   │   ├── CompositeProviderStaleDataTests.cs
+│   │   │   │   ├── CorporateActionFetchOutcomeTests.cs
+│   │   │   │   ├── CorporateActionFetchResultTests.cs
 │   │   │   │   ├── EdgarReferenceDataProviderTests.cs
 │   │   │   │   ├── EdgarSymbolSearchProviderTests.cs
 │   │   │   │   ├── FailoverAwareMarketDataClientTests.cs
@@ -15302,6 +15198,7 @@ Meridian-main
 │   │   ├── test_validate_tooling_metadata.py
 │   │   ├── test_validate_workstation_cockpit_acceptance_matrix.py
 │   │   ├── test_validation_plan.py
+│   │   ├── test_wave1_provider_validation.py
 │   │   ├── test_web_workstation_installer.py
 │   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py

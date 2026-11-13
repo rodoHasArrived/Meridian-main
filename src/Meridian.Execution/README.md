@@ -220,7 +220,19 @@ service.
 
 The order journal's `to` boundary is exclusive, matching the summary's half-open UTC window and the browser's **Before date** filter.
 
-`OrderPreviewService` observes the shared admission/risk path without reservations or side effects. `ExecutionJournal` retains scoped intent, dispatch, operation, raw report and confirmed state evidence in a synchronous WAL. FIFO operational attribution uses ledger lot helpers and preserves unknown cost/basis as unavailable. Restarting a local paper portfolio without restoring its positions retains an economic coverage gap, preserving order history while withholding cross-book P&L. `ExecutionAlertService` supplies persistent alerts and outbox selection. See [execution workflows](../../docs/engineering/execution-workflows.md) for API, recovery, limits and verification details.
+`OrderPreviewService` observes the shared admission/risk path without reserving capacity,
+consuming approval tokens, or dispatching orders. Submission repeats current admission and risk
+checks; a successful preview grants no routing authority.
+
+`ExecutionJournal` retains scoped intent, dispatch, operation, raw report and confirmed state
+evidence in a synchronous WAL. Submission attempts keep separate identities when a client order
+ID is reused; uncertain cancel or replacement outcomes retain their evidence for reconciliation.
+FIFO operational attribution uses ledger lot helpers and preserves unknown cost/basis as
+unavailable. Restarting a local paper portfolio without restoring its positions retains an
+economic coverage gap, preserving order history while withholding cross-book P&L.
+`ExecutionAlertService` supplies persistent alerts and outbox selection. See
+[execution workflows](../../docs/engineering/execution-workflows.md) for API, recovery, limits and
+verification details.
 
 All new OMS orders undergo structural validation after the duplicate-client-ID guard and before
 gateway sizing or governance preflight. Invalid requests are rejected through the existing audit
@@ -613,7 +625,8 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests|FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests|FullyQualifiedName~EquityOrderSessionPolicyTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 

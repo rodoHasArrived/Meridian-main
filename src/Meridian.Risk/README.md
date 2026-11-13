@@ -6,7 +6,7 @@ module_id: SRC-RISK
 path: src/Meridian.Risk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-08-11
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Risk
@@ -134,7 +134,7 @@ a queue entry. Submission reruns admission and risk validation with the reservat
 behavior described below. See [execution workflows](../../docs/engineering/execution-workflows.md).
 
 Composite risk validation runs rules by priority and uses synchronous fast paths when a rule
-exposes one. Rule severity maps to a real outcome in `CompositeRiskValidator`:
+exposes one. During submission admission, rule severity maps to an outcome in `CompositeRiskValidator`:
 
 - `Info`/`Warning` - the breach becomes a warning flag on the result; evaluation continues.
 - `Error` - the order is rejected.
@@ -163,13 +163,20 @@ rule in priority order — the severity map above is unchanged — but the full 
 declared severity and a stable code. Evaluation is side-effect free by contract, which is what makes
 evaluating past a block safe.
 
-Rules that consume finite capacity (the order-rate window) implement `IReservingRiskRule` and
-reserve atomically during evaluation. The validator releases those reservations on every
-non-approved decision and on any exception, and otherwise transfers them to the caller on
+During admission, rules that consume finite capacity (the order-rate window) implement
+`IReservingRiskRule` and reserve atomically during evaluation. The validator releases those
+reservations on every non-approved decision and on any exception, and otherwise transfers them to the caller on
 `RiskValidationResult.Reservations`; the OMS commits only once the order has actually routed. A rule
 that throws or exceeds the per-rule timeout yields a fail-closed `RISK_RULE_EVALUATION_FAILED`
 refusal that is deliberately *unmeasurable* rather than a breach — the rule established nothing, so
 a flaky rule refuses its own orders without tripping the circuit breaker and halting the desk.
+
+`CompositeRiskValidator.PreviewResolvedOrderAsync` implements `IRiskPreviewValidator` through
+observation-only rule evaluation. It checks current capacity without reserving it, consumes no
+approval tokens, parks no escalations and never trips controls or retries a pending halt. A pending
+halt still refuses the preview; an escalation reports `RequiresApproval` with no `EscalationId`.
+Submission performs admission again and can reserve capacity, park approvals or trip controls.
+See [execution workflows](../../docs/engineering/execution-workflows.md) for the shared preview path.
 
 The per-rule timeout bounds *asynchronous* evaluation only. It does not bound `TryEvaluate`, nor any
 synchronous work a rule performs before returning its `Task`: both run on the calling thread, and a
@@ -212,6 +219,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~Meridian.Tests.Execution.ExecutionWorkflowTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

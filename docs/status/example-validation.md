@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12521 |
-| Valid | 12039 |
+| Total code blocks | 12522 |
+| Valid | 12040 |
 | Invalid | 0 |
 | Skipped | 482 |
 
@@ -19,7 +19,7 @@
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 109 | 0 | 0 | 109 |
 | `bash` | 265 | 265 | 0 | 0 |
-| `csharp` | 11669 | 11669 | 0 | 0 |
+| `csharp` | 11670 | 11670 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -175,7 +175,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.application/page-009.md` | 68 |
 | `docs/reference/source-api/meridian.application/page-010.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-011.md` | 50 |
-| `docs/reference/source-api/meridian.application/page-012.md` | 26 |
+| `docs/reference/source-api/meridian.application/page-012.md` | 27 |
 | `docs/reference/source-api/meridian.audit/page-001.md` | 21 |
 | `docs/reference/source-api/meridian.backtesting.sdk/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.backtesting.sdk/page-002.md` | 50 |
@@ -281,7 +281,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.financialoperations/page-001.md` | 64 |
 | `docs/reference/source-api/meridian.financialoperations/page-002.md` | 62 |
 | `docs/reference/source-api/meridian.financialoperations/page-003.md` | 53 |
-| `docs/reference/source-api/meridian.financialoperations/page-004.md` | 67 |
+| `docs/reference/source-api/meridian.financialoperations/page-004.md` | 66 |
 | `docs/reference/source-api/meridian.financialoperations/page-005.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.financialoperations/page-007.md` | 50 |
@@ -298,7 +298,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.infrastructure/page-005.md` | 50 |
 | `docs/reference/source-api/meridian.infrastructure/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.infrastructure/page-007.md` | 51 |
-| `docs/reference/source-api/meridian.infrastructure/page-008.md` | 3 |
+| `docs/reference/source-api/meridian.infrastructure/page-008.md` | 4 |
 | `docs/reference/source-api/meridian.instruments/page-001.md` | 60 |
 | `docs/reference/source-api/meridian.instruments/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.ledger/page-001.md` | 50 |

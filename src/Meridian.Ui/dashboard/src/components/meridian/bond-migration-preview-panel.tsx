@@ -57,11 +57,13 @@ const conventionLabels: Record<BusinessDayConvention, string> = {
 export function BondMigrationPreviewPanel({
   securityId,
   expectedVersion,
+  initiallyOpen = false,
   preview = previewBondMigration,
   stage = stageBondMigration
 }: {
   securityId: string;
   expectedVersion: number | null;
+  initiallyOpen?: boolean;
   preview?: typeof previewBondMigration;
   stage?: typeof stageBondMigration;
 }) {
@@ -216,7 +218,7 @@ export function BondMigrationPreviewPanel({
   }
 
   return (
-    <details className="rounded-md border border-border p-3">
+    <details open={initiallyOpen} className="rounded-md border border-border p-3">
       <summary className="cursor-pointer text-sm font-semibold">Review bond convention migration</summary>
       <div className="mt-3 flex flex-col gap-3">
         <p className="text-xs text-muted-foreground">
