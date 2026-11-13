@@ -338,3 +338,41 @@ the 36-alert storage/lifecycle repair, and Windows Desktop Build passed. The ear
 These hosted results do not validate the unpublished follow-up. Fresh required hosted checks on
 the next published head remain the merge authority; no security alert or required check was
 suppressed or bypassed.
+
+### Final hosted .NET contract synchronization
+
+The full hosted .NET lane at `ad80338ec2` executed all 24 configured batches: 32,011 passed,
+21 failed and five existing UI cases were not executed. No batch was omitted after a failure.
+The failures identified contract drift after synchronization and one durable-input exception
+compatibility issue; that run is not recorded as a passing gate.
+
+- Preserve the run store's `ArgumentException` contract for invalid caller entries, retaining the
+  converter's `JsonException` as the inner exception. Snapshot rejection precedes persistence and
+  history mutation; direct SDK conversion and retained-history reading are unchanged. Four new
+  infinity/API combinations prove rejection, unchanged history, restart and valid subsequent append.
+- Assert exact retained fill counts separately from completed closing-order counts in three live
+  engine/shutdown cases. Unavailable outcome metrics remain unavailable; lifecycle assertions remain.
+- Pin the actual current cash-flow row version 2 and every interest-segment member. Exact current
+  shapes and frozen version 0 assertions remain; two new frozen version 1 cases preserve compatibility.
+- Keep quoted-value expectations while explicitly rejecting insufficient or contradictory accrual
+  history. Three complete-history cases reconcile quoted and projected principal; an additional
+  contradiction case proves no partial schedule escapes. Financial validation is unchanged.
+- Query the catalog's `FactorAmortizing` behavior instead of comparing an asset class to its name.
+  The ratchet baseline remains unchanged.
+
+Independent reviews passed for all groups. The focused main slice passed **282/282**, with no
+failures or skips, including all ten new cases and the unchanged architecture guard. The direct SDK
+metric serialization slice passed **6/6**, with no failures or skips. Final solution-level whitespace
+verification passed for all seven changed C# files using explicit repository-relative includes.
+The first local main attempt
+passed 280 cases but two architecture cases could not locate the checkout from a temporary output
+cache; a byte-verified output directory inside the checkout resolved that environment issue, and
+the complete 282-case slice then passed. The first SDK attempt lacked restored assets; normal restore,
+build and test passed. Neither unsuccessful attempt is counted as a passing run.
+
+At `ad80338ec2`, browser validation passed 5,712 cases, native Windows passed all 2,778 WPF cases
+(including 60 atomic-file cases and both backup-permission assertions), PostgreSQL integration
+passed 1,537 cases, and both CodeQL analyses plus the aggregate reported no new changed-code alerts.
+Those results remain evidence for that revision; fresh hosted gates on this follow-up are required
+before the authorized merge. No tests, guard baselines, security alerts or repository rules were
+weakened or bypassed.

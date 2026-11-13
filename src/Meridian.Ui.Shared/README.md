@@ -82,8 +82,10 @@ cannot attach verified rate evidence. Observed fixings become forecasts only thr
 assumption. Treasury constant-maturity yields require an externally reviewed construction and
 explicit discount factors; the endpoint does not bootstrap them implicitly.
 
-Recurring fixed-income accrual explicitly admits Bond and StructuredCredit calculated fixed-rate
-schedules. Versioned interest segments retain the principal and factor that earned each coupon
+Recurring fixed-income accrual admission follows the catalog's `SupportsRecurringFixedIncomeAccrual`
+capability, currently Bond and StructuredCredit calculated fixed-rate schedules. A `FactorAmortizing`
+descriptor requires retained interest segments even when its current factor is one.
+Versioned interest segments retain the principal and factor that earned each coupon
 portion. The scoped ledger history read supplies daily `FaceValueLot` holdings from the coupon
 start, including closing disposals and the last interest day before a full principal paydown.
 The bridge applies each lot's open share and factor once; cumulative coupon rounding ties across
