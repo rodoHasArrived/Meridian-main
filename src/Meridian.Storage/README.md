@@ -599,6 +599,19 @@ payload: a declared `termsFormat` wins and an untagged row is classified by the 
 `SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
 column from the stored payload on every upsert and refuses an unknown declared format before the
 column's check constraint does.
+Migration `068_security_master_terms_format_backfill.sql` (ADR-024 amendment 2026-11-13, proposed,
+requires human schema/storage review) rewrites current state only: it adds `termsFormat`, copied
+from `terms_format`, to every untagged flat and custom-profile `asset_specific_terms` document. No
+other member changes; it never adds `assetClassTermsVersion` and leaves `version`, `schema_version`
+and `terms_format` alone. Before writing anything it refuses an untagged row that classifies as
+economic, a row whose column disagrees with the 042 shape rule, and a non-object document; it then
+verifies that no untagged row remains and adds `ck_securities_terms_format_declared` (`NOT VALID`,
+then `VALIDATE`), which refuses any row whose `termsFormat` is missing or differs from the column.
+`security_events` stays append-only and untouched; `SecurityMasterSnapshotRegenerationService`
+re-serializes retained snapshots through the replay decoder afterwards. The runner gates an
+upgrade on `SecurityMasterOptions.TermsFormatBackfillLegacyWritersRetired`, a `NOWAIT` exclusive
+lock on `securities`, and a raised command timeout above one million rows. See the
+[migration procedure](../../docs/operators/security-master-governed-edit-rollout.md#terms-format-backfill-migration-068).
 Migration `048_security_master_listing_mic.sql` adds the nullable `securities.listing_mic` column
 (ISO 10383) beside the free-text `exchange_code`, which is left unchanged. A well-formed
 `commonTerms.primaryListingMic` wins; otherwise `exchange_code` resolves through the bundled

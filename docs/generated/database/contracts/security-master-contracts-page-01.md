@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 1 of 8
 
-Objects 1-80 of 572. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 582. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -32,6 +32,8 @@ classDiagram
         +long ExpectedVersion
         +string IdempotencyKey
         +JsonElement? Metadata
+    }
+    class Meridian_Contracts_SecurityMaster_AlpacaAssetClassCodes["AlpacaAssetClassCodes"] {
     }
     class Meridian_Contracts_SecurityMaster_AmendConvertibleEquityTermsRequest["AmendConvertibleEquityTermsRequest"] {
         +DateOnly? ConversionEndDate
@@ -632,11 +634,6 @@ classDiagram
         +string? ResolutionEvidenceReference
         +DateTimeOffset? ResolvedAtUtc
     }
-    class Meridian_Contracts_SecurityMaster_CorporateActionConflictMutationResultDto["CorporateActionConflictMutationResultDto"] {
-        +CorporateActionProcessingCaseDto Case
-        +CorporateActionConflictDto Conflict
-        +bool Replayed
-    }
     Meridian_Contracts_SecurityMaster_AcceptCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_AddCorporateActionEvidenceRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_ApproveCorporateActionCaseAccountingRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionAccountingDecisionAuthorityDto
@@ -681,5 +678,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingDto
     Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPreviewDto
     Meridian_Contracts_SecurityMaster_CorporateActionConflictDto --> Meridian_Contracts_SecurityMaster_CorporateActionConflictCandidateDto
-    Meridian_Contracts_SecurityMaster_CorporateActionConflictMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionConflictDto
 ```

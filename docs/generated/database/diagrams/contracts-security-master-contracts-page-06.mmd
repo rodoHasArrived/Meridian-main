@@ -1,5 +1,41 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto["SecurityClosePriceOverrideDto"] {
+        +string EvidenceReference
+        +decimal Price
+        +string Rationale
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto["SecurityClosePriceSetDto"] {
+        +SecurityClosePriceApprovalDto? Approval
+        +SecurityClosePriceSnapshotDto Snapshot
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto["SecurityClosePriceSnapshotDto"] {
+        +string AccountId
+        +IReadOnlyList~SecurityClosePriceBlockerDto~ Blockers
+        +string BookId
+        +string? CorrectionRationale
+        +Guid? CorrectsSnapshotId
+        +DateTimeOffset CreatedAt
+        +string CreatedBy
+        +string? CreationCommandDigest
+        +DateTimeOffset EvaluatedAsOf
+        +DateTimeOffset KnowledgeAsOf
+        +IReadOnlyList~SecurityClosePriceLineDto~ Lines
+        +decimal MaxSourceDispersionPercent
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto["SecurityComparisonPriceDto"] {
+        +decimal? PctDiffFromGoldenCopy
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +SecurityPriceQuotationEvidence? Quotation
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCouponKind["SecurityCouponKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCouponRateUnit["SecurityCouponRateUnit"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto["SecurityCurveDefinitionDto"] {
         +DateTimeOffset CreatedAt
         +string CreatedBy
@@ -330,6 +366,7 @@ classDiagram
         +bool ResolveInactiveByDefault
         +string Schema
         +int SnapshotIntervalVersions
+        +bool TermsFormatBackfillLegacyWritersRetired
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterProvenanceReader["SecurityMasterProvenanceReader"] {
     }
@@ -387,40 +424,7 @@ classDiagram
         +SecurityPriceQuotationEvidence? Quotation
         +Guid SecurityId
     }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceKind["SecurityPriceKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence["SecurityPriceQuotationEvidence"] {
-        +SecurityPriceBasis Basis
-        +SecurityQuotationConvention Convention
-        +string SettlementBasis
-        +DateOnly SettlementDate
-        +SecurityQuoteStatus Status
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceUnit["SecurityPriceUnit"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto["SecurityPricingHierarchyDto"] {
-        +string? AccountId
-        +DateTimeOffset AsOf
-        +IReadOnlyList~PricingHierarchyEntryDto~ Entries
-        +Guid SecurityId
-        +string UpdatedBy
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecord["SecurityProjectionRecord"] {
-        +IReadOnlyList~SecurityAliasDto~ Aliases
-        +string AssetClass
-        +JsonElement AssetSpecificTerms
-        +JsonElement CommonTerms
-        +string Currency
-        +string DisplayName
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +IReadOnlyList~SecurityIdentifierDto~ Identifiers
-        +string PrimaryIdentifierKind
-        +string PrimaryIdentifierValue
-        +JsonElement Provenance
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecordExtensions["SecurityProjectionRecordExtensions"] {
-    }
+    Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy
@@ -445,9 +449,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
     Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
-    Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityPriceBasis
-    Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto

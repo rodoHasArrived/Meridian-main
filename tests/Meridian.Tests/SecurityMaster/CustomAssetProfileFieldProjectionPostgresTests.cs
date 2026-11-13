@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Npgsql;
 using Xunit;
@@ -28,7 +29,7 @@ public sealed class CustomAssetProfileFieldProjectionPostgresTests : IClassFixtu
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         var reader = new PostgresCustomAssetProfileFieldProjectionStore(_fixture.Options);
 
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record(
+        await store.UpsertProjectionAsync(TaggedRecord(
             "CustomAsset", CustomAssetProfileFieldProjectionTests.EnvelopeJson, securityId, version: 4));
 
         var rows = (await reader.GetProfileFieldsAsync(securityId)).ToDictionary(static row => row.FieldKey);
@@ -74,7 +75,7 @@ public sealed class CustomAssetProfileFieldProjectionPostgresTests : IClassFixtu
             profileFields = new { memo = longText, other = longText[..^1] + "x" },
         });
 
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record("CustomAsset", terms, securityId, version: 1));
+        await store.UpsertProjectionAsync(TaggedRecord("CustomAsset", terms, securityId, version: 1));
 
         (await reader.GetProfileFieldsAsync(securityId)).Single(static row => row.FieldKey == "memo").TextValue.Should().Be(longText);
         (await reader.FindByTextValueAsync("p-long-text", "memo", longText)).Should().ContainSingle(row => row.SecurityId == securityId);
@@ -89,11 +90,11 @@ public sealed class CustomAssetProfileFieldProjectionPostgresTests : IClassFixtu
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         var reader = new PostgresCustomAssetProfileFieldProjectionStore(_fixture.Options);
 
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record(
+        await store.UpsertProjectionAsync(TaggedRecord(
             "CustomAsset", """{"customProfileId":"p-rewrite","profileVersion":1,"profileFields":{"a":"one","b":2}}""", securityId, version: 1));
         (await reader.GetProfileFieldsAsync(securityId)).Select(static row => row.FieldKey).Should().Equal("a", "b");
 
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record(
+        await store.UpsertProjectionAsync(TaggedRecord(
             "CustomAsset", """{"customProfileId":"p-rewrite","profileVersion":2,"profileFields":{"b":3}}""", securityId, version: 2));
         var rewritten = await reader.GetProfileFieldsAsync(securityId);
         rewritten.Should().ContainSingle().Which.Should().BeEquivalentTo(new { FieldKey = "b", NumericValue = (decimal?)3m, ProfileVersion = 2, Version = 2L },
@@ -101,7 +102,7 @@ public sealed class CustomAssetProfileFieldProjectionPostgresTests : IClassFixtu
 
         // A legacy/unmapped CustomAsset row without a profile envelope projects nothing; its terms
         // JSON is still persisted as the only copy.
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record(
+        await store.UpsertProjectionAsync(TaggedRecord(
             "CustomAsset", """{"schemaVersion":1,"profileId":"none"}""", securityId, version: 3));
         (await reader.GetProfileFieldsAsync(securityId)).Should().BeEmpty();
         var persisted = await store.GetProjectionAsync(securityId);
@@ -117,16 +118,16 @@ public sealed class CustomAssetProfileFieldProjectionPostgresTests : IClassFixtu
         var reader = new PostgresCustomAssetProfileFieldProjectionStore(_fixture.Options);
         var depositStore = new PostgresDepositReferenceProjectionStore(_fixture.Options);
 
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record(
+        await store.UpsertProjectionAsync(TaggedRecord(
             "Deposit", """{"schemaVersion":1,"depositType":"Term","institutionName":"Fan-out Bank","isCallable":false}""", securityId, version: 1));
         (await depositStore.GetDepositAsync(securityId)).Should().NotBeNull();
 
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record(
+        await store.UpsertProjectionAsync(TaggedRecord(
             "CustomAsset", CustomAssetProfileFieldProjectionTests.EnvelopeJson, securityId, version: 2));
         (await depositStore.GetDepositAsync(securityId)).Should().BeNull("the prior class's writer clears the deposit row");
         (await reader.GetProfileFieldsAsync(securityId)).Should().HaveCount(8);
 
-        await store.UpsertProjectionAsync(CustomAssetProfileFieldProjectionTests.Record(
+        await store.UpsertProjectionAsync(TaggedRecord(
             "Deposit", """{"schemaVersion":1,"depositType":"Term","institutionName":"Fan-out Bank","isCallable":false}""", securityId, version: 3));
         (await reader.GetProfileFieldsAsync(securityId)).Should().BeEmpty("leaving CustomAsset clears its profile-field rows");
         (await depositStore.GetDepositAsync(securityId)).Should().NotBeNull();
@@ -140,4 +141,7 @@ public sealed class CustomAssetProfileFieldProjectionPostgresTests : IClassFixtu
         command.Parameters.AddWithValue("id", securityId);
         return (string?)await command.ExecuteScalarAsync();
     }
+
+    private static SecurityProjectionRecord TaggedRecord(string assetClass, string assetSpecificTermsJson, Guid? securityId = null, long version = 1)
+        => CustomAssetProfileFieldProjectionTests.Record(assetClass, assetSpecificTermsJson, securityId, version).WithDeclaredTermsFormat();
 }

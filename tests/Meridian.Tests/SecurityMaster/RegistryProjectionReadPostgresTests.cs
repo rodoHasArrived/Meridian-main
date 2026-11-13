@@ -111,7 +111,7 @@ public sealed class RegistryProjectionReadPostgresTests : IClassFixture<Security
             SecurityIdentifierKind.InternalCode.ToString(),
             identifierValue,
             JsonSerializer.SerializeToElement(new { displayName = $"Registry read fixture {securityId:N}", currency = "USD" }),
-            JsonSerializer.SerializeToElement(assetSpecificTerms),
+            SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(assetSpecificTerms)),
             JsonSerializer.SerializeToElement(new { sourceSystem = "integration-test", updatedBy = "registry-read-fixture" }),
             version,
             effectiveFrom,

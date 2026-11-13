@@ -5360,6 +5360,7 @@ Meridian-main
 │   │   │   │   ├── IUflProjectionRebuilder.cs
 │   │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   │   ├── SecurityMasterRebuildOrchestrator.cs
+│   │   │   │   ├── SecurityMasterSnapshotRegenerationService.cs
 │   │   │   │   ├── SecurityProjectionRebuildHandler.cs
 │   │   │   │   └── UflProjectionRebuilder.cs
 │   │   │   ├── Validation
@@ -6151,6 +6152,7 @@ Meridian-main
 │   │   │   ├── SecurityTermConventions.cs
 │   │   │   ├── SecurityTermReader.cs
 │   │   │   ├── SecurityTermsEnvelope.cs
+│   │   │   ├── SecurityTermsProjectionReadDtos.cs
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
@@ -8346,7 +8348,8 @@ Meridian-main
 │   │   │   │   ├── 064_custom_asset_profile_field_projection.sql
 │   │   │   │   ├── 065_security_price_quotation_evidence.sql
 │   │   │   │   ├── 066_corporate_action_cash_dividend_attestations.sql
-│   │   │   │   └── 067_security_curve_rate_policy.sql
+│   │   │   │   ├── 067_security_curve_rate_policy.sql
+│   │   │   │   └── 068_security_master_terms_format_backfill.sql
 │   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
 │   │   │   ├── FileBondMarketDataStore.cs
@@ -8430,6 +8433,8 @@ Meridian-main
 │   │   │   ├── PostgresSecurityUnderlyingGraphStore.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
+│   │   │   ├── RegistryProjectionReadService.cs
+│   │   │   ├── RegistryReferenceProjectionStore.cs
 │   │   │   ├── SecurityAliasSnapshot.cs
 │   │   │   ├── SecurityGovernanceEventLog.cs
 │   │   │   ├── SecurityGovernancePayloads.cs
@@ -10512,6 +10517,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
 │   │   │   ├── SecurityMasterEndpoints.Rates.cs
+│   │   │   ├── SecurityMasterEndpoints.RegistryProjections.cs
 │   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
@@ -13675,6 +13681,8 @@ Meridian-main
 │   │   │   ├── QuotedPriceValuationModelTests.cs
 │   │   │   ├── RateUnitNormalizerTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
+│   │   │   ├── RegistryProjectionReadPostgresTests.cs
+│   │   │   ├── RegistryProjectionReadServiceTests.cs
 │   │   │   ├── RegulatoryDerivativeIdentifierKindTests.cs
 │   │   │   ├── ScheduleConventionsDecodeGoldenTests.cs
 │   │   │   ├── ScheduleTermsWriteRulesGapTests.cs
@@ -13813,9 +13821,11 @@ Meridian-main
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
 │   │   │   ├── SecurityMasterTermsCapabilityPostgresTests.cs
+│   │   │   ├── SecurityMasterTermsFormatBackfillMigrationTests.cs
 │   │   │   ├── SecurityMasterTermSpellingDerivationTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityMaturityModuleContractionTests.cs
+│   │   │   ├── SecurityProjectionRecordTestExtensions.cs
 │   │   │   ├── SecurityQuoteConventionCoverageTests.cs
 │   │   │   ├── SecurityRateIngestionRulesTests.cs
 │   │   │   ├── SecurityRateModuleContractionReplayTests.cs
@@ -13829,6 +13839,7 @@ Meridian-main
 │   │   │   ├── SecurityStructuralModuleContractionReplayTests.cs
 │   │   │   ├── SecurityTermBlockAmendmentTests.cs
 │   │   │   ├── SecurityTermConventionTests.cs
+│   │   │   ├── SecurityTermsFormatDeclarationTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
 │   │   │   ├── SecurityTermsS2StampTests.cs
 │   │   │   ├── SecurityTermsVersioningTests.cs
@@ -14457,6 +14468,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterRateEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
+│   │   │   ├── SecurityMasterRegistryProjectionEndpointsTests.cs
 │   │   │   ├── SecurityMasterSnapshotLotEconomicsTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs
 │   │   │   ├── SecurityMasterTermBlockEndpointsTests.cs

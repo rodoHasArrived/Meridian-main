@@ -391,6 +391,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<SecurityMasterProjectionService>();
             services.AddSingleton<SecurityMasterRebuildOrchestrator>();
             services.AddSingleton<IUflProjectionRebuilder, UflProjectionRebuilder>();
+            // Re-serializes retained snapshots through the replay decoder (ADR-024 amendment 2026-11-13, after migration 068).
+            services.AddSingleton<ISecurityMasterSnapshotRegenerationService, SecurityMasterSnapshotRegenerationService>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
             // (refused while governed term amendments are required, by setting or by the Institutional profile), ISecurityMasterAmender
@@ -587,6 +589,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterDataQualityService, NullSecurityMasterDataQualityService>();
         services.TryAddSingleton<ISecurityMasterStructuredCreditReclassificationService, NullSecurityMasterStructuredCreditReclassificationService>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
+        services.TryAddSingleton<ISecurityMasterSnapshotRegenerationService, NullSecurityMasterSnapshotRegenerationService>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();
         if (!configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
@@ -855,6 +858,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ResolveInactiveByDefault = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true),
             IdentifierHistoryMigrationWritersStopped = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED", false),
             IdentifierHistoryMigrationLegacyWritersRetired = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED", false),
+            TermsFormatBackfillLegacyWritersRetired = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_TERMS_FORMAT_BACKFILL_LEGACY_WRITERS_RETIRED", false),
             ProjectionCacheNotificationsEnabled = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS", true),
             EnableSinglePrincipalCashDividendAttestations = configuration.GetBoolean("SinglePrincipalAttestation:EnableCashDividends", false)
         };

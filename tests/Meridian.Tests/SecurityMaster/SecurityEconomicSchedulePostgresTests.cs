@@ -25,7 +25,7 @@ public sealed class SecurityEconomicSchedulePostgresTests : IClassFixture<Securi
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         foreach (var fixture in SecurityEconomicScheduleFixtureCorpus.All.Where(fixture => fixture.IsValid))
         {
-            var record = fixture.Record();
+            var record = fixture.Record().WithDeclaredTermsFormat();
             await store.UpsertProjectionAsync(record);
 
             var retained = await store.GetProjectionAsync(record.SecurityId);
@@ -44,7 +44,7 @@ public sealed class SecurityEconomicSchedulePostgresTests : IClassFixture<Securi
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         foreach (var fixture in SecurityEconomicScheduleFixtureCorpus.All.Where(fixture => !fixture.IsValid))
         {
-            var rejected = fixture.Record();
+            var rejected = fixture.Record().WithDeclaredTermsFormat();
             Func<Task> insert = () => store.UpsertProjectionAsync(rejected);
             fixture.AssertDiagnostics((await insert.Should().ThrowAsync<SecurityScheduleValidationException>(fixture.Id)).Which.Diagnostics);
             (await store.GetProjectionAsync(rejected.SecurityId)).Should().BeNull("a rejected schedule cannot leave its parent record behind: {0}", fixture.Id);
@@ -55,7 +55,7 @@ public sealed class SecurityEconomicSchedulePostgresTests : IClassFixture<Securi
                 "DirectLoan" => "principal-same-date-aggregation",
                 _ => "steps-unsorted-including-zero"
             });
-            var original = baseline.Record(rejected.SecurityId);
+            var original = baseline.Record(rejected.SecurityId).WithDeclaredTermsFormat();
             await store.UpsertProjectionAsync(original);
             Func<Task> replace = () => store.UpsertProjectionAsync(rejected with { Version = 2 });
             fixture.AssertDiagnostics((await replace.Should().ThrowAsync<SecurityScheduleValidationException>(fixture.Id)).Which.Diagnostics);
@@ -74,9 +74,9 @@ public sealed class SecurityEconomicSchedulePostgresTests : IClassFixture<Securi
     {
         var store = new PostgresSecurityMasterStore(_fixture.Options);
         var ids = new[] { Guid.NewGuid(), Guid.NewGuid() }.Order().ToArray();
-        var accepted = SecurityEconomicScheduleFixtureCorpus.Get("typed-factors-before-reference").Record(ids[0]);
+        var accepted = SecurityEconomicScheduleFixtureCorpus.Get("typed-factors-before-reference").Record(ids[0]).WithDeclaredTermsFormat();
         var rejectedFixture = SecurityEconomicScheduleFixtureCorpus.Get("factor-duplicate-forward");
-        var rejected = rejectedFixture.Record(ids[1]);
+        var rejected = rejectedFixture.Record(ids[1]).WithDeclaredTermsFormat();
         var projectionName = $"schedule-replay-{Guid.NewGuid():N}";
         await store.SaveCheckpointAsync(projectionName, 7);
 

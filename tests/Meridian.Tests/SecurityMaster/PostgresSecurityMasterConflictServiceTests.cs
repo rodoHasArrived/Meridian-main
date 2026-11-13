@@ -65,7 +65,7 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
             PrimaryIdentifierKind: identifierKind,
             PrimaryIdentifierValue: primaryValue ?? identifierValue,
             CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD" }),
-            AssetSpecificTerms: JsonSerializer.SerializeToElement(new { }),
+            AssetSpecificTerms: SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { })),
             Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = provider }),
             Version: 1,
             EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-30),
@@ -585,18 +585,18 @@ public sealed class PostgresSecurityMasterConflictServiceTests : IClassFixture<S
         var securityId = Guid.NewGuid();
         var previous = MakeProjection(securityId, "Isin", "US00206R1023", "provA") with
         {
-            AssetSpecificTerms = JsonSerializer.SerializeToElement(new { couponRate = 6.25m })
+            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { couponRate = 6.25m }))
         };
         var incoming = MakeProjection(securityId, "Isin", "US00206R1023", "provB") with
         {
-            AssetSpecificTerms = JsonSerializer.SerializeToElement(new { couponRate = 6.00m }),
+            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { couponRate = 6.00m })),
             Provenance = JsonSerializer.SerializeToElement(new { sourceSystem = "provB" })
         };
         var canonicalStore = new PostgresSecurityMasterStore(_fixture.Options);
         // The canonical document persists the same coupon at a different scale than the asserted text.
         await canonicalStore.UpsertProjectionAsync(incoming with
         {
-            AssetSpecificTerms = JsonSerializer.SerializeToElement(new { couponRate = 6.0m })
+            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { couponRate = 6.0m }))
         }, CancellationToken.None);
         var service = NewService(canonicalStore);
         await service.RecordFieldConflictsAsync(previous, incoming, CancellationToken.None);

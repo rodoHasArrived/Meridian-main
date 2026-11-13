@@ -234,7 +234,7 @@ public sealed class PostgresSecurityMasterPricingHistoryTests(SecurityMasterData
                 primary_identifier_value, normalized_primary_identifier_value, common_terms,
                 asset_specific_terms, provenance, version, effective_from)
             values (@id, 'Bond', 'Active', 'Price history test', 'USD', 'InternalCode', @identifier,
-                @identifier, jsonb_build_object(), jsonb_build_object(), jsonb_build_object(), 1, now());
+                @identifier, jsonb_build_object(), jsonb_build_object('termsFormat', 'flat'), jsonb_build_object(), 1, now());
             """;
         command.Parameters.AddWithValue("id", id);
         command.Parameters.AddWithValue("identifier", id.ToString("N"));

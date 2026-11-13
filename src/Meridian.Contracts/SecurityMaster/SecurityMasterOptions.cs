@@ -33,6 +33,16 @@ public sealed class SecurityMasterOptions
     public bool IdentifierHistoryMigrationLegacyWritersRetired { get; set; }
 
     /// <summary>
+    /// One-time migration-068 upgrade attestation that every Security Master writer running after
+    /// the migration commits declares <c>termsFormat</c> on the terms it persists (ADR-024 amendment
+    /// 2026-11-13): no binary built before that change will write again. Migration 068 adds a check
+    /// constraint that refuses an untagged row, so such a writer would fail every create and amend.
+    /// The runner also takes a transaction-scoped write lock and refuses active writers. Not
+    /// required for a fresh installation or after migration 068 is recorded.
+    /// </summary>
+    public bool TermsFormatBackfillLegacyWritersRetired { get; set; }
+
+    /// <summary>
     /// Interval, in minutes, at which the projection warmup service re-warms the per-process
     /// projection cache from the durable store. Zero (the default) disables periodic re-warm —
     /// single-node deployments stay coherent through per-write cache upserts, and multi-node

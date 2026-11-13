@@ -265,7 +265,7 @@ public sealed class BondProjectionGoldenTests : IClassFixture<SecurityMasterData
             SecurityIdentifierKind.InternalCode.ToString(),
             IdentifierValue(securityId),
             common.RootElement.Clone(),
-            terms.RootElement.Clone(),
+            SecurityTermsEnvelope.StampDeclaredFormat(terms.RootElement.Clone()),
             JsonSerializer.SerializeToElement(new { sourceSystem = "integration-test", updatedBy = "bond-golden-fixture" }),
             Version,
             effectiveFrom,

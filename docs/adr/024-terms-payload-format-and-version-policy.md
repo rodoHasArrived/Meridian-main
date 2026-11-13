@@ -117,6 +117,8 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Versions | `src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs` | Codec versions and the reserved value |
 | Upcaster chain | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Tag-first dispatch; shape rule for untagged payloads |
 | Migration | `src/Meridian.Storage/SecurityMaster/Migrations/042_security_master_terms_format_column.sql` | `terms_format` column, backfill, check constraint |
+| Backfill | `src/Meridian.Storage/SecurityMaster/Migrations/068_security_master_terms_format_backfill.sql`, `src/Meridian.Storage/SecurityMaster/SecurityMasterMigrationRunner.cs` | Declares `termsFormat` on current state and adds `ck_securities_terms_format_declared`; the upgrade gate (amendment 2026-11-13) |
+| Snapshot regeneration | `src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs` | Re-serializes retained snapshots through the replay decoder (amendment 2026-11-13) |
 | Store | `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | Writes `terms_format`; refuses unknown formats |
 | Writers | `src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs`, `src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`, `src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs` | Flat writers that stamp the envelope |
 | Declared-family stamp | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs`, `src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs` | `StampDeclaredFormat` choke point before every service upsert; the WPF profile-backed create (amendment 2026-11-13) |
@@ -234,7 +236,7 @@ SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, payload);
 - `SecurityTermsVersioningTests` — stamping idempotence, tag-first dispatch, SQL/code parity for
   migration 042, store refusal of unknown formats.
 - `SecurityValidationServiceTests` — `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` and `_UNKNOWN`.
-- `SecurityMasterPostgresRoundTripTests.UpsertProjection_PersistsTheTermsFormatColumn_FromTheTagOrTheShapeRule`
+- `SecurityMasterPostgresRoundTripTests.UpsertProjection_PersistsTheDeclaredTermsFormatColumn_AndTheDatabaseRefusesAnUntaggedPayload`
   (PostgreSQL integration lane).
 - `SecurityAssetSpecificTermsUpcasterChainTests` — no accepted flat version equals
   `EconomicTermsSchema.Current`.
@@ -609,8 +611,8 @@ write activation, actual exercise authority, or release acceptance.
 
 > **Status: Proposed — requires human review.** This amendment partly reverses Alternative 1
 > (rewrite stored payloads), which this ADR rejected. Nothing below may be treated as accepted
-> until a human reviewer approves it on the pull request that carries it. Steps 1 and 2 are
-> implemented on the branch; steps 3 to 6 are planned and not yet implemented.
+> until a human reviewer approves it on the pull request that carries it. Steps 1 to 4 are
+> implemented on the branch; steps 5 and 6 are planned and not yet implemented.
 
 **Context.** Decision 1 said no code path persists an untagged payload, but three writers still
 did: the F# codec's custom-asset branch (emitted verbatim), the profile-backed override in
@@ -628,9 +630,27 @@ draining through writes.
    changes `version`, refuses to run while any untagged row classifies as economic, verifies that no
    untagged row remains and that every tag equals the column, and then adds a
    `ck_securities_terms_format_declared` check constraint. `security_events` is append-only
-   (migration 059) and is never rewritten.
+   (migration 059) and is never rewritten. *(Implemented.)* Before writing, the refusal also covers
+   an untagged row whose `terms_format` column disagrees with the 042 shape rule and a non-object
+   document, so every stamped tag is exactly the family readers already inferred and no read
+   changes. The constraint is added `NOT VALID` and then validated, and refuses a row whose
+   `termsFormat` is missing, not a string, or differs from the column.
+   `SecurityMasterMigrationRunner` gates an upgrade with 068 pending, like 062: the
+   `TermsFormatBackfillLegacyWritersRetired` attestation (no writer built before step 4 below may
+   write after the commit, since the constraint refuses its untagged rows), an exclusive `NOWAIT`
+   lock on `securities`, and a raised command timeout above one million rows. Because the
+   constraint refuses untagged rows, the full-warm path of `SecurityMasterRebuildOrchestrator`
+   now declares the family on the rows it persists, as the scoped and incremental paths already
+   did through `SecurityMasterAggregateRebuilder.RebuildAsync`.
 2. **Snapshots are regenerated, not patched.** A job re-serializes each snapshot through
-   `SecurityMasterMapping.ToSnapshot` from the replayed record (step 4).
+   `SecurityMasterMapping.ToSnapshot` from the replayed record (step 4). *(Implemented.)*
+   `ISecurityMasterSnapshotRegenerationService` decodes each retained snapshot through the replay
+   decoder `SecurityMasterMapping.FromEconomicPayload`, which declares the family on retained
+   legacy terms in memory, and re-serializes it at its own version and timestamp. The store
+   replaces the payload only while the snapshot still holds that version, so a concurrent newer
+   snapshot is never overwritten, and a run is idempotent. It is registered beside the projection
+   rebuilder (with a null fallback when Security Master storage is not configured) and has no API
+   route; the operator procedure runs it once after the upgrade.
 3. **Event replay keeps a frozen legacy classifier.** Once live code stops inferring the family
    (step 5), untagged history is classified only by a frozen legacy classifier keyed by the event's
    `payload_type` and `payload_version` (migration 039). Reserved flat version 2 survives only
@@ -683,3 +703,8 @@ replay-corpus golden it is the profile envelope's amend cycle, the codec's re-se
 family-explicit flatten, a create of every profile-backed family, a deactivation of a stored
 untagged envelope, a scoped rebuild of untagged v1 and v2 events, and in-memory decoding.
 `SecurityTermsWriteGoldenTests.EveryWriterOutput_DeclaresItsFormat` is the writer-output guard.
+`SecurityMasterTermsFormatBackfillMigrationTests` (PostgreSQL integration lane) apply 068 to a
+populated through-067 schema across failure, retry and restart, re-run its statements, prove the
+constraint refuses untagged and disagreeing rows, cover every refusal and both apply gates, rebuild
+an untagged event after the upgrade, and regenerate an untagged snapshot;
+`SecurityMasterTermsFormatBackfillMigrationScriptTests` pin the script's shape-rule vocabulary.

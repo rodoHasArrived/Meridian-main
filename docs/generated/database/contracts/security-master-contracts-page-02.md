@@ -2,11 +2,16 @@
 
 # `security-master-contracts` data objects - page 2 of 8
 
-Objects 81-160 of 572. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 582. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_CorporateActionConflictMutationResultDto["CorporateActionConflictMutationResultDto"] {
+        +CorporateActionProcessingCaseDto Case
+        +CorporateActionConflictDto Conflict
+        +bool Replayed
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionConflictResolutionResultDto["CorporateActionConflictResolutionResultDto"] {
         +CorporateActionProcessingCaseDto Case
         +CorporateActionConflictDto Conflict
@@ -423,15 +428,7 @@ classDiagram
         +DateOnly End
         +DateOnly Start
     }
-    class Meridian_Contracts_SecurityMaster_DeactivateSecurityRequest["DeactivateSecurityRequest"] {
-        +DateTimeOffset EffectiveTo
-        +long ExpectedVersion
-        +string? Reason
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-        +string UpdatedBy
-    }
+    Meridian_Contracts_SecurityMaster_CorporateActionConflictMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionConflictResolutionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineEvidenceDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto
     Meridian_Contracts_SecurityMaster_CorporateActionDeadlineHistoryDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionDeadlineDto

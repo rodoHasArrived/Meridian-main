@@ -12082,6 +12082,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AlpacaAssetClassCodes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest"
     },
     {
@@ -13816,6 +13822,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeProviders"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeTraits"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest"
     },
     {
@@ -15142,7 +15178,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionChildRowsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto"
     },
     {
       "kind": "contract-set-member",
@@ -28048,6 +28108,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.AlpacaAssetClassCodes"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest"
     },
     {
@@ -29782,6 +29848,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeCatalog"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeProviders"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeTraits"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest"
     },
     {
@@ -31108,7 +31204,31 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionChildRowsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto"
     },
     {
       "kind": "contract-set-member",
@@ -45699,6 +45819,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCode",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCode",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeTraits"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCurvePointDto"
     },
@@ -46829,6 +46961,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermRead"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionChildRowsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto"
     },
     {
       "kind": "contract-reference",
@@ -61727,6 +61871,18 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:security_master.ck_securities_terms_format_declared on security_master.securities",
+      "target": "database:security_master.securities.asset_specific_terms"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_securities_terms_format_declared on security_master.securities",
+      "target": "database:security_master.securities.terms_format"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:security_master.ck_security_curves_rate_policy on security_master.security_curves",
       "target": "database:security_master.security_curves.rate_policy"
     },
@@ -65766,7 +65922,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6fc3c8adc7932e16aa34f2c669d8542be39959a0d35a9e17ee362be85f44421b",
+  "fingerprint": "562c3a66727d2f8d1895144c710bcbfadde6f7befe26c4f26e9ddc1f0a5dcf4d",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -77898,6 +78054,12 @@
       "label": "Meridian.Contracts.SecurityMaster.AddCorporateActionEvidenceRequestDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.AlpacaAssetClassCodes",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.AlpacaAssetClassCodes"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.SecurityMaster.AmendConvertibleEquityTermsRequest",
       "kind": "contract-type",
@@ -79632,6 +79794,36 @@
       "label": "Meridian.Contracts.SecurityMaster.PrincipalPaydownCorporateActionTerms"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCode",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ProviderAssetClassCode"
+    },
+    {
+      "classification": "catalog",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeCatalog",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeCatalog"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeProviders",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeProviders"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeTraits",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeTraits"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.SecurityMaster.PublishSecurityCurveVersionRequest",
       "kind": "contract-type",
@@ -80958,10 +81150,34 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermsFormats"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionChildRowsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsProjectionChildRowsDto"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsProjectionReadJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsProjectionSatelliteRowDto"
     },
     {
       "classification": "enum",
@@ -93909,6 +94125,11 @@
       "label": "security_master.ck_securities_terms_format on security_master.securities"
     },
     {
+      "id": "database:security_master.ck_securities_terms_format_declared on security_master.securities",
+      "kind": "database-object",
+      "label": "security_master.ck_securities_terms_format_declared on security_master.securities"
+    },
+    {
       "id": "database:security_master.ck_security_curves_rate_policy on security_master.security_curves",
       "kind": "database-object",
       "label": "security_master.ck_security_curves_rate_policy on security_master.security_curves"
@@ -95621,6 +95842,11 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.securities.asset_specific_terms",
+      "kind": "database-object",
+      "label": "security_master.securities.asset_specific_terms"
+    },
+    {
       "id": "database:security_master.securities.security_id",
       "kind": "database-object",
       "label": "security_master.securities.security_id"
@@ -96471,11 +96697,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4100,
-    "contract_set_memberships": 5244,
-    "edges": 10925,
+    "contract_references": 4104,
+    "contract_set_memberships": 5264,
+    "edges": 10951,
     "foreign_keys": 199,
     "logical_references": 6,
-    "nodes": 5335
+    "nodes": 5347
   }
 }
