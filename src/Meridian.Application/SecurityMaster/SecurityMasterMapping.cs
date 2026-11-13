@@ -351,40 +351,16 @@ internal static partial class SecurityMasterMapping
                 mode,
                 economicSchedules!,
                 new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),
-                ReadCallPutSchedules(json, assetClass, versionedTerms)))),
-            "FxSpot" => DecodeGeneratedFxSpot(bound, mode, assetClass, json),
-            "Deposit" => SecurityKind.NewDeposit(new DepositTerms(
-                new MaturityTerms(null, null, ToOption(bound.OptionalDateOnly("maturity"))),
-                new IssuerRef(null, FSharpOption<string>.Some(bound.RequiredString("institutionName")), FSharpOption<string>.Some(bound.RequiredString("depositType")), null, null, null, null),
-                new CouponTerms(FSharpOption<CouponKind>.Some(CouponKind.NewOtherCoupon("SimpleInterest")),
-                    ToOption(bound.OptionalDecimal("interestRate")), null,
-                    ToDayCountOption(bound.OptionalConventionString("dayCount"), mode)),
-                EconomicCallTermsModule.Scalar(bound.OptionalBoolean("isCallable") ?? false, null),
-                ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write)))),
-            "MoneyMarketFund" => DecodeGeneratedMoneyMarketFund(bound, mode, assetClass, json),
-            "CertificateOfDeposit" => SecurityKind.NewCertificateOfDeposit(new CertificateOfDepositTerms(
-                new MaturityTerms(null, null, ToOption(bound.RequiredDateOnly("maturity"))),
-                new IssuerRef(FSharpOption<string>.Some(bound.RequiredString("issuerName")), null, null, null, null, null, null),
-                new CouponTerms(FSharpOption<CouponKind>.Some(CouponKind.Fixed),
-                    ToOption(bound.OptionalDecimal("couponRate")), null,
-                    ToDayCountOption(bound.OptionalConventionString("dayCount"), mode)),
-                EconomicCallTermsModule.Scalar(bound.OptionalDateOnly("callableDate").HasValue, ToOption(bound.OptionalDateOnly("callableDate"))),
-                new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms)),
-                ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write)))),
-            "CommercialPaper" => SecurityKind.NewCommercialPaper(new CommercialPaperTerms(
-                new MaturityTerms(null, null, ToOption(bound.RequiredDateOnly("maturity"))),
-                new IssuerRef(FSharpOption<string>.Some(bound.RequiredString("issuerName")), null, ToOption((bound.OptionalBoolean("isAssetBacked") ?? false) ? "AssetBacked" : null), null, null, null, null),
-                new DiscountTerms(ToOption(bound.OptionalDecimal("discountRate")), null),
-                new CouponTerms(FSharpOption<CouponKind>.Some(CouponKind.DiscountNote), null, null,
-                    ToDayCountOption(bound.OptionalConventionString("dayCount"), mode)),
-                ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write)))),
+                ReadBondWorkflowTerms(json, versionedTerms))),
+            "FxSpot" => DecodeGeneratedFxSpot(bound, mode, assetClass, json),
+            "Deposit" => DecodeGeneratedDeposit(bound, mode, assetClass, json),
+            "MoneyMarketFund" => DecodeGeneratedMoneyMarketFund(bound, mode, assetClass, json),
+            "CertificateOfDeposit" => DecodeGeneratedCertificateOfDeposit(bound, mode, assetClass, json, versionedTerms),
+            "CommercialPaper" => DecodeGeneratedCommercialPaper(bound, mode, assetClass, json),
             "TreasuryBill" => DecodeGeneratedTreasuryBill(bound, mode, assetClass, json),
             "Repo" => DecodeGeneratedRepo(bound, mode, assetClass, json),
-            "CashSweep" => SecurityKind.NewCashSweep(new CashSweepTerms(
-                new SweepTerms(FSharpOption<string>.Some(bound.RequiredString("programName")), FSharpOption<SweepVehicle>.Some(ToCodecSweepVehicle(bound.RequiredString("sweepVehicleType"))), ToCodecSweepFrequency(ToOption(bound.OptionalString("sweepFrequency"))), ToOption(bound.OptionalString("targetAccountType"))),
-                new DiscountTerms(null, ToOption(bound.OptionalDecimal("yieldRate"))),
-                ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write)))),
+            "CashSweep" => DecodeGeneratedCashSweep(bound, mode, assetClass, json),
             "OtherSecurity" => DecodeGeneratedOtherSecurity(bound, mode, assetClass, json),
             "CustomAsset" => ToCustomAssetKind(bound, mode),
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
@@ -696,7 +672,8 @@ internal static partial class SecurityMasterMapping
         SchemaBoundTerms terms,
         SecurityKindMappingMode mode,
         SecurityEconomicScheduleValidation economicSchedules,
-        DeclaredScheduleTerms declaredSchedule)
+        DeclaredScheduleTerms declaredSchedule,
+        FSharpOption<BondWorkflowTerms> workflow)
     {
         var couponType = terms.OptionalString("couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
@@ -745,7 +722,32 @@ internal static partial class SecurityMasterMapping
                     ToOption(terms.OptionalDateOnly("mandatoryPutDate"))),
                 new PrincipalScheduleTerms(ToFSharpList(economicSchedules.PrincipalSchedule.SourceEntries.Select(static entry =>
                 new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount)))),
-                declaredSchedule);
+                declaredSchedule, workflow);
+    }
+
+    private static FSharpOption<BondWorkflowTerms> ReadBondWorkflowTerms(JsonElement payload,
+        SecurityVersionedTermDecoding decoding)
+    {
+        var field = SecurityAssetTermsSchema.Field("Bond", "bondWorkflow");
+        if (field is null || !decoding.Decodes(field) || !payload.TryGetProperty("bondWorkflow", out var workflow)
+            || !SecurityAssetTermsSchema.IsPopulatedTermValue(workflow))
+            return FSharpOption<BondWorkflowTerms>.None;
+        if (!SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.bondWorkflow",
+                workflow.GetRawText(), out _, out var reason))
+            throw new InvalidOperationException(reason);
+        return FSharpOption<BondWorkflowTerms>.Some(new(
+            Text("floatingMethod"), Text("fixingCalendarId"), Count("lookbackBusinessDays"),
+            Text("observationMethod"), Text("observationWeighting"), Count("lockoutBusinessDays"),
+            Count("lagMonths"), workflow.TryGetProperty("interpolateMonthly", out var flag) && flag.ValueKind != JsonValueKind.Null
+                ? ToOption((bool?)flag.GetBoolean()) : FSharpOption<bool>.None,
+            Ratio("couponFloorRatio"), Ratio("redemptionFloorRatio"), Count("exCouponBusinessDays")));
+
+        FSharpOption<string> Text(string name) => workflow.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null
+            ? ToOption(value.GetString()) : FSharpOption<string>.None;
+        FSharpOption<int> Count(string name) => workflow.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null
+            ? ToOption((int?)value.GetInt32()) : FSharpOption<int>.None;
+        FSharpOption<decimal> Ratio(string name) => workflow.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null
+            ? ToOption((decimal?)value.GetDecimal()) : FSharpOption<decimal>.None;
     }
 
     private const string ScheduleConventionsKey = SecurityVersionedTerms.ScheduleConventionsKey;

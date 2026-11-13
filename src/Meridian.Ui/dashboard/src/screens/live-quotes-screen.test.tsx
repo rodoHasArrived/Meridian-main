@@ -1448,7 +1448,7 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(depthCharts[0].tagName.toLowerCase()).toBe("svg");
     expect(depthCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
     expect(depthCharts[0]).toHaveAccessibleDescription(
-      "Cumulative bid and ask size around the mid price. The depth ladder below lists each price level."
+      "Cumulative bid and ask size. The quantity coverage table identifies fully and partly used displayed levels."
     );
 
     expect(bidLevel).toHaveAttribute("aria-controls", "live-quotes-depth-level-detail");

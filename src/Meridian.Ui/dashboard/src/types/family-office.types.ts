@@ -68,6 +68,7 @@ export interface FamilyOwnershipNode {
 }
 
 export interface FamilyOwnershipEdge {
+  notes?: string | null;
   edgeId: string;
   sourceNodeId: string;
   targetNodeId: string;
@@ -172,6 +173,20 @@ export interface CapitalCommitment {
   reconciliationStatus: string;
   lastReviewedBy?: string | null;
   lastReviewedAtUtc?: string | null;
+  /** False means numeric legacy fields are unavailable placeholders, never genuine zero balances. */
+  balancesAvailable?: boolean;
+  balanceStatus?: "Retained" | "Provisional" | "Settled" | "Unavailable" | string;
+  snapshotId?: string | null;
+  sourceRevision?: number | null;
+  sourceContentSha256?: string | null;
+  recordedAtUtc?: string | null;
+  exactBalances?: {
+    commitmentAmount: string;
+    calledAmount: string;
+    unfundedAmount: string;
+    distributedAmount: string;
+    currentNav: string;
+  } | null;
 }
 
 export interface CapitalActivity {
@@ -210,6 +225,7 @@ export interface FamilyOfficeReadiness {
 }
 
 export interface FamilyOfficeOverview {
+  availableClients?: Array<{ clientId: string; displayName: string }>;
   familyOfficeId: string;
   displayName: string;
   baseCurrency: string;

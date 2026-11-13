@@ -82,6 +82,68 @@ public sealed class CorporateActionOperationsContractTests
     }
 
     [Fact]
+    public void EconomicFingerprint_LegacyPayloadRepresentationsKeepTheirRecordedHashes()
+    {
+        var action = Dividend(0.24m, Guid.Empty);
+        // Recorded from the pre-companion projection for this fixed economic sample.
+        CorporateActionEconomicFingerprint.Compute(action).Should().Be("9d2f104b71e7d53acdddb96f1d1afa900a9917523646476166f6f460f8115667");
+        CorporateActionEconomicFingerprint.Compute(action with { Payload = default(JsonElement) })
+            .Should().Be("9d2f104b71e7d53acdddb96f1d1afa900a9917523646476166f6f460f8115667");
+        CorporateActionEconomicFingerprint.Compute(action with { Payload = JsonSerializer.SerializeToElement<object?>(null) })
+            .Should().Be("ef91e2f721f0497b6a8b58b85d3308b888ec3215da9ef97e26a5417fa8f9219b");
+        CorporateActionEconomicFingerprint.Compute(action with { Payload = JsonSerializer.SerializeToElement(new { }) })
+            .Should().Be("0397cc58eb5a062718ff5c38f85e492ea1675b848514aa3e5ac7f1133d639776");
+        var companionOnly = action with { Payload = ElectionPayload("Original", "document://notice", includeEconomics: false) };
+        CorporateActionEconomicFingerprint.Compute(companionOnly).Should().Be(CorporateActionEconomicFingerprint.Compute(action));
+    }
+
+    [Fact]
+    public void EconomicFingerprint_ExcludesOnlyTopLevelOperationalCalendarAndRetainsEconomicTerms()
+    {
+        var economicPayload = JsonSerializer.SerializeToElement(new
+        {
+            offerExpiryDate = "2026-09-01",
+            economics = new { electionCalendar = "economic nested value" }
+        });
+        var original = Dividend(0.24m, Guid.NewGuid(), payload: economicPayload) with { EventType = CorporateActionEventTypes.TenderOffer };
+        var reported = original with { Payload = ElectionPayload("Original", "document://notice") };
+        var corrected = reported with { Payload = ElectionPayload("Corrected", "document://corrected", at: "2026-08-21T16:00:00-05:00") };
+        var retainedJson = reported.Payload!.Value.GetRawText();
+        var fingerprint = CorporateActionEconomicFingerprint.Compute(original);
+        CorporateActionEconomicFingerprint.Compute(reported).Should().Be(fingerprint);
+        CorporateActionEconomicFingerprint.Compute(corrected).Should().Be(fingerprint);
+        CorporateActionEconomicFingerprint.Compute(reported with { ExDate = original.ExDate.AddDays(1) }).Should().NotBe(fingerprint);
+        CorporateActionEconomicFingerprint.Compute(reported with { RecordDate = original.RecordDate!.Value.AddDays(1) }).Should().NotBe(fingerprint);
+        CorporateActionEconomicFingerprint.Compute(reported with { PayDate = original.PayDate!.Value.AddDays(1) }).Should().NotBe(fingerprint);
+        CorporateActionEconomicFingerprint.Compute(reported with { Payload = ElectionPayload("Original", "document://notice", expiry: "2026-09-02") }).Should().NotBe(fingerprint);
+        CorporateActionEconomicFingerprint.Compute(reported with { Payload = ElectionPayload("Original", "document://notice", nested: "changed economic nested value") }).Should().NotBe(fingerprint);
+        reported.Payload.Value.GetRawText().Should().Be(retainedJson);
+    }
+
+    [Theory]
+    [InlineData("Corrected label", "document://notice", "2026-08-20T17:00:00-04:00", "Issuer notice")]
+    [InlineData("Original", "document://correction", "2026-08-20T17:00:00-04:00", "Issuer notice")]
+    [InlineData("Original", "document://notice", "2026-08-21T17:00:00-04:00", "Issuer notice")]
+    [InlineData("Original", "document://notice", "2026-08-20T17:00:00-04:00", "Different source")]
+    public void SourceReplayEquality_DoesNotDiscardChangedCutoffsWithTheSameEconomics(
+        string label, string evidence, string at, string source)
+    {
+        var action = Dividend(0.24m, Guid.NewGuid(), payload: ElectionPayload("Original", "document://notice", includeEconomics: false));
+        var original = new CorporateActionSourceProposalDto(Guid.NewGuid(), SecurityId,
+            new("provider-a", "event-100", "v1", DateTimeOffset.UtcNow), action, action.PayloadSchemaVersion,
+            CorporateActionEconomicFingerprint.Compute(action), CorporateActionSourceProposalStates.Observed,
+            1, null, null, null, "ingest", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
+        var changedAction = action with { Payload = ElectionPayload(label, evidence, at, source, includeEconomics: false) };
+        var changed = original with { ProposedAction = changedAction, EconomicFingerprint = CorporateActionEconomicFingerprint.Compute(changedAction) };
+        changed.EconomicFingerprint.Should().Be(original.EconomicFingerprint);
+        CorporateActionSourceProposalReplayComparer.HasSameSourcePayload(original, original).Should().BeTrue();
+        CorporateActionSourceProposalReplayComparer.HasSameSourcePayload(original, changed).Should().BeFalse();
+        var absent = original with { ProposedAction = action with { Payload = null } };
+        var explicitNull = original with { ProposedAction = action with { Payload = JsonSerializer.SerializeToElement(new { electionCalendar = (object?)null }) } };
+        CorporateActionSourceProposalReplayComparer.HasSameSourcePayload(absent, explicitNull).Should().BeFalse();
+    }
+
+    [Fact]
     public void ProviderEventIdentity_IsSeparateFromEconomicFingerprint()
     {
         var action = Dividend(amount: 0.24m, corporateActionId: Guid.NewGuid());
@@ -475,6 +537,26 @@ public sealed class CorporateActionOperationsContractTests
         json.GetProperty("acceptanceScope").GetProperty("tenantId").GetString().Should().Be("tenant-a");
         json.GetProperty("acceptanceScope").GetProperty("companyId").GetString().Should().Be("company-a");
         json.GetProperty("actionAvailability").GetProperty("canAccept").GetBoolean().Should().BeTrue();
+    }
+
+    private static JsonElement ElectionPayload(string label, string evidence,
+        string at = "2026-08-20T17:00:00-04:00", string source = "Issuer notice", bool includeEconomics = true,
+        string expiry = "2026-09-01", string nested = "economic nested value")
+    {
+        var payload = new Dictionary<string, object?>
+        {
+            ["electionCalendar"] = new
+            {
+                schemaVersion = 1,
+                cutoffs = new[] { new { id = "source-cutoff", label, deadlineAt = at, source, evidenceReference = evidence } }
+            }
+        };
+        if (includeEconomics)
+        {
+            payload["offerExpiryDate"] = expiry;
+            payload["economics"] = new { electionCalendar = nested };
+        }
+        return JsonSerializer.SerializeToElement(payload);
     }
 
     private static CorporateActionDto Dividend(

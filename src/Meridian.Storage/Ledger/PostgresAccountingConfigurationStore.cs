@@ -760,7 +760,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            select node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived
+            select node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived, intercompany_role
             from {Qualified("accounting_configuration_chart_nodes")}
             where tenant_id = @tenant_id
               and company_id = @company_id
@@ -785,7 +785,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 reader.IsDBNull(4) ? null : reader.GetString(4),
                 reader.IsDBNull(5) ? null : reader.GetString(5),
                 reader.IsDBNull(6) ? null : reader.GetString(6),
-                reader.GetBoolean(7)));
+                reader.GetBoolean(7),
+                reader.IsDBNull(8) ? null : Enum.Parse<IntercompanyAccountRoleDto>(reader.GetString(8))));
         }
 
         return nodes;
@@ -968,8 +969,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.CommandText =
                 $"""
                 insert into {Qualified("accounting_configuration_chart_nodes")} (
-                    tenant_id, company_id, fund_profile_id, configuration_scope_id, node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived)
-                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @node_id, @path, @account_name, @account_type, @parent_path, @symbol, @financial_account_id, @is_archived);
+                    tenant_id, company_id, fund_profile_id, configuration_scope_id, node_id, path, account_name, account_type, parent_path, symbol, financial_account_id, is_archived, intercompany_role)
+                values (@tenant_id, @company_id, @fund_profile_id, @configuration_scope_id, @node_id, @path, @account_name, @account_type, @parent_path, @symbol, @financial_account_id, @is_archived, @intercompany_role);
                 """;
             AddScope(command, workspace);
             command.Parameters.AddWithValue("node_id", node.NodeId);
@@ -980,6 +981,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             AddTextOrNull(command, "symbol", node.Symbol);
             AddTextOrNull(command, "financial_account_id", node.FinancialAccountId);
             command.Parameters.AddWithValue("is_archived", node.IsArchived);
+            AddTextOrNull(command, "intercompany_role", node.IntercompanyRole?.ToString());
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }

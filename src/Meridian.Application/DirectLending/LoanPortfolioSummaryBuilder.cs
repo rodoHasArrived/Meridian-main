@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.DirectLending;
 
 namespace Meridian.Application.DirectLending;
@@ -49,7 +50,18 @@ internal static class LoanPortfolioSummaryBuilder
             empty ? 0m : single?.TotalCollateralValue,
             loans,
             currencyTotals,
-            single?.Currency);
+            single?.Currency)
+        {
+            MaturityBuckets = loans.GroupBy(loan => (
+                    Currency: loan.BaseCurrency,
+                    Year: loan.MaturityDate == default ? (int?)null : loan.MaturityDate.Year,
+                    Quarter: loan.MaturityDate == default ? (int?)null : (loan.MaturityDate.Month - 1) / 3 + 1))
+                .OrderBy(group => group.Key.Currency).ThenBy(group => group.Key.Year).ThenBy(group => group.Key.Quarter)
+                .Select(group => new LoanMaturityBucketDto(group.Key.Currency, group.Key.Year, group.Key.Quarter,
+                    HasKnownDenomination(group.Key.Currency)
+                        ? group.Sum(loan => loan.PrincipalOutstanding).ToString(CultureInfo.InvariantCulture) : null,
+                    group.Select(loan => loan.LoanId).OrderBy(id => id).ToArray())).ToArray()
+        };
     }
 
     private static bool HasKnownDenomination(CurrencyCode currency) =>

@@ -2,6 +2,12 @@ using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution;
 
+/// <summary>Observation-only evaluation. Must not reserve capacity or change execution controls.</summary>
+public interface IRiskPreviewValidator
+{
+    Task<RiskValidationResult> PreviewResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default);
+}
+
 /// <summary>
 /// Pre-trade risk validation. Called by the OMS before routing orders to the gateway.
 /// </summary>

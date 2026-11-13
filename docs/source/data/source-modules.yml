@@ -66,7 +66,7 @@ modules:
     layer: Application
     status: active
     owner_lane: Runtime Host
-    purpose: Shared module-owned database startup plans, application use cases, contractual cash-flow scenario adapters and immutable replay-packet retention, Security Master implementations and compatibility adapters, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities.
+    purpose: Shared module-owned database startup plans, application use cases, contractual cash-flow scenario adapters and immutable replay-packet retention, Security Master implementations and compatibility adapters, orchestration services, commands, and workflow coordination that consumes Core configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline, credential placeholder detection, default config-path resolution, config file hot-reload watching, configuration/redaction/masking helpers, Core-owned monitoring alert/health contracts, Domain-owned event quarantine sink port, Contracts-owned pipeline statistics DTOs, monitoring webhook sink contract, backfill run-result and per-symbol completeness payloads, Contracts-owned coordination interfaces and records, Storage-owned storage-option mapping, backfill status/checkpoint persistence, and shared-storage coordination lease persistence, ProviderSdk plugin discovery helpers, Platform runtime/diagnostic/API-documentation/performance/circuit-breaker status/event-metrics/shutdown/coordination/monitoring/backpressure helpers, Platform runtime error ring-buffer, diagnostic bundle generation, and system-health diagnostics, Identity fund-account traversal helpers, Data Integration ETL job service/orchestrator, ETL normalization/export services, sample-data, historical-query, event canonicalization publisher decorator, market-data validation, schema compatibility checks, clock-skew/spread/data-loss monitors, provider telemetry, provider health/connection-status/degradation scoring, provider calibration helpers, provider integration template catalog and dry-run orchestration, Instruments option-chain helpers, Financial Operations reconciliation-engine helpers, Strategies reconciliation-governance helpers, and Reporting report-generation/NAV helpers instead of owning shared configuration JSON options, config JSON Schema generation, config validation rules, config validation pipeline stages, credential placeholder detection, default config-path resolution, config file hot-reload watching, storage option mapping, backfill result transport payloads, backfill status persistence, coordination contracts, shared-storage lease persistence, lease renewal, coordinator election, split-brain detection, scheduled-work/subscription ownership services, monitoring alert/health contracts, pipeline statistics DTOs, monitoring webhook sink contracts, pipeline backpressure alerting, alert dispatch, health aggregation, SLO/runbook registries, provider plugin discovery, configuration-template, environment-override, runtime diagnostic bundle generation, API-documentation, runtime-performance, runtime circuit-breaker status, default event metrics counters, hosted shutdown flush or shutdown sequence handling, runtime error ring-buffer, system-health snapshots, fund-account traversal, ETL job/orchestrator, ETL normalization/export services, data-fixture, historical-data, event canonicalization publisher decorator, market-data validation, schema validation services, provider data-quality monitors, provider connection-status notification, provider trust-calibration/scoring, option-chain, reconciliation-engine, strategy-governance, or reporting utilities. Shared direct-lending event journal projection supplies authoritative posting and outbox drafts through the canonical account-role registry.
     readme: src/Meridian.Application/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -76,12 +76,17 @@ modules:
       - W5-ACCT-001
       - W9-GOV-008
       - W10-MARK-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PaperSession
       - PromotionReview
       - ResearchContinuity
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccrualLedgerServiceTests|FullyQualifiedName~DirectLendingJournalLinesTests|FullyQualifiedName~DirectLendingOutboxDispatcherTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementServiceTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DatabaseStartupPlanTests|FullyQualifiedName~HostStartupLifecycleTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
@@ -123,6 +128,10 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -267,6 +276,10 @@ modules:
       - W5-ACCT-001
       - W9-ASSET-010
       - W10-JRNL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -294,7 +307,7 @@ modules:
     layer: Storage Adapter
     status: active
     owner_lane: Accounting and Ledger
-    purpose: PostgreSQL business persistence adapters composing Storage primitives with Ledger and Reporting contracts, retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
+    purpose: Accounting export projections, portable ledger-payload validation and PostgreSQL business persistence adapters composing Storage primitives with Ledger and Reporting contracts, retaining existing source namespaces, transaction authority and migration output paths through explicit linked compilation.
     readme: src/Meridian.Storage.Accounting/README.md
     roadmap_items:
       - W4-RECON-001
@@ -320,7 +333,7 @@ modules:
     layer: Execution
     status: active
     owner_lane: Execution and Fund Accounts
-    purpose: Execution composed through Contracts-owned Security Master ports without an Application dependency, order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.
+    purpose: Execution composed through Contracts-owned Security Master ports without an Application dependency, order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior. Paper lot mutations retain exact scoped fill accounting evidence; the durable fill handoff consumes shared trade-posting economics with versioned admission and historical recovery.
     readme: src/Meridian.Execution/README.md
     roadmap_items:
       - W2-TRD-001
@@ -332,12 +345,14 @@ modules:
       - PromotionReview
       - LiveReadiness
     validation:
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingPortfolioAccountingEvidenceTests|FullyQualifiedName~OrderFillProcessorTests|FullyQualifiedName~TradeFillAccountingEvidencePersistenceTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~TradeFillLedgerPostingHostCompositionTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-PAPER-SESSION-REPLAY
     todos: []
-    last_reviewed: 2026-10-21
+    last_reviewed: 2026-11-13
 
   - id: SRC-EXECUTION-SDK
     path: src/Meridian.Execution.Sdk
@@ -417,7 +432,7 @@ modules:
     layer: Backtesting
     status: active
     owner_lane: Strategy Analytics
-    purpose: Backtesting runtime and replay support for historical strategy simulation composed through Contracts-owned Security Master ports without an Application dependency.
+    purpose: Backtesting runtime and replay support for historical strategy simulation composed through Contracts-owned Security Master ports without an Application dependency. Trade journals share the canonical opening and closing posting kernel with paper and durable execution while preserving exact lot basis.
     readme: src/Meridian.Backtesting/README.md
     roadmap_items:
       - W3-CONT-001
@@ -428,6 +443,7 @@ modules:
       - ResearchContinuity
       - BacktestingEvidence
     validation:
+      - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~SharedTradePostingParityTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj --filter "FullyQualifiedName~CorporateActionAdjustmentServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests" --logger "console;verbosity=normal"
       - dotnet build src/Meridian.Backtesting/Meridian.Backtesting.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -437,7 +453,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-21
+    last_reviewed: 2026-11-12
 
   - id: SRC-BACKTESTING-SDK
     path: src/Meridian.Backtesting.Sdk
@@ -464,7 +480,7 @@ modules:
     layer: Ledger
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff.
+    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff. Explicit shared posting-account definitions and retained opening/closing trade economics serve backtesting, paper portfolios, execution and lending.
     readme: src/Meridian.Ledger/README.md
     roadmap_items:
       - W14-ATTEST-001
@@ -482,6 +498,7 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~StandardChartOfAccountsTests|FullyQualifiedName~SecurityTradePosting" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementPostingGuardTests|FullyQualifiedName~DimensionSignatureBackwardCompatibilityTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
@@ -682,6 +699,8 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-ACCT-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -694,7 +713,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-11-12
 
   - id: SRC-DESIGN-DATA-INTEGRATION
     path: src/Meridian.DataIntegration
@@ -830,6 +849,10 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -1021,6 +1044,7 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W12-ENTITY-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -1069,6 +1093,10 @@ modules:
       - W10-PERF-001
       - W10-CONSOL-001
       - W9-SAFETY-007
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
@@ -1106,6 +1134,8 @@ modules:
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
       - W6-BTSTUDIO-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -1153,6 +1183,7 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ENTITY-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack

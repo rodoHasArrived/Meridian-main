@@ -1927,6 +1927,18 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "1df7736b1e55d4f12f799e0bc0e310e22e98d582c4b24789a669fb85a75c55b5",
+      "kind": "normal",
+      "source": "security_master.ck_security_curves_rate_policy on security_master.security_curves",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_curves.rate_policy",
+      "target_kind": "table column",
+      "target_name": "security_curves",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "83dcefa50abea855290bdbff7f8a1a3449e64e63191ed7965b5aaee1dec974fb",
       "kind": "normal",
       "source": "security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection",
@@ -5099,7 +5111,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "aea3255b7e5d7abd38478fbc79e917dfbeda68fa071d05dbe83942f79ad50e8b",
+  "fingerprint": "b9f1292c3bf3305c0e4101498425e2050707fe7d3782583e8b9dc60758127dc2",
   "foreign_tables": [],
   "functions": [
     {
@@ -44115,10 +44127,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'LegacyNonNegative'::text",
+          "fingerprint": "8f26f8cb30ba4b208a34eb2974c1ec122dfd8259cfebcfc2a04a3a8a2e8a0e37",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rate_policy",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
       "constraints": [
+        {
+          "columns": [
+            "rate_policy"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (rate_policy = ANY (ARRAY['LegacyNonNegative'::text, 'SignedRates'::text]))",
+          "delete_action": null,
+          "fingerprint": "ff08a1489cf53f5467ced74c3e3139641c160b6fa788c2ff36e0f9bf75afa300",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_security_curves_rate_policy",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "currency"
@@ -44223,7 +44271,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
+      "fingerprint": "67e9226085d1f25292b0f9a2274da6a51a272ca995724b022abd00ec89d371dd",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -95948,10 +95996,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'LegacyNonNegative'::text",
+          "fingerprint": "8f26f8cb30ba4b208a34eb2974c1ec122dfd8259cfebcfc2a04a3a8a2e8a0e37",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rate_policy",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
       "constraints": [
+        {
+          "columns": [
+            "rate_policy"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (rate_policy = ANY (ARRAY['LegacyNonNegative'::text, 'SignedRates'::text]))",
+          "delete_action": null,
+          "fingerprint": "ff08a1489cf53f5467ced74c3e3139641c160b6fa788c2ff36e0f9bf75afa300",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_security_curves_rate_policy",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "currency"
@@ -96056,7 +96140,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
+      "fingerprint": "67e9226085d1f25292b0f9a2274da6a51a272ca995724b022abd00ec89d371dd",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [

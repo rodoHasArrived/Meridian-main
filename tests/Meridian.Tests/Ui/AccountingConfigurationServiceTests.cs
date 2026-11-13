@@ -2538,6 +2538,52 @@ public sealed partial class AccountingConfigurationServiceTests
     }
 
     [Theory]
+    [InlineData("Open", false)]
+    [InlineData("Open", true)]
+    [InlineData("SoftClosed", false)]
+    [InlineData("SoftClosed", true)]
+    [InlineData("HardClosed", false)]
+    [InlineData("HardClosed", true)]
+    public async Task ManualJournalEntryCloseLock_RetainedReplayRechecksServerAuthorityAndCannotChangeAction(
+        string periodStatus, bool callerReportsLocked)
+    {
+        var fixture = await CreateManualJournalCloseLockAuthorityFixtureAsync(ManualJournalAccountingPeriod(periodStatus));
+        var transition = new JournalEntryLifecycleTransitionDto("retained-close-transition", ManualJournalEntryStatusDto.Posted,
+            ManualJournalEntryStatusDto.CloseLocked, JournalEntryLifecycleActionDto.LockAfterClose, "controller",
+            DateTimeOffset.UtcNow, "Original retained close approval", "retained-close-correlation");
+        var retained = fixture.Posted with
+        {
+            Status = ManualJournalEntryStatusDto.CloseLocked,
+            Version = fixture.Posted.Version + 1,
+            LifecycleTransitions = [transition],
+            ClosedLockedAtUtc = transition.RecordedAtUtc,
+            CloseLockedBy = transition.Actor
+        };
+        await fixture.DraftStore.SaveAsync(retained);
+        var request = ManualJournalCloseLockRequest(fixture.Posted, callerReportsLocked) with
+        { CorrelationId = transition.CorrelationId };
+
+        if (periodStatus == "HardClosed")
+        {
+            var replay = await fixture.Service.ApplyLifecycleActionAsync(request);
+            replay.Transition.Should().Be(transition);
+            replay.JournalEntry.Version.Should().Be(retained.Version);
+        }
+        else
+        {
+            await fixture.Service.Invoking(service => service.ApplyLifecycleActionAsync(request)).Should()
+                .ThrowAsync<InvalidOperationException>().WithMessage("*exact server-owned HardClosed ledger period*");
+        }
+
+        await fixture.Service.Invoking(service => service.ApplyLifecycleActionAsync(request with
+        { Action = JournalEntryLifecycleActionDto.Validate })).Should()
+            .ThrowAsync<InvalidOperationException>().WithMessage("*draft version is stale*");
+        var unchanged = (await fixture.DraftStore.GetAsync(retained.FundProfileId, retained.JournalEntryId))!;
+        unchanged.Version.Should().Be(retained.Version);
+        unchanged.LifecycleTransitions.Should().ContainSingle().Which.Should().Be(transition);
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public async Task ManualJournalEntryCloseLock_HardClosedLookupWithMismatchedScopeRejectsCallerReportedLock(

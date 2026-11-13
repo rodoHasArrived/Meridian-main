@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -83,13 +83,47 @@ describe("FamilyOfficeScreen", () => {
 
     await user.click(screen.getByRole("button", { name: "Show ownership table fallback" }));
 
-    const table = screen.getByRole("treegrid", { name: "Family office ownership table fallback" });
+    const table = screen.getByRole("table", { name: "Family office ownership relationship table" });
     expect(table).toBeInTheDocument();
-    await user.click(within(table).getByRole("row", { name: "Inspect ownership node Beta Holdings LLC" }));
+    await user.click(screen.getByRole("button", { name: "Beta Holdings LLC" }));
     expect(screen.getByRole("region", { name: "Selected ownership detail" })).toHaveTextContent("Beta Holdings LLC");
   });
 
-  it("has no basic accessibility violations", async () => {
+  it("requires an explicit choice between clients and aborts old-scope reads", async () => {
+    const user = userEvent.setup();
+    const fixture = buildFamilyOfficeOverviewFixture();
+    const choices = [{ clientId: fixture.familyOfficeId, displayName: "First family" }, { clientId: "44444444-4444-4444-4444-444444444444", displayName: "Second family" }];
+    getFamilyOfficeOverview.mockResolvedValueOnce({ ...fixture, entities: [], availableClients: choices })
+      .mockResolvedValueOnce({ ...fixture, availableClients: choices })
+      .mockRejectedValueOnce(new Error("selected scope unavailable"));
+    renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+    expect(await screen.findByText("Choose an authorized client to read its current ownership and balances.")).toBeInTheDocument();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Family office" }), fixture.familyOfficeId);
+    expect(await screen.findByRole("button", { name: "Inspect ownership node Ridgeline Family Trust" })).toBeInTheDocument();
+    const oldSignal = getFamilyOfficeOverview.mock.calls[1][0]?.signal;
+    const picker = screen.getByRole("combobox", { name: "Family office" });
+    const toggle = screen.getByRole("button", { name: "Show ownership table fallback" });
+    act(() => {
+      fireEvent.change(picker, { target: { value: choices[1].clientId } });
+      fireEvent.click(toggle);
+    });
+    expect(await screen.findByText("Family office data could not be loaded")).toBeInTheDocument();
+    expect(oldSignal?.aborted).toBe(true);
+    expect(screen.queryByRole("button", { name: "Inspect ownership node Ridgeline Family Trust" })).not.toBeInTheDocument();
+    expect(getFamilyOfficeOverview.mock.calls.at(-1)![1]).toBe(choices[1].clientId);
+  });
+
+it("does not report complete source confidence when the host qualifies retained balances", async () => {
+  const overview = buildFamilyOfficeOverviewFixture();
+  overview.readiness.blockers = ["Private-capital source is unavailable; balances are excluded."];
+  getFamilyOfficeOverview.mockResolvedValue(overview);
+  renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
+  await screen.findByLabelText("Family office summary panels");
+  expect(screen.getByLabelText("Family office data confidence")).toHaveAttribute("data-status-tone", "review");
+  expect(screen.getByText("Private-capital source is unavailable; balances are excluded.")).toBeInTheDocument();
+});
+
+it("has no basic accessibility violations", async () => {
     getFamilyOfficeOverview.mockResolvedValue(buildFamilyOfficeOverviewFixture());
     const { container } = renderWithRouter(<FamilyOfficeScreen />, { initialEntries: ["/portfolio/family-office"] });
 

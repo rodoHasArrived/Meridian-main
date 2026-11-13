@@ -61,10 +61,11 @@ public sealed partial class ManualJournalEntryWorkbenchService
             var dimensions = line.Dimensions;
             if (dimensions?.IntercompanyAgreementId.HasValue != true && dimensions?.IntercompanyAgreementVersion.HasValue != true &&
                 !IsConsolidationDraft(draft) && chart.TryGetValue(line.AccountPath, out var account) &&
-                ((line.AccountPath == "Assets:Intercompany Receivable" && account.AccountType == "Asset") ||
+                (account.IntercompanyRole is not null ||
+                 (line.AccountPath == "Assets:Intercompany Receivable" && account.AccountType == "Asset") ||
                  (line.AccountPath == "Liabilities:Intercompany Payable" && account.AccountType == "Liability")))
                 issues.Add(Issue("manual-je.agreement-missing", AccountingConfigurationValidationSeverityDto.Warning,
-                    "This intercompany line has no approved agreement reference; posting remains permitted.",
+                    "This intercompany line has no approved agreement reference. The book's retained control mode determines posting eligibility.",
                     line.LineId, "Select the approved agreement/version when available."));
         }
         if (!referenced || draft.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.Reversed or
@@ -77,9 +78,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 throw new LedgerValidationException("Authoritative agreement review requires a supported ledger writer and retained book/period.");
             var book = await _journalStore.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
                 ?? throw new LedgerValidationException("The agreement review ledger book is unavailable.");
-            // Manual journals currently retain functional amounts without per-leg FX detail.
+            // Functional amounts belong to the destination book; retained transaction amounts
+            // carry the original legal agreement currency into the native posting guard.
             if (!string.Equals(draft.Currency?.Trim(), book.BaseCurrency.Trim(), StringComparison.OrdinalIgnoreCase))
-                throw new LedgerValidationException("Agreement references on manual journals require the book currency; this editor does not retain transaction FX detail.");
+                throw new LedgerValidationException("The journal functional currency must match the destination book.");
             var timestamp = ToAccountingTimestamp(draft.AccountingDate);
             var ledgerLines = lines.Select(line =>
             {
@@ -92,7 +94,13 @@ public sealed partial class ManualJournalEntryWorkbenchService
                         NormalizeOptional(line.LedgerAccountFinancialAccountId)),
                     line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
                     line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m,
-                    "Agreement review", ToLedgerLineDimensions(line.Dimensions));
+                    "Agreement review", ToLedgerLineDimensions(line.Dimensions),
+                    line.TransactionCurrency is { } original
+                        ? new LedgerEntryCurrency(original.Currency, draft.Currency,
+                            line.Side == AccountingTemplateLineSideDto.Debit ? original.Amount : 0m,
+                            line.Side == AccountingTemplateLineSideDto.Credit ? original.Amount : 0m,
+                            original.FxRateToFunctional)
+                        : null);
             }).ToArray();
             var sourceId = draft.ReversalOfJournalEntryId ?? draft.RebookedFromJournalEntryId;
             var command = new AccountingPostingCommandDto(Guid.NewGuid(), bookId, periodId,

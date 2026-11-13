@@ -548,7 +548,15 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             UnderlyingPrice: preview.UnderlyingPrice,
             Candidates: rows,
             TotalContractsScanned: preview.Candidates.Count,
-            FiltersPassed: passed);
+            FiltersPassed: passed)
+        {
+            Filters = request,
+            CoverageKnown = preview.CoverageKnown,
+            RequestedExpirations = preview.RequestedExpirations,
+            LoadedExpirations = preview.LoadedExpirations,
+            SnapshotTimes = preview.SnapshotTimes,
+            MaxStrikesPerExpiration = preview.MaxStrikesPerExpiration
+        };
     }
 
     // ------------------------------------------------------------------ //
@@ -1037,6 +1045,14 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
     private static (bool Pass, string? Reason) ApplyFilters(OptionCandidateInfo opt, OptionsOverwriteParams p)
     {
+        if (!opt.DeltaAvailable || !double.IsFinite(opt.Delta))
+            return (false, "Delta unavailable");
+        if (!opt.OpenInterestAvailable && p.MinOpenInterest > 0)
+            return (false, "Open interest unavailable");
+        if (!opt.VolumeAvailable && p.MinVolume > 0)
+            return (false, "Volume unavailable");
+        if (opt.Ask < opt.Bid)
+            return (false, "Crossed quote");
         if (!OptionsOverwriteFilters.PassesLiquidityFilter(opt, p))
         {
             if (opt.Bid <= 0m)

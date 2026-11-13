@@ -190,6 +190,30 @@ public sealed class BacktestTrustworthinessTests : IDisposable
     }
 
     [Fact]
+    public async Task DelistedSymbol_FullHaircut_WritesOffTheRetainedBasisWithoutCashProceeds()
+    {
+        WriteBars("GONE", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), basePrice: 100m);
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 20),
+            DataRoot: _dataRoot,
+            SlippageBasisPoints: 0m,
+            DelistingHaircutPercent: 1m);
+
+        var result = await _engine.RunAsync(request, new BuyOnFirstBarStrategy("GONE", quantity: 10));
+
+        result.Fills.Should().ContainSingle(fill => fill.OrderId == Guid.Empty && fill.FillPrice == 0m);
+        result.Snapshots.Last().Positions.Should().NotContainKey("GONE");
+        result.Ledger.GetBalance(LedgerAccounts.Securities("GONE", BacktestDefaults.DefaultBrokerageAccountId))
+            .Should().Be(0m);
+        result.Ledger.GetBalance(LedgerAccounts.RealizedLossFor(BacktestDefaults.DefaultBrokerageAccountId))
+            .Should().Be(1_000m);
+        var liquidation = result.Ledger.GetJournalEntries(new LedgerQuery(OrderId: Guid.Empty)).Should().ContainSingle().Subject;
+        liquidation.IsBalanced.Should().BeTrue();
+        liquidation.Lines.Should().OnlyContain(line => line.Account.Name != "Cash");
+    }
+
+    [Fact]
     public async Task DelistedSymbol_HoldPolicy_KeepsPositionAndWarnsInDisclosure()
     {
         WriteBars("GONE", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), basePrice: 100m);

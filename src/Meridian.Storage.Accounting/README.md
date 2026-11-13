@@ -6,16 +6,17 @@ module_id: SRC-STORAGE-ACCOUNTING
 path: src/Meridian.Storage.Accounting
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Storage.Accounting
 
 ## Purpose
 
-Compile business persistence adapters separately from market-data storage primitives. This project
-owns the PostgreSQL adapters for ledger, reporting, Security Master, asset operations, banking,
-fund accounts/structure, direct lending, money market, operations and tenant cutover.
+Compile business persistence and accounting adapters separately from market-data storage primitives.
+This project owns the PostgreSQL adapters for ledger, reporting, Security Master, asset operations,
+banking, fund accounts/structure, direct lending, money market, operations and tenant cutover, plus
+ledger-backed export projections and portable accounting-payload validation.
 
 ## Layer responsibility
 
@@ -27,14 +28,50 @@ through linked compile items; schema versions, SQL migrations and output paths r
 
 - `Meridian.Storage.Accounting.csproj` declares linked source ownership and migration content.
 - `../Meridian.Storage/Ledger/` and `../Meridian.Storage/Reporting/` hold accounting adapters.
+- `Export/` owns ledger-specific requests and the `ExportLedgerAsync` extension over the generic
+  `AnalysisExportService` text-table writer. Consumers keep the `Meridian.Storage.Export` namespace;
+  only the accounting adapter assembly references Ledger and interprets journals or lot evidence.
 - Other linked business store folders are enumerated explicitly in the project file.
 
 ## Important workflows
+
+Linked intercompany and entity adapters retain approved legal-agreement pins, immutable lifecycle
+and account-role history, book-control activation receipts, counterpart proposal intent and
+consolidation/FX authority through the financial commit. This assembly mints the internal Contracts
+structure-read proof while retaining its live ownership lease. See the
+[implementation sequence](../../docs/engineering/plans/intercompany-entity-controls.md) and
+[operator procedure](../../docs/operators/intercompany-entity-controls.md).
 
 Rebuild all consumers when changing assembly ownership. See
 [boundary extractions](../../docs/architecture/review-boundary-extractions.md) for the compatibility
 boundary and focused test ownership. Register concrete adapters at application composition roots;
 do not introduce a reverse reference from Storage primitives.
+
+## Accounting exports
+
+The `ExportLedgerAsync` extension exports an immutable journal generation, as-of trial balance and
+reconciled cash-flow statement as CSV, XLSX, Parquet or Arrow. Every amount and quantity uses
+invariant decimal text to preserve booked precision; consumers parse it with a decimal type.
+Empty reports retain their accounting columns. Output lives in a unique directory and failed
+exports remove their partial artifacts.
+
+Authorized callers may supply exact open-lot valuation and closed-parcel evidence. The browser run
+export maps retained account snapshots through `BacktestLedgerExportMapper`; missing historical
+snapshots produce explicit availability rows and warnings rather than fabricated zero balances.
+Fill disposals include exact basis, fees and direction; corporate-action cash-in-lieu and return of
+capital are separately exported from their authoritative journals. Fractional corporate-action
+acquisition parcel dates are not retained by the simulator, so that aggregate schedule explicitly
+reports the evidence gap and is not represented as a complete tax filing.
+
+## Portable ledger evidence
+
+`PortableLedgerSnapshot.CapturePayload` captures typed journals into the model-neutral
+`PortableLedgerPayload`. `PortableLedgerPackaging.CreatePackager` installs the accounting
+validator that replays journals and verifies the balance digest before publication or import.
+Its `ReadLedgerAsync` extension retains typed read access without moving Ledger references back
+into Storage. The workstation packaging endpoints and package CLI use this configured factory.
+An unconfigured transport refuses accounting evidence even when ordinary file checksums are
+disabled. Reserved ledger and manifest archive paths cannot be duplicated or aliased.
 
 ## Diagrams
 
@@ -62,6 +99,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ```bash
 dotnet build src/Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReviewBoundaryTests"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LedgerAnalysisExportTests"
 ```
 
 ## Change rules

@@ -23,6 +23,16 @@ function services(next: AgreementDetail = detail) {
 }
 
 describe("IntercompanyAgreementsPanel", () => {
+  it("shows current lifecycle migration warnings and preserves the warnings recorded in native audit history", async () => {
+    const source = services({ ...detail, migrationWarnings: ["Entity A has no retained legacy lifecycle baseline."],
+      history: [{ ...detail.history[0], migrationWarnings: ["Missing baseline was retained at submission."] }] });
+    render(<IntercompanyAgreementsPanel services={source} />);
+    fireEvent.click(await screen.findByRole("button", { name: "IC-LOAN · Operating loan" }));
+    expect(await screen.findByText("Entity A has no retained legacy lifecycle baseline.")).toBeVisible();
+    fireEvent.click(screen.getByText("Agreement audit history"));
+    expect(screen.getByText("Missing baseline was retained at submission.")).toBeVisible();
+    expect(source.mutateIntercompanyAgreement).not.toHaveBeenCalled();
+  });
   it("uses the selected entity/date and renders retained review evidence without claiming a journal posted", async () => {
     const source = services();
     const { container } = render(<IntercompanyAgreementsPanel initialEntityId={draft.partyOneId} services={source} />);

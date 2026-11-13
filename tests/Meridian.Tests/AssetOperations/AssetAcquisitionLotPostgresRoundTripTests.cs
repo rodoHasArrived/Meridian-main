@@ -93,7 +93,8 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         var securities = new PostgresSecurityMasterStore(securityOptions);
         PostgresAssetOperationsProjectionStore? assets = null;
         var journal = new PostgresLedgerJournalStore(ledgerOptions,
-            backfillSecurityMaster: () => securities, backfillPositions: () => assets);
+            backfillSecurityMaster: () => securities, backfillPositions: () => assets,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var books = new PostgresLedgerBookService(journal);
         assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
         var securityId = Guid.NewGuid();
@@ -314,7 +315,8 @@ public sealed partial class AssetAcquisitionLotPostgresRoundTripTests
         var replaySecurities = new PostgresSecurityMasterStore(securityOptions);
         PostgresAssetOperationsProjectionStore? replayAssets = null;
         var replayJournal = new PostgresLedgerJournalStore(ledgerOptions,
-            backfillSecurityMaster: () => replaySecurities, backfillPositions: () => replayAssets);
+            backfillSecurityMaster: () => replaySecurities, backfillPositions: () => replayAssets,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         replayAssets = new PostgresAssetOperationsProjectionStore(assetOptions, replayJournal);
         var replay = await new AccountingPostingCandidatePostService(
                 candidateBuilder, replayJournal, assetAccountingEventStore: replayAssets)

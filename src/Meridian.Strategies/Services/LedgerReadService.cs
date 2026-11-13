@@ -24,11 +24,20 @@ public sealed class LedgerReadService
     }
 
     public LedgerSummary? BuildSummary(StrategyRunEntry entry)
-        => BuildBaseSummary(entry);
+        => BuildBaseSummary(entry, asOf: null);
+
+    public LedgerSummary? BuildSummary(StrategyRunEntry entry, DateTimeOffset asOf)
+        => BuildBaseSummary(entry, asOf);
 
     public async Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+        => await BuildSummaryCoreAsync(entry, asOf: null, ct).ConfigureAwait(false);
+
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default)
+        => BuildSummaryCoreAsync(entry, asOf, ct);
+
+    private async Task<LedgerSummary?> BuildSummaryCoreAsync(StrategyRunEntry entry, DateTimeOffset? asOf, CancellationToken ct)
     {
-        var summary = BuildBaseSummary(entry);
+        var summary = BuildBaseSummary(entry, asOf);
         if (summary is null || _securityReferenceLookup is null || summary.TrialBalance.Count == 0)
         {
             return summary;
@@ -75,7 +84,7 @@ public sealed class LedgerReadService
         ];
     }
 
-    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry)
+    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry, DateTimeOffset? asOf)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
@@ -83,6 +92,16 @@ public sealed class LedgerReadService
         if (ledger is null)
         {
             return null;
+        }
+
+        // Reuse the ledger's validation and normal-balance rules for an inclusive economic-time
+        // cut. Never mutate the retained run ledger or mix final balances with historical journal.
+        if (asOf.HasValue)
+        {
+            var historicalLedger = new Meridian.Ledger.Ledger();
+            foreach (var posting in ledger.Journal.Where(item => item.Timestamp <= asOf.Value))
+                historicalLedger.Post(posting);
+            ledger = historicalLedger;
         }
 
         var scope = StrategyRunScopeMetadataResolver.Resolve(entry);
@@ -136,7 +155,7 @@ public sealed class LedgerReadService
         return new LedgerSummary(
             LedgerReference: entry.LedgerReference ?? entry.RunId,
             RunId: entry.RunId,
-            AsOf: entry.EndedAt ?? entry.StartedAt,
+            AsOf: asOf ?? entry.EndedAt ?? entry.StartedAt,
             JournalEntryCount: ledger.Journal.Count,
             LedgerEntryCount: accountSummaries.Sum(static summary => summary.EntryCount),
             AssetBalance: SumBalance(accountSummaries, LedgerAccountType.Asset),

@@ -51,9 +51,18 @@ internal static class LedgerLineDimensionSetFields
         ("projectId", static dimensions => dimensions.ProjectId)
     ];
 
+    internal static readonly (string Name, Func<LedgerLineDimensionSet, string?> GetValue)[] IntercompanyStringFields =
+    [
+        ("accountingArrangementId", static dimensions => dimensions.AccountingArrangementId),
+        ("accountingArrangementRevisionId", static dimensions => dimensions.AccountingArrangementRevisionId),
+        ("chartAccountNodeId", static dimensions => dimensions.ChartAccountNodeId),
+        ("accountBindingRevisionId", static dimensions => dimensions.AccountBindingRevisionId),
+        ("intercompanyTransactionId", static dimensions => dimensions.IntercompanyTransactionId)
+    ];
+
     /// <summary>All string-valued dimension fields in canonical order.</summary>
     internal static readonly (string Name, Func<LedgerLineDimensionSet, string?> GetValue)[] StringFields =
-        [.. LeadingStringFields, .. TrailingStringFields];
+        [.. LeadingStringFields, .. TrailingStringFields, .. IntercompanyStringFields];
 
     /// <summary>
     /// Enumerates the populated fields of a canonicalized dimension set in canonical order,
@@ -81,7 +90,7 @@ internal static class LedgerLineDimensionSetFields
         if (dimensions.IntercompanyAgreementVersion is not null)
             yield return new LedgerDimensionField("intercompanyAgreementVersion", dimensions.IntercompanyAgreementVersion.Value.ToString(CultureInfo.InvariantCulture));
 
-        foreach (var (name, getValue) in TrailingStringFields)
+        foreach (var (name, getValue) in TrailingStringFields.Concat(IntercompanyStringFields))
         {
             if (getValue(dimensions) is { } value)
                 yield return new LedgerDimensionField(name, value);
@@ -123,7 +132,12 @@ internal static class LedgerLineDimensionSetFields
                 .Append(dimensions.PositionId.Value.ToString("D", CultureInfo.InvariantCulture));
         }
 
-        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(
+        var signature = Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(
             builder.ToString(), dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e");
+        // Absent operational references preserve the existing scope signature exactly.
+        foreach (var (name, getValue) in IntercompanyStringFields)
+            if (getValue(dimensions) is { } value)
+                signature += "\u001e" + name + "=" + Uri.EscapeDataString(value);
+        return signature;
     }
 }

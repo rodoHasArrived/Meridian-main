@@ -8,7 +8,7 @@ public sealed partial class OrderManagementSystem
     // Runs under _preTradeReservationGate, before registering PendingNew. The registration
     // reserves a slot before the next admission, even while the broker has not acknowledged
     // this order or its open-order endpoint still returns an older snapshot.
-    private async Task<string?> EvaluateBrokerageAdmissionLimitsAsync(GatewayResolvedOrder order, CancellationToken ct)
+    internal async Task<string?> EvaluateBrokerageAdmissionLimitsAsync(GatewayResolvedOrder order, CancellationToken ct)
     {
         var notionalRefusal = _admissionPolicy.EvaluateBrokerageNotionalLimit(order);
         if (notionalRefusal is not null)

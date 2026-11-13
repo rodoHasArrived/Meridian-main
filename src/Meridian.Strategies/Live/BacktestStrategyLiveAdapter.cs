@@ -67,5 +67,7 @@ public sealed class BacktestStrategyLiveAdapter : LiveStrategyBase, ILiveOrderOu
         {
             observer.OnOrderTerminated(orderId, outcome);
         }
+        else if (_inner is Meridian.Backtesting.Sdk.Strategies.IBacktestOrderTerminationObserver replayObserver)
+            replayObserver.OnOrderTerminated(orderId);
     }
 }

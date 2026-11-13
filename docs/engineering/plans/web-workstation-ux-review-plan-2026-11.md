@@ -1,7 +1,7 @@
 # Browser Workstation UX Review and Improvement Plan (2026-11)
 
-> **Status:** In progress (Phase 3 started 2026-11-10) · **Created:** 2026-11-06 ·
-> **Extended:** 2026-11-10 · **Owner lane:** Workstation Shell and UX
+> **Status:** In progress (Phase 3 started 2026-11-10; trust fixes 2026-11-12) · **Created:** 2026-11-06 ·
+> **Extended:** 2026-11-10, 2026-11-12 (verified review corrections) · **Owner lane:** Workstation Shell and UX
 > **Builds on:** UI Phase 0–2 (merged 2026-11-04/05: font-fallback fix; A1–A5 task-first routes,
 > one-row masthead, Today front door, single StatusBadge; B2–B4 shared formatting, single table
 > system, three-tier type scale)
@@ -638,6 +638,109 @@ Open in Phase 3:
   step.
 
 No shared read model changed in this increment, so no WPF-parity item was filed.
+
+**2026-11-12 — Phase 3, trust fixes (latency, Today counts, setup state, placeholders).** A
+follow-up review proposed these fixes. Each claim was checked by two independent reviewers against
+source and a fresh fixture-backed capture of all 82 routes, and only the claims that held up were
+built. The before and after captures were compared route by route.
+
+Done:
+
+- **Latency is a duration.** The Data overview's provider cards printed the last response time,
+  or "Never", under "Latency" when a provider reported no latency. `buildProviderRow` now keeps
+  two values. `latencyText` holds only the reported latency, or "Latency not reported" (the same
+  sentinel the server writes). `latencyOrLastGoodText` holds the old value and feeds only the
+  "Trust / last good" column and its CSV export, which are unchanged. The row's accessible name and
+  the trust fields follow `latencyText`. The summary card's description now reads "Last successful
+  call or verification." The "Latency / Last Response" label stays the same as WPF's.
+- **Today lists what its badge counts.** The sidebar badge, the status row and the status bar
+  already counted one list and agreed with each other. That list was visible only while the
+  operator inbox was loading. Today now shows it as "Finance queue" (6 items, the ones the badges
+  count) above "Operator inbox" (3 triage items from the shared host). Each count names its unit:
+  "6 items in the finance queue", "3 of 3 inbox items", and "+5 more issues" in the status bar. The
+  unit hint is in the nav link's tooltip, because the badge itself takes no pointer events. The
+  Today link now spans its row, so clicking the badge navigates.
+- **Account setup is not a failure.** In a paper environment with no fund account in scope,
+  Trading shows a neutral "Choose a fund account" state with one "Choose account" action, and the
+  sub-pages show a neutral row. Live, unknown or failed states keep the red "Live trading blocked"
+  block. The environment comes from the trading read model, which reports "paper" whenever the
+  preferred run is not live. The neutral state therefore lowers only the displayed severity: it
+  unblocks nothing, and the copy still says live trading stays off.
+- **An undeclared basis is stated once, not as a failure.** Strips show "Basis · Not declared by
+  source" once. Cards omit the line, and the figure passport says "Basis not declared by source".
+- **Harness.** Two new blocking content rules: `latency-not-duration` (a `Latency` label followed
+  by a clock time or "Never") and `unavailable-placeholder` ("Basis unavailable", "Saved views
+  unavailable"). A saved-views fixture ends the false "Saved views unavailable" notice on 22
+  captures; the product copy is unchanged, because it is accurate when the store really fails.
+  The Today capture now waits for the inbox. Neither rule needed an `allowedContentIssues` entry.
+
+| Rendered copy (82 captures) | Before | After |
+|---|---|---|
+| "Basis unavailable" | 48 in 34 files | 0 |
+| "Saved views unavailable" | 34 in 22 files | 0 |
+| `Latency` followed by a time or "Never" | 3 | 0 |
+| "Live trading blocked" with no account in a paper environment | 4 files | 0 |
+| "loaded workspace items" / "authorized items ·" | 1 / 1 | 0 / 0 |
+
+Not done, and why:
+
+- **"Providers healthy 1/2" above five provider cards** and **Strategy "Runs 24" above "2 of 2
+  loaded"** come from the capture fixture: `/api/workstation/data` lists two providers, and the
+  server sends no "Runs" card. In production the provider populations differ only for operators
+  without ManageCredentials. One population needs the KPI definition registry and a
+  `W8-WPF-PARITY-001` item.
+- **Showing a provider's measured latency** (Alpaca's trust snapshot carries `latency:p50=18ms`)
+  needs a typed contract field.
+- **Inbox count equals the sum of the badges** (Phase 6 F1) needs the server inbox to cover the
+  workspace queue. The two lists are now labelled as different units instead.
+- **Ledger "Entity name unavailable"** stays excused until the posted-ledger DTO carries display
+  names.
+- **A new three-level tone model** was not added. The existing primitives cover setup (empty
+  state), review and blocked.
+
+No shared read model changed, so no WPF-parity item was filed. Validation: full dashboard vitest
+suite, `tsc`, lint, ratchets, the harness node tests, the production build on Node 24 (the
+`.nvmrc` toolchain, which rebuilds the base bundle byte for byte), and the full 82-route capture.
+
+### Verified corrections to the 2026-11-11 follow-up review
+
+The follow-up review also restated several open items. Verifying them changed these facts, which
+later phases should use:
+
+- **Scope (C1, F2).** The header shows "No scope selected" on 78 of 82 routes again. Commit
+  `38baf358` replaced the dock with `OperatingScopeChip` ("All funds"), and a later merge restored
+  `WorkflowContinuityDock` in `app.tsx`, so the chip is now used only in tests. The Phase 3 note
+  above ("a fund picker in place of 'No scope selected'") no longer holds. Trading's "Scope:
+  DU1009034" is the account the unscoped payload belongs to, not an operator scope.
+- **Accounting navigation (C3).** It has 17 sub-items in 5 groups (22 rows), not 20. At
+  1440×1100 every workspace stays visible, crowded at the bottom. Accounting › Today lands on a
+  page headed "Close Cockpit", and every other workspace's first item is "Overview".
+- **Period comparison (F4).** Ledger's "Vs prior period" works: it is backed by
+  `PostedPeriodComparison` and its endpoint. The orphaned control is Trial balance's permanently
+  disabled "Compare prior period" button, which sits beside the working toggle. The gap is scope:
+  the comparison covers posted movements, not trial-balance balances, NAV, attribution or the
+  cash ladder.
+- **Run comparison.** Strategy › Promotions compares exactly two runs as a metrics table, with no
+  equity or drawdown overlay. A third selection silently drops the oldest.
+- **Since last visit (P10, F7).** Markers exist on the Accounting break queue and the open-breaks
+  tile. `lib/report-change-since-review.ts` is imported only by its own test.
+- **Charts (P9).** Drawdown and candles render through `EquityCurve` and `historical-chart`. The
+  close burndown and the run trend are blank in captures because their endpoints have no fixture.
+  Two implemented charts ("Close task progress", "Break aging") sit inside collapsed disclosures.
+- **Detail panes (P2/V1).** Close Cockpit (`/accounting`) still has right-aligned values that
+  wrap onto three lines; it was not among the migrated surfaces. The unmigrated `AccountingValue`
+  tile has 41 call sites in `accounting-screen.tsx`. The Security Master panels already use
+  `EntitySummary`.
+- **Monospace (P4/V2).** Status-bar values, not labels, are mono. Dense-table headers and toolbar
+  chips are mono uppercase through CSS rules (`ui-kit-primitives.css`), so a class-count ratchet
+  would miss them. The P4 non-numeric `font-mono` ratchet has not been built.
+- **Today inbox (F1, P3, P8).** The server ranks the inbox, but the browser never shows the rank
+  or its reason. Owner, Age, Due and Triage are clipped off-screen beside the detail pane at
+  1440px. Bulk and keyboard triage cover Assign only.
+- **Portfolio market value.** "Unavailable" comes from a deliberate guard against using exposure
+  as market value, and the backend never fills `MarketValue` or `Currency`. The fix is a contract
+  change with a WPF-parity item.
+- **Preferences** still carries the system KPI strip that C6 removes.
 
 ## Recommended Next Step
 

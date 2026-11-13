@@ -1966,7 +1966,7 @@ public sealed class FundLedgerViewModelTests
                 var consolidatedView = viewModel.LedgerDimensions.Single(view => view.Key == "consolidated");
                 viewModel.SelectedLedgerDimension = consolidatedView;
 
-                viewModel.SelectedLedgerDimensionDisplayText.Should().Be("Consolidated Fund View");
+                viewModel.SelectedLedgerDimensionDisplayText.Should().Be("Gross Fund View");
                 viewModel.VisibleTrialBalance.Should().HaveCount(viewModel.TrialBalance.Count);
                 viewModel.VisibleJournal.Should().HaveCount(viewModel.Journal.Count);
 

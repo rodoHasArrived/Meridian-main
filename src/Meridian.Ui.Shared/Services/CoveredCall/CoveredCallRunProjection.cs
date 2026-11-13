@@ -239,5 +239,12 @@ internal static class CoveredCallRunProjection
             OpenInterest: candidate.OpenInterest,
             Volume: candidate.Volume,
             MeetsAllFilters: meetsAllFilters,
-            RejectReason: rejectReason);
+            RejectReason: rejectReason)
+        {
+            DeltaAvailable = candidate.DeltaAvailable,
+            OpenInterestAvailable = candidate.OpenInterestAvailable,
+            VolumeAvailable = candidate.VolumeAvailable,
+            Multiplier = candidate.Multiplier,
+            SpreadFraction = double.IsFinite(candidate.SpreadPct) ? candidate.SpreadPct : null
+        };
 }

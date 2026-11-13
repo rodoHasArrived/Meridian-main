@@ -56,7 +56,7 @@ describe("WorkstationStatusBar", () => {
       { key: "attention", status: "warn", label: "Attention", value: "Providers: 1 warning" }
     ]);
     expect(build({ tone: "blocked", title: "Cash variance needs review", moreCount: 2 })[1])
-      .toEqual({ key: "attention", status: "err", label: "Attention", value: "Cash variance needs review +2 more" });
+      .toEqual({ key: "attention", status: "err", label: "Attention", value: "Cash variance needs review +2 more issues" });
     // Clear and still-loading states leave the footer on sync alone.
     expect(build({ tone: "ready", title: "No open issues", moreCount: 0 }).map((item) => item.key)).toEqual(["sync"]);
     expect(build({ tone: "pending", title: "Workspace data loading", moreCount: 0 }).map((item) => item.key)).toEqual(["sync"]);
@@ -93,7 +93,7 @@ describe("WorkstationStatusBar", () => {
     })).toEqual([
       { key: "sync", status: "ok", label: "Sync", value: "connected" },
       { key: "freshness", status: "warn", label: "Freshness", value: "Stale · 187d ago" },
-      { key: "attention", status: "err", label: "Attention", value: "Brokerage sync failed +1 more" }
+      { key: "attention", status: "err", label: "Attention", value: "Brokerage sync failed +1 more issue" }
     ]);
   });
 

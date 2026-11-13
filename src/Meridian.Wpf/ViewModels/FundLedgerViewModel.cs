@@ -81,9 +81,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private FundLedgerDimensionView? _selectedLedgerDimension;
     private FundTrialBalanceLine? _selectedTrialBalanceLine;
     private FundJournalLine? _selectedJournalEntry;
-    private string _selectedLedgerDimensionDisplayText = "Consolidated Fund View";
+    private string _selectedLedgerDimensionDisplayText = "Gross Fund View";
     private string _selectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
-    private string _selectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+    private string _selectedLedgerDimensionStatusText = "Gross ledger totals are shown before intercompany eliminations.";
     private string _selectedLedgerLinkedAccountsText = "0";
     private string _selectedLedgerTrialBalanceLinesText = "0";
     private string _selectedLedgerJournalEntriesText = "0";
@@ -1143,9 +1143,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFlowBuckets.Clear();
         SelectedCashFlowEntry = null;
         SelectedLedgerDimension = null;
-        SelectedLedgerDimensionDisplayText = "Consolidated Fund View";
+        SelectedLedgerDimensionDisplayText = "Gross Fund View";
         SelectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
-        SelectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+        SelectedLedgerDimensionStatusText = "Gross ledger totals are shown before intercompany eliminations.";
         SelectedLedgerLinkedAccountsText = "0";
         SelectedLedgerTrialBalanceLinesText = "0";
         SelectedLedgerJournalEntriesText = "0";
@@ -1343,8 +1343,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             new(
                 Key: "consolidated",
-                DisplayName: "Consolidated Fund View",
-                CoverageText: $"1 ledger slice · {consolidatedLinkedAccountCount} linked account(s) · {consolidatedTrialBalanceLineCount} trial-balance line(s) · {consolidatedJournalEntryCount} journal entry(s) across the full fund view.",
+                DisplayName: "Gross Fund View",
+                CoverageText: $"1 ledger slice · {consolidatedLinkedAccountCount} linked account(s) · {consolidatedTrialBalanceLineCount} trial-balance line(s) · {consolidatedJournalEntryCount} journal entry(s) across the gross fund view, before intercompany eliminations.",
                 StatusText: "Shows the complete fund ledger, including generic postings that are not tied to a specific financial account.",
                 ExpectedScopeCount: 1,
                 MaterializedScopeCount: consolidatedSlice is null ? 0 : 1,
@@ -1438,9 +1438,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             VisibleJournal.Clear();
             SelectedTrialBalanceLine = null;
             SelectedJournalEntry = null;
-            SelectedLedgerDimensionDisplayText = "Consolidated Fund View";
+            SelectedLedgerDimensionDisplayText = "Gross Fund View";
             SelectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
-            SelectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+            SelectedLedgerDimensionStatusText = "Gross ledger totals are shown before intercompany eliminations.";
             SelectedLedgerLinkedAccountsText = "0";
             SelectedLedgerTrialBalanceLinesText = "0";
             SelectedLedgerJournalEntriesText = "0";

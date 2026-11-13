@@ -92,6 +92,45 @@ ReadyForApproval -> Approved -> Scheduled -> Posted -> Reconciled -> Reported ->
 
 `Blocked`, `Cancelled`, `Superseded`, and `RestatementRequired` are explicit governed states.
 
+## Operational calendar and election deadlines
+
+The corporate-action calendar reads ex, record and payment dates from retained proposals and
+scoped cases. It applies its date range before paging, preserves every matching case reference,
+and binds subsequent pages to the same scope and retained-data revision. A changed revision
+requires a fresh range read. Coverage describes retained records, not all events in the market.
+
+Actual issuer, broker and custodian election cutoffs are captured on a durable case as typed
+`ElectionDeadline` evidence, separately from financial terms and offer expiration. Recording
+requires terms-resolution or election permission, a typed evidence URI, its operator-provided
+SHA-256 digest, original source text and the operator's source-review rationale. This is
+operator-recorded evidence; recording does not verify external source bytes. A date-only notice remains date-only; a timed notice
+requires an explicit UTC offset, and a supplied named timezone must agree with it. Broker and
+custodian applicability identifies the relevant financial/custody account and must match any
+account already fixed by the case scope. The calendar retains separate cutoffs rather than
+silently choosing one intermediary or source as universally applicable.
+
+Corrections and withdrawals append evidence in the same stable deadline series and name its
+current predecessor. They retain prior values, actor, source and history. The existing case
+version, full-scope assertion, idempotency receipt, and content-freeze rules apply. Recording a
+deadline never submits an election or changes case/accounting status. Frozen cases require the
+existing governed reopen/restatement path.
+
+Canonical CSV import uses the same typed validation and row command as direct entry. Preview
+validates the exact CSV, source evidence, case version, predecessor and applicability. Acceptance
+binds the preview digest to the original scope, version, CSV and idempotency key. Rows commit
+individually; a partial or uncertain outcome retains that original request so retry replays
+committed rows and resumes the rest. It does not roll back successful rows or invent an
+all-or-nothing import result. Old records without deadline evidence remain explicitly unavailable.
+
+The canonical header is:
+
+```csv
+seriesId,kind,sourceParty,date,at,timeZoneId,financialAccountId,custodyAccountId,evidenceReference,evidenceHash,rationale,supersedesEvidenceId,withdrawn,sourceText
+```
+
+Kinds are `IssuerElection`, `BrokerElection` and `CustodianElection`. Each batch contains at most
+100 rows and at most one row per deadline series. Standard quoted CSV fields are supported.
+
 ## Examples
 
 - A tender event creates linked STAT, GAAP, and tax decisions. The STAT treatment can use a

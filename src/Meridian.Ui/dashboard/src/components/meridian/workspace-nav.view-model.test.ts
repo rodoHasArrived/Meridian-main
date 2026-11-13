@@ -353,6 +353,7 @@ describe("workspace nav view model", () => {
       "/data/import",
       "/data/providers",
       "/data/quotes",
+      "/data/quotes?view=options",
       "/data/operations",
       // The Backfill queue was reachable only from the Data tab strip until the sidebar became
       // the single sub-route navigation.
@@ -468,5 +469,21 @@ describe("workspace attention badges", () => {
     const model = buildWorkspaceNavViewModel("/", undefined, "", null, [item, item, { ...item, id: "review-1", tone: "review" }, { ...item, id: "ready-1", tone: "ready" }]);
     expect(model.items.find((entry) => entry.key === "accounting")).toMatchObject({ attentionCount: 2, attentionSeverity: "blocked" });
     expect(model.items.filter((entry) => entry.key !== "accounting").every((entry) => entry.attentionCount === 0)).toBe(true);
+  });
+
+  it("names the badge unit in a pointer hint, and gives no hint without a badge", () => {
+    const counted = buildWorkspaceNavViewModel("/trading", undefined, "", null, { total: 1, byWorkspace: { accounting: 1 } });
+    expect(counted.today).toMatchObject({ attentionCount: 1, attentionTitle: "1 item in Today's finance queue" });
+    expect(counted.items.find((entry) => entry.key === "accounting")).toMatchObject({
+      attentionCount: 1,
+      attentionTitle: "1 item from Accounting in Today's finance queue"
+    });
+    expect(counted.items.filter((entry) => entry.key !== "accounting").map((entry) => entry.attentionTitle))
+      .toEqual(Array(6).fill(null));
+
+    const clear = buildWorkspaceNavViewModel("/trading", undefined, "", null, { total: 0, byWorkspace: {} });
+    expect(clear.today).toMatchObject({ attentionCount: 0, attentionTitle: null });
+    expect(clear.items.every((entry) => entry.attentionCount === 0 && entry.attentionTitle === null)).toBe(true);
+    expect(buildWorkspaceNavViewModel("/").today.attentionTitle).toBeNull();
   });
 });

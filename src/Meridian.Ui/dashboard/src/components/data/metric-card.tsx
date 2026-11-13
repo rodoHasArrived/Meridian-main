@@ -55,7 +55,7 @@ export interface MetricCardProps {
   freshnessLabel?: string;
   /** Where the figure comes from, e.g. "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC". */
   provenance?: string;
-  /** Declared calculation/population basis; omit only for non-financial decorative samples. */
+  /** Declared calculation/population basis. Omitted when the source declares none; the figure passport states that. */
   basis?: ReactNode;
 }
 

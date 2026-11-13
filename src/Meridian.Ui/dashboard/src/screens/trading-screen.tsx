@@ -1,6 +1,8 @@
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
+import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
+import { ExecutionJournalPanel } from "./trading-screen.journal";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { useLocation } from "react-router-dom";
 import { StatusBadge } from "@/design-system/status";
@@ -82,6 +84,7 @@ import {
 } from "@/screens/trading-screen.view-model";
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
+import { ExecutionJourneyPanel } from "@/screens/execution-journey";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -481,6 +484,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const selectedPositionRow = blotterVm.positionRows.find((row) => row.id === blotterVm.selectedPositionRowId) ?? null;
   const selectedOrderRow = blotterVm.orderRows.find((row) => row.id === blotterVm.selectedOrderRowId) ?? null;
+  const journeyOrderId = blotterVm.selectedExecutionKind === "fill"
+    ? blotterVm.fillRows.find((row) => row.id === blotterVm.selectedFillRowId)?.orderId
+    : selectedOrderRow?.orderId;
   const positionColumns = React.useMemo(() => tradingExportColumns(buildPositionColumns(confirmVm), {
     "mark-readiness": (row) => row.markFreshness.label,
     symbol: (row) => row.symbol, side: (row) => row.side, quantity: (row) => row.quantity,
@@ -666,6 +672,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       <BrokerageRecoveryPanel
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
+        brokerageEnvironment={data?.brokerage.environment ?? null}
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}
@@ -720,8 +727,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
           </div>
         </div>
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Card className="panel-surface min-w-0">
           <CardHeader>
             <div className="eyebrow-label">Risk State</div>
             <CardTitle className="flex items-center gap-2">
@@ -782,7 +789,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
 
-        <Card className="panel-surface-strong bg-panel-strong">
+        <Card className="panel-surface-strong min-w-0 bg-panel-strong">
           <CardHeader>
             <div className="eyebrow-label">Brokerage Wiring</div>
             <CardTitle className="flex items-center gap-2">
@@ -869,6 +876,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ) : null}
 
       {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
+      ) : null}
+      {showOrders ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0">
@@ -890,6 +900,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </Button>
             ) : null}
           />
+          {journeyOrderId ? <ExecutionJourneyPanel key={`${fundAccountId}:${data.brokerage.account}:${journeyOrderId}`} orderId={journeyOrderId} fills={data.fills} /> : null}
         </div>
       )}>
 
@@ -932,7 +943,15 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           {orderTicket.open && (
             <TradingOrderTicketForm
               orderTicket={orderTicket}
-              preview={<OrderPreviewPanel preview={orderTicket.preview} />}
+              preview={<>
+                <OrderPreviewPanel preview={orderTicket.preview} />
+                <ServerOrderPreviewPanel
+                  preview={orderTicket.serverPreview} error={orderTicket.serverPreviewError}
+                  loading={orderTicket.serverPreviewLoading} expired={orderTicket.serverPreviewExpired}
+                  sessionIntent={orderTicket.sessionIntent} onSessionIntent={orderTicket.setSessionIntent}
+                  onRefresh={orderTicket.refreshServerPreview}
+                />
+              </>}
             />
           )}
           {!orderTicket.open && (
