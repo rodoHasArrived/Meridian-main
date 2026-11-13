@@ -353,6 +353,7 @@ describe("workspace nav view model", () => {
       "/data/import",
       "/data/providers",
       "/data/quotes",
+      "/data/quotes?view=options",
       "/data/operations",
       // The Backfill queue was reachable only from the Data tab strip until the sidebar became
       // the single sub-route navigation.
