@@ -16126,6 +16126,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.BookOfRecordStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto"
     },
     {
@@ -16451,6 +16457,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.DeltaOutlierResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.DesignateShadowBookRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -16865,6 +16877,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -17446,6 +17464,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.IBookOfRecordGuard"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.IClosePublicationReadinessGuard"
     },
     {
@@ -17501,6 +17525,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ImportBrokerData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -17675,6 +17705,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.InvestmentAccountingTrialBalanceImpactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -17908,6 +17944,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingClassificationCountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto"
     },
     {
@@ -17932,7 +17974,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceClassifications"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto"
     },
     {
       "kind": "contract-set-member",
@@ -17950,13 +18004,55 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto"
     },
     {
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto"
     },
     {
       "kind": "contract-set-member",
@@ -17981,6 +18077,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingShadowDesignationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingShadowStates"
     },
     {
       "kind": "contract-set-member",
@@ -18875,6 +18989,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.ProductExposureDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.PromoteShadowBookRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -20470,6 +20590,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto"
     },
     {
@@ -21533,6 +21665,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.VersionedReportTemplateIdDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -49473,6 +49611,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.IngestionOperationDetailDto",
       "target": "contract:Meridian.Contracts.Workstation.IngestionCheckpointDto"
     },
@@ -50013,6 +50157,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto"
     },
@@ -50044,6 +50194,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto"
     },
     {
@@ -50061,8 +50217,56 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingShadowDesignationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingReviewDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingClassificationCountDto"
     },
     {
       "kind": "contract-reference",
@@ -50074,7 +50278,19 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto"
     },
     {
       "kind": "contract-reference",
@@ -50140,6 +50356,18 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingReadinessDto"
     },
     {
@@ -50159,6 +50387,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingShadowDesignationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingWorkspaceDto",
+      "target": "contract:Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto"
     },
     {
       "kind": "contract-reference",
@@ -66082,7 +66328,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "b6b833abcfda238a634747a7e903e4f994109ca2f9ebb51db90d8b49b56efff4",
+  "fingerprint": "d8821f325215f1bac963e712ed0d20b6ba650757bc158bcc858b818f27517277",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -82259,6 +82505,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.BookOfRecordStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.BookOfRecordStatusDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto"
@@ -82586,6 +82838,12 @@
       "id": "contract:Meridian.Contracts.Workstation.DeltaOutlierResult",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.DeltaOutlierResult"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.DesignateShadowBookRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.DesignateShadowBookRequestDto"
     },
     {
       "classification": "dto",
@@ -83000,6 +83258,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto"
     },
     {
       "classification": "dto",
@@ -83579,6 +83843,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Workstation.IBookOfRecordGuard",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.IBookOfRecordGuard"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Workstation.IClosePublicationReadinessGuard",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.IClosePublicationReadinessGuard"
@@ -83636,6 +83906,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ImportBrokerData",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ImportBrokerData"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto"
     },
     {
       "classification": "dto",
@@ -83810,6 +84086,12 @@
       "id": "contract:Meridian.Contracts.Workstation.InvestmentAccountingTrialBalanceImpactDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.InvestmentAccountingTrialBalanceImpactDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto"
     },
     {
       "classification": "class",
@@ -84041,6 +84323,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingClassificationCountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingClassificationCountDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OnboardingComparisonDto"
@@ -84064,10 +84352,22 @@
       "label": "Meridian.Contracts.Workstation.OnboardingDifferenceAssignmentDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceClassifications",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingDifferenceClassifications"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OnboardingDifferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingDifferenceExplanationDto"
     },
     {
       "classification": "dto",
@@ -84083,15 +84383,57 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingOpeningAccountMappingDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OnboardingPacketContentDto"
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateContentDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingPeriodSummaryDto"
     },
     {
       "classification": "dto",
@@ -84116,6 +84458,24 @@
       "id": "contract:Meridian.Contracts.Workstation.OnboardingScopeDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OnboardingScopeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingShadowAuditEntryDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingShadowDesignationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingShadowDesignationDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingShadowStates",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingShadowStates"
     },
     {
       "classification": "dto",
@@ -85010,6 +85370,12 @@
       "id": "contract:Meridian.Contracts.Workstation.ProductExposureDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.ProductExposureDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.PromoteShadowBookRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.PromoteShadowBookRequestDto"
     },
     {
       "classification": "dto",
@@ -86602,6 +86968,18 @@
       "label": "Meridian.Contracts.Workstation.SettlementInstruction"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ShadowBookNotBookOfRecordException"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.ShadowBookPromotionDecisionDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.SinglePrincipalAttestationAuditEventDto",
       "kind": "contract-type",
@@ -87668,6 +88046,12 @@
       "id": "contract:Meridian.Contracts.Workstation.VersionedReportTemplateIdDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.VersionedReportTemplateIdDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.WithdrawShadowBookRequestDto"
     },
     {
       "classification": "dto",
@@ -97025,11 +97409,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4110,
-    "contract_set_memberships": 5256,
-    "edges": 10977,
+    "contract_references": 4128,
+    "contract_set_memberships": 5279,
+    "edges": 11018,
     "foreign_keys": 203,
     "logical_references": 6,
-    "nodes": 5381
+    "nodes": 5404
   }
 }

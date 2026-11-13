@@ -1230,8 +1230,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:367](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L367) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:369](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L369) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:368](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L368) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:370](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L370) |  |
 
 ## DataFeatureModule
 

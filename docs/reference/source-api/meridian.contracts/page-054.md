@@ -386,7 +386,7 @@ public sealed record ApproveWorkflow(Guid WorkflowId, FundWorkflowCommandMetadat
 
 Qualified name: <code>Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L32).
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L34).
 
 ```csharp
 public sealed record AssignOnboardingDifferenceRequestDto(int ExpectedVersion, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds);
@@ -589,6 +589,18 @@ One disclosed simulation assumption or detected data-quality issue for a backtes
 public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
 ```
 
+## BookOfRecordStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L128).
+
+Whether a ledger book may act as the book of record (publish, release, hard-close).
+
+```csharp
+public sealed record BookOfRecordStatusDto(Guid LedgerBookId, bool IsBookOfRecord, string? ShadowState, string? ShadowWorkspaceId, string Reason, int? CleanPeriodCount = null, int? RequiredPeriodCount = null, int? UnexplainedDifferenceCount = null);
+```
+
 ## BooksBeforeBrokerReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
@@ -698,20 +710,3 @@ Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:197](../../../.
 ```csharp
 public sealed record BrokerageHouseholdPortfolioDto(string ProviderId, DateTimeOffset AsOf, decimal TotalCash, decimal TotalEquity, decimal TotalBuyingPower, string Currency, IReadOnlyList<BrokerageHouseholdAccountDto> Accounts, IReadOnlyList<BrokerageHouseholdPositionDto> Positions, IReadOnlyList<string> Warnings);
 ```
-
-## BrokerageHouseholdPositionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageHouseholdPositionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:172](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L172).
-
-```csharp
-public sealed record BrokerageHouseholdPositionDto(Guid FundAccountId, string ProviderId, string ExternalAccountId, BrokerageAccountKindDto AccountKind, string Symbol, decimal Quantity, decimal AverageEntryPrice, decimal MarketPrice, decimal MarketValue, decimal UnrealizedPnl, string AssetClass, WorkstationSecurityReference? Security, string? Description = null, string? PositionId = null, string? Currency = null, MarkFreshnessAssessmentDto? MarkFreshness = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:191](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L191) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ValuationBasis { get; init; }</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:194](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L194) | ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark. |
