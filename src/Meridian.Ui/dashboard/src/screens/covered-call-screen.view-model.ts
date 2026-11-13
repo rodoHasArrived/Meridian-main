@@ -1525,7 +1525,7 @@ export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
   selectChainRow: (index: number) => void;
   startRun: () => Promise<void>;
   cancelRun: () => Promise<void>;
-  loadHistory: () => Promise<void>;
+  loadHistory: (signal?: AbortSignal) => Promise<void>;
   openRun: (runId: string) => Promise<void>;
   selectTradeRow: (index: number) => void;
   selectOpenPosition: (index: number) => void;
@@ -1820,17 +1820,19 @@ export function useCoveredCallScreenViewModel(
     }
   }, [pendingCancelRunId, run.isCancelling, run.runId, services, stopPolling]);
 
-  const loadHistory = useCallback(async () => {
+  const loadHistory = useCallback(async (signal?: AbortSignal) => {
     setHistoryLoading(true);
     setHistoryError(null);
     try {
-      const items = await services.listRuns(50);
-      setHistory(items);
+      const items = await services.listRuns(50, signal);
+      if (!signal?.aborted) setHistory(items);
     } catch (error) {
-      setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
+      if (!signal?.aborted) setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
     } finally {
-      setHistoryLoaded(true);
-      setHistoryLoading(false);
+      if (!signal?.aborted) {
+        setHistoryLoaded(true);
+        setHistoryLoading(false);
+      }
     }
   }, [services]);
 

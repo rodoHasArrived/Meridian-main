@@ -156,7 +156,9 @@ export function CoveredCallScreen() {
   const vm = useCoveredCallScreenViewModel();
 
   useEffect(() => {
-    void vm.loadHistory();
+    const controller = new AbortController();
+    void vm.loadHistory(controller.signal);
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

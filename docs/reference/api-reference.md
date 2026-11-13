@@ -1563,8 +1563,8 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs](../../src/Mer
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L3103](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L3103) |
-| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L3106](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L3106) |
+| `/workstation` | GET | `(IWebHostEnvironment environment) => …` | — | — | [L1204](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1204) |
+| `/workstation/{*path}` | GET | `(string? path, IWebHostEnvironment environment) => …` | `Results.NotFound`; `Results.File` | — | [L1207](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L1207) |
 
 ### WorkstationEndpoints.OperatorTriage
 
@@ -1582,9 +1582,9 @@ Source: [src/Meridian/UiServer.cs](../../src/Meridian/UiServer.cs)
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L664](../../src/Meridian/UiServer.cs#L664) |
-| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L698](../../src/Meridian/UiServer.cs#L698) |
-| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L752](../../src/Meridian/UiServer.cs#L752) |
-| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L773](../../src/Meridian/UiServer.cs#L773) |
+| `/api/system/lifecycle` | GET | `(HttpContext context) => …` | `Results.Ok` | — | [L668](../../src/Meridian/UiServer.cs#L668) |
+| `/api/system/shutdown` | POST | `async (HttpContext context) => …`<br>Body reads: `DeserializeAsync` | `Results.Json` | — | [L702](../../src/Meridian/UiServer.cs#L702) |
+| `/api/system/shutdown/{operationId}` | GET | `(string operationId, HttpContext context) => …` | `Results.Ok` | — | [L756](../../src/Meridian/UiServer.cs#L756) |
+| `/api/system/shutdown/receipts/latest` | GET | `async (HttpContext context) => …` | `Results.Ok` | — | [L777](../../src/Meridian/UiServer.cs#L777) |
 
 <!-- END GENERATED HTTP DECLARATION REFERENCE -->

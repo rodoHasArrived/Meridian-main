@@ -6,72 +6,11 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ExecutionAuditEntry
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAuditEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:33](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L33).
-
-Durable audit record for live-execution operations, approvals, and control changes.
-
-```csharp
-public sealed record ExecutionAuditEntry(string AuditId, string Category, string Action, string Outcome, DateTimeOffset OccurredAt, string? Actor = null, string? BrokerName = null, string? OrderId = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Message = null, string? Reason = null, string? Scope = null, IReadOnlyDictionary<string, string>? Metadata = null);
-```
-
-## ExecutionAuditTrailOptions
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAuditTrailOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:11](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L11).
-
-Configuration for the durable execution audit trail.
-
-```csharp
-public sealed record ExecutionAuditTrailOptions(string RootDirectory, int InMemoryRetention = 1_000, WalSyncMode SyncMode = WalSyncMode.EveryWrite, TimeSpan? InMemoryRetentionWindow = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ExecutionAuditTrailOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;audit&quot;));</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:24](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L24) |  |
-| <code>public string WalDirectory =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:27](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L27) |  |
-
-## ExecutionAuditTrailService
-
-Qualified name: <code>Meridian.Execution.Services.ExecutionAuditTrailService</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:57](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L57).
-
-Durable execution audit trail backed by the platform WAL. The payload volume is low compared with market-data paths, so we bias toward explicit durability and traceability over raw throughput.
-
-```csharp
-public sealed class ExecutionAuditTrailService : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool RetentionWindowComplete =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:88](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L88) | Whether every entry inside the retention window is actually retained. False once a burst exceeds the hard ceiling below. A consumer that reasons over a time window — &quot;no breach in the last hour&quot; — cannot make that claim from an incomplete window, and logging the shortfall does not make the claim true. Reading this lets such a consumer decline to assert safety instead, which is the only fail-closed answer available. Incompleteness is sticky until the gap itself ages out. It is judged from the newest entry ever discarded from inside the window, not from whether the currently retained set fits the cap — those differ exactly when it matters, because once entries have been dropped the retained set can fit again while the dropped ones are still inside the window. This answers for this trail&#x27;s window. A consumer reasoning over a shorter span should ask RetentionWindowCompleteFor instead, or it will keep failing closed after the gap has already left its own horizon. |
-| <code>public bool RetentionWindowCompleteFor(TimeSpan horizon);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:109](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L109) | Whether every entry inside the caller&#x27;s horizon is retained — the same question RetentionWindowComplete answers, asked at the span the caller actually reasons over rather than at this trail&#x27;s retention window. The distinction is not cosmetic, because incompleteness blocks callers. A discard is only capable of hiding something from a caller if it fell inside that caller&#x27;s horizon, so a trail retaining two hours and a consumer claiming one must stop reporting a gap once the discarded entry is an hour old, not two. Measuring against the longer window instead keeps every non-breached rule Constrained — and order readiness blocked — for an extra hour in which no breach the consumer could assert about was ever missing. This is orthogonal to whether the horizon fits at all: a caller whose horizon exceeds InMemoryRetentionWindow loses entries to age-based trimming that never register as discards, so it must compare the two windows as well. Neither check subsumes the other. |
-| <code>public static readonly TimeSpan DefaultInMemoryRetentionWindow = TimeSpan.FromHours(2);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:124](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L124) | Default window kept regardless of the count cap. See the option&#x27;s remarks. |
-| <code>public static readonly TimeSpan WriterClockSkewAllowance = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:138](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L138) | How far ahead of now a caller-stamped timestamp is still treated as real when deciding whether discarding it left a coverage gap. Writers do not share a clock, so a little drift is ordinary; a record stamped well beyond it is not evidence any consumer would have reasoned with, and counting its loss as a gap would let a caller hold completeness false — and order readiness closed — until wall-clock time caught up with the date it chose. Consumers apply their own plausibility bound when reading (RiskRuleRuntimeService uses a five-minute violation clock-skew allowance). This is the trail&#x27;s own, deliberately not shared: a consumer tightening its reading must not silently change what this records as lost. |
-| <code>public TimeSpan InMemoryRetentionWindow =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:146](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L146) | The window this instance actually keeps. A consumer whose own claim spans longer than this cannot establish that claim from this trail, however complete the window is — completeness is measured against this window, so an entry older than it is trimmed without ever registering as a gap. Consumers are expected to compare their horizon against this value. |
-| <code>public ExecutionAuditTrailService(ExecutionAuditTrailOptions? options, ILogger&lt;ExecutionAuditTrailService&gt; logger);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:160](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L160) |  |
-| <code>public ExecutionAuditTrailService(string rootDirectory, ILogger&lt;ExecutionAuditTrailService&gt; logger) : this(new ExecutionAuditTrailOptions(rootDirectory), logger);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:186](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L186) | Convenience constructor that accepts a root directory string directly. Useful for tests and simple host scenarios that do not need the full options object. |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetRecentAsync(int take = 100, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:196](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L196) | Returns the most recent audit entries, newest first. |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetRecentOrSinceAsync(int take, DateTimeOffset since, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:223](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L223) | The newest take entries plus every retained entry at or after since, newest first. A count-bounded query and a time-bounded claim do not mix. A caller that says &quot;a breach in the last hour holds this rule constrained&quot; and then reads a fixed number of newest entries silently drops that breach as soon as enough unrelated activity follows it — which on an active desk happens well inside the hour, turning a live breach into a healthy rule and reopening whatever gate reads it. The count still bounds ordinary history; the window is what the caller actually reasons about, so both are honoured. |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionAuditEntry&gt;&gt; GetAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:246](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L246) | Returns all retained audit entries in chronological order. |
-| <code>public async Task&lt;ExecutionAuditEntry&gt; RecordAsync(string category, string action, string outcome, string? actor = null, string? brokerName = null, string? orderId = null, string? runId = null, string? symbol = null, string? correlationId = null, string? message = null, string? reason = null, string? scope = null, IReadOnlyDictionary&lt;string, string&gt;? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:260](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L260) | Appends a new audit entry and returns the persisted record. |
-| <code>public async Task RecordAsync(ExecutionAuditEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:300](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L300) | Appends a pre-built audit entry. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionAuditTrailService.cs:322](../../../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs#L322) |  |
-
 ## ExecutionCircuitBreakerState
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionCircuitBreakerState</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:49](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L49).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:50](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L50).
 
 Current execution circuit-breaker state.
 
@@ -83,7 +22,7 @@ public sealed record ExecutionCircuitBreakerState(bool IsOpen, string? Reason = 
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionControlDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:96](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L96).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:97](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L97).
 
 Result of evaluating a new order against the current operator controls.
 
@@ -95,14 +34,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ExecutionControlDecision Approved(string? appliedManualOverrideId = null) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:102](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L102) |  |
-| <code>public static ExecutionControlDecision Rejected(string reason, string? rejectCode = null) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:105](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L105) |  |
+| <code>public static ExecutionControlDecision Approved(string? appliedManualOverrideId = null) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:103](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L103) |  |
+| <code>public static ExecutionControlDecision Rejected(string reason, string? rejectCode = null) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:106](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L106) |  |
 
 ## ExecutionControlSnapshot
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionControlSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:72](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L72).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:73](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L73).
 
 Persisted snapshot of the live execution control state.
 
@@ -114,7 +53,7 @@ public sealed record ExecutionControlSnapshot(ExecutionCircuitBreakerState Circu
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionManualOverride</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:58](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L58).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:59](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L59).
 
 Operator-created manual override used to temporarily bypass or force execution controls.
 
@@ -126,7 +65,7 @@ public sealed record ExecutionManualOverride(string OverrideId, string Kind, str
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionManualOverrideKinds</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:34](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L34).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:35](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L35).
 
 Supported manual override kinds for operator-managed execution governance.
 
@@ -138,16 +77,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string BypassOrderControls = &quot;BypassOrderControls&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:36](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L36) |  |
-| <code>public const string AllowLivePromotion = &quot;AllowLivePromotion&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:37](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L37) |  |
-| <code>public const string ForceBlockOrders = &quot;ForceBlockOrders&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:38](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L38) |  |
-| <code>public static bool IsSupported(string kind) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:40](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L40) |  |
+| <code>public const string BypassOrderControls = &quot;BypassOrderControls&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:37](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L37) |  |
+| <code>public const string AllowLivePromotion = &quot;AllowLivePromotion&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:38](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L38) |  |
+| <code>public const string ForceBlockOrders = &quot;ForceBlockOrders&quot;;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:39](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L39) |  |
+| <code>public static bool IsSupported(string kind) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:41](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L41) |  |
 
 ## ExecutionOperatorControlOptions
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionOperatorControlOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:14](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L14).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:15](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L15).
 
 Configuration for persisted execution operator controls.
 
@@ -159,38 +98,38 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ExecutionOperatorControlOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;controls&quot;));</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:18](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L18) |  |
-| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:21](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L21) |  |
-| <code>public string PendingTripPath =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:28](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L28) | Marker recording a circuit-breaker trip that was demanded but could not be written into the snapshot. It is independent of the snapshot on purpose: the snapshot write is exactly what failed, so the halt needs somewhere else to survive a restart. |
+| <code>public static ExecutionOperatorControlOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;controls&quot;));</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:19](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L19) |  |
+| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:22](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L22) |  |
+| <code>public string PendingTripPath =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:29](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L29) | Marker recording a circuit-breaker trip that was demanded but could not be written into the snapshot. It is independent of the snapshot on purpose: the snapshot write is exactly what failed, so the halt needs somewhere else to survive a restart. |
 
 ## ExecutionOperatorControlService
 
 Qualified name: <code>Meridian.Execution.Services.ExecutionOperatorControlService</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:123](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L123).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:124](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L124).
 
 Tracks operator-managed circuit breakers, position limits, and manual overrides. Control changes are persisted atomically because they are infrequent, while order evaluation stays entirely in-memory to keep routing latency predictable.
 
 ```csharp
-public sealed class ExecutionOperatorControlService
+public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Func&lt;string, Guid?, decimal&gt;? WorkingReductionQuantityProbe { get; set; }</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:153](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L153) | Absolute quantity already working in orders that would reduce the given symbol&#x27;s position for the given fund account, excluding the order being evaluated. Set by the composition that owns the open book — the gate itself cannot see working orders. Close-only admission compares settled position against committed reduction, not against this one order alone: two 10-share sells against a 10-share long each pass in isolation and together leave the account short 10, reopening risk behind the kill switch. An unset probe means working reductions cannot be established, so close-only refuses. That is the same fail-closed posture the rest of this exception takes, and it is why production compositions wire it: a host that does not is telling the gate it cannot answer the question, and under an open breaker that is not a reason to route. |
-| <code>public ExecutionOperatorControlService(ExecutionOperatorControlOptions? options, ILogger&lt;ExecutionOperatorControlService&gt; logger, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:155](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L155) |  |
-| <code>public ExecutionOperatorControlService() : this(ExecutionOperatorControlOptions.Default, Microsoft.Extensions.Logging.Abstractions.NullLogger&lt;ExecutionOperatorControlService&gt;.Instance);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:178](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L178) | Convenience constructor for test scenarios that do not need explicit options or a logger. Uses ExecutionOperatorControlOptions.Default and a null logger. |
-| <code>public ExecutionControlSnapshot GetSnapshot();</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:186](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L186) | Returns the current control state. |
-| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetCircuitBreakerAsync(bool isOpen, string? reason, string? changedBy, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:198](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L198) | Opens or closes the global execution circuit breaker. |
-| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetDefaultPositionLimitAsync(decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:253](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L253) | Updates the default position limit used when no symbol-specific limit exists. |
-| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetSymbolPositionLimitAsync(string symbol, decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:292](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L292) | Updates or clears the symbol-specific position limit. |
-| <code>public async Task&lt;ExecutionManualOverride&gt; CreateManualOverrideAsync(ManualOverrideRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:344](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L344) | Creates a new manual override. |
-| <code>public async Task&lt;bool&gt; ClearManualOverrideAsync(string overrideId, string? changedBy, string? reason, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:404](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L404) | Clears an existing manual override. |
-| <code>public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:446](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L446) | Evaluates a new order against the current operator controls. |
-| <code>public LivePromotionControlDecision EvaluateLivePromotion(string runId, string? strategyId, string? manualOverrideId);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:650](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L650) | Evaluates whether a Paper -&gt; Live promotion may proceed. |
-| <code>public async Task&lt;bool&gt; TryRecordPendingCircuitBreakerTripAsync(string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:717](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L717) | Durably records a circuit-breaker trip whose snapshot write failed, so a restart before the retry succeeds still comes up halted. Best-effort by nature — the caller already holds an in-memory fail-closed latch — but a snapshot write can fail for reasons a small independent marker survives. Returns whether the marker landed. |
+| <code>public Func&lt;string, Guid?, decimal&gt;? WorkingReductionQuantityProbe { get; set; }</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:160](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L160) | Absolute quantity already working in orders that would reduce the given symbol&#x27;s position for the given fund account, excluding the order being evaluated. Set by the composition that owns the open book — the gate itself cannot see working orders. Close-only admission compares settled position against committed reduction, not against this one order alone: two 10-share sells against a 10-share long each pass in isolation and together leave the account short 10, reopening risk behind the kill switch. An unset probe means working reductions cannot be established, so close-only refuses. That is the same fail-closed posture the rest of this exception takes, and it is why production compositions wire it: a host that does not is telling the gate it cannot answer the question, and under an open breaker that is not a reason to route. |
+| <code>public ExecutionOperatorControlService(ExecutionOperatorControlOptions? options, ILogger&lt;ExecutionOperatorControlService&gt; logger, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:162](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L162) |  |
+| <code>public ExecutionOperatorControlService() : this(ExecutionOperatorControlOptions.Default, Microsoft.Extensions.Logging.Abstractions.NullLogger&lt;ExecutionOperatorControlService&gt;.Instance);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:185](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L185) | Convenience constructor for test scenarios that do not need explicit options or a logger. Uses ExecutionOperatorControlOptions.Default and a null logger. |
+| <code>public ExecutionControlSnapshot GetSnapshot();</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:193](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L193) | Returns the current control state. |
+| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetCircuitBreakerAsync(bool isOpen, string? reason, string? changedBy, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:205](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L205) | Opens or closes the global execution circuit breaker. |
+| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetDefaultPositionLimitAsync(decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:260](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L260) | Updates the default position limit used when no symbol-specific limit exists. |
+| <code>public async Task&lt;ExecutionControlSnapshot&gt; SetSymbolPositionLimitAsync(string symbol, decimal? maxPositionSize, string? changedBy, string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:299](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L299) | Updates or clears the symbol-specific position limit. |
+| <code>public async Task&lt;ExecutionManualOverride&gt; CreateManualOverrideAsync(ManualOverrideRequest request, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:351](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L351) | Creates a new manual override. |
+| <code>public async Task&lt;bool&gt; ClearManualOverrideAsync(string overrideId, string? changedBy, string? reason, string? correlationId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:411](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L411) | Clears an existing manual override. |
+| <code>public ExecutionControlDecision EvaluateOrder(OrderRequest request, IPortfolioState? portfolioState, string? runId = null);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:453](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L453) | Evaluates a new order against the current operator controls. |
+| <code>public LivePromotionControlDecision EvaluateLivePromotion(string runId, string? strategyId, string? manualOverrideId);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:659](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L659) | Evaluates whether a Paper -&gt; Live promotion may proceed. |
+| <code>public async Task&lt;bool&gt; TryRecordPendingCircuitBreakerTripAsync(string? reason, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:726](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L726) | Durably records a circuit-breaker trip whose snapshot write failed, so a restart before the retry succeeds still comes up halted. Best-effort by nature — the caller already holds an in-memory fail-closed latch — but a snapshot write can fail for reasons a small independent marker survives. Returns whether the marker landed. |
 
 ## ExecutionPortfolioSnapshotDto
 
@@ -346,7 +285,7 @@ public sealed record LiveOrderReadinessRequest(string RunId, string BrokerName, 
 
 Qualified name: <code>Meridian.Execution.Services.LivePromotionControlDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:112](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L112).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:113](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L113).
 
 Result of evaluating a Paper -&gt; Live promotion request against the current controls.
 
@@ -358,14 +297,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static LivePromotionControlDecision Allowed() =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:114](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L114) |  |
-| <code>public static LivePromotionControlDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:115](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L115) |  |
+| <code>public static LivePromotionControlDecision Allowed() =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:115](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L115) |  |
+| <code>public static LivePromotionControlDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:116](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L116) |  |
 
 ## ManualOverrideRequest
 
 Qualified name: <code>Meridian.Execution.Services.ManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:83](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L83).
+Source: [src/Meridian.Execution/Services/ExecutionOperatorControlService.cs:84](../../../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs#L84).
 
 Manual override creation request.
 
@@ -878,23 +817,11 @@ Declared public members:
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public bool RequiresAmendmentRecovery { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:170](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L170) |  |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string[]? BrokerOrderAliases { get; init; }</code> | [src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs:172](../../../../src/Meridian.Execution/Services/FileBrokerageOrderRecoveryStore.cs#L172) |  |
 
-## RiskEscalationEntry
-
-Qualified name: <code>Meridian.Execution.Services.RiskEscalationEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:26](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L26).
-
-An order parked by the pre-trade risk gate awaiting governed operator approval. The original OrderRequest is retained so an approval can release exactly the order that was evaluated, never a caller-supplied variant.
-
-```csharp
-public sealed record RiskEscalationEntry(string EscalationId, OrderRequest Request, string Reason, string? RuleName, string? Actor, string? RunId, string? CorrelationId, DateTimeOffset ParkedAt, RiskEscalationStatus Status, string? ResolvedBy = null, string? ResolutionReason = null, DateTimeOffset? ResolvedAt = null, string? ReleasedBy = null, DateTimeOffset? ReleasedAt = null, bool ReleaseInFlight = false, string? SubmitterProvenance = null);
-```
-
 ## RiskEscalationQueueOptions
 
 Qualified name: <code>Meridian.Execution.Services.RiskEscalationQueueOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:67](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L67).
+Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:24](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L24).
 
 Location of the durable governed-approval queue snapshot.
 
@@ -906,76 +833,127 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static RiskEscalationQueueOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;risk-escalations&quot;, &quot;escalations.json&quot;));</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:72](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L72) |  |
+| <code>public static RiskEscalationQueueOptions Default { get; } = new (Path.Combine(AppContext.BaseDirectory, &quot;data&quot;, &quot;execution&quot;, &quot;risk-escalations&quot;, &quot;escalations.json&quot;));</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:29](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L29) |  |
 
 ## RiskEscalationQueueService
 
 Qualified name: <code>Meridian.Execution.Services.RiskEscalationQueueService</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:87](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L87).
+Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:44](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L44).
 
 Governed-approval queue for risk escalations: the enforced pre-trade validator parks escalated orders here instead of hard-rejecting them, operators approve or deny with an audited actor and reason, and an approval releases exactly one resubmission of the original order through the same risk gate. Metadata key ApprovalMetadataKey carries the one-shot approval token; consumption verifies the resubmitted order matches the full parked order fingerprint (every routing- and payoff-relevant field) so an approval can never release a different executable order than the risk desk reviewed. Queue transitions persist atomically so parked decisions and armed approvals survive process restarts.
 
 ```csharp
-public sealed class RiskEscalationQueueService : IAsyncDisposable
+public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDisposable
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string ApprovalMetadataKey = &quot;riskEscalationId&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:90](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L90) | Order-metadata key carrying the escalation id(s) of granted governed approvals. |
-| <code>public const string TokenSeparator = &quot;,&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:96](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L96) | Separator for the approval token set. An order breaching several escalation-capable rules carries one token per granted decision. |
-| <code>public const string IncrementalNotionalMetadataKey = &quot;riskIncrementalNotional&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:104](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L104) | Order-metadata key carrying the incremental notional an amendment adds. Quantity stays the full amended quantity so position limits evaluate the real post-amendment position, while notional-based rules measure only the exposure being added (the snapshot already reserves the working order at its current size). |
-| <code>public const string EvaluationOnlyMetadataKey = &quot;riskEvaluationOnly&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:112](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L112) | Order-metadata flag marking a probe evaluation: the rules should decide, but an escalation must not park a queue entry. Amendment validation uses this, since an escalated amendment could never be released as a modification and would leave an unusable approval behind. |
-| <code>public const string SubmitterMetadataKey = &quot;riskSubmitter&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:124](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L124) | Order-metadata key carrying the original submitting operator across a chained release. The actor key on a release names the operator performing the release — it feeds RiskEscalationEntry.ReleasedBy and the consumption-time segregation check — so it cannot also carry the submitter. Without this key, a re-park during a chained release would record the previous stage&#x27;s approver as the escalation&#x27;s actor: the original submitter could then approve a later stage of their own order, while the independent approver would be refused as a false self-release. |
-| <code>public RiskEscalationQueueService(ILogger&lt;RiskEscalationQueueService&gt; logger, ExecutionAuditTrailService? auditTrail = null, RiskEscalationQueueOptions? options = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:134](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L134) |  |
-| <code>public RiskEscalationEntry Park(OrderRequest request, string reason, string? ruleName = null, string? actor = null, string? runId = null, string? correlationId = null, IReadOnlyList&lt;RiskEscalationEntry&gt;? consumedApprovals = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:148](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L148) | Parks request for governed approval and returns the queue entry. |
-| <code>public bool TryBeginRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:262](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L262) | Atomically claims an approved entry for release. Two concurrent approve requests on the same entry would otherwise both submit the retained order; the first can fill and free its client order id before the second reaches the OMS, letting the second park a fresh escalation for an order that already executed. Returns false when the entry is not approved or a release is already in flight. |
-| <code>public void EndRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:281](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L281) | Clears a release claim that did not result in a released order. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetUnresolved() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:300](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L300) | Returns every entry that can still route an order — awaiting approval or approved and not yet released — oldest first. Used to rebuild the client-order-id reservations a restarted host would otherwise lose while this durable queue keeps the escalations themselves. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetPending() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:307](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L307) | Returns entries awaiting approval, oldest first. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetRecent(int take = 50);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:319](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L319) | Returns recent entries newest first. Unresolved entries (pending or armed approvals) are always included regardless of age — an old escalation that still needs a decision must never scroll out of the only queue listing — while terminal Denied/Released history fills whatever remains of the take window. |
-| <code>public RiskEscalationEntry? TryGet(string escalationId) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:338](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L338) | Returns the entry with escalationId, or null. |
-| <code>public RiskEscalationEntry? Approve(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:346](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L346) | Approves a pending escalation, arming a one-shot release of the parked order. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
-| <code>public RiskEscalationEntry? Deny(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:353](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L353) | Denies a pending escalation. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
-| <code>public RiskEscalationEntry? TryConsumeApproval(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:365](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L365) | Consumes a one-shot governed approval carried on request metadata. Returns the released entry only when the token references an approved, unreleased entry whose full order fingerprint matches the resubmitted order; the entry then transitions to RiskEscalationStatus.Released. The release commits durably before it is honored: if the snapshot cannot be persisted the in-memory transition rolls back and consumption fails closed, so a restart can never reload a stale approved token for an order that already routed. |
-| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; TryConsumeApprovals(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:379](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L379) | Consumes every governed approval carried on request metadata. An order that breaches several escalation-capable rules accumulates one token per granted decision (the token value is a delimited set), and all of them must be honored in a single evaluation — otherwise each release satisfies one rule while re-parking another and the order can never route despite every decision being granted. Each token is still one-shot and fingerprint-bound individually. |
-| <code>public static IReadOnlyList&lt;string&gt; SplitTokens(string? tokenValue) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:403](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L403) | Splits a governed-approval token value into its individual escalation ids. |
-| <code>public static string JoinTokens(IEnumerable&lt;string&gt; escalationIds) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:409](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L409) | Joins escalation ids into a single governed-approval token value. |
-| <code>public bool TryRestoreApproval(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:482](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L482) | Re-arms a released approval whose order did not route (a later hard rule rejected it), restoring the entry to RiskEscalationStatus.Approved so the operator&#x27;s decision remains retryable once the blocking condition clears. Only a caller that observed the failed release may restore, and only from Released. |
-| <code>public RiskEscalationEntry? Withdraw(string escalationId, string actor, string? reason);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:523](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L523) | Withdraws an escalation whose order can no longer be routed — the submitter cancelled it, or the run that owned it ended. Unlike Deny this also resolves an entry an operator already RiskEscalationStatus.Approved, because an approval that has not been released is still only a permission: the order behind it is gone. A release already in flight is left alone — that order is on its way to the broker and only its own outcome may resolve the entry. Returns null when there was nothing withdrawable, so callers can fail closed rather than reporting a cancellation the queue never accepted. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:1032](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L1032) | Drains outstanding audit writes so shutdown cannot lose approval evidence. |
+| <code>public const string ApprovalMetadataKey = &quot;riskEscalationId&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:47](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L47) | Order-metadata key carrying the escalation id(s) of granted governed approvals. |
+| <code>public const string TokenSeparator = &quot;,&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:53](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L53) | Separator for the approval token set. An order breaching several escalation-capable rules carries one token per granted decision. |
+| <code>public const string IncrementalNotionalMetadataKey = RiskEscalationMetadata.IncrementalNotionalMetadataKey;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:61](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L61) | Order-metadata key carrying the incremental notional an amendment adds. Quantity stays the full amended quantity so position limits evaluate the real post-amendment position, while notional-based rules measure only the exposure being added (the snapshot already reserves the working order at its current size). |
+| <code>public const string EvaluationOnlyMetadataKey = RiskEscalationMetadata.EvaluationOnlyMetadataKey;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:69](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L69) | Order-metadata flag marking a probe evaluation: the rules should decide, but an escalation must not park a queue entry. Amendment validation uses this, since an escalated amendment could never be released as a modification and would leave an unusable approval behind. |
+| <code>public const string SubmitterMetadataKey = &quot;riskSubmitter&quot;;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:81](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L81) | Order-metadata key carrying the original submitting operator across a chained release. The actor key on a release names the operator performing the release — it feeds RiskEscalationEntry.ReleasedBy and the consumption-time segregation check — so it cannot also carry the submitter. Without this key, a re-park during a chained release would record the previous stage&#x27;s approver as the escalation&#x27;s actor: the original submitter could then approve a later stage of their own order, while the independent approver would be refused as a false self-release. |
+| <code>public RiskEscalationQueueService(ILogger&lt;RiskEscalationQueueService&gt; logger, ExecutionAuditTrailService? auditTrail = null, RiskEscalationQueueOptions? options = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:91](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L91) |  |
+| <code>public RiskEscalationEntry Park(OrderRequest request, string reason, string? ruleName = null, string? actor = null, string? runId = null, string? correlationId = null, IReadOnlyList&lt;RiskEscalationEntry&gt;? consumedApprovals = null);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:105](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L105) | Parks request for governed approval and returns the queue entry. |
+| <code>public bool TryBeginRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:219](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L219) | Atomically claims an approved entry for release. Two concurrent approve requests on the same entry would otherwise both submit the retained order; the first can fill and free its client order id before the second reaches the OMS, letting the second park a fresh escalation for an order that already executed. Returns false when the entry is not approved or a release is already in flight. |
+| <code>public void EndRelease(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:238](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L238) | Clears a release claim that did not result in a released order. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetUnresolved() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:257](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L257) | Returns every entry that can still route an order — awaiting approval or approved and not yet released — oldest first. Used to rebuild the client-order-id reservations a restarted host would otherwise lose while this durable queue keeps the escalations themselves. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetPending() =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:264](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L264) | Returns entries awaiting approval, oldest first. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; GetRecent(int take = 50);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:276](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L276) | Returns recent entries newest first. Unresolved entries (pending or armed approvals) are always included regardless of age — an old escalation that still needs a decision must never scroll out of the only queue listing — while terminal Denied/Released history fills whatever remains of the take window. |
+| <code>public RiskEscalationEntry? TryGet(string escalationId) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:295](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L295) | Returns the entry with escalationId, or null. |
+| <code>public RiskEscalationEntry? Approve(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:303](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L303) | Approves a pending escalation, arming a one-shot release of the parked order. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
+| <code>public RiskEscalationEntry? Deny(string escalationId, string actor, string? reason = null) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:310](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L310) | Denies a pending escalation. Returns the updated entry, or null when the entry does not exist or is no longer pending. |
+| <code>public RiskEscalationEntry? TryConsumeApproval(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:322](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L322) | Consumes a one-shot governed approval carried on request metadata. Returns the released entry only when the token references an approved, unreleased entry whose full order fingerprint matches the resubmitted order; the entry then transitions to RiskEscalationStatus.Released. The release commits durably before it is honored: if the snapshot cannot be persisted the in-memory transition rolls back and consumption fails closed, so a restart can never reload a stale approved token for an order that already routed. |
+| <code>public IReadOnlyList&lt;RiskEscalationEntry&gt; TryConsumeApprovals(OrderRequest request);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:336](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L336) | Consumes every governed approval carried on request metadata. An order that breaches several escalation-capable rules accumulates one token per granted decision (the token value is a delimited set), and all of them must be honored in a single evaluation — otherwise each release satisfies one rule while re-parking another and the order can never route despite every decision being granted. Each token is still one-shot and fingerprint-bound individually. |
+| <code>public static IReadOnlyList&lt;string&gt; SplitTokens(string? tokenValue) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:360](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L360) | Splits a governed-approval token value into its individual escalation ids. |
+| <code>public static string JoinTokens(IEnumerable&lt;string&gt; escalationIds) =&gt; …;</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:366](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L366) | Joins escalation ids into a single governed-approval token value. |
+| <code>public bool TryRestoreApproval(string escalationId);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:439](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L439) | Re-arms a released approval whose order did not route (a later hard rule rejected it), restoring the entry to RiskEscalationStatus.Approved so the operator&#x27;s decision remains retryable once the blocking condition clears. Only a caller that observed the failed release may restore, and only from Released. |
+| <code>public RiskEscalationEntry? Withdraw(string escalationId, string actor, string? reason);</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:480](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L480) | Withdraws an escalation whose order can no longer be routed — the submitter cancelled it, or the run that owned it ended. Unlike Deny this also resolves an entry an operator already RiskEscalationStatus.Approved, because an approval that has not been released is still only a permission: the order behind it is gone. A release already in flight is left alone — that order is on its way to the broker and only its own outcome may resolve the entry. Returns null when there was nothing withdrawable, so callers can fail closed rather than reporting a cancellation the queue never accepted. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:989](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L989) | Drains outstanding audit writes so shutdown cannot lose approval evidence. |
 
-## RiskEscalationSnapshot
+## SessionSymbolTcaSummary
 
-Qualified name: <code>Meridian.Execution.Services.RiskEscalationSnapshot</code>. Kind: `record`.
+Qualified name: <code>Meridian.Execution.Services.SessionSymbolTcaSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:53](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L53).
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:409](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L409).
 
-Persisted snapshot of the governed-approval queue.
-
-```csharp
-public sealed record RiskEscalationSnapshot(IReadOnlyList<RiskEscalationEntry> Entries);
-```
-
-## RiskEscalationStatus
-
-Qualified name: <code>Meridian.Execution.Services.RiskEscalationStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:13](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L13).
-
-Lifecycle of a parked risk escalation.
+Per-symbol cost breakdown, sorted by total commission descending.
 
 ```csharp
-public enum RiskEscalationStatus
+public sealed record SessionSymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills);
 ```
 
-Enum declarations:
+## SessionTcaCostSummary
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaCostSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:398](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L398).
+
+Aggregate session-level cost summary.
+
+```csharp
+public sealed record SessionTcaCostSummary(decimal TotalCommissions, decimal TotalBuyNotional, decimal TotalSellNotional, decimal TotalNotional, double CommissionRateBps, int TotalFills, int BuyFills, int SellFills);
+```
+
+## SessionTcaExecutionQuality
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaExecutionQuality</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:433](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L433).
+
+Execution-quality statistics derived by joining fills to their originating orders. AvgLimitPriceImprovementBps is notional-weighted; positive values mean fills executed better than their limit price.
+
+```csharp
+public sealed record SessionTcaExecutionQuality(int OrdersWithLimitPrice, double AvgLimitPriceImprovementBps, double MedianTimeToFillSeconds, int TimedFillCount)
+```
+
+Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>PendingApproval</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:15](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L15) |  |
-| <code>Approved</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:16](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L16) |  |
-| <code>Denied</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:17](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L17) |  |
-| <code>Released</code> | [src/Meridian.Execution/Services/RiskEscalationQueueService.cs:18](../../../../src/Meridian.Execution/Services/RiskEscalationQueueService.cs#L18) |  |
+| <code>public static SessionTcaExecutionQuality Empty { get; } = new (0, 0.0, 0.0, 0);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:439](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L439) |  |
+
+## SessionTcaFillOutlier
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaFillOutlier</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:420](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L420).
+
+A fill whose commission rate significantly exceeds the session median.
+
+```csharp
+public sealed record SessionTcaFillOutlier(string OrderId, string Symbol, decimal Notional, decimal Commission, double CommissionRateBps, DateTimeOffset FilledAt);
+```
+
+## SessionTcaReport
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:388](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L388).
+
+TCA report over a paper/live session fill tape.
+
+```csharp
+public sealed record SessionTcaReport(string SessionId, string StrategyId, DateTimeOffset GeneratedAtUtc, SessionTcaCostSummary CostSummary, IReadOnlyList<SessionSymbolTcaSummary> SymbolSummaries, IReadOnlyList<SessionTcaFillOutlier> Outliers, SessionTcaExecutionQuality ExecutionQuality);
+```
+
+## SessionTcaReporter
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReporter</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:12](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L12).
+
+Generates a Transaction Cost Analysis (TCA) report from a paper/live session fill tape. Computes commission attribution, per-symbol cost breakdowns, outlier detection, and execution-quality statistics (time-to-fill, limit-price improvement). This is a post-processing pass over the session&#x27;s persisted ExecutionReport history; it requires no market data beyond the fills and orders already recorded by the session.
+
+```csharp
+public static class SessionTcaReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SessionTcaReport Generate(string sessionId, string strategyId, IReadOnlyList&lt;ExecutionReport&gt; fills, IReadOnlyList&lt;OrderState&gt;? orders = null);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:33](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L33) | Generates a SessionTcaReport for sessionId from the session&#x27;s fill history. Only reports of type ExecutionReportType.Fill or ExecutionReportType.PartialFill with a fill price and positive filled quantity contribute. Report sequences whose per-order quantities are cumulative (as emitted by brokers that report running totals, e.g. the IB gateway) are converted to incremental quantities before aggregation. orders is optional and enriches the report with time-to-fill and limit-price-improvement statistics. Returns a zero-valued report when no usable fills exist. |

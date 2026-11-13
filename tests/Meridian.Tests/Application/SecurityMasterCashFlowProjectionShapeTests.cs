@@ -17,8 +17,8 @@ namespace Meridian.Tests.Application;
 /// case goes through the public <see cref="SecurityMasterCashFlowService.GetProjectionAsync"/> seam and
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
 /// The frozen legacy row codec preserves the original nested-member pins. Current calculated rows
-/// explicitly declare row version 2 and retain measured interest intervals and interest-basis
-/// segments when their calculation path supplies them. Both contracts pin every nested member
+/// explicitly declare row version 2 and retain measured interest intervals and principal-basis
+/// segments when the calculation supplies them. Current and frozen contracts pin every nested member
 /// independently. Top-level and resolved terms members remain unchanged; only a declared projection
 /// adds <c>scheduleEvidence</c>. A stray or malformed convention block still projects exactly as its clean twin.
 /// </summary>
@@ -147,7 +147,14 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             ["Swap.zeroRateTwoLeg"] = [ScheduleRowPaths, SwapLegPaths],
         };
 
-    private static readonly string[] InterestSegmentPaths =
+    private static readonly string[] MeasuredInterestRowPaths =
+    [
+        "schedule[].rowVersion",
+        "schedule[].interestMeasuredFrom",
+        "schedule[].interestMeasuredTo",
+    ];
+
+    private static readonly string[] InterestSegmentRowPaths =
     [
         "schedule[].interestSegments",
         "schedule[].interestSegments[].start",
@@ -160,12 +167,12 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         "schedule[].interestSegments[].factorAfter",
     ];
 
-    // Exact additions in current row contract 2. Factor-aware bonds retain the original coupon
-    // interval and every interest-basis segment; netted multi-leg rows do not claim that evidence.
+    // Exact additions in current row contract 2. Both fixed-rate bond walks retain their measured
+    // intervals and interest-principal segments. Netted multi-leg rows cannot claim that evidence.
     private static string[] CurrentRowAdditions(string caseName) => caseName switch
     {
         "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule" =>
-        ["schedule[].rowVersion", "schedule[].interestMeasuredFrom", "schedule[].interestMeasuredTo", .. InterestSegmentPaths],
+            [.. MeasuredInterestRowPaths, .. InterestSegmentRowPaths],
         "Swap.zeroRateTwoLeg" => ["schedule[].rowVersion", "legSchedules[].schedule[].rowVersion"],
         _ => []
     };
@@ -327,7 +334,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
     [MemberData(nameof(UndeclaredCases))]
     public async Task UndeclaredProjection_FrozenLegacyRowsRetainExactlyTheOriginalNestedMembers(string caseName)
     {
-        var legacy = await ProjectAsync(caseName, legacyRows: true);
+        var legacy = await ProjectAsync(caseName, frozenRowVersion: 0);
         var expected = TopLevelMembers
             .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
             .Concat(LegacyRowsWritten[caseName].SelectMany(static rows => rows));
@@ -339,6 +346,29 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             .Select(JsonNamingPolicy.CamelCase.ConvertName))).Should().BeEquivalentTo(expected);
         if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))
             legacy["BlockedReason"]!.GetValue<string>().Should().Be(reason);
+    }
+
+    [Theory]
+    [InlineData("Bond.zeroRateBullet")]
+    [InlineData("Bond.zeroRateContractualSchedule")]
+    public async Task VersionOneRows_RetainMeasuredIntervalsWithoutVersionTwoSegments(string caseName)
+    {
+        var versionOne = await ProjectAsync(caseName, frozenRowVersion: 1);
+        var expected = TopLevelMembers
+            .Concat(TermsUsedMembers.Select(static member => $"termsUsed.{member}"))
+            .Concat(LegacyRowsWritten[caseName].SelectMany(static rows => rows))
+            .Concat(MeasuredInterestRowPaths);
+
+        MemberPaths(versionOne).Select(static path => string.Join('.', path.Split('.')
+            .Select(JsonNamingPolicy.CamelCase.ConvertName))).Should().BeEquivalentTo(expected);
+        versionOne["Schedule"]!.AsArray().Should().NotBeEmpty();
+        foreach (var row in versionOne["Schedule"]!.AsArray())
+        {
+            row!["RowVersion"]!.GetValue<int>().Should().Be(1);
+            row["InterestMeasuredFrom"].Should().NotBeNull();
+            row["InterestMeasuredTo"].Should().NotBeNull();
+            row.AsObject().ContainsKey("InterestSegments").Should().BeFalse();
+        }
     }
 
     [Fact]
@@ -404,10 +434,10 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         }
     }
 
-    private static Task<JsonObject> ProjectAsync(string caseName, bool legacyRows = false)
+    private static Task<JsonObject> ProjectAsync(string caseName, int? frozenRowVersion = null)
     {
         var (assetClass, sourceKind, buildTerms) = Cases[caseName];
-        return ProjectAsync(caseName, assetClass, sourceKind, buildTerms(IssueDate), legacyRows);
+        return ProjectAsync(caseName, assetClass, sourceKind, buildTerms(IssueDate), frozenRowVersion);
     }
 
     private static async Task<JsonObject> ProjectAsync(
@@ -415,7 +445,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         string assetClass,
         StructuredCashFlowSourceKind sourceKind,
         JsonObject terms,
-        bool legacyRows = false)
+        int? frozenRowVersion = null)
     {
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(SecurityId, Arg.Any<CancellationToken>())
@@ -432,8 +462,8 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         var projection = await service.GetProjectionAsync(SecurityId, StructuredCashFlowScenario.Base);
 
         projection.Should().NotBeNull($"the '{caseName}' security has a calculated source");
-        return legacyRows
-            ? JsonSerializer.SerializeToNode(SecurityCashFlowScheduleRowCodec.Legacy(projection!),
+        return frozenRowVersion is { } rowVersion
+            ? JsonSerializer.SerializeToNode(SecurityCashFlowScheduleRowCodec.ForVersion(projection!, rowVersion),
                 SecurityCashFlowReceiptJsonContext.Default.StructuredCashFlowProjectionDto)!.AsObject()
             : JsonSerializer.SerializeToNode(projection, EndpointOptions)!.AsObject();
     }

@@ -132,7 +132,7 @@ jobs:
       - name: Read installed Playwright version
         id: playwright_version
         run: |
-          node -e 'console.log(`version=${require("./src/Meridian.Ui/dashboard/node_modules/playwright/package.json").version}`)' >> "$GITHUB_OUTPUT"
+          node -e 'console.log("version=" + require("./src/Meridian.Ui/dashboard/node_modules/playwright/package.json").version)' >> "$GITHUB_OUTPUT"
 
       - name: Restore Playwright browsers
         id: playwright_cache
@@ -315,7 +315,7 @@ jobs:
       - name: Read installed Playwright version
         id: playwright_version
         run: |
-          node -e 'console.log(`version=${require("./src/Meridian.Ui/dashboard/node_modules/playwright/package.json").version}`)' >> "$GITHUB_OUTPUT"
+          node -e 'console.log("version=" + require("./src/Meridian.Ui/dashboard/node_modules/playwright/package.json").version)' >> "$GITHUB_OUTPUT"
 
       - name: Restore Playwright browsers
         id: playwright_cache

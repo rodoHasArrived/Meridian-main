@@ -17,6 +17,8 @@ global using MarketEventPayload = Meridian.Domain.Events.MarketEventPayload;
 // Expose internal classes to test assembly, benchmark project, and main entry point for unit testing
 using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Meridian.Tests")]
+[assembly: InternalsVisibleTo("Meridian.Storage.Tests")]
+[assembly: InternalsVisibleTo("Meridian.Execution.Tests")]
 [assembly: InternalsVisibleTo("Meridian.Demo.Tests")]
 [assembly: InternalsVisibleTo("Meridian")]
 [assembly: InternalsVisibleTo("Meridian.Benchmarks")]

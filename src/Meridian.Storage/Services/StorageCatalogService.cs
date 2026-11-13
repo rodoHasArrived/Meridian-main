@@ -293,24 +293,24 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
 
             // Update directory index
             var dirPath = Path.GetDirectoryName(entry.RelativePath) ?? string.Empty;
-            if (_directoryIndexCache.TryGetValue(dirPath, out var dirIndex))
+            var dirIndex = _directoryIndexCache.GetOrAdd(dirPath, _ => new DirectoryIndex
             {
-                var existingIdx = dirIndex.Files.FindIndex(f => f.RelativePath == entry.RelativePath);
-                if (existingIdx >= 0)
-                {
-                    dirIndex.Files[existingIdx] = entry;
-                }
-                else
-                {
-                    dirIndex.Files.Add(entry);
-                }
+                RelativePath = dirPath,
+                CreatedAt = DateTime.UtcNow
+            });
+            var existingIdx = dirIndex.Files.FindIndex(f => f.RelativePath == entry.RelativePath);
+            if (existingIdx >= 0)
+                dirIndex.Files[existingIdx] = entry;
+            else
+                dirIndex.Files.Add(entry);
 
-                dirIndex.LastUpdatedAt = DateTime.UtcNow;
-                FinalizeDirectoryIndex(dirIndex);
+            dirIndex.LastUpdatedAt = DateTime.UtcNow;
+            FinalizeDirectoryIndex(dirIndex);
 
-                var indexPath = Path.Combine(_rootPath, dirPath, DirectoryIndexFileName);
-                await SaveDirectoryIndexAsync(dirIndex, indexPath, ct);
-            }
+            var indexPath = Path.Combine(_rootPath, dirPath, DirectoryIndexFileName);
+            await SaveDirectoryIndexAsync(dirIndex, indexPath, ct);
+            if (!_catalog.DirectoryIndexes.Contains(dirPath))
+                _catalog.DirectoryIndexes = [.. _catalog.DirectoryIndexes, dirPath];
 
             // Update symbol entry
             if (!string.IsNullOrEmpty(entry.Symbol))

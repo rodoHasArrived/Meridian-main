@@ -21,6 +21,17 @@ module JournalValidation =
         if isJournalPosted journalEntryId then
             errors.Add (sprintf "Journal entry '%O' has already been posted." journalEntryId)
 
+        // Legacy lines without currency detail remain compatible. Explicit functional
+        // amounts in different currencies can never be summed into a balanced journal.
+        let currencies =
+            lines
+            |> List.choose (fun line ->
+                if String.IsNullOrWhiteSpace line.FunctionalCurrency then None
+                else Some (line.FunctionalCurrency.Trim().ToUpperInvariant()))
+            |> List.distinct
+        if List.length currencies > 1 then
+            errors.Add "Journal entry lines must use one functional currency."
+
         let totalDebit = lines |> List.sumBy (fun line -> line.Debit)
         let totalCredit = lines |> List.sumBy (fun line -> line.Credit)
 
