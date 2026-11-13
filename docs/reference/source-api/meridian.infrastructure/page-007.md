@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HealthCheckOptions
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.HealthCheckOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:643](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L643).
+
+Health check configuration.
+
+```csharp
+public sealed record HealthCheckOptions(int IntervalSeconds = 30, int TimeoutSeconds = 10, int UnhealthyThreshold = 3);
+```
+
 ## PluginInstanceConfig
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.PluginInstanceConfig</code>. Kind: `record`.
@@ -1118,15 +1130,3 @@ Declared public members:
 | <code>public Task&lt;HttpHandleResult&gt; TryHandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action&lt;RateLimitInfo&gt;? onRateLimitHit = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:65](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L65) | Handle HTTP response without throwing exceptions. Returns a result object with categorized error information. This is the preferred method for use in base provider classes that need to return results rather than throw. |
 | <code>public HttpResponseResult HandleResponse(HttpStatusCode statusCode, string symbol, string dataType, string? errorContent = null);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:125](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L125) | Synchronous version for responses already read. |
 | <code>public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:211](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L211) | Extract Retry-After header value from response. |
-
-## HttpResponseResult
-
-Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:241](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L241).
-
-Result of HTTP response handling.
-
-```csharp
-public readonly record struct HttpResponseResult(bool IsSuccess, HttpStatusCode StatusCode, bool IsNotFound = false, string? ErrorMessage = null);
-```

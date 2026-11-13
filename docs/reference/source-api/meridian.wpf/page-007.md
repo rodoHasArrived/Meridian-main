@@ -44,7 +44,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.DesktopConfigurationRecoveryResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:17](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L17).
+Source: [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:18](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L18).
 
 Result of the desktop configuration preflight. Recovery artifacts are retained beside the configuration so an operator can inspect exactly what was displaced and why.
 
@@ -56,15 +56,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Recovered =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:25](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L25) |  |
-| <code>public IReadOnlyList&lt;string&gt; RetainedArtifacts { get; }</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:28](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L28) |  |
-| <code>public string OperatorMessage =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:41](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L41) |  |
+| <code>public bool Recovered =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:26](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L26) |  |
+| <code>public IReadOnlyList&lt;string&gt; RetainedArtifacts { get; }</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:29](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L29) |  |
+| <code>public string OperatorMessage =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:42](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L42) |  |
 
 ## DesktopConfigurationRecoveryService
 
 Qualified name: <code>Meridian.Wpf.Services.DesktopConfigurationRecoveryService</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:58](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L58).
+Source: [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:61](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L61).
 
 Performs configuration validation, last-known-good recovery, and atomic persistence without depending on WPF application state. This service is intentionally path-injected for focused startup-recovery tests.
 
@@ -76,11 +76,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DesktopConfigurationRecoveryService(string configPath, Func&lt;DateTimeOffset&gt;? utcNow = null);</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:70](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L70) |  |
-| <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:81](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L81) |  |
-| <code>public string LastKnownGoodPath =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:83](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L83) |  |
-| <code>public DesktopConfigurationRecoveryResult EnsureReadableConfiguration(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:85](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L85) |  |
-| <code>public async Task PersistValidConfigurationAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:176](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L176) |  |
+| <code>public DesktopConfigurationRecoveryService(string configPath, Func&lt;DateTimeOffset&gt;? utcNow = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:74](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L74) |  |
+| <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:87](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L87) |  |
+| <code>public string LastKnownGoodPath =&gt; …;</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:89](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L89) |  |
+| <code>public DesktopConfigurationRecoveryResult EnsureReadableConfiguration(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:91](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L91) |  |
+| <code>public async Task PersistValidConfigurationAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs:199](../../../../src/Meridian.Wpf/Services/DesktopConfigurationRecoveryService.cs#L199) |  |
 
 ## DesktopFundScopeTenantAccessor
 
@@ -377,7 +377,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.FirstRunInitializedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/FirstRunService.cs:287](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L287).
+Source: [src/Meridian.Wpf/Services/FirstRunService.cs:284](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L284).
 
 Event arguments for first-run initialization events.
 
@@ -389,15 +389,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool WasFirstRun { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:292](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L292) | Gets whether this was the first run. |
-| <code>public DateTime Timestamp { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:297](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L297) | Gets the timestamp of initialization. |
-| <code>public FirstRunInitializedEventArgs(bool wasFirstRun);</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:303](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L303) | Initializes a new instance of the FirstRunInitializedEventArgs class. |
+| <code>public bool WasFirstRun { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:289](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L289) | Gets whether this was the first run. |
+| <code>public DateTime Timestamp { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:294](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L294) | Gets the timestamp of initialization. |
+| <code>public FirstRunInitializedEventArgs(bool wasFirstRun);</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:300](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L300) | Initializes a new instance of the FirstRunInitializedEventArgs class. |
 
 ## FirstRunService
 
 Qualified name: <code>Meridian.Wpf.Services.FirstRunService</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/FirstRunService.cs:14](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L14).
+Source: [src/Meridian.Wpf/Services/FirstRunService.cs:13](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L13).
 
 Service for detecting and handling first-run scenarios. Implements singleton pattern for application-wide first-run detection.
 
@@ -409,19 +409,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static FirstRunService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:29](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L29) | Gets the singleton instance of the FirstRunService. |
-| <code>public string AppDataPath { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:34](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L34) | Gets the path to the application data directory. |
-| <code>public string ConfigFilePath { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:39](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L39) | Gets the path to the configuration file. |
-| <code>public string FirstRunMarkerPath { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:44](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L44) | Gets the path to the first-run marker file. |
-| <code>public event EventHandler&lt;FirstRunInitializedEventArgs&gt;? Initialized;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:49](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L49) | Occurs when initialization is complete. |
-| <code>public Task&lt;bool&gt; IsFirstRunAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:63](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L63) | Determines whether this is the first run of the application. |
-| <code>public Task InitializeAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:98](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L98) | Initializes the application for first-run scenarios. Creates necessary directories and default configuration. |
-| <code>public Task ResetAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:158](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L158) | Resets the first-run state, useful for testing or reconfiguration. |
-| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:192](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L192) | Gets whether the application has been initialized. |
-| <code>public ConfigurationProvisioningResult LastConfigurationProvisioningResult =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:194](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L194) |  |
-| <code>public DesktopConfigurationRecoveryResult? LastConfigurationRecoveryResult =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:196](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L196) |  |
-| <code>public Task&lt;ConfigurationProvisioningResult&gt; EnsureConfigurationExistsAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:198](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L198) |  |
-| <code>public async Task PersistConfigurationAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:221](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L221) |  |
+| <code>public static FirstRunService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:28](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L28) | Gets the singleton instance of the FirstRunService. |
+| <code>public string AppDataPath { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:33](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L33) | Gets the path to the application data directory. |
+| <code>public string ConfigFilePath { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:38](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L38) | Gets the path to the configuration file. |
+| <code>public string FirstRunMarkerPath { get; }</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:43](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L43) | Gets the path to the first-run marker file. |
+| <code>public event EventHandler&lt;FirstRunInitializedEventArgs&gt;? Initialized;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:48](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L48) | Occurs when initialization is complete. |
+| <code>public Task&lt;bool&gt; IsFirstRunAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:62](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L62) | Determines whether this is the first run of the application. |
+| <code>public Task InitializeAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:97](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L97) | Initializes the application for first-run scenarios. Creates necessary directories and default configuration. |
+| <code>public Task ResetAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:157](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L157) | Resets the first-run state, useful for testing or reconfiguration. |
+| <code>public bool IsInitialized =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:191](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L191) | Gets whether the application has been initialized. |
+| <code>public ConfigurationProvisioningResult LastConfigurationProvisioningResult =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:193](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L193) |  |
+| <code>public DesktopConfigurationRecoveryResult? LastConfigurationRecoveryResult =&gt; …;</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:195](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L195) |  |
+| <code>public Task&lt;ConfigurationProvisioningResult&gt; EnsureConfigurationExistsAsync();</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:197](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L197) |  |
+| <code>public async Task PersistConfigurationAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:220](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L220) |  |
 
 ## FloatingPageService
 

@@ -763,7 +763,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.ConfigurationProvisioningResult</code>. Kind: `enum`.
 
-Source: [src/Meridian.Wpf/Services/FirstRunService.cs:276](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L276).
+Source: [src/Meridian.Wpf/Services/FirstRunService.cs:273](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L273).
 
 ```csharp
 public enum ConfigurationProvisioningResult
@@ -773,10 +773,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>CreatedDefault</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:278](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L278) |  |
-| <code>RestoredLastKnownGood</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:279](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L279) |  |
-| <code>RepairedInvalid</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:280](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L280) |  |
-| <code>AlreadyValid</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:281](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L281) |  |
+| <code>CreatedDefault</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:275](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L275) |  |
+| <code>RestoredLastKnownGood</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:276](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L276) |  |
+| <code>RepairedInvalid</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:277](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L277) |  |
+| <code>AlreadyValid</code> | [src/Meridian.Wpf/Services/FirstRunService.cs:278](../../../../src/Meridian.Wpf/Services/FirstRunService.cs#L278) |  |
 
 ## ConnectionService
 

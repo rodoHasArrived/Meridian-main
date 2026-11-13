@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TemplateBrokerMarketDataExtensions
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerMarketDataExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:185](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L185).
+
+Provides the placeholder market data ingestion seam for the broker adapter template.
+
+```csharp
+public sealed class TemplateBrokerMarketDataExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task IngestMarketDataAsync(IAsyncEnumerable&lt;TemplateBrokerMarketDataPayload&gt; feed, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs:187](../../../../src/Meridian.Infrastructure/Adapters/Templates/BrokerAdapterTemplate.cs#L187) |  |
+
 ## TemplateBrokerMarketDataPayload
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Templates.TemplateBrokerMarketDataPayload</code>. Kind: `record`.
@@ -883,15 +901,3 @@ Declared public members:
 | <code>public int TimeoutSeconds { get; init; } = 10;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:187](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L187) | Timeout for health check requests in seconds. |
 | <code>public int UnhealthyThreshold { get; init; } = 3;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:192](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L192) | Number of consecutive failures before marking unhealthy. |
 | <code>public HealthCheckOptions ToOptions() =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:197](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L197) | Converts to internal options format. |
-
-## HealthCheckOptions
-
-Qualified name: <code>Meridian.Infrastructure.DataSources.HealthCheckOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:643](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L643).
-
-Health check configuration.
-
-```csharp
-public sealed record HealthCheckOptions(int IntervalSeconds = 30, int TimeoutSeconds = 10, int UnhealthyThreshold = 3);
-```

@@ -6,6 +6,164 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleExecutionSummary
+
+Qualified name: <code>Meridian.Application.Scheduling.ScheduleExecutionSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:523](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L523).
+
+Summary statistics for a single schedule.
+
+```csharp
+public sealed record ScheduleExecutionSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScheduleId { get; init; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:525](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L525) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:526](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L526) |  |
+| <code>public int SuccessfulExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:527](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L527) |  |
+| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:528](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L528) |  |
+| <code>public int PartialSuccessExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:529](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L529) |  |
+| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:530](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L530) |  |
+| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:531](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L531) |  |
+| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:532](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L532) |  |
+| <code>public DateTimeOffset? LastExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:533](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L533) |  |
+| <code>public DateTimeOffset? LastSuccessfulExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:534](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L534) |  |
+| <code>public double SuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:535](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L535) |  |
+
+## ScheduleStatusSummary
+
+Qualified name: <code>Meridian.Application.Scheduling.ScheduleStatusSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:667](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L667).
+
+Summary of all schedule statuses.
+
+```csharp
+public sealed record ScheduleStatusSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:669](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L669) |  |
+| <code>public int EnabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:670](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L670) |  |
+| <code>public int DisabledSchedules { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:671](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L671) |  |
+| <code>public int SchedulesDueNow { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:672](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L672) |  |
+| <code>public DateTimeOffset NextScheduledExecution { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:673](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L673) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:674](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L674) |  |
+| <code>public int TotalSuccesses { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:675](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L675) |  |
+| <code>public int TotalFailures { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:676](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L676) |  |
+| <code>public double OverallSuccessRate =&gt; …;</code> | [src/Meridian.Application/Scheduling/BackfillScheduleManager.cs:677](../../../../src/Meridian.Application/Scheduling/BackfillScheduleManager.cs#L677) |  |
+
+## SymbolExecutionResult
+
+Qualified name: <code>Meridian.Application.Scheduling.SymbolExecutionResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:246](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L246).
+
+Execution result for a single symbol.
+
+```csharp
+public sealed class SymbolExecutionResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:248](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L248) |  |
+| <code>public ExecutionStatus Status { get; set; } = ExecutionStatus.Pending;</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:249](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L249) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:250](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L250) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:251](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L251) |  |
+| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:252](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L252) |  |
+| <code>public string? Provider { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:253](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L253) |  |
+| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:254](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L254) |  |
+| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:255](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L255) |  |
+| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:256](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L256) |  |
+
+## SystemExecutionSummary
+
+Qualified name: <code>Meridian.Application.Scheduling.SystemExecutionSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:543](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L543).
+
+System-wide execution summary.
+
+```csharp
+public sealed record SystemExecutionSummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan Period { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:545](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L545) |  |
+| <code>public int TotalExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:546](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L546) |  |
+| <code>public int CompletedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:547](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L547) |  |
+| <code>public int FailedExecutions { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:548](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L548) |  |
+| <code>public double SuccessRate { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:549](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L549) |  |
+| <code>public long TotalBarsRetrieved { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:550](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L550) |  |
+| <code>public int TotalGapsFilled { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:551](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L551) |  |
+| <code>public double AverageDurationMinutes { get; init; }</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:552](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L552) |  |
+| <code>public Dictionary&lt;string, int&gt; ProviderUsage { get; init; } = new ();</code> | [src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:553](../../../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs#L553) |  |
+
+## AlternativeAssetLotExtensions
+
+Qualified name: <code>Meridian.Application.SecurityMaster.AlternativeAssetLotExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:11](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L11).
+
+Adapts the canonical commitment, fund-unit and notional lots to the LedgerTaxLot shape the relief engines consume, the way FaceValueLotExtensions does for face-value lots.
+
+```csharp
+public static class AlternativeAssetLotExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerTaxLot ToLedgerTaxLot(this FundUnitLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:17](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L17) | A fund unit lot is already in ledger shape: quantity is the unit count and unit cost is the acquisition NAV per unit, so quantity times unit cost reproduces FundUnitLot.CostBasis. |
+| <code>public static LedgerTaxLot ToLedgerTaxLot(this CommitmentLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:35](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L35) | The ledger carries contributed capital, not the commitment: the relief engines relieve what was paid in, while the unfunded balance is an obligation the ledger projects separately. The ledger lot is therefore SecurityLotUnitKind.CurrencyAmount of CommitmentLot.FundedAmount at a unit cost of one, and an unfunded commitment has no ledger lot yet. |
+| <code>public static LedgerTaxLot ToLedgerTaxLot(this NotionalLot lot);</code> | [src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs:54](../../../../src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs#L54) | A notional lot&#x27;s quantity is the notional outstanding and its only cost is the upfront payment, so the ledger lot carries that notional at a unit cost that reproduces NotionalLot.CostBasis (zero for a par contract). A fully amortized lot has no notional left to carry. |
+
+## AmortizationAccrualWindow
+
+Qualified name: <code>Meridian.Application.SecurityMaster.AmortizationAccrualWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:87](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L87).
+
+An inclusive range of accounting dates whose accrual is posted as one entry.
+
+```csharp
+public sealed record AmortizationAccrualWindow
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AmortizationAccrualWindow(DateOnly start, DateOnly end);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:89](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L89) |  |
+| <code>public DateOnly Start { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:97](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L97) |  |
+| <code>public DateOnly End { get; }</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:99](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L99) |  |
+
+## AmortizationLedgerPostingContext
+
+Qualified name: <code>Meridian.Application.SecurityMaster.AmortizationLedgerPostingContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:73](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L73).
+
+Position-level context for posting projected cash flows. The legacy OpenLots input interprets LedgerTaxLot.UnitCost as a market quote under QuoteConvention; cost-basis relief instead uses monetary cost per recorded quantity. These inputs must not be interchanged. Historical pool accrual uses AccrualHoldings, whose FaceValueLot owns the acquisition quote basis and booked factor. Day-count weighting comes from the same terms as the projected coupon, while typed holdings supply the actual daily interest face.
+
+```csharp
+public sealed record AmortizationLedgerPostingContext(IReadOnlyList<LedgerTaxLot>? OpenLots = null, string? FinancialAccountId = null, StructuredCashFlowScenario Scenario = StructuredCashFlowScenario.Base, int? MaxPeriods = null, DateTimeOffset? ProjectionAsOf = null, DateOnly? AmortizedThrough = null, AmortizationAccrualWindow? AccrualWindow = null, decimal? CouponPrincipalBasis = null, SecurityQuoteConvention? QuoteConvention = null, IReadOnlyList<FaceValueAccrualHolding>? AccrualHoldings = null, StructuredCashFlowProjectionDto? RetainedProjection = null);
+```
+
 ## ApprovedFieldEditCanonicalMergeHandler
 
 Qualified name: <code>Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler</code>. Kind: `class`.
@@ -837,131 +995,3 @@ Declared public members:
 | <code>public const string RefusalDetail = &quot;This deployment requires term corrections to pass maker-checker: stage the edit through the &quot; + &quot;Security Master workbench field-edit route and publish it through the governed &quot; + &quot;Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.&quot;;</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:32](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L32) | Guidance used when a direct amendment is refused. |
 | <code>public GovernedTermAmendmentPolicy(ISecurityMasterGovernanceRequirements requirements);</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:39](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L39) |  |
 | <code>public string? RefusalReason =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:45](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L45) |  |
-
-## GovernedTermAmendmentRequiredException
-
-Qualified name: <code>Meridian.Application.SecurityMaster.GovernedTermAmendmentRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs:13](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs#L13).
-
-A direct (operator) term amendment refused because governed term amendments are required: SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on, or the Institutional governance profile is in force. The edit must be staged through the governed workbench (Draft → Submitted → Approved → Published) instead. Raised by SecurityMasterService itself, so every in-process caller of ISecurityMasterService sees the same refusal the HTTP routes and the WPF editor show. The HTTP routes answer it with 403 and the shared GovernedTermAmendmentPolicy.RefusalTitle and GovernedTermAmendmentPolicy.RefusalDetail.
-
-```csharp
-public sealed class GovernedTermAmendmentRequiredException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public GovernedTermAmendmentRequiredException() : base($&quot;{GovernedTermAmendmentPolicy.RefusalTitle} {GovernedTermAmendmentPolicy.RefusalDetail}&quot;);</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs:15](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs#L15) |  |
-| <code>public string Title =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs:21](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs#L21) | The problem title shared with the HTTP 403 response and the WPF editor. |
-| <code>public string Detail =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs:24](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentRequiredException.cs#L24) | The guidance shared with the HTTP 403 response and the WPF editor. |
-
-## IAffectedLedgerBookResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IAffectedLedgerBookResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs:19](../../../../src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs#L19).
-
-Resolves the durable accounting ledger books a published Security Master revision could have touched, so the period-aware restatement resolver (Phase 3) can route each book by its accounting period lock status. This is the publish-time feed for SecurityMasterRevisionPublishedEvent.AffectedLedgerBookIds; without it the resolver is a no-op end-to-end (an empty affected-book set short-circuits to no restatement). Restatement protects durable accounting books — the only ledger surface that carries an accounting-period lock. Those books are keyed by fund profile, so a fund-scoped impact resolves to that fund&#x27;s books. When the impact reports no ledger exposure, or no durable ledger backend is configured, there is no locked book to protect and the affected set is empty.
-
-```csharp
-public interface IAffectedLedgerBookResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; ResolveAsync(SecurityMasterDownstreamImpactDto impact, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs:25](../../../../src/Meridian.Application/SecurityMaster/IAffectedLedgerBookResolver.cs#L25) | Resolves the distinct durable ledger book ids implicated by impact. Returns an empty list when the impact has no ledger exposure or no books can be resolved. |
-
-## IEdgarIngestOrchestrator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IEdgarIngestOrchestrator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IEdgarIngestOrchestrator.cs:8](../../../../src/Meridian.Application/SecurityMaster/IEdgarIngestOrchestrator.cs#L8).
-
-Defines ingestion of SEC EDGAR data into the Security Master workflow.
-
-```csharp
-public interface IEdgarIngestOrchestrator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EdgarIngestResult&gt; IngestAsync(EdgarIngestRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IEdgarIngestOrchestrator.cs:10](../../../../src/Meridian.Application/SecurityMaster/IEdgarIngestOrchestrator.cs#L10) |  |
-
-## IGovernedPublicationAmender
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedPublicationAmender</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:26](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L26).
-
-The publication write path of the governed workbench lifecycle. Only the published-revision merge (ApprovedFieldEditCanonicalMergeHandler) uses it.
-
-```csharp
-public interface IGovernedPublicationAmender
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs:29](../../../../src/Meridian.Application/SecurityMaster/IGovernedPublicationAmender.cs#L29) | Applies the merged amendment of an approved revision named by request.SourceRecordId. |
-
-## IGovernedTermAmendmentPolicy
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:19](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L19).
-
-Whether direct term amendments are refused in favour of the governed workbench (Draft → Submitted → Approved → Published). One policy for every client so the web API and the WPF editor cannot disagree. It reads the effective requirement from ISecurityMasterGovernanceRequirements, so it refuses when SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on or the Institutional governance profile is in force.
-
-```csharp
-public interface IGovernedTermAmendmentPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string? RefusalReason { get; }</code> | [src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs:22](../../../../src/Meridian.Application/SecurityMaster/GovernedTermAmendmentPolicy.cs#L22) | The refusal an operator should see, or null when direct amendments are permitted. |
-
-## ILedgerPeriodLockReader
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ILedgerPeriodLockReader</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:17](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L17).
-
-Authoritative read of accounting-period lock status for a date, backing the Security Master Passport Workbench period-aware propagation (Phase 3). The authority is the ledger accounting period status (LedgerAccountingPeriod.Status), the same source LedgerPeriodPostingGuard enforces at post-time — not close-readiness. Default-deny: when the covering period is missing, indeterminate, or its status is unrecognized, the reader returns LedgerPeriodStatusDto.HardClosed so an upstream reference-data edit can never silently mutate a book whose lock state could not be confirmed.
-
-```csharp
-public interface ILedgerPeriodLockReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;LedgerPeriodStatusDto&gt; GetPeriodStatusAsync(Guid ledgerBookId, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs:23](../../../../src/Meridian.Application/SecurityMaster/ILedgerPeriodLockReader.cs#L23) | Resolves the accounting period covering date for ledgerBookId and returns its lock status; LedgerPeriodStatusDto.HardClosed when indeterminate. |
-
-## IMultiAssetCoverageInvalidator
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IMultiAssetCoverageInvalidator</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:14](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L14).
-
-Evicts any cached multi-asset coverage / operational-readiness view affected by a published Security Master revision, so the next read recomputes against the refreshed projection. The coverage read path (MultiAssetCoverageReadService) is currently recomputed per request rather than cached, so the default NullMultiAssetCoverageInvalidator is a no-op; a real eviction lands when a coverage cache is introduced. The seam exists now so the ordered published-revision fan-out has a stable place to evict from.
-
-```csharp
-public interface IMultiAssetCoverageInvalidator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task InvalidateAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:17](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L17) | Invalidates cached coverage for the security/fund implicated by evt. |

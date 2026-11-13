@@ -396,23 +396,34 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StorageCatalogService(string rootPath, StorageOptions options);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:35](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L35) |  |
-| <code>public StorageCatalog GetCatalog() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:43](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L43) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:45](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L45) |  |
-| <code>public async Task&lt;CatalogRebuildResult&gt; RebuildCatalogAsync(CatalogRebuildOptions? options = null, IProgress&lt;CatalogRebuildProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:97](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L97) |  |
-| <code>public async Task UpdateFileEntryAsync(IndexedFileEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:287](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L287) |  |
-| <code>public async Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:330](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L330) |  |
-| <code>public async Task&lt;DirectoryIndex?&gt; GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:358](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L358) |  |
-| <code>public async Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:387](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L387) |  |
-| <code>public async Task&lt;DirectoryScanResult&gt; ScanDirectoryAsync(string path, bool recursive = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:394](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L394) |  |
-| <code>public CatalogStatistics GetStatistics() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:493](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L493) |  |
-| <code>public async Task&lt;CatalogVerificationResult&gt; VerifyIntegrityAsync(CatalogVerificationOptions? options = null, IProgress&lt;CatalogVerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:495](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L495) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForSymbol(string symbol);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:609](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L609) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForDateRange(DateTime start, DateTime end);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:615](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L615) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForEventType(string eventType);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:621](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L621) |  |
-| <code>public IEnumerable&lt;IndexedFileEntry&gt; SearchFiles(CatalogSearchCriteria criteria);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:627](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L627) |  |
-| <code>public async Task SaveCatalogAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:677](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L677) |  |
-| <code>public async Task ExportCatalogAsync(string outputPath, CatalogExportFormat format = CatalogExportFormat.Json, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:697](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L697) |  |
+| <code>public StorageCatalogService(string rootPath, StorageOptions options) : this(rootPath, options, static (path, content, ct) =&gt; AtomicFileWriter.WriteAsync(path, content, ct));</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:38](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L38) |  |
+| <code>public StorageCatalog GetCatalog() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:52](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L52) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:54](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L54) |  |
+| <code>public async Task&lt;CatalogRebuildResult&gt; RebuildCatalogAsync(CatalogRebuildOptions? options = null, IProgress&lt;CatalogRebuildProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:96](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L96) |  |
+| <code>public Task UpdateFileEntryAsync(IndexedFileEntry entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:275](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L275) |  |
+| <code>public Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:290](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L290) |  |
+| <code>public Task&lt;DirectoryIndex?&gt; GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:300](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L300) |  |
+| <code>public Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:307](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L307) |  |
+| <code>public async Task&lt;DirectoryScanResult&gt; ScanDirectoryAsync(string path, bool recursive = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:313](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L313) |  |
+| <code>public CatalogStatistics GetStatistics() =&gt; …;</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:411](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L411) |  |
+| <code>public async Task&lt;CatalogVerificationResult&gt; VerifyIntegrityAsync(CatalogVerificationOptions? options = null, IProgress&lt;CatalogVerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:413](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L413) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForSymbol(string symbol);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:529](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L529) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForDateRange(DateTime start, DateTime end);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:535](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L535) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; GetFilesForEventType(string eventType);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:541](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L541) |  |
+| <code>public IEnumerable&lt;IndexedFileEntry&gt; SearchFiles(CatalogSearchCriteria criteria);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:547](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L547) |  |
+| <code>public async Task ExportCatalogAsync(string outputPath, CatalogExportFormat format = CatalogExportFormat.Json, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.cs:597](../../../../src/Meridian.Storage/Services/StorageCatalogService.cs#L597) |  |
+
+Source: [src/Meridian.Storage/Services/StorageCatalogService.Persistence.cs:12](../../../../src/Meridian.Storage/Services/StorageCatalogService.Persistence.cs#L12).
+
+```csharp
+public sealed partial class StorageCatalogService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task SaveCatalogAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageCatalogService.Persistence.cs:18](../../../../src/Meridian.Storage/Services/StorageCatalogService.Persistence.cs#L18) |  |
 
 Source: [src/Meridian.Storage/Services/StorageCatalogService.ReadSnapshot.cs:3](../../../../src/Meridian.Storage/Services/StorageCatalogService.ReadSnapshot.cs#L3).
 
@@ -639,7 +650,7 @@ public sealed record TradingSession(string Name, DayOfWeek[] ActiveDays, TimeSpa
 
 Qualified name: <code>Meridian.Storage.Services.TransformationRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/DataLineageService.cs:433](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L433).
+Source: [src/Meridian.Storage/Services/DataLineageService.cs:449](../../../../src/Meridian.Storage/Services/DataLineageService.cs#L449).
 
 ```csharp
 public sealed record TransformationRecord(DateTime TimestampUtc, string Type, string Description, string? Algorithm = null, IReadOnlyDictionary<string, string>? Parameters = null);

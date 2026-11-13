@@ -289,7 +289,7 @@ public sealed record PolygonOptions(string? ApiKey = null, bool UseDelayed = fal
 
 Qualified name: <code>Meridian.Core.Config.ProviderBindingConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:52](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L52).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:53](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L53).
 
 Capability binding targeting one connection and one scope.
 
@@ -301,7 +301,7 @@ public sealed record ProviderBindingConfig(string BindingId, ProviderCapabilityK
 
 Qualified name: <code>Meridian.Core.Config.ProviderCertificationConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:94](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L94).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:95](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L95).
 
 Stored certification state for a provider connection.
 
@@ -313,7 +313,7 @@ public sealed record ProviderCertificationConfig(string ConnectionId, string Sta
 
 Qualified name: <code>Meridian.Core.Config.ProviderConnectionConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:31](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L31).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:32](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L32).
 
 One credentialed provider relationship.
 
@@ -387,7 +387,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.ProviderPolicyConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:67](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L67).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:68](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L68).
 
 Policy override for a capability.
 
@@ -399,7 +399,7 @@ public sealed record ProviderPolicyConfig(string PolicyId, ProviderCapabilityKin
 
 Qualified name: <code>Meridian.Core.Config.ProviderPresetConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:81](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L81).
+Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:82](../../../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs#L82).
 
 Reusable provider operations preset.
 
@@ -428,7 +428,7 @@ Source: [src/Meridian.Core/Config/ProviderConnectionsConfig.cs:26](../../../../s
 A host-selected provider connection; never a credential value or provider-wide fallback.
 
 ```csharp
-public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId);
+public sealed record ProviderRuntimeCredentialBinding(string ProviderId, string TenantId, string ConnectionId, string? ExternalAccountId = null, string? Environment = null, string? SelectionId = null);
 ```
 
 ## RobinhoodConfig

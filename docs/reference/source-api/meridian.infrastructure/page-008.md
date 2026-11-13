@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HttpResponseResult
+
+Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:241](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L241).
+
+Result of HTTP response handling.
+
+```csharp
+public readonly record struct HttpResponseResult(bool IsSuccess, HttpStatusCode StatusCode, bool IsNotFound = false, string? ErrorMessage = null);
+```
+
 ## JsonElementExtensions
 
 Qualified name: <code>Meridian.Infrastructure.Utilities.JsonElementExtensions</code>. Kind: `class`.
