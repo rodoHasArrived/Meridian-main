@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 11904 |
-| Valid | 11404 |
+| Total code blocks | 11911 |
+| Valid | 11411 |
 | Invalid | 0 |
 | Skipped | 500 |
 
@@ -18,9 +18,9 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 119 | 0 | 0 | 119 |
-| `bash` | 271 | 271 | 0 | 0 |
+| `bash` | 270 | 270 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 11031 | 11031 | 0 | 0 |
+| `csharp` | 11039 | 11039 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 69 | 69 | 0 | 0 |
@@ -171,7 +171,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.application/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-003.md` | 50 |
-| `docs/reference/source-api/meridian.application/page-004.md` | 56 |
+| `docs/reference/source-api/meridian.application/page-004.md` | 57 |
 | `docs/reference/source-api/meridian.application/page-005.md` | 51 |
 | `docs/reference/source-api/meridian.application/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.application/page-007.md` | 51 |
@@ -302,7 +302,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ledger/page-003.md` | 52 |
 | `docs/reference/source-api/meridian.ledger/page-004.md` | 50 |
 | `docs/reference/source-api/meridian.ledger/page-005.md` | 50 |
-| `docs/reference/source-api/meridian.ledger/page-006.md` | 7 |
+| `docs/reference/source-api/meridian.ledger/page-006.md` | 14 |
 | `docs/reference/source-api/meridian.mcp/page-001.md` | 20 |
 | `docs/reference/source-api/meridian.platform/page-001.md` | 51 |
 | `docs/reference/source-api/meridian.platform/page-002.md` | 50 |
@@ -419,7 +419,6 @@ No invalid code examples found.
 | `docs/testing/evidence/next-work-20261028/release-readiness.md` | 1 |
 | `docs/testing/evidence/w10-615abde9/browser/browser-evidence.md` | 2 |
 | `docs/testing/evidence/w10-615abde9/desktop/desktop-evidence.md` | 1 |
-| `docs/testing/evidence/wal-checksum-2026-10-07/README.md` | 1 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md` | 19 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/dotnet-test-summary.md` | 19 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/component-profiles/dedup/README.md` | 2 |
