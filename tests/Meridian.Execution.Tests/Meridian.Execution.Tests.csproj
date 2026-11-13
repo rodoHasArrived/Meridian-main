@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <Import Project="ExecutionTestSources.props" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="FsCheck.Xunit" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Backtesting\Meridian.Backtesting.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Execution\Meridian.Execution.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.FinancialOperations\Meridian.FinancialOperations.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Identity\Meridian.Identity.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Ledger\Meridian.Ledger.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Reporting\Meridian.Reporting.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Risk\Meridian.Risk.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Core\Meridian.Core.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Domain\Meridian.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="@(ExecutionTestSource)" Link="Execution/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Shared/Ledger/CanonicalCashFlowTestData.cs" Link="Support/CanonicalCashFlowTestData.cs" />
+    <Compile Include="../Meridian.Tests/TestHelpers/RecordingLogger.cs" Link="Support/RecordingLogger.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Meridian.Tests/GlobalUsings*.cs" Link="Support/%(Filename)%(Extension)" />
+    <Compile Include="../Meridian.Tests/TestCollections.cs" Link="Support/TestCollections.cs" />
+  </ItemGroup>
+</Project>

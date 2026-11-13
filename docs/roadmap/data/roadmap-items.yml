@@ -915,9 +915,9 @@ items:
       - type: source
         path: src/Meridian/DemoWorkspaceCli.cs
       - type: test
-        path: tests/Meridian.Tests/Demo/DemoWorkspaceSeederTests.cs
+        path: tests/Meridian.Demo.Tests/Demo/DemoWorkspaceSeederTests.cs
       - type: test
-        path: tests/Meridian.Tests/Demo/DemoWorkspaceGuardTests.cs
+        path: tests/Meridian.Demo.Tests/Demo/DemoWorkspaceGuardTests.cs
       - type: source
         path: src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs
       - type: source

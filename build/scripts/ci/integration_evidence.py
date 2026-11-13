@@ -25,6 +25,10 @@ SUITES = {
         "project": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
         "filter": "Category=Integration",
     },
+    "demo-integrations": {
+        "project": "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj",
+        "filter": "Category=Integration&Category!=LiveProvider",
+    },
 }
 SCHEMA_FILES = ("database-schema.sql", "database-table-inventory.csv", "migration-ledger-inventory.csv")
 

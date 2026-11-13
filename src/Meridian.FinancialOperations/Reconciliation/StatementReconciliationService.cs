@@ -186,7 +186,7 @@ public sealed class StatementReconciliationService
     /// Reads an IB Flex report into normalized statement rows (one per Trade, OpenPosition,
     /// and CashTransaction element) so case intake matches Flex statements with the same
     /// engine as canonical CSV rows. Fee-like cash transactions keep fee row semantics via
-    /// <see cref="Infrastructure.Reconciliation.IbFlexBrokerStatementService.MapCashTransactionActivity"/>.
+    /// <see cref="DataIntegration.Reconciliation.IbFlexBrokerStatementService.MapCashTransactionActivity"/>.
     /// </summary>
     private static IReadOnlyList<NormalizedStatementRow> ReadFlexStatementRows(
         string importId,
@@ -200,7 +200,7 @@ public sealed class StatementReconciliationService
 
         foreach (var statement in document.Descendants("FlexStatement"))
         {
-            var statementToDate = Infrastructure.Reconciliation.IbFlexBrokerStatementService
+            var statementToDate = DataIntegration.Reconciliation.IbFlexBrokerStatementService
                 .ParseFlexDate((string?)statement.Attribute("toDate"));
 
             foreach (var element in statement.Descendants()
@@ -224,7 +224,7 @@ public sealed class StatementReconciliationService
                             : FlexDecimal(element, "position") * FlexFirstDecimal(element, "markPrice", "costBasisPrice"),
                         FlexFirstDate(element, ["reportDate"], statementToDate)),
                     _ => (
-                        Infrastructure.Reconciliation.IbFlexBrokerStatementService
+                        DataIntegration.Reconciliation.IbFlexBrokerStatementService
                             .MapCashTransactionActivity((string?)element.Attribute("type")),
                         0m,
                         FlexDecimal(element, "amount"),
@@ -286,7 +286,7 @@ public sealed class StatementReconciliationService
     {
         foreach (var attribute in attributes)
         {
-            if (Infrastructure.Reconciliation.IbFlexBrokerStatementService
+            if (DataIntegration.Reconciliation.IbFlexBrokerStatementService
                     .ParseFlexDate((string?)element.Attribute(attribute)) is { } parsed)
                 return parsed;
         }

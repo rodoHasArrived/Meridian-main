@@ -55,6 +55,7 @@ env:
   PLAYWRIGHT_INSTALL_ATTEMPTS: 2
   PLAYWRIGHT_INSTALL_TIMEOUT_SECONDS: 720
   CAPTURE_DIR: artifacts/web-screenshots/captures
+  CAPTURE_WORKERS: 2
 
 jobs:
   capture-web-screenshots:
@@ -123,23 +124,28 @@ jobs:
       - name: Install dashboard dependencies
         # Use a clean, lockfile-pinned install (matching ci.yml) so the capture
         # run is reproducible and cannot silently drift the dependency tree.
-        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional --prefer-offline --no-fund --timing
 
       - name: Test screenshot harness
         run: node --test scripts/dev/capture-web-screenshots.test.mjs scripts/dev/web-screenshot-scenarios.test.mjs
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Read installed Playwright version
+        id: playwright_version
+        run: |
+          node -e 'console.log("version=" + require("./src/Meridian.Ui/dashboard/node_modules/playwright/package.json").version)' >> "$GITHUB_OUTPUT"
+
+      - name: Restore Playwright browsers
+        id: playwright_cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('src/Meridian.Ui/dashboard/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
+          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright_version.outputs.version }}-chromium-headless-shell-v1
 
       - name: Install Playwright system dependencies
         run: npx --prefix src/Meridian.Ui/dashboard playwright install-deps chromium
 
       - name: Install Playwright browser
+        id: install_playwright
         run: |
           set -euo pipefail
           install_attempts="${PLAYWRIGHT_INSTALL_ATTEMPTS:-2}"
@@ -147,7 +153,7 @@ jobs:
 
           run_playwright_install() {
             set +e
-            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium
+            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium --only-shell
             install_exit_code=$?
             set -e
             return "$install_exit_code"
@@ -181,6 +187,15 @@ jobs:
             attempt=$((attempt + 1))
           done
 
+      # Save a verified installation before route validation can fail the job.
+      # The combined cache action saves only on success during post-job cleanup.
+      - name: Save Playwright browsers
+        if: ${{ steps.playwright_cache.outputs.cache-hit != 'true' && steps.install_playwright.outcome == 'success' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.playwright_cache.outputs.cache-primary-key }}
+
       - name: Capture web screenshots
         id: capture_web
         env:
@@ -192,7 +207,8 @@ jobs:
           fi
           node scripts/dev/capture-web-screenshots.mjs \
             --output-dir "$OUTPUT_DIR" \
-            --config "$ROUTES_CONFIG"
+            --config "$ROUTES_CONFIG" \
+            --workers "$CAPTURE_WORKERS"
 
       - name: Validate web screenshot captures
         id: validate_web
@@ -291,27 +307,30 @@ jobs:
       - name: Install dashboard dependencies
         # Use a clean, lockfile-pinned install (matching ci.yml) so the capture
         # run is reproducible and cannot silently drift the dependency tree.
-        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
+        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional --prefer-offline --no-fund --timing
 
       - name: Test screenshot harness
         run: node --test scripts/dev/capture-web-screenshots.test.mjs scripts/dev/web-screenshot-scenarios.test.mjs
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      - name: Read installed Playwright version
+        id: playwright_version
+        run: |
+          node -e 'console.log("version=" + require("./src/Meridian.Ui/dashboard/node_modules/playwright/package.json").version)' >> "$GITHUB_OUTPUT"
+
+      - name: Restore Playwright browsers
+        id: playwright_cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('src/Meridian.Ui/dashboard/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
+          key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ steps.playwright_version.outputs.version }}-chromium-headless-shell-v1
 
       - name: Install Playwright system dependencies
         run: npx --prefix src/Meridian.Ui/dashboard playwright install-deps chromium
 
       - name: Install Playwright browser
-        # Deliberately a copy of the publish job's install step rather than a
-        # shared composite action: the publish path is the one that currently
-        # works, and this lane was added without touching it. Keep the two in
-        # step when either changes.
+        id: install_playwright
+        # Keep this bounded install in sync with dispatch: both jobs use the
+        # same headless browser and cache format.
         run: |
           set -euo pipefail
           install_attempts="${PLAYWRIGHT_INSTALL_ATTEMPTS:-2}"
@@ -319,7 +338,7 @@ jobs:
 
           run_playwright_install() {
             set +e
-            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium
+            timeout "$install_timeout_seconds" npx --prefix src/Meridian.Ui/dashboard playwright install chromium --only-shell
             install_exit_code=$?
             set -e
             return "$install_exit_code"
@@ -353,6 +372,15 @@ jobs:
             attempt=$((attempt + 1))
           done
 
+      # Save a verified installation before route validation can fail the job.
+      # The combined cache action saves only on success during post-job cleanup.
+      - name: Save Playwright browsers
+        if: ${{ steps.playwright_cache.outputs.cache-hit != 'true' && steps.install_playwright.outcome == 'success' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ steps.playwright_cache.outputs.cache-primary-key }}
+
       - name: Capture web screenshots
         id: capture_web
         # The dispatch inputs do not exist on a pull_request event, so this lane
@@ -367,7 +395,8 @@ jobs:
           fi
           node scripts/dev/capture-web-screenshots.mjs \
             --output-dir "$OUTPUT_DIR" \
-            --config "$ROUTES_CONFIG"
+            --config "$ROUTES_CONFIG" \
+            --workers "$CAPTURE_WORKERS"
 
       - name: Validate web screenshot captures
         id: validate_web

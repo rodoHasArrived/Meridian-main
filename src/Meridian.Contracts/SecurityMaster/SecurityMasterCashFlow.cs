@@ -85,6 +85,33 @@ public sealed record SecurityCashFlowSourceDto(
     DateTimeOffset? ClientConfirmedAt);
 
 /// <summary>
+/// Retained interest economics for one constant-principal portion of a coupon. Interest is
+/// measured over (<see cref="Start"/>, <see cref="End"/>]; the original coupon anchors remain
+/// explicit so subwindows use differences of cumulative day-count fractions rather than assume
+/// that a convention is additive across arbitrary dates. <see cref="ReferencePrincipal"/> is
+/// the balance before any principal payment on the segment's end date, and <see cref="Factor"/>
+/// is the pool factor carried by that balance. Interest remains unrounded until allocated to
+/// a holder; the rounded sum of segments reconciles to the schedule row's interest.
+/// </summary>
+public sealed record StructuredCashFlowInterestSegment(
+    DateOnly Start,
+    DateOnly End,
+    decimal ReferencePrincipal,
+    decimal UnroundedInterestAmount,
+    decimal Factor,
+    DateOnly PeriodStart,
+    DateOnly PeriodEnd)
+{
+    /// <summary>
+    /// Exact pool factor after principal movements on <see cref="End"/>, for reconciling the
+    /// closing lot state separately from the face that earned interest through that date.
+    /// Required on current segment evidence; omitted only when no such evidence was retained.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? FactorAfter { get; init; }
+}
+
+/// <summary>
 /// A single period in a structured cash flow schedule.
 /// </summary>
 public sealed record StructuredCashFlowScheduleEntry(
@@ -106,7 +133,8 @@ public sealed record StructuredCashFlowScheduleEntry(
 
     /// <summary>
     /// Stored row contract. Zero denotes the frozen legacy shape; version 1 retains measured
-    /// interest intervals. Calculated projections explicitly stamp their output version.
+    /// interest intervals and version 2 retains interest-basis segments. Calculated projections
+    /// explicitly stamp their output version.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public int RowVersion { get; init; }
@@ -117,6 +145,13 @@ public sealed record StructuredCashFlowScheduleEntry(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public DateOnly? InterestMeasuredTo { get; init; }
 
+    /// <summary>
+    /// Version-2 row evidence for allocating interest against dated holdings without applying a
+    /// pool factor twice. Null on historical rows and on calculations without segment evidence.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<StructuredCashFlowInterestSegment>? InterestSegments { get; init; }
+
     /// <summary>The start of the interval this row's interest accrues over, when it is known.</summary>
     [JsonIgnore]
     public DateOnly? InterestAccrualStart => AccrualStart ?? InterestMeasuredFrom;
@@ -124,6 +159,38 @@ public sealed record StructuredCashFlowScheduleEntry(
     /// <summary>The end of the interval this row's interest accrues over, when it is known.</summary>
     [JsonIgnore]
     public DateOnly? InterestAccrualEnd => AccrualEnd ?? InterestMeasuredTo;
+
+    public bool Equals(StructuredCashFlowScheduleEntry? other)
+        => ReferenceEquals(this, other) || other is not null
+            && PeriodDate == other.PeriodDate && PrincipalAmount == other.PrincipalAmount
+            && InterestAmount == other.InterestAmount && Factor == other.Factor
+            && UnadjustedStart == other.UnadjustedStart && UnadjustedEnd == other.UnadjustedEnd
+            && AccrualStart == other.AccrualStart && AccrualEnd == other.AccrualEnd
+            && RateEvidence == other.RateEvidence && RowVersion == other.RowVersion
+            && InterestMeasuredFrom == other.InterestMeasuredFrom && InterestMeasuredTo == other.InterestMeasuredTo
+            && (InterestSegments is null ? other.InterestSegments is null
+                : other.InterestSegments is not null && InterestSegments.SequenceEqual(other.InterestSegments));
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        hash.Add(PeriodDate);
+        hash.Add(PrincipalAmount);
+        hash.Add(InterestAmount);
+        hash.Add(Factor);
+        hash.Add(UnadjustedStart);
+        hash.Add(UnadjustedEnd);
+        hash.Add(AccrualStart);
+        hash.Add(AccrualEnd);
+        hash.Add(RateEvidence);
+        hash.Add(RowVersion);
+        hash.Add(InterestMeasuredFrom);
+        hash.Add(InterestMeasuredTo);
+        hash.Add(InterestSegments is not null);
+        foreach (var segment in InterestSegments ?? [])
+            hash.Add(segment);
+        return hash.ToHashCode();
+    }
 }
 
 /// <summary>How a cash-flow leg's rate is determined.</summary>

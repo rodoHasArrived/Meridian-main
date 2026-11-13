@@ -52,7 +52,7 @@ public static class ConfigEndpoints
                     },
                 storage = cfg.Storage,
                 symbols = cfg.Symbols ?? Array.Empty<SymbolConfig>(),
-                backfill = cfg.Backfill,
+                backfill = MaskBackfill(cfg.Backfill),
                 derivatives = cfg.Derivatives
             }, jsonOptions);
         }).WithName("GetConfig")
@@ -260,4 +260,30 @@ public static class ConfigEndpoints
 
         return new { key, value, source };
     }
+    // Clone the response projection: masking must never alter the persisted credentials.
+    private static BackfillConfig? MaskBackfill(BackfillConfig? config)
+    {
+        if (config?.Providers is not { } providers)
+            return config;
+
+        return config with
+        {
+            Providers = providers with
+            {
+                Alpaca = providers.Alpaca is { } alpaca ? alpaca with
+                {
+                    KeyId = SensitiveValueMasker.Mask(alpaca.KeyId),
+                    SecretKey = SensitiveValueMasker.MaskCompletely(alpaca.SecretKey)
+                } : null,
+                Nasdaq = providers.Nasdaq is { } nasdaq ? nasdaq with { ApiKey = SensitiveValueMasker.MaskCompletely(nasdaq.ApiKey) } : null,
+                OpenFigi = providers.OpenFigi is { } figi ? figi with { ApiKey = SensitiveValueMasker.MaskCompletely(figi.ApiKey) } : null,
+                Tiingo = providers.Tiingo is { } tiingo ? tiingo with { ApiToken = SensitiveValueMasker.MaskCompletely(tiingo.ApiToken) } : null,
+                Polygon = providers.Polygon is { } polygon ? polygon with { ApiKey = SensitiveValueMasker.MaskCompletely(polygon.ApiKey) } : null,
+                AlphaVantage = providers.AlphaVantage is { } alpha ? alpha with { ApiKey = SensitiveValueMasker.MaskCompletely(alpha.ApiKey) } : null,
+                Finnhub = providers.Finnhub is { } finnhub ? finnhub with { ApiKey = SensitiveValueMasker.MaskCompletely(finnhub.ApiKey) } : null,
+                Fred = providers.Fred is { } fred ? fred with { ApiKey = SensitiveValueMasker.MaskCompletely(fred.ApiKey) } : null
+            }
+        };
+    }
+
 }

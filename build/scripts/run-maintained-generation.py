@@ -45,6 +45,9 @@ BROWSER_STEPS = (
 # same required steps, ordering, bounded convergence, and write protection.
 # The core profile includes generate-workflow-manifest; do not run it twice.
 DOCS_STEPS = (
+    Step("Render public type reference", ("python3", "build/scripts/docs/render-public-type-reference.py")),
+    Step("Render HTTP declaration reference", ("python3", "build/scripts/docs/render-endpoint-reference.py")),
+    Step("Render configuration reference", ("python3", "build/scripts/docs/generate-configuration-reference.py")),
     Step("Validate roadmap registry", ("python3", "build/scripts/docs/validate-roadmap-registry.py", "--summary")),
     Step("Validate source READMEs", ("python3", "build/scripts/docs/validate-source-readmes.py", "--summary")),
     Step("Scan source TODOs", ("python3", "build/scripts/docs/scan-source-todos.py", "--summary")),

@@ -50,8 +50,8 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         })
         self.assertIn("image: postgres:17", self.integrations)
         self.assertIn('MERIDIAN_DISABLE_DOCKER_TESTS: "false"', self.integrations)
-        self.assertEqual(self.integrations.count('--collect:"XPlat Code Coverage"'), 2)
-        self.assertEqual(self.integrations.count("--settings tests/coverlet.runsettings"), 2)
+        self.assertEqual(self.integrations.count('--collect:"XPlat Code Coverage"'), 3)
+        self.assertEqual(self.integrations.count("--settings tests/coverlet.runsettings"), 3)
         self.assertIn('"Category=Integration&Category!=LiveProvider"', self.integrations)
         self.assertIn('"Category=Integration"', self.integrations)
 
@@ -70,6 +70,7 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         self.assertIn("validate-test-results.py", self.integrations)
         self.assertIn("--require-trx-prefix meridian-integrations", self.integrations)
         self.assertIn("--require-trx-prefix direct-lending-integrations", self.integrations)
+        self.assertIn("--require-trx-prefix demo-integrations", self.integrations)
 
     def test_postgres_client_tools_match_the_service_major(self) -> None:
         # Integrations use clients inside the service container; the recovery drill

@@ -98,6 +98,19 @@ public sealed class TrustedActionOriginTests
     }
 
     [Theory]
+    [InlineData(254)]
+    [InlineData(255)]
+    public void AnUndefinedDeclarationFailsClosedEvenForAnInteractiveSession(int declared)
+    {
+        var origin = (OperationsActionOriginDto)declared;
+
+        EndpointAuthorization.ResolveTrustedActionOrigin(InteractiveSession(), origin)
+            .Should().Be(OperationsActionOriginDto.AutomationAssistant);
+        EndpointAuthorization.ResolveTrustedActionOrigin(ApiKeyPrincipal(), origin)
+            .Should().Be(OperationsActionOriginDto.AutomationAssistant);
+    }
+
+    [Theory]
     [InlineData(OperationsActionOriginDto.AutomationSuggestion)]
     [InlineData(OperationsActionOriginDto.AssistantDraft)]
     [InlineData(OperationsActionOriginDto.AutomationAssistant)]

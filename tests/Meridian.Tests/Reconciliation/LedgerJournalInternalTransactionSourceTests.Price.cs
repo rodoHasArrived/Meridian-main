@@ -2,7 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Reconciliation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Ledger;
 using Meridian.Storage.Archival;
 
