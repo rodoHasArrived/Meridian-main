@@ -2,6 +2,7 @@ using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Application.UI;
+using Meridian.Application.ProviderRouting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -15,6 +16,7 @@ internal sealed class CredentialFeatureRegistration : IServiceFeatureRegistratio
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.AddProviderCredentialOwnershipPolicy();
         services.AddSingleton<CredentialTestingService>(sp =>
         {
             var configStore = sp.GetRequiredService<ConfigStore>();
@@ -42,7 +44,8 @@ internal sealed class CredentialFeatureRegistration : IServiceFeatureRegistratio
             var config = configStore.Load();
             return new OAuthTokenRefreshService(config.DataRoot, vault:
                 sp.GetRequiredService<IProviderCredentialStore>() as IOAuthTokenVault
-                ?? throw new InvalidOperationException("Configured credential vault does not support OAuth token persistence."));
+                ?? throw new InvalidOperationException("Configured credential vault does not support OAuth token persistence."),
+                ownershipPolicy: sp.GetRequiredService<ProviderCredentialOwnershipPolicy>());
         });
 
         return services;

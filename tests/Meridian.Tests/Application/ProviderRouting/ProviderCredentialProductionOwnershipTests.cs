@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Application.Config.Credentials;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.Services;
@@ -119,6 +120,20 @@ public sealed class ProviderCredentialProductionOwnershipTests : IDisposable
         var save = () => lifecycle.SaveCredentialsAsync("alpaca", new(new Dictionary<string, string?> { ["KeyId"] = "replacement" }));
         await save.Should().ThrowAsync<UnauthorizedAccessException>();
         (await vault.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("unassigned");
+    }
+
+    [Fact]
+    public async Task Production_UnscopedBackgroundOAuthCannotLoadOrRefreshUnassignedTokens()
+    {
+        var vault = new Mock<IOAuthTokenVault>(MockBehavior.Strict);
+        await using var refresh = new OAuthTokenRefreshService(_root, vault: vault.Object, ownershipPolicy: Required);
+        var initialize = () => refresh.InitializeAsync();
+        await initialize.Should().ThrowAsync<ProviderCredentialOwnershipRequiredException>();
+        Action start = refresh.Start;
+        start.Should().Throw<ProviderCredentialOwnershipRequiredException>();
+        var exchange = () => refresh.RefreshTokenAsync("quickbooks");
+        await exchange.Should().ThrowAsync<ProviderCredentialOwnershipRequiredException>();
+        vault.VerifyNoOtherCalls();
     }
 
     [Fact]

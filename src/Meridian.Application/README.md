@@ -206,7 +206,9 @@ it revalidates one retained tenant/connection/account/environment under the conf
 reading the scoped vault. Owned, ambiguous or dangling selections never fall back.
 `ProviderCredentialOwnershipPolicy` requires explicit ownership in production and packaged/customer
 workstation compositions, including posture declarations added after feature registration. Entirely
-legacy families retain their prior policy only in unflagged development compositions. Host selection requires provider reconstruction; credential editing
+legacy families retain their prior policy only in unflagged development compositions. The generic background
+OAuth helper also refuses activation without an explicit owned scope in these protected compositions;
+its unassigned token vault is not a separate execution fallback. Host selection requires provider reconstruction; credential editing
 does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
 Legacy setup refuses a retained runtime binding even when its connection or ownership marker is
 missing. `LegacyProviderRuntimeCredentialStore` guards runtimes that do not yet carry trusted
