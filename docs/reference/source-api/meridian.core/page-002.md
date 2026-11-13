@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FeatureCapabilityCatalog
+
+Qualified name: <code>Meridian.Core.Config.FeatureCapabilityCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:6](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L6).
+
+Lists the declared workstation feature capabilities and their default enablement metadata.
+
+```csharp
+public static class FeatureCapabilityCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Trading { get; } = [new (&quot;desktop.trading.workspace&quot;, &quot;Trading workspace&quot;, &quot;Trading shell, market feed, order book, position blotter, and run-risk screens.&quot;, true, true), new (&quot;desktop.trading.hours&quot;, &quot;Trading hours&quot;, &quot;Market-session briefing and schedule coverage review in the Trading workspace.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:8](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L8) |  |
+| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Data { get; } = [new (&quot;desktop.data.workspace&quot;, &quot;Data workspace&quot;, &quot;Provider setup, backfill, storage, quality, and data catalog workstation surfaces.&quot;, true, true), new (&quot;desktop.data.security-master&quot;, &quot;Security master&quot;, &quot;Reference-data review, security lifecycle readiness, and vendor-symbol mapping workbench.&quot;, true, false), new (&quot;desktop.data.retention&quot;, &quot;Retention assurance&quot;, &quot;Archive health, storage optimization, and retention-policy assurance surfaces.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:14](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L14) |  |
+| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Settings { get; } = [new (&quot;desktop.settings.workspace&quot;, &quot;Settings workspace&quot;, &quot;Preferences, credentials, diagnostics, service management, notifications, and support surfaces.&quot;, true, true), new (&quot;desktop.settings.capabilities&quot;, &quot;Capability toggles&quot;, &quot;Generated capability-control tab for module-declared desktop feature switches.&quot;, true, true), new (&quot;desktop.settings.workflow-library&quot;, &quot;Workflow library&quot;, &quot;Reusable workflow catalog and action launch surface in Settings.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:21](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L21) |  |
+| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; Reporting { get; } = [new (&quot;desktop.reporting.workspace&quot;, &quot;Reporting workspace&quot;, &quot;Governed report-pack review, delivery posture, publication evidence, and line-provenance surfaces.&quot;, true, true), new (&quot;desktop.reporting.review-workbench&quot;, &quot;Reporting review workbench&quot;, &quot;Approval, rejection, publication, restatement, and retained evidence review surfaces.&quot;, true, false), new (&quot;desktop.reporting.delivery-readiness&quot;, &quot;Reporting delivery readiness&quot;, &quot;Schedule due work, delivery blockers, failure evidence, and readiness warnings.&quot;, true, false)];</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:28](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L28) |  |
+| <code>public static IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; All { get; } = Trading.Concat(Data).Concat(Reporting).Concat(Settings).GroupBy(static capability =&gt; capability.CapabilityKey, StringComparer.OrdinalIgnoreCase).Select(static group =&gt; group.First()).OrderBy(static capability =&gt; capability.DisplayName, StringComparer.OrdinalIgnoreCase).ToArray();</code> | [src/Meridian.Core/Config/FeatureCapabilityCatalog.cs:35](../../../../src/Meridian.Core/Config/FeatureCapabilityCatalog.cs#L35) |  |
+
 ## FeatureCapabilityDescriptor
 
 Qualified name: <code>Meridian.Core.Config.FeatureCapabilityDescriptor</code>. Kind: `record`.
@@ -80,7 +102,7 @@ public sealed record FredConfig(bool Enabled = true, string? ApiKey = null, int 
 
 Qualified name: <code>Meridian.Core.Config.FundOperationsPersistenceConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:209](../../../../src/Meridian.Core/Config/AppConfig.cs#L209).
+Source: [src/Meridian.Core/Config/AppConfig.cs:213](../../../../src/Meridian.Core/Config/AppConfig.cs#L213).
 
 Configuration for per-domain fund operations persistence cutover. Controls shadow write and read mode toggles for each fund operations domain.
 
@@ -253,7 +275,7 @@ public sealed record OpenFigiConfig(bool Enabled = true, string? ApiKey = null, 
 
 Qualified name: <code>Meridian.Core.Config.PipelineRuntimeConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:101](../../../../src/Meridian.Core/Config/AppConfig.cs#L101).
+Source: [src/Meridian.Core/Config/AppConfig.cs:105](../../../../src/Meridian.Core/Config/AppConfig.cs#L105).
 
 Runtime tuning for the event pipeline&#x27;s flush behaviour. All fields are optional; unset values fall back to the pipeline&#x27;s built-in defaults (final flush 30s, periodic sink flush 60s), so existing configurations keep their current behaviour. Non-positive values are ignored (treated as unset) by the pipeline registration.
 
@@ -407,11 +429,23 @@ Reusable provider operations preset.
 public sealed record ProviderPresetConfig(string PresetId, string Name, string Description, ProviderPolicyConfig[]? Policies = null, string[]? Highlights = null, bool IsBuiltIn = false, bool IsEnabled = false);
 ```
 
+## ProviderQuotasConfig
+
+Qualified name: <code>Meridian.Core.Config.ProviderQuotasConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:4](../../../../src/Meridian.Core/Config/ProviderQuotasConfig.cs#L4).
+
+Explicit vendor account limits shared by every capability using the same API credential.
+
+```csharp
+public sealed record ProviderQuotasConfig(TwelveDataQuotaConfig? TwelveData = null, AlphaVantageQuotaConfig? AlphaVantage = null);
+```
+
 ## ProviderRegistryConfig
 
 Qualified name: <code>Meridian.Core.Config.ProviderRegistryConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:115](../../../../src/Meridian.Core/Config/AppConfig.cs#L115).
+Source: [src/Meridian.Core/Config/AppConfig.cs:119](../../../../src/Meridian.Core/Config/AppConfig.cs#L119).
 
 Configuration for the unified provider registry (Phase 1.2). Controls how streaming, backfill, and symbol search providers are discovered and registered.
 
@@ -527,7 +561,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.SourceRegistryConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:177](../../../../src/Meridian.Core/Config/AppConfig.cs#L177).
+Source: [src/Meridian.Core/Config/AppConfig.cs:181](../../../../src/Meridian.Core/Config/AppConfig.cs#L181).
 
 Source registry configuration - only PersistencePath is used.
 
@@ -551,7 +585,7 @@ public sealed record StooqConfig(bool Enabled = true, int Priority = 20, string 
 
 Qualified name: <code>Meridian.Core.Config.StorageConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:123](../../../../src/Meridian.Core/Config/AppConfig.cs#L123).
+Source: [src/Meridian.Core/Config/AppConfig.cs:127](../../../../src/Meridian.Core/Config/AppConfig.cs#L127).
 
 Storage configuration for file naming and organization. Conversion to StorageOptions is available via extension methods in the Application layer.
 
@@ -680,6 +714,18 @@ Declared public members:
 | <code>public double SamplingRatio { get; init; } = 1.0;</code> | [src/Meridian.Core/Config/TracingConfig.cs:17](../../../../src/Meridian.Core/Config/TracingConfig.cs#L17) |  |
 | <code>public int FlushTimeoutMilliseconds { get; init; } = 5000;</code> | [src/Meridian.Core/Config/TracingConfig.cs:18](../../../../src/Meridian.Core/Config/TracingConfig.cs#L18) |  |
 
+## TwelveDataQuotaConfig
+
+Qualified name: <code>Meridian.Core.Config.TwelveDataQuotaConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:13](../../../../src/Meridian.Core/Config/ProviderQuotasConfig.cs#L13).
+
+Twelve Data Basic defaults. Daily credits reset at midnight UTC. A paid account must explicitly declare its limits and fundamentals entitlement; numeric capacity alone grants none. NoDailyLimit explicitly declares an account without a daily credit cap.
+
+```csharp
+public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = 8, int DailyCredits = 800, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
+```
+
 ## ValidatedConfig
 
 Qualified name: <code>Meridian.Core.Config.ValidatedConfig</code>. Kind: `record`.
@@ -710,49 +756,3 @@ Declared public members:
 | <code>public static ValidatedConfig Failed(AppConfig? config, IReadOnlyList&lt;string&gt; errors, string? sourcePath = null, ConfigurationOrigin source = ConfigurationOrigin.File);</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:103](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L103) | Creates a ValidatedConfig representing a failure state. |
 | <code>public static ValidatedConfig Default() =&gt; …;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:123](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L123) | Creates a ValidatedConfig with default/empty configuration. |
 | <code>public static implicit operator AppConfig(ValidatedConfig validated) =&gt; …;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:134](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L134) | Implicit conversion to AppConfig for backwards compatibility. |
-
-## ValidationPipelineConfig
-
-Qualified name: <code>Meridian.Core.Config.ValidationPipelineConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/AppConfig.cs:196](../../../../src/Meridian.Core/Config/AppConfig.cs#L196).
-
-Configuration for the F# validation pipeline stage. When enabled, every incoming Meridian.Domain.Events.MarketEvent is validated against the F# Railway-Oriented validators before it is persisted. Events that fail validation are written to the dead-letter sink instead of primary storage.
-
-```csharp
-public sealed record ValidationPipelineConfig(bool Enabled = false, bool UseRealTimeMode = false);
-```
-
-## YahooFinanceConfig
-
-Qualified name: <code>Meridian.Core.Config.YahooFinanceConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:153](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L153).
-
-Yahoo Finance provider configuration.
-
-```csharp
-public sealed record YahooFinanceConfig(bool Enabled = true, int Priority = 10, int RateLimitPerHour = 2000);
-```
-
-## IProviderCredentialStore
-
-Qualified name: <code>Meridian.Core.Contracts.IProviderCredentialStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:7](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L7).
-
-Compatibility contract for provider-module setup. Production implementations must delegate to the encrypted, audited credential vault; no implementation may persist plaintext sidecars.
-
-```csharp
-public interface IProviderCredentialStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:10](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L10) | Persists credential key/value pairs for a provider module. |
-| <code>Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:13](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L13) | Returns all credential key/value pairs stored for a provider module. |
-| <code>async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:20](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L20) | Reads one selected record, preserving an empty retained record; null proves absence. Compatibility stores that cannot prove absence conservatively select their returned record, so missing fields cannot borrow ambient credentials. |
-| <code>Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:24](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L24) | Returns the set of credential key names that have stored (non-empty) values. |
-| <code>Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:27](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L27) | Removes all stored credentials for a provider module. |

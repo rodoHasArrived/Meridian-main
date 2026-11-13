@@ -104,8 +104,9 @@ validation pipeline stages, credential placeholder detection, default config-pat
 environment-variable override handling, configuration-template generation, and debounced config
 file hot-reload watching for Application commands, configuration services, WPF setup flows, and
 shared endpoints.
-Schema generation excludes members marked `JsonIgnore`: those members may remain as in-process
-compatibility aliases, but they are not accepted configuration inputs.
+Schema generation excludes members with `JsonIgnoreCondition.Always`: those members may remain as
+in-process compatibility aliases. Conditional write omission retains the member's input schema,
+including nullable ownership bindings and account quota declarations.
 `DataSourceKindConverter` resolves the ProviderSdk alias map before enum validation, so `ibkr` and
 `interactive-brokers` load as `DataSourceKind.IB`. Unknown providers, unsupported transport modes,
 and undefined numeric values remain configuration errors.

@@ -12,8 +12,8 @@ describe("ProviderAccountingRegion", () => {
   it("renders credits and daily limits with their units in the current quota table", async () => {
     const rates = buildProviderRateLimitsFixture();
     rates.providers[0] = { ...rates.providers[0], quotaUnit: "credits", requestsInWindow: 40,
-      maxRequestsPerWindow: 55, remainingRequests: 15, dailyMaximum: 800,
-      dailyUnitsUsed: 800, dailyResetPolicy: "utc-midnight" };
+      maxRequestsPerWindow: 55, remainingRequests: 0, dailyMaximum: 800,
+      dailyUnitsUsed: 800, dailyResetPolicy: "utc-midnight", reason: "daily-quota" };
     const services: ProviderAccountingServices = {
       getCatalog: vi.fn(async () => buildProviderAccountingCatalogFixture()),
       getRateLimits: vi.fn(async () => rates),
@@ -22,6 +22,7 @@ describe("ProviderAccountingRegion", () => {
     render(<ProviderAccountingRegion services={services} />);
     await waitFor(() => expect(screen.getByText("40 / 55 credits")).toBeInTheDocument());
     expect(screen.getByText("800 / 800 credits · midnight UTC")).toBeInTheDocument();
+    expect(screen.getByText("0 credits")).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /Quota usage/ })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: /Daily quota/ })).toBeInTheDocument();
   });

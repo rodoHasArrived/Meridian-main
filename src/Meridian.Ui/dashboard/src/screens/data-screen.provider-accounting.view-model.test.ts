@@ -17,12 +17,12 @@ describe("provider accounting view model", () => {
     rates.providers[0] = {
       ...rates.providers[0], quotaUnit: "credits", requestsInWindow: 40,
       maxRequestsPerWindow: 55, remainingRequests: 15,
-      dailyUnitsUsed: 800, dailyMaximum: 800, dailyResetPolicy: "utc-midnight"
+      dailyUnitsUsed: 400, dailyMaximum: 800, dailyResetPolicy: "utc-midnight"
     };
     const panel = buildProviderAccountingPanelState(buildProviderAccountingCatalogFixture(), rates, now);
     expect(panel.rateLimits[0].requestUsage).toBe("40 / 55 credits");
     expect(panel.rateLimits[0].remaining).toBe("15 credits");
-    expect(panel.rateLimits[0].dailyUsage).toBe("800 / 800 credits · midnight UTC");
+    expect(panel.rateLimits[0].dailyUsage).toBe("400 / 800 credits · midnight UTC");
   });
 
   it("does not infer a daily quota or reset policy when the runtime did not supply one", () => {

@@ -269,7 +269,8 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     {
         lock (_rateLimitSync)
         {
-            return GetRateLimitInfo(_timeProvider.GetUtcNow());
+            var budget = RequestRateLimiter.GetBudgetStatus();
+            return GetRateLimitInfo(budget);
         }
     }
 
@@ -278,14 +279,13 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     {
         lock (_rateLimitSync)
         {
-            var observedAt = _timeProvider.GetUtcNow();
-            var info = GetRateLimitInfo(observedAt);
             var budget = RequestRateLimiter.GetBudgetStatus();
+            var info = GetRateLimitInfo(budget);
             var dailyLimited = budget.DailyMaximum is { } daily && budget.DailyUnitsUsed >= daily;
             return new ProviderRateLimitDiagnosticSnapshot(
                 info.ProviderName,
                 ProviderRateLimitSurfaces.Historical,
-                observedAt,
+                budget.ObservedAt,
                 info.RequestsMade,
                 info.MaxRequests,
                 info.Window,
@@ -305,10 +305,10 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         }
     }
 
-    private RateLimitInfo GetRateLimitInfo(DateTimeOffset observedAt)
+    private RateLimitInfo GetRateLimitInfo(RequestBudgetStatus usage)
     {
-        var usage = RequestRateLimiter.GetBudgetStatus();
-        if (RequestRateLimiter.GetCooldownUntil() is { } sharedReset && sharedReset > observedAt)
+        var observedAt = usage.ObservedAt;
+        if (usage.CooldownUntil is { } sharedReset && sharedReset > observedAt)
         {
             _isRateLimited = true;
             _rateLimitResetsAt = sharedReset;
@@ -329,7 +329,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             Name,
             usage.UnitsInWindow,
             usage.Maximum,
-            RateLimitWindow,
+            usage.Window,
             reset,
             _isRateLimited || quotaLimited,
             reset.HasValue ? reset.Value - observedAt : null

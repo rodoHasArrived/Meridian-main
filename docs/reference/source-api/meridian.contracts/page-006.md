@@ -631,7 +631,7 @@ public sealed record ProviderPresetDto(string PresetId, string Name, string Desc
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:62](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L62).
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:78](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L78).
 
 Historical-data capabilities preserved from the previous rate-limit endpoint shape.
 
@@ -643,7 +643,7 @@ public sealed record ProviderRateLimitCapabilitiesDto([property : JsonPropertyNa
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitEventDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:86](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L86).
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:102](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L102).
 
 Reserved bounded-history event contract for a future durable implementation.
 
@@ -655,7 +655,7 @@ public sealed record ProviderRateLimitEventDto([property : JsonPropertyName("tim
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitHistoryResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:75](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L75).
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:91](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L91).
 
 Honest response for the legacy history route. Runtime rate-limit history is not retained.
 
@@ -700,8 +700,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;isThrottled&quot;)] public bool IsThrottled =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:53](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L53) |  |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:56](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L56) |  |
+| <code>[JsonPropertyName(&quot;quotaUnit&quot;)] public string QuotaUnit { get; init; } = &quot;requests&quot;;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:54](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L54) | Unit of the compatibility request-named counters. |
+| <code>[JsonPropertyName(&quot;dailyUnitsUsed&quot;)] public int? DailyUnitsUsed { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:57](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L57) |  |
+| <code>[JsonPropertyName(&quot;dailyMaximum&quot;)] public int? DailyMaximum { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:60](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L60) |  |
+| <code>[JsonPropertyName(&quot;dailyResetsAt&quot;)] public DateTimeOffset? DailyResetsAt { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:63](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L63) |  |
+| <code>[JsonPropertyName(&quot;dailyResetPolicy&quot;)] public string? DailyResetPolicy { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:66](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L66) |  |
+| <code>[JsonPropertyName(&quot;isThrottled&quot;)] public bool IsThrottled =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:69](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L69) |  |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:72](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L72) |  |
 
 ## ProviderRateLimitsResponse
 

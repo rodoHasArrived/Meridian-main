@@ -37,8 +37,8 @@
       "id": "SRC-CORE",
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
-      "readme_hash": "99a4805123017e13ebac331834b291f57e3a15482b30169fc5f3b41e21756ed2",
-      "source_hash": "cf5be7557d073326eb2e41a4a4bceb05a293dfca7dcb77acc085b37b0dea21ad"
+      "readme_hash": "e3fcd0a911e015e694a40c3f2496ef2a21df79890ec1347c49ba340945107c6b",
+      "source_hash": "f7bc016a32e24e7637132d194bcba49fe43a861701d48321b0323f0291a47b0a"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "87bd81c659a5f8fda9756fd9fa05713acc6b3d3628c1691accb4508ce125934d",
-      "source_hash": "c52c45bcb0c91327519f2a91f823c1524e4dd70fb52cb7cfd0c2178356f9c0cc"
+      "readme_hash": "3e9f7fdf0574490063f7ea130e13955b1399cfcaa01c8e72537b0acef95bb2d0",
+      "source_hash": "de1955fdab4b2aad506acb8ec08b86e84f4daa3b9cf0cc17a464e5ed79ad6c3d"
     },
     {
       "id": "SRC-LAUNCHER",
@@ -227,7 +227,7 @@
       "path": "src/Meridian.ProviderSdk",
       "readme": "src/Meridian.ProviderSdk/README.md",
       "readme_hash": "ffb6eb8ea11ece4c38a4b9c8804bcf1a1facb1629e4d8c6f9ec6d1f767b5f693",
-      "source_hash": "e94a71071d0bdf84b960c35fc7ac8c217bae0991ddfa5fa568e53cd9b00cb70d"
+      "source_hash": "42fdadcae0b96781a2d8b51eb5ecf1e891e2268455e2870ec6f1e111ea7304c1"
     },
     {
       "id": "SRC-QUANTSCRIPT",
@@ -276,14 +276,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "fa1d85e1cc8e2622a0f357d9f33e6cbf0f5cfdc798b957cc1411d33c83e9d2dc",
-      "source_hash": "0a8ba85ff699b219f2f330ac28248189663475b6be2e5845503b3c123612502a"
+      "source_hash": "9fea0ee4e5e48091797fe1a90b7fc5170886038c12d161ebefe77b5154fc01d7"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
       "readme_hash": "85cf882ce3300b8c06dddfd12e3f26deecde4365359a39cc5d3c4485f8d494dd",
-      "source_hash": "0a8ba85ff699b219f2f330ac28248189663475b6be2e5845503b3c123612502a"
+      "source_hash": "9fea0ee4e5e48091797fe1a90b7fc5170886038c12d161ebefe77b5154fc01d7"
     },
     {
       "id": "SRC-UI-SERVICES",

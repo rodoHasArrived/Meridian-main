@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12457 |
-| Valid | 11975 |
+| Total code blocks | 12464 |
+| Valid | 11982 |
 | Invalid | 0 |
 | Skipped | 482 |
 
@@ -19,7 +19,7 @@
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 109 | 0 | 0 | 109 |
 | `bash` | 265 | 265 | 0 | 0 |
-| `csharp` | 11605 | 11605 | 0 | 0 |
+| `csharp` | 11612 | 11612 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -260,7 +260,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-004.md` | 50 |
-| `docs/reference/source-api/meridian.core/page-005.md` | 32 |
+| `docs/reference/source-api/meridian.core/page-005.md` | 35 |
 | `docs/reference/source-api/meridian.dataintegration/page-001.md` | 53 |
 | `docs/reference/source-api/meridian.dataintegration/page-002.md` | 51 |
 | `docs/reference/source-api/meridian.dataintegration/page-003.md` | 50 |
@@ -293,12 +293,12 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.identity/page-002.md` | 3 |
 | `docs/reference/source-api/meridian.infrastructure/page-001.md` | 55 |
 | `docs/reference/source-api/meridian.infrastructure/page-002.md` | 51 |
-| `docs/reference/source-api/meridian.infrastructure/page-003.md` | 53 |
-| `docs/reference/source-api/meridian.infrastructure/page-004.md` | 53 |
+| `docs/reference/source-api/meridian.infrastructure/page-003.md` | 52 |
+| `docs/reference/source-api/meridian.infrastructure/page-004.md` | 54 |
 | `docs/reference/source-api/meridian.infrastructure/page-005.md` | 50 |
 | `docs/reference/source-api/meridian.infrastructure/page-006.md` | 50 |
 | `docs/reference/source-api/meridian.infrastructure/page-007.md` | 51 |
-| `docs/reference/source-api/meridian.infrastructure/page-008.md` | 4 |
+| `docs/reference/source-api/meridian.infrastructure/page-008.md` | 8 |
 | `docs/reference/source-api/meridian.instruments/page-001.md` | 60 |
 | `docs/reference/source-api/meridian.instruments/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.ledger/page-001.md` | 50 |

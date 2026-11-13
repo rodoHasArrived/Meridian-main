@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using Meridian.Core.Config;
+using TwelveDataQuotaConfig = Meridian.Core.Config.TwelveDataQuotaConfig;
 using Meridian.Contracts.Text;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;

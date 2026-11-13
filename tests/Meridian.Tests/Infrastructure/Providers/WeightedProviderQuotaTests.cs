@@ -18,9 +18,53 @@ public sealed class WeightedProviderQuotaTests
     private static readonly TimeSpan PaidDelay = ProviderQuotaBudgets.TwelveData(Paid).MinimumDelay;
 
     [Fact]
+    public void ConfigurationSchema_RetainsConditionallyOmittedQuotaAndOwnershipInputsButExcludesAlwaysIgnoredAliases()
+    {
+        var schema = new ConfigJsonSchemaGenerator().GenerateSchema();
+        Assert.NotNull(schema["properties"]![nameof(AppConfig.ProviderQuotas)]);
+        Assert.NotNull(schema["$defs"]![nameof(ProviderConnectionsConfig)]!["properties"]![nameof(ProviderConnectionsConfig.RuntimeCredentials)]);
+        Assert.NotNull(schema["$defs"]![nameof(ProviderConnectionsConfig)]!["properties"]![nameof(ProviderConnectionsConfig.OwnershipRequiredProviders)]);
+        Assert.False(schema["$defs"]![nameof(AlpacaOptions)]!["properties"]!.AsObject().ContainsKey(nameof(AlpacaOptions.EquitiesFeed)));
+        Assert.NotNull(schema["$defs"]![nameof(TwelveDataQuotaConfig)]!["properties"]![nameof(TwelveDataQuotaConfig.FundamentalsEntitled)]);
+        Assert.NotNull(schema["$defs"]![nameof(TwelveDataQuotaConfig)]!["properties"]![nameof(TwelveDataQuotaConfig.NoDailyLimit)]);
+    }
+
+    [Fact]
+    public void UnconfiguredQuotaSection_IsOmittedToPreserveLegacyConfigurationSerialization()
+    {
+        var json = JsonSerializer.Serialize(new AppConfig(), AppConfigJsonOptions.Write);
+        Assert.DoesNotContain("providerQuotas", json);
+        Assert.Null(JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)!.ProviderQuotas);
+    }
+
+    [Fact]
+    public void DiagnosticSnapshot_RemainsCoherentWhenAnotherCapabilityChargesDuringObservation()
+    {
+        var clock = new ChargingTimeProvider();
+        using var registry = new RateLimiterRegistry(timeProvider: clock);
+        var profile = new TwelveDataQuotaConfig(100, 3);
+        var budget = registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", ProviderQuotaBudgets.TwelveData(profile));
+        using var handler = new RecordingHandler();
+        using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry, quotaConfig: profile);
+        // Another capability can reserve at any clock observation. This deterministic interleaving
+        // exposes a second shared-budget read without relying on thread scheduling.
+        clock.OnRead = budget.RecordRequest;
+
+        var snapshot = history.GetRateLimitDiagnosticsSnapshot();
+
+        clock.OnRead = null;
+        Assert.Equal(snapshot.RequestsInWindow, snapshot.DailyUnitsUsed);
+        Assert.Equal(snapshot.DailyUnitsUsed >= snapshot.DailyMaximum, snapshot.IsRateLimited);
+        Assert.Equal(snapshot.IsRateLimited ? "daily-quota" : null, snapshot.Reason);
+        Assert.Equal(Math.Max(0, 3 - snapshot.DailyUnitsUsed!.Value), snapshot.RemainingRequests);
+        Assert.Equal((double)snapshot.DailyUnitsUsed.Value / 3, snapshot.UsageRatio);
+    }
+
+    [Fact]
     public void ExplicitUnlimitedPaidProfiles_SurviveCoreAndDesktopConfigurationRoundTrips()
     {
-        var config = new AppConfig { ProviderQuotas = new(Paid, new(75, NoDailyLimit: true)) };
+        // Desktop configuration models compression as a non-nullable boolean.
+        var config = new AppConfig(Compress: false) { ProviderQuotas = new(Paid, new(75, NoDailyLimit: true)) };
         var json = JsonSerializer.Serialize(config, AppConfigJsonOptions.Write);
         var desktop = JsonSerializer.Deserialize<AppConfigDto>(json, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint)!;
         var desktopJson = JsonSerializer.Serialize(desktop, Meridian.Ui.Services.DesktopJsonOptions.PrettyPrint);
@@ -102,6 +146,25 @@ public sealed class WeightedProviderQuotaTests
         clock.Advance(TimeSpan.FromMinutes(1));
         Assert.Equal(0, limiter.GetBudgetStatus().UnitsInWindow);
         Assert.Equal(30, limiter.GetBudgetStatus().DailyUnitsUsed);
+    }
+
+    [Fact]
+    public async Task FractionalMillisecondWait_SchedulesPositiveDelayRatherThanSpinning()
+    {
+        var clock = new RequestBudgetTimeProvider();
+        using var limiter = new RateLimiter(10, TimeSpan.FromMinutes(1), TimeSpan.FromTicks(9090), timeProvider: clock);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await limiter.WaitForSlotAsync(cancellation.Token);
+
+        var pending = limiter.WaitForSlotAsync(cancellation.Token);
+
+        Assert.False(pending.IsCompleted);
+        Assert.True(clock.HasTimerDueWithin(TimeSpan.FromMilliseconds(1)));
+        clock.Advance(TimeSpan.FromTicks(9090));
+        Assert.False(pending.IsCompleted, "a positive fractional wait must never charge early");
+        clock.Advance(TimeSpan.FromTicks(910));
+        Assert.Equal(TimeSpan.FromMilliseconds(1), await pending.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.Equal(2, limiter.GetBudgetStatus().UnitsInWindow);
     }
 
     [Fact]
@@ -255,6 +318,7 @@ public sealed class WeightedProviderQuotaTests
         Assert.Empty(handler.Requests);
         Assert.True(history.GetRateLimitDiagnosticsSnapshot().IsRateLimited);
         Assert.Equal("daily-quota", history.GetRateLimitDiagnosticsSnapshot().Reason);
+        Assert.Equal(0, history.GetRateLimitDiagnosticsSnapshot().RemainingRequests);
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
         Assert.Equal(1, budget.GetBudgetStatus().DailyUnitsUsed);
@@ -272,7 +336,7 @@ public sealed class WeightedProviderQuotaTests
             NullLogger<AlphaVantageCorporateActionProvider>.Instance, new Credentials("synthetic-key"), registry);
         var work = Task.WhenAll(
             history.GetDailyBarsAsync("AAPL", new(2026, 1, 1), new(2026, 1, 2)),
-            search.SearchAsync("AAPL"),
+            search.SearchAsync("AAPL", 10, CancellationToken.None),
             actions.FetchWithOutcomeAsync("AAPL", Guid.NewGuid()));
         for (var count = 1; count < 3; count++)
         {
@@ -305,6 +369,22 @@ public sealed class WeightedProviderQuotaTests
     {
         public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
             => new Credentials("synthetic-key");
+    }
+
+    private sealed class ChargingTimeProvider : TimeProvider
+    {
+        private int _reading;
+        internal Action? OnRead;
+        public override DateTimeOffset GetUtcNow()
+        {
+            if (Interlocked.Exchange(ref _reading, 1) == 0)
+            {
+                try
+                { OnRead?.Invoke(); }
+                finally { Volatile.Write(ref _reading, 0); }
+            }
+            return new(2026, 11, 11, 0, 0, 0, TimeSpan.Zero);
+        }
     }
 
     private sealed class RecordingHandler : HttpMessageHandler, IHttpClientFactory

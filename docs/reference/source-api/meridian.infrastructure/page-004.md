@@ -6,6 +6,95 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FredEconomicObservationsResult
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredEconomicObservationsResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L15).
+
+Unmodified response evidence is available to the host&#x27;s evidence retainer; missing observations stay explicit.
+
+```csharp
+public sealed record FredEconomicObservationsResult(IReadOnlyList<BondMarketObservationInput> Observations, IReadOnlyList<DateOnly> MissingDates, string RawResponseJson, string ResponseSha256);
+```
+
+## FredEconomicSeriesDefinition
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredEconomicSeriesDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L11).
+
+A reviewed mapping from a FRED series to an exact contractual index and explicit source units.
+
+```csharp
+public sealed record FredEconomicSeriesDefinition(string SeriesId, string IndexName, BondMarketObservationKind Kind, BondMarketValueUnit Unit, string SourceName, string? Currency = null);
+```
+
+## FredHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L31).
+
+Historical provider for FRED economic time series. Legacy chart clients can request explicitly synthetic bars. Fixed-income consumers use GetRateObservationsAsync, which preserves units and vintage evidence without OHLC conversion.
+
+```csharp
+public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISecurityRateObservationProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L36) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L37) |  |
+| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L38) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L41) |  |
+| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L42) |  |
+| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L43) |  |
+| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L44) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly.WithMarkets(&quot;US&quot;);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L46) |  |
+| <code>public FredHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L49) |  |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L55) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L74) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityRateObservationDto&gt;&gt; GetRateObservationsAsync(string seriesId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:137](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L137) | Dedicated rate/fixing ingress. FRED&#x27;s realtime dates are vintages, never fabricated publication timestamps. |
+
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:21](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L21).
+
+```csharp
+public sealed partial class FredHistoricalDataProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;FredEconomicObservationsResult&gt; GetEconomicObservationsAsync(FredEconomicSeriesDefinition definition, DateOnly from, DateOnly to, DateOnly vintageDate, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L28) | Fetches typed, vintage-bound index observations independently of synthetic OHLC bars. Series mapping is explicit: benchmark yields are never turned into discount factors. FRED&#x27;s vintage date is retained as a date, not invented as a publication-time instant. |
+
+## FredProviderModule
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredProviderModule</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L14).
+
+Owns FRED&#x27;s historical and series-search factories. Configuration is evaluated against the host&#x27;s final credential resolver without connecting to FRED during registration.
+
+```csharp
+public sealed class FredProviderModule : ConfigurableProviderModuleBase, IProviderModuleCapabilityAvailability, IProviderModuleCredentialHints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string ModuleId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L17) |  |
+| <code>public override string ModuleDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:18](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L18) |  |
+| <code>public IReadOnlyList&lt;string&gt; CredentialKeyHints =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L19) |  |
+| <code>public override ProviderCapabilities[] Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L20) |  |
+| <code>public static ProviderCapabilityDescriptor Descriptor { get; } = new (&quot;fred&quot;, Historical : typeof(FredHistoricalDataProvider), Search : typeof(FredSymbolSearchProvider), InstrumentTypes :[InstrumentType.Index], HistoricalFactory : static factory =&gt; CreateHistorical(factory), SearchFactory : static factory =&gt; CreateSearch(factory), FactoryOwner : ProviderCapabilityFactoryOwner.Module);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L23) |  |
+| <code>public override void Register(IServiceCollection services, DataSourceRegistry registry);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L30) |  |
+| <code>public bool IsCapabilityConfigured(Type contract, IServiceProvider services);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L41) |  |
+
 ## FredSymbolSearchProvider
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredSymbolSearchProvider</code>. Kind: `class`.
@@ -1488,112 +1577,3 @@ Intraday bar data from IB.
 ```csharp
 public sealed record IntradayBar(string Symbol, DateTimeOffset Timestamp, decimal Open, decimal High, decimal Low, decimal Close, long Volume, decimal VWAP, int TradeCount, string Source = "ibkr");
 ```
-
-## JsonIBDurableResultStore
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.JsonIBDurableResultStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:66](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L66).
-
-Small atomic JSON result store used until an installation supplies a database projection. It is deliberately keyed by tenant + company + provider connection + immutable correlation + request id, so process restarts and shared gateway request-id reuse cannot cross ownership boundaries.
-
-```csharp
-public sealed class JsonIBDurableResultStore : IBDurableResultStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonIBDurableResultStore(string path) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:72](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L72) |  |
-| <code>public void Upsert(IBDataRequestOwnership ownership, string providerConnectionId, string requestCorrelationId, ProviderDataRequestReadModel request, IBDataLineage? lineage);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:74](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L74) |  |
-| <code>public IReadOnlyList&lt;IBDurableResult&gt; Get(string tenantId, string companyId, string? capability = null, string? accountId = null, string? modelAccountId = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs:140](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDurableResultStore.cs#L140) |  |
-
-## IBHistoricalDataProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.Meridian.Infrastructure.Adapters.InteractiveBrokers.IBHistoricalDataProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:577](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L577).
-
-Stub IB historical data provider for non-IBAPI builds. Registers in the provider list so users can see IB is available but requires IBAPI.
-
-```csharp
-public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IBHistoricalDataProvider();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:581](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L581) |  |
-| <code>public IBHistoricalDataProvider(EnhancedIBConnectionManager connectionManager, int priority = 10, Serilog.ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:583](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L583) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:592](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L592) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:593](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L593) |  |
-| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:594](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L594) |  |
-| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:598](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L598) |  |
-| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:599](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L599) |  |
-| <code>public int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:600](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L600) |  |
-| <code>public TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:601](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L601) |  |
-| <code>public HistoricalDataCapabilities Capabilities { get; } = (HistoricalDataCapabilities.BarsOnly with { Intraday = true }).WithMarkets(&quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot;);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:603](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L603) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:607](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L607) |  |
-| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:608](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L608) |  |
-| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:609](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L609) |  |
-| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:610](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L610) |  |
-| <code>public ProviderCapabilities ProviderCapabilities { get; } = new () { SupportsBackfill = true, SupportsIntraday = true, SupportsAdjustedPrices = true, SupportedMarkets = new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, DeclaredMarketDataCapabilities = new[] { new MarketDataCapabilityProfile(MarketDataCapabilityKind.Bars, new[] { &quot;Equity&quot;, &quot;Option&quot;, &quot;Future&quot;, &quot;Forex&quot;, &quot;Bond&quot; }, new[] { &quot;US&quot;, &quot;EU&quot;, &quot;APAC&quot; }, new[] { &quot;SMART&quot; }, &quot;IBKR TWS/Gateway&quot;, &quot;Historical&quot;, &quot;Account and market-data subscription may be required&quot;, 60, TimeSpan.FromMinutes(10), TimeSpan.FromSeconds(15), &quot;IB historical bar timestamp&quot;, &quot;Entitlement-dependent; unavailable without an IBAPI-enabled build&quot;) }, MaxRequestsPerWindow = 60, RateLimitWindow = TimeSpan.FromMinutes(10), MinRequestDelay = TimeSpan.FromSeconds(15) };</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:612](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L612) |  |
-| <code>public ProviderCredentialField[] ProviderCredentialFields =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:627](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L627) |  |
-| <code>public string[] ProviderNotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:633](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L633) |  |
-| <code>public string[] ProviderWarnings =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:639](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L639) |  |
-| <code>public Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:645](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L645) |  |
-| <code>public Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:651](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L651) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs:658](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs#L658) |  |
-
-## NasdaqDataLinkCorporateActionProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkCorporateActionProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L34).
-
-Fetches dividend and split history from Nasdaq Data Link time-series datasets.
-
-```csharp
-public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateActionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NasdaqDataLinkCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;NasdaqDataLinkCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L41) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L53) |  |
-| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L55) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L59) |  |
-| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:66](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L66) |  |
-
-## NasdaqDataLinkHistoricalDataProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkHistoricalDataProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L31).
-
-Historical data provider using Nasdaq Data Link (formerly Quandl). Free tier: 50 calls/day, 300 calls/10 seconds. Provides access to various datasets including WIKI (end-of-life) and premium datasets. Extends BaseHistoricalDataProvider for common functionality.
-
-```csharp
-public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:38](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L38) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:39](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L39) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:40](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L40) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L43) |  |
-| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L44) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L45) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L46) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:51](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L51) | Nasdaq Data Link supports adjusted bars with corporate actions. |
-| <code>public NasdaqDataLinkHistoricalDataProvider(string? apiKey = null, string database = &quot;WIKI&quot;, HttpClient? httpClient = null, ILogger? log = null) : base(httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:60](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L60) | Create a Nasdaq Data Link provider. |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:79](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L79) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:96](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L96) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:106](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L106) |  |

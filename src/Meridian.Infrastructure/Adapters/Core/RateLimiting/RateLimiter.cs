@@ -106,7 +106,10 @@ public sealed class RateLimiter : IDisposable
                     }
 
                     _log.Debug("Rate limit reached, waiting {WaitMs}ms", wait.TotalMilliseconds);
-                    await Task.Delay(wait, _timeProvider, linked.Token).ConfigureAwait(false);
+                    // Task.Delay truncates fractional milliseconds, including positive waits
+                    // below one millisecond. Round up so a frozen clock cannot spin at zero.
+                    var delay = TimeSpan.FromMilliseconds(Math.Ceiling(wait.TotalMilliseconds));
+                    await Task.Delay(delay, _timeProvider, linked.Token).ConfigureAwait(false);
                     // A response from another in-flight request can extend the cooldown while
                     // this caller sleeps; recheck all constraints before charging and sending.
                 }
@@ -188,7 +191,8 @@ public sealed class RateLimiter : IDisposable
             var next = NextAdmissionAt(now, 1);
             return new(_limits.Unit, _unitsInWindow, _limits.Maximum, _limits.Window,
                 _limits.DailyMaximum.HasValue ? _dailyUnits : null, _limits.DailyMaximum,
-                DailyResetAt(now), _limits.DailyReset, next > now ? next : null);
+                DailyResetAt(now), _limits.DailyReset, next > now ? next : null, now,
+                _cooldownUntil > now ? _cooldownUntil : null);
         }
     }
 

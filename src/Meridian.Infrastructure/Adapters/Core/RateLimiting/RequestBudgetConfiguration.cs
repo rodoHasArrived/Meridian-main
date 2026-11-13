@@ -42,7 +42,9 @@ public sealed record RequestBudgetStatus(
     int? DailyMaximum,
     DateTimeOffset? DailyResetsAt,
     DailyQuotaResetMode DailyReset,
-    DateTimeOffset? NextAvailableAt)
+    DateTimeOffset? NextAvailableAt,
+    DateTimeOffset ObservedAt,
+    DateTimeOffset? CooldownUntil)
 {
     public bool IsLimited => NextAvailableAt.HasValue;
 }
@@ -56,7 +58,7 @@ public static class ProviderQuotaBudgets
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.CreditsPerMinute, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.DailyCredits, 0);
         var budget = new RequestBudgetConfiguration(profile.CreditsPerMinute, TimeSpan.FromMinutes(1),
-            TimeSpan.FromMinutes(1) / profile.CreditsPerMinute, profile.NoDailyLimit ? null : profile.DailyCredits, DailyQuotaResetMode.UtcMidnight, "credits");
+            MinimumDelay(profile.CreditsPerMinute), profile.NoDailyLimit ? null : profile.DailyCredits, DailyQuotaResetMode.UtcMidnight, "credits");
         budget.Validate();
         return budget;
     }
@@ -67,8 +69,11 @@ public static class ProviderQuotaBudgets
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.RequestsPerMinute, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(profile.DailyRequests, 0);
         var budget = new RequestBudgetConfiguration(profile.RequestsPerMinute, TimeSpan.FromMinutes(1),
-            TimeSpan.FromMinutes(1) / profile.RequestsPerMinute, profile.NoDailyLimit ? null : profile.DailyRequests);
+            MinimumDelay(profile.RequestsPerMinute), profile.NoDailyLimit ? null : profile.DailyRequests);
         budget.Validate();
         return budget;
     }
+
+    private static TimeSpan MinimumDelay(int perMinute)
+        => TimeSpan.FromMilliseconds(Math.Ceiling(TimeSpan.FromMinutes(1).TotalMilliseconds / perMinute));
 }

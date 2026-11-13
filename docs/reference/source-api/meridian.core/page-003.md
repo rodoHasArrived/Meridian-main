@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidationPipelineConfig
+
+Qualified name: <code>Meridian.Core.Config.ValidationPipelineConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/AppConfig.cs:200](../../../../src/Meridian.Core/Config/AppConfig.cs#L200).
+
+Configuration for the F# validation pipeline stage. When enabled, every incoming Meridian.Domain.Events.MarketEvent is validated against the F# Railway-Oriented validators before it is persisted. Events that fail validation are written to the dead-letter sink instead of primary storage.
+
+```csharp
+public sealed record ValidationPipelineConfig(bool Enabled = false, bool UseRealTimeMode = false);
+```
+
+## YahooFinanceConfig
+
+Qualified name: <code>Meridian.Core.Config.YahooFinanceConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:153](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L153).
+
+Yahoo Finance provider configuration.
+
+```csharp
+public sealed record YahooFinanceConfig(bool Enabled = true, int Priority = 10, int RateLimitPerHour = 2000);
+```
+
+## IProviderCredentialStore
+
+Qualified name: <code>Meridian.Core.Contracts.IProviderCredentialStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:7](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L7).
+
+Compatibility contract for provider-module setup. Production implementations must delegate to the encrypted, audited credential vault; no implementation may persist plaintext sidecars.
+
+```csharp
+public interface IProviderCredentialStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:10](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L10) | Persists credential key/value pairs for a provider module. |
+| <code>Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:13](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L13) | Returns all credential key/value pairs stored for a provider module. |
+| <code>async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:20](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L20) | Reads one selected record, preserving an empty retained record; null proves absence. Compatibility stores that cannot prove absence conservatively select their returned record, so missing fields cannot borrow ambient credentials. |
+| <code>Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:24](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L24) | Returns the set of credential key names that have stored (non-empty) values. |
+| <code>Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:27](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L27) | Removes all stored credentials for a provider module. |
+
 ## CurrencyMinorUnits
 
 Qualified name: <code>Meridian.Core.Currency.CurrencyMinorUnits</code>. Kind: `class`.
@@ -979,75 +1025,3 @@ Declared public members:
 | <code>public readonly byte Aggressor;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:43](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L43) | Aggressor side encoded as the underlying byte value of Meridian.Contracts.Domain.Enums.AggressorSide: 0 = Unknown, 1 = Buy, 2 = Sell. |
 | <code>public readonly long Sequence;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:46](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L46) | Provider-assigned sequence number for ordering and gap detection. |
 | <code>public RawTradeEvent(long timestampTicks, int symbolHash, decimal price, long size, byte aggressor, long sequence);</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:57](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L57) | Creates a new RawTradeEvent. |
-
-## SpscRingBuffer (generic arity 1)
-
-Qualified name: <code>Meridian.Core.Performance.SpscRingBuffer</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:41](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L41).
-
-Lock-free, single-producer/single-consumer ring buffer backed by a pre-allocated array.
-
-```csharp
-public sealed class SpscRingBuffer<T> where T : struct
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SpscRingBuffer(int capacity);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:59](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L59) | Creates a new ring buffer with a capacity rounded up to the next power of two. |
-| <code>public int Capacity =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:72](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L72) | Gets the actual buffer capacity (the next power of two ≥ the requested capacity). |
-| <code>public int Count { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:78](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L78) | Gets an approximate count of items currently available to read. The value may be stale by the time the caller acts on it. |
-| <code>public bool IsEmpty { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:85](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L85) | Gets whether the buffer currently has no items to read. |
-| <code>public bool IsFull { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:92](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L92) | Gets whether the buffer is currently full. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryWrite(in T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:111](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L111) | Tries to write item into the buffer. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryRead(out T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:139](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L139) | Tries to read the next item from the buffer. |
-| <code>public int DrainTo(Span&lt;T&gt; destination, int maxItems = int.MaxValue);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:162](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L162) | Drains up to maxItems items into destination. |
-
-## SymbolTable
-
-Qualified name: <code>Meridian.Core.Performance.SymbolTable</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/SymbolTable.cs:20](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L20).
-
-Thread-safe symbol intern table that maps market symbol strings to compact integer IDs.
-
-```csharp
-public sealed class SymbolTable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetOrAdd(string symbol);</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:33](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L33) | Returns the integer ID for symbol, registering it if not already present. This call is allocation-free for symbols that have already been registered. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public string? TryGetSymbol(int id);</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:53](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L53) | Resolves an integer ID back to its symbol string. |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:60](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L60) | Gets the total number of symbols registered in this table. |
-
-## ThreadingUtilities
-
-Qualified name: <code>Meridian.Core.Performance.ThreadingUtilities</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:12](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L12).
-
-Low-level threading utilities for high-performance scenarios. Provides thread affinity, priority, and CPU pinning capabilities.
-
-```csharp
-public static class ThreadingUtilities
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SetHighPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:18](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L18) | Sets the current thread&#x27;s priority to highest for latency-critical operations. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SetAboveNormalPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:34](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L34) | Sets the current thread&#x27;s priority to above normal (less aggressive than highest). |
-| <code>public static bool TrySetThreadAffinity(int cpuIndex);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:51](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L51) | Attempts to set thread affinity to a specific CPU core (Windows/Linux). |
-| <code>public static bool TrySetProcessAffinity(nint affinityMask);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:80](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L80) | Attempts to set process affinity to specific CPU cores. Only supported on Windows and Linux. |
-| <code>public static bool TrySetProcessHighPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:105](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L105) | Attempts to set the process to high priority class. Only supported on Windows and Linux. Use sparingly - this affects all threads and can starve other processes. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void YieldProcessor();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:130](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L130) | Yields the current thread to allow other threads to execute. More efficient than Thread.Sleep(0) for busy-wait scenarios. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SpinWait(int iterations);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:140](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L140) | Performs a spin-wait for the specified number of iterations. Useful for very short waits where context switching is too expensive. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static int GetCurrentThreadId() =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:149](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L149) | Gets the current thread&#x27;s managed thread ID. |
-| <code>public static bool TryStartNoGCRegion(long totalBytes);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:155](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L155) | Prevents the GC from relocating the current thread&#x27;s stack during critical sections. Call EndNoGCRegion when done. |
-| <code>public static void EndNoGCRegion();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:170](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L170) | Ends the no-GC region started by TryStartNoGCRegion. |

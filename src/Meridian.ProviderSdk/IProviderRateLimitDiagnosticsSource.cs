@@ -33,7 +33,9 @@ public sealed record ProviderRateLimitDiagnosticSnapshot(
     public DateTimeOffset? DailyResetsAt { get; init; }
     public string? DailyResetPolicy { get; init; }
 
-    public int RemainingRequests => Math.Max(0, MaxRequestsPerWindow - RequestsInWindow);
+    public int RemainingRequests => DailyMaximum is { } daily && DailyUnitsUsed is { } used
+        ? Math.Min(Math.Max(0, MaxRequestsPerWindow - RequestsInWindow), Math.Max(0, daily - used))
+        : Math.Max(0, MaxRequestsPerWindow - RequestsInWindow);
 }
 
 /// <summary>

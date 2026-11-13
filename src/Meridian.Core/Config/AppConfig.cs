@@ -76,6 +76,7 @@ public sealed record AppConfig(
 )
 {
     /// <summary>Restart-required vendor quota and entitlement declarations; contains no credentials.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ProviderQuotasConfig? ProviderQuotas { get; init; }
 
     /// <summary>
