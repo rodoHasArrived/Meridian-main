@@ -72,7 +72,7 @@ public sealed class ConfigStoreCredentialPersistenceTests : IDisposable
         new ConfigurationFeatureRegistration().Register(services, new CompositionOptions { ConfigPath = ConfigPath });
         services.DeclareMeridianDeploymentPosture(posture == "production"
             ? MeridianDeploymentPosture.ProductionApi : MeridianDeploymentPosture.LocalWorkstation);
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
         var secret = new AppConfig(Polygon: new(ApiKey: "synthetic-new-secret"));
 
         Func<Task> saveStore = () => provider.GetRequiredService<ConfigStore>().SaveAsync(secret);
