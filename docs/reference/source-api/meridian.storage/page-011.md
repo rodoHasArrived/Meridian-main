@@ -6,11 +6,117 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProjectionBatchRebuiltRecord
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L46).
+
+A record written by a rebuild batch. Version 1 stored these two names in PascalCase.
+
+```csharp
+public sealed record ProjectionBatchRebuiltRecord([property : JsonPropertyName("SecurityId")] Guid SecurityId, [property : JsonPropertyName("Version")] long Version);
+```
+
+## SecurityGovernanceEvent
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceEvent</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:30](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L30).
+
+One recorded governance event. Payload is the stored JSON as written; ReadPayload{TPayload} reads it through the declared contract for Stream/EventType, dispatching on PayloadVersion.
+
+```csharp
+public sealed record SecurityGovernanceEvent(long GlobalSequence, Guid? SecurityId, string Stream, string EventType, string Actor, DateTimeOffset OccurredAt, JsonElement Payload, int PayloadVersion)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TPayload ReadPayload&lt;TPayload&gt;() where TPayload : class, ISecurityGovernancePayload =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L46) | The payload as its declared type. Throws SecurityGovernancePayloadContractException when the event type has no contract on this node, SecurityGovernancePayloadVersionException when PayloadVersion has no reader, and InvalidOperationException when TPayload is not the declared type. |
+| <code>public bool TryReadPayload&lt;TPayload&gt;([NotNullWhen(true)] out TPayload? payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs:55](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernanceEventLog.cs#L55) | Reads the payload when this node declares a contract and a reader for its version and TPayload is the declared type; otherwise returns false and leaves the raw Payload as the only reading. Malformed JSON for a declared version still throws. |
+
+## SecurityGovernanceJsonContext
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernanceJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:235](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L235).
+
+Source-generated metadata for every governance payload version. The camelCase policy and the default encoder and null handling reproduce the reflective JsonSerializer.Serialize(object) output the version-1 writers produced; dictionary keys are written as stored.
+
+```csharp
+public sealed partial class SecurityGovernanceJsonContext : JsonSerializerContext;
+```
+
+## SecurityGovernancePayloadContract
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContract</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:241](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L241).
+
+The declared payload contract of one governance stream/event type: its payload type, the version new writes carry, and a reader for every version that may be stored.
+
+```csharp
+public sealed class SecurityGovernancePayloadContract
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Stream { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:262](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L262) |  |
+| <code>public string EventType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:263](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L263) |  |
+| <code>public Type PayloadType { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:264](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L264) |  |
+| <code>public int CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:267](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L267) | The payload_version new writes record. |
+| <code>public IReadOnlyList&lt;int&gt; ReadableVersions =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:270](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L270) | The stored versions this node can read, ascending. |
+
+## SecurityGovernancePayloadContractException
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContractException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:386](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L386).
+
+A governance event&#x27;s stream/event type has no declared payload contract on this node.
+
+```csharp
+public sealed class SecurityGovernancePayloadContractException(string stream, string eventType) : NotSupportedException($"No governance payload contract is declared for {stream}/{eventType}.")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Stream { get; } = stream;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:389](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L389) |  |
+| <code>public string EventType { get; } = eventType;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:390](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L390) |  |
+
+## SecurityGovernancePayloadContracts
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadContracts</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:303](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L303).
+
+The registry of declared governance payload contracts, keyed by stream and event type.
+
+```csharp
+public static class SecurityGovernancePayloadContracts
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int InitialPayloadVersion = 1;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:306](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L306) | The version of every payload shape written before explicit versioning (migration 040&#x27;s default). |
+| <code>public static IReadOnlyList&lt;SecurityGovernancePayloadContract&gt; All { get; } = [SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Aliases, &quot;AliasRevisionRecorded&quot;, Json.AliasRevisionRecordedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Aliases, &quot;AliasRevisionsSynchronized&quot;, Json.AliasRevisionsSynchronizedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.ProjectionRebuild, &quot;ProjectionBatchRebuilt&quot;, Json.ProjectionBatchRebuiltPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OperatorOverrides, &quot;Patched&quot;, Json.OperatorOverridesPatchedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OperatorOverrides, &quot;Approved&quot;, Json.OperatorOverridesDecisionPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OperatorOverrides, &quot;Rejected&quot;, Json.OperatorOverridesDecisionPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.UnderlyingGraph, SecurityUnderlyingLinkWriter.DeclaredEvent, Json.UnderlyingLinkDeclaredPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.UnderlyingGraph, SecurityUnderlyingLinkWriter.AmendedEvent, Json.UnderlyingLinkDeclaredPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.UnderlyingGraph, SecurityUnderlyingLinkWriter.RemovedEvent, Json.UnderlyingLinkRemovedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Curves, PostgresSecurityCurveStore.DefinedEvent, Json.CurveDefinedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.Curves, PostgresSecurityCurveStore.VersionPublishedEvent, Json.CurveVersionPublishedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.SnapshotRecordedEvent, Json.OtcExposureSnapshotRecordedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.BalanceRecordedEvent, Json.OtcCollateralBalanceChangedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.BalanceAmendedEvent, Json.OtcCollateralBalanceChangedPayload), SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, PostgresOtcCollateralStore.CallIssuedEvent, Json.OtcMarginCallIssuedPayload), ..new[] { Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Agree, Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Dispute, Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Settle, Meridian.Contracts.SecurityMaster.OtcMarginCallAction.Cancel }.Select(static action =&gt; SecurityGovernancePayloadContract.Initial(SecurityGovernanceStreams.OtcCollateral, Meridian.Contracts.SecurityMaster.OtcMarginCallRules.EventType(action), Json.OtcMarginCallTransitionedPayload))];</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:311](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L311) | Every declared contract. |
+| <code>public static bool TryResolve(string stream, string eventType, out SecurityGovernancePayloadContract contract) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:344](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L344) | The contract declared for stream/eventType, if any. |
+| <code>public static SecurityGovernancePayloadContract Resolve(string stream, string eventType) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:348](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L348) | The contract declared for stream/eventType. |
+| <code>public static TPayload Read&lt;TPayload&gt;(string stream, string eventType, int payloadVersion, JsonElement payload) where TPayload : class, ISecurityGovernancePayload;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:371](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L371) | Reads a stored payload through its declared contract, dispatching on payloadVersion. Throws when the event type has no contract, the version has no reader on this node, or TPayload is not the declared payload type. |
+
 ## SecurityGovernancePayloadVersionException
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.SecurityGovernancePayloadVersionException</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:390](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L390).
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:394](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L394).
 
 A stored governance payload&#x27;s version has no reader on this node (for example, a newer writer&#x27;s version).
 
@@ -22,9 +128,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Stream { get; } = stream;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:394](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L394) |  |
-| <code>public string EventType { get; } = eventType;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:395](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L395) |  |
-| <code>public int PayloadVersion { get; } = payloadVersion;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:396](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L396) |  |
+| <code>public string Stream { get; } = stream;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:398](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L398) |  |
+| <code>public string EventType { get; } = eventType;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:399](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L399) |  |
+| <code>public int PayloadVersion { get; } = payloadVersion;</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:400](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L400) |  |
 
 ## SecurityGovernanceStreams
 
@@ -753,88 +859,3 @@ Declared public members:
 | <code>public decimal RatePerGigabyteUsd { get; set; } = 5.00m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:162](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L162) | Metered per-gigabyte rate applied to uncompressed stored volume. |
 | <code>public string RateCardSource { get; set; } = &quot;Conservative low-end of published metered vendor list prices (per-symbol-day historical and per-GB tick data).&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:165](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L165) | Provenance note for the configured rates. |
 | <code>public string RateCardLastVerified { get; set; } = &quot;2026-07-01&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:169](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L169) | Date the rate card values were last checked against vendor pricing pages. |
-
-## DateIndex
-
-Qualified name: <code>Meridian.Storage.Services.DateIndex</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:841](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L841).
-
-```csharp
-public sealed record DateIndex(string Date, List<string> Files);
-```
-
-## DateRange
-
-Qualified name: <code>Meridian.Storage.Services.DateRange</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:837](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L837).
-
-```csharp
-public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
-```
-
-## DefragOptions
-
-Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:932](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L932).
-
-```csharp
-public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:941](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L941) |  |
-| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:943](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L943) |  |
-
-## DefragResult
-
-Qualified name: <code>Meridian.Storage.Services.DefragResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:946](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L946).
-
-```csharp
-public sealed record DefragResult(int FilesProcessed, int FilesCreated, long BytesBefore, long BytesAfter, double CompressionImprovement, TimeSpan Duration, int MergeGroupsAttempted = 0, int MergeGroupsSucceeded = 0, int FilesDeleted = 0, IReadOnlyList<string>? Errors = null);
-```
-
-## DiscoveryQuery
-
-Qualified name: <code>Meridian.Storage.Services.DiscoveryQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:779](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L779).
-
-```csharp
-public sealed record DiscoveryQuery;
-```
-
-## EventBuffer (generic arity 1)
-
-Qualified name: <code>Meridian.Storage.Services.EventBuffer</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/EventBuffer.cs:17](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L17).
-
-Thread-safe generic event buffer using a swap-buffer drain strategy to eliminate per-drain allocations. Maintains two List{T} instances: _active (receives new events) and _standby (returned to callers from DrainAll so they can process events without holding the lock). Eliminates the duplicate lock-based buffer implementations that existed in JsonlStorageSink and ParquetStorageSink.
-
-```csharp
-public class EventBuffer<T>: IDisposable where T : class
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EventBuffer(int initialCapacity = 1000, int maxCapacity = int.MaxValue);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:48](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L48) | Creates a new event buffer. |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:62](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L62) | Gets the approximate current count of buffered events. This is a lock-free volatile read; callers should tolerate minor staleness. |
-| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:65](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L65) | Gets whether the buffer is empty (lock-free). |
-| <code>public bool ShouldFlush(int threshold) =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:71](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L71) | Returns true when the buffered event count meets or exceeds threshold. Lock-free — safe to call on every incoming event. |
-| <code>public void Add(T evt);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:77](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L77) | Add a single event to the buffer. When the buffer is at maxCapacity the oldest buffered event is dropped to make room (drop-oldest policy). |
-| <code>public void AddRange(IEnumerable&lt;T&gt; events);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:95](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L95) | Add multiple events to the buffer, applying the drop-oldest policy as needed. |
-| <code>public IReadOnlyList&lt;T&gt; DrainAll();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:124](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L124) | Atomically drains all buffered events via a buffer swap — no copy allocation. The returned IReadOnlyList{T} is the buffer&#x27;s internal backing store and will be cleared and reused on the next call to DrainAll. Callers must complete all processing of the returned list before the next drain cycle begins on the same buffer instance. |
-| <code>public IReadOnlyList&lt;T&gt; Drain(int maxCount);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:170](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L170) | Drain up to maxCount events from the front of the buffer. |
-| <code>public IReadOnlyList&lt;T&gt; PeekAll();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:192](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L192) | Returns a snapshot of all buffered events without removing them. Allocates a new list on every call; intended for diagnostics/monitoring only. |
-| <code>public void Clear();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:203](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L203) | Clear all events from the buffer. |
-| <code>public void Dispose();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:212](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L212) |  |

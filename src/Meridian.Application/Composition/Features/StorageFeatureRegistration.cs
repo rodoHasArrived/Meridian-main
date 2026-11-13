@@ -255,10 +255,15 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 () => sp.GetService<IInstrumentPositionProjectionStore>());
             services.AddSingleton<Func<IConsolidationPostingAuthority?>>(sp =>
                 () => sp.GetService<IConsolidationPostingAuthority>());
+            services.AddSingleton<Func<Meridian.Contracts.Accounting.Lots.IBondIncomeService?>>(sp =>
+                () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>());
+            services.AddSingleton<Func<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?>>(sp =>
+                () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>());
             services.AddSingleton<Func<IIntercompanyAgreementPostingAuthority?>>(sp =>
                 () => sp.GetService<IIntercompanyAgreementPostingAuthority>());
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddSingleton<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.TryAddSingleton<ILedgerSecurityEntitlementInventory>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());

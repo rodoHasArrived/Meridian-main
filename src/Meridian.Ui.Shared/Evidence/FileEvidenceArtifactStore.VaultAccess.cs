@@ -648,17 +648,15 @@ public sealed partial class FileEvidenceArtifactStore
         catch (IOException ex)
         {
             _logger.LogWarning(
-                ex,
-                "Evidence vault artifact '{ArtifactPath}' could not be verified.",
-                artifactPath);
+                "Evidence vault artifact could not be read for verification ({FailureType}).",
+                ex.GetType().Name);
             return false;
         }
         catch (UnauthorizedAccessException ex)
         {
             _logger.LogWarning(
-                ex,
-                "Evidence vault artifact '{ArtifactPath}' could not be accessed for verification.",
-                artifactPath);
+                "Evidence vault artifact could not be accessed for verification ({FailureType}).",
+                ex.GetType().Name);
             return false;
         }
     }

@@ -10,6 +10,12 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.AssetAccountingEventSpineService</code>. Kind: `class`.
 
+Source: [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.BondCouponRecognition.cs:7](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.BondCouponRecognition.cs#L7).
+
+```csharp
+public sealed partial class AssetAccountingEventSpineService
+```
+
 Source: [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:52](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L52).
 
 Assembles accounting-event lineage across source events, projections, candidates, approvals, and postings.
@@ -22,12 +28,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IAssetAccountingEventSpineService? TryCreate(IAssetAccountingEventProjectionStore? eventStore, IInstrumentPositionProjectionStore? positionStore, ISecurityMasterQueryService? securityMasterQueryService, ILedgerBookService? ledgerBookService, IAccountingPolicyService? accountingPolicyService, IAccountingConfigurationService? configurationService, IAccountingPostingCandidateAuthorityBuilder? authorityBuilder, ILedgerJournalStore? journalStore, ISecurityMasterStore? securityMasterStore = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:73](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L73) | Creates the governed spine only when every authority and durable-ledger dependency exists. Optional workstation hosts can therefore leave the feature unavailable instead of failing service-provider resolution during startup. |
-| <code>public AssetAccountingEventSpineService(IAssetAccountingEventProjectionStore eventStore, IInstrumentPositionProjectionStore positionStore, ISecurityMasterQueryService securityMasterQueryService, ILedgerBookService ledgerBookService, IAccountingPolicyService accountingPolicyService, IAccountingConfigurationService configurationService, IAccountingPostingCandidateAuthorityBuilder authorityBuilder, ILedgerJournalStore journalStore, ISecurityMasterStore? securityMasterStore = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:112](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L112) |  |
-| <code>public async Task&lt;AssetAccountingEventSpineDto?&gt; GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:138](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L138) |  |
-| <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; ProjectAsync(ProjectAssetAccountingEventRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:153](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L153) |  |
-| <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; AppendLifecycleStageAsync(AppendAssetAccountingLifecycleStageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:302](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L302) |  |
-| <code>public async Task&lt;AssetAccountingPostingCandidateDto&gt; BuildPostingCandidateAsync(AssetAccountingPostingCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:390](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L390) |  |
+| <code>public static IAssetAccountingEventSpineService? TryCreate(IAssetAccountingEventProjectionStore? eventStore, IInstrumentPositionProjectionStore? positionStore, ISecurityMasterQueryService? securityMasterQueryService, ILedgerBookService? ledgerBookService, IAccountingPolicyService? accountingPolicyService, IAccountingConfigurationService? configurationService, IAccountingPostingCandidateAuthorityBuilder? authorityBuilder, ILedgerJournalStore? journalStore, ISecurityMasterStore? securityMasterStore = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null, IBondIncomeService? bondIncomeService = null, Func&lt;IBondCouponRecognitionService?&gt;? couponRecognitionAuthority = null);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:75](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L75) | Creates the governed spine only when every authority and durable-ledger dependency exists. Optional workstation hosts can therefore leave the feature unavailable instead of failing service-provider resolution during startup. |
+| <code>public AssetAccountingEventSpineService(IAssetAccountingEventProjectionStore eventStore, IInstrumentPositionProjectionStore positionStore, ISecurityMasterQueryService securityMasterQueryService, ILedgerBookService ledgerBookService, IAccountingPolicyService accountingPolicyService, IAccountingConfigurationService configurationService, IAccountingPostingCandidateAuthorityBuilder authorityBuilder, ILedgerJournalStore journalStore, ISecurityMasterStore? securityMasterStore = null, Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null, Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService? bondSettlementConsiderationService = null, IBondIncomeService? bondIncomeService = null, Func&lt;IBondCouponRecognitionService?&gt;? couponRecognitionAuthority = null);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:117](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L117) |  |
+| <code>public async Task&lt;AssetAccountingEventSpineDto?&gt; GetLatestAsync(Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:147](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L147) |  |
+| <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; ProjectAsync(ProjectAssetAccountingEventRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:162](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L162) |  |
+| <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; AppendLifecycleStageAsync(AppendAssetAccountingLifecycleStageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:312](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L312) |  |
+| <code>public async Task&lt;AssetAccountingPostingCandidateDto&gt; BuildPostingCandidateAsync(AssetAccountingPostingCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs:400](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.cs#L400) |  |
 
 Source: [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs:9](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs#L9).
 
@@ -40,6 +46,85 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;AssetAccountingEventSpineAppendResultDto&gt; ReprepareUnpostedFactorPaydownAsync(ProjectAssetAccountingEventRequestDto request, AssetLotMutationInstructionDto lotMutation, long expectedSpineVersion, string expectedCanonicalFingerprint, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/AssetAccountingEventSpineService.PreparationRevision.cs#L11) |  |
+
+## BondCouponRecognitionOpeningGuard
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.BondCouponRecognitionOpeningGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionOpeningGuard.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionOpeningGuard.cs#L14).
+
+Proves a zero opening recognized-coupon balance from the existing lot and journal authority. This does not migrate legacy balances or infer that missing dimensional history means zero.
+
+```csharp
+public static class BondCouponRecognitionOpeningGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static Task ValidateAsync(ILedgerJournalStore ledger, AccountCashForecastScopeDto scope, OpenLotDto lot, BondCouponBookAccountsDto accountPaths, IReadOnlyList&lt;BondCouponRecognitionAccountDto&gt; accounts, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionOpeningGuard.cs:23](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionOpeningGuard.cs#L23) | Call only when the lot has no native coupon-recognition receipt. Repeat at final canonical verification. The journal store must expose the complete owning-book history, not an as-of or knowledge-time projection: a later-dated posted entry can already consume this income. |
+
+## BondCouponRecognitionService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.BondCouponRecognitionService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs:13](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs#L13).
+
+Coupon income and cash clearing have their own governed Income event, independent of lot basis.
+
+```csharp
+public sealed class BondCouponRecognitionService(IBondIncomeService income, IBondCouponRecognitionStore receipts, ILedgerJournalStore ledger, IInstrumentPositionProjectionStore positions, IAccountingPolicyService policies, IAccountingConfigurationService configuration, IBondMonitoringService monitoring, IBondCouponRecognitionEvidenceVerifier? evidenceVerifier = null, IBondIncomePreparationEvidenceStore? preparationEvidence = null) : IBondCouponRecognitionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondCouponRecognitionPreviewDto&gt; PreviewAsync(AccountCashForecastScopeDto scope, BondCouponRecognitionRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs:21](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs#L21) |  |
+| <code>public async Task VerifyTerminalOpeningAsync(AccountCashForecastScopeDto scope, OpenLotAmortizationInstructionDto inputs, BondIncomeTerminalCouponOpeningDto opening, Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs:250](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs#L250) |  |
+| <code>public async Task&lt;BondCouponRecognitionPreparationDto&gt; PrepareAsync(AccountCashForecastScopeDto scope, BondCouponRecognitionRequest request, string expectedFingerprint, string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs:271](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs#L271) |  |
+| <code>public async Task VerifyAsync(BondCouponRecognitionInstructionDto instruction, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs:319](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs#L319) |  |
+| <code>public async Task VerifyPreparedSourceAsync(BondCouponRecognitionInstructionDto instruction, RetainedEvidenceIdentityDto source, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs:326](../../../../src/Meridian.FinancialOperations/Ledger/BondCouponRecognitionService.cs#L326) |  |
+
+## BondIncomePreparationService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.BondIncomePreparationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:12](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L12).
+
+Retains the reviewed calculation source, then uses the existing governed event/draft path.
+
+```csharp
+public sealed class BondIncomePreparationService(IBondIncomeService income, ILedgerJournalStore ledger, IInstrumentPositionProjectionStore positions, IAccountingPolicyService policies, IAssetAccountingEventSpineService spine, IBondIncomePreparationEvidenceStore evidence)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, string tenantId, string companyId, string actor, DateTimeOffset preparedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:16](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L16) |  |
+
+## BondIncomeService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.BondIncomeService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:18](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L18).
+
+Prepares canonical, non-posting income instructions from actual book/lot authorities. Caller amounts, policy choices, fixing values and journal lines are never accepted.
+
+```csharp
+public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPositionProjectionStore positions, ISecurityMasterStore securities, IAccountingPolicyService policies, IBondWorkflowService workflow, IBondIncomePreparationEvidenceStore? preparationEvidence = null) : IBondIncomeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyPreparedSourceAsync(OpenLotAmortizationInstructionDto instruction, EconomicEventReferenceDto economicEvent, Guid periodId, IReadOnlyList&lt;RetainedEvidenceIdentityDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:22](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L22) |  |
+| <code>public async Task RequireAcquisitionPolicyAsync(Guid ledgerBookId, DateOnly acquiredDate, BondIncomeAcquisitionDto acquisition, decimal retainedCost, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:35](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L35) |  |
+| <code>public async Task&lt;BondIncomePreviewDto&gt; PreviewAsync(BondIncomePreviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:56](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L56) |  |
+| <code>public async Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs:316](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomeService.cs#L316) |  |
 
 ## BondSettlementConsiderationService
 
@@ -127,25 +212,26 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.FactorPaydownLotInstructionService</code>. Kind: `class`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:59](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L59).
+Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:60](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L60).
 
 Prepares a reviewed factor paydown from the lots of record: loads the lots open in the scope as of the effective date, derives held face and the position principal through the registered projector, allocates principal and pro-rata basis relief per lot, and assembles the canonical corporate-action event, lineage, two- or three-line projected effect and lot instruction the spine retains. It never approves or posts; the candidate service and the atomic store re-derive and re-lock everything here before anything is written. Hosts compose it like the amortization preview: a host without persistence still starts, and preparation refuses the missing authority before reading any source record.
 
 ```csharp
-public sealed class FactorPaydownLotInstructionService(ILedgerJournalStore? lots, ISecurityMasterStore? securities, IInstrumentPositionProjectionStore? positions, IFactorPaydownProjectionService? projector)
+public sealed class FactorPaydownLotInstructionService(ILedgerJournalStore? lots, ISecurityMasterStore? securities, IInstrumentPositionProjectionStore? positions, IFactorPaydownProjectionService? projector, IBondIncomeService? incomeService = null, Func<IBondCouponRecognitionService?>? couponAuthority = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;FactorPaydownPreparation&gt; PrepareAsync(FactorPaydownPreparationRequest request, string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:65](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L65) |  |
+| <code>public Task&lt;FactorPaydownPreparation&gt; PrepareAsync(FactorPaydownPreparationRequest request, string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:68](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L68) |  |
+| <code>public Task&lt;FactorPaydownPreparation&gt; PrepareScheduledAsync(FactorPaydownPreparationRequest request, string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:75](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L75) |  |
 
 ## FactorPaydownPreparation
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.FactorPaydownPreparation</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:43](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L43).
+Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:44](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L44).
 
 The derived instruction and the spine projection request that carries it.
 
@@ -157,7 +243,7 @@ public sealed record FactorPaydownPreparation(OpenLotFactorPaydownInstructionDto
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.FactorPaydownPreparationRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L17).
+Source: [src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs:18](../../../../src/Meridian.FinancialOperations/Ledger/FactorPaydownLotInstructionService.cs#L18).
 
 What a caller states about a factor observation: the scope, the two factors, the retained factor evidence and the chart paths the paydown posts to. Everything else — the lots, the principal, the per-lot allocation, the realized result — is derived server side.
 
@@ -262,7 +348,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPostingCandidateAuthorityBuilder</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:36](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L36).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:37](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L37).
 
 Internal-process authority handoff used only after the Asset Accounting Event Spine has resolved immutable Asset Operations, Security Master, ledger-book, period, evidence, model, and rule-pack state. Generic candidate callers cannot opt canonical asset events into this path.
 
@@ -274,7 +360,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:38](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L38) |  |
+| <code>Task&lt;AccountingPostingCandidateWriteResult&gt; BuildAuthoritativeCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, AssetAccountingCandidateAuthorityContext authority, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:39](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L39) |  |
 
 ## IAccountingPostingCandidatePostService
 
@@ -298,7 +384,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPostingCandidateService</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L14).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:15](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L15).
 
 Builds journal candidates from accounting events and posting rules for review.
 
@@ -310,13 +396,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;PostingRuleJournalCandidateResultDto&gt; BuildCandidateAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:16](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L16) |  |
+| <code>Task&lt;PostingRuleJournalCandidateResultDto&gt; BuildCandidateAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L17) |  |
 
 ## IAccountingPostingCandidateWriteBuilder
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.IAccountingPostingCandidateWriteBuilder</code>. Kind: `interface`.
 
-Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:24](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L24).
+Source: [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:25](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L25).
 
 Builds candidate journal writes and their associated accounting evidence.
 
@@ -328,7 +414,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;AccountingPostingCandidateWriteResult&gt; BuildCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:26](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L26) |  |
+| <code>Task&lt;AccountingPostingCandidateWriteResult&gt; BuildCandidateWriteAsync(PostingRuleJournalCandidateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs:27](../../../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs#L27) |  |
 
 ## IAssetAccountingEventSpineService
 
@@ -825,81 +911,3 @@ Enum declarations:
 | <code>Warning</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:13](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L13) | Past the warning threshold but not yet due. |
 | <code>Breached</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:16](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L16) | Past the due time without being stopped. |
 | <code>Stopped</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:19](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L19) | Stopped (the tracked work completed) before breaching. |
-
-## WorkflowSlaTimer
-
-Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaTimer</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:55](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L55).
-
-A running SLA timer bound to a subject (a booking, a break, a delivery). Computes due and warning instants from its policy and reports its state as of any evaluation time.
-
-```csharp
-public sealed record WorkflowSlaTimer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkflowSlaTimer(string timerId, string subject, WorkflowSlaPolicy policy, DateTimeOffset startedAtUtc, DateTimeOffset? stoppedAtUtc = null);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:57](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L57) |  |
-| <code>public string TimerId { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:88](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L88) |  |
-| <code>public string Subject { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:90](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L90) |  |
-| <code>public WorkflowSlaPolicy Policy { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:92](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L92) |  |
-| <code>public DateTimeOffset StartedAtUtc { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:94](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L94) |  |
-| <code>public DateTimeOffset? StoppedAtUtc { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:96](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L96) |  |
-| <code>public DateTimeOffset DueAtUtc =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:98](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L98) |  |
-| <code>public DateTimeOffset WarningAtUtc =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:100](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L100) |  |
-| <code>public WorkflowSlaTimer Stop(DateTimeOffset stoppedAtUtc) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:108](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L108) | Returns a copy of this timer stopped at stoppedAtUtc. The stop instant must not precede StartedAtUtc (enforced by the constructor), so the timer can never record an impossible negative elapsed window and thereby suppress breach evaluation. |
-| <code>public WorkflowSlaState StateAt(DateTimeOffset asOfUtc);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:112](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L112) | The timer&#x27;s state as of asOfUtc. |
-| <code>public bool IsBreachedAt(DateTimeOffset asOfUtc) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:127](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L127) | True when the timer is running and has passed its due time as of asOfUtc. |
-
-## IOnboardingSourceProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Onboarding.IOnboardingSourceProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:14](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L14).
-
-Composes existing reconciliation, ledger/NAV, close and evidence services without writes.
-
-```csharp
-public interface IOnboardingSourceProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:16](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L16) |  |
-
-## IOnboardingWorkspaceStore
-
-Qualified name: <code>Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:6](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L6).
-
-Durable workspace storage. Save must atomically compare the retained version and replace.
-
-```csharp
-public interface IOnboardingWorkspaceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:8](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L8) |  |
-| <code>Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:9](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L9) |  |
-| <code>Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:10](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L10) |  |
-
-## OnboardingConcurrencyException
-
-Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingConcurrencyException</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:23](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L23).
-
-Indicates that retained onboarding state changed during a requested mutation.
-
-```csharp
-public sealed class OnboardingConcurrencyException(string message) : InvalidOperationException(message);
-```

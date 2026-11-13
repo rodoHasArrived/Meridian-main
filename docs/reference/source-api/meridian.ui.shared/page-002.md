@@ -787,20 +787,20 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapBondReferencePagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs#L15) |  |
 
-## BrokerageConnectionEndpoints
+## BondWorkflowEndpoints
 
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.BrokerageConnectionEndpoints</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondWorkflowEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs#L15).
 
-Maps brokerage connection setup and lifecycle operations within the workstation tenant scope.
+Shared retained-input bond analysis. A calculation never grants financial write authority.
 
 ```csharp
-public static class BrokerageConnectionEndpoints
+public static class BondWorkflowEndpoints
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapBrokerageConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs#L16) |  |
+| <code>public static void MapBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs#L19) |  |

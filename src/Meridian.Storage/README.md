@@ -11,6 +11,27 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Storage
 
+`FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
+partitions with process-wide file leases, atomic publication, content validation and immutable
+source revision identity. This store does not publish prices or post journals. Signed curves use
+the existing PostgreSQL curve authority: each definition's immutable `rate_policy` is included in
+identity comparisons and governance evidence; legacy definitions retain their default policy.
+
+`FileBondProviderResponseStore` archives exact provider JSON text as UTF-8, addressed by its SHA-256
+inside hashed tenant/company partitions. Immutable atomic publication supports concurrent retries;
+scoped reads verify original content and metadata hashes and refuse corruption. Typed FRED inputs
+pin their first retained response while later overlapping fetches retain their own response evidence.
+
+Fixed-income stores retain scoped monitoring, saved runs and reviewed performance transaction
+populations. Account revision authority and curve-policy migrations preserve earlier rows; coupon
+recognition receipts participate in the existing governed journal/lot transaction. Restore retained
+evidence on corruption rather than recreating empty history. See [bond operations](../../docs/operators/bond-workflows.md).
+
+Coupon and terminal-principal writers take a history lock before any authority read. Ordinary
+journal writers take the compatible writer mode, so unrelated ordinary writes can proceed while
+coupon history remains stable through its validation and commit. Both ordinary and atomic entry
+paths select the lock mode before reading; stale serializable snapshots still fail explicitly.
+
 `AnalysisExportService.WriteInvariantTextTableAsync` writes schema-preserving text tables as CSV,
 XLSX, Parquet or Arrow. It owns format IO, formula-safe spreadsheet escaping and checksums without
 interpreting accounting records. Ledger-backed `ExportLedgerAsync` projections are extension methods
@@ -221,6 +242,10 @@ history projector continues to refuse an inferred opening-age character.
 V3 remaining-face amortization verifies each immutable paydown receipt before walking prior
 partial-disposal/amortization history. The current/booked factor scales surviving face once;
 booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
+The separately adopted US GAAP income model walks only exact scheduled-principal receipts through
+that history, without enabling the legacy remaining-face election. Missing, altered or legacy
+paydown authority blocks the next income posting; scheduled repayments continue to relieve basis
+through their principal workflow.
 
 The Security Master store also answers the ADR-024 decision-5 retirement-gate count
 (`CountUntaggedAssetSpecificTermsAsync`): one SQL aggregate over `securities` for rows whose

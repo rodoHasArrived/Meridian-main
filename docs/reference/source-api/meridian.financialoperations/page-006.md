@@ -6,6 +6,75 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementConnectorLimits
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorLimits</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L16).
+
+Defines the maximum accepted statement source file size.
+
+```csharp
+public static class StatementConnectorLimits
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const long MaxFileBytes = 20L * 1024 * 1024;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L24) | Maximum accepted statement file size (20 MiB). IB Flex XML exports routinely exceed the general 5 MB data-upload cap, so statement imports get their own, larger bound. Shared by the workstation upload endpoint and the CLI import/validate commands so neither path buffers an unbounded caller-supplied file into memory. |
+
+## StatementConnectorRegistry
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L8).
+
+Resolves statement connectors by id and auto-detects the right connector for an uploaded document. The CSV connector is consulted last because it is the text catch-all; structured formats (OFX, Flex XML, activity snapshots) sniff first.
+
+```csharp
+public sealed class StatementConnectorRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementConnectorRegistry(IEnumerable&lt;IStatementConnector&gt; connectors);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L12) |  |
+| <code>public IReadOnlyList&lt;StatementConnectorDescriptor&gt; List() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L21) |  |
+| <code>public IStatementConnector Resolve(string connectorId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L24) |  |
+| <code>public IStatementConnector? Detect(StatementSourceDocument document) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L32) |  |
+
+## StatementFetchAuthorizationCommand
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchAuthorizationCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L8).
+
+```csharp
+public sealed record StatementFetchAuthorizationCommand(string TenantId, string CompanyId, string FundAccountId, string ExternalAccountId, string SourceInstitution, DateOnly PeriodStart, DateOnly PeriodEnd, StatementAccountingScope AccountingScope);
+```
+
+## StatementFetchDatasets
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchDatasets</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:196](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L196).
+
+Which remote datasets a fetch-capable connector should pull.
+
+```csharp
+public enum StatementFetchDatasets
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Activity = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:198](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L198) |  |
+| <code>Positions = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:199](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L199) |  |
+| <code>All = Activity &#124; Positions</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:200](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L200) |  |
+
 ## StatementFetchIngestionCommand
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchIngestionCommand</code>. Kind: `record`.
@@ -805,76 +874,3 @@ Declared public members:
 | <code>string AdapterVersion { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:66](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L66) |  |
 | <code>CanonicalReconciliationSourceKind SourceKind { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:67](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L67) |  |
 | <code>Task&lt;BrokerCustodianFeedBatch&gt; ReadAsync(BrokerCustodianFeedDescriptor descriptor, Stream source, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L69) |  |
-
-## IDataIntegrationIngestionService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IDataIntegrationIngestionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L35).
-
-Ingests source data into normalized reconciliation input.
-
-```csharp
-public interface IDataIntegrationIngestionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;DataIntegrationIngestionResult&gt; IngestAsync(DataIntegrationIngestionRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L37) |  |
-
-## IdentityReconciliationFxRateProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IdentityReconciliationFxRateProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:73](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L73).
-
-The safe default: only a currency against itself resolves (rate 1). Every genuine cross-currency conversion returns false, so a deployment that has not configured FX rates reconciles same-currency lines exactly and fails closed on everything else.
-
-```csharp
-public sealed class IdentityReconciliationFxRateProvider : IReconciliationFxRateProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IdentityReconciliationFxRateProvider Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:75](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L75) |  |
-| <code>public bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L77) |  |
-
-## IInstrumentMappingService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IInstrumentMappingService</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L35).
-
-Resolves source instrument identifiers for reconciliation matching.
-
-```csharp
-public interface IInstrumentMappingService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ResolveCanonicalId(string? cusip, string? isin, string? ticker, string? internalId);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L37) |  |
-
-## IInternalReconciliationBookSource
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IInternalReconciliationBookSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L30).
-
-Supplies the internal book (positions, cash, ledger transactions) that a given statement run is reconciled against. Registering a real implementation is how a deployment wires reconciliation against its authoritative internal records; the default EmptyInternalReconciliationBookSource yields an empty book so unprovisioned accounts surface honest unmatched breaks rather than fabricated self-matches.
-
-```csharp
-public interface IInternalReconciliationBookSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;InternalReconciliationBook&gt; GetBookAsync(StatementRunRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L32) |  |

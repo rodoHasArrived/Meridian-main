@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationHttpResponse
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L32).
+
+```csharp
+public sealed record ProviderIntegrationHttpResponse(int StatusCode, IReadOnlyDictionary<string, string> Headers, string Body);
+```
+
 ## ProviderIntegrationIdentityResolutionPreviewService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationIdentityResolutionPreviewService</code>. Kind: `class`.
@@ -346,9 +356,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;ProviderIntegrationManifestDto&gt; ListManifests() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:29](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L29) |  |
-| <code>public IReadOnlyList&lt;ProviderIntegrationTemplateCatalogEntryDto&gt; ListEntries() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:31](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L31) |  |
-| <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:46](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L46) |  |
+| <code>public IReadOnlyList&lt;ProviderIntegrationManifestDto&gt; ListManifests() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:30](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L30) |  |
+| <code>public IReadOnlyList&lt;ProviderIntegrationTemplateCatalogEntryDto&gt; ListEntries() =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L32) |  |
+| <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:47](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L47) |  |
+| <code>public ProviderIntegrationManifestDto? GetManifest(string manifestId, int manifestVersion);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs:55](../../../../src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs#L55) | Version-pinned lookup preserves the original template when reviewing retained imports. |
 
 ## DependencyRecoveredEvent
 
@@ -1052,23 +1063,3 @@ Declared public members:
 | <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:948](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L948) | Flushes the ledger to disk. |
 | <code>public async Task CompactAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:970](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L970) | Compacts the ledger file by rewriting only non-expired entries. The ledger also does this itself as the file grows; see CompactIfDueLockedAsync. |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/PersistentDedupLedger.cs:1071](../../../../src/Meridian.Application/Pipeline/PersistentDedupLedger.cs#L1071) |  |
-
-## ValidationResult
-
-Qualified name: <code>Meridian.Application.Pipeline.ValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Pipeline/IEventValidator.cs:31](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L31).
-
-Immutable result of a IEventValidator.Validate call.
-
-```csharp
-public sealed record ValidationResult(bool IsValid, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ValidationResult Valid =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:38](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L38) | Returns a cached valid result (no allocation on the hot path). |
-| <code>public static ValidationResult Failed(params string[] errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:44](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L44) | Creates a failed validation result with one or more error messages. |
-| <code>public static ValidationResult Failed(IReadOnlyList&lt;string&gt; errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:51](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L51) | Creates a failed validation result from a list of error messages. |

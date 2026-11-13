@@ -124,6 +124,11 @@ public static partial class ExecutionEndpoints
         JsonSerializerOptions jsonOptions,
         HttpContext context)
     {
+        if (!TryResolveActor(context, out var actor))
+        {
+            return Results.Unauthorized();
+        }
+
         if (quantity <= 0m)
         {
             var invalid = new TradingActionResult(
@@ -173,11 +178,6 @@ public static partial class ExecutionEndpoints
 
         var logger = GetLogger(context.RequestServices);
         var actionId = GenerateActionId();
-        if (!TryResolveActor(context, out var actor))
-        {
-            return Results.Unauthorized();
-        }
-
         var gateDecision = BrokerageOrderPlacementGate.Evaluate(
             context.RequestServices.GetService<BrokerageConfiguration>(),
             activeGatewayId);

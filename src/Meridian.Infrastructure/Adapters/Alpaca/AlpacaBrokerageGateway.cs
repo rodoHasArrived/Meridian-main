@@ -421,6 +421,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             AccruedInterest = string.IsNullOrEmpty(p.AccruedInterest)
                 ? null
                 : ParseDecimal(p.AccruedInterest),
+            ValuationBasis = BrokeragePositionValuationBasis.ProviderReported,
         }).ToList().AsReadOnly();
     }
 

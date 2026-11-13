@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQueryOptions
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:302](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L302).
+
+Limits for the data query workbench, bound from the DataQuery configuration section.
+
+```csharp
+public sealed class DataQueryOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;DataQuery&quot;;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:304](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L304) |  |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:306](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L306) |  |
+| <code>public int MaxRows { get; set; } = 10_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:309](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L309) | Maximum rows returned to the client; additional rows set Truncated. |
+| <code>public int TimeoutSeconds { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:312](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L312) | Wall-clock limit for a single query. |
+| <code>public int MemoryLimitMb { get; set; } = 512;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:315](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L315) | DuckDB session memory limit. |
+| <code>public int MaxThreads { get; set; } = 2;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:318](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L318) | DuckDB session thread cap, keeping analytics off the ingestion cores. |
+| <code>public int MaxSqlLength { get; set; } = 20_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:320](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L320) |  |
+| <code>public string? RetainedResultsRoot { get; set; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:323](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L323) | Private retention must remain outside RootPath, which SQL readers may access. |
+| <code>public long MaxRetainedResultBytes { get; set; } = 32L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:324](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L324) |  |
+| <code>public long MaxRetainedTotalBytes { get; set; } = 128L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:325](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L325) |  |
+| <code>public int MaxRetainedRows { get; set; } = 250_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:326](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L326) |  |
+| <code>public int RetainedResultMinutes { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:327](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L327) |  |
+
+## DataQueryOwner
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryOwner</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:11](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L11).
+
+```csharp
+public sealed record DataQueryOwner(string TenantId, string CompanyId, string OperatorId);
+```
+
+## DataQueryRequest
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:331](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L331).
+
+Request body for the data query endpoint.
+
+```csharp
+public sealed record DataQueryRequest(string? Sql);
+```
+
+## DataQueryResult
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:334](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L334).
+
+Bounded, string-projected query result.
+
+```csharp
+public sealed record DataQueryResult(bool Success, string? Error, IReadOnlyList<string> Columns, IReadOnlyList<string> ColumnTypes, IReadOnlyList<string?[]> Rows, int RowCount, bool Truncated, long ElapsedMs)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ExecutionId { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:344](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L344) |  |
+| <code>public long? RetainedRowCount { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:345](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L345) |  |
+| <code>public DateTimeOffset? ExecutionExpiresAt { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:346](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L346) |  |
+| <code>public static DataQueryResult Failed(string error) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:347](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L347) |  |
+
 ## DataQueryRetentionReceipt
 
 Qualified name: <code>Meridian.Storage.Query.DataQueryRetentionReceipt</code>. Kind: `record`.
@@ -869,72 +941,4 @@ Source: [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.
 
 ```csharp
 public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string CommodityType, string? Denomination, decimal? ContractSize, string? ExchangeCode, string? DeliveryCountry, string PrimaryIdentifierValue, long Version);
-```
-
-## ConnectionLease
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:213](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L213).
-
-Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
-
-```csharp
-public sealed class ConnectionLease(NpgsqlConnection connection, bool ownsConnection, NpgsqlTransaction? transaction = null, SemaphoreSlim? gate = null) : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
-| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
-
-## CorporateActionCashDividendPostingLease
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:13](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L13).
-
-Server-created, invocation-bound authority for one exact native candidate. Its internal constructor and sealed type prevent HTTP inputs from manufacturing a posting capability.
-
-```csharp
-public sealed class CorporateActionCashDividendPostingLease
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionCashDividendAttestationDto Attestation { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:44](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L44) |  |
-| <code>public CorporateActionCaseAccountingProjectionDto Projection { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:45](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L45) |  |
-| <code>public CashDividendAttestationDeclarationDto Declaration { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:46](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L46) |  |
-| <code>public async Task EnsureCurrentAsync(string actor, Guid ledgerBookId, Guid periodId, string draftedCandidateFingerprint, string postingIntentHash, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:50](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L50) | Checks the exact candidate and rereads native authority within the held transaction. |
-| <code>public Task EnsureCanonicalInstrumentAsync(string? symbol, Guid securityId, long expectedSecurityVersion, DateTimeOffset accountingTimestamp, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:80](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L80) |  |
-| <code>public async Task AppendJournalAsync(ITransactionalLedgerJournalStore store, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:92](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L92) |  |
-| <code>public async Task&lt;LedgerJournalEntryRecord?&gt; GetJournalAsync(ITransactionalLedgerJournalStore store, Guid journalEntryId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:101](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L101) |  |
-| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:113](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L113) |  |
-| <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:126](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L126) |  |
-
-## CorporateActionInboxExportSource
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionInboxExportSource</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/CorporateActionInboxExportSource.cs:6](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionInboxExportSource.cs#L6).
-
-One repeatable-read export cut: global actionable observations plus exact scoped cases.
-
-```csharp
-public sealed record CorporateActionInboxExportSource(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
-```
-
-## CryptoProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CryptoProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L15).
-
-```csharp
-public sealed record CryptoProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string? Network, string PrimaryIdentifierValue, long Version);
 ```

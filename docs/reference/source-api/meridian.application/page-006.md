@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidationResult
+
+Qualified name: <code>Meridian.Application.Pipeline.ValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Pipeline/IEventValidator.cs:31](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L31).
+
+Immutable result of a IEventValidator.Validate call.
+
+```csharp
+public sealed record ValidationResult(bool IsValid, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ValidationResult Valid =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:38](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L38) | Returns a cached valid result (no allocation on the hot path). |
+| <code>public static ValidationResult Failed(params string[] errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:44](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L44) | Creates a failed validation result with one or more error messages. |
+| <code>public static ValidationResult Failed(IReadOnlyList&lt;string&gt; errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:51](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L51) | Creates a failed validation result from a list of error messages. |
+
 ## BestOfBreedProviderSelector
 
 Qualified name: <code>Meridian.Application.ProviderRouting.BestOfBreedProviderSelector</code>. Kind: `class`.
@@ -1071,24 +1091,3 @@ Position-level context for posting projected cash flows. The legacy OpenLots inp
 ```csharp
 public sealed record AmortizationLedgerPostingContext(IReadOnlyList<LedgerTaxLot>? OpenLots = null, string? FinancialAccountId = null, StructuredCashFlowScenario Scenario = StructuredCashFlowScenario.Base, int? MaxPeriods = null, DateTimeOffset? ProjectionAsOf = null, DateOnly? AmortizedThrough = null, AmortizationAccrualWindow? AccrualWindow = null, decimal? CouponPrincipalBasis = null, SecurityQuoteConvention? QuoteConvention = null, IReadOnlyList<FaceValueAccrualHolding>? AccrualHoldings = null, StructuredCashFlowProjectionDto? RetainedProjection = null);
 ```
-
-## ApprovedFieldEditCanonicalMergeHandler
-
-Qualified name: <code>Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:36](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L36).
-
-Published-revision side effect (Order = 5, runs before the projection rebuild): merges an approved assetSpecificTerms.* field edit into the CANONICAL security terms by emitting a complete economic-definition amendment through IGovernedPublicationAmender — the current definition plus the one typed field change — so replay stays correct and the approved correction reaches cash-flow projection, amortization, pricing, and NAV instead of living only in the override overlay. Paths outside the asset-terms namespace stay overlay annotations by design (the documented D2 rationale), as do CLEARs (withdrawing an override reveals the canonical value, so there is nothing to merge) and paths nested deeper than the shapes the workbench validates (top-level declared terms, the profileFields envelope, and one-level profileFields.* fields). Idempotent: the merged document is rebuilt from the CURRENT canonical terms on every run, so a retried publish whose merge already landed detects a no-op (the patched document equals the stored one) and skips the amendment instead of appending a duplicate event. A failure leaves the revision Approved and the publish retryable, per the handler seam&#x27;s contract. The amendment names operator-workbench as its source system, so the amend seam&#x27;s cross-source conflict detection records the vendor-versus-operator disagreement as usual; the handler then best-effort resolves those freshly opened workbench-challenger conflicts in favor of the operator value — the maker-checker approval that published this revision already adjudicated it, and leaving the conflict open would queue a second governance decision for a value a reviewer just decided. No-op in composition roots without a Security Master backend (no projection store).
-
-```csharp
-public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevisionPublishedHandler, ISecurityMasterCanonicalMergeOutcomeReporter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ApprovedFieldEditCanonicalMergeHandler(ISecurityMasterRevisionStore revisions, ILogger&lt;ApprovedFieldEditCanonicalMergeHandler&gt; logger, ISecurityMasterStore? projectionStore = null, IGovernedPublicationAmender? amender = null, ISecurityMasterConflictService? conflictService = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:49](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L49) |  |
-| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:69](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L69) | Runs BEFORE the projection rebuild (Order = 10) and coverage invalidation (Order = 20): both must observe the merged canonical terms, not the pre-merge definition. |
-| <code>public SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:72](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L72) |  |
-| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:75](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L75) |  |

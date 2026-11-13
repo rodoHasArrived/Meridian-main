@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityProjectionRefreshResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityProjectionRefreshResult</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L100).
+
+Outcome of SecurityMasterProjectionService.RefreshSecurityAsync.
+
+```csharp
+public enum SecurityProjectionRefreshResult
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Refreshed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:103](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L103) | The durable record was installed in the cache. |
+| <code>KeptNewer</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:106](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L106) | The cache already held a newer version; the durable read did not downgrade it. |
+| <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:109](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L109) | The durable store no longer holds the security; the cached entry was evicted. |
+| <code>NotFound</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:112](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L112) | Neither the durable store nor the cache holds the security. |
+
 ## SecurityResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolver</code>. Kind: `class`.
@@ -950,25 +971,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ExecutionSimulationResult&gt; RunAsync(ExecutionSimulationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:44](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L44) |  |
-
-## PreflightChecker
-
-Qualified name: <code>Meridian.Application.Services.PreflightChecker</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:19](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L19).
-
-Performs comprehensive pre-flight checks before starting data collection. Verifies disk space, network connectivity, file permissions, and system resources to catch issues early and provide actionable error messages.
-
-```csharp
-public sealed class PreflightChecker
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PreflightChecker(PreflightConfig? config = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:24](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L24) |  |
-| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:36](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L36) | Runs all pre-flight checks and returns a comprehensive result. |
-| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, string? activeDataSource, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:44](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L44) | Runs all pre-flight checks including provider credential validation. |
-| <code>public async Task EnsureReadyAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:112](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L112) | Runs checks and throws if any critical check fails. |
-| <code>public PreflightCheckResult ValidateProviderCredentials(string activeDataSource);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:552](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L552) | Validates that all enabled providers have their required credentials configured. Returns a detailed table of missing credentials with the exact env var names to set. |
