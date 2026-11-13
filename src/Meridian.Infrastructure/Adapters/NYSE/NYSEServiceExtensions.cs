@@ -35,6 +35,7 @@ public static class NYSEServiceExtensions
         services.AddSingleton(provider =>
         {
             var configuration = resolveConfiguration(provider);
+            NyseCredentialAccessPolicy.EnsureAccessAllowed(provider, configuration);
             var nyseOptions = new NYSEOptions();
             configuration.GetSection("DataSources:Sources:nyse:NYSE").Bind(nyseOptions);
 
@@ -48,6 +49,7 @@ public static class NYSEServiceExtensions
 
         services.AddSingleton<IDataSource>(sp =>
         {
+            NyseCredentialAccessPolicy.EnsureAccessAllowed(sp, resolveConfiguration(sp));
             var dataSourcesConfig = new UnifiedDataSourcesConfig();
             resolveConfiguration(sp).GetSection("DataSources").Bind(dataSourcesConfig);
             var sourceOptions = dataSourcesConfig.GetOptionsForSource("nyse");

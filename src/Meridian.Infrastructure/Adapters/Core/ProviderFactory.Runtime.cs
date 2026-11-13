@@ -153,12 +153,16 @@ public sealed partial class ProviderFactory
             reconnectionMetrics: Services.GetService<IReconnectionMetrics>());
     }
 
-    internal IMarketDataClient CreateNyseStreamingClient() => new NyseMarketDataClient(
-        Services.GetRequiredService<TradeDataCollector>(),
-        Services.GetRequiredService<MarketDepthCollector>(),
-        Services.GetRequiredService<QuoteCollector>(),
-        Services.GetRequiredService<IHttpClientFactory>(),
-        Services.GetService<NYSEOptions>());
+    internal IMarketDataClient CreateNyseStreamingClient()
+    {
+        NyseCredentialAccessPolicy.EnsureAccessAllowed(Services);
+        return new NyseMarketDataClient(
+            Services.GetRequiredService<TradeDataCollector>(),
+            Services.GetRequiredService<MarketDepthCollector>(),
+            Services.GetRequiredService<QuoteCollector>(),
+            Services.GetRequiredService<IHttpClientFactory>(),
+            Services.GetService<NYSEOptions>());
+    }
 
     internal IMarketDataClient CreateRobinhoodStreamingClient() => new RobinhoodMarketDataClient(
         Services.GetRequiredService<IHttpClientFactory>(),

@@ -9,6 +9,7 @@ using Meridian.Core.Logging;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.NYSE;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition.Features;
@@ -22,6 +23,10 @@ internal sealed class ProviderFeatureRegistration : IServiceFeatureRegistration
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         services.AddProviderCredentialOwnershipPolicy();
+        // NYSE still reads provider-wide configuration/environment credentials. Keep every
+        // registered NYSE surface unavailable until it can retain a tenant/account selection.
+        services.AddSingleton(sp => new NyseCredentialAccessPolicy(
+            sp.GetRequiredService<ProviderCredentialOwnershipPolicy>().RequireExplicitOwnership));
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         // Register credential resolver
         services.AddSingleton<IProviderCredentialResolver>(sp =>

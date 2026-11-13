@@ -11,6 +11,12 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+NYSE direct data sources and unified streaming refuse activation in production, packaged and
+customer builds until their provider-wide credential path supports retained tenant/account
+ownership. Final host posture and direct-construction environment flags are checked before
+credential configuration is read or a client is created. Development compatibility is retained;
+this refusal is covered by synthetic fixtures and does not establish live-provider compatibility.
+
 Twelve Data daily history retrieves overlapping windows of at most 5,000 calendar days and
 withholds the aggregate until all requested windows succeed. Body-level quota, entitlement and
 upstream errors remain distinct from an unknown symbol or a valid empty date window. History
