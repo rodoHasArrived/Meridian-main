@@ -274,7 +274,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
             sp.GetService<IWorkstationTenantContextAccessor>(),
             () => sp.GetService<IOperationsReportPackAuthority>(),
-            sp.GetService<IBookOfRecordGuard>()));
+            () => sp.GetService<IBookOfRecordGuard>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

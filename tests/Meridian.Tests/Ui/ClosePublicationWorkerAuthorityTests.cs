@@ -72,7 +72,7 @@ public sealed class ClosePublicationWorkerAuthorityTests
     {
         var factoryCalls = 0;
         var bookOfRecord = new FixedBookOfRecordGuard(isBookOfRecord: false);
-        var guard = new ClosePublicationReadinessGuard(() => { factoryCalls++; return null; }, bookOfRecordGuard: bookOfRecord);
+        var guard = new ClosePublicationReadinessGuard(() => { factoryCalls++; return null; }, bookOfRecordGuardFactory: () => bookOfRecord);
         using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "retained close publication");
 
         var blockers = await guard.ValidateAsync(Guid.NewGuid(), 1, Scope, "tenant-alpha", "company-alpha");
@@ -87,7 +87,7 @@ public sealed class ClosePublicationWorkerAuthorityTests
     {
         var factoryCalls = 0;
         var guard = new ClosePublicationReadinessGuard(() => { factoryCalls++; return null; },
-            bookOfRecordGuard: new FixedBookOfRecordGuard(isBookOfRecord: true));
+            bookOfRecordGuardFactory: () => new FixedBookOfRecordGuard(isBookOfRecord: true));
         using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "retained close publication");
 
         var blockers = await guard.ValidateAsync(Guid.NewGuid(), 1, Scope, "tenant-alpha", "company-alpha");

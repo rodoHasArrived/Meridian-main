@@ -1340,7 +1340,7 @@ public static class WorkstationServiceCollectionExtensions
             () => sp.GetService<IFinancialOperationsCommandCenterReadService>(),
             sp.GetService<IWorkstationTenantContextAccessor>(),
             () => sp.GetService<IOperationsReportPackAuthority>(),
-            sp.GetService<IBookOfRecordGuard>()));
+            () => sp.GetService<IBookOfRecordGuard>()));
         services.TryAddSingleton<IFinancialOperationsCommandCenterReadService>(sp =>
             new FinancialOperationsCommandCenterReadService(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
