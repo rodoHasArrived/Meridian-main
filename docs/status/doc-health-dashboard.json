@@ -3,9 +3,9 @@
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
-  "todo_count": 309,
+  "todo_count": 310,
   "health_score": 84,
-  "signal_digest": "sha256:4b78c561fc58adee73bcde4ee422edfce51c437769a7cbefb977914abe014e0a",
+  "signal_digest": "sha256:6a0192cef7d8c171cf9df49c8d93220812de72b386ce43aabca1630399b1f608",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -796,7 +796,7 @@
     {
       "path": ".agents/skills/meridian-docs/SKILL.md",
       "has_heading": true,
-      "todo_count": 2,
+      "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

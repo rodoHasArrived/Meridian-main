@@ -48,7 +48,10 @@ public sealed record CorporateActionInboxDto(
     int AppliedLastRun,
     int DuplicatesSkippedLastRun,
     IReadOnlyList<CorporateActionProposal> Staged,
-    IReadOnlyList<string> Errors);
+    IReadOnlyList<string> Errors)
+{
+    public IReadOnlyList<CorporateActionProviderFetchOutcome> FetchOutcomes { get; init; } = [];
+}
 
 /// <summary>
 /// Holds the latest corporate-action ingest outcome so the workbench can badge and list
@@ -127,6 +130,9 @@ public sealed class CorporateActionInboxState
             AppliedLastRun: latest.Applied,
             DuplicatesSkippedLastRun: latest.DuplicatesSkipped,
             Staged: staged,
-            Errors: latest.Errors);
+            Errors: latest.Errors)
+        {
+            FetchOutcomes = latest.FetchOutcomes,
+        };
     }
 }

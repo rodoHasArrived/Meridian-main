@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRateLimitTracker
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L10).
+
+Tracks rate limit status across multiple providers for intelligent rotation.
+
+```csharp
+public sealed class ProviderRateLimitTracker : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderRateLimitTracker(ILogger? log = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L19) |  |
+| <code>public void RegisterProvider(string providerName, int maxRequestsPerWindow, TimeSpan window, TimeSpan minDelay);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L28) | Register a provider with its rate limit configuration. |
+| <code>public void RegisterProvider(IHistoricalDataProvider provider);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L53) | Register a provider from its interface properties. |
+| <code>public void RecordRequest(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L67) | Record a successful request to a provider. |
+| <code>public void RecordRateLimitHit(string providerName, TimeSpan? retryAfter = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L80) | Record that a provider hit its rate limit (HTTP 429). |
+| <code>public bool IsRateLimited(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:101](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L101) | Check if a provider is currently rate limited. |
+| <code>public bool IsApproachingLimit(string providerName, double threshold = 0.8);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:113](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L113) | Check if a provider is approaching its rate limit threshold. |
+| <code>public TimeSpan? GetTimeUntilReset(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:128](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L128) | Get time until a provider&#x27;s rate limit resets. |
+| <code>public string? GetBestAvailableProvider(IEnumerable&lt;string&gt; providerNames);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:142](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L142) | Get the best available provider from a list, preferring those with more capacity. |
+| <code>public IReadOnlyDictionary&lt;string, RateLimitStatus&gt; GetAllStatus();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:176](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L176) | Get status for all tracked providers. |
+| <code>public RateLimitStatus? GetStatus(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:191](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L191) | Get status for a specific provider. |
+| <code>public void ClearRateLimitState(string providerName);</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:203](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L203) | Clear rate limit state for a provider (e.g., after successful request). |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/ProviderRateLimitTracker.cs#L213) |  |
+
 ## ProviderRegistry
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRegistry</code>. Kind: `class`.
@@ -952,7 +982,8 @@ Declared public members:
 | <code>public FinnhubCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;FinnhubCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L44) |  |
 | <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L56) |  |
 | <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L62) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:62](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L62) |  |
+| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubCorporateActionProvider.cs#L69) |  |
 
 ## FinnhubEarning
 
@@ -1123,26 +1154,3 @@ Declared public members:
 | <code>public static ProviderCapabilityDescriptor Descriptor { get; } = new (&quot;fred&quot;, Historical : typeof(FredHistoricalDataProvider), Search : typeof(FredSymbolSearchProvider), InstrumentTypes :[InstrumentType.Index], HistoricalFactory : static factory =&gt; CreateHistorical(factory), SearchFactory : static factory =&gt; CreateSearch(factory), FactoryOwner : ProviderCapabilityFactoryOwner.Module);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L23) |  |
 | <code>public override void Register(IServiceCollection services, DataSourceRegistry registry);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L30) |  |
 | <code>public bool IsCapabilityConfigured(Type contract, IServiceProvider services);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L41) |  |
-
-## FredSymbolSearchProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredSymbolSearchProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L24).
-
-Symbol search provider for FRED economic series discovery.
-
-```csharp
-public sealed class FredSymbolSearchProvider : BaseSymbolSearchProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L26) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L27) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L28) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L43) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L48) |  |
-| <code>public FredSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L53) |  |

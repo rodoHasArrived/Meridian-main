@@ -557,7 +557,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 - `src/Meridian.FinancialOperations` - registered source module root.
 - `OperationsContinuity/OperationsContinuityWorkflow.cs` - account-period close workflow aggregate, gates, checklist state, audit evidence, and close-readiness posture inputs.
-- `OperationsContinuity/OperationsContinuityWorkflowService.cs` - command transitions, optimistic version checks, audit writes, ledger-post coordination, and DTO projection.
+- `OperationsContinuity/OperationsContinuityWorkflowService.cs` - command transitions, optimistic version checks, audit writes, ledger-post coordination, and captured-state reads.
+- `OperationsContinuity/OperationsWorkflowReadModelBuilder.cs` - read-only DTO, checklist, dashboard, and evidence-package composition from captured workflow state and its loaded audit timeline; the service retains storage access and close-readiness policy.
 - `OperationsContinuity/OperationsContinuityRepositories.cs` - in-memory and file-backed workflow/audit stores plus transactional commit store contracts.
 - `OperationsContinuity/PostgresOperationsContinuityStore.cs` - PostgreSQL workflow snapshot, audit timeline, and transactional ledger-post commit store.
 - `OperationsContinuity/OperationsStatusDerivationService.cs` - deterministic status derivation from gate/sub-state posture through the F# operations rules.
