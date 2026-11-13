@@ -193,7 +193,7 @@ public sealed class ProviderIntegrationActivationServiceTests : IDisposable
             await store.SaveSyncRunAsync(run);
         }
 
-        var readiness = await new ProviderIntegrationActivationReadinessService(store).EvaluateAsync(manifest.ManifestId, connection.ConnectionId);
+        var readiness = await new ProviderIntegrationActivationReadinessService(store).EvaluateAsync(manifestId: manifest.ManifestId, connectionId: connection.ConnectionId);
         var result = await new ProviderIntegrationActivationService(store).ActivateAsync(CreateRequest(manifest, connection));
 
         readiness.IsReady.Should().BeFalse();
@@ -260,7 +260,7 @@ public sealed class ProviderIntegrationActivationServiceTests : IDisposable
         dryRun.RecordsAccepted.Should().Be(1);
 
         var result = await new ProviderIntegrationActivationService(store).ActivateAsync(CreateRequest(manifest, connection));
-        var currentReadiness = await new ProviderIntegrationActivationReadinessService(store).EvaluateAsync(manifest.ManifestId, connection.ConnectionId);
+        var currentReadiness = await new ProviderIntegrationActivationReadinessService(store).EvaluateAsync(manifestId: manifest.ManifestId, connectionId: connection.ConnectionId);
 
         result.Activated.Should().BeTrue();
         result.ManifestReference!.ManifestVersion.Should().Be(manifest.ManifestVersion + 1);
