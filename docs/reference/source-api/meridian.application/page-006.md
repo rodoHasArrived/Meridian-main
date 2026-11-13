@@ -265,7 +265,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.ProviderRouting.ProviderConfigurationCredentialException</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs:126](../../../../src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs#L126).
+Source: [src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs:178](../../../../src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs#L178).
 
 Safe refusal without echoing submitted credential values or configuration content.
 
@@ -277,7 +277,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderConfigurationCredentialException() : base(&quot;Provider credentials cannot be saved in application configuration. Use Settings &gt; Manage owned credentials for the retained tenant and account. For legacy plaintext, complete an explicit migration and purge before production or during reviewed offline maintenance. The original configuration was not changed.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs:128](../../../../src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs#L128) |  |
+| <code>public ProviderConfigurationCredentialException() : base(&quot;Provider credentials cannot be saved in application configuration. Use Settings &gt; Manage owned credentials for the retained tenant and account. For legacy plaintext, complete an explicit migration and purge before production or during reviewed offline maintenance. The original configuration was not changed.&quot;);</code> | [src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs:180](../../../../src/Meridian.Application/ProviderRouting/ProviderConfigurationCredentialGuard.cs#L180) |  |
 
 ## ProviderConfigurationCredentialGuard
 

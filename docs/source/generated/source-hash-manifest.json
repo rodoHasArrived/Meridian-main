@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "d5076de145f37e888f9ea03502ea269980abc6a5747690f401759dd0103c75be",
-      "source_hash": "3f8540a6f03c33963463ef7d83fdd67d7048b6cca2bfdb1671a7b2f331cb7154"
+      "source_hash": "2a5049029b0e2ac7a4eddc6621b4deed06d0ec5e14af5a9d069d171ee5a680e9"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -37,8 +37,8 @@
       "id": "SRC-CORE",
       "path": "src/Meridian.Core",
       "readme": "src/Meridian.Core/README.md",
-      "readme_hash": "35428b04c9dd6a83873dcd9091dd130dc33e7c970f00d761be50e75ffa9f55aa",
-      "source_hash": "266727f45783f635cedb1a9e102bad8bb246624f841feb55faf3fa1824f9ccb6"
+      "readme_hash": "4029ac10994b15f74f5358d583192ee7947871fb65f35b1864e3f93d632bb6d8",
+      "source_hash": "dd3c621b79e056022c3135e2487c5c9defc016fb27b660130a9c7566a135a675"
     },
     {
       "id": "SRC-DESIGN-AUDIT",
@@ -275,15 +275,15 @@
       "id": "SRC-UI",
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
-      "readme_hash": "fa1d85e1cc8e2622a0f357d9f33e6cbf0f5cfdc798b957cc1411d33c83e9d2dc",
-      "source_hash": "ef886e01a2870c8090cf94d4e5e0cdf3620f4db2e753543fd293238a805496a3"
+      "readme_hash": "c544da6ed571f4bbc8559e5e569c374c520eeb0445ff40597743c60ff46c4a48",
+      "source_hash": "8662007ef004be82760fcf562308aabeab0774c6e6cd1d30f67f948411046e88"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "3ff38e62807012bf8aee7453fbbbfbd7cc04c2948c86295c8276723041bf6fa9",
-      "source_hash": "ef886e01a2870c8090cf94d4e5e0cdf3620f4db2e753543fd293238a805496a3"
+      "readme_hash": "dd60d9a71273abd8fb9373637d7c232cc911a8305332eb41807fdd6a4612e3e9",
+      "source_hash": "8662007ef004be82760fcf562308aabeab0774c6e6cd1d30f67f948411046e88"
     },
     {
       "id": "SRC-UI-SERVICES",
