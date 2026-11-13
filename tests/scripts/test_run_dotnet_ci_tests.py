@@ -73,6 +73,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 "core-reporting",
                 "contracts-unit",
                 "core-unit",
+                "demo",
                 "fsharp",
                 "ui",
                 "backtesting",
@@ -203,7 +204,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(solution["projects"], [
                 project.path.replace("/", "\\") for project in MODULE.get_unique_build_projects(projects)
             ])
-            self.assertEqual(len(solution["projects"]), 11)
+            self.assertEqual(len(solution["projects"]), 12)
             self.assertTrue(all((resolved_solution.parent / path.replace("\\", "/")).is_file()
                                 for path in solution["projects"]))
 
@@ -802,6 +803,49 @@ print(json.dumps({'temporary': temporary}), flush=True)
             self.assertIn("tests/Meridian.Tests/Meridian.Tests.csproj", summary)
             self.assertIn("tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj", summary)
             self.assertIn("❌ failed", summary)
+
+
+class ExtractedDemoProjectTests(unittest.TestCase):
+    REPO = Path(__file__).resolve().parents[2]
+    PROJECT_PATH = "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj"
+
+    def test_demo_project_runs_every_test_without_building_the_monolithic_test_project(self):
+        projects = MODULE.parse_project_entries([])
+        demo = next(project for project in projects if project.path == self.PROJECT_PATH)
+        self.assertEqual(demo.name, "demo")
+        self.assertIsNone(demo.filter_expression)
+        project = ET.parse(self.REPO / self.PROJECT_PATH).getroot()
+        references = {
+            item.get("Include").replace("\\", "/") for item in project.iter("ProjectReference")
+        }
+        self.assertEqual(references, {
+            "../../src/Meridian/Meridian.csproj",
+            "../Meridian.TestSupport/Meridian.TestSupport.csproj",
+        })
+        self.assertFalse(list(project.iter("EnableDefaultCompileItems")))
+        links = {item.get("Include").replace("\\", "/") for item in project.iter("Compile")}
+        self.assertIn("../Meridian.Tests/TestCollections.cs", links)
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+            path = Path(temporary) / "build.slnf"
+            MODULE.write_build_solution_filter(projects, repo_root=self.REPO, filter_path=path)
+            roots = json.loads(path.read_text(encoding="utf-8"))["solution"]["projects"]
+            self.assertIn(self.PROJECT_PATH.replace("/", "\\"), roots)
+
+    def test_demo_sources_have_exactly_one_compile_owner(self):
+        directory = self.REPO / "tests/Meridian.Demo.Tests/Demo"
+        expected = {
+            "DemoWorkspaceGuardTests.cs", "DemoWorkspaceSeederTests.cs",
+            "DemoWorkspaceSmokeTests.cs", "DemoWorkstationAssetTreeTests.cs",
+        }
+        self.assertEqual({source.name for source in directory.glob("*.cs")}, expected)
+        self.assertFalse((self.REPO / "tests/Meridian.Tests/Demo").exists())
+        for project in (self.REPO / "tests").glob("*/*.csproj"):
+            for item in ET.parse(project).getroot().iter("Compile"):
+                include = item.get("Include", "").replace("\\", "/")
+                if include and "$(" not in include:
+                    linked = {source.resolve() for source in project.parent.glob(include)}
+                    self.assertFalse(linked.intersection(directory.glob("*.cs")),
+                                     f"{project} links an already owned demo source")
 
 
 class ExtractedUnitProjectTests(unittest.TestCase):
