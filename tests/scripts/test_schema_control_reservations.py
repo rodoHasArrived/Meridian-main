@@ -464,6 +464,22 @@ class SchemaControlReservationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     load_reservation_register(self.root, self.config)
 
+    def test_mapping_errors_name_optional_keys_as_optional(self) -> None:
+        self.register["migration_sets"][0]["unexpected"] = "x"
+        self._save_register()
+        with self.assertRaises(ValueError) as caught:
+            load_reservation_register(self.root, self.config)
+        message = str(caught.exception)
+        self.assertIn("may also contain retired", message)
+        self.assertNotIn("exactly", message)
+
+        del self.register["migration_sets"][0]["unexpected"]
+        self.register["migration_sets"][0]["reservations"][0]["extra"] = "x"
+        self._save_register()
+        with self.assertRaises(ValueError) as caught:
+            load_reservation_register(self.root, self.config)
+        self.assertIn("must contain exactly", str(caught.exception))
+
     def test_file_at_retired_ordinal_is_reported_and_prevents_scaffolding(self) -> None:
         self._retire(41)
         reused = self._migration(41, "reused_retired_number")

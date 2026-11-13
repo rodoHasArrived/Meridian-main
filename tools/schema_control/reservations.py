@@ -102,10 +102,13 @@ def _mapping(
     value: Any, fields: set[str], label: str, optional: frozenset[str] = frozenset()
 ) -> Mapping[str, Any]:
     if not isinstance(value, Mapping) or not fields <= set(value) <= fields | optional:
-        expected = ", ".join(sorted(fields))
+        required = ", ".join(sorted(fields))
         if optional:
-            expected += " (optionally " + ", ".join(sorted(optional)) + ")"
-        raise ReservationError(f"{label} must contain exactly {expected}.")
+            allowed = ", ".join(sorted(optional))
+            raise ReservationError(
+                f"{label} must contain {required} and may also contain {allowed}."
+            )
+        raise ReservationError(f"{label} must contain exactly {required}.")
     return value
 
 

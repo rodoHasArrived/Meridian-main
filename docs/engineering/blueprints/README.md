@@ -133,8 +133,8 @@ Retired ordinals are never reused; scaffolding and validation refuse them.
 
 Scaffold new work with
 `python build/scripts/schema-control.py new-migration --migration-set ledger --name example`.
-The command selects the next ordinal after the highest on disk, skips pending reservations, and
-refreshes this generated block. An explicit `--ordinal N` must also be free: occupied, reserved, and
+The command selects the next ordinal after the highest on disk, skips pending reservations and
+retired ordinals, and refreshes this generated block. An explicit `--ordinal N` must also be free: occupied, reserved, and
 retired numbers are refused.
 
 Reservations describe planning work only. When implementing a reserved migration, release that
