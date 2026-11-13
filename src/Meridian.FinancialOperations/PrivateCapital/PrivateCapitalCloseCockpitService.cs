@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.Intercompany;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
@@ -46,15 +47,18 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
     private readonly IDailyValuationScheduleStatusSource? _dailyValuationScheduleStatusSource;
     private readonly IAutomatedJournalScheduleStatusSource? _automatedJournalScheduleStatusSource;
     private readonly IRecurringJournalQueueSource? _recurringJournalQueueSource;
+    private readonly IIntercompanyBalanceScheduleSource? _intercompanyBalances;
 
     public PrivateCapitalCloseCockpitService(
         IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService,
         IOperationsContinuityWorkflowService? operationsContinuityWorkflowService,
         IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null,
         IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null,
-        IRecurringJournalQueueSource? recurringJournalQueueSource = null)
+        IRecurringJournalQueueSource? recurringJournalQueueSource = null,
+        IIntercompanyBalanceScheduleSource? intercompanyBalances = null)
     {
         _recurringJournalQueueSource = recurringJournalQueueSource;
+        _intercompanyBalances = intercompanyBalances;
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
         _dailyValuationScheduleStatusSource = dailyValuationScheduleStatusSource;
@@ -109,6 +113,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             .SelectMany(static workflow => workflow.CloseReadiness?.NextActions ?? workflow.NextActions)
             .DistinctBy(static action => action.Code, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var intercompanySchedule = _intercompanyBalances is null ? null : await _intercompanyBalances.GetForCloseAsync(
+            tenantId, companyId, fundProfileId, ledgerBookId, periodId, ct).ConfigureAwait(false);
         var lanes = BuildLanes(
             activity,
             workflows,
@@ -118,7 +124,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             dailyValuationStatus,
             dailyValuationDrafts,
             automatedJournalStatus,
-            automatedJournalDrafts);
+            automatedJournalDrafts,
+            intercompanySchedule);
         if (await BuildRecurringJournalLaneAsync(fundProfileId, ledgerBookId, entityId, periodId, tenantId, companyId, ct)
                 .ConfigureAwait(false) is { } recurringLane)
         {
@@ -203,7 +210,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         DailyValuationScheduleStatusDto? dailyValuationStatus,
         IReadOnlyList<ManualJournalEntryDraftDto> dailyValuationDrafts,
         AutomatedJournalScheduleStatusDto? automatedJournalStatus,
-        IReadOnlyList<ManualJournalEntryDraftDto> automatedJournalDrafts)
+        IReadOnlyList<ManualJournalEntryDraftDto> automatedJournalDrafts,
+        IntercompanyBalanceScheduleDto? intercompanySchedule)
     {
         var lanes = new List<PrivateCapitalCloseCockpitLaneDto>
         {
@@ -213,7 +221,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             BuildCapitalAccountLane(activity, records, subledgers),
             BuildPartnerCapitalTieOutLane(activity, records, subledgers, reportOutputs),
             BuildExpenseFeeAllocationLane(activity, records, subledgers),
-            BuildManagementCompanyOperationsLane(activity, records, subledgers),
+            BuildManagementCompanyOperationsLane(activity, records, subledgers, intercompanySchedule),
             BuildNavSupportLane(workflows, records, reportOutputs),
             BuildValuationEvidenceLane(workflows, records),
             BuildReportingLane(workflows, reportOutputs),
@@ -408,59 +416,6 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             "Retain posted expense, fee, and allocation review evidence");
     }
 
-    private static PrivateCapitalCloseCockpitLaneDto BuildManagementCompanyOperationsLane(
-        PrivateCapitalActivityProjectionDto? activity,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> subledgers)
-    {
-        var managementRecords = records
-            .Where(IsManagementCompanyOperatingRecord)
-            .ToArray();
-        var values = records.SelectMany(BuildManagementCompanyRecordValues).ToArray();
-        var signals = new[]
-        {
-            EvidenceSignal("expense allocation", ContainsManagementCompanyToken(values, "allocation", "expense allocation")),
-            EvidenceSignal("management fee", ContainsManagementCompanyToken(values, "management fee", "managementfee", "management fees")),
-            EvidenceSignal("intercompany balance", ContainsManagementCompanyToken(values, "intercompany", "due to", "due from", "due-to", "due-from")),
-            EvidenceSignal("bank/card evidence", ContainsManagementCompanyToken(values, "bank", "card", "bank card", "bankcard")),
-            EvidenceSignal("budget or cash-plan snapshot", ContainsManagementCompanyToken(values, "budget", "cash plan", "cash-plan", "cashplan")),
-            EvidenceSignal("reimbursement evidence", ContainsManagementCompanyToken(values, "reimbursement", "reimbursements", "reimburse"))
-        };
-        var completeSignals = signals.Count(static signal => signal.IsPresent);
-        var hasSource = managementRecords.Length > 0 || completeSignals > 0;
-        var hasValidationBlocker = managementRecords.Any(static record => record.ValidationIssueCount > 0);
-        var isReady = hasSource && !hasValidationBlocker && completeSignals == signals.Length;
-        var status = isReady
-            ? EvidenceStatusDto.Ready
-            : hasValidationBlocker
-                ? EvidenceStatusDto.Blocked
-                : MissingWhenNoSources(activity, []);
-        var missing = signals
-            .Where(static signal => !signal.IsPresent)
-            .Select(static signal => signal.Label)
-            .ToArray();
-        var evidence = RecordEvidence(managementRecords, "Management-company operating evidence")
-            .Concat(SubledgerEvidence(subledgers, "Cumulative capital-account diagnostics"))
-            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        return Lane(
-            "management-company-operations",
-            "Management company operating records",
-            status,
-            isReady,
-            isReady
-                ? $"{managementRecords.Length} management-company operating record(s) retain expense allocation, intercompany, management-fee, bank/card, budget or cash-plan, and reimbursement evidence."
-                : hasSource
-                    ? $"Management-company operating support is incomplete; missing {string.Join(", ", missing)}."
-                    : "No retained management-company operating records are linked to this close scope.",
-            managementRecords
-                .Select(static record => record.NextActionRoute ?? record.ActivityRoute ?? record.EvidenceRoute)
-                .FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route))
-                ?? subledgers.Select(static subledger => subledger.ActivityRoute).FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route)),
-            evidence,
-            "Retain management-company operating evidence for expense allocations, intercompany balances, fees, bank/card support, budget or cash-plan snapshots, and reimbursements");
-    }
 
     private static PrivateCapitalCloseCockpitLaneDto BuildNavSupportLane(
         IReadOnlyList<OperationsContinuityWorkflowDto> workflows,

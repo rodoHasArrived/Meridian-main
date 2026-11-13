@@ -8,6 +8,7 @@ import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { DesignSystemStatus } from "@/design-system/status";
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
+import { pluralizeCount } from "@/lib/format";
 import {
   bulkAssignOperatorTriage, commandOperatorTriage, getOperatorTriageInbox,
   isActiveTriageSnooze, routeForTriageItem,
@@ -22,7 +23,8 @@ interface PendingCommand {
 
 export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = false }: {
   fundAccountId?: string | null;
-  fallback: React.ReactNode;
+  /** Shown until the inbox loads, or when it fails. Omit when the host page already lists its own work. */
+  fallback?: React.ReactNode;
   refreshKey?: unknown;
 }) {
   const [inbox, setInbox] = useState<OperatorTriageInbox | null>(null);
@@ -191,10 +193,10 @@ export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = fals
 
   return <div role="group" aria-label="Authorized operator inbox" aria-busy={loading || busy} className="space-y-3">
     {loading ? <p role="status" className="text-xs text-muted-foreground">Refreshing authorized inbox…</p> : null}
-    {error ? <div role="alert" className="space-y-2 border border-border p-3"><p>Inbox triage is unavailable. Loaded workspace evidence remains visible below; assignment and personal triage are disabled.</p><p className="text-xs">{error}</p><Button size="sm" variant="outline" onClick={reload}>Retry inbox</Button></div> : null}
-    {!inbox ? fallback : <>
+    {error ? <div role="alert" className="space-y-2 border border-border p-3"><p>Inbox triage is unavailable. The finance queue on this page is unaffected; assignment and personal triage are disabled.</p><p className="text-xs">{error}</p><Button size="sm" variant="outline" onClick={reload}>Retry inbox</Button></div> : null}
+    {!inbox ? (fallback ?? null) : <>
       <div className="flex flex-wrap items-center justify-between gap-2" role="group" aria-label="Inbox filters">
-        <p className="text-xs text-muted-foreground">{rows.length} of {inbox.items.length} authorized items · {fundAccountId ? "Account filter applied" : "All authorized accounts"}</p>
+        <p className="text-xs text-muted-foreground">{rows.length} of {pluralizeCount(inbox.items.length, "inbox item")} · {fundAccountId ? "Account filter applied" : "All authorized accounts"}</p>
         <div className="flex flex-wrap items-center gap-2">
         <Button size="sm" variant="outline" disabled={!actionsAvailable || checkedIds.length === 0 || checkedIds.length > 100} onClick={() => openAction("BulkAssign")}>Assign {checkedIds.length} selected</Button>
         <Button size="sm" variant="outline" disabled={loading || busy} onClick={reload}>Refresh inbox</Button>

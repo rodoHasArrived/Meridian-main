@@ -248,7 +248,22 @@ public sealed partial class BondAnalyticsService : IBondAnalyticsService
         return new(security.SecurityId, security.Currency, model.Version, context, convention,
             clean, measures.DirtyPrice, accrued, yield, annualRate * 100m / clean,
             measures.MacaulayDuration, measures.ModifiedDuration, measures.Convexity, measures.Dv01,
-            worst, flows, exerciseYields, inputs, [], Capabilities(true), diagnostics);
+            worst, flows, exerciseYields, inputs, [], Capabilities(true), diagnostics)
+        {
+            MaturityDate = maturity,
+            GoverningYieldScenarios = exerciseYields
+                .Where(item => item.Kind == "Call")
+                .Select(item => new BondGoverningYieldScenario(item.Kind, item.ExerciseDate, item.Yield))
+                .Append(new BondGoverningYieldScenario("Maturity", maturity, yield))
+                .Where(item => item.Yield == worst)
+                .Distinct().OrderBy(item => item.Date).ThenBy(item => item.Kind).ToArray(),
+            RedemptionScenarios = exerciseYields.Append(new BondExerciseYield("Maturity",
+                terms.MaturityDate!.Value, 100m, yield, null)).ToArray(),
+            YieldToWorstScenarios = exerciseYields.Where(item => item.Kind == "Call" && item.Yield == worst)
+                .Concat(yield == worst
+                    ? new[] { new BondExerciseYield("Maturity", terms.MaturityDate!.Value, 100m, yield, null) }
+                    : Array.Empty<BondExerciseYield>()).ToArray()
+        };
     }
 
     /// <summary>

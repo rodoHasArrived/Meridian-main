@@ -143,7 +143,7 @@ public sealed class ExecutionJournal : IAsyncDisposable
             && (string.IsNullOrWhiteSpace(symbol) || order.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
             && (string.IsNullOrWhiteSpace(strategy) || order.StrategyId == strategy || order.RunId == strategy)
             && (string.IsNullOrWhiteSpace(tag) || order.Tag == tag)
-            && (from is null || order.UpdatedAt >= from) && (to is null || order.CreatedAt <= to);
+            && (from is null || order.UpdatedAt >= from) && (to is null || order.CreatedAt < to);
     }
 
     private static IReadOnlyList<OrderAttempt> GroupAttempts(IReadOnlyList<ExecutionJournalEntry> entries, string? scope)

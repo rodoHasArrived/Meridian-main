@@ -12,7 +12,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     public async Task GetCockpitAsync_CumulativeForeignSupportCannotReplaceSelectedScopeEvidence_RepairRestoresReadiness(string foreignScope)
     {
         var source = new StubManualJournalEntryWorkbenchService(BuildMixedScopeActivity(foreignScope, repair: false));
-        var service = new PrivateCapitalCloseCockpitService(source,
+        var service = CreateSourceBackedCockpitService(source,
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]));
 
         // Use the real cumulative subledger builder: both scopes share one account,
@@ -58,7 +58,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
                 : output).ToArray()
         };
         var source = new StubManualJournalEntryWorkbenchService(wrongPeriod);
-        var service = new PrivateCapitalCloseCockpitService(source,
+        var service = CreateSourceBackedCockpitService(source,
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]));
 
         var blocked = await service.GetCockpitAsync(FundProfileId, ready.LedgerBookId, FundAccountId, PeriodId, EntityId);

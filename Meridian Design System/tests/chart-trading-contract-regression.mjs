@@ -165,7 +165,7 @@ try {
     await test(name,'omitted callback exposes read-only data without active selection targets','state',async()=>{
       await mount(name,{readOnly:true}); assert.equal(await page.locator('.mds-cdg__hit[tabindex="0"],button.mds-lin__node:not(:disabled),button.mds-own__node,.mds-trc__svg[tabindex="0"],[role="option"],button.mds-ladder__price,.mds-ochain__row[aria-selected],tr[data-row-key][tabindex="0"],button.mds-plate').count(),0);
       if(name==='OptionChainTable') {
-        const scroll=page.getByRole('grid',{name:'Option chain',exact:true});
+        const scroll=page.getByRole('table',{name:'Option chain',exact:true});
         assert.equal(await scroll.getAttribute('tabindex'),'0','Read-only horizontal data remains reachable by keyboard');
         await scroll.focus(); assert(await scroll.evaluate(node=>node===document.activeElement));
         for(const key of ['ArrowDown','End','Enter','Space']) await scroll.press(key);

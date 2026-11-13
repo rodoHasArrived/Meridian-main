@@ -421,6 +421,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             AccruedInterest = string.IsNullOrEmpty(p.AccruedInterest)
                 ? null
                 : ParseDecimal(p.AccruedInterest),
+            ValuationBasis = BrokeragePositionValuationBasis.ProviderReported,
         }).ToList().AsReadOnly();
     }
 
@@ -639,10 +640,14 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                 .ToArray(),
             Fills: fills,
             CashTransactions: cashTransactions,
-            Cursor: new BrokerageActivityCursorDto(activities.LastOrDefault()?.Id,
-                activities.Count == 0 ? null : activities.Max(ParseActivityTimestamp),
-                activityResult.PageCount, activityResult.SourceRecordCount, IsComplete: true),
-            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray());
+            Activities: activities.Select(activity => BuildCanonicalActivityEvent(activity, account.Currency)).ToArray(),
+            Cursor: new BrokerageActivityCursorDto(
+                LastEventId: activities.OrderBy(ParseActivityTimestamp).ThenBy(BuildActivityId, StringComparer.Ordinal).LastOrDefault() is { } latest
+                    ? BuildActivityId(latest) : null,
+                HighWatermark: activities.Count == 0 ? null : activities.Max(ParseActivityTimestamp),
+                PageCount: activityResult.PageCount,
+                SourceRecordCount: activityResult.SourceRecordCount,
+                IsComplete: true));
     }
 
     /// <inheritdoc />

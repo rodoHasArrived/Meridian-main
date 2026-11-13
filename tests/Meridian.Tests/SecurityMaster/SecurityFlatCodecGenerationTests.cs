@@ -38,15 +38,17 @@ public sealed class SecurityFlatCodecGenerationTests
     [MemberData(nameof(GeneratedClasses))]
     public void EveryDeclaredKeyOfAGeneratedClass_IsWrittenByExactlyOneRow(string assetClass)
     {
-        // rateUnit is written by the shared rate-unit step, after the class's own document, the
-        // declared-schedule containers by the generated version branches, and a read-only field
-        // (AuthoringEnabled false, e.g. cashFlowContract) is not written by the codec at all.
+        // rateUnit and bondWorkflow are written by the snapshot wrapper after the class's own
+        // document is stamped (bondWorkflow absent, not null, when undeclared), the declared-schedule
+        // containers by the generated version branches, and a read-only field (AuthoringEnabled
+        // false, e.g. cashFlowContract) is not written by the codec at all.
         var binding = SecurityAssetTermsCodecBindings.ByAssetClass[assetClass];
         string[] versioned = binding.VersionedSchedules ? ["scheduleConventions", "callSchedule", "putSchedule"] : [];
+        string[] writtenAfterStamping = ["rateUnit", "bondWorkflow"];
         var declared = SecurityAssetTermsSchema.Fields(assetClass)
             .Where(static field => field.AuthoringEnabled)
             .Select(static field => field.Key)
-            .Where(key => key != "rateUnit" && !versioned.Contains(key))
+            .Where(key => !writtenAfterStamping.Contains(key) && !versioned.Contains(key))
             .ToArray();
         var written = binding.Members
             .Where(static row => row.Key is not null && !row.DecodeOnly)

@@ -1,8 +1,7 @@
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-import { usesTrackedCaps } from "@/design-system/label-case";
+import { type AriaAttributes, type ReactNode } from "react";
+import { CalendarField } from "@/components/ui/date-field";
 
-export interface DatePickerProps {
+export interface DatePickerProps extends AriaAttributes {
   value?: string | null;
   onChange?: (value: string) => void;
   label?: ReactNode;
@@ -11,8 +10,6 @@ export interface DatePickerProps {
   className?: string;
   id?: string;
 }
-
-const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 export function toIsoDate(date: Date): string {
   const year = date.getFullYear();
@@ -34,111 +31,7 @@ export function monthGrid(month: Date): Date[] {
   return days;
 }
 
-const dayButtonClass =
-  "flex h-8 w-8 items-center justify-center rounded-[var(--radius-button)] border border-transparent font-mono text-xs text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] [outline-offset:-2px]";
-
-/**
- * Single-date input with a flat calendar popover. Concrete: hairline field, menu shadow on the
- * calendar, control-radius cells, one selection tone for the selected day. Emits ISO `YYYY-MM-DD` via `onChange`.
- */
-export function DatePicker({ value, onChange, label, placeholder = "Select date…", disabled = false, className, id }: DatePickerProps) {
-  const [open, setOpen] = useState(false);
-  const [month, setMonth] = useState<Date>(value ? new Date(value) : new Date());
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (typeof document === "undefined") {
-      return undefined;
-    }
-    const handler = (event: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const days = monthGrid(month);
-  const display = value
-    ? new Date(value).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
-    : placeholder;
-  const today = toIsoDate(new Date());
-
-  return (
-    <div ref={rootRef} className={cn("relative w-full", className)}>
-      {label ? (
-        <label htmlFor={id} className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
-          {label}
-        </label>
-      ) : null}
-      <input
-        id={id}
-        type="text"
-        readOnly
-        disabled={disabled}
-        value={display}
-        onClick={() => !disabled && setOpen((current) => !current)}
-        className={cn(
-          "h-9 w-full cursor-pointer rounded-[var(--radius-button)] border border-border bg-[var(--ws-surface-raised)] px-2.5 font-mono text-sm text-foreground",
-          "hover:border-[var(--ws-border-hover)] focus-visible:border-[var(--interaction-focus)] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
-          disabled && "cursor-not-allowed opacity-55"
-        )}
-      />
-      {open ? (
-        <div className="absolute left-0 top-[calc(100%+4px)] z-[100] rounded-[var(--radius-overlay)] border border-border bg-popover p-3 shadow-[0_2px_6px_rgba(0,0,0,0.18)]">
-          <div className="mb-3 flex items-center justify-between text-xs font-semibold text-foreground">
-            <button
-              type="button"
-              aria-label="Previous month"
-              onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1))}
-              className="rounded-[var(--radius-button)] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
-            >
-              ←
-            </button>
-            <span>{month.toLocaleDateString("en-US", { year: "numeric", month: "long" })}</span>
-            <button
-              type="button"
-              aria-label="Next month"
-              onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1))}
-              className="rounded-[var(--radius-button)] border border-border bg-card px-2 py-1 transition-colors hover:bg-[var(--ws-row-hover)]"
-            >
-              →
-            </button>
-          </div>
-          <div className="grid grid-cols-7 gap-0.5">
-            {DOW.map((day) => (
-              <div key={day} className="text-center font-mono text-[10px] font-semibold text-muted-foreground">
-                {day}
-              </div>
-            ))}
-            {days.map((day, index) => {
-              const iso = toIsoDate(day);
-              const other = day.getMonth() !== month.getMonth();
-              const selected = value === iso;
-              const isToday = iso === today;
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => {
-                    onChange?.(iso);
-                    setOpen(false);
-                  }}
-                  className={cn(
-                    dayButtonClass,
-                    other && "text-muted-foreground",
-                    isToday && !selected && "border-[var(--interaction-selected)]",
-                    selected && "border-[var(--interaction-selected)] bg-[var(--interaction-selected)] text-[var(--text-on-fill)] hover:bg-[var(--interaction-selected)]"
-                  )}
-                >
-                  {day.getDate()}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
+/** Date-only field with a keyboard-operable, labelled calendar popover. */
+export function DatePicker(props: DatePickerProps) {
+  return <CalendarField {...props} />;
 }

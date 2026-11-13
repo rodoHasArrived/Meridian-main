@@ -44,3 +44,8 @@
     display: none;
   }
 }
+
+.dense-table-wrap[tabindex="0"]:focus-visible {
+  outline: var(--focus-ring, 2px solid hsl(var(--ring)));
+  outline-offset: 2px;
+}

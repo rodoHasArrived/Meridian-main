@@ -3,17 +3,19 @@ import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LiveQuotesScreen } from "@/screens/live-quotes-screen";
 import { PriceAlertsScreen } from "@/screens/price-alerts-screen";
 import { WatchlistScreen } from "@/screens/watchlist-screen";
+import { OptionsScreen } from "@/screens/options-screen";
 
 const MARKET_DATA_TABS = [
   { id: "quotes", label: "Live quotes" },
   { id: "watchlist", label: "Watchlist" },
-  { id: "alerts", label: "Price alerts" }
+  { id: "alerts", label: "Price alerts" },
+  { id: "options", label: "Options screening" }
 ];
 
-type MarketDataView = "quotes" | "watchlist" | "alerts";
+type MarketDataView = "quotes" | "watchlist" | "alerts" | "options";
 
 function resolveMarketDataView(requested: string | null): MarketDataView {
-  return requested === "watchlist" || requested === "alerts" ? requested : "quotes";
+  return requested === "watchlist" || requested === "alerts" || requested === "options" ? requested : "quotes";
 }
 
 /**
@@ -43,6 +45,7 @@ export function MarketDataScreen() {
       <TabPanel>{view === "quotes" ? <LiveQuotesScreen /> : null}</TabPanel>
       <TabPanel>{view === "watchlist" ? <WatchlistScreen /> : null}</TabPanel>
       <TabPanel>{view === "alerts" ? <PriceAlertsScreen /> : null}</TabPanel>
+      <TabPanel>{view === "options" ? <OptionsScreen /> : null}</TabPanel>
     </Tabs>
   );
 }

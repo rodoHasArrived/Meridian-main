@@ -2,9 +2,9 @@
 
 # `fund_structure` schema
 
-- Relations: 20
-- Functions/procedures: 3
-- Triggers: 12
+- Relations: 23
+- Functions/procedures: 5
+- Triggers: 18
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -42,6 +42,21 @@ erDiagram
         text client_segment_kind
         timestamp_with_time_zone updated_at
         text tenant_id
+    }
+    fund_structure_entity_lifecycle_legacy_baseline {
+        uuid entity_id PK,FK
+        text lifecycle_status
+        timestamp_with_time_zone captured_at_utc
+    }
+    fund_structure_entity_lifecycle_revision {
+        text tenant_id PK
+        uuid entity_id PK,FK
+        bigint revision PK
+        timestamp_with_time_zone recorded_at_utc
+        text recorded_by
+        text content_hash
+        text previous_hash
+        jsonb payload
     }
     fund_structure_fund {
         uuid fund_id PK
@@ -106,6 +121,13 @@ erDiagram
         timestamp_with_time_zone resolved_at_utc
         text resolved_tenant_id
         text resolution_note
+    }
+    fund_structure_intercompany_accounting_arrangement_events {
+        text tenant_id PK
+        uuid arrangement_id PK
+        bigint aggregate_version PK
+        uuid request_id
+        jsonb payload
     }
     fund_structure_intercompany_agreement {
         text tenant_id PK,FK
@@ -237,12 +259,16 @@ erDiagram
     fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_revision : "intercompany_agreement_revision_tenant_id_agreement_id_fkey"
     fund_structure_intercompany_agreement ||--o{ fund_structure_intercompany_agreement_snapshot : "intercompany_agreement_snapshot_tenant_id_agreement_id_fkey"
     fund_structure_intercompany_agreement_snapshot ||--o{ fund_structure_intercompany_agreement : "intercompany_agreement_snapshot_pointer"
+    fund_structure_legal_entity ||--o{ fund_structure_entity_lifecycle_legacy_baseline : "entity_lifecycle_legacy_baseline_entity_id_fkey"
+    fund_structure_legal_entity ||--o{ fund_structure_entity_lifecycle_revision : "entity_lifecycle_revision_entity_id_fkey"
 ```
 
 | Relation | Kind | Columns | Primary key | Foreign keys | Indexes | Comment |
 | --- | --- | ---: | --- | ---: | ---: | --- |
 | `business` | table | 15 | `business_id` | 0 | 2 | - |
 | `client` | table | 13 | `client_id` | 0 | 2 | - |
+| `entity_lifecycle_legacy_baseline` | table | 3 | `entity_id` | 1 | 1 | - |
+| `entity_lifecycle_revision` | table | 8 | `tenant_id`, `entity_id`, `revision` | 1 | 1 | - |
 | `fund` | table | 16 | `fund_id` | 0 | 2 | - |
 | `fund_structure_assignment` | table | 9 | `assignment_id` | 0 | 3 | - |
 | `fund_structure_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |
@@ -250,6 +276,7 @@ erDiagram
 | `fund_structure_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `fund_structure_tenant_backfill_receipt` | table | 8 | `run_id` | 0 | 1 | Immutable receipts binding an explicit tenant-backfill run to its reviewed plan hash, operator, review reference, and atomically committed attribution and quarantine counts. |
 | `fund_structure_tenant_quarantine` | table | 8 | `node_id` | 0 | 2 | Fund-structure nodes the W9-GOV-008 tenant attribution declined to attribute: MixedOwnership for a genuinely shared ancestor whose descendants resolve to more than one tenant, Underivable for a node the fund_profile_tenancy registry cannot reach in either direction. Rows here are an operator decision, not a defect - resolving one records the chosen tenant and the reason. |
+| `intercompany_accounting_arrangement_events` | table | 5 | `tenant_id`, `arrangement_id`, `aggregate_version` | 0 | 2 | - |
 | `intercompany_agreement` | table | 3 | `tenant_id`, `agreement_id` | 1 | 1 | - |
 | `intercompany_agreement_audit` | table | 4 | `tenant_id`, `agreement_id`, `sequence_number` | 1 | 1 | - |
 | `intercompany_agreement_command_receipt` | table | 4 | `tenant_id`, `agreement_id`, `command_id` | 1 | 2 | - |

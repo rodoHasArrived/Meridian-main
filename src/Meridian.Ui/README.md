@@ -6,10 +6,14 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui
+
+The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
+
+The served bundle also includes linked analytical investigation views across the existing workspaces: orders, displayed depth, options, margin, maturities, ownership, retained private capital, fixed-income exercises, corporate dates, tax parcels and retained strategy sweeps. The dashboard and shared-source READMEs document their source, unit and authority boundaries; generated assets must be rebuilt after integration.
 
 The served Accounting configuration bundle includes the intercompany agreement registry, immutable
 revision/evidence inspection and governed proposal review over shared tenant-scoped APIs. Optional
@@ -35,6 +39,15 @@ READMEs for the exact support boundary and validation.
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.
+
+The rebuilt browser assets include the current design-system date and keyboard adapters and
+current-view print styling. Printed views retain mounted selection, financial context, session and
+provenance; printing does not fetch unmounted records or change report authority.
+
+Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
+CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
+trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
+in the package. Rebuild `dashboard/` to refresh the checked-in workstation bundle.
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 
@@ -122,6 +135,20 @@ fails a route that renders a request path, "lane", "payload", "mutation", "calle
 slug-shaped identifier, an unexplained disabled primary button, or a status bar that contradicts
 the page. No shared contract changed; routes whose read models name records only by key are listed
 with reasons in `scripts/dev/web-screenshot-routes.json`.
+
+It also carries the Phase 3 trust fixes from the same plan:
+- Data overview shows a provider's "Latency" only as a reported duration or "Latency not
+  reported"; the "Trust / last good" column keeps the last response time.
+- Today lists the finance queue that the sidebar badges count, above the operator inbox, and each
+  count names its unit (for example "+5 more issues" in the status bar).
+- Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
+  account is in scope in a non-live brokerage environment; live, unknown and failed states still
+  block.
+- A metric basis the source does not declare reads "Not declared by source" once per strip.
+- The screenshot harness fails a route that shows a time under "Latency" or a "Basis unavailable"
+  or "Saved views unavailable" placeholder.
+
+No shared contract changed.
 
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency

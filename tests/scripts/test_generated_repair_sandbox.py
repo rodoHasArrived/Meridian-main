@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import os
 from pathlib import Path
-import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -44,51 +45,145 @@ class SandboxTests(unittest.TestCase):
             sandbox.run(self.root, self.output, "repair-test", "--evil", "2" * 40)
         run.assert_not_called()
 
-    def test_pointer_only_checkout_is_cloned_without_fetching_lfs_payloads(self):
-        self.assertIsNotNone(shutil.which("git-lfs"), "Git LFS is required for this clone regression")
-        repo = self.root / "repo"
+    def test_local_clone_retains_lfs_pointers_without_host_objects_or_filters(self):
+        """Exercise real Git/LFS; only the Docker invocation is replaced."""
+        repo = self.root / "host-repo"
         repo.mkdir()
-        pointer = ("version https://git-lfs.github.com/spec/v1\n"
-                   f"oid sha256:{'1' * 64}\nsize 42\n")
-        clean_env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1",
-                         GIT_TERMINAL_PROMPT="0", GIT_CONFIG_COUNT="0")
-        clean_env.pop("GIT_LFS_SKIP_SMUDGE", None)
-        clean_env.pop("GIT_LFS_SKIP_DOWNLOAD_ERRORS", None)
-        git = ["git", "-C", str(repo), "-c", "core.hooksPath=/dev/null"]
-        for args in (("init",), ("config", "user.name", "Synthetic clone test"),
-                     ("config", "user.email", "synthetic@example.invalid")):
-            subprocess.run([*git, *args], env=clean_env, check=True, capture_output=True)
-        (repo / ".gitattributes").write_text("*.png filter=lfs diff=lfs merge=lfs -text\n")
-        (repo / "evidence.png").write_text(pointer)
-        subprocess.run([*git, "add", "."], env=clean_env, check=True, capture_output=True)
-        subprocess.run([*git, "commit", "-m", "Pointer-only synthetic checkout"],
-                       env=clean_env, check=True, capture_output=True)
-        head = subprocess.check_output([*git, "rev-parse", "HEAD"], env=clean_env, text=True).strip()
-        lfs_env = dict(clean_env, GIT_CONFIG_COUNT="2", GIT_CONFIG_KEY_0="filter.lfs.process",
-                       GIT_CONFIG_VALUE_0="git-lfs filter-process", GIT_CONFIG_KEY_1="filter.lfs.required",
-                       GIT_CONFIG_VALUE_1="true")
-        failed = subprocess.run(["git", "clone", "--no-hardlinks", str(repo), str(self.root / "unprepared")],
-                                env=lfs_env, text=True, capture_output=True)
-        self.assertNotEqual(failed.returncode, 0)
-        self.assertIn("remote missing object", failed.stderr)
-
+        environment = dict(os.environ, GIT_CONFIG_GLOBAL=str(self.root / "host-gitconfig"),
+                           GIT_CONFIG_NOSYSTEM="1", GIT_TERMINAL_PROMPT="0",
+                           GITHUB_TOKEN="synthetic-host-token", ACTIONS_RUNTIME_TOKEN="synthetic-runtime-token")
+        environment.pop("GIT_LFS_SKIP_SMUDGE", None)
         real_run = subprocess.run
 
-        def run_with_fake_container(command, **kwargs):
+        def git(*arguments, env=environment, check=True):
+            return real_run(["git", *arguments], env=env, capture_output=True, text=True, check=check)
+
+        # Match the runner's installed global LFS filters without changing real configuration.
+        for key, value in (("filter.lfs.process", "git-lfs filter-process"),
+                           ("filter.lfs.clean", "git-lfs clean -- %f"),
+                           ("filter.lfs.smudge", "git-lfs smudge -- %f"),
+                           ("filter.lfs.required", "true")):
+            git("config", "--global", key, value)
+        git("init", "-b", "main", str(repo))
+        git("-C", str(repo), "config", "user.name", "LFS regression")
+        git("-C", str(repo), "config", "user.email", "lfs-regression@example.invalid")
+        git("-C", str(repo), "config", "meridian.hostOnly", "synthetic-host-setting")
+        payload = b"synthetic retained diagram without local LFS object\n"
+        oid = hashlib.sha256(payload).hexdigest()
+        pointer = f"version https://git-lfs.github.com/spec/v1\noid sha256:{oid}\nsize {len(payload)}\n"
+        relative = Path("docs/diagrams/analytics/backtesting-engine.png")
+        (repo / ".gitattributes").write_text("docs/diagrams/**/*.png filter=lfs diff=lfs merge=lfs -text\n")
+        (repo / relative).parent.mkdir(parents=True)
+        (repo / relative).write_text(pointer)
+        git("-C", str(repo), "add", ".")
+        git("-C", str(repo), "commit", "-m", "Retain synthetic LFS pointer")
+        revision = git("-C", str(repo), "rev-parse", "HEAD").stdout.strip()
+        self.assertFalse((repo / ".git/lfs/objects" / oid[:2] / oid[2:4] / oid).exists())
+        host_cache = repo / ".git/lfs/objects/aa/bb/host-only-cache"
+        host_cache.parent.mkdir(parents=True, exist_ok=True)
+        host_cache.write_text("synthetic host cache must not be mounted or copied")
+
+        # The old command must reproduce the hosted missing-object failure, not pass accidentally.
+        control = git("-c", "core.hooksPath=/dev/null", "clone", "--no-hardlinks", str(repo),
+                      str(self.root / "failing-clone"), check=False)
+        self.assertEqual(control.returncode, 128)
+        self.assertIn("remote missing object", control.stderr)
+        self.assertIn("smudge filter lfs failed", control.stderr)
+        docker_calls = []
+
+        def run_without_docker(command, *args, **kwargs):
             if command[0] != "docker":
-                return real_run(command, **kwargs)
-            mounts = [command[index + 1] for index, value in enumerate(command) if value == "--mount"]
-            work = Path(next(value for value in mounts if "target=/work" in value).split("source=", 1)[1].split(",", 1)[0])
-            raw = Path(next(value for value in mounts if "target=/output" in value).split("source=", 1)[1].split(",", 1)[0])
-            self.assertEqual((work / "repo" / "evidence.png").read_text(), pointer)
-            (raw / "report.json").write_text('{"status":"noop"}')
+                if "clone" in command:
+                    self.assertEqual(kwargs["env"]["GIT_LFS_SKIP_SMUDGE"], "1")
+                    self.assertIn("--no-hardlinks", command)
+                    self.assertIn("core.hooksPath=/dev/null", command)
+                return real_run(command, *args, **kwargs)
+            docker_calls.append(command)
+            self.assertEqual(command.count("--mount"), 2)
+            self.assertNotIn("GIT_LFS_SKIP_SMUDGE", " ".join(command))
+            self.assertNotIn("synthetic-host-token", " ".join(command))
+            work_mount = next(value for value in command if value.startswith("type=bind,source=") and value.endswith(",target=/work"))
+            work = Path(work_mount.removeprefix("type=bind,source=").removesuffix(",target=/work"))
+            clone = work / "repo"
+            self.assertEqual((clone / relative).read_text(), pointer)
+            self.assertFalse((clone / ".git/lfs/objects/aa/bb/host-only-cache").exists())
+            self.assertFalse((clone / ".git/objects/info/alternates").exists())
+            self.assertNotIn("synthetic-host-setting", (clone / ".git/config").read_text())
+            for object_file in (clone / ".git/objects").rglob("*"):
+                if object_file.is_file():
+                    self.assertEqual(object_file.stat().st_nlink, 1)
+
+            # Use the container's existing configuration policy for real worktree and staging commands.
+            # No host LFS filters or skip-smudge environment are passed into that policy.
+            container_env = {"PATH": environment.get("PATH", os.defpath), "GIT_CONFIG_GLOBAL": os.devnull,
+                             "GIT_CONFIG_NOSYSTEM": "1", "GIT_TERMINAL_PROMPT": "0"}
+            checkout = work / "checkout"
+            git("-c", "core.hooksPath=/dev/null", "-C", str(clone), "worktree", "add", "--detach",
+                str(checkout), revision, env=container_env)
+            self.assertEqual((checkout / relative).read_text(), pointer)
+            self.assertEqual(git("-C", str(checkout), "status", "--porcelain", env=container_env).stdout, "")
+            git("-C", str(checkout), "add", "-A", env=container_env)
+            self.assertEqual(git("-C", str(checkout), "write-tree", env=container_env).stdout.strip(),
+                             git("-C", str(repo), "rev-parse", "HEAD^{tree}").stdout.strip())
             return subprocess.CompletedProcess(command, 0)
 
-        with mock.patch.dict(os.environ, lfs_env, clear=True), \
-                mock.patch.object(sandbox.subprocess, "run", side_effect=run_with_fake_container):
-            self.assertEqual(sandbox.run(repo, self.output, "repair-test", head, head), 0)
-        self.assertEqual((self.output / "report.json").read_text(), '{"status":"noop"}')
-        self.assertEqual((repo / "evidence.png").read_text(), pointer)
+        with mock.patch.dict(os.environ, environment, clear=True), mock.patch.object(sandbox.subprocess, "run", side_effect=run_without_docker):
+            self.assertEqual(sandbox.run(repo, self.output, "repair-test", revision, revision), 0)
+            self.assertNotIn("GIT_LFS_SKIP_SMUDGE", os.environ)
+        self.assertEqual(len(docker_calls), 1)
+        self.assertTrue((self.output / "container.log").is_file())
+        self.assertEqual((repo / relative).read_text(), pointer)
+
+    def test_clone_retains_unavailable_lfs_pointer_and_pinned_commits_without_hooks(self):
+        repo = self.root / "repo"
+        repo.mkdir()
+        config = self.root / "gitconfig"
+        config.write_text('[filter "lfs"]\nprocess = git-lfs filter-process\nrequired = true\n')
+        environment = {**os.environ, "GIT_CONFIG_GLOBAL": str(config),
+                       "GIT_CONFIG_NOSYSTEM": "1", "GIT_LFS_SKIP_SMUDGE": "0"}
+
+        def git(*args, directory=repo):
+            return subprocess.check_output(["git", "-c", "core.hooksPath=/dev/null", *args],
+                                           cwd=directory, env=environment, stderr=subprocess.PIPE)
+
+        git("init", "-q")
+        git("config", "user.name", "Fixture")
+        git("config", "user.email", "fixture@example.invalid")
+        (repo / ".gitattributes").write_text("*.png filter=lfs diff=lfs merge=lfs -text\n")
+        pointer = ("version https://git-lfs.github.com/spec/v1\noid sha256:" + "1" * 64 + "\nsize 4\n").encode()
+        (repo / "diagram.png").write_bytes(pointer)
+        git("-c", "filter.lfs.process=", "-c", "filter.lfs.required=false", "add", ".")
+        git("commit", "-qm", "Track an unavailable LFS object")
+        base = git("rev-parse", "HEAD").decode().strip()
+        (repo / "note.txt").write_text("pinned head\n")
+        git("add", "note.txt")
+        git("commit", "-qm", "Advance the pinned head")
+        head = git("rev-parse", "HEAD").decode().strip()
+        hooks = self.root / "hooks"
+        hooks.mkdir()
+        hook_marker = self.root / "hook-ran"
+        (hooks / "post-checkout").write_text(f'#!/bin/sh\ntouch "{hook_marker}"\n')
+        (hooks / "post-checkout").chmod(0o755)
+        git("config", "--file", str(config), "core.hooksPath", str(hooks))
+
+        def inspect_clone(work, output, image, requested_head, requested_base):
+            clone = work / "repo"
+            self.assertEqual((requested_head, requested_base), (head, base))
+            self.assertEqual((clone / "diagram.png").read_bytes(), pointer)
+            for revision in (head, base):
+                self.assertEqual(git("rev-parse", "--verify", f"{revision}^{{commit}}", directory=clone).decode().strip(), revision)
+            self.assertFalse(hook_marker.exists())
+            original = repo / ".git" / "objects" / head[:2] / head[2:]
+            copied = clone / ".git" / "objects" / head[:2] / head[2:]
+            self.assertNotEqual((original.stat().st_dev, original.stat().st_ino),
+                                (copied.stat().st_dev, copied.stat().st_ino))
+            return [sys.executable, "-c", "pass"]
+
+        with mock.patch.dict(os.environ, environment), mock.patch.object(sandbox, "container_command", side_effect=inspect_clone):
+            self.assertEqual(sandbox.run(repo, self.output, "repair-test", head, base), 0)
+            self.assertEqual(os.environ["GIT_LFS_SKIP_SMUDGE"], "0")
+        self.assertFalse(hook_marker.exists())
+
 
     def test_only_bounded_regular_exports_are_copied(self):
         (self.raw / "repair.patch").write_text("patch")

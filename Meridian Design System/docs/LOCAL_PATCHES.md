@@ -17,7 +17,7 @@ regression that was run against the pre-patch file and failed on it.
 
 ## Behaviour fixes with a regression
 
-| Id | File(s) | Behaviour fixed | Patch commit | Regression |
+| Id | File(s) | Behaviour fixed | Patch commit / PR | Regression |
 | --- | --- | --- | --- | --- |
 | LP-01 | `templates/_scaffold/action-bridge.jsx` | The bridge notified its parent on every render. Basket Builder, Settings Admin and Report Pack re-rendered without end. It now hands the parent one stable API object and notifies only when the instruction list changes. | `7e580e17` | `tests/local-patches-regression.mjs` |
 | LP-02 | `components/operations/ActionEnvelope.jsx` | Repeat submits made before React re-rendered each reached the transport. The idempotency key is now reserved synchronously. `retry()` rebuilt the instruction from the static declaration and dropped payload and endpoint overrides; it now resends the declaration that was sent. | `7e580e17` | `tests/local-patches-regression.mjs` |
@@ -33,6 +33,11 @@ regression that was run against the pre-patch file and failed on it.
 | LP-12 | `components/core/Modal.jsx` | Every dialog labelled itself with the shared id `mdl-title`. Each dialog now owns its title id, and the close control is an explicit `type="button"`. | `db7902a8` | `tests/modal-label-regression.mjs` |
 | LP-13 | `components/charts/ChartAnnotations.jsx` | Annotations had no accessible text. The overlay group now carries an image name listing band positions, event explanations and callout values, and each event exposes its `detail` in an SVG title. | `590735c5` | `tests/chart-accessibility-regression.mjs` |
 | LP-14 | `components/charts/PeerComparisonStrip.jsx` | Individual peer values were available only through hover titles. The table emitted with `ariaLabel` now lists them. | `590735c5` | `tests/chart-accessibility-regression.mjs` |
+| LP-15 | `components/core/useOverlayFocus.js` | Initial focus and the Tab cycle exclude hidden, inert, disabled and collapsed content. Intentional heading autofocus, empty-panel focus and trigger restoration preserve the existing scroll locks and Escape stack. | PR #3542 | `tests/core-integration-regression.mjs` |
+| LP-16 | `components/core/DatePicker.jsx`, `DateRangePicker.jsx`, `localDate.js` | Field labels and validation ARIA reach the actual date controls; feedback descriptions compose with caller descriptions. Civil years 0000–0099 round-trip without a century shift while retaining local-calendar semantics. | PR #3542 | `tests/core-integration-regression.mjs` |
+| LP-17 | `components/accounting/LedgerTable.jsx`, `components/trading/OptionChainTable.jsx`, `components/charts/CorrelationHeatmap.jsx`, `CoverageMatrix.jsx`, `components/data/VirtualizedList.jsx`, `WorksheetGrid.jsx` | Roving rows preserve original callback objects and exclude child-control activation. Read-only tables, active strike announcements, accessible values, list positions and worksheet editability reflect their actual interaction contracts. | PR #3542 | `tests/integration-data-accessibility-regression.mjs` |
+| LP-18 | `templates/field-formula/screen.jsx` | Retained formula suggestions use native buttons with announced selection, roving focus, arrow/Home/End navigation and native Enter/Space activation. The newer published DC workflow retains its existing implementation. | PR #3542 | `tests/retained-reference-accessibility-regression.mjs` |
+| LP-19 | `templates/books-loop/BooksLoop.dc.html` | A cold start could remain on its loading view; duplicate dependency initialization could leave the view subscribed to an obsolete instruction store. Dependency readiness refreshes the real model and maintains one active subscription to the current store, with listener and subscription cleanup on unmount. | PR #3542 | `tests/books-loop-readiness-regression.mjs` |
 
 ## Other local changes
 
@@ -44,10 +49,12 @@ checks named here, not by `test:patches`.
 | Template contract repairs (`books-loop`, `position-detail` and the retained compatibility templates), shell comment tokens, retired-export declarations | `590735c5`, `db7902a8`, `bd3354f5`, `9ea0b762` | `scripts/check_design_system_governance.py` (zero findings), `tests/retained-template-states-regression.mjs`, `tests/template-preview-regression.mjs` |
 | Token and palette reconciliation with the dashboard and WPF, and white-label brand identities in dark and forced-light, listed in [the audit](AUDIT_4_3_0.md) | `c77ced17`, `9ecec3da`, `2b3822d2`, `bc980e1b`, `004c94b8` | `scripts/check_contrast.py`, `scripts/check_token_parity.py`, `tests/brand-contrast-regression.mjs` |
 | Release tooling: case-correct `README.md` lookups, family classification of 17 exports, build provenance, deterministic export | `de886adb` | `scripts/validate_release.py`, `npm run test:release`, `npm run release:check` |
+| Strict asset-failure and loaded-style auditing; iframe accessibility remains independently checked | PR #3542 | `tests/browser-audit-regression.mjs`, `tests/full-library-browser.mjs` |
+| Reference form names, associated labels, image alternatives, per-job progress names and keyboard-scrollable read-only examples | PR #3542 | `tests/full-library-browser.mjs` |
 
 ## To carry upstream
 
-LP-01 to LP-14 are defects in the design source and should be fixed there, so the
+LP-01 to LP-19 are defects in the design source and should be fixed there, so the
 next export arrives with them. Until then this file is the re-apply list. When a
 patch lands upstream, keep its regression and remove its row.
 

@@ -181,7 +181,7 @@
                 </Border>
             </UniformGrid>
 
-            <TabControl AutomationProperties.AutomationId="AccountingConfigureTabs">
+            <TabControl x:Name="AccountingTabs" AutomationProperties.AutomationId="AccountingConfigureTabs">
                 <TabItem Header="Configuration">
                     <Grid Margin="0,16,0,0">
                         <Grid.ColumnDefinitions>
@@ -983,7 +983,7 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel>
                                         <TextBlock Text="MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding CanEditManualJournalDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                        <TextBlock Text="{Binding ManualJournalEntryHeadingText}" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding IsAssetAccountingDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                        <TextBlock Text="{Binding ManualJournalEntryHeadingText}" Style="{StaticResource CardHeaderStyle}" Visibility="{Binding IsReadOnlyRetainedDraft, Converter={StaticResource BooleanToVisibilityConverter}}" />
                                         <TextBlock Text="{Binding ManualJournalStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                         <TextBlock Text="{Binding AssetAccountingDraftRestrictionText}" TextWrapping="Wrap" Margin="0,6,0,0" AutomationProperties.AutomationId="AssetAccountingDraftRestriction" />
                                     </StackPanel>
@@ -1148,7 +1148,7 @@
                                 </Border>
 
                                 <DataGrid ItemsSource="{Binding AssetAccountingDraftLines}" IsReadOnly="True" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0"
-                                          Visibility="{Binding IsAssetAccountingDraft, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.AutomationId="AssetAccountingDraftLines">
+                                          Visibility="{Binding IsReadOnlyRetainedDraft, Converter={StaticResource BooleanToVisibilityConverter}}" AutomationProperties.AutomationId="AssetAccountingDraftLines">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Account" Binding="{Binding AccountPath}" Width="*" />
                                         <DataGridTextColumn Header="Side" Binding="{Binding Side}" Width="80" />
@@ -1566,6 +1566,9 @@
                             </DataGrid>
                         </StackPanel>
                     </Border>
+                </TabItem>
+                <TabItem Header="Entities &amp; consolidation">
+                    <views:EntityConsolidationControl DataContext="{Binding EntityConsolidation}" ReviewDraftsRequested="OnReviewConsolidationDrafts" />
                 </TabItem>
             </TabControl>
         </StackPanel>

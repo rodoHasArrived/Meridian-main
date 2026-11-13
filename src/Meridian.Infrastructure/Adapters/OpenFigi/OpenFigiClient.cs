@@ -102,7 +102,7 @@ public sealed class OpenFigiClient : IDisposable
     /// </summary>
     public async Task<IReadOnlyList<FigiMapping>> LookupByIsinAsync(
         string isin,
-        string? marketSector = "Equity",
+        string? marketSector = null,
         CancellationToken ct = default)
     {
         var request = new OpenFigiMappingRequest
@@ -121,7 +121,7 @@ public sealed class OpenFigiClient : IDisposable
     /// </summary>
     public async Task<IReadOnlyList<FigiMapping>> LookupByCusipAsync(
         string cusip,
-        string? marketSector = "Equity",
+        string? marketSector = null,
         CancellationToken ct = default)
     {
         var request = new OpenFigiMappingRequest
@@ -134,6 +134,32 @@ public sealed class OpenFigiClient : IDisposable
         var results = await MappingRequestAsync(new[] { request }, ct).ConfigureAwait(false);
         return results.FirstOrDefault() ?? Array.Empty<FigiMapping>();
     }
+
+    /// <summary>
+    /// Discovers a bond by durable identifier without an implicit equity/corporate filter.
+    /// Competing FIGIs remain candidates; response order never resolves an ambiguity.
+    /// </summary>
+    public async Task<BondFigiLookupResult> LookupBondIdentifierAsync(
+        string identifier, string identifierType, string? marketSector = null, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+        ArgumentException.ThrowIfNullOrWhiteSpace(identifierType);
+        var type = identifierType.Trim().ToUpperInvariant();
+        if (type is not ("ISIN" or "CUSIP"))
+            throw new ArgumentException("Bond discovery requires an ISIN or CUSIP.", nameof(identifierType));
+        if (marketSector is not null && !IsBondSector(marketSector))
+            throw new ArgumentException("The requested market sector is not a supported bond sector.", nameof(marketSector));
+        var results = type == "ISIN"
+            ? await LookupByIsinAsync(identifier.Trim(), marketSector, ct).ConfigureAwait(false)
+            : await LookupByCusipAsync(identifier.Trim(), marketSector, ct).ConfigureAwait(false);
+        var candidates = results.Where(mapping => IsBondSector(mapping.MarketSector)
+                && (marketSector is null || string.Equals(mapping.MarketSector, marketSector, StringComparison.OrdinalIgnoreCase)))
+            .Distinct().OrderBy(mapping => mapping.Figi, StringComparer.Ordinal).ToArray();
+        return new BondFigiLookupResult(identifier.Trim().ToUpperInvariant(), type, candidates);
+    }
+
+    private static bool IsBondSector(string? sector)
+        => sector?.Trim().ToUpperInvariant() is "GOVT" or "CORP" or "MTGE" or "MUNI";
 
     /// <summary>
     /// Lookup FIGI mappings by SEDOL.

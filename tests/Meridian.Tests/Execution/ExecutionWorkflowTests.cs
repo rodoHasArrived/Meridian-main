@@ -182,6 +182,25 @@ public sealed class ExecutionWorkflowTests
     }
 
     [Fact]
+    public async Task Journal_OrderAndSummaryDateBoundsIncludeStartAndExcludeEnd()
+    {
+        await using var journal = new ExecutionJournal(Root());
+        var from = new DateTimeOffset(2026, 11, 10, 0, 0, 0, TimeSpan.Zero);
+        var to = from.AddDays(1);
+        foreach (var (id, at) in new[]
+        {
+            ("before-from", from.AddTicks(-1)), ("at-from", from),
+            ("before-to", to.AddTicks(-1)), ("at-to", to), ("after-to", to.AddTicks(1))
+        })
+            await journal.AppendAsync(new(1, $"rejected:{id}", "paper", Account, id, "Rejected", at, Request: Request(id)));
+
+        var orders = await journal.OrdersAsync(Account, from: from, to: to, scope: "paper");
+        orders.Select(order => order.OrderId).Should().BeEquivalentTo(new[] { "at-from", "before-to" });
+        var summary = await journal.SummaryAsync(Account, scope: "paper", from: from, to: to);
+        summary.Orders.Should().Be(orders.Count);
+    }
+
+    [Fact]
     public async Task Journal_UnpricedExecutionInvalidatesEconomics_EvenWithProvedFlatOpening()
     {
         await using var journal = new ExecutionJournal(Root())

@@ -45,6 +45,7 @@ function routeFocusSearch(pathname: string, search: string): string {
   const normalizedPath = pathname.replace(/\/$/, "").toLowerCase();
   const isReporting = normalizedPath === WORKSTATION_ROUTE_CATALOG.reporting;
   const isPortfolio = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolio;
+  const isFamilyOffice = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice;
   const isMarketData = normalizedPath === WORKSTATION_ROUTE_CATALOG.dataQuotes;
   const isIncomeComparison = normalizedPath === WORKSTATION_ROUTE_CATALOG.reportingRunStatus
     || normalizedPath === WORKSTATION_ROUTE_CATALOG.reportingRunDetail;
@@ -56,7 +57,7 @@ function routeFocusSearch(pathname: string, search: string): string {
       ? ["dataJob", "dataTask"]
       : normalizedPath === WORKSTATION_ROUTE_CATALOG.settings
         ? ["settingsTask"] : [];
-  if (!isReporting && !isPortfolio && !isMarketData && !isReconciliation && !isIncomeComparison && taskKeys.length === 0) return search;
+  if (!isReporting && !isPortfolio && !isFamilyOffice && !isMarketData && !isReconciliation && !isIncomeComparison && taskKeys.length === 0) return search;
 
   // Queue selection, search, and table controls stay in their current workbench.
   // Treating screen-local URL state as navigation would steal the control/row focus.
@@ -77,6 +78,8 @@ function routeFocusSearch(pathname: string, search: string): string {
     for (const key of ["reconciliationRun", "reconciliationBreak", "reconciliationSearch", "reconciliationStatus", "reconciliationSort"]) {
       params.delete(key);
     }
+  } else if (isFamilyOffice) {
+    params.delete("ownershipNode");
   } else {
     params.delete(isReporting ? REPORTING_WORK_SELECTION_PARAM : VIEW_STATE_QUERY_KEY);
   }

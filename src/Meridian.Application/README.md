@@ -11,6 +11,36 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Application
 
+Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
+these summarize current principal and do not project repayments. Corporate-action calendar reads
+use the scoped retained date population before pagination and bind cursors to the range revision.
+Deadline capture and CSV import reuse the append-only case evidence lifecycle, source precision,
+predecessor validation, frozen-case checks and durable command replay without changing economics.
+
+`BondHoldingImportService` bridges tenant-scoped raw/mapped integration evidence and retained
+reconciliation handoffs into the account statement authority. It rejects omitted unreviewed rows,
+unresolved identities, mismatched dates/currencies and cost-derived marks. The versioned fixed-income
+workflow template adds explicit terms and nested bond holdings without changing retained v1 manifests.
+Full-snapshot admission verifies completed source counts, quarantine and failed-page evidence.
+Unknown account attribution and unreviewed accepted rows block; an other-account exclusion requires
+exact authenticated identity. A rejected-row replay does not supply a complete corrected statement.
+See [bond import and account workflows](../../docs/operators/bond-workflows.md).
+
+Corporate-action inbox projections read actual election cutoffs only from the retained, versioned `electionCalendar` companion. Staged proposals and durable cases preserve source offsets and evidence; absent or malformed companions remain unavailable and never inherit operational SLA or ex-date deadlines.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`IntercompanyEntityServiceRegistration` composes shared agreement/lifecycle, account-binding,
+legacy-attribution and FX authority for CLI and workstation hosts. PostgreSQL registration supplies
+book-control, atomic proposal and consolidation commit boundaries; local file counterparts preserve
+scope and explicit unavailable capabilities. Generic posting delegates validated consolidation to
+its specialized authority instead of reacquiring the same fences. See
+[the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
 `DirectLendingJournalLines.ForEvent` owns the loan journal templates consumed by both
 `LoanAccountingProjector` and `DirectLendingOutboxDispatcher`. Their trading cash and loan-specific
 account roles resolve through the shared `IChartOfAccounts` registry while preserving historical
@@ -1352,7 +1382,7 @@ because it is stored as the wrong JSON kind or under a case-variant key (every r
 `ExerciseStyle` is not `exerciseStyle`; the variant is refused whether or not the canonical key sits
 beside it, because a readable canonical value only means the record loads while the variant is
 dropped without trace) — and, for bonds, coupon structure the canonical codec does
-not read. `ToBondTerms` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
+not read. `ToBondCouponStructure` reads the flat companions (`couponRate`, `floatingIndex`, `spreadBps`, cap/floor,
 `stepSchedule`, the inflation triple, `dayCount`) ONE COUPON ARM AT A TIME, so a populated companion
 is lost whenever the arm the record resolves to does not read it — a `floatingIndex` beside
 `couponType: "Fixed"` as surely as one with no `couponType` at all — and so are legacy nested
@@ -1594,6 +1624,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -3,6 +3,15 @@ export type BondDecimal = number | string;
 export type BondYieldConvention = "NominalPeriodic" | "AnnualEffective" | "Simple";
 export type BondCalculationVersion = "bond-analytics-v1" | "bond-analytics-v2" | "bond-analytics-v3";
 
+export interface BondExerciseScenario {
+  kind: string;
+  exerciseDate: string;
+  redemptionPrice: BondDecimal;
+  yield: BondDecimal;
+  latestNoticeDate?: string | null;
+  earliestNoticeDate?: string | null;
+}
+
 export interface BondCalculationContext {
   asOf: string;
   settlementDate?: string | null;
@@ -44,6 +53,10 @@ export interface BondAnalyticsResult {
   /** Dirty-price change per 100 face for +1 bp coupon spread at unchanged projected-flow yield. */
   spreadDv01?: BondDecimal | null;
   yieldToWorst: BondDecimal | null;
+  maturityDate?: string | null;
+  governingYieldScenarios?: Array<{ kind: string; date: string; yield: BondDecimal }> | null;
+  redemptionScenarios?: BondExerciseScenario[];
+  yieldToWorstScenarios?: BondExerciseScenario[];
   cashFlows: Array<{
     flowId: string;
     paymentDate: string;
@@ -69,6 +82,7 @@ export interface BondAnalyticsResult {
     redemptionPrice: BondDecimal;
     yield: BondDecimal;
     latestNoticeDate?: string | null;
+    earliestNoticeDate?: string | null;
   }>;
   inputs: BondCalculationInput[];
   blockers: Array<{ code: string; reason: string }>;

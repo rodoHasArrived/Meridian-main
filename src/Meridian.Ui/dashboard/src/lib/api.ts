@@ -1,3 +1,11 @@
+import {
+  buildReferenceDataApiErrorDetails,
+  classifyReferenceDataApiError,
+  previewReferenceDataPayload,
+  summarizeReferenceDataPayload,
+  type ReferenceDataEndpointProbeResult,
+  type ReferenceDataWorkbenchCoverage
+} from "./reference-data-probe";
 import { reportingSchedulePauseEndpoint, reportingScheduleResumeEndpoint, reportingScheduleRunNowEndpoint } from "@/lib/reporting-schedule-endpoints";
 import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions } from "@/lib/provider-credential-scope";
 import {
@@ -6,10 +14,25 @@ import {
   quantDataIntervalMinutes,
 } from "./quant-api-mappers";
 import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
+import type { StrategySweepResultGroup } from "@/types/workstation-6";
+import type {
+  FundStructureSetupDraft,
+  FundStructureSetupPreview,
+  FundStructureSetupResult
+} from "./api/fund-structure-setup.contracts";
+export type {
+  FundStructureSetupDraft,
+  FundStructureNodePreview,
+  FundStructureSetupValidationIssue,
+  FundStructureSetupValidationSummary,
+  FundStructureSetupPreview,
+  FundStructureSetupResult
+} from "./api/fund-structure-setup.contracts";
 
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
 export type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
 export { resolveProviderIntegrationIdentity } from "./api/provider-integration-identity.api";
+export { readOrderSubmissionRefusal } from "./api-errors";
 
 import type {
   BackfillPreviewResult,
@@ -91,9 +114,6 @@ import type {
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialRecordExplorerSelectedRecordDto,
   ExportAnalysisResult,
-  ExecutionCircuitBreakerActivationResponse,
-  ExecutionControlSnapshot,
-  ExecutionAuditEntry,
   AccountingWorkspaceResponse,
   AssetOperationsDetail,
   FinancialOperationsCommandCenter,
@@ -117,8 +137,6 @@ import type {
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
-  PaperSessionDetail,
-  PaperSessionReplayVerification,
   ProviderConnectionRow,
   ProviderCredentialMutationResult,
   ProviderCredentialUpsertRequest,
@@ -238,8 +256,6 @@ import type {
   WorkflowPresetSaveRequest,
   CreateExecutionManualOverrideRequest,
   ExecutionManualOverride,
-  UpdateExecutionCircuitBreakerRequest,
-  UpdateExecutionPositionLimitRequest,
   FeatureCapabilitySettingsResponse,
   LedgerMappingAssignmentRequest,
   LedgerMappingAssignmentResult,
@@ -340,6 +356,7 @@ import type {
   MaintenanceSchedulesResponse
 } from "@/types";
 import { createReportingRunsApi } from "@/lib/api/reporting-runs.api";
+import { createExecutionEvidenceApi } from "@/lib/api/execution-evidence.api";
 import { createProviderModulesApi } from "@/lib/api/provider-modules.api";
 import {
   AUTH_API_ENDPOINTS,
@@ -375,14 +392,10 @@ import {
   brokerageConnectionConnectEndpoint,
   brokerageConnectionEndpoint,
   brokerageConnectionStatusEndpoint,
-  executionAuditEndpoint,
   executionManualOverrideClearEndpoint,
   executionOrderCancelEndpoint,
   executionPositionCloseEndpoint,
-  executionSymbolPositionLimitEndpoint,
   executionSessionCloseEndpoint,
-  executionSessionEndpoint,
-  executionSessionReplayEndpoint,
   riskRuleConfigEndpoint,
   riskRuleStatusEndpoint,
   historicalBarsEndpoint,
@@ -569,23 +582,11 @@ export function hasDevelopmentFixtureUsage() {
   return developmentFixtureUsage;
 }
 
-export type ReferenceDataEndpointProbeStatus = "Ready" | "Empty" | "Missing" | "Blocked" | "Error" | "Deferred";
-
-export interface ReferenceDataEndpointProbeResult extends ReferenceDataEndpointDefinition {
-  status: ReferenceDataEndpointProbeStatus;
-  statusCode: number | null;
-  durationMs: number | null;
-  responseCount: number | null;
-  responseSummary: string;
-  responsePreview: string | null;
-  errorSummary: string | null;
-  errorDetails: string[];
-}
-
-export interface ReferenceDataWorkbenchCoverage {
-  requestedAtUtc: string;
-  endpoints: ReferenceDataEndpointProbeResult[];
-}
+export type {
+  ReferenceDataEndpointProbeStatus,
+  ReferenceDataEndpointProbeResult,
+  ReferenceDataWorkbenchCoverage
+} from "./reference-data-probe";
 
 export async function getReferenceDataWorkbenchCoverage(
   seed: ReferenceDataWorkbenchEndpointSeed,
@@ -663,79 +664,6 @@ async function probeReferenceDataEndpoint(
       errorDetails: []
     };
   }
-}
-
-function summarizeReferenceDataPayload(payload: unknown): { count: number; summary: string } {
-  if (payload === null || payload === undefined) {
-    return { count: 0, summary: "No payload returned." };
-  }
-
-  if (Array.isArray(payload)) {
-    return {
-      count: payload.length,
-      summary: payload.length > 0 ? `${payload.length} records returned.` : "No records returned."
-    };
-  }
-
-  if (typeof payload === "object") {
-    const keys = Object.keys(payload as Record<string, unknown>);
-    return {
-      count: keys.length > 0 ? 1 : 0,
-      summary: keys.length > 0 ? `${keys.length} fields returned.` : "Empty object returned."
-    };
-  }
-
-  return { count: 1, summary: "Scalar response returned." };
-}
-
-function previewReferenceDataPayload(payload: unknown): string | null {
-  if (payload === null || payload === undefined) {
-    return null;
-  }
-
-  const previewPayload = Array.isArray(payload) ? payload.slice(0, 3) : payload;
-  try {
-    const preview = JSON.stringify(previewPayload, null, 2);
-    return preview.length > 1600 ? `${preview.slice(0, 1600)}...` : preview;
-  } catch {
-    return String(previewPayload).slice(0, 1600);
-  }
-}
-
-function classifyReferenceDataApiError(status: number): ReferenceDataEndpointProbeStatus {
-  if (status === 401 || status === 403) {
-    return "Blocked";
-  }
-
-  if (status === 404) {
-    return "Missing";
-  }
-
-  return "Error";
-}
-
-function buildReferenceDataApiErrorDetails(error: { path: string; status: number; title: string | null; detail: string | null; responseBody: string | null; validationIssues: Array<{ label: string; messages: string[] }> }): string[] {
-  const details: string[] = [`Endpoint returned ${error.status} for ${error.path}.`];
-
-  if (error.title && error.title !== error.detail) {
-    details.push(error.title);
-  }
-
-  if (error.detail) {
-    details.push(error.detail);
-  }
-
-  for (const issue of error.validationIssues) {
-    for (const message of issue.messages) {
-      details.push(`${issue.label}: ${message}`);
-    }
-  }
-
-  if (details.length === 1 && error.responseBody) {
-    details.push(error.responseBody);
-  }
-
-  return details;
 }
 
 export async function getJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -2744,35 +2672,6 @@ export function submitOrder(request: OrderSubmitRequest) {
     ...(request.type === "Stop" ? { stopPrice: request.limitPrice, limitPrice: null } : {}) });
 }
 
-export function readOrderSubmissionRefusal(error: unknown): string | null {
-  if (!isApiError(error) || error.path !== EXECUTION_API_ENDPOINTS.ordersSubmit) {
-    return null;
-  }
-
-  // The submit route reserves these responses for validation, authorization, rate limits,
-  // and confirmed rejections. Timeouts and unqualified server errors carry no such proof.
-  const refusalStatus = [400, 401, 403, 404, 405, 413, 415, 422, 429].includes(error.status);
-  if (!refusalStatus && error.status !== 503) {
-    return null;
-  }
-
-  let body: { type?: unknown; success?: unknown; errorMessage?: unknown; requiresOrderReconciliation?: unknown } | null = null;
-  try {
-    body = error.responseBody ? JSON.parse(error.responseBody) : null;
-  } catch {
-    // A definitive response can have a plain-text or empty body.
-  }
-  const unavailableBeforeDispatch = error.status === 503
-    && body?.type === "https://meridian.io/errors/execution-pre-dispatch-unavailable";
-  if ((!refusalStatus && !unavailableBeforeDispatch) || body?.requiresOrderReconciliation === true) {
-    return null;
-  }
-
-  return body?.success === false && typeof body.errorMessage === "string" && body.errorMessage.trim()
-    ? body.errorMessage.trim()
-    : error.message;
-}
-
 export function cancelOrder(orderId: string) {
   return postJson<TradingActionResult>(executionOrderCancelEndpoint(orderId));
 }
@@ -2810,33 +2709,15 @@ export function closePaperSession(sessionId: string) {
   return postJson<TradingActionResult>(executionSessionCloseEndpoint(sessionId));
 }
 
-export function getPaperSessionDetail(sessionId: string) {
-  return getJson<PaperSessionDetail>(executionSessionEndpoint(sessionId));
-}
-
-export function getPaperSessionReplayVerification(sessionId: string) {
-  return getJson<PaperSessionReplayVerification>(executionSessionReplayEndpoint(sessionId));
-}
-
-export function getExecutionAudit(take = 20) {
-  return getJson<ExecutionAuditEntry[]>(executionAuditEndpoint(take));
-}
-
-export function getExecutionControls() {
-  return getJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.controls);
-}
-
-export function updateExecutionCircuitBreaker(request: UpdateExecutionCircuitBreakerRequest) {
-  return postJson<ExecutionCircuitBreakerActivationResponse>(EXECUTION_API_ENDPOINTS.circuitBreaker, request);
-}
-
-export function updateExecutionDefaultPositionLimit(request: UpdateExecutionPositionLimitRequest) {
-  return postJson<ExecutionControlSnapshot>(EXECUTION_API_ENDPOINTS.defaultPositionLimit, request);
-}
-
-export function updateExecutionSymbolPositionLimit(symbol: string, request: UpdateExecutionPositionLimitRequest) {
-  return postJson<ExecutionControlSnapshot>(executionSymbolPositionLimitEndpoint(symbol), request);
-}
+export const {
+  getPaperSessionDetail,
+  getPaperSessionReplayVerification,
+  getExecutionAudit,
+  getExecutionControls,
+  updateExecutionCircuitBreaker,
+  updateExecutionDefaultPositionLimit,
+  updateExecutionSymbolPositionLimit
+} = createExecutionEvidenceApi(getJson, postJson);
 
 export function getRiskRules() {
   return getJson<RiskRuleStatus[]>(RISK_API_ENDPOINTS.rules);
@@ -2992,7 +2873,7 @@ export function getRunTimeline(options: { mode?: string; status?: string; strate
 }
 
 export function getRunSweeps(limit?: number) {
-  return getJson<unknown>(workstationRunSweepsEndpoint(limit));
+  return getJson<StrategySweepResultGroup[]>(workstationRunSweepsEndpoint(limit), { allowDevelopmentFallback: false });
 }
 
 // --- Security Master search ---
@@ -4041,85 +3922,6 @@ export async function fetchQuantData(request: DataFetchRequest, options: ApiRequ
     bars,
     rowCount: response.totalBars || bars.length
   };
-}
-
-export interface FundStructureSetupDraft {
-  organization: { organizationId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
-  businessLane: { businessId?: string | null; businessKind: string; code: string; name: string; baseCurrency: string; description?: string | null };
-  clientOrFund: { clientId?: string | null; fundId?: string | null; createClient: boolean; code: string; name: string; baseCurrency: string; description?: string | null; clientSegmentKind?: string };
-  legalEntity: {
-    entityId?: string | null;
-    entityType: string;
-    code: string;
-    name: string;
-    jurisdiction: string;
-    baseCurrency: string;
-    description?: string | null;
-    legalForm?: string;
-    lifecycleStatus?: string;
-    registrationNumber?: string | null;
-    beneficialOwners?: Array<{
-      ownerName: string;
-      ownershipPercent?: number | null;
-      ownerIdentifier?: string | null;
-      isControlPerson?: boolean;
-      effectiveFrom?: string | null;
-      effectiveTo?: string | null;
-      notes?: string | null;
-    }>;
-    initialLifecycleEventKind?: string;
-    initialLifecycleEventSummary?: string | null;
-    initialLifecycleEvidenceReference?: string | null;
-  };
-  vehicle: { vehicleId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
-  investmentPortfolio: { investmentPortfolioId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
-  accountHandoff: { accountCode: string; displayName: string; accountType: string; baseCurrency: string; institution?: string | null; ledgerReference?: string | null; notes?: string | null };
-  initialOwnershipLinks?: Array<{ ownershipLinkId?: string | null; parent: string; child: string; relationshipType: string; ownershipPercent?: number | null; isPrimary?: boolean; notes?: string | null }>;
-  effectiveFrom?: string | null;
-  requestedBy?: string | null;
-}
-
-export interface FundStructureNodePreview {
-  nodeId: string;
-  kind: string;
-  code: string;
-  name: string;
-  description?: string | null;
-  isActive: boolean;
-  effectiveFrom: string;
-  effectiveTo?: string | null;
-}
-
-export interface FundStructureSetupValidationIssue {
-  code: string;
-  message: string;
-  fieldPath: string;
-  isBlocking: boolean;
-}
-
-export interface FundStructureSetupValidationSummary {
-  isValid: boolean;
-  issues: FundStructureSetupValidationIssue[];
-}
-
-export interface FundStructureSetupPreview {
-  nodes: FundStructureNodePreview[];
-  ownershipLinks: Array<{ parent: string; child: string; relationshipType: string; ownershipPercent?: number | null; isPrimary: boolean; notes?: string | null }>;
-  validationSummary: FundStructureSetupValidationSummary;
-}
-
-export interface FundStructureSetupResult {
-  organization: { organizationId: string; code: string; name: string };
-  businessLane: { businessId: string; code: string; name: string };
-  client?: { clientId: string; code: string; name: string } | null;
-  fund?: { fundId: string; code: string; name: string } | null;
-  legalEntity: { entityId: string; code: string; name: string; legalForm?: string; lifecycleStatus?: string; registrationNumber?: string | null };
-  vehicle: { vehicleId: string; code: string; name: string };
-  investmentPortfolio: { investmentPortfolioId: string; code: string; name: string };
-  ownershipLinks: unknown[];
-  accountHandoffAssignment: unknown;
-  graph: { nodes: FundStructureNodePreview[]; ownershipLinks: unknown[] };
-  validationSummary: FundStructureSetupValidationSummary;
 }
 
 export async function validateFundStructureSetupDraft(draft: FundStructureSetupDraft, options: ApiRequestOptions = {}): Promise<FundStructureSetupPreview> {

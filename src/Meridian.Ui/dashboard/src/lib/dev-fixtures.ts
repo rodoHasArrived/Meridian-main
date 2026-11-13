@@ -133,6 +133,7 @@ import {
 } from "./dev-fixtures/fixture-resolver";
 import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 import { bootstrapFixtureRoutes } from "./dev-fixtures/bootstrap-fixtures";
+import { analyticalFixturePatterns, analyticalFixtureRoutes } from "./dev-fixtures/analytical-fixtures";
 import { workstationSurfaceFixturePatterns, workstationSurfaceFixtureRoutes } from "./dev-fixtures/workstation-surface-fixtures";
 import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
@@ -6020,7 +6021,8 @@ const fixtures = {
   [UI_API_ROUTES.LedgerBooks]: fixtureAccountingConfiguration.ledgerBooks,
   ...marketDataFixtureRoutes,
   ...bootstrapFixtureRoutes,
-  ...workstationSurfaceFixtureRoutes
+  ...workstationSurfaceFixtureRoutes,
+  ...analyticalFixtureRoutes
 } satisfies Record<string, unknown>;
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
@@ -6087,6 +6089,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
     }
   },
   ...marketDataFixturePatterns,
+  ...analyticalFixturePatterns,
   {
     pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
     resolve: (cleanPath) => {
@@ -6141,6 +6144,12 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   {
     pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/export-manifest"),
     resolve: () => fixtureAccountingRecordExportResponse
+  },
+  {
+    // Saved table views: an empty personal list, so captures show the normal state rather than the
+    // failure notice. Writes never match: resolveScenarioResponse returns early for non-GET.
+    pattern: apiRoutePattern("/api/workstation/tables", "/[^/]+/views"),
+    resolve: () => []
   }
 ];
 

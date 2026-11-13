@@ -3,12 +3,15 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
+import { buildWorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 import { DailyControlTowerScreen } from "@/screens/daily-control-tower-screen";
 import { renderWithRouter } from "@/test/render";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
+// A loaded inbox: the stub ignores any fallback, so every finance-queue assertion below holds
+// after the shared inbox has replaced its loading state.
 vi.mock("@/components/meridian/operator-triage-queue", () => ({
-  OperatorTriageQueue: ({ fallback }: { fallback: React.ReactNode }) => <>{fallback}</>
+  OperatorTriageQueue: () => <table aria-label="Stub operator inbox"><tbody><tr><td>Stub inbox item</td></tr></tbody></table>
 }));
 
 // A payload that produces a multi-row finance queue so row selection is
@@ -136,12 +139,46 @@ describe("DailyControlTowerScreen", () => {
     expect(
       screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 loaded workspace items");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 items in the finance queue");
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Stale update");
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("May 14, 2026");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
+  });
+
+  it("lists every item the Today badge counts after the inbox loads", async () => {
+    const shell = buildAppShellViewState({
+      pathname: "/",
+      search: "?symbol=MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload
+    });
+    const { total } = buildWorkspaceAttentionCounts(shell.workflowContinuity);
+    expect(total).toBeGreaterThan(0);
+    const { container } = renderScreen();
+
+    // The badge, the confidence line and the table read one list, so they cannot disagree.
+    const queue = screen.getByRole("treegrid", { name: "Daily control tower finance queue" });
+    expect(queue.querySelectorAll("tbody tr[data-dense-row-id]")).toHaveLength(total);
+    expect(screen.getByRole("region", { name: "Daily control tower confidence" }))
+      .toHaveTextContent(`${total} items in the finance queue`);
+
+    // Two lists, two units, each named and described; the counted queue comes first.
+    const financeQueue = screen.getByRole("region", { name: "Finance queue" });
+    const inbox = screen.getByRole("region", { name: "Operator inbox" });
+    expect(within(financeQueue).getByRole("heading", { name: "Finance queue" })).toBeInTheDocument();
+    expect(financeQueue).toContainElement(queue);
+    expect(financeQueue).toHaveTextContent("Signals from the loaded workspaces; the sidebar badges count these.");
+    expect(within(inbox).getByRole("heading", { name: "Operator inbox" })).toBeInTheDocument();
+    expect(within(inbox).getByRole("table", { name: "Stub operator inbox" })).toHaveTextContent("Stub inbox item");
+    expect(inbox).toHaveTextContent("Triage items from the shared host, with assignment and snooze.");
+    expect(financeQueue.compareDocumentPosition(inbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
   });
 
   it("states the workstation status in one line that names only the open issues", () => {

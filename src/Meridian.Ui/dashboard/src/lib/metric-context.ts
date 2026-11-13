@@ -12,7 +12,22 @@ export function presentMetricChange(metric: Pick<MetricSnapshot, "delta" | "comp
   return DECLARED_PERIOD.test(delta) ? delta : null;
 }
 
-export function metricBasisLabel(metric: Pick<MetricSnapshot, "basis" | "asOf">): string {
-  return [metric.basis?.trim() || "Basis unavailable", metric.asOf?.trim() ? `as of ${metric.asOf.trim()}` : null]
+const BASIS_NOT_DECLARED = "Not declared by source";
+
+/** The value beside a "Basis" term: the declared basis, or that none was declared, plus any as-of time. */
+export function metricBasisValue(metric: Pick<MetricSnapshot, "basis" | "asOf">): string {
+  return [metric.basis?.trim() || BASIS_NOT_DECLARED, metric.asOf?.trim() ? `as of ${metric.asOf.trim()}` : null]
     .filter(Boolean).join(" · ");
+}
+
+/** A basis line that stands alone (figure passport, per-figure strip note). */
+export function metricBasisLabel(metric: Pick<MetricSnapshot, "basis" | "asOf">): string {
+  const asOf = metric.asOf?.trim();
+  return metric.basis?.trim()
+    ? metricBasisValue(metric)
+    : `Basis not declared by source${asOf ? ` · as of ${asOf}` : ""}`;
+}
+
+export function hasDeclaredMetricBasis(metric: Pick<MetricSnapshot, "basis">): boolean {
+  return Boolean(metric.basis?.trim());
 }

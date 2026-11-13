@@ -11,10 +11,11 @@ public enum SecurityRateUnit { Fraction, Percent, BasisPoints, IndexLevel }
 
 /// <summary>A source observation, never an OHLC bar. Unknown publication dates remain unknown.</summary>
 public sealed record SecurityRateObservationDto(
-    string Provider, string SeriesId, [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal Value, string OriginalValue, SecurityRateUnit Unit,
+    string Provider, string SeriesId, [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal Value, string OriginalValue,
+    [property: JsonRequired] SecurityRateUnit Unit,
     string SourceUnits, DateOnly ObservationDate, DateTimeOffset? PublishedAt,
     DateOnly? VintageDate, DateOnly? VintageEndDate, DateTimeOffset RetrievedAt,
-    string Transformation, SecurityRateObservationKind Kind, string? Currency = null);
+    string Transformation, [property: JsonRequired] SecurityRateObservationKind Kind, string? Currency = null);
 
 public interface ISecurityRateObservationProvider
 {
