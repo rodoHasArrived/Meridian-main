@@ -16,9 +16,13 @@ internal static partial class SecurityMasterMapping
         "Option",
         "Future",
         "FxSpot",
+        "Deposit",
         "MoneyMarketFund",
+        "CertificateOfDeposit",
+        "CommercialPaper",
         "TreasuryBill",
         "Repo",
+        "CashSweep",
         "OtherSecurity",
         "PrivateFundInterest",
         "PrivateCompanyEquity",
@@ -102,6 +106,28 @@ internal static partial class SecurityMasterMapping
                 null,
                 null)));
 
+    private static SecurityKind DecodeGeneratedDeposit(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
+        => SecurityKind.NewDeposit(new DepositTerms(
+            new MaturityTerms(
+                null,
+                null,
+                ToOption(bound.OptionalDateOnly("maturity"))),
+            new IssuerRef(
+                null,
+                FSharpOption<string>.Some(bound.RequiredString("institutionName")),
+                FSharpOption<string>.Some(bound.RequiredString("depositType")),
+                null,
+                null,
+                null,
+                null),
+            new CouponTerms(
+                FSharpOption<CouponKind>.Some(CouponKind.NewOtherCoupon("SimpleInterest")),
+                ToOption(bound.OptionalDecimal("interestRate")),
+                null,
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode)),
+            EconomicCallTermsModule.Scalar(bound.OptionalBoolean("isCallable") ?? false, null),
+            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
     private static SecurityKind DecodeGeneratedMoneyMarketFund(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewMoneyMarketFund(new MoneyMarketFundTerms(
             new FundTerms(
@@ -109,6 +135,54 @@ internal static partial class SecurityMasterMapping
                 ToOption(bound.OptionalInt("weightedAverageMaturityDays")),
                 ToOption(bound.OptionalBoolean("sweepEligible") ?? false),
                 ToOption(bound.OptionalBoolean("liquidityFeeEligible") ?? false))));
+
+    private static SecurityKind DecodeGeneratedCertificateOfDeposit(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json, SecurityVersionedTermDecoding versionedTerms)
+        => SecurityKind.NewCertificateOfDeposit(new CertificateOfDepositTerms(
+            new MaturityTerms(
+                null,
+                null,
+                ToOption(bound.RequiredDateOnly("maturity"))),
+            new IssuerRef(
+                FSharpOption<string>.Some(bound.RequiredString("issuerName")),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null),
+            new CouponTerms(
+                FSharpOption<CouponKind>.Some(CouponKind.Fixed),
+                ToOption(bound.OptionalDecimal("couponRate")),
+                null,
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode)),
+            EconomicCallTermsModule.Scalar(bound.OptionalDateOnly("callableDate").HasValue, ToOption(bound.OptionalDateOnly("callableDate"))),
+            new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),
+                ReadCallPutSchedules(json, assetClass, versionedTerms)),
+            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
+    private static SecurityKind DecodeGeneratedCommercialPaper(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
+        => SecurityKind.NewCommercialPaper(new CommercialPaperTerms(
+            new MaturityTerms(
+                null,
+                null,
+                ToOption(bound.RequiredDateOnly("maturity"))),
+            new IssuerRef(
+                FSharpOption<string>.Some(bound.RequiredString("issuerName")),
+                null,
+                ToOption((bound.OptionalBoolean("isAssetBacked") ?? false) ? "AssetBacked" : null),
+                null,
+                null,
+                null,
+                null),
+            new DiscountTerms(
+                ToOption(bound.OptionalDecimal("discountRate")),
+                null),
+            new CouponTerms(
+                FSharpOption<CouponKind>.Some(CouponKind.DiscountNote),
+                null,
+                null,
+                ToDayCountOption(bound.OptionalConventionString("dayCount"), mode)),
+            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
 
     private static SecurityKind DecodeGeneratedTreasuryBill(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
         => SecurityKind.NewTreasuryBill(new TreasuryBillTerms(
@@ -143,6 +217,18 @@ internal static partial class SecurityMasterMapping
             new DiscountTerms(
                 null,
                 ToOption(bound.OptionalDecimal("repoRate"))),
+            ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
+
+    private static SecurityKind DecodeGeneratedCashSweep(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)
+        => SecurityKind.NewCashSweep(new CashSweepTerms(
+            new SweepTerms(
+                FSharpOption<string>.Some(bound.RequiredString("programName")),
+                FSharpOption<SweepVehicle>.Some(ToCodecSweepVehicle(bound.RequiredString("sweepVehicleType"))),
+                ToCodecSweepFrequency(ToOption(bound.OptionalString("sweepFrequency"))),
+                ToOption(bound.OptionalString("targetAccountType"))),
+            new DiscountTerms(
+                null,
+                ToOption(bound.OptionalDecimal("yieldRate"))),
             ToRateConventionOption(SecurityRecordRateUnit.ReadToken(assetClass, json, mode == SecurityKindMappingMode.Write))));
 
     private static SecurityKind DecodeGeneratedOtherSecurity(SchemaBoundTerms bound, SecurityKindMappingMode mode, string assetClass, JsonElement json)

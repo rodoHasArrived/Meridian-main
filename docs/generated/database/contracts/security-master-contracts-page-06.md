@@ -2,11 +2,15 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 552. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 554. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict["SecurityFactorHistoryConflict"] {
+        +DateOnly AsOfDate
+        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
+    }
     class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto["SecurityFactorHistoryDto"] {
         +IReadOnlyList~SecurityFactorHistoryConflict~ Conflicts
         +IReadOnlyList~SecurityFactorHistoryPoint~ Points
@@ -401,9 +405,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecuritySchedulePresence["SecuritySchedulePresence"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException["SecurityScheduleValidationException"] {
-        +IReadOnlyList~SecurityScheduleDiagnostic~ Diagnostics
-    }
+    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
+    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint --> Meridian_Contracts_SecurityMaster_SecurityFactorSource
     Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
@@ -435,5 +438,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
-    Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
 ```

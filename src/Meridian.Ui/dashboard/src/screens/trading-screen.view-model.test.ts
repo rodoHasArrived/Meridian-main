@@ -1661,9 +1661,10 @@ describe("trading order ticket view model", () => {
   it("withholds prior numeric editor text and review in the first render of another account scope", () => {
     const accountA = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
     const accountB = "7a4c2251-17f6-4fb7-8dbe-6fb4966e2749";
+    const services: OrderTicketServices = { submitOrder: vi.fn() };
     const rendered: Array<{ scope: string; price: string | undefined; acknowledged: boolean }> = [];
     const { result, rerender } = renderHook(({ fundAccountId }) => {
-      const ticket = useOrderTicketViewModel({ fundAccountId });
+      const ticket = useOrderTicketViewModel({ fundAccountId, services });
       rendered.push({ scope: fundAccountId, price: ticket.controls.limitPrice?.value, acknowledged: ticket.acknowledgement.checked });
       return ticket;
     }, { initialProps: { fundAccountId: accountA } });

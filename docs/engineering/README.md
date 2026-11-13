@@ -41,6 +41,7 @@ Use the source-module registry and source README workflow before changing code:
 - [Architecture](../architecture/README.md) *(canonical system design and rationale)*
 - [Module map](../architecture/module-map.md) *(maintained boundary reference; module ownership is registered in `source/data/source-modules.yml`)*
 - [Project structure](../architecture/project-structure.md) *(maintained repository overview)*
+- [Execution workflows](execution-workflows.md) *(preview, operational journal, alerts, controlled strategy comparison and opt-in paper probe)*
 - [Live trading engine](live-trading-engine.md) *(promotion → execution loop: feed tap, strategy sessions, OMS routing)*
 - [ETL execution ownership](etl-execution-ownership.md) *(single-run admission, guarded publication, takeover, and commit ordering)*
 
