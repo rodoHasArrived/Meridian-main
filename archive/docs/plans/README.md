@@ -14,6 +14,13 @@ status. Active plans are listed in the
 | [Tooling & Workflow Backlog](tooling-workflow-backlog.md) | 2026-09-28 | Completed; all nine items verified delivered in source (closure record inside) |
 | [What To Work On Next (2026-09-20)](next-work-determination-2026-09-20.md) | 2026-09-28 | Superseded by the 2026-09-23 determination |
 | [What To Work On Next (2026-09-23)](next-work-determination-2026-09-23.md) | 2026-09-28 | Superseded by the 2026-09-27 determination |
+| [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | 2026-11-13 | Superseded snapshot; the 2026-10-25 and 2026-11-01 determinations remain active in `docs/product/plans/` |
+| [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | 2026-11-13 | Superseded snapshot; the 2026-10-25 and 2026-11-01 determinations remain active in `docs/product/plans/` |
+| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | 2026-11-13 | Superseded snapshot; the 2026-10-25 and 2026-11-01 determinations remain active in `docs/product/plans/` |
+| [What To Work On Next (2026-10-16)](next-work-determination-2026-10-16.md) | 2026-11-13 | Superseded snapshot; the 2026-10-25 and 2026-11-01 determinations remain active in `docs/product/plans/` |
+| [What To Work On Next (2026-10-20)](next-work-determination-2026-10-20.md) | 2026-11-13 | Superseded snapshot; the 2026-10-25 and 2026-11-01 determinations remain active in `docs/product/plans/` |
+| [What To Work On Next (2026-10-24)](next-work-determination-2026-10-24.md) | 2026-11-13 | Superseded snapshot; the 2026-10-25 and 2026-11-01 determinations remain active in `docs/product/plans/` |
+| [What To Work On Next (2026-10-27)](next-work-determination-2026-10-27.md) | 2026-11-13 | Superseded snapshot; the 2026-10-25 and 2026-11-01 determinations remain active in `docs/product/plans/` |
 
 Plans archived before the 2026-09-11 archive cleanup (`982eea2d`) were removed from the tree. Their
 last copies are at

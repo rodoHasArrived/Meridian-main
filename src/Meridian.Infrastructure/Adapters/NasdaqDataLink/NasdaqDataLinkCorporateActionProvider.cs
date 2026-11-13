@@ -124,7 +124,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
             return dataset.Data.Any(row => row is null || !TryGetString(row, columnIndex, "Date", out var date)
                 || !ProviderDateParsing.TryParseProviderDate(date, out _)
                 || !TryGetString(row, columnIndex, "Ex-Dividend", out var dividendText)
-                || !decimal.TryParse(dividendText, NumberStyles.Number, CultureInfo.InvariantCulture, out var dividend)
+                || !decimal.TryParse(dividendText, NumberStyles.Float, CultureInfo.InvariantCulture, out var dividend)
                 || dividend < 0m || !TryGetPositiveDecimal(row, columnIndex, "Split Ratio", out _))
                 ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record")])
                 : CorporateActionFetchResult.Complete(commands);
@@ -273,7 +273,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
             JsonValueKind.Number => element.GetDecimal(),
             JsonValueKind.String when decimal.TryParse(
                 element.GetString(),
-                NumberStyles.Any,
+                NumberStyles.Float,
                 CultureInfo.InvariantCulture,
                 out var stringValue) => stringValue,
             _ => 0m

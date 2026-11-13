@@ -2,6 +2,7 @@ using Meridian.Tests.TestHelpers;
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Moq;
@@ -28,7 +29,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ValidAaplResponse);
         using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
         bars.Should().HaveCount(3);
         bars.Should().AllSatisfy(bar =>
@@ -65,28 +66,26 @@ public sealed class TwelveDataNasdaqProviderContractTests
     }
 
     [Fact]
-    public async Task TwelveData_InvalidJson_ReturnsEmptyList()
+    public async Task TwelveData_InvalidJson_ThrowsProviderException()
     {
         var httpClient = CreateMockHttpClient("{ not valid json }}}");
         using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        // TwelveData catches JSON exceptions and returns empty, per implementation
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var request = () => provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
-        bars.Should().BeEmpty();
+        await request.Should().ThrowAsync<DataProviderException>();
     }
 
     [Fact]
-    public async Task TwelveData_SkipsRowsWithInvalidOhlc_WhereHighLessThanLow()
+    public async Task TwelveData_MixedInvalidOhlc_ThrowsInsteadOfReturningPartialBars()
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ResponseWithInvalidOhlcRow);
         using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var request = () => provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
-        // Only the valid row should be returned
-        bars.Should().HaveCount(1);
-        bars[0].SessionDate.Should().Be(new DateOnly(2024, 1, 2));
+        await request.Should().ThrowAsync<DataProviderException>(
+            "a malformed row cannot be omitted while the valid remainder is reported as complete history");
     }
 
     #endregion
@@ -126,7 +125,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
         var httpClient = CreateMockHttpClient(TwelveDataResponses.UnsortedResponse);
         using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
         bars.Should().BeInAscendingOrder(b => b.SessionDate,
             "provider must return bars ordered oldest-first regardless of API response order");

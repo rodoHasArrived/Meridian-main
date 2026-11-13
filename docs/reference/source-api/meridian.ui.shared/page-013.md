@@ -529,25 +529,6 @@ Declared public members:
 | <code>public LedgerClientReportDocumentPackage BuildClientDocumentPackage(LedgerFinancialReportPack reportPack);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L40) | Renders the atomic PDF/XLSX primary-document pair for a governed client package from the exact supplied report pack. Both documents flow through the same composition-root renderer; if either render fails or returns no bytes, no package is returned. |
 | <code>public IReadOnlyList&lt;LedgerReportPackArtifact&gt; BuildClientDeliverables(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport);</code> | [src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs:60](../../../../src/Meridian.Ui.Shared/Services/LedgerClientReportExportService.cs#L60) | Builds the scheduled-export delivery artifacts (manifest + one artifact per declared format) for reportPack, rendering PDF/XLSX through the wired renderer. |
 
-## LedgerDisposalTaxReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerDisposalTaxReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L13).
-
-Reads certified, journal-backed disposal results without recalculating replacement matches or substituting today&#x27;s mutable account policy for the retained revision.
-
-```csharp
-public sealed class LedgerDisposalTaxReadService(ILedgerTaxLotDisposalHistory? history, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;LedgerJournalTaxResultsDto&gt; ReadAsync(Guid ledgerBookId, Guid periodId, JournalEntry entry, string functionalCurrency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:17](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L17) |  |
-| <code>public static LedgerDisposalTaxResultDto Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency, DateOnly asOfDate);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:48](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L48) |  |
-
 ## LedgerExportEvidenceUnavailableException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerExportEvidenceUnavailableException</code>. Kind: `class`.
@@ -623,25 +604,6 @@ Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Succ
 ```csharp
 public sealed partial class LedgerReportingAuthoritativeSource
 ```
-
-## LedgerReportingPartnersCapitalSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingPartnersCapitalSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L16).
-
-Produces the certified partners-capital roll-forward for a governed reporting run by hydrating the scoped ledger from the durable journal store and reusing the tested LedgerFinancialStatementBuilder.BuildForPeriod computation — the same hydrate-and-build pattern the live capital-account reconciliation resolver uses. Read-only: it posts nothing and mutates no state.
-
-```csharp
-public sealed class LedgerReportingPartnersCapitalSource : IReportingPartnersCapitalSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerReportingPartnersCapitalSource(ILedgerJournalStore? journalStore = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L20) |  |
-| <code>public async Task&lt;CertifiedPartnersCapitalProjection?&gt; CaptureAsync(ReportingRunParametersDto parameters, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L23) |  |
 
 ## LedgerReportingSchedulePeriodResolver
 
@@ -1050,3 +1012,38 @@ Declared public members:
 | <code>public OperationsContinuityReconciliationBridge(IOperationsContinuityWorkflowService workflowService, IReconciliationRunService? reconciliationRunService = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IReconciliationApiService? statementReconciliation = null);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:76](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L76) |  |
 | <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:88](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L88) |  |
 | <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:95](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L95) |  |
+
+## OperationsReportPackAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperationsReportPackAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:22](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L22).
+
+Resolves pre-close report support from retained packages, never a caller readiness flag.
+
+```csharp
+public sealed class OperationsReportPackAuthority(IAccountingReportPackageService? packages = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? ownership = null, ILedgerJournalStore? journals = null) : IOperationsReportPackAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool MatchesRetainedRevision(OperationsReportPackReadinessDto retained, OperationsReportPackReadinessDto current);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:30](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L30) |  |
+| <code>public async Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L41) |  |
+
+## OperatorTriageException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OperatorTriageException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:7](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L7).
+
+```csharp
+public sealed class OperatorTriageException(string status, string message) : InvalidOperationException(message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Status { get; } = status;</code> | [src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs:9](../../../../src/Meridian.Ui.Shared/Services/OperatorTriagePolicy.cs#L9) |  |

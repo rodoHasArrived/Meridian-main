@@ -976,8 +976,61 @@ maturity instead. Reads were already ordered by the legacy read-order guard. No 
 fixture moved. The schema-bound decode ratchet and existing comments now name
 `ToBondCouponStructure`.
 
-Still hand-written (3): Equity, InvestmentFund and CustomAsset, for the bespoke reasons in the
-cohort-1 table.
+Still hand-written at this entry (3): Equity, InvestmentFund and CustomAsset, for the bespoke
+reasons in the cohort-1 table.
+
+#### Cohort 4 — Equity and InvestmentFund; CustomAsset stays verbatim — 2026-11-13
+
+Equity and InvestmentFund now have both codec arms generated, so 31 of the 32 classes are
+generated. Neither needed a new row kind:
+
+- **Equity.** The classification union is written as four keys (`classification`,
+  `otherClassification`, `preferredTerms`, `convertibleTerms`) through `WrittenAs` rows. The
+  decode stays `ToEquityClassificationOption`, with its write-strict, read-tolerant handling of
+  unrecognized and unnamed `Other` classifications. `EquityCapitalCodec` moved unchanged into the
+  writer-parts file, which compiles before the generated writer, and is split into one function per
+  key. `toPayload` and `toJson` are rebuilt from those functions, so the economic document's
+  `equityCapital` serialization is unchanged.
+- **InvestmentFund.** Plain rows plus a `Computed` distribution policy.
+  `ToInvestmentFundReferenceTerms` is removed. Its comment pinned the old scalar read order, but
+  none of these reads can throw (absent or mistyped values read as absent, and an unrecognized
+  distribution policy is kept as `Other`), so record order changes no outcome.
+
+**CustomAsset is not generated, by design.** Its flat codec is not a set of class keys. A record
+holds the approved profile's document: the profile id, the profile version and the
+profile-governed fields. The writer emits that document verbatim and unstamped (it already
+carries its profile schema version), and the decode either keeps it whole or, on a read of a
+legacy row without a profile envelope, salvages the row as an OtherSecurity. A binding table row
+would only restate that pass-through, and the profile's own schema governs the fields. ADR-027
+stage 3's goal, one statement of which key carries which member, is met for every class that has
+class keys.
+
+Behaviour is unchanged. No golden, corpus or fixture moved and no test changed.
+
+**`Equity.preferredTerms` now has a declared inner shape.** It had none, so its eleven decode
+reads went through the unbound-read ledger (`UnboundCompatibilityReads`). The schema now declares
+it, matching the decode exactly:
+
+- `preferredTerms` itself: `dividendRate`, `redemptionPrice`, `redemptionDate` and `callableDate`
+  optional; `dividendType` required, one of Fixed, Floating or Cumulative; `participationTerms`
+  optional; `liquidationPreference` required.
+- `participationTerms`: both members optional (an absent participation flag reads as false).
+- `liquidationPreference`: `kind` required, one of Pari, Senior or Subordinated; `multiple`
+  optional (read only for Senior).
+
+The eleven reads are now bound and their ledger entries are retired. The only unbound reads left
+are the three CustomAsset legacy-salvage reads, which are permanent.
+
+This is a deliberate write-contract change. The schema validator now walks `preferredTerms` the
+way it already walked `convertibleTerms`:
+
+- A value outside the two vocabularies, or a missing required member, was already refused by the
+  decode. The validator now refuses it first, with the schema's codes.
+- A mistyped optional member (a `dividendRate` of `"6.25"`) used to be read as absent and silently
+  dropped. It is now refused (`SM_TERM_TYPE_INVALID`), as it already was inside `convertibleTerms`.
+
+A new theory pins both vocabulary refusals and the type refusal. The underlying-role coverage
+check lists `liquidationPreference` as not a link, because "preference" only contains "reference".
 
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 7,059 passed, 1 skipped; adjacent suites — 5,145 passed, 134 skipped;
@@ -9952,6 +10005,24 @@ record did.
   None of the three is implemented. Source still behaves as D10 describes: a CertificateOfDeposit
   with a non-zero coupon and no declared unit blocks with no repair path, and the legacy
   projection still floors a negative rate at zero.
+
+  *2026-11-13: all three are now implemented.* Verified against source on this date:
+  - *Undeclared legacy rates.* The optional governed `rateUnit` term, with no default, is
+    version-gated and written through the governed edit lifecycle.
+  - *Negative rates.* Live readers that do not model signed interest return the typed
+    `NegativeInterestUnsupported` blocker (`SecurityInterestSupport`) and no partial output. That
+    covers the cash-flow projections (scalar, declared bond leg and swap leg), accounting events,
+    the portfolio cash ladder, bond analytics, asset-obligation projection and the structured
+    cash-flow ledger gate. A zero floor survives only in two places: when a cash-flow receipt
+    captured before `bond-cash-flow-context-v3` is replayed, and when the v1 cash ladder is
+    explicitly selected. Both reproduce historical output and never compute anything new.
+  - *StructuredNote.* The catalog declares fair value through profit or loss and keeps the class
+    outside the accrual slice. `structured-note-fvtpl-v1` (`StructuredNoteAccountingTemplate`)
+    posts only the change from retained carrying value, through the daily valuation route, with
+    no coupon accrual.
+
+  The remediation plan's follow-through section and `docs/domain/security.md` describe the current
+  behaviour.
 - **Sequencing: follow-up pull requests.** The ADR-027 S3-E record contraction, and the code for
   the two D10 decisions that need code, are done in pull requests that follow this one, not
   stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility

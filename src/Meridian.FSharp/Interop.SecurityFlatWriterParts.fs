@@ -1,6 +1,75 @@
 namespace Meridian.FSharp.SecurityMasterInterop
 
+open System.Text.Json
 open Meridian.FSharp.Domain
+
+/// One lossless typed equity serializer shared by the economic document and flat codec. The
+/// classification union is written as four keys; the generated Equity writer names each one.
+module EquityCapitalCodec =
+    let private preferredTermsToLegacy (preferred: PreferredTerms) =
+        let liquidationKind, liquidationMultiple =
+            match preferred.LiquidationPreference with
+            | LiquidationPreference.Pari -> "Pari", None
+            | LiquidationPreference.Senior multiple -> "Senior", Some multiple
+            | LiquidationPreference.Subordinated -> "Subordinated", None
+
+        {| dividendRate = preferred.DividendRate
+           dividendType = preferred.DividendType |> DividendType.asString
+           redemptionPrice = preferred.RedemptionPrice
+           redemptionDate = preferred.RedemptionDate
+           callableDate = preferred.CallableDate
+           participationTerms =
+                preferred.ParticipationTerms
+                |> Option.map (fun terms ->
+                    {| participatesInCommonDividends = terms.ParticipatesInCommonDividends
+                       additionalDividendThreshold = terms.AdditionalDividendThreshold |})
+           liquidationPreference =
+                {| kind = liquidationKind
+                   multiple = liquidationMultiple |} |}
+
+    let private convertibleTermsToLegacy (convertible: ConvertibleTerms) =
+        let (SecurityId underlyingSecurityId) = convertible.UnderlyingSecurityId
+        {| underlyingSecurityId = underlyingSecurityId
+           conversionRatio = convertible.ConversionRatio
+           conversionPrice = convertible.ConversionPrice
+           conversionStartDate = convertible.ConversionStartDate
+           conversionEndDate = convertible.ConversionEndDate |}
+
+    /// "Other" classifications serialize as the discriminant "Other" plus the raw label in
+    /// otherClassification — writing the raw label into the classification slot produced a value
+    /// the deserializer did not recognize, failing every read of the row.
+    let classification (terms: EquityCapitalTerms) =
+        match terms.Classification with
+        | Some (EquityClassification.Other _) -> Some "Other"
+        | Some value -> Some (EquityClassification.asString value)
+        | None -> None
+
+    let otherClassification (terms: EquityCapitalTerms) =
+        match terms.Classification with
+        | Some (EquityClassification.Other label) -> Some label
+        | _ -> None
+
+    let preferredTerms (terms: EquityCapitalTerms) =
+        match terms.Classification with
+        | Some (EquityClassification.Preferred preferred)
+        | Some (EquityClassification.ConvertiblePreferred (preferred, _)) -> Some (preferredTermsToLegacy preferred)
+        | _ -> None
+
+    let convertibleTerms (terms: EquityCapitalTerms) =
+        match terms.Classification with
+        | Some (EquityClassification.Convertible convertible)
+        | Some (EquityClassification.ConvertiblePreferred (_, convertible)) -> Some (convertibleTermsToLegacy convertible)
+        | _ -> None
+
+    let toPayload (terms: EquityCapitalTerms) =
+        {| shareClass = terms.ShareClass
+           votingRightsCat = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
+           classification = classification terms
+           otherClassification = otherClassification terms
+           preferredTerms = preferredTerms terms
+           convertibleTerms = convertibleTerms terms |}
+
+    let toJson (terms: EquityCapitalTerms) = JsonSerializer.Serialize(toPayload terms)
 
 /// The written forms the generated flat writer cannot state as a record property: the bond coupon
 /// union, written as one key per structure-specific field, and a swap leg, whose schedule-conventions

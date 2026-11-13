@@ -161,6 +161,22 @@ public sealed class CorporateActionFetchOutcomeTests
 
     [Theory]
     [InlineData("alphavantage")]
+    [InlineData("nasdaq")]
+    public async Task CommaDecimalText_IsInvalidRecordInsteadOfCompleteAbsence(string providerId)
+    {
+        using var handler = new StubHttpMessageHandler(_ => Json(providerId == "alphavantage"
+            ? """{"Time Series (Daily)":{"2024-01-03":{"7. dividend amount":"0,24","8. split coefficient":"1"}}}"""
+            : """{"dataset":{"column_names":["Date","Ex-Dividend","Split Ratio"],"data":[["2024-01-03","0,24",1]]}}"""));
+
+        var result = await CreateProvider(providerId, handler).FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        result.Status.Should().Be(CorporateActionFetchStatus.Partial);
+        result.Actions.Should().BeEmpty();
+        result.Failures.Should().NotBeEmpty().And.OnlyContain(failure => failure.Code == "invalid-record");
+    }
+
+    [Theory]
+    [InlineData("alphavantage")]
     [InlineData("finnhub")]
     [InlineData("tiingo")]
     [InlineData("twelvedata")]
