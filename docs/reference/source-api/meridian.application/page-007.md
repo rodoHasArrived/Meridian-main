@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApprovedFieldEditCanonicalMergeHandler
+
+Qualified name: <code>Meridian.Application.SecurityMaster.ApprovedFieldEditCanonicalMergeHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:36](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L36).
+
+Published-revision side effect (Order = 5, runs before the projection rebuild): merges an approved assetSpecificTerms.* field edit into the CANONICAL security terms by emitting a complete economic-definition amendment through IGovernedPublicationAmender — the current definition plus the one typed field change — so replay stays correct and the approved correction reaches cash-flow projection, amortization, pricing, and NAV instead of living only in the override overlay. Paths outside the asset-terms namespace stay overlay annotations by design (the documented D2 rationale), as do CLEARs (withdrawing an override reveals the canonical value, so there is nothing to merge) and paths nested deeper than the shapes the workbench validates (top-level declared terms, the profileFields envelope, and one-level profileFields.* fields). Idempotent: the merged document is rebuilt from the CURRENT canonical terms on every run, so a retried publish whose merge already landed detects a no-op (the patched document equals the stored one) and skips the amendment instead of appending a duplicate event. A failure leaves the revision Approved and the publish retryable, per the handler seam&#x27;s contract. The amendment names operator-workbench as its source system, so the amend seam&#x27;s cross-source conflict detection records the vendor-versus-operator disagreement as usual; the handler then best-effort resolves those freshly opened workbench-challenger conflicts in favor of the operator value — the maker-checker approval that published this revision already adjudicated it, and leaving the conflict open would queue a second governance decision for a value a reviewer just decided. No-op in composition roots without a Security Master backend (no projection store).
+
+```csharp
+public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevisionPublishedHandler, ISecurityMasterCanonicalMergeOutcomeReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ApprovedFieldEditCanonicalMergeHandler(ISecurityMasterRevisionStore revisions, ILogger&lt;ApprovedFieldEditCanonicalMergeHandler&gt; logger, ISecurityMasterStore? projectionStore = null, IGovernedPublicationAmender? amender = null, ISecurityMasterConflictService? conflictService = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:49](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L49) |  |
+| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:69](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L69) | Runs BEFORE the projection rebuild (Order = 10) and coverage invalidation (Order = 20): both must observe the merged canonical terms, not the pre-merge definition. |
+| <code>public SecurityMasterCanonicalMergeOutcomeDto? TakeOutcome(Guid revisionId) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:72](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L72) |  |
+| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs:75](../../../../src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs#L75) |  |
+
 ## CanonicalRegistryCoverageSource
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CanonicalRegistryCoverageSource</code>. Kind: `class`.
@@ -936,21 +957,3 @@ Declared public members:
 | <code>public Task&lt;SecurityMasterRevisionRecord?&gt; GetAsync(Guid revisionId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:198](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L198) |  |
 | <code>public Task&lt;IReadOnlyList&lt;SecurityMasterRevisionRecord&gt;&gt; ListBySecurityAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:204](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L204) |  |
 | <code>public Task&lt;SecurityMasterRevisionRecord&gt; TransitionAsync(Guid revisionId, SecurityMasterRevisionStateDto expected, SecurityMasterRevisionStateDto next, string actor, Guid? workflowIdForSubmit = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:208](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L208) |  |
-
-## IPeriodAwareRestatementResolver
-
-Qualified name: <code>Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:21](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L21).
-
-Phase 3 period-aware propagation: decides, for a published Security Master revision, whether any affected ledger book is in a closed period and therefore requires a governed restatement proposal rather than silent mutation. The authoritative lock state is the ledger accounting-period status (ILedgerPeriodLockReader) — the same authority LedgerPeriodPostingGuard enforces. Routing per book (D3 matrix): Open → immediate propagation (lower-order publish handlers already applied it), no restatement; SoftClosed → the downstream effect posts as a governed adjustment (a later slice), and only already-published report packs become restatement candidates; HardClosed or any indeterminate/default-deny state → no posting and a mandatory restatement proposal. When a hard-closed book has exposure but no candidate can be located, the decision still reports SecurityMasterRestatementDecision.RestatementRequired (a manual &quot;locate affected packs&quot; task) — a closed period is never silently completed.
-
-```csharp
-public interface IPeriodAwareRestatementResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:23](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L23) |  |

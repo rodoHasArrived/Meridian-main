@@ -6,6 +6,111 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DateIndex
+
+Qualified name: <code>Meridian.Storage.Services.DateIndex</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:841](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L841).
+
+```csharp
+public sealed record DateIndex(string Date, List<string> Files);
+```
+
+## DateRange
+
+Qualified name: <code>Meridian.Storage.Services.DateRange</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:837](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L837).
+
+```csharp
+public sealed record DateRange(DateTimeOffset Start, DateTimeOffset End);
+```
+
+## DefragOptions
+
+Qualified name: <code>Meridian.Storage.Services.DefragOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:932](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L932).
+
+```csharp
+public sealed record DefragOptions(long MinFileSizeBytes = 1_048_576, int MaxFilesPerMerge = 100, bool PreserveOriginals = false, System.IO.Compression.CompressionLevel TargetCompression = System.IO.Compression.CompressionLevel.Optimal, TimeSpan MaxFileAge = default, bool DryRun = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan MaxFileAge { get; init; } = MaxFileAge == default? TimeSpan.FromDays(1) : MaxFileAge;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:941](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L941) |  |
+| <code>public DefragOptions() : this(1_048_576);</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:943](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L943) |  |
+
+## DefragResult
+
+Qualified name: <code>Meridian.Storage.Services.DefragResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:946](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L946).
+
+```csharp
+public sealed record DefragResult(int FilesProcessed, int FilesCreated, long BytesBefore, long BytesAfter, double CompressionImprovement, TimeSpan Duration, int MergeGroupsAttempted = 0, int MergeGroupsSucceeded = 0, int FilesDeleted = 0, IReadOnlyList<string>? Errors = null);
+```
+
+## DiscoveryQuery
+
+Qualified name: <code>Meridian.Storage.Services.DiscoveryQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:779](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L779).
+
+```csharp
+public sealed record DiscoveryQuery;
+```
+
+## EventBuffer (generic arity 1)
+
+Qualified name: <code>Meridian.Storage.Services.EventBuffer</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/EventBuffer.cs:17](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L17).
+
+Thread-safe generic event buffer using a swap-buffer drain strategy to eliminate per-drain allocations. Maintains two List{T} instances: _active (receives new events) and _standby (returned to callers from DrainAll so they can process events without holding the lock). Eliminates the duplicate lock-based buffer implementations that existed in JsonlStorageSink and ParquetStorageSink.
+
+```csharp
+public class EventBuffer<T>: IDisposable where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public EventBuffer(int initialCapacity = 1000, int maxCapacity = int.MaxValue);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:48](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L48) | Creates a new event buffer. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:62](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L62) | Gets the approximate current count of buffered events. This is a lock-free volatile read; callers should tolerate minor staleness. |
+| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:65](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L65) | Gets whether the buffer is empty (lock-free). |
+| <code>public bool ShouldFlush(int threshold) =&gt; …;</code> | [src/Meridian.Storage/Services/EventBuffer.cs:71](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L71) | Returns true when the buffered event count meets or exceeds threshold. Lock-free — safe to call on every incoming event. |
+| <code>public void Add(T evt);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:77](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L77) | Add a single event to the buffer. When the buffer is at maxCapacity the oldest buffered event is dropped to make room (drop-oldest policy). |
+| <code>public void AddRange(IEnumerable&lt;T&gt; events);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:95](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L95) | Add multiple events to the buffer, applying the drop-oldest policy as needed. |
+| <code>public IReadOnlyList&lt;T&gt; DrainAll();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:124](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L124) | Atomically drains all buffered events via a buffer swap — no copy allocation. The returned IReadOnlyList{T} is the buffer&#x27;s internal backing store and will be cleared and reused on the next call to DrainAll. Callers must complete all processing of the returned list before the next drain cycle begins on the same buffer instance. |
+| <code>public IReadOnlyList&lt;T&gt; Drain(int maxCount);</code> | [src/Meridian.Storage/Services/EventBuffer.cs:170](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L170) | Drain up to maxCount events from the front of the buffer. |
+| <code>public IReadOnlyList&lt;T&gt; PeekAll();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:192](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L192) | Returns a snapshot of all buffered events without removing them. Allocates a new list on every call; intended for diagnostics/monitoring only. |
+| <code>public void Clear();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:203](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L203) | Clear all events from the buffer. |
+| <code>public void Dispose();</code> | [src/Meridian.Storage/Services/EventBuffer.cs:212](../../../../src/Meridian.Storage/Services/EventBuffer.cs#L212) |  |
+
+## EventSearchQuery
+
+Qualified name: <code>Meridian.Storage.Services.EventSearchQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:756](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L756).
+
+```csharp
+public sealed record EventSearchQuery(string Symbol, MarketEventType Type, DateTimeOffset From, DateTimeOffset To, decimal? MinPrice = null, decimal? MaxPrice = null, long? MinVolume = null, AggressorSide? Side = null, long? SequenceFrom = null, long? SequenceTo = null, int Limit = 1000);
+```
+
+## EventSearchResult
+
+Qualified name: <code>Meridian.Storage.Services.EventSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/StorageSearchService.cs:800](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L800).
+
+```csharp
+public sealed record EventSearchResult(DateTimeOffset Timestamp, string Symbol, string EventType, long Sequence, string Source, object? Payload);
+```
+
 ## FacetedSearchQuery
 
 Qualified name: <code>Meridian.Storage.Services.FacetedSearchQuery</code>. Kind: `record`.
@@ -805,119 +910,3 @@ Enum declarations:
 | <code>Failed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1671](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1671) |  |
 | <code>Cancelled</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1672](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1672) |  |
 | <code>Blocked</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1673](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1673) |  |
-
-## JsonlPositionSnapshotStore
-
-Qualified name: <code>Meridian.Storage.Services.JsonlPositionSnapshotStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:32](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L32).
-
-JSONL-backed implementation of IPositionSnapshotStore. Owned path convention: {StorageRoot}/portfolios/owned/{tenant}/{company}/{fund}/{book}/{entity}/{runId}/{accountId}/snapshots.jsonl. Legacy unowned snapshots retain {StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl and are never returned by an owned lookup. This path falls under StorageOptions.RootPath so the LifecyclePolicyEngine automatically picks it up for tiered-storage lifecycle enforcement (ADR-002). Each snapshot is a single JSON line appended atomically (ADR-007). A per-partition file lock serializes the conditional same-timestamp check and append across store instances and cooperating processes. Recovery streams the file and selects the greatest recorded AsOf timestamp rather than trusting append order, so a delayed writer cannot make an older observation authoritative.
-
-```csharp
-public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonlPositionSnapshotStore(StorageOptions options, ILogger&lt;JsonlPositionSnapshotStore&gt; logger);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:41](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L41) |  |
-| <code>public async Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:51](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L51) |  |
-| <code>public async Task&lt;PositionSnapshotSaveOutcome&gt; SaveSnapshotConditionallyAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:59](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L59) |  |
-| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:106](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L106) |  |
-| <code>public async Task&lt;AccountSnapshotRecord?&gt; GetLatestSnapshotAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:126](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L126) |  |
-| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:149](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L149) |  |
-| <code>public async IAsyncEnumerable&lt;AccountSnapshotRecord&gt; GetSnapshotHistoryAsync(string runId, string accountId, PositionSnapshotOwnerScope ownerScope, DateTimeOffset from, DateTimeOffset to, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs:180](../../../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs#L180) |  |
-
-## LifecycleAction
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:423](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L423).
-
-```csharp
-public sealed record LifecycleAction(string FilePath, LifecycleActionType ActionType, StorageTier? CurrentTier, StorageTier? TargetTier, string Reason, long EstimatedSizeBytes, StoragePolicyConfig? Policy = null);
-```
-
-## LifecycleActionType
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleActionType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:432](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L432).
-
-```csharp
-public enum LifecycleActionType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>TierMigration</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:434](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L434) |  |
-| <code>CompressionUpgrade</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:435](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L435) |  |
-| <code>Delete</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:436](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L436) |  |
-| <code>Archive</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:437](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L437) |  |
-| <code>FormatConversion</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:438](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L438) |  |
-
-## LifecycleEvaluationResult
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleEvaluationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:417](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L417).
-
-```csharp
-public sealed record LifecycleEvaluationResult(DateTime EvaluatedAtUtc, int FilesEvaluated, IReadOnlyList<LifecycleAction> Actions, IReadOnlyList<string> Errors);
-```
-
-## LifecycleExecutionResult
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleExecutionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:441](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L441).
-
-```csharp
-public sealed record LifecycleExecutionResult(DateTime ExecutedAtUtc, int ActionsExecuted, int ActionsFailed, long BytesMigrated, long BytesDeleted, bool DryRun, IReadOnlyList<string> Errors);
-```
-
-## LifecyclePolicyEngine
-
-Qualified name: <code>Meridian.Storage.Services.LifecyclePolicyEngine</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:13](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L13).
-
-Engine that enforces tier-based lifecycle policies on stored data. Evaluates files against their configured StoragePolicyConfig and orchestrates tier migrations, compression upgrades, and retention enforcement.
-
-```csharp
-public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LifecyclePolicyEngine(StorageOptions options, ITierMigrationService tierMigration, IFileMaintenanceService maintenanceService, ILogger&lt;LifecyclePolicyEngine&gt; logger);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:23](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L23) |  |
-| <code>public Task&lt;LifecycleEvaluationResult&gt; EvaluateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:36](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L36) |  |
-| <code>public async Task&lt;LifecycleExecutionResult&gt; ExecuteAsync(IReadOnlyList&lt;LifecycleAction&gt; actions, bool dryRun = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:129](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L129) |  |
-| <code>public StoragePolicyConfig ResolvePolicy(string filePath);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:240](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L240) |  |
-| <code>public IReadOnlyDictionary&lt;StorageTier, LifecycleTierInfo&gt; GetTierStatistics();</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:265](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L265) |  |
-
-## LifecycleState
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleState</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:450](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L450).
-
-```csharp
-public sealed record LifecycleState(StorageTier CurrentTier, TimeSpan FileAge, DataClassification Classification);
-```
-
-## LifecycleTierInfo
-
-Qualified name: <code>Meridian.Storage.Services.LifecycleTierInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:455](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L455).
-
-```csharp
-public sealed record LifecycleTierInfo(int FileCount, long TotalBytes, TimeSpan OldestFileAge, TimeSpan NewestFileAge);
-```

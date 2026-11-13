@@ -11,6 +11,43 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+`BondWorkflowConnectionReadinessService` joins exact tenant-owned connections, credential status
+and applicable input-specific entitlements. It reports identifier, terms, holdings, quote, fixing,
+inflation, factor, rating, curve and execution coverage separately. Connection verification never
+promotes a workflow to `LiveVerified`; deterministic imports and live provider evidence remain
+distinct. Brokerage position projections preserve accrued interest and cost-derived mark labels.
+New balance snapshots use `brokerage-sync:<provider>:disjoint-components-v2` and separate known
+signed accruals in the balance currency from securities, preserving the provider equity total.
+Unknown accrual allocation stays in the full remainder. The explicit source version preserves
+legacy snapshot performance arithmetic without rewriting retained snapshots or raw positions.
+
+The shared bond account endpoints bind account-owned book/tenant/company scope, retain plans and
+comparisons, project collection exceptions into governed casework, and keep preview/preparation apart
+from posting. Performance imports read exact accepted vault documents; current cash/FX authority is
+reverified before consumption. See [routes, typed source JSON and book policy](../../docs/operators/bond-workflows.md).
+Lifecycle close-lock replay derives its action from the matched retained transition and rechecks
+the authoritative hard-closed period. Evidence-index warnings retain operation and failure type,
+without raw scoped paths or parser exceptions. Explorer dimension filters include the retained
+intercompany agreement GUID.
+
+`BondProviderIntakeService` connects operator-triggered bond ISIN/CUSIP discovery to OpenFIGI without
+resolving ambiguous candidates, and typed FRED intake to the retained market-input service. Exact
+independently reviewed provider-trust binding bytes supply the series/index/unit mapping; source
+review is rechecked after fetching. The service archives and reopens exact provider-response JSON
+through a tenant/company-scoped content-addressed store. API responses keep the separate
+`LiveUntested` evidence status.
+
+Run ledger summary, journal and trial-balance endpoints accept an inclusive `asOf` economic
+timestamp after the existing tenant/company run-access guard. The accounting-package download
+endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow; lot reports
+require an exact retained valuation cut. Its availability table distinguishes absent lot evidence
+from measured empty schedules. Temporary export files are removed after ZIP construction. The
+paper-accounting reconciliation host is registered after the shared portfolio registry.
+
+Fund workspace research-ledger reads hydrate archived journal details only after the fund and
+selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.
+A configured durable journal store remains authoritative, including when its book is empty.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native
@@ -3666,3 +3703,16 @@ readiness; mini and adjusted options retain their contractual multiplier. Each c
 its multiplier map so concurrent synchronization cannot mix observations. Raw snapshots and cash
 remain readable when a legacy position cannot safely be valued. Current implementation performs
 individual retained-history lookups; large-portfolio batching remains a performance follow-up.
+
+Brokerage activity sync accepts provider records through `ImportWithHistoryAsync` into the shared
+durable activity inbox before publication. Its `Current` snapshot supplies only the latest provider
+observation to the workstation projection, raw snapshot and status. The checksum-verified
+`Retained` union of immutable accepted records rebuilds downstream activity history after an
+interrupted projection write, including when the next current fetch is empty. Historical accepted
+rows are not relabeled as observations in that current provider window. The existing `ImportAsync`
+retained-history contract remains unchanged.
+Retained complete cursor watermarks resume with an inclusive timestamp reread; immutable activity-ID
+evidence prevents duplicates across retries and restart.
+Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
+retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
+rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.

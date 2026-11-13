@@ -11,6 +11,8 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Wpf
 
+The retained run ledger page offers an inclusive UTC date filter through the shared strategy-run read service. Clearing the picker restores the complete retained run. Delayed reads from an earlier run or date cannot overwrite the current selection. Journal, trial balance and posting counts use one economic-time cut.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native

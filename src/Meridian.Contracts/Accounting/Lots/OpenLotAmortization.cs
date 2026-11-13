@@ -20,6 +20,10 @@ public sealed record OpenLotAmortizationInstructionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     OpenLotAmortizationReversalDto? Reversal = null)
 {
+    /// <summary>Explicit US GAAP income model. Absent on every historical instruction.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondIncomeInstructionDto? BondIncome { get; init; }
+
     /// <summary>Retained authority for continuing an unchanged schedule after a one-for-one exchange.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public OpenLotAmortizationContinuationDto? Continuation { get; init; }
@@ -61,7 +65,7 @@ public static class OpenLotAmortization
     public const string CalendarModelVersion = ModelVersion;
 
     public static bool IsCurrentVersion(string? version)
-        => version is ModelVersion or ExtendedModelVersion or UnifiedDeclaredModelVersion;
+        => version is ModelVersion or ExtendedModelVersion or UnifiedDeclaredModelVersion or BondIncomeCalculator.ModelVersion;
 
     public static string SecurityHash(SecurityProjectionRecord security)
     {
@@ -91,6 +95,10 @@ public static class OpenLotAmortization
         ArgumentNullException.ThrowIfNull(instruction);
         if (instruction.CalculationVersion is not null && !IsCurrentVersion(instruction.CalculationVersion))
             throw new ArgumentException("Amortization calculation version is unsupported.");
+        if (instruction.CalculationVersion == BondIncomeCalculator.ModelVersion)
+            return BondIncomeCalculator.ProjectCanonical(instruction);
+        if (instruction.BondIncome is not null)
+            throw new ArgumentException("Bond income inputs require their explicit calculation version.");
         var extended = instruction.CalculationVersion == ExtendedModelVersion;
         if ((!extended && (instruction.AmortizeRemainingFace || instruction.YieldToWorst is not null))
             || (extended && !instruction.AmortizeRemainingFace && instruction.YieldToWorst is null))

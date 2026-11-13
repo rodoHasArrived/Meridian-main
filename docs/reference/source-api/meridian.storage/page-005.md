@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConsolidationFxPostgresStore
+
+Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxPostgresStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:9](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L9).
+
+Immutable approved FX revisions, serialized against posting&#x27;s shared authority lease.
+
+```csharp
+public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConsolidationFxPostgresStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:15](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L15) |  |
+| <code>public async Task RetainRateSetAsync(ConsolidationFxRateSetDto value, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:21](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L21) |  |
+| <code>public async Task&lt;ConsolidationFxRateSetDto?&gt; GetRateSetAsync(string tenantId, string companyId, Guid rateSetId, int revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:58](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L58) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ConsolidationFxRateSetDto&gt;&gt; ListRateSetsAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:75](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L75) |  |
+| <code>public async Task RetainConfigurationAsync(ConsolidationFxBookConfigurationDto value, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:93](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L93) |  |
+| <code>public async Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:141](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L141) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:161](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L161) |  |
+| <code>public async Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationRevisionAsync(Guid ledgerBookId, int revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:180](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L180) |  |
+
+## ConsolidationFxState
+
+Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxState</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:182](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L182).
+
+```csharp
+public sealed record ConsolidationFxState(IReadOnlyList<ConsolidationFxRateSetDto> RateSets, IReadOnlyList<ConsolidationFxBookConfigurationDto> Configurations);
+```
+
+## ConsolidationPostingEvidenceGuard
+
+Qualified name: <code>Meridian.Storage.Ledger.ConsolidationPostingEvidenceGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs:136](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs#L136).
+
+Reserved evidence is checked even when a caller bypasses the workbench.
+
+```csharp
+public static class ConsolidationPostingEvidenceGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ConsolidationEvidenceDto? Validate(LedgerJournalEntryWrite write);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs:140](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs#L140) |  |
+
 ## ConsolidationTransitionFileStore
 
 Qualified name: <code>Meridian.Storage.Ledger.ConsolidationTransitionFileStore</code>. Kind: `class`.
@@ -158,6 +211,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static EmptyLedgerAuthorityLease Instance { get; } = new ();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:62](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L62) |  |
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:64](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L64) |  |
+
+## FileBondIncomePreparationEvidenceStore
+
+Qualified name: <code>Meridian.Storage.Ledger.FileBondIncomePreparationEvidenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs:11](../../../../src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs#L11).
+
+Immutable scoped calculation artifacts used as the canonical income event source.
+
+```csharp
+public sealed class FileBondIncomePreparationEvidenceStore(string root) : IBondIncomePreparationEvidenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyAsync(RetainedEvidenceIdentityDto expected, OpenLotAmortizationInstructionDto instruction, Guid periodId, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs:15](../../../../src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs#L15) |  |
+| <code>public async Task&lt;RetainedEvidenceIdentityDto&gt; RetainAsync(BondIncomePreparationArtifactDto artifact, string actor, DateTimeOffset preparedAtUtc, bool mustExist, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs:40](../../../../src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs#L40) |  |
 
 ## FileIntercompanyAccountBindingStore
 
@@ -876,69 +948,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public LedgerBookServiceException(string message) : base(message);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:10](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L10) |  |
 | <code>public LedgerBookServiceException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:15](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L15) |  |
-
-## LedgerBookValidationException
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerBookValidationException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:24](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L24).
-
-Signals invalid input or accounting facts in a ledger book operation.
-
-```csharp
-public sealed class LedgerBookValidationException : LedgerBookServiceException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerBookValidationException(string message) : base(message);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:26](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L26) |  |
-| <code>public LedgerBookValidationException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:31](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L31) |  |
-
-## LedgerCurrencyAffirmationResult
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerCurrencyAffirmationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:100](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L100).
-
-The record of an operator asserting that a ledger book with no retained currency evidence transacted only in its base currency, and of the legs that assertion completed.
-
-```csharp
-public sealed record LedgerCurrencyAffirmationResult(Guid AffirmationId, Guid LedgerBookId, string AffirmedCurrency, string Actor, int LegsRepaired, DateTimeOffset AffirmedAt);
-```
-
-## LedgerCurrencyBackfillDisposition
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerCurrencyBackfillDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:7](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L7).
-
-Why a currency-blind journal leg — one persisted before the append path carried currency detail through to the store — can or cannot be repaired from what the ledger still retains.
-
-```csharp
-public enum LedgerCurrencyBackfillDisposition
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Repairable</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:14](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L14) | The leg&#x27;s ledger book corroborates single-currency operation: it has currency-bearing legs, and every one of them is an identity translation at the book&#x27;s own base currency. Repairing records that denomination without inventing an FX rate. |
-| <code>UnaffirmedSingleCurrency</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:21](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L21) | Nothing contradicts single-currency operation and nothing corroborates it — the book has no currency-bearing leg at all. Silence is not evidence, so completing these takes an operator&#x27;s explicit affirmation rather than an inference from the data. |
-| <code>ForeignCurrencyEvidence</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:27](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L27) | The book does transact in foreign currency, so a blind leg in it may be a foreign leg whose rate is unrecoverable. Stamping it as base currency would misstate the denomination. |
-| <code>FunctionalCurrencyMismatch</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:33](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L33) | The book&#x27;s currency-bearing legs name a functional currency other than the book&#x27;s own base currency, which leaves the base currency untrustworthy as a label for anything in the book. |
-| <code>UnusableBaseCurrency</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:38](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L38) | The book&#x27;s base currency is not a three-letter code, so it cannot be stamped onto a leg. |
-| <code>UnresolvedLedgerBook</code> | [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:44](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L44) | The leg&#x27;s accounting period was never scoped to a ledger book, so no authoritative functional currency resolves for it. |
-
-## LedgerCurrencyBackfillScope
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerCurrencyBackfillScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs:62](../../../../src/Meridian.Storage/Ledger/LedgerCurrencyBackfill.cs#L62).
-
-The currency-blind legs of one ledger book that share a disposition.
-
-```csharp
-public sealed record LedgerCurrencyBackfillScope(Guid? LedgerBookId, string? BaseCurrency, LedgerCurrencyBackfillDisposition Disposition, int CurrencyBlindLegs, int ClosedPeriodLegs);
-```

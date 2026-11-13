@@ -11,6 +11,8 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui
 
+The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
+
 The served bundle also includes linked analytical investigation views across the existing workspaces: orders, displayed depth, options, margin, maturities, ownership, retained private capital, fixed-income exercises, corporate dates, tax parcels and retained strategy sweeps. The dashboard and shared-source READMEs document their source, unit and authority boundaries; generated assets must be rebuilt after integration.
 
 The served Accounting configuration bundle includes the intercompany agreement registry, immutable
@@ -37,6 +39,11 @@ READMEs for the exact support boundary and validation.
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.
+
+Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
+CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
+trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
+in the package. Rebuild `dashboard/` to refresh the checked-in workstation bundle.
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 

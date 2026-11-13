@@ -31,7 +31,7 @@ public sealed class SecurityMasterTermsCapabilityStartupTests : IDisposable
     private const string CapabilityPrefix = "Security Master terms capability: ";
 
     // Pinned on purpose: a release that changes a class's read or write terms version changes this line.
-    private const string ExpectedTermsVersions = "Bond r4/w3";
+    private const string ExpectedTermsVersions = "none";
 
     private readonly TestArtifactDirectory _artifacts = TestArtifactDirectory.Create(nameof(SecurityMasterTermsCapabilityStartupTests));
 

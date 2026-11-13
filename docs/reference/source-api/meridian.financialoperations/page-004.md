@@ -6,6 +6,84 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowSlaTimer
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaTimer</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:55](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L55).
+
+A running SLA timer bound to a subject (a booking, a break, a delivery). Computes due and warning instants from its policy and reports its state as of any evaluation time.
+
+```csharp
+public sealed record WorkflowSlaTimer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowSlaTimer(string timerId, string subject, WorkflowSlaPolicy policy, DateTimeOffset startedAtUtc, DateTimeOffset? stoppedAtUtc = null);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:57](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L57) |  |
+| <code>public string TimerId { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:88](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L88) |  |
+| <code>public string Subject { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:90](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L90) |  |
+| <code>public WorkflowSlaPolicy Policy { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:92](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L92) |  |
+| <code>public DateTimeOffset StartedAtUtc { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:94](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L94) |  |
+| <code>public DateTimeOffset? StoppedAtUtc { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:96](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L96) |  |
+| <code>public DateTimeOffset DueAtUtc =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:98](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L98) |  |
+| <code>public DateTimeOffset WarningAtUtc =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:100](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L100) |  |
+| <code>public WorkflowSlaTimer Stop(DateTimeOffset stoppedAtUtc) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:108](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L108) | Returns a copy of this timer stopped at stoppedAtUtc. The stop instant must not precede StartedAtUtc (enforced by the constructor), so the timer can never record an impossible negative elapsed window and thereby suppress breach evaluation. |
+| <code>public WorkflowSlaState StateAt(DateTimeOffset asOfUtc);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:112](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L112) | The timer&#x27;s state as of asOfUtc. |
+| <code>public bool IsBreachedAt(DateTimeOffset asOfUtc) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:127](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L127) | True when the timer is running and has passed its due time as of asOfUtc. |
+
+## IOnboardingSourceProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.IOnboardingSourceProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:14](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L14).
+
+Composes existing reconciliation, ledger/NAV, close and evidence services without writes.
+
+```csharp
+public interface IOnboardingSourceProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:16](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L16) |  |
+
+## IOnboardingWorkspaceStore
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:6](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L6).
+
+Durable workspace storage. Save must atomically compare the retained version and replace.
+
+```csharp
+public interface IOnboardingWorkspaceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:8](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L8) |  |
+| <code>Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:9](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L9) |  |
+| <code>Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:10](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L10) |  |
+
+## OnboardingConcurrencyException
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingConcurrencyException</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:23](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L23).
+
+Indicates that retained onboarding state changed during a requested mutation.
+
+```csharp
+public sealed class OnboardingConcurrencyException(string message) : InvalidOperationException(message);
+```
+
 ## OnboardingValidationException
 
 Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingValidationException</code>. Kind: `class`.
@@ -1079,46 +1157,4 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliati
 
 ```csharp
 public sealed record AccountCashBalanceSource(string SourceId, ReconciliationSourceType SourceType, string Version, string EvidenceReference, DateTimeOffset CapturedAtUtc, bool CompletePopulation, IReadOnlyList<AccountCashBalanceSourceRow> Rows);
-```
-
-## AccountCashBalanceSourceRow
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashBalanceSourceRow</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L9).
-
-The original row payload remains independent of its normalized comparison amounts.
-
-```csharp
-public sealed record AccountCashBalanceSourceRow(NormalizedCashEntry Row, string OriginalPayload);
-```
-
-## AccountCashCaseAssignment
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseAssignment</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L44).
-
-```csharp
-public sealed record AccountCashCaseAssignment(string Owner, string Actor, string Reason, DateTimeOffset AssignedAtUtc);
-```
-
-## AccountCashCaseObservation
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L43).
-
-```csharp
-public sealed record AccountCashCaseObservation(string RunId, DateTimeOffset ObservedAtUtc, string State, string ResultHash);
-```
-
-## AccountCashComparison
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L30).
-
-```csharp
-public sealed record AccountCashComparison(string Currency, string ObservationState, IReadOnlyList<MatchGroup> Matches, IReadOnlyList<BreakRecord> Breaks, IReadOnlyList<MatchEvidence> Evidence);
 ```

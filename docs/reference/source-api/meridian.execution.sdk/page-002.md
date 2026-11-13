@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExecutionMode
+
+Qualified name: <code>Meridian.Execution.Sdk.ExecutionMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/Models.cs:4](../../../../src/Meridian.Execution.Sdk/Models.cs#L4).
+
+Execution mode determines whether orders are routed to live brokers or simulated.
+
+```csharp
+public enum ExecutionMode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Paper</code> | [src/Meridian.Execution.Sdk/Models.cs:7](../../../../src/Meridian.Execution.Sdk/Models.cs#L7) | Orders are simulated locally (no broker connection). |
+| <code>Live</code> | [src/Meridian.Execution.Sdk/Models.cs:10](../../../../src/Meridian.Execution.Sdk/Models.cs#L10) | Orders are routed to a live broker for real execution. |
+| <code>Simulation</code> | [src/Meridian.Execution.Sdk/Models.cs:13](../../../../src/Meridian.Execution.Sdk/Models.cs#L13) | Orders are simulated using historical replay data. |
+
 ## ExecutionOrderMetadataPolicy
 
 Qualified name: <code>Meridian.Execution.Sdk.ExecutionOrderMetadataPolicy</code>. Kind: `class`.
@@ -130,7 +150,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageAccountCatalog</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:27](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L27).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:29](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L29).
 
 Enumerates brokerage or custodian accounts that can be imported into Meridian&#x27;s read-side Portfolio, ledger, and Accounting workflows.
 
@@ -142,15 +162,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:29](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L29) |  |
-| <code>string ProviderDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:31](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L31) |  |
-| <code>Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:33](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L33) |  |
+| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:31](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L31) |  |
+| <code>string ProviderDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:33](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L33) |  |
+| <code>Task&lt;IReadOnlyList&lt;BrokerageExternalAccountDto&gt;&gt; GetAccountsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:35](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L35) |  |
 
 ## IBrokerageAccountIdentity
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageAccountIdentity</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:17](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L17).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:19](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L19).
 
 Implemented by a gateway whose broker gives one account more than one identifier (for example an operator-visible account number and an internal id). The gateway reports one of them as the account&#x27;s identity and recognizes the others, so a link retained under an older identifier is neither refused nor mistaken for a second account.
 
@@ -162,13 +182,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>bool IdentifiesConnectedAccount(string externalAccountId);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:20](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L20) | True when externalAccountId names the account this gateway is connected to. |
+| <code>bool IdentifiesConnectedAccount(string externalAccountId);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:22](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L22) | True when externalAccountId names the account this gateway is connected to. |
 
 ## IBrokerageActivitySync
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageActivitySync</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:51](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L51).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:53](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L53).
 
 Reads recent orders, fills, and cash movements from a brokerage or custodian.
 
@@ -180,15 +200,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:53](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L53) |  |
-| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:55](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L55) |  |
-| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, DateTimeOffset? untilExclusive, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:64](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L64) | Reads activity inside an exact half-open window. Providers that cannot enforce the upper bound fail closed instead of silently widening a governed statement period. |
+| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:55](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L55) |  |
+| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since = null, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:57](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L57) |  |
+| <code>Task&lt;BrokerageActivitySnapshotDto&gt; GetActivitySnapshotAsync(string externalAccountId, DateTimeOffset? since, DateTimeOffset? untilExclusive, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:66](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L66) | Reads activity inside an exact half-open window. Providers that cannot enforce the upper bound fail closed instead of silently widening a governed statement period. |
 
 ## IBrokerageConnectionState
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageConnectionState</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:4](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L4).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:6](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L6).
 
 Opaque connection epoch; changes revoke portfolio evidence without exposing credentials.
 
@@ -200,15 +220,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>long ConnectionGeneration { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:6](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L6) |  |
-| <code>bool IsExecutionStreamHealthy { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:7](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L7) |  |
-| <code>string? ScopeIdentity { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:8](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L8) |  |
+| <code>long ConnectionGeneration { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:8](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L8) |  |
+| <code>bool IsExecutionStreamHealthy { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:9](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L9) |  |
+| <code>string? ScopeIdentity { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:10](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L10) |  |
 
 ## IBrokerageGateway
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokerageGateway</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:9](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L9).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:11](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L11).
 
 Extended execution gateway contract for full brokerage providers. Adds account querying, position sync, and connection lifecycle on top of IExecutionGateway. Each broker (Alpaca, IB, etc.) implements this interface to expose its full trading capabilities.
 
@@ -220,12 +240,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string BrokerDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:12](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L12) | Gets the human-readable broker display name (e.g., &quot;Alpaca Markets&quot;). |
-| <code>BrokerageCapabilities BrokerageCapabilities { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:15](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L15) | Gets the declared brokerage capabilities for this gateway. |
-| <code>Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:18](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L18) | Gets the current account balance and buying power from the broker. |
-| <code>Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:21](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L21) | Queries current positions held at the broker. |
-| <code>Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:24](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L24) | Queries open orders at the broker. |
-| <code>Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:30](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L30) | Checks whether the gateway can currently accept orders (credentials valid, connection alive, market open, etc.). |
+| <code>string BrokerDisplayName { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:14](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L14) | Gets the human-readable broker display name (e.g., &quot;Alpaca Markets&quot;). |
+| <code>BrokerageCapabilities BrokerageCapabilities { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:17](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L17) | Gets the declared brokerage capabilities for this gateway. |
+| <code>Task&lt;AccountInfo&gt; GetAccountInfoAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:20](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L20) | Gets the current account balance and buying power from the broker. |
+| <code>Task&lt;IReadOnlyList&lt;BrokerPosition&gt;&gt; GetPositionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:23](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L23) | Queries current positions held at the broker. |
+| <code>Task&lt;IReadOnlyList&lt;BrokerOrder&gt;&gt; GetOpenOrdersAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:26](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L26) | Queries open orders at the broker. |
+| <code>Task&lt;BrokerHealthStatus&gt; CheckHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:32](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L32) | Checks whether the gateway can currently accept orders (credentials valid, connection alive, market open, etc.). |
 
 ## IBrokerageOrderAmendmentRecoveryGateway
 
@@ -267,7 +287,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.IBrokeragePortfolioSync</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:39](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L39).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:41](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L41).
 
 Reads point-in-time account, balance, and position state from a brokerage or custodian.
 
@@ -279,8 +299,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:41](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L41) |  |
-| <code>Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:43](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L43) |  |
+| <code>string ProviderId { get; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:43](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L43) |  |
+| <code>Task&lt;BrokeragePortfolioSnapshotDto&gt; GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:45](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L45) |  |
 
 ## IBrokeragePositionSync
 
@@ -937,37 +957,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal Percent { get; }</code> | [src/Meridian.Execution.Sdk/ValidatedOrder.cs:153](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L153) |  |
-
-## OrderRequest
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution.Sdk/Models.cs:87](../../../../src/Meridian.Execution.Sdk/Models.cs#L87).
-
-Request to place a new order.
-
-```csharp
-public sealed record OrderRequest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:89](../../../../src/Meridian.Execution.Sdk/Models.cs#L89) |  |
-| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:90](../../../../src/Meridian.Execution.Sdk/Models.cs#L90) |  |
-| <code>public required OrderType Type { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:91](../../../../src/Meridian.Execution.Sdk/Models.cs#L91) |  |
-| <code>public required decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:92](../../../../src/Meridian.Execution.Sdk/Models.cs#L92) |  |
-| <code>public decimal? LimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:93](../../../../src/Meridian.Execution.Sdk/Models.cs#L93) |  |
-| <code>public decimal? StopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:94](../../../../src/Meridian.Execution.Sdk/Models.cs#L94) |  |
-| <code>public decimal? TrailPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:95](../../../../src/Meridian.Execution.Sdk/Models.cs#L95) |  |
-| <code>public decimal? TrailPercent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:96](../../../../src/Meridian.Execution.Sdk/Models.cs#L96) |  |
-| <code>public TimeInForce TimeInForce { get; init; } = TimeInForce.Day;</code> | [src/Meridian.Execution.Sdk/Models.cs:97](../../../../src/Meridian.Execution.Sdk/Models.cs#L97) |  |
-| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:98](../../../../src/Meridian.Execution.Sdk/Models.cs#L98) |  |
-| <code>public string? StrategyId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:99](../../../../src/Meridian.Execution.Sdk/Models.cs#L99) |  |
-| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:100](../../../../src/Meridian.Execution.Sdk/Models.cs#L100) |  |
-| <code>public PositionIntent? PositionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:101](../../../../src/Meridian.Execution.Sdk/Models.cs#L101) |  |
-| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:102](../../../../src/Meridian.Execution.Sdk/Models.cs#L102) |  |
-| <code>public IReadOnlyList&lt;OrderLeg&gt;? Legs { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:103](../../../../src/Meridian.Execution.Sdk/Models.cs#L103) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:104](../../../../src/Meridian.Execution.Sdk/Models.cs#L104) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public OrderSessionIntent? SessionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:106](../../../../src/Meridian.Execution.Sdk/Models.cs#L106) |  |

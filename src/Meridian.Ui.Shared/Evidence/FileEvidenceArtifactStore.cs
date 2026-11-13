@@ -420,10 +420,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             JsonSerializer.Serialize(vaultIdentity, _jsonOptions), ct).ConfigureAwait(false);
 
         _logger.LogInformation(
-            "Retained evidence vault intake {VaultId} for {SubjectKind}/{SubjectId}.",
-            vaultId,
-            EscapeLogValue(subjectKind),
-            EscapeLogValue(subjectId));
+            "Retained evidence vault intake {VaultId}.",
+            vaultId);
 
         return new EvidenceVaultIntakeResponseDto(
             IntakeId: artifactId,
@@ -1966,22 +1964,19 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning("Evidence vault index '{IndexPath}' could not be deserialized. {Error}",
-                EscapeLogValue(indexPath), EscapeLogValue(ex.ToString()));
+            _logger.LogWarning("Evidence vault index could not be deserialized ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (IOException ex)
         {
             // A locked or transiently unreadable file must skip this entry, not fail the
             // whole vault listing.
-            _logger.LogWarning("Evidence vault index '{IndexPath}' could not be read. {Error}",
-                EscapeLogValue(indexPath), EscapeLogValue(ex.ToString()));
+            _logger.LogWarning("Evidence vault index could not be read ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning("Evidence vault index '{IndexPath}' could not be accessed. {Error}",
-                EscapeLogValue(indexPath), EscapeLogValue(ex.ToString()));
+            _logger.LogWarning("Evidence vault index could not be accessed ({FailureType}).", ex.GetType().Name);
             return null;
         }
     }
@@ -2010,32 +2005,20 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning("Evidence vault manifest '{ManifestPath}' could not be deserialized. {Error}",
-                EscapeLogValue(manifestPath), EscapeLogValue(ex.ToString()));
+            _logger.LogWarning("Evidence vault manifest could not be deserialized ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (IOException ex)
         {
-            _logger.LogWarning("Evidence vault manifest '{ManifestPath}' could not be read. {Error}",
-                EscapeLogValue(manifestPath), EscapeLogValue(ex.ToString()));
+            _logger.LogWarning("Evidence vault manifest could not be read ({FailureType}).", ex.GetType().Name);
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning("Evidence vault manifest '{ManifestPath}' could not be accessed. {Error}",
-                EscapeLogValue(manifestPath), EscapeLogValue(ex.ToString()));
+            _logger.LogWarning("Evidence vault manifest could not be accessed ({FailureType}).", ex.GetType().Name);
             return null;
         }
     }
-
-    // Escape only at the logging boundary: retained identifiers, paths, bytes and their hashes
-    // remain exact. Exception text must use the same boundary because it can repeat a file path.
-    private static string EscapeLogValue(string value)
-        => value.Replace("\r", "\\r", StringComparison.Ordinal)
-            .Replace("\n", "\\n", StringComparison.Ordinal)
-            .Replace("\u0085", "\\u0085", StringComparison.Ordinal)
-            .Replace("\u2028", "\\u2028", StringComparison.Ordinal)
-            .Replace("\u2029", "\\u2029", StringComparison.Ordinal);
 
     private string? ResolveSubjectManifestPath(
         string subjectKind,

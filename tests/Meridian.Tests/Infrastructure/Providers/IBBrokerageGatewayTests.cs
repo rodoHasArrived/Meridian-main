@@ -335,6 +335,7 @@ public sealed partial class IBBrokerageGatewayTests
         positions[0].Symbol.Should().Be("IEF");
         positions[0].AssetClass.Should().Be("bond");
         positions[0].AccruedInterest.Should().Be(12.50m);
+        positions[0].ValuationBasis.Should().Be(BrokeragePositionValuationBasis.CostDerived);
     }
 
     [Fact]

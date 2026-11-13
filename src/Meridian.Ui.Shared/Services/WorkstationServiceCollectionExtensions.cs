@@ -250,10 +250,13 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
             new FileOperationalCaseHistoryStore(ResolveConfigDataRoot(sp)));
+        services.TryAddSingleton<IStrategyRunLedgerArchive>(sp =>
+            new JsonlStrategyRunLedgerArchive(ResolveConfigDataRoot(sp), sp.GetRequiredService<IAtomicFileWriter>()));
         // The concrete store is the single instance: StrategyRunStore holds in-memory state, so
         // registering it separately per interface would split that state between consumers.
         services.TryAddSingleton(sp =>
-            new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
+            new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>(),
+                sp.GetRequiredService<IStrategyRunLedgerArchive>()));
         services.TryAddSingleton<IStrategyRepository>(sp => sp.GetRequiredService<StrategyRunStore>());
         services.TryAddSingleton<IResearchRunRecorder, StrategyRunResearchRecorder>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
@@ -516,6 +519,7 @@ public static class WorkstationServiceCollectionExtensions
 
             return registry;
         });
+        services.AddPortfolioAccountingReconciliation();
         services.TryAddSingleton<IAggregatePortfolioService, AggregatePortfolioService>();
         // Exposure feed for the portfolio-aware rules: sourced from the same aggregation
         // service the Portfolio workspace reports, so enforcement and display agree.
@@ -1055,14 +1059,17 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IAccountingConfigurationService>(),
                 sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
                 sp.GetService<ILedgerJournalStore>(),
-                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>())!);
+                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>(),
+                bondIncomeService: sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+                couponRecognitionAuthority: () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<IAtomicTaxLotJournalStore>(),
                 sp.GetService<IAssetAccountingEventProjectionStore>(),
-                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>()));
+                sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>(),
+                instrumentPositions: sp.GetService<IInstrumentPositionProjectionStore>()));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
@@ -1427,6 +1434,7 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<QuoteStreamOptions>()));
         services.TryAddSingleton<IReportingRunNotifier>(sp => sp.GetRequiredService<ReportRunStreamBroadcaster>());
 
+        services.AddBondWorkflowServices();
         return services;
     }
 

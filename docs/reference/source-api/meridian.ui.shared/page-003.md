@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BrokerageConnectionEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BrokerageConnectionEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs#L14).
+
+Maps brokerage connection setup and lifecycle operations within the workstation tenant scope.
+
+```csharp
+public static class BrokerageConnectionEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapBrokerageConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs#L16) |  |
+
 ## CalendarEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CalendarEndpoints</code>. Kind: `class`.
@@ -110,7 +128,7 @@ public record CleanupHistoryRequest(int? MaxAgeDays = null);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1936](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1936).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1508](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1508).
 
 Request to clear an existing execution manual override.
 
@@ -122,7 +140,7 @@ public sealed record ClearExecutionManualOverrideRequest(string? Reason = null, 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1951](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1951).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1523](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1523).
 
 Legacy request alias preserved for older callers.
 
@@ -262,7 +280,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1926](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1926).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1498](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1498).
 
 Request to create an execution manual override.
 
@@ -284,7 +302,7 @@ public record CreateMaintenanceScheduleRequest(string Name, string? Description 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1941](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1941).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1513](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1513).
 
 Legacy request alias preserved for older callers.
 
@@ -296,7 +314,7 @@ public sealed record CreateManualOverrideCommandRequest(string Kind, string Reas
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreatePaperSessionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1847](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1847).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1419](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1419).
 
 Request to create a new paper trading session.
 
@@ -677,7 +695,7 @@ public record ExecuteMaintenanceRequest(string TaskType, string[]? TargetPaths =
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionAccountSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1821](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1821).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1393](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1393).
 
 Account-level snapshot returned by the execution cockpit.
 
@@ -689,7 +707,7 @@ public sealed record ExecutionAccountSnapshot(decimal Cash, decimal PortfolioVal
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionCircuitBreakerActivationResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1869](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1869).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1441](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1441).
 
 Structured result returned by every Trading write action (cancel, close, pause, etc.). Carries a correlation ID so UI and backend audit logs can be cross-referenced.
 
@@ -701,7 +719,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ExecutionCircuitBreakerActivationResponse From(ExecutionControlSnapshot snapshot, KillSwitchSweepResult sweep) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1878](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1878) |  |
+| <code>public static ExecutionCircuitBreakerActivationResponse From(ExecutionControlSnapshot snapshot, KillSwitchSweepResult sweep) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1450](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1450) |  |
 
 ## ExecutionEndpoints
 
@@ -727,6 +745,18 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L27) |  |
 
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs#L7).
+
+```csharp
+public static partial class ExecutionEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs#L14).
+
+```csharp
+public static partial class ExecutionEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs#L14).
 
 ```csharp
@@ -737,7 +767,7 @@ public static partial class ExecutionEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionGatewayHealth</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1839](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1839).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1411](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1411).
 
 Gateway health summary.
 
@@ -749,7 +779,7 @@ public sealed record ExecutionGatewayHealth(string BrokerName, string Mode, bool
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ExecutionPortfolioSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1830](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1830).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1402](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1402).
 
 Full portfolio snapshot including all positions.
 
@@ -846,21 +876,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L22) |  |
-
-## FundProfileScopeEndpointFilters
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundProfileScopeEndpointFilters</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs#L37).
-
-Endpoint filter that applies the fund-profile tenant ownership gate (SEC-005 slice 3) to fund-scoped read routes. When a request carries a fundProfileId query value that the authoritative IFundProfileTenantGuard reports as owned by a different tenant, the route is refused with 403 before any fund-partitioned data is loaded. Read-side counterpart to the governed-write guard on the Security Master workbench field-edit route. Its strictness follows the deployment&#x27;s TenantScopeEnforcementOptions. Under TenantScopeEnforcementMode.DeploymentBoundary it is fail-open: a blank fund, a caller with no tenant scope, a fund the registry does not positively attribute to another tenant, or an unavailable registry all pass — the single-company-per-deployment boundary remains the control and a legitimate read is never blocked. Under TenantScopeEnforcementMode.FailClosed each of those four becomes a refusal, because each is a scope that could not be resolved, and the exit criterion is categorical: an unresolvable scope is rejected rather than defaulted. The unavailable-registry case is the one most easily missed and the most important — a gate that cannot reach its authority has not decided that the caller is entitled, it has merely failed to ask. The tenantless-caller refusal is evaluated before the absent-fund short circuit, so omitting fundProfileId entirely is not a way past it. The routes attached to this filter have no separate tenant gate behind it, and their stores treat a null tenant with no fund as no filter at all — so under fail-closed the omission has to be refused here or nowhere. See docs/security/security-remediation-backlog.md (SEC-005) and W9-GOV-008 criterion 2.
-
-```csharp
-public static class FundProfileScopeEndpointFilters
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RouteHandlerBuilder RequireFundProfileTenantScope(this RouteHandlerBuilder builder, params UserPermission[] readPermissions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs:52](../../../../src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs#L52) | Adds the fund-profile tenant ownership gate to a fund-scoped read endpoint. The gate reads the fundProfileId query value and denies only a fund positively owned by another tenant. Pass the route&#x27;s read permission(s) so the ownership check runs only for callers who can already read this route. Endpoint filters execute before the route delegate&#x27;s own permission check, so without this an unauthorized caller would receive the ownership 403 for a foreign fund but fall through to the handler&#x27;s plain 403 for an own/unbound fund — distinguishing cross-tenant ownership to callers who should see neither. When no permissions are supplied the check always runs (the route has no read gate to defer to). |

@@ -586,6 +586,18 @@ XLSX (Excel) format export with Open XML generation.
 public sealed partial class AnalysisExportService
 ```
 
+Source: [src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs:8](../../../../src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs#L8).
+
+```csharp
+public sealed partial class AnalysisExportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ExportedFile&gt; WriteInvariantTextTableAsync(string path, ExportFormat format, IReadOnlyList&lt;string&gt; columns, IReadOnlyList&lt;Dictionary&lt;string, object?&gt;&gt; rows, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs:15](../../../../src/Meridian.Storage/Export/AnalysisExportService.TextTables.cs#L15) | Writes a schema-preserving table of already formatted text cells. Domain projections own their interpretation and formatting; this primitive owns file formats and checksums only. Empty tables retain the supplied column schema, and spreadsheet formulas remain text. |
+
 ## AnalysisQualityReport
 
 Qualified name: <code>Meridian.Storage.Export.AnalysisQualityReport</code>. Kind: `class`.
