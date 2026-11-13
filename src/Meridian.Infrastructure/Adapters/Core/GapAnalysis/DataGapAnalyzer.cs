@@ -311,10 +311,10 @@ public sealed class DataGapAnalyzer
                 {
                     if (prop.ValueKind == JsonValueKind.String)
                     {
-                        if (DateTimeOffset.TryParse(prop.GetString(), out var dto))
-                            return DateOnly.FromDateTime(dto.UtcDateTime);
                         if (DateOnly.TryParse(prop.GetString(), out var dateOnly))
                             return dateOnly;
+                        if (DateTimeOffset.TryParse(prop.GetString(), out var dto))
+                            return DateOnly.FromDateTime(dto.UtcDateTime);
                     }
                 }
             }

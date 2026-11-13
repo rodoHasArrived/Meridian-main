@@ -1,3 +1,4 @@
+using System.Net;
 using Meridian.Core.Logging;
 using Polly;
 using Polly.CircuitBreaker;
@@ -42,10 +43,8 @@ public static class HttpResiliencePolicy
                 BackoffType = DelayBackoffType.Exponential,
                 UseJitter = true,
                 MaxDelay = maxDelay.Value,
-                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                    .Handle<HttpRequestException>()
-                    .Handle<TaskCanceledException>(ex => ex.InnerException is TimeoutException)
-                    .HandleResult(r => IsTransientHttpError(r)),
+                ShouldHandle = args => ValueTask.FromResult(
+                    ShouldHandleFailure(args.Outcome, args.Context.CancellationToken)),
                 OnRetry = args =>
                 {
                     var statusCode = args.Outcome.Result?.StatusCode;
@@ -57,6 +56,7 @@ public static class HttpResiliencePolicy
                         (int?)statusCode,
                         args.RetryDelay.TotalMilliseconds,
                         args.Outcome.Exception?.Message ?? "Transient HTTP error");
+                    args.Outcome.Result?.Dispose();
                     return ValueTask.CompletedTask;
                 }
             })
@@ -82,10 +82,8 @@ public static class HttpResiliencePolicy
                 FailureRatio = 0.5,
                 MinimumThroughput = failureThreshold,
                 BreakDuration = breakDuration.Value,
-                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                    .Handle<HttpRequestException>()
-                    .Handle<TaskCanceledException>()
-                    .HandleResult(r => IsTransientHttpError(r)),
+                ShouldHandle = args => ValueTask.FromResult(
+                    ShouldHandleFailure(args.Outcome, args.Context.CancellationToken)),
                 OnOpened = args =>
                 {
                     logger.Error(
@@ -113,12 +111,14 @@ public static class HttpResiliencePolicy
     /// Creates a timeout policy for HTTP operations.
     /// </summary>
     /// <param name="timeout">Request timeout (default: 30 seconds)</param>
-    public static ResiliencePipeline<HttpResponseMessage> CreateTimeoutPipeline(TimeSpan? timeout = null)
+    public static ResiliencePipeline<HttpResponseMessage> CreateTimeoutPipeline(
+        TimeSpan? timeout = null,
+        TimeProvider? timeProvider = null)
     {
         var logger = LoggingSetup.ForContext("HttpTimeout");
         timeout ??= TimeSpan.FromSeconds(30);
 
-        return new ResiliencePipelineBuilder<HttpResponseMessage>()
+        return new ResiliencePipelineBuilder<HttpResponseMessage> { TimeProvider = timeProvider ?? TimeProvider.System }
             .AddTimeout(new TimeoutStrategyOptions
             {
                 Timeout = timeout.Value,
@@ -142,13 +142,17 @@ public static class HttpResiliencePolicy
     /// <param name="circuitBreakerFailureThreshold">Failures before circuit opens (default: 5)</param>
     /// <param name="circuitBreakerDuration">Duration circuit stays open (default: 30 seconds)</param>
     /// <param name="requestTimeout">Individual request timeout (default: 30 seconds)</param>
+    /// <param name="timeProvider">Clock used for timeouts and retry delays.</param>
+    /// <param name="includeAttemptTimeout">Include the per-attempt timeout. Callers that wait for quota
+    /// inside the retry callback can disable it and apply a timeout only to the network send.</param>
     public static ResiliencePipeline<HttpResponseMessage> CreateComprehensivePipeline(
         int maxRetries = 3,
         TimeSpan? retryBaseDelay = null,
         int circuitBreakerFailureThreshold = 5,
         TimeSpan? circuitBreakerDuration = null,
         TimeSpan? requestTimeout = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        bool includeAttemptTimeout = true)
     {
         retryBaseDelay ??= TimeSpan.FromSeconds(1);
         circuitBreakerDuration ??= TimeSpan.FromSeconds(30);
@@ -156,7 +160,8 @@ public static class HttpResiliencePolicy
 
         var logger = LoggingSetup.ForContext("HttpResilience");
 
-        return new ResiliencePipelineBuilder<HttpResponseMessage> { TimeProvider = timeProvider ?? TimeProvider.System }
+        var builder = new ResiliencePipelineBuilder<HttpResponseMessage> { TimeProvider = timeProvider ?? TimeProvider.System };
+        builder
             // Outermost: Total operation timeout
             .AddTimeout(new TimeoutStrategyOptions
             {
@@ -173,12 +178,11 @@ public static class HttpResiliencePolicy
                 FailureRatio = 0.5,
                 MinimumThroughput = circuitBreakerFailureThreshold,
                 BreakDuration = circuitBreakerDuration.Value,
-                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                    .Handle<HttpRequestException>()
-                    .Handle<TaskCanceledException>()
-                    .HandleResult(r => IsTransientHttpError(r))
+                ShouldHandle = args => ValueTask.FromResult(
+                    ShouldHandleFailure(args.Outcome, args.Context.CancellationToken))
             })
-            // Innermost: Retry with exponential backoff
+            // Retry with exponential backoff. Quota responses pass through to the provider's
+            // Retry-After handling rather than retrying outside its rate limiter.
             .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
             {
                 MaxRetryAttempts = maxRetries,
@@ -188,18 +192,20 @@ public static class HttpResiliencePolicy
                 MaxDelay = TimeSpan.FromSeconds(30),
                 DelayGenerator = args => ValueTask.FromResult(
                     args.Outcome.Result is { } response ? ExtractRetryAfter(response, timeProvider) : null),
+                ShouldHandle = args => ValueTask.FromResult(
+                    ShouldHandleFailure(args.Outcome, args.Context.CancellationToken)),
                 OnRetry = args =>
                 {
-                    // Polly does not dispose outcomes it replaces with a later attempt.
                     args.Outcome.Result?.Dispose();
                     return ValueTask.CompletedTask;
-                },
-                ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-                    .Handle<HttpRequestException>()
-                    .Handle<TaskCanceledException>(ex => ex.InnerException is TimeoutException)
-                    .HandleResult(r => IsRetryableHttpError(r))
-            })
-            .Build();
+                }
+            });
+        if (includeAttemptTimeout)
+        {
+            // Innermost: a fresh timeout for each HTTP attempt, within the total budget.
+            builder.AddTimeout(requestTimeout.Value);
+        }
+        return builder.Build();
     }
 
     /// <summary>
@@ -293,27 +299,25 @@ public static class HttpResiliencePolicy
     private static TimeSpan ClampDelay(TimeSpan delay) => delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
 
     /// <summary>
-    /// Determines if an HTTP response represents a transient error that should trigger circuit breaker.
+    /// Handles transport failures and server errors, excluding caller cancellation and quota
+    /// responses. Providers preserve Retry-After metadata and schedule throttled work themselves.
     /// </summary>
-    private static bool IsTransientHttpError(HttpResponseMessage response)
+    private static bool ShouldHandleFailure(Outcome<HttpResponseMessage> outcome, CancellationToken cancellationToken)
     {
-        var statusCode = (int)response.StatusCode;
-        return statusCode >= 500 || // Server errors
-               statusCode == 408 || // Request Timeout
-               statusCode == 429;   // Too Many Requests
-    }
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
 
-    /// <summary>
-    /// Determines if an HTTP response represents a retryable error.
-    /// More conservative than IsTransientHttpError - excludes some cases.
-    /// </summary>
-    private static bool IsRetryableHttpError(HttpResponseMessage response)
-    {
-        var statusCode = (int)response.StatusCode;
-        return statusCode >= 500 || // Server errors
-               statusCode == 408;   // Request Timeout
-        // Throttling is returned to the caller immediately, with a shared cooldown.
-        // Provider orchestration can retry it without keeping a hidden HTTP operation alive.
+        return outcome.Exception switch
+        {
+            HttpRequestException exception => exception.StatusCode != HttpStatusCode.TooManyRequests,
+            TimeoutRejectedException => true,
+            TaskCanceledException { InnerException: TimeoutException } => true,
+            null => outcome.Result is { } response &&
+                ((int)response.StatusCode >= 500 || response.StatusCode == HttpStatusCode.RequestTimeout),
+            _ => false
+        };
     }
 }
 

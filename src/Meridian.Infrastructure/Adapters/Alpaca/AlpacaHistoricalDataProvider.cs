@@ -191,9 +191,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
         var normalizedSymbol = NormalizeSymbol(symbol);
         var allBars = new List<AdjustedHistoricalBar>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
 
         do
         {
+            pagination.Visit(nextPageToken);
+
             var url = BuildUrl(normalizedSymbol, from, to, nextPageToken);
             Log.Information("Requesting Alpaca history for {Symbol} ({Url})", symbol, url);
 
@@ -300,10 +303,13 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         var allQuotes = new List<HistoricalQuote>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
         long sequenceNumber = 0;
 
         do
         {
+            pagination.Visit(nextPageToken);
+
             // Each page asks only for what the limit still allows, so nothing fetched is discarded
             // and the page token returned to the caller continues exactly where the result ends.
             var url = BuildQuotesUrl(symbolList, start, end, RemainingLimit(allQuotes.Count, limit), nextPageToken);
@@ -417,10 +423,13 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         var allTrades = new List<HistoricalTrade>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
         long sequenceNumber = 0;
 
         do
         {
+            pagination.Visit(nextPageToken);
+
             // Each page asks only for what the limit still allows, so nothing fetched is discarded
             // and the page token returned to the caller continues exactly where the result ends.
             var url = BuildTradesUrl(symbolList, start, end, RemainingLimit(allTrades.Count, limit), nextPageToken);
@@ -535,9 +544,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         var allAuctions = new List<HistoricalAuction>();
         string? nextPageToken = null;
+        var pagination = new PaginationCursorGuard("Alpaca");
 
         do
         {
+            pagination.Visit(nextPageToken);
+
             var url = BuildAuctionsUrl(symbolList, start, end, nextPageToken);
             Log.Information("Requesting Alpaca auctions for {Symbols} ({Url})", string.Join(",", symbolList), url);
 

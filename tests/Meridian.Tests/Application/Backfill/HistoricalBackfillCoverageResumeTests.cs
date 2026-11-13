@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Application.Pipeline;
@@ -7,6 +8,9 @@ using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Backfill;
 using Meridian.Storage.Interfaces;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using Xunit;
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 
@@ -26,6 +30,43 @@ public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
     {
         if (Directory.Exists(_dataRoot))
             Directory.Delete(_dataRoot, recursive: true);
+    }
+
+    [Fact]
+    public async Task ResumeAndStaleLogs_NeutralizeTextAndRenderInvariantDatesWithoutChangingSymbols()
+    {
+        const string symbol = "SPY\r\nforged";
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var coveredDay = today.AddDays(-30);
+        var store = new BackfillStatusStore(_dataRoot);
+        await store.WriteSymbolCoverageAsync(DataGranularity.Daily, "alpha", "default",
+            [new BackfillCoverageUpdate(symbol, [new BackfillCoverageRange(coveredDay, coveredDay, 1)], ["alpha"])]);
+        var provider = new WeekdayBarProvider("alpha", displayName: "Alpha\r\nforged")
+        {
+            NewestAvailable = today.AddDays(-BackfillBarValidation.DefaultStaleToleranceDays - 5)
+        };
+        var collector = new LogCollector();
+        using var logger = new LoggerConfiguration().WriteTo.Sink(collector).CreateLogger();
+        var service = new HistoricalBackfillService([provider], logger: logger, checkpointStore: store);
+        await using var pipeline = new EventPipeline(new ProbeSink(), capacity: 10_000, enablePeriodicFlush: false);
+
+        var result = await service.RunAsync(new AppBackfillRequest("alpha", [symbol], coveredDay, today,
+            ResumeFromCheckpoint: true), pipeline);
+
+        result.BarsWritten.Should().BeGreaterThan(0);
+        provider.RequestedSymbols.Should().OnlyContain(value => value == symbol);
+        var resume = collector.Events.Should().ContainSingle(entry =>
+            entry.MessageTemplate.Text.StartsWith("Resuming ")).Which;
+        var stale = collector.Events.Should().ContainSingle(entry =>
+            entry.MessageTemplate.Text.StartsWith("Stale backfill ")).Which;
+        ((ScalarValue)resume.Properties["ResumeFrom"]).Value.Should().Be(coveredDay.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        ((ScalarValue)stale.Properties["ExpectedThrough"]).Value.Should().Be(today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        foreach (var entry in new[] { resume, stale })
+        {
+            ((ScalarValue)entry.Properties["Symbol"]).Value.Should().Be("SPY__forged");
+            ((ScalarValue)entry.Properties["Provider"]).Value.Should().Be("Alpha__forged");
+            entry.RenderMessage().Should().NotContain("\r").And.NotContain("\n");
+        }
     }
 
     [Fact]
@@ -261,13 +302,14 @@ public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
     }
 
     /// <summary>Synthetic provider: one bar per weekday in the requested range; every call is recorded.</summary>
-    private sealed class WeekdayBarProvider(string name, string feed = "default") : IHistoricalDataProvider
+    private sealed class WeekdayBarProvider(string name, string feed = "default", string? displayName = null) : IHistoricalDataProvider
     {
         public string Name => name;
-        public string DisplayName => name;
+        public string DisplayName => displayName ?? name;
         public string Description => string.Empty;
         public string CoverageFeed => feed;
         public ConcurrentQueue<(DateOnly? From, DateOnly? To)> Calls { get; } = new();
+        public ConcurrentQueue<string> RequestedSymbols { get; } = new();
         public DateOnly? FailFrom { get; set; }
         public DateOnly? NewestAvailable { get; set; }
 
@@ -276,6 +318,7 @@ public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             Calls.Enqueue((from, to));
+            RequestedSymbols.Enqueue(symbol);
             if (FailFrom is { } failFrom && from == failFrom)
                 throw new InvalidOperationException("simulated provider interruption");
 
@@ -290,5 +333,11 @@ public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
 
             return Task.FromResult<IReadOnlyList<HistoricalBar>>(bars);
         }
+    }
+
+    private sealed class LogCollector : ILogEventSink
+    {
+        public ConcurrentQueue<LogEvent> Events { get; } = new();
+        public void Emit(LogEvent logEvent) => Events.Enqueue(logEvent);
     }
 }

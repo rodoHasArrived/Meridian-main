@@ -3,6 +3,7 @@
 // </auto-generated>
 
 export const UI_API_ROUTES = {
+  IntercompanyAgreements: "/api/fund-structure/intercompany-agreements",
   OnboardingWorkspaces: "/api/accounting/onboarding/workspaces",
   OnboardingWorkspace: "/api/accounting/onboarding/workspaces/{workspaceId:guid}",
   OnboardingCriteria: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria",
@@ -375,6 +376,10 @@ export const UI_API_ROUTES = {
   SecurityMasterEdgarIngest: "/api/security-master/ingest/edgar",
   SecurityMasterPricingHierarchy: "/api/security-master/{securityId:guid}/pricing-hierarchy",
   SecurityMasterPriceGoldenCopy: "/api/security-master/{securityId:guid}/price-golden-copy",
+  SecurityMasterRetainedPriceObservations: "/api/security-master/{securityId:guid}/price-golden-copy/observations",
+  SecurityMasterRateObservations: "/api/security-master/rates/observations",
+  SecurityMasterRateIngest: "/api/security-master/rates/ingest",
+  SecurityMasterObservedBondFixings: "/api/security-master/{securityId:guid}/observed-bond-fixings",
   SecurityMasterPriceComparison: "/api/security-master/{securityId:guid}/price-comparison",
   SecurityMasterRecordRawPrice: "/api/security-master/{securityId:guid}/raw-price",
   SecurityMasterCashFlowSource: "/api/security-master/{securityId:guid}/cashflow-source",

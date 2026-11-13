@@ -1,5 +1,4 @@
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Logging;
 using Serilog;
 
@@ -14,9 +13,8 @@ public sealed class RateLimiter : IDisposable
     private readonly Queue<DateTimeOffset> _requestTimestamps = new();
     private readonly object _sync = new();
     private readonly CancellationTokenSource _lifetime = new();
-    private readonly int _maxRequests;
-    private readonly TimeSpan _window;
-    private readonly TimeSpan _minDelay;
+    private sealed record Limits(int MaxRequests, TimeSpan Window, TimeSpan MinDelay);
+    private Limits _limits;
     private readonly ILogger _log;
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
@@ -33,11 +31,23 @@ public sealed class RateLimiter : IDisposable
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxRequestsPerWindow, 0, nameof(maxRequestsPerWindow));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(window, TimeSpan.Zero, nameof(window));
 
-        _maxRequests = maxRequestsPerWindow;
-        _window = window;
-        _minDelay = minDelayBetweenRequests ?? TimeSpan.Zero;
+        ArgumentOutOfRangeException.ThrowIfLessThan(minDelayBetweenRequests ?? TimeSpan.Zero, TimeSpan.Zero, nameof(minDelayBetweenRequests));
+        _limits = new Limits(maxRequestsPerWindow, window, minDelayBetweenRequests ?? TimeSpan.Zero);
         _log = log ?? LoggingSetup.ForContext<RateLimiter>();
         _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    /// <summary>Updates admission limits in place, retaining recent request history and cooldown.</summary>
+    public void UpdateLimits(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null)
+    {
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxRequestsPerWindow, 0, nameof(maxRequestsPerWindow));
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(window, TimeSpan.Zero, nameof(window));
+            ArgumentOutOfRangeException.ThrowIfLessThan(minDelayBetweenRequests ?? TimeSpan.Zero, TimeSpan.Zero, nameof(minDelayBetweenRequests));
+            _limits = new Limits(maxRequestsPerWindow, window, minDelayBetweenRequests ?? TimeSpan.Zero);
+        }
     }
 
     /// <summary>
@@ -67,9 +77,10 @@ public sealed class RateLimiter : IDisposable
                         linked.Token.ThrowIfCancellationRequested();
                         var now = _timeProvider.GetUtcNow();
                         CleanupOldTimestamps(now);
-                        var next = _lastRequest == DateTimeOffset.MinValue ? now : _lastRequest + _minDelay;
-                        if (_requestTimestamps.Count >= _maxRequests && _requestTimestamps.TryPeek(out var oldest))
-                            next = Max(next, oldest + _window);
+                        var limits = _limits;
+                        var next = _lastRequest == DateTimeOffset.MinValue ? now : _lastRequest + limits.MinDelay;
+                        if (_requestTimestamps.Count >= limits.MaxRequests && _requestTimestamps.TryPeek(out var oldest))
+                            next = Max(next, oldest + limits.Window);
                         if (_cooldownUntil is { } cooldown)
                             next = Max(next, cooldown);
                         wait = next - now;
@@ -139,16 +150,16 @@ public sealed class RateLimiter : IDisposable
             CleanupOldTimestamps(now);
             var reset = now;
             if (_requestTimestamps.TryPeek(out var oldest))
-                reset = Max(reset, oldest + _window);
+                reset = Max(reset, oldest + _limits.Window);
             if (_cooldownUntil is { } cooldown)
                 reset = Max(reset, cooldown);
-            return (_requestTimestamps.Count, _maxRequests, reset - now);
+            return (_requestTimestamps.Count, _limits.MaxRequests, reset - now);
         }
     }
 
     private void CleanupOldTimestamps(DateTimeOffset now)
     {
-        var cutoff = now - _window;
+        var cutoff = now - _limits.Window;
         while (_requestTimestamps.TryPeek(out var oldest) && oldest <= cutoff)
             _requestTimestamps.Dequeue();
     }
@@ -207,7 +218,7 @@ public sealed class RateLimiterRegistry : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(providerName);
         ArgumentException.ThrowIfNullOrWhiteSpace(credential);
         ArgumentException.ThrowIfNullOrWhiteSpace(quotaGroup);
-        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(credential)));
+        var fingerprint = Sha256Digest.ComputeUtf8(credential);
         var key = $"{providerName.Trim().ToLowerInvariant()}:{quotaGroup.Trim().ToLowerInvariant()}:{fingerprint}";
         return GetOrCreateCore(key, maxRequests, window, minDelay ?? TimeSpan.Zero, enforceConfiguration: true);
     }
@@ -221,6 +232,13 @@ public sealed class RateLimiterRegistry : IDisposable
             {
                 if (enforceConfiguration && (existing.Maximum != maximum || existing.Window != window || existing.Delay != delay))
                     throw new InvalidOperationException("Capabilities sharing a vendor quota must use the same request budget configuration.");
+                if (!enforceConfiguration)
+                {
+                    // Legacy provider registries support live reconfiguration. Update the
+                    // existing limiter so requests already admitted keep consuming quota.
+                    existing.Limiter.UpdateLimits(maximum, window, delay);
+                    _limiters[key] = (existing.Limiter, maximum, window, delay);
+                }
                 return existing.Limiter;
             }
             var limiter = new RateLimiter(maximum, window, delay, _log, _timeProvider);

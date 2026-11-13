@@ -14,7 +14,7 @@ namespace Meridian.Wpf.ViewModels;
 /// documents; it never evaluates completeness, SLA, or retention policy locally. Deep links arrive
 /// as <c>EvidenceWorkbench:{subjectKind}/{subjectId}</c> navigation parameters.
 /// </summary>
-public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
+public sealed partial class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 {
     private const int VaultQueueMaxResults = 25;
 
@@ -46,6 +46,8 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
     private string _exportResultText = string.Empty;
     private string _requestListErrorText = string.Empty;
     private string _documentQueueErrorText = string.Empty;
+    private string _attestationStatusText = "Preparer attestation history has not loaded.";
+    private string _attestationScopeText = "Scope unavailable";
     private EvidenceVaultDocumentQueuePresentationModel _documentQueue =
         EvidenceVaultPresentationMapper.BuildDocumentQueue([], null);
 
@@ -64,6 +66,7 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         OpenPacketActionCommand = new RelayCommand<EvidencePacketActionRowModel>(
             OpenPacketAction,
             static action => action is not null && !string.IsNullOrWhiteSpace(action.TargetPageTag));
+        InitializeAttestationCommands();
     }
 
     public IAsyncRelayCommand RefreshCommand { get; }
@@ -97,6 +100,20 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
     public ObservableCollection<string> SlaBreaches { get; } = [];
 
     public ObservableCollection<string> Warnings { get; } = [];
+
+    public ObservableCollection<PreparerAttestationHistoryRowModel> AttestationRows { get; } = [];
+
+    public string AttestationStatusText
+    {
+        get => _attestationStatusText;
+        private set => SetProperty(ref _attestationStatusText, value);
+    }
+
+    public string AttestationScopeText
+    {
+        get => _attestationScopeText;
+        private set => SetProperty(ref _attestationScopeText, value);
+    }
 
     /// <summary>
     /// Navigation parameter applied by the shell. A string in the form
@@ -197,7 +214,7 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         }
     }
 
-    public bool IsBusy => IsRefreshing || IsValidating || IsExporting;
+    public bool IsBusy => IsRefreshing || IsValidating || IsExporting || IsAttestationBusy;
 
     public bool HasPacket => _packet is not null;
 
@@ -337,6 +354,11 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         IsRefreshing = true;
         ErrorText = string.Empty;
         ExportResultText = string.Empty;
+        AttestationRows.Clear();
+        AttestationScopeText = "Scope unavailable";
+        AttestationStatusText = "Loading preparer attestation history…";
+        ApplyPacketAttestationProjection(null);
+        ResetAttestationForRefresh();
         try
         {
             var subjectsResponse = await _apiClient.ListSubjectsAsync(ct).ConfigureAwait(true);
@@ -359,17 +381,20 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
                 selection?.SubjectKind, selection?.SubjectId, VaultQueueMaxResults, ct);
             var documentsTask = _apiClient.ListDocumentsAsync(
                 selection?.SubjectKind, selection?.SubjectId, VaultQueueMaxResults, ct);
+            var attestationsTask = LoadAttestationsAsync(ct);
             var packetResponse = selection is null
                 ? null
                 : await _apiClient.GetPacketAsync(selection.SubjectKind, selection.SubjectId, selection.LedgerBookId, ct).ConfigureAwait(true);
             var requestListsResponse = await requestListsTask.ConfigureAwait(true);
             var documentsResponse = await documentsTask.ConfigureAwait(true);
+            var attestationsResponse = await attestationsTask.ConfigureAwait(true);
             if (IsStale(revision))
             {
                 return;
             }
 
             ApplyVaultQueues(requestListsResponse, documentsResponse);
+            ApplyAttestations(attestationsResponse);
             ApplyPacketResponse(selection, packetResponse);
             _hasLoaded = true;
         }
@@ -590,6 +615,67 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(HasSubjects));
     }
 
+    private async Task<ApiResponse<SinglePrincipalAttestationWorkspaceDto>> LoadAttestationsAsync(CancellationToken ct)
+    {
+        try
+        {
+            return await _apiClient.GetAttestationsAsync(ct).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LoggingService.Instance.LogError("Preparer attestation history failed to load.", ex);
+            return ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Fail(
+                "Preparer attestation history is unavailable. Refresh to try again.");
+        }
+    }
+
+    private void ApplyAttestations(ApiResponse<SinglePrincipalAttestationWorkspaceDto> response)
+    {
+        ApplyAttestationWorkspace(response.Success ? response.Data : null);
+        AttestationRows.Clear();
+        if (!response.Success || response.Data is null)
+        {
+            AttestationScopeText = "Scope unavailable";
+            AttestationStatusText = response.ErrorMessage ?? "Preparer attestation history is unavailable.";
+            return;
+        }
+
+        var state = response.Data.State;
+        AttestationScopeText = $"Tenant {state.Scope.TenantId} / company {state.Scope.CompanyId}; all retained evidence assertions in this scope.";
+        var declaration = state.Declaration;
+        var declarationText = declaration is null
+            ? "No single-principal declaration has been recorded."
+            : $"Declaration revision {declaration.Revision}: {(declaration.Enabled ? "enabled" : "withdrawn")} for {declaration.PrincipalId}.";
+        AttestationStatusText = $"{(state.PolicyEnabled ? "Evidence acknowledgment policy enabled." : "Evidence acknowledgment policy disabled.")} {declarationText} " +
+            $"{state.Receipts.Count} retained assertion(s). These do not grant approval, posting, close or release authority.";
+
+        foreach (var receipt in state.Receipts.OrderByDescending(static item => item.RecordedAt))
+        {
+            var revocation = state.Revocations
+                .Where(item => item.ReceiptId == receipt.ReceiptId)
+                .OrderByDescending(static item => item.Revision)
+                .FirstOrDefault();
+            var knownClassification = receipt.SchemaVersion == SinglePrincipalAttestationPolicy.SchemaVersion &&
+                string.Equals(receipt.DecisionKind, SinglePrincipalAttestationPolicy.DecisionKind, StringComparison.Ordinal) &&
+                string.Equals(receipt.Disclosure, SinglePrincipalAttestationPolicy.Disclosure, StringComparison.Ordinal);
+            AttestationRows.Add(new PreparerAttestationHistoryRowModel(
+                receipt.ReceiptId.ToString("D"),
+                knownClassification ? receipt.Disclosure : "Review classification unavailable; retained record does not establish approval.",
+                $"{receipt.AttestedBy} · {receipt.RecordedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC",
+                $"{receipt.SubjectKind}/{receipt.SubjectId} · revision {receipt.SubjectRevision}",
+                $"Subject hash: {receipt.SubjectHash} · Source hash: {receipt.SourceHash}",
+                $"Source provenance: {receipt.SourceProvenance} · Source actor: {receipt.SourceActor ?? "unavailable"}",
+                revocation is null
+                    ? "Recorded assertion; current support has not been reassessed."
+                    : $"Revoked at revision {revocation.Revision} by {revocation.Actor} · {revocation.RecordedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC: {revocation.Reason}. Original assertion retained.",
+                receipt.Reason));
+        }
+    }
+
     private void ApplyVaultQueues(
         ApiResponse<EvidenceVaultRequestListEntryDto[]> requestListsResponse,
         ApiResponse<EvidenceVaultDocumentEntryDto[]> documentsResponse)
@@ -615,12 +701,14 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         DocumentQueue = EvidenceVaultPresentationMapper.BuildDocumentQueue(
             documentsResponse.Success ? documentsResponse.Data ?? [] : [],
             manifestSnapshot: null);
+        ApplyAttestationDocuments(documentsResponse.Success ? documentsResponse.Data ?? [] : []);
     }
 
     private void ApplyPacketResponse(
         EvidenceWorkbenchSubjectRowModel? selection,
         ApiResponse<EvidencePacketDto>? packetResponse)
     {
+        ApplyPacketAttestationProjection(packetResponse?.Success == true ? packetResponse.Data?.PreparerAttestations : null);
         if (selection is null)
         {
             _packet = null;
@@ -744,11 +832,15 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 
         ValidateCommand.NotifyCanExecuteChanged();
         ExportManifestCommand.NotifyCanExecuteChanged();
+        NotifyAttestationCommands();
     }
 
     private void ApplyLoadFailure(string message)
     {
         _packet = null;
+        AttestationRows.Clear();
+        AttestationScopeText = "Scope unavailable";
+        AttestationStatusText = "Preparer attestation history is unavailable because the workbench failed to load.";
 
         // Retained rows from the previous refresh must not read as current evidence during an
         // outage; the global error banner owns the failure story.
@@ -825,5 +917,6 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         RefreshCommand.NotifyCanExecuteChanged();
         ValidateCommand.NotifyCanExecuteChanged();
         ExportManifestCommand.NotifyCanExecuteChanged();
+        NotifyAttestationCommands();
     }
 }

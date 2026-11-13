@@ -1,3 +1,4 @@
+using Meridian.Contracts.Calendars;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -17,12 +18,20 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
+    private readonly IBusinessDayCalendarSource? calendars;
     private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
 
     public ProviderIntegrationQuarantineReplayService(
         IProviderIntegrationManifestStore store,
         ILogger<ProviderIntegrationQuarantineReplayService>? logger = null)
+        : this(store, logger, null) { }
+
+    public ProviderIntegrationQuarantineReplayService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationQuarantineReplayService>? logger,
+        IBusinessDayCalendarSource? calendars = null)
     {
+        this.calendars = calendars;
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.logger = logger ?? NullLogger<ProviderIntegrationQuarantineReplayService>.Instance;
     }
@@ -216,7 +225,7 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
                 }
             }
 
-            ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues);
+            ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues, calendars);
             allIssues.AddRange(rowIssues);
             var mappedElement = ToJsonElement(mappedRecord);
             var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);

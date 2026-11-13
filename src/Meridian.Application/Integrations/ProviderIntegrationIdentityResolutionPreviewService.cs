@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -46,6 +47,54 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             new ProviderIntegrationBoundaryContext(TenantId: tenantId, ConnectionId: connectionId),
             () => PreviewCoreAsync(tenantId, connectionId, recentRunLimit, ct)).ConfigureAwait(false);
 
+    public async Task<ProviderIntegrationIdentityDecisionDto> ResolveAsync(
+        string? tenantId,
+        string connectionId,
+        ProviderIntegrationIdentityResolutionRequestDto request,
+        string reviewedBy,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reviewedBy);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Reason);
+        if (request.SelectedSecurityId == Guid.Empty)
+        {
+            throw new ArgumentException("Choose an active matched security.", nameof(request));
+        }
+        var scopedStore = ResolveStore(tenantId);
+        if (scopedStore is not IProviderIntegrationIdentityDecisionStore decisionStore)
+        {
+            throw new InvalidOperationException("Retained identity decisions are not supported by this store.");
+        }
+        var connection = await scopedStore.GetConnectionAsync(connectionId, ct).ConfigureAwait(false)
+            ?? throw new KeyNotFoundException("Provider integration connection was not found.");
+        var run = await scopedStore.GetSyncRunAsync(request.SyncRunId, ct).ConfigureAwait(false);
+        if (run?.ConnectionId != connectionId)
+        {
+            throw new KeyNotFoundException("The sync run does not belong to this connection.");
+        }
+        var record = (await scopedStore.ListStagingRecordsAsync(request.SyncRunId, ct).ConfigureAwait(false))
+            .SingleOrDefault(candidate => candidate.ConnectionId == connectionId && candidate.StagingRecordId == request.StagingRecordId)
+            ?? throw new KeyNotFoundException("The staged record does not belong to this connection and run.");
+        var decisions = await LoadIdentityDecisionSnapshotAsync(scopedStore, connectionId, request.SyncRunId, ct).ConfigureAwait(false);
+        var preview = await ResolveRecordAsync(connection, record, decisions[record.StagingRecordId], ct).ConfigureAwait(false);
+        if (!StringComparer.Ordinal.Equals(request.EvidenceHash, preview.EvidenceHash))
+        {
+            throw new InvalidOperationException("Identifier matching evidence changed. Reload and review the current evidence.");
+        }
+        if (!preview.SecurityCandidates.Any(candidate => candidate.Status == ProviderIntegrationIdentityResolutionStatusDto.Resolved &&
+            candidate.InternalSecurityId == request.SelectedSecurityId.ToString("D")))
+        {
+            throw new ArgumentException("Choose an active security from the matching evidence.", nameof(request));
+        }
+        var decision = new ProviderIntegrationIdentityDecisionDto(Guid.NewGuid().ToString("N"), connectionId,
+            request.SyncRunId, request.StagingRecordId, request.SelectedSecurityId, request.EvidenceHash,
+            reviewedBy.Trim(), DateTimeOffset.UtcNow, request.Reason.Trim());
+        await decisionStore.SaveIdentityDecisionAsync(decision, ct).ConfigureAwait(false);
+        return decision;
+    }
+
     private async Task<ProviderIntegrationStagingIdentityResolutionPreviewDto> PreviewCoreAsync(
         string? tenantId,
         string connectionId,
@@ -67,10 +116,11 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         {
             ct.ThrowIfCancellationRequested();
             var records = await scopedStore.ListStagingRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
+            var decisions = await LoadIdentityDecisionSnapshotAsync(scopedStore, connectionId, syncRun.SyncRunId, ct).ConfigureAwait(false);
             foreach (var record in records.Where(record => StringComparer.Ordinal.Equals(record.ConnectionId, connectionId)))
             {
                 ct.ThrowIfCancellationRequested();
-                rows.Add(await ResolveRecordAsync(connection, record, ct).ConfigureAwait(false));
+                rows.Add(await ResolveRecordAsync(connection, record, decisions[record.StagingRecordId], ct).ConfigureAwait(false));
             }
         }
 
@@ -87,13 +137,30 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             rows.Count(row => row.SecurityStatus == ProviderIntegrationIdentityResolutionStatusDto.Resolved),
             rows.Count(row => row.SecurityStatus is ProviderIntegrationIdentityResolutionStatusDto.ReviewRequired
                 or ProviderIntegrationIdentityResolutionStatusDto.NotFound
-                or ProviderIntegrationIdentityResolutionStatusDto.NotConfigured),
+                or ProviderIntegrationIdentityResolutionStatusDto.NotConfigured
+                or ProviderIntegrationIdentityResolutionStatusDto.Conflict),
             rows.Count(row => row.SecurityStatus == ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier));
+    }
+
+    private static async Task<ILookup<string, ProviderIntegrationIdentityDecisionDto>> LoadIdentityDecisionSnapshotAsync(
+        IProviderIntegrationManifestStore scopedStore,
+        string connectionId,
+        string syncRunId,
+        CancellationToken ct)
+    {
+        IReadOnlyList<ProviderIntegrationIdentityDecisionDto> decisions = scopedStore is IProviderIntegrationIdentityDecisionStore decisionStore
+            ? await decisionStore.ListIdentityDecisionsAsync(syncRunId, ct).ConfigureAwait(false)
+            : [];
+        return decisions
+            .Where(decision => StringComparer.Ordinal.Equals(decision.ConnectionId, connectionId) &&
+                StringComparer.Ordinal.Equals(decision.SyncRunId, syncRunId))
+            .ToLookup(decision => decision.StagingRecordId, StringComparer.Ordinal);
     }
 
     private async Task<ProviderIntegrationStagingIdentityResolutionRowDto> ResolveRecordAsync(
         ProviderConnectionDto connection,
         IntegrationStagingRecordDto record,
+        IEnumerable<ProviderIntegrationIdentityDecisionDto> retainedDecisions,
         CancellationToken ct)
     {
         var issues = new List<ValidationIssueDto>(record.ValidationWarnings);
@@ -110,18 +177,12 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         };
 
         IReadOnlyList<ProviderIntegrationIdentityCandidateDto> securityCandidates = BuildSecurityCandidates(connection, record.MappedRecord);
-        var internalSecurityId = TryReadString(record.MappedRecord, "security.internalSecurityId");
-        var resolvedSecurity = TryBuildInternalSecurityCandidate(internalSecurityId);
+        Guid? resolvedSecurity = null;
         ProviderIntegrationIdentityResolutionStatusDto securityStatus;
         string? securityDisplayName = null;
         string? securityRoute = null;
 
-        if (resolvedSecurity is not null)
-        {
-            securityStatus = ProviderIntegrationIdentityResolutionStatusDto.Resolved;
-            securityRoute = CreateSecurityRoute(resolvedSecurity.Value);
-        }
-        else if (securityCandidates.Count == 0)
+        if (securityCandidates.Count == 0)
         {
             securityStatus = ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier;
             issues.Add(new ValidationIssueDto(
@@ -130,6 +191,17 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
                 "No security identifier was found on the staged provider record.",
                 "security",
                 "Map CUSIP, ISIN, FIGI, provider security id, or ticker before reconciliation."));
+        }
+        else if (securityMaster is null && securityCandidates.Count == 1 &&
+            securityCandidates[0].IdentifierKind == "InternalSecurityId" &&
+            Guid.TryParse(securityCandidates[0].IdentifierValue, out var canonicalId))
+        {
+            // Existing canonical-only mappings remain usable in runtimes without a resolver.
+            // A supplied provider identifier still requires the complete agreement check.
+            resolvedSecurity = canonicalId;
+            securityRoute = CreateSecurityRoute(canonicalId);
+            securityStatus = ProviderIntegrationIdentityResolutionStatusDto.Resolved;
+            securityCandidates = [securityCandidates[0] with { Status = securityStatus, InternalSecurityId = canonicalId.ToString("D"), Route = securityRoute }];
         }
         else if (securityMaster is null)
         {
@@ -149,24 +221,49 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             resolvedSecurity = resolved.SecurityId;
             securityDisplayName = resolved.DisplayName;
             securityRoute = resolved.Route;
-            if (securityStatus == ProviderIntegrationIdentityResolutionStatusDto.NotFound)
-            {
-                issues.Add(new ValidationIssueDto(
-                    "identity.security.not-found",
-                    ProviderIntegrationIssueSeverityDto.Critical,
-                    "Security identifiers did not resolve to an active Security Master record.",
-                    "security",
-                    "Create or approve a Security Master record before canonical promotion."));
-            }
-            else if (securityStatus == ProviderIntegrationIdentityResolutionStatusDto.ReviewRequired)
-            {
-                issues.Add(new ValidationIssueDto(
-                    "identity.security.review-required",
-                    ProviderIntegrationIssueSeverityDto.Critical,
-                    "Security identifiers resolved to a non-active Security Master record.",
-                    "security",
-                    "Review Security Master status before using the staged provider record."));
-            }
+        }
+
+        // Bind a retained choice to the complete matching evidence. Changed source data,
+        // identifier mappings or Security Master statuses require a fresh review.
+        var evidenceHash = Sha256Digest.ComputeUtf8(
+            record.MappedRecord.GetRawText() + "\n" + JsonSerializer.Serialize(securityCandidates,
+                ProviderIntegrationContractsJsonContext.Default.IReadOnlyListProviderIntegrationIdentityCandidateDto));
+        var hasConflict = securityStatus == ProviderIntegrationIdentityResolutionStatusDto.Conflict;
+        var resolution = retainedDecisions
+            .Where(decision => decision.ConnectionId == connection.ConnectionId && decision.SyncRunId == record.SyncRunId &&
+                decision.StagingRecordId == record.StagingRecordId && decision.EvidenceHash == evidenceHash &&
+                securityCandidates.Any(candidate => candidate.Status == ProviderIntegrationIdentityResolutionStatusDto.Resolved &&
+                    candidate.InternalSecurityId == decision.SelectedSecurityId.ToString("D")))
+            .OrderByDescending(decision => decision.ReviewedAt)
+            .ThenByDescending(decision => decision.DecisionId, StringComparer.Ordinal)
+            .FirstOrDefault();
+        if (resolution is not null)
+        {
+            var selected = securityCandidates.First(candidate => candidate.InternalSecurityId == resolution.SelectedSecurityId.ToString("D"));
+            resolvedSecurity = resolution.SelectedSecurityId;
+            securityDisplayName = selected.DisplayName;
+            securityRoute = selected.Route;
+            securityStatus = ProviderIntegrationIdentityResolutionStatusDto.Resolved;
+        }
+
+        if (hasConflict && resolution is null)
+        {
+            issues.Add(new ValidationIssueDto("identity.security.identifier-conflict",
+                ProviderIntegrationIssueSeverityDto.Critical,
+                "Supplied identifiers resolve to different Security Master records.",
+                "security", "Resolve source conflict by reviewing every identifier and recording the chosen security and reason."));
+        }
+        else if (securityStatus == ProviderIntegrationIdentityResolutionStatusDto.NotFound)
+        {
+            issues.Add(new ValidationIssueDto("identity.security.not-found", ProviderIntegrationIssueSeverityDto.Critical,
+                "Security identifiers did not resolve to an active Security Master record.", "security",
+                "Create or approve a Security Master record before canonical promotion."));
+        }
+        else if (securityStatus == ProviderIntegrationIdentityResolutionStatusDto.ReviewRequired)
+        {
+            issues.Add(new ValidationIssueDto("identity.security.review-required", ProviderIntegrationIssueSeverityDto.Critical,
+                "One or more supplied identifiers did not resolve to the same active Security Master record.", "security",
+                "Review the identifier evidence before using the staged provider record."));
         }
 
         return new ProviderIntegrationStagingIdentityResolutionRowDto(
@@ -182,7 +279,12 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             securityDisplayName,
             securityRoute,
             securityCandidates,
-            issues);
+            issues)
+        {
+            EvidenceHash = evidenceHash,
+            HasIdentifierConflict = hasConflict,
+            OperatorResolution = resolution
+        };
     }
 
     private async Task<(
@@ -198,17 +300,21 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         foreach (var candidate in candidates.OrderBy(candidate => candidate.Priority))
         {
             ct.ThrowIfCancellationRequested();
-            if (!Enum.TryParse<SecurityIdentifierKind>(candidate.IdentifierKind, ignoreCase: true, out var kind))
+            SecurityDetailDto? detail;
+            if (candidate.IdentifierKind == "InternalSecurityId" && Guid.TryParse(candidate.IdentifierValue, out var internalId))
+            {
+                detail = await securityMaster!.GetByIdAsync(internalId, ct).ConfigureAwait(false);
+            }
+            else if (Enum.TryParse<SecurityIdentifierKind>(candidate.IdentifierKind, ignoreCase: true, out var kind))
+            {
+                detail = await securityMaster!.GetByIdentifierAsync(kind, candidate.IdentifierValue, candidate.Provider, ct).ConfigureAwait(false);
+            }
+            else
             {
                 resolvedCandidates.Add(candidate with { Status = ProviderIntegrationIdentityResolutionStatusDto.ReviewRequired });
                 continue;
             }
 
-            var detail = await securityMaster!.GetByIdentifierAsync(
-                kind,
-                candidate.IdentifierValue,
-                candidate.Provider,
-                ct).ConfigureAwait(false);
             if (detail is null)
             {
                 resolvedCandidates.Add(candidate with { Status = ProviderIntegrationIdentityResolutionStatusDto.NotFound });
@@ -226,10 +332,23 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
                 DisplayName = detail.DisplayName,
                 Route = route
             });
-            return (status, detail.SecurityId, detail.DisplayName, route, resolvedCandidates.Concat(candidates.Skip(resolvedCandidates.Count)).ToArray());
+
         }
 
-        return (ProviderIntegrationIdentityResolutionStatusDto.NotFound, null, null, null, resolvedCandidates);
+        var matches = resolvedCandidates.Where(candidate => candidate.InternalSecurityId is not null).ToArray();
+        if (matches.Select(candidate => candidate.InternalSecurityId).Distinct(StringComparer.Ordinal).Count() > 1)
+        {
+            return (ProviderIntegrationIdentityResolutionStatusDto.Conflict, null, null, null, resolvedCandidates);
+        }
+        if (matches.Length == 0)
+        {
+            return (ProviderIntegrationIdentityResolutionStatusDto.NotFound, null, null, null, resolvedCandidates);
+        }
+        var match = matches[0];
+        var aggregateStatus = resolvedCandidates.All(candidate => candidate.Status == ProviderIntegrationIdentityResolutionStatusDto.Resolved)
+            ? ProviderIntegrationIdentityResolutionStatusDto.Resolved
+            : ProviderIntegrationIdentityResolutionStatusDto.ReviewRequired;
+        return (aggregateStatus, Guid.Parse(match.InternalSecurityId!), match.DisplayName, match.Route, resolvedCandidates);
     }
 
     private static ProviderIntegrationIdentityResolutionStatusDto ResolveAccountStatus(
@@ -267,12 +386,14 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         JsonElement record)
     {
         var candidates = new List<ProviderIntegrationIdentityCandidateDto>();
+        AddCandidate(candidates, "InternalSecurityId", TryReadString(record, "security.internalSecurityId"), provider: null, priority: 0);
         AddCandidate(candidates, "Cusip", TryReadString(record, "security.cusip"), provider: null, priority: 1);
         AddCandidate(candidates, "Isin", TryReadString(record, "security.isin"), provider: null, priority: 2);
         AddCandidate(candidates, "Sedol", TryReadString(record, "security.sedol"), provider: null, priority: 3);
         AddCandidate(candidates, "Figi", TryReadString(record, "security.figi"), provider: null, priority: 4);
         AddCandidate(candidates, "ProviderSymbol", TryReadString(record, "security.providerSecurityId"), connection.ProviderId, priority: 5);
-        AddCandidate(candidates, "Ticker", TryReadString(record, "security.symbol"), provider: null, priority: 6);
+        AddCandidate(candidates, "Ticker", TryReadString(record, "security.ticker"), provider: null, priority: 6);
+        AddCandidate(candidates, "Ticker", TryReadString(record, "security.symbol"), provider: null, priority: 7);
         return candidates;
     }
 
@@ -288,6 +409,11 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             return;
         }
 
+        if (candidates.Any(candidate => candidate.IdentifierKind == kind && candidate.IdentifierValue == value.Trim() && candidate.Provider == provider))
+        {
+            return;
+        }
+
         candidates.Add(new ProviderIntegrationIdentityCandidateDto(
             kind,
             value.Trim(),
@@ -298,9 +424,6 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             DisplayName: null,
             Route: null));
     }
-
-    private static Guid? TryBuildInternalSecurityCandidate(string? internalSecurityId)
-        => Guid.TryParse(internalSecurityId, out var securityId) ? securityId : null;
 
     private static string CreateSecurityRoute(Guid securityId)
         => UiApiRoutes.SecurityMasterById.Replace("{securityId:guid}", securityId.ToString("D"), StringComparison.Ordinal);

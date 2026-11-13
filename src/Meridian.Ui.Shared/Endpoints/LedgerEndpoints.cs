@@ -964,12 +964,19 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReopenClosePeriodScopedAsync(
-                        request with
-                        {
-                            Actor = actor,
-                            Role = controllerRole,
-                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
-                        },
+                        new ReopenClosePeriodRequestDto(
+                            WorkflowId: request.WorkflowId,
+                            ExpectedWorkflowVersion: request.ExpectedWorkflowVersion,
+                            Actor: actor,
+                            Role: controllerRole,
+                            Rationale: request.Rationale,
+                            IncidentId: request.IncidentId,
+                            Justification: request.Justification,
+                            ApprovalReference: request.ApprovalReference,
+                            ImpactSummary: request.ImpactSummary,
+                            EvidenceLinks: request.EvidenceLinks,
+                            CorrelationId: request.CorrelationId,
+                            ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)),
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,
@@ -1727,7 +1734,8 @@ public static partial class LedgerEndpoints
 
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryLifecycleAction, async (JournalEntryLifecycleActionRequestDto request, HttpContext context) =>
         {
-            if (!HasManualJournalLifecycleActionPermission(context, request.Action) ||
+            var action = ResolveAuthorizedManualJournalLifecycleAction(context, request.Action);
+            if (action is null ||
                 !EndpointAuthorization.TryResolveActor(context, out var actor) || string.IsNullOrWhiteSpace(actor))
             {
                 return EndpointHelpers.Forbidden();
@@ -1743,14 +1751,24 @@ public static partial class LedgerEndpoints
             {
                 var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var result = await service
-                    .ApplyLifecycleActionAsync(request with
+                    .ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+                        JournalEntryId: request.JournalEntryId,
+                        FundProfileId: request.FundProfileId,
+                        Action: action.Value,
+                        Actor: actor,
+                        Version: request.Version,
+                        Notes: request.Notes,
+                        CorrelationId: request.CorrelationId,
+                        EvidenceLinks: request.EvidenceLinks,
+                        ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                        PeriodIsLocked: request.PeriodIsLocked,
+                        RebookLines: request.RebookLines,
+                        LedgerBookId: request.LedgerBookId,
+                        TenantId: tenantContext.TenantId,
+                        CompanyId: tenantContext.CompanyId,
+                        ReportGroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context))
                     {
-                        Actor = actor,
-                        AuthenticatedActorAssertion = request.Actor ?? string.Empty,
-                        TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId,
-                        ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+                        AuthenticatedActorAssertion = request.Actor ?? string.Empty
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -2102,12 +2120,21 @@ public static partial class LedgerEndpoints
             string.Equals(profileName.Trim(), normalizedRole, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool HasManualJournalLifecycleActionPermission(
+    private static JournalEntryLifecycleActionDto? ResolveAuthorizedManualJournalLifecycleAction(
         HttpContext context,
-        JournalEntryLifecycleActionDto action)
-        => action == JournalEntryLifecycleActionDto.Validate
-            ? HasLedgerReadPermission(context)
-            : HasLedgerCertificationPermission(context);
+        JournalEntryLifecycleActionDto requestedAction)
+        => requestedAction switch
+        {
+            JournalEntryLifecycleActionDto.Validate when HasLedgerReadPermission(context) => JournalEntryLifecycleActionDto.Validate,
+            JournalEntryLifecycleActionDto.Submit when HasLedgerCertificationPermission(context) => JournalEntryLifecycleActionDto.Submit,
+            JournalEntryLifecycleActionDto.Approve when HasLedgerCertificationPermission(context) => JournalEntryLifecycleActionDto.Approve,
+            JournalEntryLifecycleActionDto.Reject when HasLedgerCertificationPermission(context) => JournalEntryLifecycleActionDto.Reject,
+            JournalEntryLifecycleActionDto.Post when HasLedgerCertificationPermission(context) => JournalEntryLifecycleActionDto.Post,
+            JournalEntryLifecycleActionDto.Reverse when HasLedgerCertificationPermission(context) => JournalEntryLifecycleActionDto.Reverse,
+            JournalEntryLifecycleActionDto.Rebook when HasLedgerCertificationPermission(context) => JournalEntryLifecycleActionDto.Rebook,
+            JournalEntryLifecycleActionDto.LockAfterClose when HasLedgerCertificationPermission(context) => JournalEntryLifecycleActionDto.LockAfterClose,
+            _ => null
+        };
 
     private static bool HasLedgerClosePermission(HttpContext context)
         => HasLedgerMutationPermission(context);
@@ -2321,7 +2348,9 @@ public static partial class LedgerEndpoints
             VendorId: filter.VendorId,
             ProjectId: filter.ProjectId)
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = Guid.TryParse(filter.IntercompanyAgreementId, out var agreementId) ? agreementId : null,
+            IntercompanyAgreementVersion = int.TryParse(filter.IntercompanyAgreementVersion, out var agreementVersion) ? agreementVersion : null
         };
     }
 
@@ -2359,7 +2388,9 @@ public static partial class LedgerEndpoints
             VendorId: filter.VendorId,
             ProjectId: filter.ProjectId)
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = Guid.TryParse(filter.IntercompanyAgreementId, out var agreementId) ? agreementId : null,
+            IntercompanyAgreementVersion = int.TryParse(filter.IntercompanyAgreementVersion, out var agreementVersion) ? agreementVersion : null
         };
     }
 
@@ -2504,7 +2535,9 @@ public static partial class LedgerEndpoints
             VendorId: LedgerDimensionTags.FirstTag(tags, "vendorId"),
             ProjectId: metadata.ProjectId ?? LedgerDimensionTags.FirstTag(tags, "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags)
         };
 
         return CanonicalizeDimensions(dimensions);
@@ -2537,7 +2570,9 @@ public static partial class LedgerEndpoints
             VendorId: dimensions.VendorId,
             ProjectId: dimensions.ProjectId)
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return CanonicalizeDimensions(result);
@@ -2575,7 +2610,9 @@ public static partial class LedgerEndpoints
             VendorId: LedgerDimensionTags.FirstTag(tags, prefix + "vendorId"),
             ProjectId: LedgerDimensionTags.FirstTag(tags, prefix + "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags, prefix),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags, prefix)
         };
 
         return CanonicalizeDimensions(dimensions);
@@ -2614,6 +2651,8 @@ public static partial class LedgerEndpoints
                && Matches(filter.CapitalAccountId, dimensions.CapitalAccountId)
                && Matches(filter.InstrumentId, dimensions.InstrumentId?.ToString("D"))
                && Matches(filter.PositionId, dimensions.PositionId?.ToString("D"))
+               && Matches(filter.IntercompanyAgreementId, dimensions.IntercompanyAgreementId?.ToString("D"))
+               && Matches(filter.IntercompanyAgreementVersion, dimensions.IntercompanyAgreementVersion?.ToString(CultureInfo.InvariantCulture))
                && Matches(filter.TaxLotId, dimensions.TaxLotId)
                && Matches(filter.CostCenterId, dimensions.CostCenterId)
                && Matches(filter.CounterpartyId, dimensions.CounterpartyId)
@@ -2680,7 +2719,11 @@ public static partial class LedgerEndpoints
             CustomerId: NormalizeOptional(filter.CustomerId),
             VendorId: NormalizeOptional(filter.VendorId),
             ProjectId: NormalizeOptional(filter.ProjectId),
-            ExternalGlDimensions: NormalizeExternalGlDimensions(filter.ExternalGlDimensions));
+            ExternalGlDimensions: NormalizeExternalGlDimensions(filter.ExternalGlDimensions))
+        {
+            IntercompanyAgreementId = NormalizeOptional(filter.IntercompanyAgreementId),
+            IntercompanyAgreementVersion = NormalizeOptional(filter.IntercompanyAgreementVersion)
+        };
 
     private static LedgerDimensionSetDto? CanonicalizeDimensions(LedgerDimensionSetDto? dimensions)
     {
@@ -2709,7 +2752,9 @@ public static partial class LedgerEndpoints
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return LedgerDimensionTags.HasAnyDimension(canonical) ? canonical : null;

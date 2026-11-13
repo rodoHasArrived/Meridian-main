@@ -1,5 +1,9 @@
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_CorporateActionProjectionBlockerDto["CorporateActionProjectionBlockerDto"] {
+        +string Code
+        +string Message
+    }
     class Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto["CorporateActionProjectionEvidenceDependencyDto"] {
         +string ContentHashSha256
         +string EvidenceId
@@ -223,6 +227,16 @@ classDiagram
         +decimal? ParAmount
         +Guid PositionId
     }
+    class Meridian_Contracts_AssetOperations_PostAttestedCashDividendPostingCandidateRequestDto["PostAttestedCashDividendPostingCandidateRequestDto"] {
+        +Meridian_Contracts_Workstation_OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +Guid AttestationId
+        +Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto Candidate
+        +string CompanyId
+        +string? CorrelationId
+        +string Reason
+        +string TenantId
+    }
     class Meridian_Contracts_AssetOperations_PostedJournalImpactDto["PostedJournalImpactDto"] {
         +AccountingBasisKindDto AccountingBasis
         +string Currency
@@ -253,12 +267,12 @@ classDiagram
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
         +OpenLotDirection Direction
+        +AssetLotMutationInstructionDto? Disposal
         +EconomicEventReferenceDto EconomicEvent
         +decimal EventAmount
         +AssetAccountingEventKindDto EventKind
         +long ExpectedPeriodVersion
         +Meridian_Contracts_Accounting_Lots_OpenLotFactorPaydownInstructionDto? FactorPaydown
-        +string? Notes
     }
     class Meridian_Contracts_AssetOperations_ProjectedAccountingEffectDto["ProjectedAccountingEffectDto"] {
         +string Currency

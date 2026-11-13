@@ -1,0 +1,99 @@
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Services;
+using Meridian.Contracts.Workstation;
+using Meridian.Identity.Auth;
+using Meridian.Storage.FundStructure;
+using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Shared.Evidence;
+using Microsoft.AspNetCore.Http;
+
+namespace Meridian.Ui.Shared.Services;
+
+/// <summary>Checks both legal entities against current tenant ownership and retained operator grants.</summary>
+public sealed class HttpContextIntercompanyAgreementAccessAuthority(
+    IHttpContextAccessor accessor, IFundStructureStore structure) : IIntercompanyAgreementAccessAuthority
+{
+    private static readonly object TenantMapKey = new();
+
+    public async Task<bool> CanAccessEntitiesAsync(IntercompanyAgreementCallContext context,
+        IReadOnlyList<Guid> entityIds, CancellationToken ct = default)
+    {
+        var http = accessor.HttpContext;
+        if (http is null || entityIds.Count == 0 || entityIds.Any(id => id == Guid.Empty))
+            return false;
+        var scope = HttpContextWorkstationTenantContextAccessor.Resolve(http);
+        if (!scope.HasTenantScope || !string.Equals(scope.TenantId, context.TenantId, StringComparison.Ordinal)
+            || !string.Equals(scope.Actor, context.Actor, StringComparison.Ordinal))
+            return false;
+
+        if (!http.Items.TryGetValue(TenantMapKey, out var cached) || cached is not Task<FundStructureTenantMap> tenantTask)
+        {
+            tenantTask = structure.GetNodeTenantsAsync(ct);
+            http.Items[TenantMapKey] = tenantTask;
+        }
+        var tenants = await tenantTask.ConfigureAwait(false);
+        var ids = entityIds.ToHashSet();
+        if (!tenants.IsPartitioned || ids.Any(id => !tenants.NodeTenants.TryGetValue(id, out var owner)
+            || !string.Equals(owner, context.TenantId, StringComparison.Ordinal)))
+            return false;
+
+        if (EndpointAuthorization.HasPermission(http, UserPermission.AdminMaintenance))
+            return true;
+        var permission = EndpointAuthorization.HasPermission(http, UserPermission.ManageFundStructure)
+            ? UserPermission.ManageFundStructure : UserPermission.ManageDirectLending;
+        var allowed = await EndpointAuthorization.AuthorizeScopedManyAsync(http, permission,
+            AccessScopeKindDto.LegalEntity, ids, ct).ConfigureAwait(false);
+        return ids.IsSubsetOf(allowed);
+    }
+}
+
+/// <summary>Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.</summary>
+public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(
+    IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
+{
+    public async Task<IReadOnlyList<IntercompanyAgreementEvidenceDto>> ResolveAsync(
+        IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId,
+        IReadOnlyList<IntercompanyAgreementEvidenceDto> evidence, CancellationToken ct = default)
+    {
+        var http = accessor.HttpContext;
+        var scope = http is null ? null : HttpContextWorkstationTenantContextAccessor.Resolve(http);
+        if (scope is null || !scope.HasTenantScope || string.IsNullOrWhiteSpace(scope.CompanyId)
+            || !string.Equals(scope.TenantId, context.TenantId, StringComparison.Ordinal)
+            || !string.Equals(scope.Actor, context.Actor, StringComparison.Ordinal))
+            throw new IntercompanyAgreementForbiddenException("A tenant and company scoped operator is required for agreement evidence.");
+        if (agreementId == Guid.Empty || proposalId == Guid.Empty || evidence.Count == 0)
+            throw new IntercompanyAgreementValidationException("Retained agreement evidence is required.");
+
+        var resolved = new List<IntercompanyAgreementEvidenceDto>();
+        var verifiedVaults = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var reference in evidence)
+        {
+            if (!EvidenceVaultReference.TryParseCanonical(reference.Reference, out var vaultId))
+                throw new IntercompanyAgreementValidationException("Select a canonical retained Evidence Vault reference.");
+            var identity = await evidenceStore.TryGetVaultIdentityAsync(vaultId, context.TenantId,
+                scope.CompanyId, ct).ConfigureAwait(false);
+            if (identity is null)
+                throw new IntercompanyAgreementValidationException("Agreement evidence is unavailable in this scope.");
+            var artifacts = identity.Artifacts.Where(artifact => artifact.Document is not null
+                && (string.IsNullOrWhiteSpace(reference.ArtifactId)
+                    || string.Equals(artifact.ArtifactId, reference.ArtifactId, StringComparison.Ordinal))).ToArray();
+            if (artifacts.Length != 1)
+                throw new IntercompanyAgreementValidationException("Select one exact retained document artifact.");
+            var artifact = artifacts[0];
+            var document = artifact.Document!;
+            if (document.ReviewerState.Status != EvidenceDocumentReviewStatusDto.Accepted
+                || string.IsNullOrWhiteSpace(artifact.ContentHashSha256)
+                || !string.Equals(artifact.ContentHashSha256, document.SourceHashSha256, StringComparison.OrdinalIgnoreCase)
+                || (!string.IsNullOrWhiteSpace(reference.ContentHash)
+                    && !string.Equals(reference.ContentHash, artifact.ContentHashSha256, StringComparison.OrdinalIgnoreCase)))
+                throw new IntercompanyAgreementValidationException("Agreement evidence must be accepted and unchanged since review.");
+            if (verifiedVaults.Add(vaultId)
+                && !await evidenceStore.VerifyRetainedContentAsync(vaultId, context.TenantId, scope.CompanyId, ct).ConfigureAwait(false))
+                throw new IntercompanyAgreementValidationException("Retained agreement document content could not be verified.");
+            resolved.Add(new(EvidenceVaultReference.CanonicalPrefix + vaultId,
+                artifact.ArtifactId, artifact.ContentHashSha256.ToLowerInvariant()));
+        }
+        return resolved.Distinct().OrderBy(item => item.Reference, StringComparer.Ordinal)
+            .ThenBy(item => item.ArtifactId, StringComparer.Ordinal).ToArray();
+    }
+}

@@ -5,6 +5,8 @@ namespace Meridian.Contracts.Api;
 /// </summary>
 public static class UiApiRoutes
 {
+    public const string IntercompanyAgreements = "/api/fund-structure/intercompany-agreements";
+
     // Bounded accounting onboarding; retained comparisons and readiness never transfer authority.
     public const string OnboardingWorkspaces = "/api/accounting/onboarding/workspaces";
     public const string OnboardingWorkspace = "/api/accounting/onboarding/workspaces/{workspaceId:guid}";
@@ -444,6 +446,10 @@ public static class UiApiRoutes
     // Pricing hierarchy & golden copy
     public const string SecurityMasterPricingHierarchy = "/api/security-master/{securityId:guid}/pricing-hierarchy";
     public const string SecurityMasterPriceGoldenCopy = "/api/security-master/{securityId:guid}/price-golden-copy";
+    public const string SecurityMasterRetainedPriceObservations = "/api/security-master/{securityId:guid}/price-golden-copy/observations";
+    public const string SecurityMasterRateObservations = "/api/security-master/rates/observations";
+    public const string SecurityMasterRateIngest = "/api/security-master/rates/ingest";
+    public const string SecurityMasterObservedBondFixings = "/api/security-master/{securityId:guid}/observed-bond-fixings";
     public const string SecurityMasterPriceComparison = "/api/security-master/{securityId:guid}/price-comparison";
     public const string SecurityMasterRecordRawPrice = "/api/security-master/{securityId:guid}/raw-price";
 

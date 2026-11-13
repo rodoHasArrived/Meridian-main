@@ -29,9 +29,15 @@ public sealed class HistoricalHttpRetryTests
         var builder = services.AddHttpClient("retry-test").ConfigurePrimaryHttpMessageHandler(() => handler);
         switch (policy)
         {
-            case "standard": builder.AddSharedResiliencePolicy(); break;
-            case "custom": builder.AddCustomResiliencePolicy(); break;
-            case "tracked": builder.AddSharedResiliencePolicyTracked("retry-test", (_, _, _) => { }); break;
+            case "standard":
+                builder.AddSharedResiliencePolicy();
+                break;
+            case "custom":
+                builder.AddCustomResiliencePolicy();
+                break;
+            case "tracked":
+                builder.AddSharedResiliencePolicyTracked("retry-test", (_, _, _) => { });
+                break;
         }
         using var serviceProvider = services.BuildServiceProvider();
         using var provider = new TestHistoricalProvider(
@@ -65,7 +71,8 @@ public sealed class HistoricalHttpRetryTests
         var clock = new RequestBudgetTimeProvider();
         using var handler = new AttemptHandler(attempt =>
         {
-            if (attempt != 1) return Response(HttpStatusCode.OK);
+            if (attempt != 1)
+                return Response(HttpStatusCode.OK);
             var response = Response(HttpStatusCode.ServiceUnavailable);
             response.Headers.RetryAfter = useDate
                 ? new RetryConditionHeaderValue(clock.GetUtcNow().AddSeconds(45))
@@ -147,6 +154,75 @@ public sealed class HistoricalHttpRetryTests
     }
 
     [Fact]
+    public async Task QuotaWaitLongerThanAttemptTimeout_StartsFreshNetworkTimeoutAfterAdmission()
+    {
+        var clock = new RequestBudgetTimeProvider();
+        var timedOutSends = 0;
+        using var handler = new AsyncAttemptHandler(async (attempt, ct) =>
+        {
+            if (attempt == 1)
+                return Response(HttpStatusCode.TooManyRequests, TimeSpan.FromSeconds(45));
+            if (attempt == 2)
+            {
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+                }
+                catch (OperationCanceledException)
+                {
+                    Interlocked.Increment(ref timedOutSends);
+                    throw;
+                }
+            }
+            return Response(HttpStatusCode.OK);
+        });
+        using var provider = new TestHistoricalProvider(new HttpClient(handler), clock);
+        using var throttled = await provider.SendAsync();
+
+        var pending = provider.SendAsync();
+        await RequestBudgetTimeProvider.WaitUntilAsync(() => clock.HasTimerDueWithin(TimeSpan.FromSeconds(45)));
+        clock.Advance(TimeSpan.FromSeconds(31));
+        pending.IsCompleted.Should().BeFalse("quota waiting must not consume the 30-second network timeout");
+        handler.Attempts.Should().Be(1);
+        clock.Advance(TimeSpan.FromSeconds(14));
+        await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Attempts == 2 &&
+            clock.HasTimerDueWithin(TimeSpan.FromSeconds(30)));
+
+        clock.Advance(TimeSpan.FromSeconds(29));
+        timedOutSends.Should().Be(0, "the admitted send gets a fresh timeout budget");
+        clock.Advance(TimeSpan.FromSeconds(1));
+        await RequestBudgetTimeProvider.WaitUntilAsync(() => Volatile.Read(ref timedOutSends) == 1);
+        await RequestBudgetTimeProvider.WaitUntilAsync(() => clock.HasTimerDueWithin(TimeSpan.FromSeconds(30)));
+        clock.Advance(TimeSpan.FromSeconds(30));
+        using var response = await pending.WaitAsync(TimeSpan.FromSeconds(5));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        handler.Attempts.Should().Be(3, "the timed-out network attempt is retried exactly once before success");
+        provider.GetRateLimitInfo().RequestsMade.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task CallerCancellationDuringNetworkSend_PropagatesWithoutRetry()
+    {
+        var clock = new RequestBudgetTimeProvider();
+        using var cancellation = new CancellationTokenSource();
+        using var handler = new AsyncAttemptHandler(async (_, ct) =>
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return Response(HttpStatusCode.OK);
+        });
+        using var provider = new TestHistoricalProvider(new HttpClient(handler), clock);
+        var pending = provider.SendAsync(cancellation.Token);
+        await RequestBudgetTimeProvider.WaitUntilAsync(() => handler.Attempts == 1);
+
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => pending);
+
+        handler.Attempts.Should().Be(1);
+        provider.GetRateLimitInfo().RequestsMade.Should().Be(1);
+    }
+
+    [Fact]
     public void RetryAfterInPast_UsesZeroRatherThanInventingAnotherCooldown()
     {
         var clock = new RequestBudgetTimeProvider();
@@ -158,7 +234,8 @@ public sealed class HistoricalHttpRetryTests
     private static HttpResponseMessage Response(HttpStatusCode status, TimeSpan? retryAfter = null, HttpContent? content = null)
     {
         var response = new HttpResponseMessage(status) { Content = content ?? new StringContent("test") };
-        if (retryAfter is { } delay) response.Headers.RetryAfter = new RetryConditionHeaderValue(delay);
+        if (retryAfter is { } delay)
+            response.Headers.RetryAfter = new RetryConditionHeaderValue(delay);
         return response;
     }
 
@@ -168,6 +245,14 @@ public sealed class HistoricalHttpRetryTests
         public int Attempts => Volatile.Read(ref _attempts);
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
             Task.FromResult(respond(Interlocked.Increment(ref _attempts)));
+    }
+
+    private sealed class AsyncAttemptHandler(Func<int, CancellationToken, Task<HttpResponseMessage>> respond) : HttpMessageHandler
+    {
+        private int _attempts;
+        public int Attempts => Volatile.Read(ref _attempts);
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            respond(Interlocked.Increment(ref _attempts), cancellationToken);
     }
 
     private sealed class ObservedContent() : StringContent("transient failure")

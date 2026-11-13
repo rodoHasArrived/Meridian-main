@@ -15,7 +15,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Serves retained evidence artifacts and maps evidence workflow operations with subject-scope authorization.
 /// </summary>
-public static class EvidenceEndpoints
+public static partial class EvidenceEndpoints
 {
     public static WebApplication MapEvidenceEndpoints(
         this WebApplication app,
@@ -126,6 +126,7 @@ public static class EvidenceEndpoints
         .RequireWorkstationTenantCompanyScope();
 
         var group = app.MapGroup("/api/workstation/evidence");
+        MapSinglePrincipalAttestationEndpoints(group, jsonOptions);
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjects), async (HttpContext context) =>
         {
@@ -189,7 +190,7 @@ public static class EvidenceEndpoints
             if (scopeError is not null)
                 return scopeError;
             var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope,
-                BuildAmountReportAccess(context)).ConfigureAwait(false);
+                BuildAmountReportAccess(context), BuildPreparerAttestationReadContext(context)).ConfigureAwait(false);
             return graph is null
                 ? Results.NotFound(Error(
                     "evidence-subject-not-found",
@@ -661,7 +662,7 @@ public static class EvidenceEndpoints
         if (scopeError is not null)
             return (null, scopeError);
         var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope,
-            BuildAmountReportAccess(context)).ConfigureAwait(false);
+            BuildAmountReportAccess(context), BuildPreparerAttestationReadContext(context)).ConfigureAwait(false);
         return packet is null
             ? (null, Results.NotFound(Error(
                 "evidence-subject-not-found",

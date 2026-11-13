@@ -630,10 +630,9 @@ public sealed partial class PostgresCorporateActionOperationsStore
 
         var now = DateTimeOffset.UtcNow;
 
-        // A governed return out of Approved withdraws the maker-checker approval: the unconsumed
-        // approval is voided (audit-preserved) so posting can never consume an approval whose case
-        // left the approved state. Re-approval requires a fresh exact-version binding.
-        if (string.Equals(processingCase.State, CorporateActionCaseStates.Approved, StringComparison.Ordinal))
+        // A governed return withdraws its unconsumed decision while preserving its audit record.
+        // Preparer decisions stay distinct from maker-checker approvals and retain reservations.
+        if (processingCase.State is CorporateActionCaseStates.Approved or CorporateActionCaseStates.PreparerAttested)
         {
             await VoidActiveApprovalsAsync(
                     connection, transaction, processingCase.CaseId, request.Actor, now, ct)
@@ -1065,7 +1064,7 @@ public sealed partial class PostgresCorporateActionOperationsStore
             providerIdentity,
             displayMetadata);
 
-        var accountingStatus = reader.IsDBNull(38) && reader.IsDBNull(44)
+        var accountingStatus = reader.IsDBNull(38) && reader.IsDBNull(44) && reader.IsDBNull(46)
             ? null
             : new CorporateActionCaseAccountingStatusDto(
                 reader.IsDBNull(38) ? null : reader.GetGuid(38),
@@ -1075,7 +1074,10 @@ public sealed partial class PostgresCorporateActionOperationsStore
                 reader.IsDBNull(42) ? null : reader.GetGuid(42),
                 reader.IsDBNull(43) ? null : reader.GetString(43),
                 reader.IsDBNull(44) ? null : reader.GetGuid(44),
-                reader.IsDBNull(45) ? null : ReadTimestamp(reader, 45));
+                reader.IsDBNull(45) ? null : ReadTimestamp(reader, 45),
+                reader.IsDBNull(46) ? null : reader.GetGuid(46),
+                reader.IsDBNull(47) ? null : reader.GetString(47),
+                reader.IsDBNull(48) ? null : reader.GetString(48));
 
         return new CorporateActionProcessingCaseDto(
             reader.GetGuid(0),
@@ -1128,13 +1130,18 @@ public sealed partial class PostgresCorporateActionOperationsStore
                ap.projection_id, ap.bound_case_version,
                (ap.total_debits = ap.total_credits and ap.total_debits > 0) as projection_balanced,
                ap.prepared_by, aa.approval_id, aa.approved_by,
-               cp.journal_entry_id, cp.posted_at
+               coalesce(cp.journal_entry_id, cap.journal_entry_id), coalesce(cp.posted_at, cap.posted_at),
+               ca.attestation_id, ca.attested_by,
+               case when ca.attestation_id is not null then 'PreparerAttestation' else null end
         from {Qualified("corporate_action_processing_cases")} pc
         join {Qualified("corporate_action_source_proposals")} p on p.proposal_id = pc.proposal_id
         left join {Qualified("corporate_action_case_accounting_projections")} ap
             on ap.case_id = pc.case_id and ap.is_current
         left join {Qualified("corporate_action_case_accounting_approvals")} aa
             on aa.case_id = pc.case_id and aa.voided_at is null
+        left join {Qualified("cash_dividend_attestations")} ca
+            on ca.case_id = pc.case_id and ca.voided_at is null
+        left join {Qualified("cash_dividend_attestation_postings")} cap on cap.case_id = pc.case_id
         left join lateral (
             select p2.journal_entry_id, p2.posted_at
             from {Qualified("corporate_action_case_accounting_postings")} p2

@@ -38,6 +38,7 @@ CATALOG_SOURCE = (
     / "ProviderCapabilityDescriptorCatalog.cs"
 )
 IDENTITY_SOURCE = REPO_ROOT / "src" / "Meridian.ProviderSdk" / "ProviderIdentity.cs"
+ADAPTERS_ROOT = REPO_ROOT / "src" / "Meridian.Infrastructure" / "Adapters"
 
 # Fallback vocabulary if the masker cannot be parsed. The live list is read from
 # SensitiveValueMasker so this guard and the runtime redaction share one definition of "secret".
@@ -124,15 +125,36 @@ def canonical_family(name: str) -> str:
 
 
 def _descriptor_bodies() -> dict[str, str]:
-    """Read family descriptors, retaining nested exclusions and multiline declarations."""
+    """Read inline descriptors and the module descriptors aggregated by the catalog."""
     try:
         text = CATALOG_SOURCE.read_text(encoding="utf-8")
     except OSError:
         return {}
+    descriptors = _parse_descriptor_bodies(text)
+    for module_text in _referenced_module_sources(text):
+        descriptors.update(_parse_descriptor_bodies(module_text))
+    return descriptors
+
+
+def _parse_descriptor_bodies(text: str) -> dict[str, str]:
     return dict(re.findall(
-        r'new\(\s*"([a-z0-9_.-]+)"\s*,(.*?)(?=\bnew\(\s*"|\n\s*\];)',
+        r'new\(\s*"([a-z0-9_.-]+)"\s*,(.*?)(?=\bnew\(\s*"|\n\s*\];|\Z)',
         text, re.S,
     ))
+
+
+def _referenced_module_sources(catalog_text: str) -> list[str]:
+    """Follow only module descriptors explicitly referenced by the composition catalog."""
+    sources: list[str] = []
+    for module_name in sorted(set(re.findall(r"\b(\w+ProviderModule)\.Descriptor\b", catalog_text))):
+        paths = list(ADAPTERS_ROOT.rglob(f"{module_name}.cs"))
+        if len(paths) != 1:
+            continue
+        try:
+            sources.append(paths[0].read_text(encoding="utf-8"))
+        except OSError:
+            continue
+    return sources
 
 
 def _declares_capability(body: str, name: str, position: int) -> bool:
@@ -170,7 +192,7 @@ def _backfill_factory_bodies() -> dict[str, str]:
     try:
         text = PROVIDER_FACTORY_SOURCE.read_text(encoding="utf-8")
     except OSError:
-        return bodies
+        text = ""
 
     for match in re.finditer(
         r"(?:private|internal)\s+IHistoricalDataProvider\?\s+Create(\w+)BackfillProvider\s*\(", text
@@ -208,6 +230,17 @@ def _backfill_factory_bodies() -> dict[str, str]:
             continue
 
         bodies[canonical_family(match.group(1))] = body
+
+    # A migrated built-in owns its factory and enable predicate in its module. Keep the
+    # source-driven checks after relocation; catalog metadata alone does not establish a gate.
+    try:
+        catalog_text = CATALOG_SOURCE.read_text(encoding="utf-8")
+    except OSError:
+        return bodies
+    for module_text in _referenced_module_sources(catalog_text):
+        for family, descriptor in _parse_descriptor_bodies(module_text).items():
+            if _declares_capability(descriptor, "Historical", 1) and re.search(r"\bHistoricalFactory:", descriptor):
+                bodies[canonical_family(family)] = module_text
     return bodies
 
 
@@ -219,6 +252,15 @@ def backfill_activation() -> dict[str, str]:
             activation[family] = "opt-in"
         elif "EnabledByDefault" in body:
             activation[family] = "default-on"
+        else:
+            # Yahoo's module keeps the original default-on rule as a direct predicate over
+            # final host configuration. Read the comparison rather than hard-coding a policy
+            # for a known provider id; an opt-in change must change this guard's verdict too.
+            gates = [comparison.replace(" ", "") for name, comparison in re.findall(
+                r"\bBackfill\?\.Providers\?\.(\w+)\?\.Enabled\s*(==\s*true|!=\s*false)", body
+            ) if canonical_family(name) == family]
+            if gates and len(set(gates)) == 1:
+                activation[family] = "opt-in" if gates[0] == "==true" else "default-on"
     return activation
 
 

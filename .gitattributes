@@ -10,3 +10,9 @@ src/Meridian.Ui/dashboard/index.html text eol=lf
 src/Meridian.Ui/wwwroot/workstation/*.html text eol=lf
 src/Meridian.Ui/wwwroot/workstation/assets/*.js text eol=lf
 src/Meridian.Ui/wwwroot/workstation/assets/*.css text eol=lf
+
+# Retained visual evidence is stored outside ordinary Git blobs for new revisions.
+# Source diagrams (.mmd/.dot/.svg), Markdown and machine-readable manifests remain inspectable.
+docs/diagrams/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/screenshots/**/*.png filter=lfs diff=lfs merge=lfs -text
+docs/testing/evidence/**/*.png filter=lfs diff=lfs merge=lfs -text

@@ -61,11 +61,24 @@ flowchart LR
 | Financial Operations | `src/Meridian.FinancialOperations` | Own close, reconciliation, accounting-basis workflows, and preparation of governed ledger instructions |
 | Instruments | `src/Meridian.Instruments` | Own instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
 | Reference Data | `src/Meridian.ReferenceData` | Own asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
-| Reporting | `src/Meridian.Reporting` | Own governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
+| Reporting | `src/Meridian.Reporting` | Own template-governance lifecycle and access policy, governed report-pack behavior, report-writer grids, filters, formulas, lineage, publication, restatement, and report-generation semantics |
+| Reporting read models | `src/Meridian.Reporting.ReadModels` | Own leaf reporting and journal-backed readers over Contracts, Ledger, Reporting, and Storage.Accounting, with no UI, host, or provider implementation reference |
 | Identity and Access | `src/Meridian.Identity` | Own sessions, role profiles, scoped access, fund/account traversal authorization, and company-scoped user account/profile state |
 | Strategy/Backtesting | `src/Meridian.Strategies`, `src/Meridian.Backtesting*`, `src/Meridian.QuantScript` | Keep strategy definitions, validation, run evidence, promotion, replay, and supported scripting reusable outside UI |
 | UI Shared | `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` | Own workstation DTO projection and endpoint/read-model support for accounting configuration, private-capital drill-through, report packs, auth/session adapters, and shared browser/WPF workflows |
 | UI Surfaces | `src/Meridian.Ui/dashboard`, `src/Meridian.Wpf` | Keep views thin; put state, labels, disabled reasons, and commands in view models |
+
+## Feature composition and workflow projections
+
+`ServiceCompositionRoot` pairs market-data registration modules with activation predicates in one
+ordered plan. Host presets and custom flags select entries without changing the plan's order;
+configuration, coordination, storage, and ledger remain unconditional. Production composition and
+startup guards run after registration.
+
+Within Financial Operations, `OperationsContinuityWorkflowService` owns governed transitions and
+persistence coordination. Its internal `OperationsReviewedAutomationProjection` builds reviewed-
+automation guidance and artifact DTOs from workflow state and evidence. The projection performs no
+writes and grants no posting, approval, publication, or close authority.
 
 ## Boundary Checks
 
@@ -232,3 +245,11 @@ Dated factors absorb principal through their evidence date; later completed prin
 payments reduce the balance. Future-dated scalar factors do not price an earlier date,
 and an undated current factor is not reduced twice. This calculation is separate from
 posting a lot-factor paydown and does not activate its operator route.
+
+## Review boundary extraction
+
+Storage primitives no longer reference Ledger or Reporting. `Meridian.Storage.Accounting` owns
+business PostgreSQL adapters and composes those owners with Storage. Risk references execution SDK
+authorities; concrete controls, approval queues and audit services are supplied by the host.
+Strategies and FinancialOperations do not reference the provider Infrastructure assembly.
+See [review boundary extractions](review-boundary-extractions.md) for source and binary compatibility.

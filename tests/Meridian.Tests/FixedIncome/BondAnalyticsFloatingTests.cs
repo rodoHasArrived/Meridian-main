@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Storage;
 using FluentAssertions;
 using Meridian.Contracts.Calendars;
 using Meridian.Contracts.FixedIncome;
@@ -53,6 +55,84 @@ public sealed class BondAnalyticsFloatingTests
 
         var priced = (await service.CalculateAsync(Request(BondAnalyticsService.FloatingModelVersion, cleanPrice: result.CleanPrice)))!;
         priced.YieldToMaturity.Should().BeApproximately(0.03m, 0.000000001m, "solving the yield from the derived clean price round-trips");
+    }
+
+    [Theory]
+    [InlineData(SecurityPriceBasis.Clean, "98.5")]
+    [InlineData(SecurityPriceBasis.Dirty, "98.833333333333")]
+    public async Task V3_RetainedCleanAndDirtyQuotes_SolveTheSameYieldAndBindExactReceipt(
+        SecurityPriceBasis basis, string providerQuote)
+    {
+        var curves = new InMemorySecurityForwardCurveProvider();
+        curves.Publish(new SecurityForwardCurve("SOFR", new DateOnly(2026, 1, 1),
+            [new(new DateOnly(2026, 1, 1), 0.02m)], Source: "Synthetic forward curve"));
+        var query = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
+        query.Setup(value => value.GetByIdAsync(SecurityId, It.IsAny<CancellationToken>())).ReturnsAsync(Floating());
+        var pricing = new Mock<ISecurityMasterPricingService>(MockBehavior.Strict);
+        var receiptId = Guid.Parse("21bd9010-2de1-4b22-8ad5-1fe9c2932a14");
+        var settlement = new DateOnly(2026, 2, 15);
+        var observation = new SecurityPriceGoldenCopyDto(SecurityId,
+            decimal.Parse(providerQuote, System.Globalization.CultureInfo.InvariantCulture),
+            SecurityPriceKind.Raw, "synthetic-dealer", AsOf, false, 0, [], SecurityPriceUnit.PercentOfPar,
+            AsOf, AsOf.AddDays(-1), AsOf.AddHours(1), receiptId,
+            new(SecurityId, "account-a", [new(1, "synthetic-dealer", "Synthetic dealer", 1)], AsOf.AddDays(-1), "operator"))
+        {
+            Quotation = new(basis, SecurityQuotationConvention.Per100Face, SecurityQuoteStatus.Bid,
+                settlement, "Same-day synthetic settlement")
+        };
+        pricing.Setup(value => value.GetGoldenCopySelectionAsync(SecurityId, "account-a", receiptId,
+            It.IsAny<CancellationToken>())).ReturnsAsync(observation);
+        var service = new BondAnalyticsService(query.Object,
+            new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]),
+            forwardCurves: curves, pricing: pricing.Object);
+        var explicitClean = (await service.CalculateAsync(Request(BondAnalyticsService.FloatingModelVersion,
+            cleanPrice: 98.5m)))!;
+        var retainedRequest = Request(BondAnalyticsService.FloatingModelVersion) with
+        {
+            SelectionReceiptId = receiptId,
+            PriceAccountId = "account-a"
+        };
+
+        var retained = (await service.CalculateAsync(retainedRequest))!;
+        var replay = (await service.CalculateAsync(retainedRequest))!;
+
+        explicitClean.Blockers.Should().BeEmpty();
+        retained.Blockers.Should().BeEmpty();
+        retained.ModelVersion.Should().Be(BondAnalyticsService.FloatingModelVersion);
+        // The current observed fixing is 3% plus 100 bp: one 30/360 month of its semiannual
+        // 2-per-100 coupon accrues 1/3, rounded to the contractual kernel's twelve decimals.
+        retained.AccruedInterest.Should().Be(0.333333333333m);
+        retained.CleanPrice.Should().BeApproximately(98.5m, 0.00000001m);
+        retained.DirtyPrice.Should().BeApproximately(98.833333333333m, 0.00000001m,
+            "a retained dirty quote already contains accrued interest; it must not be counted twice");
+        retained.YieldToMaturity.Should().BeApproximately(explicitClean.YieldToMaturity!.Value, 0.000000001m);
+        retained.CashFlows.Should().Equal(explicitClean.CashFlows);
+        retained.SpreadDv01.Should().Be(explicitClean.SpreadDv01);
+        var receipt = retained.Inputs.Should().ContainSingle(input => input.Kind == "PriceSelectionReceipt").Subject;
+        receipt.VersionId.Should().Be(receiptId);
+        receipt.Key.Should().Be(receiptId.ToString("D"));
+        receipt.ContentSha256.Should().Be(Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(
+            JsonSerializer.Serialize(observation)), "the exact retained quote and its convention evidence identify the input");
+        replay.Inputs.Should().Equal(retained.Inputs);
+        pricing.Verify(value => value.GetGoldenCopySelectionAsync(SecurityId, "account-a", receiptId,
+            It.IsAny<CancellationToken>()), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task V1_RefusesRetainedObservation_WithoutChangingLegacyReplayInputs()
+    {
+        var request = Request(BondAnalyticsService.LegacyModelVersion) with
+        {
+            SelectionReceiptId = Guid.Parse("21bd9010-2de1-4b22-8ad5-1fe9c2932a14")
+        };
+        var result = (await Service(Fixed(), null).CalculateAsync(request))!;
+
+        result.ModelVersion.Should().Be(BondAnalyticsService.LegacyModelVersion);
+        result.Blockers.Should().ContainSingle().Which.Code.Should().Be("UnsupportedRetainedObservation");
+        result.CleanPrice.Should().BeNull();
+        result.YieldToMaturity.Should().BeNull();
+        result.CashFlows.Should().BeEmpty();
+        result.Inputs.Should().NotContain(input => input.Kind == "PriceSelectionReceipt");
     }
 
     [Fact]
@@ -196,11 +276,130 @@ public sealed class BondAnalyticsFloatingTests
             .And.NotContain("\"floatingCoupon\"");
     }
 
-    private static BondAnalyticsService Service(SecurityDetailDto security, ISecurityForwardCurveProvider? curves)
+    [Fact]
+    public async Task ExplicitObservedFixingPin_RepairsMissingReset_AndLaterReceiptsCannotChangePriorRequests()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "bond-fixing-analytics", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new FileBondObservedFixingStore(new StorageOptions { RootPath = root }, new FixedClock(AsOf));
+            var curves = new InMemorySecurityForwardCurveProvider();
+            curves.Publish(new SecurityForwardCurve("SOFR", new DateOnly(2026, 1, 1), [new(new DateOnly(2026, 1, 1), 0.02m)]));
+            var service = Service(Floating(resetSchedule: false), curves, store);
+            var request = Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m);
+            var before = (await service.CalculateAsync(request))!;
+            before.Blockers.Should().ContainSingle().Which.Code.Should().Be("MissingFixing");
+            var first = await store.RetainAsync(FixingCandidate());
+            var pinnedRequest = request with { Context = request.Context with { ObservedFixingReceiptIds = [first.ReceiptId] } };
+            var pinned = (await service.CalculateAsync(pinnedRequest))!;
+            pinned.IsBlocked.Should().BeFalse(string.Join(" ", pinned.Blockers.Select(blocker => blocker.Reason)));
+            pinned.CashFlows[0].Interest.Should().Be(2m);
+            pinned.CashFlows[0].FloatingCoupon!.Source.Should().Contain(first.ReceiptId.ToString("D")).And.Contain(first.ContentSha256);
+            pinned.Inputs.Should().Contain(input => input.Kind == "ObservedFixingReceipt" && input.VersionId == first.ReceiptId && input.ContentSha256 == first.ContentSha256);
+            await store.RetainAsync(FixingCandidate() with { RateFraction = 0.04m, Observation = FixingCandidate().Observation with { Value = 4m, OriginalValue = "4" } });
+            JsonSerializer.Serialize(await service.CalculateAsync(request)).Should().Be(JsonSerializer.Serialize(before), "unselected new receipts cannot repair or change a past request");
+            JsonSerializer.Serialize(await service.CalculateAsync(pinnedRequest)).Should().Be(JsonSerializer.Serialize(pinned), "a pinned receipt replays unchanged after another source value is retained");
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public async Task PinnedFixings_RefuseWrongSecurityVersionDuplicateDateAndExistingTermsSource()
+    {
+        var store = new Mock<IBondObservedFixingStore>();
+        var candidate = FixingCandidate();
+        var first = new BondObservedFixingReceipt(Guid.NewGuid(), candidate, AsOf, new string('a', 64));
+        var second = first with { ReceiptId = Guid.NewGuid() };
+        store.Setup(value => value.GetAsync(SecurityId, first.ReceiptId, It.IsAny<CancellationToken>())).ReturnsAsync(first);
+        store.Setup(value => value.GetAsync(SecurityId, second.ReceiptId, It.IsAny<CancellationToken>())).ReturnsAsync(second);
+        var request = Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m) with
+        { Context = new BondCalculationContext(AsOf) { ObservedFixingReceiptIds = [first.ReceiptId] } };
+        var existing = (await Service(Floating(), null, store.Object).CalculateAsync(request))!;
+        existing.Blockers.Should().ContainSingle().Which.Code.Should().Be("ObservedFixingSourceConflict");
+        var duplicate = (await Service(Floating(false), null, store.Object).CalculateAsync(request with
+        { Context = request.Context with { ObservedFixingReceiptIds = [first.ReceiptId, second.ReceiptId] } }))!;
+        duplicate.Blockers.Should().ContainSingle().Which.Code.Should().Be("ObservedFixingSourceConflict");
+        store.Setup(value => value.GetAsync(SecurityId, first.ReceiptId, It.IsAny<CancellationToken>())).ReturnsAsync(first with { Fixing = candidate with { SecurityVersion = 6 } });
+        (await Service(Floating(false), null, store.Object).CalculateAsync(request))!.Blockers.Should().ContainSingle().Which.Code.Should().Be("FixingReceiptContextMismatch");
+    }
+
+    [Theory]
+    [InlineData("recorded")]
+    [InlineData("retrieved")]
+    [InlineData("vintage")]
+    [InlineData("date")]
+    public async Task PinnedFixings_RespectExactResetAndKnowledgeCutoff(string futureFact)
+    {
+        var cutoff = AsOf.AddDays(5);
+        var candidate = FixingCandidate();
+        candidate = candidate with
+        {
+            Observation = candidate.Observation with
+            {
+                RetrievedAt = futureFact == "retrieved" ? cutoff.AddHours(1) : AsOf,
+                VintageDate = futureFact == "vintage" ? DateOnly.FromDateTime(cutoff.AddDays(1).UtcDateTime) : new DateOnly(2026, 1, 16),
+                ObservationDate = futureFact == "date" ? candidate.ResetDate.AddDays(-1) : candidate.ResetDate
+            }
+        };
+        var receipt = new BondObservedFixingReceipt(Guid.NewGuid(), candidate, futureFact == "recorded" ? cutoff.AddHours(1) : AsOf, new string('b', 64));
+        var store = new Mock<IBondObservedFixingStore>();
+        store.Setup(value => value.GetAsync(SecurityId, receipt.ReceiptId, It.IsAny<CancellationToken>())).ReturnsAsync(receipt);
+        var request = Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m) with
+        { Context = new BondCalculationContext(AsOf, KnownAt: cutoff) { ObservedFixingReceiptIds = [receipt.ReceiptId] } };
+        (await Service(Floating(false), null, store.Object).CalculateAsync(request))!.Blockers.Should().ContainSingle().Which.Code.Should().Be("FixingReceiptCutoffMismatch");
+    }
+
+    [Fact]
+    public async Task CorruptObservedFixingReceipt_ReturnsActionableBlockerWithoutMetrics()
+    {
+        var receiptId = Guid.NewGuid();
+        var store = new Mock<IBondObservedFixingStore>();
+        store.Setup(value => value.GetAsync(SecurityId, receiptId, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidDataException("Retained observed fixing content hash does not match"));
+        var request = Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m) with
+        { Context = new BondCalculationContext(AsOf) { ObservedFixingReceiptIds = [receiptId] } };
+        var result = (await Service(Floating(false), null, store.Object).CalculateAsync(request))!;
+        result.IsBlocked.Should().BeTrue();
+        result.Blockers.Should().ContainSingle().Which.Code.Should().Be("FixingReceiptUnavailable");
+        result.Blockers[0].Reason.Should().Contain("review its retained receipt");
+        result.CashFlows.Should().BeEmpty();
+        result.CleanPrice.Should().BeNull();
+        result.YieldToMaturity.Should().BeNull();
+    }
+
+    private static BondObservedFixingCandidate FixingCandidate() => new(SecurityId, 7, "SOFR", new DateOnly(2026, 1, 15), 0.03m,
+        new("fred", "SOFR", 3m, "3", SecurityRateUnit.Percent, "Percent", new DateOnly(2026, 1, 15), null,
+            new DateOnly(2026, 1, 16), new DateOnly(9999, 12, 31), AsOf.AddDays(-1), "lin", SecurityRateObservationKind.ObservedFixing, "USD"), "operator", "Reviewed exact-date reset");
+
+    [Fact]
+    public async Task LaterVintage_IsEligibleOnlyWithTheExplicitLaterKnowledgeCutoff_AndLegacyContextStaysUnchanged()
+    {
+        var candidate = FixingCandidate() with
+        {
+            Observation = FixingCandidate().Observation with
+            { VintageDate = DateOnly.FromDateTime(AsOf.AddDays(2).UtcDateTime), RetrievedAt = AsOf.AddDays(3) }
+        };
+        var receipt = new BondObservedFixingReceipt(Guid.NewGuid(), candidate, AsOf.AddDays(4), new string('c', 64));
+        var store = new Mock<IBondObservedFixingStore>();
+        store.Setup(value => value.GetAsync(SecurityId, receipt.ReceiptId, It.IsAny<CancellationToken>())).ReturnsAsync(receipt);
+        var curves = new InMemorySecurityForwardCurveProvider();
+        curves.Publish(new SecurityForwardCurve("SOFR", new DateOnly(2026, 1, 1), [new(new DateOnly(2026, 1, 1), 0.02m)]));
+        var request = Request(BondAnalyticsService.FloatingModelVersion, yield: 0.03m) with
+        { Context = new BondCalculationContext(AsOf, KnownAt: AsOf.AddDays(5)) { ObservedFixingReceiptIds = [receipt.ReceiptId] } };
+        var result = (await Service(Floating(false), curves, store.Object).CalculateAsync(request))!;
+        result.IsBlocked.Should().BeFalse(string.Join(" ", result.Blockers.Select(blocker => blocker.Reason)));
+        result.Inputs.Should().Contain(input => input.VersionId == receipt.ReceiptId && input.RecordedAt == receipt.RecordedAt);
+        JsonSerializer.Serialize(new BondCalculationContext(AsOf), new JsonSerializerOptions(JsonSerializerDefaults.Web))
+            .Should().NotContain("observedFixingReceiptIds", "the absent opt-in cannot alter v1/v2 or earlier v3 retained bytes");
+    }
+    private sealed class FixedClock(DateTimeOffset at) : TimeProvider { public override DateTimeOffset GetUtcNow() => at; }
+
+    private static BondAnalyticsService Service(SecurityDetailDto security, ISecurityForwardCurveProvider? curves, IBondObservedFixingStore? observedFixings = null)
     {
         var query = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
         query.Setup(value => value.GetByIdAsync(SecurityId, It.IsAny<CancellationToken>())).ReturnsAsync(security);
-        return new BondAnalyticsService(query.Object, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]), null, curves);
+        query.Setup(value => value.GetRecordedByIdAsOfAsync(SecurityId, It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>())).ReturnsAsync(security);
+        return new BondAnalyticsService(query.Object, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]), null, curves, observedFixings: observedFixings);
     }
 
     private static BondAnalyticsRequest Request(string version, decimal? yield = null, decimal? cleanPrice = null) =>

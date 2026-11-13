@@ -11,6 +11,20 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Infrastructure
 
+Gap inventory preserves date-only records as calendar dates before attempting timestamp parsing.
+Actual timestamp records still use their UTC date, regardless of the collector host's time zone.
+
+HTTP resilience applies a fresh timeout to each attempt inside the total operation budget.
+Quota responses (HTTP 429) pass straight through to provider handling, retaining `Retry-After`
+for the quota-aware backfill scheduler; they are neither generic retries nor circuit-breaker
+failures. Caller cancellation is also excluded from circuit-breaker failures.
+
+FRED supports a typed rates observation path alongside the legacy synthetic-bar compatibility API.
+Fixed-income ingestion uses original decimal text, provider units, observation date, publication
+(unknown when unavailable), vintage interval, retrieval time and transformation metadata. Constant-
+maturity Treasury yields are labeled par-curve observations and are never silently treated as
+zero rates or discount factors. Provider verification here is synthetic; live FRED access remains untested.
+
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 
 `BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.
@@ -22,7 +36,9 @@ The backfill worker's connectivity handler is documented as logging only; offlin
 `RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
 
 Historical HTTP requests use the base provider as their retry owner. Each send attempt acquires
-capacity, including retries; the named-client retry policy yields to these requests. Throttling
+capacity, including retries; the named-client retry policy yields to these requests. The network
+attempt timeout starts after quota acquisition, so waiting for pacing or a cooldown does not
+consume the request's network timeout. Throttling
 responses publish a cooldown even when returned to the caller, and `Retry-After` delays subsequent
 attempts. Twelve Data history, symbol search and corporate actions share the `api-requests` budget
 for the same API credential; different credentials and vendor quota groups retain separate budgets.
@@ -169,6 +185,13 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Historical Alpaca, Polygon Security Master ingest, and Robinhood option-contract pagination
+reject repeated continuation cursors. Failed Polygon ingest and Robinhood contract pages propagate
+failure rather than publishing partial data as a complete response. Continuation URLs are validated
+against the provider's HTTPS origin before credentials or rate-limit admission; Robinhood requests
+are paced and dispose their responses. Registry updates apply new provider limits to the existing
+limiter while retaining its current request history.
+
 Provider construction preserves the credential resolver's selected record, including missing,
 removed and deleted fields. Stored records cannot be overlaid by module settings; selected module
 sidecars cannot borrow missing fields from environment mappings. Alpaca historical, streaming,
@@ -303,6 +326,15 @@ for multi-capability adapters and isolates construction failures from other prov
 Options enumeration reuses successfully constructed module entries rather than retrying failed
 factories during catalog reads.
 `FredProviderModuleCompositionTests` and `ProviderModuleCompositionTests` cover these seams.
+`YahooFinanceProviderModule` owns Yahoo's historical registration, construction, and descriptor
+through the same module mechanism. Yahoo remains enabled without backfill configuration and
+requires no credentials; either the family switch or `Backfill.Providers.Yahoo.Enabled=false`
+keeps it unavailable. Its late availability check reads the final host configuration without
+network requests. Hosted consumers share the container-owned historical singleton, including its
+intraday aggregate interface, while standalone `ProviderFactory` calls delegate to the same local
+factory. The adapter's existing priority, rate limits, coverage, and HTTP behavior are retained.
+`YahooFinanceProviderModuleCompositionTests` covers default and disabled configurations,
+final host configuration, lifetime ownership, catalog inventory, and standalone compatibility.
 OpenFIGI's `ISymbolResolver` remains in the adapter inventory, while the operator matrix
 projects only its six supported surfaces and omits resolver-only rows. Streaming instrument coverage is independently
 declared, so Polygon's Forex/Crypto/Index historical coverage does not advertise unsupported

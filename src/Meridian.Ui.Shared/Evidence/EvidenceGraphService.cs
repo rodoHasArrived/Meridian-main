@@ -18,6 +18,7 @@ public sealed class EvidenceGraphService
     private readonly ILogger<EvidenceGraphService> _logger;
     private readonly PostedLedgerAmountProvenanceService? _postedLedgerAmounts;
     private readonly ReportLedgerAmountProvenanceService? _reportLedgerAmounts;
+    private readonly PreparerAttestationEvidenceProjectionService? _preparerAttestations;
 
     public EvidenceGraphService(
         EvidenceSubjectResolver subjectResolver,
@@ -27,7 +28,8 @@ public sealed class EvidenceGraphService
         IWorkflowActionCatalog? actionCatalog = null,
         EvidencePacketValidationService? validationService = null,
         PostedLedgerAmountProvenanceService? postedLedgerAmounts = null,
-        ReportLedgerAmountProvenanceService? reportLedgerAmounts = null)
+        ReportLedgerAmountProvenanceService? reportLedgerAmounts = null,
+        PreparerAttestationEvidenceProjectionService? preparerAttestations = null)
     {
         _subjectResolver = subjectResolver ?? throw new ArgumentNullException(nameof(subjectResolver));
         _templateRegistry = templateRegistry ?? throw new ArgumentNullException(nameof(templateRegistry));
@@ -37,6 +39,7 @@ public sealed class EvidenceGraphService
         _validationService = validationService ?? new EvidencePacketValidationService();
         _postedLedgerAmounts = postedLedgerAmounts;
         _reportLedgerAmounts = reportLedgerAmounts;
+        _preparerAttestations = preparerAttestations;
     }
 
     public Task<IReadOnlyList<EvidenceSubjectDto>> ListSubjectsAsync(CancellationToken ct = default)
@@ -50,17 +53,20 @@ public sealed class EvidenceGraphService
         CancellationToken ct = default,
         Guid? ledgerBookId = null,
         LedgerAmountScopeDto? ledgerAmountScope = null,
-        ReportAccessQueryContext? reportAccess = null)
+        ReportAccessQueryContext? reportAccess = null,
+        PreparerAttestationEvidenceReadContext? attestationReadContext = null)
     {
         // Amount proof has one authority. General contributors must never add unrelated cases.
         if (string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase))
         {
             if (ReportLedgerAmountProvenanceService.IsReportSubject(subjectId))
-                return _reportLedgerAmounts is null || ledgerAmountScope is null ? null
-                    : await _reportLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, reportAccess, ct).ConfigureAwait(false);
-            return _postedLedgerAmounts is null || ledgerAmountScope is null
+                return await AddPreparerDisclosuresAsync(_reportLedgerAmounts is null || ledgerAmountScope is null ? null
+                    : await _reportLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, reportAccess, ct).ConfigureAwait(false),
+                    attestationReadContext, ct).ConfigureAwait(false);
+            return await AddPreparerDisclosuresAsync(_postedLedgerAmounts is null || ledgerAmountScope is null
                 ? null
-                : await _postedLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, ct).ConfigureAwait(false);
+                : await _postedLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, ct).ConfigureAwait(false),
+                attestationReadContext, ct).ConfigureAwait(false);
         }
 
         var subject = await _subjectResolver.ResolveAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
@@ -160,7 +166,7 @@ public sealed class EvidenceGraphService
             actions[action.ActionId] = action;
         }
 
-        return new EvidencePacketDto(
+        var packet = new EvidencePacketDto(
             Subject: subject,
             GeneratedAt: generatedAt,
             Nodes: nodeList,
@@ -171,6 +177,7 @@ public sealed class EvidenceGraphService
         {
             ProofChain = proofChain
         };
+        return await AddPreparerDisclosuresAsync(packet, attestationReadContext, ct).ConfigureAwait(false);
     }
 
     public async Task<EvidenceGraphDto?> GetGraphAsync(
@@ -179,15 +186,29 @@ public sealed class EvidenceGraphService
         CancellationToken ct = default,
         Guid? ledgerBookId = null,
         LedgerAmountScopeDto? ledgerAmountScope = null,
-        ReportAccessQueryContext? reportAccess = null)
+        ReportAccessQueryContext? reportAccess = null,
+        PreparerAttestationEvidenceReadContext? attestationReadContext = null)
     {
-        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId, ledgerAmountScope, reportAccess).ConfigureAwait(false);
+        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId, ledgerAmountScope,
+            reportAccess, attestationReadContext).ConfigureAwait(false);
         return packet is null
             ? null
             : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings)
             {
-                ProofChain = packet.ProofChain
+                ProofChain = packet.ProofChain,
+                PreparerAttestations = packet.PreparerAttestations
             };
+    }
+
+    private async Task<EvidencePacketDto?> AddPreparerDisclosuresAsync(EvidencePacketDto? packet,
+        PreparerAttestationEvidenceReadContext? context, CancellationToken ct)
+    {
+        if (packet is null || _preparerAttestations is null || context is null)
+            return packet;
+        return packet with
+        {
+            PreparerAttestations = await _preparerAttestations.ProjectAsync(packet, context, ct).ConfigureAwait(false)
+        };
     }
 
     private IReadOnlyList<WorkflowActionDto> ResolveEvidenceActions()

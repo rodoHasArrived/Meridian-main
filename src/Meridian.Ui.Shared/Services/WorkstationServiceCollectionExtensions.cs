@@ -85,6 +85,8 @@ public static class WorkstationServiceCollectionExtensions
 {
     public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null)
     {
+        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport,
+            CorporateActionCashDividendReconciliationSupport>();
         services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         services.TryAddSingleton<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>();
         services.AddHostedService(sp => sp.GetRequiredService<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>());
@@ -153,6 +155,14 @@ public static class WorkstationServiceCollectionExtensions
         // This accessor retains only singleton IHttpContextAccessor and rereads its AsyncLocal
         // request each time, so singleton accounting guards can consume it without capturing a scope.
         services.TryAddSingleton<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
+        // Agreement writes require durable tenant-partitioned authority. An unconfigured local
+        // fund-structure graph must not silently become a production agreement registry.
+        if (services.Any(static descriptor => descriptor.ServiceType == typeof(Meridian.Storage.FundStructure.IIntercompanyAgreementStore)))
+        {
+            services.TryAddSingleton<IIntercompanyAgreementAccessAuthority, HttpContextIntercompanyAgreementAccessAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementEvidenceAuthority, WorkstationIntercompanyAgreementEvidenceAuthority>();
+            services.TryAddSingleton<IIntercompanyAgreementService, IntercompanyAgreementService>();
+        }
         // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
         // otherwise HTTP scope must take precedence over any ambient background authority.
         services.AddFundScopeTenantServices<WorkstationFundScopeTenantAccessor>();
@@ -502,6 +512,8 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RiskEscalationQueueService>>(),
             sp.GetService<ExecutionAuditTrailService>(),
             sp.GetService<RiskEscalationQueueOptions>()));
+        services.TryAddSingleton<Meridian.Execution.Services.IRiskEscalationQueue>(sp =>
+            sp.GetRequiredService<RiskEscalationQueueService>());
         // On-trip kill switch: when a Critical rule trips the circuit breaker automatically,
         // the same cancel-all sweep the operator breaker endpoint performs must empty the open
         // book — a halt that only blocks new submissions leaves resting orders filling. The
@@ -1251,17 +1263,18 @@ public static class WorkstationServiceCollectionExtensions
                 ResolveWorkstationDataDirectory(sp),
                 logger,
                 sp.GetService<IReconciliationSlaPolicyProvider>(),
-                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>());
+                slaCalendarResolver: sp.GetRequiredService<IReconciliationSlaCalendarResolver>(),
+                preparerAttestationReferences: sp.GetRequiredService<Meridian.Contracts.Operations.IPreparerAttestationReferenceClassifier>());
         });
         services.TryAddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
             new StatementReconciliationCaseworkHandoffService(
                 sp.GetRequiredService<IReconciliationBreakQueueRepository>(),
-                sp.GetService<Meridian.Infrastructure.Reconciliation.IReconciliationBreakStore>(),
-                sp.GetService<Meridian.Infrastructure.Reconciliation.IReconciliationCaseStore>(),
+                sp.GetService<Meridian.DataIntegration.Reconciliation.IReconciliationBreakStore>(),
+                sp.GetService<Meridian.DataIntegration.Reconciliation.IReconciliationCaseStore>(),
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<ILedgerJournalStore>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementCaseworkCommitStore>()));
+                sp.GetRequiredService<Meridian.DataIntegration.Reconciliation.IStatementCaseworkCommitStore>()));
         services.TryAddSingleton<SecurityMasterExceptionCaseworkService>(sp =>
             new SecurityMasterExceptionCaseworkService(
                 sp.GetService<IReconciliationBreakQueueRepository>(),
@@ -1282,8 +1295,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<Meridian.Contracts.Reconciliation.IReconciliationApiService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>(),
+                sp.GetRequiredService<Meridian.DataIntegration.Reconciliation.ICanonicalStatementStore>(),
+                sp.GetRequiredService<Meridian.DataIntegration.Reconciliation.IStatementRunMatchArtifactStore>(),
                 sp.GetRequiredService<IStatementRunRecoveryRepository>()));
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(

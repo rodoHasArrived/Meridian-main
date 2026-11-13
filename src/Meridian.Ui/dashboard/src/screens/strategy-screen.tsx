@@ -1,42 +1,39 @@
-import { DetailFields } from "@/components/meridian/detail-pane";
-import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
-import { useEffect, useMemo, useRef } from "react";
-import type { ReactNode } from "react";
-import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Histogram } from "@/components/charts";
+import { CompareToggle } from "@/components/charts/SelectionCompare";
+import { Sparkline } from "@/components/charts/Sparkline";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
-import { StatStrip } from "@/components/meridian/stat-strip";
-import { QuantNotebook } from "@/components/meridian/quant-notebook";
-import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
-import { EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { TableWorkbench, tableColumnsWithExport, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { DetailFields } from "@/components/meridian/detail-pane";
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { EntityLink } from "@/components/meridian/entity-inspector";
-import { Sparkline } from "@/components/charts/Sparkline";
-import { exportTableQuery } from "@/lib/table-workbench";
-import { formatNumber } from "@/lib/format";
-import { Histogram } from "@/components/charts";
-import {
-  CompareSheet,
-  CompareToggle,
-  CompareTray,
-  SelectionCompareProvider,
-  useSelectionCompare
-} from "@/components/charts/SelectionCompare";
-import type { CompareSheetColumn } from "@/components/charts/SelectionCompare";
+import { QuantNotebook } from "@/components/meridian/quant-notebook";
+import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { tableColumnsWithExport, TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { TechnicalDetails } from "@/components/ui/technical-details";
-import { cn } from "@/lib/utils";
-import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import {
-  buildStrategyEquityPathCompareItem,
-  useStrategyEquityPathCompare,
-  useStrategyRunLibraryViewModel
-} from "@/screens/strategy-screen.view-model";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { formatNumber } from "@/lib/format";
+import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
+import { exportTableQuery } from "@/lib/table-workbench";
+import { cn } from "@/lib/utils";
+import { StrategyRunEquityPathCompare } from "@/screens/strategy-screen.equity-paths";
 import type {
   StrategyComparisonTableRow,
   StrategyDiffChangeRow,
@@ -51,11 +48,21 @@ import type {
   StrategyPlotStudyItem,
   StrategyPlotWorkspaceState,
   StrategyPromotionHistoryRow,
-  StrategyRunLibraryState,
   StrategyRunTableRow
 } from "@/screens/strategy-screen.view-model";
-import type { StrategyRunRecord, StrategyWorkspaceResponse } from "@/types";
-import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { buildStrategyEquityPathCompareItem, useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
+import type { StrategyWorkspaceResponse } from "@/types";
+import {
+  BarChart3,
+  BookOpenText,
+  ChartScatter,
+  Network,
+  Sigma,
+  Sparkles
+} from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { StrategyOverviewHub } from "./strategy-overview-hub";
 
 interface StrategyScreenProps {
   data: StrategyWorkspaceResponse | null;
@@ -245,78 +252,6 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
     description: "PlotTool workstation: scatter analysis, notebooks, and statistics."
   }
 };
-
-/** Drops a run from the equity-path set when the run library no longer lists it. */
-function EquityPathCompareRowSync({ runIds }: { runIds: readonly string[] }) {
-  const { items, remove } = useSelectionCompare();
-  useEffect(() => {
-    for (const item of items) {
-      if (!runIds.includes(item.id)) {
-        remove(item.id);
-      }
-    }
-  }, [items, remove, runIds]);
-  return null;
-}
-
-/**
- * Equity paths on one scale for the Strategy run library: the design-system SelectionCompare
- * tray and inline sheet, wired the way the package's strategy-runs template wires them. The set
- * (up to six runs) is visual only and independent of the two-run compare / diff / promote
- * selection. Curves are read when the chart is opened, not before.
- */
-function StrategyRunEquityPathCompare({ runs, children }: { runs: StrategyRunRecord[]; children: ReactNode }) {
-  const equityPaths = useStrategyEquityPathCompare(runs);
-  const runIds = useMemo(() => runs.map((run) => run.id), [runs]);
-  const { viewFor } = equityPaths;
-  const tableColumns = useMemo<CompareSheetColumn[]>(() => [
-    { id: "curve-dates", label: "Curve dates", render: (item) => viewFor(item.id).curveDatesText },
-    { id: "curve-points", label: "Curve points", numeric: true, render: (item) => viewFor(item.id).curvePointsText },
-    { id: "initial-equity", label: "Initial equity (reported)", numeric: true, render: (item) => viewFor(item.id).initialEquityText },
-    { id: "final-equity", label: "Final equity (reported)", numeric: true, render: (item) => viewFor(item.id).finalEquityText }
-  ], [viewFor]);
-
-  return (
-    <SelectionCompareProvider
-      max={equityPaths.maxRuns}
-      categories={equityPaths.categories}
-      format={equityPaths.formatIndex}
-      onChange={equityPaths.onCompareSetChange}
-      onOpenChange={equityPaths.onSheetOpenChange}
-    >
-      <EquityPathCompareRowSync runIds={runIds} />
-      <CompareTray
-        label="runs to compare"
-        emptyLabel={`Tick ▢ Chart on two or more runs to compare their equity paths on one scale (up to ${equityPaths.maxRuns}). This set only draws a chart; it is separate from the two-run selection used by Compare, Diff and Promote.`}
-        regionLabel="Equity path comparison set"
-        compareLabel={(count) => count >= 2 ? `Chart ${count} equity paths` : "Chart equity paths"}
-        compareDisabledReason="Tick ▢ Chart on at least two runs to chart their equity paths."
-        removeLabel={(item) => `Remove ${item.title} from the equity path set`}
-        fullLabel={(max) => `Set is full (${max}). Remove a run to chart another.`}
-      />
-      <CompareSheet
-        mode="inline"
-        title="Equity paths on one scale"
-        footerLabel="Total return"
-        footerValue={equityPaths.totalReturnFor}
-        seriesFor={equityPaths.seriesFor}
-        categoryLabels={equityPaths.categoryLabels}
-        tableColumns={tableColumns}
-        itemColumnLabel="Run"
-        closeLabel="Close equity path chart"
-        basis={(
-          <ul className="list-disc space-y-1 pl-5">
-            <li>{equityPaths.basisText.value}</li>
-            <li>{equityPaths.basisText.category}</li>
-            <li>{equityPaths.basisText.footer}</li>
-            <li>{equityPaths.basisText.asOf}</li>
-          </ul>
-        )}
-      />
-      {children}
-    </SelectionCompareProvider>
-  );
-}
 
 export function StrategyScreen({ data }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
@@ -1709,8 +1644,9 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="h-[180px] w-full" role="img" aria-label={vm.distributionChart.ariaLabel}>
+            <div className="h-[180px] w-full">
               <Histogram
+                ariaLabel={vm.distributionChart.ariaLabel}
                 bins={vm.distributionChart.bars.map((bar, index) => ({
                   x0: index,
                   x1: index + 1,
@@ -1929,86 +1865,6 @@ function PlotToolScatterChart({
         </>
       ) : null}
     </svg>
-  );
-}
-
-const strategyHubRoutes = [
-  {
-    id: "designer",
-    title: "Design strategies",
-    description: "Compose cells, inspect field vocabulary, and review backtest proof.",
-    href: "/strategy/designer",
-    action: "Open Designer"
-  },
-  {
-    id: "lab",
-    title: "Inspect PlotTool",
-    description: "Review retained notebooks, scatter observations, and statistical evidence.",
-    href: "/strategy/lab",
-    action: "Open Strategy Lab"
-  },
-  {
-    id: "promotions",
-    title: "Review retained runs",
-    description: "Compare candidates and review paper-promotion evidence.",
-    href: "/strategy/promotions",
-    action: "Open Promotions"
-  },
-  {
-    id: "quant-lab",
-    title: "Run Quant Lab",
-    description: "Compile scripts against governed price, statistics, and backtest APIs.",
-    href: "/strategy/quant-lab",
-    action: "Open Quant Lab"
-  },
-  {
-    id: "covered-call",
-    title: "Model covered calls",
-    description: "Configure a chain preview and review backtest payoff evidence.",
-    href: "/strategy/covered-call",
-    action: "Open Covered Call"
-  }
-] as const;
-
-function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
-  const plotToolConnected = vm.plotTool.workspace.statusBadgeLabel !== "NOT CONNECTED";
-  const runs = vm.runs.map((run) => ({
-    id: run.id,
-    title: run.strategyName,
-    description: `${run.engine} · ${run.mode} · ${run.dataset}`,
-    status: run.status,
-    href: `/strategy/promotions?runId=${encodeURIComponent(run.id)}`,
-    actionLabel: "Review run",
-    facts: [
-      { label: "Run", value: run.id },
-      { label: "Engine", value: run.engine },
-      { label: "Mode", value: run.mode },
-      { label: "Dataset", value: run.dataset },
-      { label: "Window", value: run.window },
-      { label: "P&L", value: run.pnl },
-      { label: "Sharpe", value: run.sharpe },
-      { label: "Updated", value: run.lastUpdated },
-      { label: "Notes", value: run.notes }
-    ]
-  }));
-  return (
-    <section className="space-y-3" aria-label="Strategy run workbench">
-      <WorkspaceTaskWorkbench title="Retained strategy runs" description="Select a run to inspect its source, results, and next review action. Comparison and promotion controls remain in the run library." items={runs} stateKey="strategyRun" emptyText="No retained runs are available yet. Open a focused lab to create or inspect strategy evidence." />
-      <div className="workspace-task-health" role="status">
-        <strong>PlotTool analytics</strong>
-        <Badge variant={vm.plotTool.workspace.statusBadgeVariant}>{vm.plotTool.workspace.statusBadgeLabel}</Badge>
-        {!plotToolConnected ? <Link to="/settings/providers" className="text-xs font-semibold text-primary underline" aria-label="Review provider connections for PlotTool analytics">Review provider connections</Link> : null}
-      </div>
-      <TechnicalDetails label="Run coverage and analytics posture">
-        <section aria-label={vm.runHistorySummary.ariaLabel} className="workspace-task-facts">
-          {vm.runHistorySummary.cards.map((card) => <div key={card.id}><strong>{card.label}: {card.value}</strong><p>{card.detail}</p></div>)}
-        </section>
-      </TechnicalDetails>
-      <details className="workspace-task-disclosure">
-        <summary>Strategy authoring and analysis tools</summary>
-        <WorkspaceTaskWorkbench title="Strategy tasks" description="Open the focused authoring, analytics, or promotion workflow." items={strategyHubRoutes.map((route) => ({ ...route, actionLabel: route.action }))} stateKey="strategyTask" />
-      </details>
-    </section>
   );
 }
 

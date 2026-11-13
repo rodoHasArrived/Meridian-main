@@ -51,6 +51,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected readonly ILogger Log;
     protected readonly ResiliencePipeline<HttpResponseMessage> ResiliencePipeline;
     private readonly HttpResponseHandler _responseHandler;
+    private readonly ResiliencePipeline<HttpResponseMessage> _requestTimeoutPipeline;
     private readonly object _rateLimitSync = new();
     private readonly TimeProvider _timeProvider;
     private readonly ConditionalWeakTable<HttpResponseMessage, object> _responsesWithCooldown = new();
@@ -200,7 +201,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                 circuitBreakerFailureThreshold: 5,
                 circuitBreakerDuration: TimeSpan.FromSeconds(30),
                 requestTimeout: TimeSpan.FromSeconds(30),
-                timeProvider: _timeProvider)
+                timeProvider: _timeProvider,
+                includeAttemptTimeout: false)
+            : ResiliencePipeline<HttpResponseMessage>.Empty;
+        _requestTimeoutPipeline = enableResilience
+            ? HttpResiliencePolicy.CreateTimeoutPipeline(TimeSpan.FromSeconds(30), _timeProvider)
             : ResiliencePipeline<HttpResponseMessage>.Empty;
 
         // Initialize centralized HTTP response handler (Name property must be available).
@@ -332,7 +337,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             token.ThrowIfCancellationRequested();
             using var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
-            var response = await Http.SendAsync(request, token).ConfigureAwait(false);
+            // Quota waiting belongs to the total operation budget; the network attempt gets
+            // its own fresh timeout only after it is admitted by the shared limiter.
+            var response = await _requestTimeoutPipeline.ExecuteAsync(
+                async sendToken => await Http.SendAsync(request, sendToken).ConfigureAwait(false),
+                token).ConfigureAwait(false);
             var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _timeProvider);
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
                 (!response.IsSuccessStatusCode && retryAfter.HasValue))

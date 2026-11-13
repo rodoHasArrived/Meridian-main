@@ -3,7 +3,8 @@ import { getProviderCapabilityMatrix } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import type {
   ProviderCapabilityMatrixResponse,
-  ProviderDiscoveryFailure
+  ProviderDiscoveryFailure,
+  ProviderFixedIncomeTaskCapability
 } from "@/types";
 
 export type CapabilityMatrixFetcher = typeof getProviderCapabilityMatrix;
@@ -21,6 +22,7 @@ export interface CapabilityMatrixRowModel {
   providerId: string;
   declaredCount: number;
   cells: CapabilityMatrixCellModel[];
+  fixedIncomeTasks: ProviderFixedIncomeTaskCapability[];
 }
 
 export interface CapabilityMatrixModel {
@@ -54,6 +56,7 @@ export function buildCapabilityMatrixModel(response: ProviderCapabilityMatrixRes
   const rows = response.providers.map((provider) => ({
     providerId: provider.providerId,
     declaredCount: provider.declaredInstrumentTypes.length,
+    fixedIncomeTasks: provider.fixedIncomeTasks ?? [],
     cells: provider.cells.map((cell) => {
       const active = CAPABILITY_LEGEND.filter((mark) => cell[mark.flag]);
       return {

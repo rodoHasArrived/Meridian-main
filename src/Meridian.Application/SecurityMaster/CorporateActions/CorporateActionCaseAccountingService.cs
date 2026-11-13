@@ -1,6 +1,7 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
@@ -19,7 +20,8 @@ namespace Meridian.Application.SecurityMaster.CorporateActions;
 /// evidence, or the required maker-checker approval is missing, and a failed attempt leaves the
 /// case recoverable in its prior state.
 /// </summary>
-public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseAccountingService
+public sealed partial class CorporateActionCaseAccountingService : ICorporateActionCaseAccountingService,
+    ICorporateActionCashDividendAccountingService
 {
     private const string PostingIdempotencyKeyPrefix = "corporate-action-posting/v1:";
     private const string CaseSourceSystem = "meridian-corporate-action-case";
@@ -28,17 +30,23 @@ public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseA
     private readonly IAssetAccountingEventProjectionStore? _spineStore;
     private readonly IAccountingPostingCandidatePostService? _postingService;
     private readonly ILedgerBookService? _ledgerBookService;
+    private readonly ICorporateActionCashDividendAccountingStore? _cashDividendStore;
+    private readonly ICorporateActionCashDividendEligibilityResolver? _cashDividendEligibility;
 
     public CorporateActionCaseAccountingService(
         ICorporateActionOperationsStore store,
         IAssetAccountingEventProjectionStore? spineStore = null,
         IAccountingPostingCandidatePostService? postingService = null,
-        ILedgerBookService? ledgerBookService = null)
+        ILedgerBookService? ledgerBookService = null,
+        ICorporateActionCashDividendAccountingStore? cashDividendStore = null,
+        ICorporateActionCashDividendEligibilityResolver? cashDividendEligibility = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _spineStore = spineStore;
         _postingService = postingService;
         _ledgerBookService = ledgerBookService;
+        _cashDividendStore = cashDividendStore ?? store as ICorporateActionCashDividendAccountingStore;
+        _cashDividendEligibility = cashDividendEligibility;
     }
 
     public async Task<CorporateActionAccountingProjectionMutationResultDto> AttachProjectionAsync(
@@ -115,6 +123,9 @@ public sealed class CorporateActionCaseAccountingService : ICorporateActionCaseA
         RequireId(request.ProjectionId, "ProjectionId");
         RequireCorporateActionText(request.Reason, "Reason");
         RequireCanonicalSha256(request.EvidenceHash, "EvidenceHash");
+        if (request.ApprovalId is { } approvalIdentity && PreparerAttestationApprovalBoundary.IsReservedReceiptId(approvalIdentity)
+            || PreparerAttestationApprovalBoundary.IsReservedReference(request.EvidenceReference))
+            throw new CorporateActionValidationException("A preparer attestation cannot be used as an ordinary independent accounting approval or its evidence reference.");
         if (!CorporateActionEvidenceKinds.IsTrustedReference(request.EvidenceReference))
         {
             throw new CorporateActionValidationException(
