@@ -2162,7 +2162,8 @@ Meridian-main
 │   │   │   │   ├── page-071.md
 │   │   │   │   ├── page-072.md
 │   │   │   │   ├── page-073.md
-│   │   │   │   └── page-074.md
+│   │   │   │   ├── page-074.md
+│   │   │   │   └── page-075.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -6997,6 +6998,7 @@ Meridian-main
 │   │   ├── Interop.CashFlow.fs
 │   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.fs
+│   │   ├── Interop.SecurityFlatWriterParts.fs
 │   │   ├── Interop.SecurityMaster.fs
 │   │   ├── Interop.SecurityMaster.GeneratedWriter.fs
 │   │   ├── Interop.SecurityStructures.fs

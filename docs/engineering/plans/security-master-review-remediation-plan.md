@@ -610,9 +610,12 @@ from one binding table (`SecurityAssetTermsCodecBindings`): the decode arm in
 
 Cohort 2 (2026-11-12) added a module-level row kind and generated Deposit,
 CertificateOfDeposit, CommercialPaper and CashSweep, so 24 of 32 classes are generated. Eight
-remain hand-written: five need the structural codecs named in the table (Bond, Swap, DirectLoan,
-StructuredCredit, CommitmentGuarantee) and three have bespoke decodes (Equity, InvestmentFund,
-CustomAsset). See the review record for the split.
+remained hand-written at that point.
+
+Cohort 3 (2026-11-13) added list, computed and multi-key row kinds plus per-class decode inputs.
+It generated the five structural classes (Bond, Swap, DirectLoan, StructuredCredit,
+CommitmentGuarantee), so 29 of 32 classes are generated. Three remain hand-written because their
+decodes are bespoke: Equity, InvestmentFund and CustomAsset. See the review record for the split.
 
 ## Accrual and accounting follow-through — 2026-11-12
 

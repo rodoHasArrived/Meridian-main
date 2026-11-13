@@ -2,11 +2,27 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 572. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 574. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecord["SecurityProjectionRecord"] {
+        +IReadOnlyList~SecurityAliasDto~ Aliases
+        +string AssetClass
+        +JsonElement AssetSpecificTerms
+        +JsonElement CommonTerms
+        +string Currency
+        +string DisplayName
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +IReadOnlyList~SecurityIdentifierDto~ Identifiers
+        +string PrimaryIdentifierKind
+        +string PrimaryIdentifierValue
+        +JsonElement Provenance
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecordExtensions["SecurityProjectionRecordExtensions"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityQuotationConvention["SecurityQuotationConvention"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityQuoteConvention["SecurityQuoteConvention"] {
@@ -126,9 +142,11 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityTermBinding["SecurityTermBinding"] {
         +string? DecodeExpression
         +bool DecodeOnly
+        +IReadOnlyList~SecurityListItemBinding~? Items
         +string? Key
         +string Path
         +SecurityTermRead? Read
+        +string? WriteExpression
         +bool WriteOnly
         +string? WriteVia
     }
@@ -429,18 +447,7 @@ classDiagram
         +decimal Amount
         +DateOnly PaymentDate
     }
-    class Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry["StructuredStepCouponEntry"] {
-        +DateOnly EffectiveDate
-        +decimal Rate
-    }
-    class Meridian_Contracts_SecurityMaster_SubscriptionCorporateActionTerms["SubscriptionCorporateActionTerms"] {
-        +string EventType
-        +decimal? PricePerUnit
-        +decimal? RightsPerHeldUnit
-        +Guid? RightsSecurityId
-        +Guid? SuccessorSecurityId
-        +decimal? UnitsPerRight
-    }
+    Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityRateFieldUnits --> Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration
     Meridian_Contracts_SecurityMaster_SecurityRateIngestionPointDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
     Meridian_Contracts_SecurityMaster_SecurityRateObservationDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationKind
@@ -486,7 +493,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto
