@@ -19,7 +19,7 @@ remaining compatibility-lane cleanup.
 | Lookup material | `docs/reference/` | Keep APIs, environment variables, CLI flags, schemas, glossary, and matrices discoverable. |
 | Roadmap truth | `docs/roadmap/data/*.yml` | Validate and render; do not hand-author competing durable roadmap truth. |
 | Source-module truth | `docs/source/data/*.yml` and registered `src/**/README.md` | Update with source behavior, ownership, validation, TODO, and diagram changes. |
-| Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/` | Update generators or inputs, not emitted files by hand. |
+| Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/ai/exports/`, `docs/reference/source-api/` | Update generators or inputs, not emitted files by hand. |
 | Automation-owned status output | `docs/status/` | Keep generated reports and compatibility artifacts at the paths consumed by tooling; do not create competing roadmap truth. |
 | Detailed supporting guidance | `docs/development/`, `docs/security/`, `docs/testing/`, `docs/integrations/`, and related specialist folders | Development holds active implementation, extension, testing, and tooling guides reached from Engineering. Link specialist material from its canonical owner and avoid duplicating entrypoint commands or product status. |
 | Transitional compatibility paths | `docs/operations/` and `docs/plans/` | Retain only when active code, tests, tooling, or strong links require the path; do not add new durable guidance. |

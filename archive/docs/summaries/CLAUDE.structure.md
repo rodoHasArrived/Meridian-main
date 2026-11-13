@@ -1,8 +1,12 @@
 # Repository Structure
 
-**Status:** active
+**Status:** archived
 **Owner:** core-team
 **Reviewed:** 2026-06-04
+**Archived:** 2026-11-13
+
+> Historical 2026-06 snapshot; counts and paths below are stale. Use the generated
+> [repository structure](../../../docs/generated/repository-structure.md) instead.
 
 Full annotated file tree for Meridian (1,313 source files: 1,262 C# + 51 F#).
 

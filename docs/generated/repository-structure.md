@@ -1412,7 +1412,6 @@ Meridian-main
 │   │   │   ├── CLAUDE.repo-updater.md
 │   │   │   ├── CLAUDE.roadmap-learning-log.md
 │   │   │   ├── CLAUDE.storage.md
-│   │   │   ├── CLAUDE.structure.md
 │   │   │   ├── CLAUDE.testing.md
 │   │   │   └── contract-policy.mirror.json
 │   │   ├── codex
