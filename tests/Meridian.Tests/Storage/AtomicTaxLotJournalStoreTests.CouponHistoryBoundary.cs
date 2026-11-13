@@ -33,21 +33,33 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
         await connection.OpenAsync(ct);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        await fixture.Store.AppendAsync(connection, transaction, fixture.Write(coupon), ct);
-        var application = "coupon-sensitive-history-" + Guid.NewGuid().ToString("N");
-        var competing = fixture.Restart(CouponHistoryOptions(fixture.Options, application));
-        var waiting = competing.AppendAsync(CouponHistoryWrite(june.PeriodId, DateTimeOffset.Parse("2026-06-12T12:00:00Z"), fixture.BookId), ct);
-        await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
-        waiting.IsCompleted.Should().BeFalse();
-        // Readers used by canonical opening validation remain available while publication waits.
-        (await fixture.Store.GetByPeriodAsync(june.PeriodId, ct)).Should().BeEmpty();
-        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(0m);
-        await transaction.CommitAsync(ct);
-        await waiting;
-        (await fixture.Store.GetByPeriodAsync(june.PeriodId, ct)).Should().ContainSingle();
-        (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
-            coupon.Request.RunId, ct)).Should().NotBeNull();
-        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(45m);
+        var write = fixture.Write(coupon);
+        await using var authority = await fixture.Store.AcquirePostingAuthorityAsync(connection, transaction, [write], ct);
+        var completed = false;
+        try
+        {
+            await fixture.Store.AppendAsync(connection, transaction, write, ct);
+            var application = "coupon-sensitive-history-" + Guid.NewGuid().ToString("N");
+            var competing = fixture.Restart(CouponHistoryOptions(fixture.Options, application));
+            var waiting = competing.AppendAsync(CouponHistoryWrite(june.PeriodId, DateTimeOffset.Parse("2026-06-12T12:00:00Z"), fixture.BookId), ct);
+            await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
+            waiting.IsCompleted.Should().BeFalse();
+            // Readers used by canonical opening validation remain available while publication waits.
+            (await fixture.Store.GetByPeriodAsync(june.PeriodId, ct)).Should().BeEmpty();
+            (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(0m);
+            await transaction.CommitAsync(ct);
+            completed = true;
+            await waiting;
+            (await fixture.Store.GetByPeriodAsync(june.PeriodId, ct)).Should().ContainSingle();
+            (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
+                coupon.Request.RunId, ct)).Should().NotBeNull();
+            (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(45m);
+        }
+        finally
+        {
+            if (!completed)
+                await transaction.RollbackAsync(CancellationToken.None);
+        }
     }
 
     [LedgerDatabaseFact]
@@ -124,26 +136,38 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
         await connection.OpenAsync(ct);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        await fixture.Store.AppendAsync(connection, transaction, CouponHistoryWrite(first.PeriodId, at, fixture.BookId), ct);
-        var application = "coupon-ordinary-history-" + Guid.NewGuid().ToString("N");
-        var competing = fixture.Restart(CouponHistoryOptions(fixture.Options, application));
-        var instruction = fixture.Instruction(0, "typed-coupon-after-ordinary", 45m, 50m, 3m, 2m);
-        var waiting = competing.AppendAsync(fixture.Write(instruction), ct);
-        await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
-        waiting.IsCompleted.Should().BeFalse("actual typed coupon validation must exclude ordinary publication across periods");
-        (await competing.GetByPeriodAsync(first.PeriodId, ct)).Should().BeEmpty();
-        (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
-            instruction.Request.RunId, ct)).Should().BeNull();
-        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(0m);
-        if (rollback)
-            await transaction.RollbackAsync(ct);
-        else
-            await transaction.CommitAsync(ct);
-        await waiting;
-        (await competing.GetByPeriodAsync(first.PeriodId, ct)).Count.Should().Be(rollback ? 0 : 1);
-        (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
-            instruction.Request.RunId, ct)).Should().NotBeNull();
-        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(45m);
+        var write = CouponHistoryWrite(first.PeriodId, at, fixture.BookId);
+        await using var authority = await fixture.Store.AcquirePostingAuthorityAsync(connection, transaction, [write], ct);
+        var completed = false;
+        try
+        {
+            await fixture.Store.AppendAsync(connection, transaction, write, ct);
+            var application = "coupon-ordinary-history-" + Guid.NewGuid().ToString("N");
+            var competing = fixture.Restart(CouponHistoryOptions(fixture.Options, application));
+            var instruction = fixture.Instruction(0, "typed-coupon-after-ordinary", 45m, 50m, 3m, 2m);
+            var waiting = competing.AppendAsync(fixture.Write(instruction), ct);
+            await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
+            waiting.IsCompleted.Should().BeFalse("actual typed coupon validation must exclude ordinary publication across periods");
+            (await competing.GetByPeriodAsync(first.PeriodId, ct)).Should().BeEmpty();
+            (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
+                instruction.Request.RunId, ct)).Should().BeNull();
+            (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(0m);
+            if (rollback)
+                await transaction.RollbackAsync(ct);
+            else
+                await transaction.CommitAsync(ct);
+            completed = true;
+            await waiting;
+            (await competing.GetByPeriodAsync(first.PeriodId, ct)).Count.Should().Be(rollback ? 0 : 1);
+            (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
+                instruction.Request.RunId, ct)).Should().NotBeNull();
+            (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(45m);
+        }
+        finally
+        {
+            if (!completed)
+                await transaction.RollbackAsync(CancellationToken.None);
+        }
     }
 
     private static LedgerJournalEntryWrite CouponHistoryWrite(Guid periodId, DateTimeOffset at, Guid? bookId = null)

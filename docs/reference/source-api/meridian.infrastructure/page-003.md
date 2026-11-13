@@ -1039,7 +1039,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredEconomicObservationsResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L14).
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L15).
 
 Unmodified response evidence is available to the host&#x27;s evidence retainer; missing observations stay explicit.
 
@@ -1051,7 +1051,7 @@ public sealed record FredEconomicObservationsResult(IReadOnlyList<BondMarketObse
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredEconomicSeriesDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L10).
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L11).
 
 A reviewed mapping from a FRED series to an exact contractual index and explicit source units.
 
@@ -1088,7 +1088,7 @@ Declared public members:
 | <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L74) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;SecurityRateObservationDto&gt;&gt; GetRateObservationsAsync(string seriesId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:137](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L137) | Dedicated rate/fixing ingress. FRED&#x27;s realtime dates are vintages, never fabricated publication timestamps. |
 
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L20).
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:21](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L21).
 
 ```csharp
 public sealed partial class FredHistoricalDataProvider
@@ -1098,7 +1098,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;FredEconomicObservationsResult&gt; GetEconomicObservationsAsync(FredEconomicSeriesDefinition definition, DateOnly from, DateOnly to, DateOnly vintageDate, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:27](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L27) | Fetches typed, vintage-bound index observations independently of synthetic OHLC bars. Series mapping is explicit: benchmark yields are never turned into discount factors. FRED&#x27;s vintage date is retained as a date, not invented as a publication-time instant. |
+| <code>public async Task&lt;FredEconomicObservationsResult&gt; GetEconomicObservationsAsync(FredEconomicSeriesDefinition definition, DateOnly from, DateOnly to, DateOnly vintageDate, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L28) | Fetches typed, vintage-bound index observations independently of synthetic OHLC bars. Series mapping is explicit: benchmark yields are never turned into discount factors. FRED&#x27;s vintage date is retained as a date, not invented as a publication-time instant. |
 
 ## FredProviderModule
 

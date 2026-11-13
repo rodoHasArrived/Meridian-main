@@ -97,17 +97,55 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     {
         await using var fixture = await CouponSinkFixture.CreateAsync();
         var instruction = fixture.Instruction(0, "rollback-share", 45m, 50m, 3m, 2m);
-        var duplicateJournal = fixture.Write(instruction, fixture.Lots[0].SourceJournalEntryId);
-        await fixture.Store.Invoking(store => store.AppendAsync(duplicateJournal)).Should().ThrowAsync<PostgresException>()
-            .Where(error => error.SqlState == PostgresErrorCodes.UniqueViolation);
+        var write = fixture.Write(instruction);
+        var auditBefore = (await fixture.Store.VerifyLedgerEventAuditAsync()).ChainedEvents;
+        await using var faultConnection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await faultConnection.OpenAsync();
+        await using var fault = faultConnection.CreateCommand();
+        fault.CommandText = $"""
+            create sequence "{fixture.Options.SchemaName}".coupon_insert_attempt;
+            create function "{fixture.Options.SchemaName}".fail_coupon_insert_once() returns trigger
+            language plpgsql as $$
+            begin
+                if new.journal_entry_id = '{write.Entry.JournalEntryId:D}'::uuid then
+                  if nextval('"{fixture.Options.SchemaName}".coupon_insert_attempt') = 1 then
+                    if (select count(*) from "{fixture.Options.SchemaName}".bond_coupon_recognition
+                        where journal_entry_id = new.journal_entry_id) <> 1
+                        or (select count(*) from "{fixture.Options.SchemaName}".bond_coupon_cash_consumption c
+                            join "{fixture.Options.SchemaName}".bond_coupon_recognition r using(receipt_id)
+                            where r.journal_entry_id = new.journal_entry_id) <> 1
+                        or (select count(*) from "{fixture.Options.SchemaName}".bond_coupon_cash_consumption c
+                            join "{fixture.Options.SchemaName}".bond_coupon_recognition r using(receipt_id)
+                            where r.journal_entry_id = new.journal_entry_id and c.net_amount = 45
+                                and c.gross_amount = 50 and c.withholding_tax = 3 and c.fees = 2) <> 1 then
+                        raise exception 'coupon receipt and cash claims were not reached before journal insert';
+                    end if;
+                    raise exception using errcode = '23514', constraint = 'test_late_coupon_insert',
+                        message = 'injected journal insert failure after coupon receipt and cash claims';
+                  end if;
+                end if;
+                return new;
+            end $$;
+            create trigger fail_coupon_insert_once before insert on "{fixture.Options.SchemaName}".journal_entries
+                for each row execute function "{fixture.Options.SchemaName}".fail_coupon_insert_once();
+            """;
+        await fault.ExecuteNonQueryAsync();
+        await fixture.Store.Invoking(store => store.AppendAsync(write)).Should().ThrowAsync<PostgresException>()
+            .Where(error => error.SqlState == PostgresErrorCodes.CheckViolation && error.ConstraintName == "test_late_coupon_insert");
         (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId, instruction.Request.RunId)).Should().BeNull();
         (await fixture.Store.GetConsumedCouponAllocationAsync(fixture.Scope, "shared-allocation"))
             .Should().Be(new BondCouponAllocationConsumptionDto(0m, 0m, 0m, 0m));
         (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(2);
+        (await fixture.Store.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore);
         (await fixture.Store.GetTaxLotsByIdsAsync(fixture.BookId, [fixture.Lots[0].TaxLotRecordId])).Single().Version.Should().Be(1);
-        await fixture.Store.AppendAsync(fixture.Write(instruction));
+        // nextval survives rollback: the identical write reaches journal insertion on attempt two.
+        await fixture.Store.AppendAsync(write);
         (await fixture.Store.GetConsumedCouponAllocationAsync(fixture.Scope, "shared-allocation"))
             .Should().Be(new BondCouponAllocationConsumptionDto(45m, 50m, 3m, 2m));
+        (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId, instruction.Request.RunId))!
+            .JournalEntryId.Should().Be(write.Entry.JournalEntryId);
+        fault.CommandText = $"select last_value from \"{fixture.Options.SchemaName}\".coupon_insert_attempt";
+        (await fault.ExecuteScalarAsync()).Should().Be(2L);
     }
 
     [LedgerDatabaseFact]
@@ -181,7 +219,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public PostgresLedgerJournalStore Restart(LedgerJournalStoreOptions options)
             => new(options, backfillSecurityMaster: () => _reference.Securities,
                 backfillPositions: () => _reference.Positions, bondIncomeAuthority: () => IncomeAuthority,
-                couponRecognitionAuthority: () => Authority);
+                couponRecognitionAuthority: () => Authority,
+                postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
 
         public static async Task<CouponSinkFixture> CreateAsync(bool negative = false)
         {

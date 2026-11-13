@@ -77,6 +77,10 @@ public interface IEvidenceArtifactStore
     Task<EvidenceManifestFile?> TryOpenDocumentContentAsync(string vaultId, string documentId,
         string tenantId, string scope, CancellationToken ct = default) => Task.FromResult<EvidenceManifestFile?>(null);
 
+    /// <summary>Streams and verifies one exact pinned artifact within the vault's configured document limits.</summary>
+    Task<bool> VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256,
+        string tenantId, string scope, CancellationToken ct = default) => Task.FromResult(false);
+
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
         CancellationToken ct = default);

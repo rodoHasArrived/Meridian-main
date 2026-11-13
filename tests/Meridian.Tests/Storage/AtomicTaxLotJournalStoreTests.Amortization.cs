@@ -530,7 +530,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         // Even hosts permitting legacy generic journal writes must require the complete
         // governed instruction for amortization. Every variant is otherwise normalizable.
         var compatibilityStore = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
-        { ConnectionString = fixture.Options.ConnectionString, SchemaName = fixture.Options.SchemaName });
+        { ConnectionString = fixture.Options.ConnectionString, SchemaName = fixture.Options.SchemaName },
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         foreach (var changed in variants)
         {
             var invalid = (command with { Journal = command.Journal with { PostingCommand = changed } }).WithComputedFingerprint();
@@ -952,8 +953,12 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             Store = Restart();
         }
 
-        public PostgresLedgerJournalStore Restart() => new(Options, backfillSecurityMaster: () => Securities, backfillPositions: () => Positions,
-            bondIncomeAuthority: () => IncomeAuthority, couponRecognitionAuthority: () => CouponAuthority);
+        // Keep real lot/security/position authority while isolating these financial scenarios
+        // from the independently tested lifecycle and intercompany onboarding prerequisites.
+        public PostgresLedgerJournalStore Restart() => new(Options,
+            backfillSecurityMaster: () => Securities, backfillPositions: () => Positions,
+            bondIncomeAuthority: () => IncomeAuthority, couponRecognitionAuthority: () => CouponAuthority,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
 
         public async Task LockPeriodAsync()
             => Period = await Store.SavePeriodAsync(Period with { Status = "HardClosed", ClosedAt = DateTimeOffset.UtcNow }, Period.Version);

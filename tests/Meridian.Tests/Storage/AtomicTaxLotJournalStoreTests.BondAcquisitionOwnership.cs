@@ -18,7 +18,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var (command, references, _) = await PrepareOwnedBondAcquisitionAsync(database);
         var policy = Substitute.For<IBondIncomeService>();
         var writer = new PostgresLedgerJournalStore(database.Options, backfillSecurityMaster: () => references.Securities,
-            backfillPositions: () => references.Positions, bondIncomeAuthority: () => policy);
+            backfillPositions: () => references.Positions, bondIncomeAuthority: () => policy,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         foreach (var transactionCurrencyOnly in new[] { false, true })
         {
             const decimal unrepresentableDelta = 0.00000000001m;
@@ -55,7 +56,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var (command, references, owner) = await PrepareOwnedBondAcquisitionAsync(database);
         var policy = Substitute.For<IBondIncomeService>();
         var writer = new PostgresLedgerJournalStore(database.Options, backfillSecurityMaster: () => references.Securities,
-            backfillPositions: () => references.Positions, bondIncomeAuthority: () => policy);
+            backfillPositions: () => references.Positions, bondIncomeAuthority: () => policy,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
 
         var result = await writer.AppendAssetPostingAsync(command);
 
@@ -80,7 +82,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var (command, references, _) = await PrepareOwnedBondAcquisitionAsync(database);
         var policy = Substitute.For<IBondIncomeService>();
         var writer = new PostgresLedgerJournalStore(database.Options, backfillSecurityMaster: () => references.Securities,
-            backfillPositions: () => references.Positions, bondIncomeAuthority: () => policy);
+            backfillPositions: () => references.Positions, bondIncomeAuthority: () => policy,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var before = (await writer.VerifyLedgerEventAuditAsync()).ChainedEvents;
         foreach (var flaw in new[] { "account", "owner-dimension", "book", "lot", "missing-lot", "holding-account" })
         {

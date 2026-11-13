@@ -1,4 +1,5 @@
 using Meridian.FinancialOperations.Consolidation;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.Storage.Archival;
 using Meridian.Core.IO;
 using Meridian.Application.Accounting;
@@ -19,6 +20,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Etl;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Plaid;
@@ -115,6 +117,7 @@ public static class WorkstationServiceCollectionExtensions
 
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
         services.AddOperatorTriageStorage(configuration, isProductionComposition);
+        services.AddIntercompanyEntityServices(configuration);
 
         services.TryAddSingleton<ConfigStore>(sp =>
         {
@@ -161,7 +164,7 @@ public static class WorkstationServiceCollectionExtensions
         {
             services.TryAddSingleton<IIntercompanyAgreementAccessAuthority, HttpContextIntercompanyAgreementAccessAuthority>();
             services.TryAddSingleton<IIntercompanyAgreementEvidenceAuthority, WorkstationIntercompanyAgreementEvidenceAuthority>();
-            services.TryAddSingleton<IIntercompanyAgreementService, IntercompanyAgreementService>();
+            services.TryAddSingleton<IIntercompanyAgreementService, Meridian.Application.FundStructure.IntercompanyAgreementService>();
         }
         // Replace only the core worker fallback. Preserve an explicitly supplied host accessor;
         // otherwise HTTP scope must take precedence over any ambient background authority.
@@ -1140,7 +1143,10 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetService<ILedgerJournalStore>() is PostgresLedgerJournalStore ledger &&
             sp.GetService<IAccountingPolicyService>() is { } policy &&
             sp.GetService<IAccountingJournalDraftService>() is { } journalDrafts
-                ? new ConsolidationService(new ConsolidationPerimeterResolver(structure), ledger, policy, journalDrafts)
+                ? new ConsolidationService(new ConsolidationPerimeterResolver(structure), ledger, policy, journalDrafts,
+                    sp.GetService<IIntercompanyAccountBindingStore>(), sp.GetService<IConsolidationFxAuthority>(),
+                    sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>(),
+                    sp.GetService<IntercompanyAccountingArrangementService>())
                 : null!);
         services.TryAddSingleton<IConsolidationDraftGuard>(sp => sp.GetService<ConsolidationService>()!);
         services.TryAddSingleton<IConsolidationPostingAuthority>(sp =>
@@ -1148,7 +1154,11 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetService<Meridian.Storage.FundStructure.IFundStructureStore>() is
                 Meridian.Storage.FundStructure.PostgresFundStructureStore structure &&
             sp.GetService<IAccountingPolicyService>() is { } policies
-                ? new PostgresConsolidationPostingAuthority(consolidation, structure, policies) : null!);
+                ? new PostgresConsolidationPostingAuthority(consolidation, structure, policies,
+                    sp.GetService<IIntercompanyAccountBindingStore>(), sp.GetService<IConsolidationFxAuthority>(),
+                    sp.GetService<ILegacyIntercompanyAttributionStore>(), sp.GetService<IConsolidationTransitionStore>(),
+                        sp.GetService<Meridian.Storage.FundStructure.IIntercompanyAccountingArrangementStore>(),
+                        sp.GetService<IIntercompanyAccountingArrangementLegalAuthority>()) : null!);
         services.TryAddSingleton<ConsolidationWorkbenchService>(sp =>
             sp.GetService<ConsolidationService>() is { } consolidation &&
             sp.GetService<IManualJournalEntryWorkbenchService>() is ManualJournalEntryWorkbenchService workbench
@@ -1170,7 +1180,33 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>(),
                 assetCandidatePostingFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService>(),
                 assetAccountingSourceFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>(),
-                privateCapitalStore: sp.GetService<IPrivateCapitalStore>()));
+                privateCapitalStore: sp.GetService<IPrivateCapitalStore>(),
+                controlledCloseAuthorizations: sp.GetService<IControlledCloseAuthorizationStore>(),
+                lifecycleCloseAuthority: sp.GetService<LifecycleLedgerPostingAuthority>(),
+                intercompanyFxAuthority: sp.GetService<IConsolidationFxAuthority>(),
+                intercompanyPostingAuthority: sp.GetService<IntercompanyLedgerPostingAuthority>()));
+        services.TryAddSingleton<ManualJournalEntryWorkbenchService>(sp =>
+            sp.GetRequiredService<IManualJournalEntryWorkbenchService>() as ManualJournalEntryWorkbenchService ?? null!);
+        services.TryAddSingleton<IEntityTimelineAccessAuthority, HttpContextEntityTimelineAccessAuthority>();
+        services.TryAddSingleton<EntityTimelineService>(sp =>
+            sp.GetService<IFundStructureService>() is { } structure && sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAgreementService>() is { } legalAgreements
+                ? new EntityTimelineService(structure, sp.GetRequiredService<Meridian.Storage.FundStructure.IEntityLifecycleStore>(),
+                    sp.GetRequiredService<IntercompanyAccountingArrangementService>(), journals, legalAgreements,
+                    sp.GetRequiredService<IEntityTimelineAccessAuthority>()) : null!);
+        services.TryAddSingleton<IntercompanyProposalDeliveryService>(sp =>
+            sp.GetService<IIntercompanyProposalStore>() is { } proposals &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
+            sp.GetService<ManualJournalEntryWorkbenchService>() is { } workbench
+                ? new IntercompanyProposalDeliveryService(proposals, sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
+                    sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench,
+                    sp.GetRequiredService<IFundProfileTenancyRegistry>(), sp.GetRequiredService<IConsolidationFxAuthority>(),
+                    sp.GetRequiredService<TimeProvider>()) : null!);
+        if (services.Any(item => item.ServiceType == typeof(IIntercompanyProposalStore)
+            && item.ImplementationType == typeof(PostgresIntercompanyProposalStore)))
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyProposalHostedService>());
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
@@ -1273,7 +1309,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>(),
-                sp.GetService<IRecurringJournalQueueSource>()));
+                sp.GetService<IRecurringJournalQueueSource>(),
+                sp.GetService<IntercompanyBalanceScheduleService>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(

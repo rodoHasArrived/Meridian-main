@@ -6,6 +6,301 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowSlaTimer
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaTimer</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:55](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L55).
+
+A running SLA timer bound to a subject (a booking, a break, a delivery). Computes due and warning instants from its policy and reports its state as of any evaluation time.
+
+```csharp
+public sealed record WorkflowSlaTimer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowSlaTimer(string timerId, string subject, WorkflowSlaPolicy policy, DateTimeOffset startedAtUtc, DateTimeOffset? stoppedAtUtc = null);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:57](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L57) |  |
+| <code>public string TimerId { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:88](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L88) |  |
+| <code>public string Subject { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:90](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L90) |  |
+| <code>public WorkflowSlaPolicy Policy { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:92](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L92) |  |
+| <code>public DateTimeOffset StartedAtUtc { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:94](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L94) |  |
+| <code>public DateTimeOffset? StoppedAtUtc { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:96](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L96) |  |
+| <code>public DateTimeOffset DueAtUtc =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:98](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L98) |  |
+| <code>public DateTimeOffset WarningAtUtc =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:100](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L100) |  |
+| <code>public WorkflowSlaTimer Stop(DateTimeOffset stoppedAtUtc) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:108](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L108) | Returns a copy of this timer stopped at stoppedAtUtc. The stop instant must not precede StartedAtUtc (enforced by the constructor), so the timer can never record an impossible negative elapsed window and thereby suppress breach evaluation. |
+| <code>public WorkflowSlaState StateAt(DateTimeOffset asOfUtc);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:112](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L112) | The timer&#x27;s state as of asOfUtc. |
+| <code>public bool IsBreachedAt(DateTimeOffset asOfUtc) =&gt; …;</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:127](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L127) | True when the timer is running and has passed its due time as of asOfUtc. |
+
+## IOnboardingSourceProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.IOnboardingSourceProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:14](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L14).
+
+Composes existing reconciliation, ledger/NAV, close and evidence services without writes.
+
+```csharp
+public interface IOnboardingSourceProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:16](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L16) |  |
+
+## IOnboardingWorkspaceStore
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:6](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L6).
+
+Durable workspace storage. Save must atomically compare the retained version and replace.
+
+```csharp
+public interface IOnboardingWorkspaceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:8](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L8) |  |
+| <code>Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:9](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L9) |  |
+| <code>Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:10](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L10) |  |
+
+## OnboardingConcurrencyException
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingConcurrencyException</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:23](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L23).
+
+Indicates that retained onboarding state changed during a requested mutation.
+
+```csharp
+public sealed class OnboardingConcurrencyException(string message) : InvalidOperationException(message);
+```
+
+## OnboardingValidationException
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingValidationException</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs:28](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs#L28).
+
+Indicates invalid input for an accounting onboarding operation.
+
+```csharp
+public sealed class OnboardingValidationException(string message) : ArgumentException(message);
+```
+
+## OnboardingWorkspaceService
+
+Qualified name: <code>Meridian.FinancialOperations.Onboarding.OnboardingWorkspaceService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:11](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L11).
+
+Owns bounded onboarding casework and reproducible comparison history. The only source dependency is a read-only capture seam; neither readiness nor a packet can change accounting authority.
+
+```csharp
+public sealed class OnboardingWorkspaceService(IOnboardingWorkspaceStore store, IOnboardingSourceProvider sources, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ReadOnlyAuthorityPosture = &quot;ExternalBooksReadOnly;AccountingAuthorityTransitionSeparatelyControlled&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:16](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L16) |  |
+| <code>public const string ComparisonAlgorithmVersion = &quot;onboarding-comparison/1&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:17](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L17) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; CreateAsync(CreateOnboardingWorkspaceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:22](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L22) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:42](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L42) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:52](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L52) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; UpdateCriteriaAsync(string tenantId, string companyId, string workspaceId, UpdateOnboardingCriteriaRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:65](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L65) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; CompareAsync(string tenantId, string companyId, string workspaceId, CaptureOnboardingComparisonRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:82](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L82) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; AssignDifferenceAsync(string tenantId, string companyId, string workspaceId, string differenceKey, AssignOnboardingDifferenceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:100](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L100) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; ReviewAsync(string tenantId, string companyId, string workspaceId, ReviewOnboardingWorkspaceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:120](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L120) |  |
+| <code>public async Task&lt;OnboardingReadinessPacketDto&gt; FreezePacketAsync(string tenantId, string companyId, string workspaceId, FreezeOnboardingPacketRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:143](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L143) |  |
+| <code>public async Task&lt;OnboardingReadinessPacketDto?&gt; GetPacketAsync(string tenantId, string companyId, string workspaceId, string packetId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:161](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L161) |  |
+| <code>public async Task&lt;OnboardingComparisonDto?&gt; ReplayComparisonAsync(string tenantId, string companyId, string workspaceId, string comparisonId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:172](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L172) | Recomputes solely from retained inputs and preceding retained history, with no live source calls. |
+| <code>public static string HashSourcePayload(string payload) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:206](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L206) |  |
+| <code>public static string HashPacketContent(OnboardingPacketContentDto content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:209](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L209) |  |
+| <code>public static bool VerifyComparisonHash(OnboardingComparisonDto comparison) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:211](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L211) |  |
+| <code>public static string DifferenceKey(OnboardingObservationDto observation) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs:214](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs#L214) |  |
+
+## FileOperationsContinuityRepository
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.FileOperationsContinuityRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:318](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L318).
+
+Persists operations workflows in local files and supports coordinated workflow commits.
+
+```csharp
+public sealed class FileOperationsContinuityRepository : IOperationsContinuityRepository, IOperationsContinuityWorkflowStartCommitStore, IOperationsContinuityTransitionCommitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperationsContinuityRepository(string dataDirectory, IOperationsStatusDerivationService statusDerivation, ILogger&lt;FileOperationsContinuityRepository&gt; logger);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:330](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L330) |  |
+| <code>public async Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:344](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L344) |  |
+| <code>public async Task&lt;OperationsContinuityWorkflow?&gt; GetAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:359](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L359) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflow&gt;&gt; ListAsync(Guid? fundAccountId = null, string? periodId = null, OperationsWorkflowStatusDto? status = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:374](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L374) |  |
+| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitWorkflowStartAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:442](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L442) |  |
+| <code>public async Task&lt;OperationsContinuityTransactionalCommitResult&gt; CommitWorkflowTransitionAsync(OperationsContinuityWorkflow workflow, OperationsWorkflowAuditDraft auditDraft, bool persistWorkflowState, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:485](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L485) |  |
+
+## FileOperationsWorkflowAuditStore
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.FileOperationsWorkflowAuditStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:599](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L599).
+
+Persists workflow audit envelopes and validates their retained hash-chain evidence.
+
+```csharp
+public sealed class FileOperationsWorkflowAuditStore : IOperationsWorkflowAuditStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperationsWorkflowAuditStore(string dataDirectory, ILogger&lt;FileOperationsWorkflowAuditStore&gt; logger);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:610](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L610) |  |
+| <code>public async Task&lt;OperationsWorkflowAuditDto&gt; AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:620](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L620) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowAuditDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:639](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L639) |  |
+
+## FinancialOperationsCommandCenterReadService
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.FinancialOperationsCommandCenterReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs:6](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs#L6).
+
+```csharp
+public sealed partial class FinancialOperationsCommandCenterReadService
+```
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:13](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L13).
+
+Assembles financial operations workflow, close-input, and output-evidence views for the command center.
+
+```csharp
+public sealed partial class FinancialOperationsCommandCenterReadService : IFinancialOperationsCommandCenterReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:31](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L31) |  |
+| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:47](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L47) |  |
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs#L5).
+
+```csharp
+public sealed partial class FinancialOperationsCommandCenterReadService
+```
+
+## InMemoryOperationsContinuityRepository
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.InMemoryOperationsContinuityRepository</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:99](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L99).
+
+Stores operations workflow snapshots in process and derives their status on reads.
+
+```csharp
+public sealed class InMemoryOperationsContinuityRepository : IOperationsContinuityRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public InMemoryOperationsContinuityRepository(IOperationsStatusDerivationService statusDerivation);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:105](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L105) |  |
+| <code>public Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:110](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L110) |  |
+| <code>public Task&lt;OperationsContinuityWorkflow?&gt; GetAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:123](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L123) |  |
+| <code>public Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflow&gt;&gt; ListAsync(Guid? fundAccountId = null, string? periodId = null, OperationsWorkflowStatusDto? status = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:133](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L133) |  |
+
+## InMemoryOperationsWorkflowAuditStore
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.InMemoryOperationsWorkflowAuditStore</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:187](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L187).
+
+Maintains workflow audit timelines and commits supported workflow mutations in process.
+
+```csharp
+public sealed class InMemoryOperationsWorkflowAuditStore : IOperationsWorkflowAuditStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;OperationsWorkflowAuditDto&gt; AppendAsync(OperationsWorkflowAuditDraft draft, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:192](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L192) |  |
+| <code>public Task&lt;IReadOnlyList&lt;OperationsWorkflowAuditDto&gt;&gt; GetTimelineAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:203](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L203) |  |
+
+## IOperationsApprovalPolicyMatrixService
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.IOperationsApprovalPolicyMatrixService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:14](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L14).
+
+Reads and updates approval rules for operations workflow actions.
+
+```csharp
+public interface IOperationsApprovalPolicyMatrixService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OperationsApprovalPolicyMatrixDto GetMatrix();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:16](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L16) |  |
+| <code>Task&lt;OperationsApprovalPolicyRuleUpsertResultDto&gt; UpsertRuleAsync(OperationsApprovalPolicyRuleUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:18](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L18) |  |
+
+## IOperationsCloseCalendarService
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.IOperationsCloseCalendarService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:13](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L13).
+
+Reads close calendar items and updates workflow-linked calendar controls.
+
+```csharp
+public interface IOperationsCloseCalendarService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperationsCloseCalendarDto&gt; GetCalendarAsync(Guid? fundAccountId = null, string? periodId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:15](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L15) |  |
+| <code>Task&lt;OperationsCloseCalendarItemUpsertResultDto&gt; UpsertItemAsync(OperationsCloseCalendarItemUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs:20](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs#L20) |  |
+
+## IOperationsContinuityRepository
+
+Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.IOperationsContinuityRepository</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:15](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L15).
+
+Saves and retrieves operations continuity workflows and filtered workflow lists.
+
+```csharp
+public interface IOperationsContinuityRepository
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveAsync(OperationsContinuityWorkflow workflow, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:17](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L17) |  |
+| <code>Task&lt;OperationsContinuityWorkflow?&gt; GetAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:18](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L18) |  |
+| <code>Task&lt;IReadOnlyList&lt;OperationsContinuityWorkflow&gt;&gt; ListAsync(Guid? fundAccountId = null, string? periodId = null, OperationsWorkflowStatusDto? status = null, CancellationToken ct = default, Guid? ledgerBookId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs:19](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs#L19) |  |
+
 ## IOperationsContinuityTransactionalCommitStore
 
 Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.IOperationsContinuityTransactionalCommitStore</code>. Kind: `interface`.
@@ -715,7 +1010,7 @@ Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCock
 public sealed partial class PrivateCapitalCloseCockpitService
 ```
 
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:13](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L13).
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L14).
 
 Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
 
@@ -727,10 +1022,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:50](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L50) |  |
-| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:64](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L64) |  |
+| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:52](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L52) |  |
+| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:68](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L68) |  |
 
 Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs#L5).
+
+```csharp
+public sealed partial class PrivateCapitalCloseCockpitService
+```
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs:7](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs#L7).
 
 ```csharp
 public sealed partial class PrivateCapitalCloseCockpitService
@@ -856,180 +1157,4 @@ Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliati
 
 ```csharp
 public sealed record AccountCashBalanceSource(string SourceId, ReconciliationSourceType SourceType, string Version, string EvidenceReference, DateTimeOffset CapturedAtUtc, bool CompletePopulation, IReadOnlyList<AccountCashBalanceSourceRow> Rows);
-```
-
-## AccountCashBalanceSourceRow
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashBalanceSourceRow</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L9).
-
-The original row payload remains independent of its normalized comparison amounts.
-
-```csharp
-public sealed record AccountCashBalanceSourceRow(NormalizedCashEntry Row, string OriginalPayload);
-```
-
-## AccountCashCaseAssignment
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseAssignment</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L44).
-
-```csharp
-public sealed record AccountCashCaseAssignment(string Owner, string Actor, string Reason, DateTimeOffset AssignedAtUtc);
-```
-
-## AccountCashCaseObservation
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L43).
-
-```csharp
-public sealed record AccountCashCaseObservation(string RunId, DateTimeOffset ObservedAtUtc, string State, string ResultHash);
-```
-
-## AccountCashComparison
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashComparison</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L30).
-
-```csharp
-public sealed record AccountCashComparison(string Currency, string ObservationState, IReadOnlyList<MatchGroup> Matches, IReadOnlyList<BreakRecord> Breaks, IReadOnlyList<MatchEvidence> Evidence);
-```
-
-## AccountCashReconciliationCase
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationCase</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L47).
-
-Source resolution is separate from governed sign-off and accounting close authority.
-
-```csharp
-public sealed record AccountCashReconciliationCase(string CaseId, AccountCashReconciliationScope Scope, string LeftSourceId, string RightSourceId, string Currency, string Owner, int Version, DateTimeOffset FirstObservedAtUtc, DateTimeOffset LastObservedAtUtc, string State, DateTimeOffset? ResolvedAtUtc, string? ResolutionRunId, IReadOnlyList<AccountCashCaseObservation> History, IReadOnlyList<AccountCashCaseAssignment> Assignments)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int AgingDays =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L63) |  |
-
-## AccountCashReconciliationRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L20).
-
-```csharp
-public sealed record AccountCashReconciliationRequest(string RunId, AccountCashReconciliationScope Scope, DateOnly BusinessDate, DateTimeOffset ObservedAtUtc, AccountCashBalanceSource Left, AccountCashBalanceSource Right, StatementToleranceProfile Tolerance, string InitialOwner);
-```
-
-## AccountCashReconciliationRun
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationRun</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L37).
-
-```csharp
-public sealed record AccountCashReconciliationRun(AccountCashReconciliationRequest Input, string InputHash, IReadOnlyList<AccountCashComparison> Comparisons, string ResultHash);
-```
-
-## AccountCashReconciliationScope
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationScope</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:6](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L6).
-
-```csharp
-public sealed record AccountCashReconciliationScope(string TenantId, string CompanyId, string AccountId, Guid LedgerBookId);
-```
-
-## AccountCashReconciliationService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L10).
-
-Durable two-source, account-scoped cash-balance continuity over the canonical matcher.
-
-```csharp
-public sealed class AccountCashReconciliationService(FileAccountCashReconciliationStore store)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;AccountCashReconciliationRun&gt; RunAsync(AccountCashReconciliationRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L16) |  |
-| <code>public Task&lt;AccountCashReconciliationRun&gt; ReplayAsync(AccountCashReconciliationScope scope, string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:83](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L83) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountCashReconciliationCase&gt;&gt; GetCasesAsync(AccountCashReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:99](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L99) |  |
-| <code>public Task&lt;AccountCashReconciliationCase&gt; AssignAsync(AccountCashReconciliationScope scope, string caseId, int expectedVersion, string owner, string actor, string reason, DateTimeOffset assignedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:106](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L106) |  |
-
-## BrokerCustodianFeedBatch
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianFeedBatch</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L56).
-
-```csharp
-public sealed record BrokerCustodianFeedBatch(BrokerCustodianFeedDescriptor Descriptor, IReadOnlyList<CanonicalReconciliationRecord> Records);
-```
-
-## BrokerCustodianFeedDescriptor
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianFeedDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L26).
-
-```csharp
-public sealed record BrokerCustodianFeedDescriptor(string FeedId, CanonicalReconciliationSourceKind SourceKind, string SourceSystem, string AccountId, string ExternalAccountId, DateOnly BusinessDate, string BaseCurrency, DateTimeOffset CapturedAtUtc, string ContentHash, string AdapterId, string AdapterVersion);
-```
-
-## BrokerCustodianMatchDecision
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianMatchDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:82](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L82).
-
-```csharp
-public sealed record BrokerCustodianMatchDecision(string DecisionId, string RunId, string LeftRecordId, string? RightRecordId, CanonicalReconciliationDecisionStatus Status, ReconciliationMatchTier Tier, decimal Confidence, string RuleId, decimal QuantityVariance, decimal PriceVariance, decimal MarketValueVariance, decimal CashVariance, string Explanation, DateTimeOffset DecidedAtUtc, string DecidedBy, IReadOnlyList<string> EvidenceReferences)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsTerminal =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:100](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L100) |  |
-
-## BrokerCustodianMatchingPipeline
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianMatchingPipeline</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:129](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L129).
-
-Matches broker and custodian records using ordered reconciliation rules.
-
-```csharp
-public sealed class BrokerCustodianMatchingPipeline
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IReadOnlyList&lt;BrokerCustodianMatchRule&gt; DefaultRules = [new (&quot;exact-position-cash-transaction-v1&quot;, ReconciliationMatchTier.Exact, 0m, 0m, 0m, 0m, TimeSpan.Zero, 1.00m), new (&quot;tolerance-position-cash-transaction-v1&quot;, ReconciliationMatchTier.Tolerance, 0.0001m, 0.01m, 0.01m, 0.01m, TimeSpan.FromDays(1), 0.90m), new (&quot;heuristic-reference-symbol-date-v1&quot;, ReconciliationMatchTier.Heuristic, 0.01m, 0.05m, 1.00m, 1.00m, TimeSpan.FromDays(3), 0.70m)];</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:131](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L131) |  |
-| <code>public IReadOnlyList&lt;BrokerCustodianMatchDecision&gt; Match(string runId, IReadOnlyList&lt;CanonicalReconciliationRecord&gt; brokerRecords, IReadOnlyList&lt;CanonicalReconciliationRecord&gt; custodianRecords, DateTimeOffset decidedAtUtc, string decidedBy, IReadOnlyList&lt;BrokerCustodianMatchRule&gt;? rules = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:138](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L138) |  |
-
-## BrokerCustodianMatchRule
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianMatchRule</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:72](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L72).
-
-```csharp
-public sealed record BrokerCustodianMatchRule(string RuleId, ReconciliationMatchTier Tier, decimal QuantityTolerance, decimal PriceTolerance, decimal MarketValueTolerance, decimal CashTolerance, TimeSpan SettlementTolerance, decimal MinimumConfidence);
 ```

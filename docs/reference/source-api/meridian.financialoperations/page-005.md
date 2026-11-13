@@ -6,6 +6,182 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashBalanceSourceRow
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashBalanceSourceRow</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L9).
+
+The original row payload remains independent of its normalized comparison amounts.
+
+```csharp
+public sealed record AccountCashBalanceSourceRow(NormalizedCashEntry Row, string OriginalPayload);
+```
+
+## AccountCashCaseAssignment
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L44).
+
+```csharp
+public sealed record AccountCashCaseAssignment(string Owner, string Actor, string Reason, DateTimeOffset AssignedAtUtc);
+```
+
+## AccountCashCaseObservation
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L43).
+
+```csharp
+public sealed record AccountCashCaseObservation(string RunId, DateTimeOffset ObservedAtUtc, string State, string ResultHash);
+```
+
+## AccountCashComparison
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L30).
+
+```csharp
+public sealed record AccountCashComparison(string Currency, string ObservationState, IReadOnlyList<MatchGroup> Matches, IReadOnlyList<BreakRecord> Breaks, IReadOnlyList<MatchEvidence> Evidence);
+```
+
+## AccountCashReconciliationCase
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationCase</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L47).
+
+Source resolution is separate from governed sign-off and accounting close authority.
+
+```csharp
+public sealed record AccountCashReconciliationCase(string CaseId, AccountCashReconciliationScope Scope, string LeftSourceId, string RightSourceId, string Currency, string Owner, int Version, DateTimeOffset FirstObservedAtUtc, DateTimeOffset LastObservedAtUtc, string State, DateTimeOffset? ResolvedAtUtc, string? ResolutionRunId, IReadOnlyList<AccountCashCaseObservation> History, IReadOnlyList<AccountCashCaseAssignment> Assignments)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int AgingDays =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L63) |  |
+
+## AccountCashReconciliationRequest
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L20).
+
+```csharp
+public sealed record AccountCashReconciliationRequest(string RunId, AccountCashReconciliationScope Scope, DateOnly BusinessDate, DateTimeOffset ObservedAtUtc, AccountCashBalanceSource Left, AccountCashBalanceSource Right, StatementToleranceProfile Tolerance, string InitialOwner);
+```
+
+## AccountCashReconciliationRun
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationRun</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L37).
+
+```csharp
+public sealed record AccountCashReconciliationRun(AccountCashReconciliationRequest Input, string InputHash, IReadOnlyList<AccountCashComparison> Comparisons, string ResultHash);
+```
+
+## AccountCashReconciliationScope
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationScope</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:6](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L6).
+
+```csharp
+public sealed record AccountCashReconciliationScope(string TenantId, string CompanyId, string AccountId, Guid LedgerBookId);
+```
+
+## AccountCashReconciliationService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L10).
+
+Durable two-source, account-scoped cash-balance continuity over the canonical matcher.
+
+```csharp
+public sealed class AccountCashReconciliationService(FileAccountCashReconciliationStore store)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;AccountCashReconciliationRun&gt; RunAsync(AccountCashReconciliationRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L16) |  |
+| <code>public Task&lt;AccountCashReconciliationRun&gt; ReplayAsync(AccountCashReconciliationScope scope, string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:83](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L83) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AccountCashReconciliationCase&gt;&gt; GetCasesAsync(AccountCashReconciliationScope scope, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:99](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L99) |  |
+| <code>public Task&lt;AccountCashReconciliationCase&gt; AssignAsync(AccountCashReconciliationScope scope, string caseId, int expectedVersion, string owner, string actor, string reason, DateTimeOffset assignedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs:106](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs#L106) |  |
+
+## BrokerCustodianFeedBatch
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianFeedBatch</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L56).
+
+```csharp
+public sealed record BrokerCustodianFeedBatch(BrokerCustodianFeedDescriptor Descriptor, IReadOnlyList<CanonicalReconciliationRecord> Records);
+```
+
+## BrokerCustodianFeedDescriptor
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianFeedDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L26).
+
+```csharp
+public sealed record BrokerCustodianFeedDescriptor(string FeedId, CanonicalReconciliationSourceKind SourceKind, string SourceSystem, string AccountId, string ExternalAccountId, DateOnly BusinessDate, string BaseCurrency, DateTimeOffset CapturedAtUtc, string ContentHash, string AdapterId, string AdapterVersion);
+```
+
+## BrokerCustodianMatchDecision
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianMatchDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:82](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L82).
+
+```csharp
+public sealed record BrokerCustodianMatchDecision(string DecisionId, string RunId, string LeftRecordId, string? RightRecordId, CanonicalReconciliationDecisionStatus Status, ReconciliationMatchTier Tier, decimal Confidence, string RuleId, decimal QuantityVariance, decimal PriceVariance, decimal MarketValueVariance, decimal CashVariance, string Explanation, DateTimeOffset DecidedAtUtc, string DecidedBy, IReadOnlyList<string> EvidenceReferences)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsTerminal =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:100](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L100) |  |
+
+## BrokerCustodianMatchingPipeline
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianMatchingPipeline</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:129](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L129).
+
+Matches broker and custodian records using ordered reconciliation rules.
+
+```csharp
+public sealed class BrokerCustodianMatchingPipeline
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlyList&lt;BrokerCustodianMatchRule&gt; DefaultRules = [new (&quot;exact-position-cash-transaction-v1&quot;, ReconciliationMatchTier.Exact, 0m, 0m, 0m, 0m, TimeSpan.Zero, 1.00m), new (&quot;tolerance-position-cash-transaction-v1&quot;, ReconciliationMatchTier.Tolerance, 0.0001m, 0.01m, 0.01m, 0.01m, TimeSpan.FromDays(1), 0.90m), new (&quot;heuristic-reference-symbol-date-v1&quot;, ReconciliationMatchTier.Heuristic, 0.01m, 0.05m, 1.00m, 1.00m, TimeSpan.FromDays(3), 0.70m)];</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:131](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L131) |  |
+| <code>public IReadOnlyList&lt;BrokerCustodianMatchDecision&gt; Match(string runId, IReadOnlyList&lt;CanonicalReconciliationRecord&gt; brokerRecords, IReadOnlyList&lt;CanonicalReconciliationRecord&gt; custodianRecords, DateTimeOffset decidedAtUtc, string decidedBy, IReadOnlyList&lt;BrokerCustodianMatchRule&gt;? rules = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:138](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L138) |  |
+
+## BrokerCustodianMatchRule
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BrokerCustodianMatchRule</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs:72](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerCustodianReconciliationModels.cs#L72).
+
+```csharp
+public sealed record BrokerCustodianMatchRule(string RuleId, ReconciliationMatchTier Tier, decimal QuantityTolerance, decimal PriceTolerance, decimal MarketValueTolerance, decimal CashTolerance, TimeSpan SettlementTolerance, decimal MinimumConfidence);
+```
+
 ## BusinessDayAccountingCalendar
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.BusinessDayAccountingCalendar</code>. Kind: `class`.
@@ -663,246 +839,3 @@ Describes a statement connector so operators can discover what formats can be im
 ```csharp
 public sealed record StatementConnectorDescriptor(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
 ```
-
-## StatementConnectorLimits
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorLimits</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L16).
-
-Defines the maximum accepted statement source file size.
-
-```csharp
-public static class StatementConnectorLimits
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const long MaxFileBytes = 20L * 1024 * 1024;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L24) | Maximum accepted statement file size (20 MiB). IB Flex XML exports routinely exceed the general 5 MB data-upload cap, so statement imports get their own, larger bound. Shared by the workstation upload endpoint and the CLI import/validate commands so neither path buffers an unbounded caller-supplied file into memory. |
-
-## StatementConnectorRegistry
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L8).
-
-Resolves statement connectors by id and auto-detects the right connector for an uploaded document. The CSV connector is consulted last because it is the text catch-all; structured formats (OFX, Flex XML, activity snapshots) sniff first.
-
-```csharp
-public sealed class StatementConnectorRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementConnectorRegistry(IEnumerable&lt;IStatementConnector&gt; connectors);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L12) |  |
-| <code>public IReadOnlyList&lt;StatementConnectorDescriptor&gt; List() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L21) |  |
-| <code>public IStatementConnector Resolve(string connectorId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L24) |  |
-| <code>public IStatementConnector? Detect(StatementSourceDocument document) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L32) |  |
-
-## StatementFetchAuthorizationCommand
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchAuthorizationCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L8).
-
-```csharp
-public sealed record StatementFetchAuthorizationCommand(string TenantId, string CompanyId, string FundAccountId, string ExternalAccountId, string SourceInstitution, DateOnly PeriodStart, DateOnly PeriodEnd, StatementAccountingScope AccountingScope);
-```
-
-## StatementFetchDatasets
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchDatasets</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:196](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L196).
-
-Which remote datasets a fetch-capable connector should pull.
-
-```csharp
-public enum StatementFetchDatasets
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Activity = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:198](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L198) |  |
-| <code>Positions = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:199](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L199) |  |
-| <code>All = Activity &#124; Positions</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:200](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L200) |  |
-
-## StatementFetchIngestionCommand
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchIngestionCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L18).
-
-```csharp
-public sealed record StatementFetchIngestionCommand(StatementSourceDocument Document, string ConnectorId, string SourceKind, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string? ToleranceProfileId, string ImportedBy, string TenantId, string CompanyId, StatementAccountingScope AccountingScope)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementFetchAuthorizationCommand ToAuthorizationCommand() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L33) |  |
-
-## StatementFetchRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:207](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L207).
-
-Requests remote statement data. When UntilExclusive is set, the connector must enforce the exact half-open window or fail closed.
-
-```csharp
-public sealed record StatementFetchRequest(string ConnectorId, string ExternalAccountId, DateTimeOffset? Since = null, string? MappingProfileId = null, StatementFetchDatasets Datasets = StatementFetchDatasets.All, DateTimeOffset? UntilExclusive = null);
-```
-
-## StatementFetchSchedule
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchSchedule</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L10).
-
-A persisted scheduled-fetch configuration for a fetch-capable statement connector.
-
-```csharp
-public sealed record StatementFetchSchedule(string ScheduleId, string ConnectorId, string ExternalAccountId, string FundAccountId, string SourceInstitution, string? MappingProfileId, string ToleranceProfileId, int CadenceHours, bool Enabled, DateTimeOffset? LastRunAtUtc = null, string? LastRunStatus = null, string SourceKind = "broker", DateTimeOffset? LastAttemptAtUtc = null, string? TenantId = null, string? CompanyId = null, DateOnly? PeriodStart = null, DateOnly? PeriodEnd = null, StatementAccountingScope? AccountingScope = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset? NextDueAtUtc =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L30) |  |
-| <code>public bool IsDue(DateTimeOffset nowUtc) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L33) |  |
-
-## StatementFetchScheduleRunner
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchScheduleRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:68](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L68).
-
-Executes scheduled statement fetches: pulls the remote document through the connector, delegates ingestion to the canonical statement reconciliation report workflow, and records the run outcome on the schedule. Downstream duplicate-key idempotency makes overlapping or repeated runs safe, so the scheduler can be simple.
-
-```csharp
-public sealed class StatementFetchScheduleRunner(IStatementFetchScheduleStore scheduleStore, StatementImportService importService, IStatementFetchIngestionAuthority? ingestionAuthority = null, ILogger<StatementFetchScheduleRunner>? logger = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunDueSchedulesAsync(DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:75](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L75) | Runs every enabled, due schedule; failures are recorded per schedule, never thrown. |
-| <code>public async Task&lt;StatementImportCommitResultDto?&gt; RunScheduleAsync(string scheduleId, DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:90](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L90) | Runs one schedule immediately (operator &quot;Run now&quot;), due or not. |
-| <code>public Task&lt;StatementImportCommitResultDto?&gt; RunScheduleAsync(StatementFetchSchedule schedule, DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:106](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L106) | Runs the exact tenant-scoped schedule already authorized by an endpoint or other caller. |
-
-## StatementFetchScheduleSnapshot
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchScheduleSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleStore.cs#L37).
-
-```csharp
-public sealed record StatementFetchScheduleSnapshot(int Version, IReadOnlyList<StatementFetchSchedule> Schedules);
-```
-
-## StatementFormatFingerprint
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFormatFingerprint</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:112](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L112).
-
-Structural fingerprint of a parsed source used for format-drift detection: when a custodian silently changes its export layout, the column set diff surfaces before rows are mapped incorrectly.
-
-```csharp
-public sealed record StatementFormatFingerprint(string Sha256, IReadOnlyList<string> NormalizedColumns, string Delimiter);
-```
-
-## StatementImportCommitRequest
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementImportCommitRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L27).
-
-```csharp
-public sealed record StatementImportCommitRequest(StatementSourceDocument Document, string? ConnectorId, string SourceKind, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string? ToleranceProfileId, string ImportedBy)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementAccountingScope? AccountingScope { get; init; }</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L43) | Exact server-verified accounting authority for statement-to-close processing. It remains optional for legacy reconciliation-report callers that do not enter the governed close lane. |
-
-## StatementImportService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:83](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L83).
-
-Orchestrates the statement connector pipeline: preview (per-column mapping confidence, per-kind record breakdown, drift and parse diagnostics, profile suggestions) and commit (deterministic canonical-CSV artifact, retained raw evidence, hand-off to the existing statement-run workflow and reconciliation queue).
-
-```csharp
-public sealed class StatementImportService(StatementConnectorRegistry connectors, StatementMappingProfileCatalog catalog, IStatementRunWorkflowService workflow, string dataRoot, StatementIngressLimits? ingressLimits = null) : IStatementImportCommitService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StatementImportPreviewDto&gt; PreviewAsync(StatementSourceDocument document, string? connectorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:106](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L106) |  |
-| <code>public async Task&lt;StatementImportCommitResultDto&gt; CommitAsync(StatementImportCommitRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:178](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L178) |  |
-| <code>public async Task&lt;StatementImportValidationResult&gt; ValidateAsync(StatementSourceDocument document, string? connectorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:450](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L450) |  |
-| <code>public async Task&lt;StatementSourceDocument&gt; FetchDocumentAsync(StatementFetchRequest request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:508](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L508) | Fetches a remote statement document through a fetch-capable connector. |
-
-## StatementImportValidationResult
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementImportValidationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:52](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L52).
-
-The outcome of validating a statement document through the connector pipeline without committing it: whether the document parsed cleanly into canonical records, how many records it produced, and any blocking error messages. Mirrors the connector&#x27;s parse result so an operator can validate a bank file (camt.053, BAI2, ...) before importing it, not only CSV/IB Flex.
-
-```csharp
-public sealed record StatementImportValidationResult(bool IsValid, int RecordCount, IReadOnlyList<string> Errors);
-```
-
-## StatementIngressLimits
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementIngressLimits</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L58).
-
-Ingress bounds for statement parsing (PRD-010). StatementImportService enforces MaxDocumentBytes and MaxRecords for every connector it resolves, so no format can exceed them; every connector additionally enforces MaxDocumentBytes at the top of its own ParseAsync, because that method is public API reached directly by in-process callers that never pass through the service, and every connector charges MaxRecords as it appends, which refuses a hostile payload partway through instead of after it is already built. That charge is taken on rows actually retained, never on rows an input is predicted to yield: a rejected candidate costs a diagnostic and no record, so charging it to the record allowance refuses documents whose canonical rows sit well inside the bound. Work that produces no record is bounded by the budget that owns it - MaxDocumentLines, MaxDocumentEntries, MaxParseNodes, MaxSubtreeNodes, or MaxDiagnostics - each reporting its own code. A connector that decodes a whole document and builds a full parse tree lets a caller-supplied StatementSourceDocument size the parse rather than the operator, so the limits are checked while parsing rather than after: an oversize document is refused before its bytes are copied, and a document within the byte cap can still be refused once it exceeds the record, line, or nesting bound.
-
-```csharp
-public sealed record StatementIngressLimits(long MaxDocumentBytes, int MaxRecords, int MaxLineBytes, int MaxNestingDepth, int MaxSubtreeNodes = 50_000, int MaxParseNodes = 500_000, int MaxDocumentLines = 2_000_000, int MaxDiagnostics = 25_000, int MaxDocumentEntries = 500_000)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StatementIngressLimits Default { get; } = new (MaxDocumentBytes : StatementConnectorLimits.MaxFileBytes, MaxRecords : 250_000, MaxLineBytes : 64 * 1024, MaxNestingDepth : 64);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:81](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L81) | Default bounds. MaxDocumentBytes is StatementConnectorLimits.MaxFileBytes, the statement-specific 20 MiB cap the workstation statement-connector endpoint and the CLI import/validate commands already enforce — NOT the general 5 MiB data-upload cap. IB Flex XML exports routinely exceed 5 MiB, which is why statements carry their own larger bound; anchoring this default to the smaller cap would refuse every 5–20 MiB statement those paths accept. The remaining bounds are sized well above any real bank statement — a camt.053 or BAI2 file carrying more than 250,000 canonical rows, a BAI2 line over 64 KiB, or XML nested deeper than 64 levels is malformed or hostile, not large. MaxSubtreeNodes bounds one materialized XML subtree: depth alone does not, because a shallow element with millions of siblings stays inside the nesting bound while still expanding far beyond its own byte size once it becomes an object graph. |
-| <code>public const string DocumentTooLargeCode = &quot;STATEMENT_DOCUMENT_TOO_LARGE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:88](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L88) | Issue code for a document refused before parsing because it exceeds the byte cap. |
-| <code>public const string TooManyRecordsCode = &quot;STATEMENT_TOO_MANY_RECORDS&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L91) | Issue code for a document that produced more canonical records than the cap allows. |
-| <code>public const string LineTooLongCode = &quot;STATEMENT_LINE_TOO_LONG&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:94](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L94) | Issue code for a line longer than the cap allows. |
-| <code>public const string TooManyLinesCode = &quot;STATEMENT_TOO_MANY_LINES&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:102](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L102) | Issue code for a document carrying more raw lines than the allocation bound allows. Distinct from TooManyRecordsCode on purpose: blank lines map to no canonical row but still cost a list entry, so a file can breach the line bound while being nowhere near the record bound. Reporting that as record overflow told the operator something untrue about their file. |
-| <code>public const string TooManyDiagnosticsCode = &quot;STATEMENT_TOO_MANY_DIAGNOSTICS&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:111](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L111) | Issue code for a document that retained more parse issues than the allocation bound allows. Distinct from TooManyRecordsCode for the same reason TooManyLinesCode is: a row rejected for an unparseable date retains an issue and no record, so a file can carry tens of thousands of diagnostics while producing almost no canonical rows. Reporting that as record overflow would tell the operator something untrue about their file. |
-| <code>public const string TooManyEntriesCode = &quot;STATEMENT_TOO_MANY_ENTRIES&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:121](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L121) | Issue code for a document flattening more raw aggregates than the allocation bound allows. Distinct from TooManyRecordsCode for the same reason TooManyLinesCode and TooManyDiagnosticsCode are: an OFX aggregate that the record mapper rejects costs an entry dictionary and produces no canonical row, so a file can breach the aggregate bound while its records sit far inside theirs. Reporting that as record overflow told the operator something untrue about their file. |
-| <code>public const string NestingTooDeepCode = &quot;STATEMENT_NESTING_TOO_DEEP&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:124](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L124) | Issue code for a payload nested deeper than the cap allows. |
-| <code>public const string SubtreeTooLargeCode = &quot;STATEMENT_SUBTREE_TOO_LARGE&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:127](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L127) | Issue code for a single XML element that expands past the per-subtree node cap. |
-| <code>public const string TooManyNodesCode = &quot;STATEMENT_TOO_MANY_NODES&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:146](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L146) | Whole-document retained-node cap, deliberately not derived from MaxRecords. Deriving it made the bound vary with an unrelated knob and, at the default record allowance, put it above what MaxDocumentBytes can even produce - a bound that cannot be reached is not a bound. The value is a deliberate trade, and worth stating plainly. Node count alone cannot separate a hostile payload from a very large legitimate one: a single entry carrying a million uniquely named compact leaves and a hundred thousand ordinary entries of ten leaves each reach a similar total. Each retained leaf costs a name string, a value string, a slot in OfxNode.Leaves, another slot once FlattenLeaves copies it into the entry dictionary, and an entry in the detected-column set - on the order of a couple of hundred bytes for a few bytes of source. A ceiling set above the legitimate maximum therefore never fires, so this one is set below it: a statement above roughly fifty thousand rich entries is refused rather than expanded, with a message that names the two remedies. Refusing an enormous-but-honest file, actionably, is the better error than expanding a hostile one silently. |
-| <code>public StatementParseIssue SubtreeTooLarge() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:148](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L148) |  |
-| <code>public StatementParseIssue TooManyDiagnostics() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:153](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L153) |  |
-| <code>public StatementParseIssue TooManyNodes() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:159](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L159) |  |
-| <code>public StatementParseIssue DocumentTooLarge(long actualBytes) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:165](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L165) |  |
-| <code>public StatementParseIssue TooManyRecords() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:170](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L170) |  |
-| <code>public StatementParseIssue TooManyEntries() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:175](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L175) |  |
-| <code>public StatementParseIssue TooManyLines(int lineBound) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:182](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L182) |  |
-| <code>public StatementParseIssue LineTooLong(int rowNumber) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:189](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L189) |  |
-| <code>public StatementParseIssue NestingTooDeep() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs:194](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementIngressLimits.cs#L194) |  |

@@ -93,40 +93,50 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await using var append = await appendConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
         var write = typedCoupon ? fixture.Write(fixture.Instruction(0, "dividend-boundary-coupon", 45m, 50m, 3m, 2m))
             : CouponHistoryWrite(fixture.Period.PeriodId, DateTimeOffset.Parse("2026-05-12T12:00:00Z"), fixture.BookId);
-        await fixture.Store.AppendAsync(appendConnection, append, write, ct);
-
-        var application = "dividend-coupon-boundary-" + Guid.NewGuid().ToString("N");
-        var connectionString = new NpgsqlConnectionStringBuilder(fixture.Options.ConnectionString)
-        { ApplicationName = application }.ConnectionString;
-        await using var dividendConnection = new NpgsqlConnection(connectionString);
-        await dividendConnection.OpenAsync(ct);
-        await using var dividend = await dividendConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        var pending = fixture.Store.LockCashDividendBookAsync(dividendConnection, dividend, fixture.BookId, ct);
+        await using var authority = await fixture.Store.AcquirePostingAuthorityAsync(appendConnection, append, [write], ct);
+        var completed = false;
         try
         {
-            // Wait for the real producer at its table gate, rather than allowing it to enqueue
-            // exclusive dividend authority behind this transaction's shared book authority.
-            await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
-            pending.IsCompleted.Should().BeFalse();
-            var birth = fixture.Lots[0].OriginatingMutationBatchId!.Value;
-            var nested = await fixture.Store.GetAtomicTaxLotPostingAsync(birth, ct).WaitAsync(TimeSpan.FromSeconds(5), ct);
-            nested.Should().NotBeNull("canonical separate-connection readers must complete while the producer waits");
-            pending.IsCompleted.Should().BeFalse();
-            await append.CommitAsync(ct);
-            await pending;
-            await dividend.RollbackAsync(ct);
-            (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId, ct)).Should()
-                .Contain(row => row.Entry.JournalEntryId == write.Entry.JournalEntryId);
+            await fixture.Store.AppendAsync(appendConnection, append, write, ct);
+            var application = "dividend-coupon-boundary-" + Guid.NewGuid().ToString("N");
+            var connectionString = new NpgsqlConnectionStringBuilder(fixture.Options.ConnectionString)
+            { ApplicationName = application }.ConnectionString;
+            await using var dividendConnection = new NpgsqlConnection(connectionString);
+            await dividendConnection.OpenAsync(ct);
+            await using var dividend = await dividendConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+            var pending = fixture.Store.LockCashDividendBookAsync(dividendConnection, dividend, fixture.BookId, ct);
+            try
+            {
+                // Wait for the real producer at its table gate, rather than allowing it to enqueue
+                // exclusive dividend authority behind this transaction's shared book authority.
+                await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
+                pending.IsCompleted.Should().BeFalse();
+                var birth = fixture.Lots[0].OriginatingMutationBatchId!.Value;
+                var nested = await fixture.Store.GetAtomicTaxLotPostingAsync(birth, ct).WaitAsync(TimeSpan.FromSeconds(5), ct);
+                nested.Should().NotBeNull("canonical separate-connection readers must complete while the producer waits");
+                pending.IsCompleted.Should().BeFalse();
+                await append.CommitAsync(ct);
+                completed = true;
+                await pending;
+                await dividend.RollbackAsync(ct);
+                (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId, ct)).Should()
+                    .Contain(row => row.Entry.JournalEntryId == write.Entry.JournalEntryId);
+            }
+            finally
+            {
+                if (!pending.IsCompleted)
+                {
+                    await timeout.CancelAsync();
+                    try
+                    { await pending; }
+                    catch (OperationCanceledException) { }
+                }
+            }
         }
         finally
         {
-            if (!pending.IsCompleted)
-            {
-                await timeout.CancelAsync();
-                try
-                { await pending; }
-                catch (OperationCanceledException) { }
-            }
+            if (!completed)
+                await append.RollbackAsync(CancellationToken.None);
         }
     }
 }

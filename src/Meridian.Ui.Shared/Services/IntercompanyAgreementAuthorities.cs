@@ -81,12 +81,20 @@ public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(
                 throw new IntercompanyAgreementValidationException("Select one exact retained document artifact.");
             var artifact = artifacts[0];
             var document = artifact.Document!;
-            if (document.ReviewerState.Status != EvidenceDocumentReviewStatusDto.Accepted
+            if (!string.Equals(document.TenantId, context.TenantId, StringComparison.OrdinalIgnoreCase)
+                || !string.Equals(document.Scope, scope.CompanyId, StringComparison.OrdinalIgnoreCase)
+                || document.ReviewerState.Status != EvidenceDocumentReviewStatusDto.Accepted
+                || document.Classification != EvidenceDocumentClassificationDto.Agreement
+                || !document.ObjectLinks.Any(link => link.LinkKind == EvidenceDocumentLinkKindDto.IntercompanyAgreement
+                    && Guid.TryParse(link.ObjectId, out var linked) && linked == agreementId)
                 || string.IsNullOrWhiteSpace(artifact.ContentHashSha256)
                 || !string.Equals(artifact.ContentHashSha256, document.SourceHashSha256, StringComparison.OrdinalIgnoreCase)
                 || (!string.IsNullOrWhiteSpace(reference.ContentHash)
                     && !string.Equals(reference.ContentHash, artifact.ContentHashSha256, StringComparison.OrdinalIgnoreCase)))
                 throw new IntercompanyAgreementValidationException("Agreement evidence must be accepted and unchanged since review.");
+            if (!await evidenceStore.VerifyDocumentContentAsync(vaultId, document.DocumentId, artifact.ArtifactId,
+                artifact.ContentHashSha256, context.TenantId, scope.CompanyId, ct).ConfigureAwait(false))
+                throw new IntercompanyAgreementValidationException("The exact retained agreement document failed content verification.");
             if (verifiedVaults.Add(vaultId)
                 && !await evidenceStore.VerifyRetainedContentAsync(vaultId, context.TenantId, scope.CompanyId, ct).ConfigureAwait(false))
                 throw new IntercompanyAgreementValidationException("Retained agreement document content could not be verified.");

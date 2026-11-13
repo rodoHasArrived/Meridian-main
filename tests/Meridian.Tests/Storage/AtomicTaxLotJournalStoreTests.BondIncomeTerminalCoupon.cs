@@ -274,13 +274,14 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             _couponStart = purchasedOnly ? AmortAcquired.AddMonths(-6) : AmortAcquired;
             _couponEnd = purchasedOnly ? AmortAcquired : FirstPaydown;
             Scope = new("terminal-tenant", "terminal-company", physical.IncomeAccountId.ToString("D"), physical.BookId.ToString("D"), "USD");
-            // Only the external retained-document review gate is substituted. Calculations,
-            // coupon receipts, physical lots, reference locks and both financial writers are real.
+            // Retained-document review and separately tested entity/intercompany onboarding use
+            // explicit test authorities. Calculations, receipts, lots and financial writers are real.
             _sourceReview.VerifyPreparedSourceAsync(Arg.Any<BondCouponRecognitionInstructionDto>(),
                 Arg.Any<RetainedEvidenceIdentityDto>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             Store = new(physical.Options, backfillSecurityMaster: () => physical.Securities,
                 backfillPositions: () => physical.Positions, bondIncomeAuthority: () => physical.IncomeAuthority,
-                couponRecognitionAuthority: () => _sourceReview);
+                couponRecognitionAuthority: () => _sourceReview,
+                postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         }
 
         public static async Task<TerminalCouponFixture> CreateAsync(int sign, bool deferred, bool purchasedOnly = false)

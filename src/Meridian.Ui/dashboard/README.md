@@ -43,6 +43,15 @@ identity; FRED intake derives series units from an independently accepted provid
 keeps missing observations and live verification status explicit.
 Focused coverage is in the `bond-workflow`, `account-bond-planning` and `bond-income` tests.
 
+Accounting's entity and intercompany view uses shared host contracts for authorized entity history,
+accounting profiles, source-linked proposals, breaks and versioned consolidation. Each accounting
+profile pins a canonical approved legal agreement ID, integer version and payload hash; operators
+configure book/account mappings without copying or editing legal terms. Legal authoring and
+independent approval remain in Accounting Configure's canonical agreement registry. Financial amounts and
+capabilities come from the host. Current draft scope must match the preview before mutation;
+loading, stale, blocked and unavailable states remain visible. See
+[intercompany operations](../../../docs/operators/intercompany-entity-controls.md).
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Accounting Security Master selection/search state belongs to
@@ -137,6 +146,9 @@ account changes invalidate review acknowledgement in their first render. Numeric
 server authority remain unchanged. Native number inputs can normalize characters before validation;
 the strict decimal parser validates the text the browser actually supplies. Focused coverage lives
 in `trading-screen.test.tsx` and `trading-screen.view-model.test.ts`.
+Pure ticket control and invalid-field projections live beside their wording in
+`trading-screen.order-ticket-text.ts`. Definitive order-refusal classification lives in
+`api-errors.ts`; the existing `api.ts` facade retains its named export.
 
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
@@ -2492,6 +2504,8 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W5X-EVIDENCE-001` | Evidence Vault productization |
 | `W5X-STMT-ONBOARD-001` | Statement reconciliation onboarding wedge |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderRequest
+
+Qualified name: <code>Meridian.Execution.Sdk.OrderRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/Models.cs:87](../../../../src/Meridian.Execution.Sdk/Models.cs#L87).
+
+Request to place a new order.
+
+```csharp
+public sealed record OrderRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:89](../../../../src/Meridian.Execution.Sdk/Models.cs#L89) |  |
+| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:90](../../../../src/Meridian.Execution.Sdk/Models.cs#L90) |  |
+| <code>public required OrderType Type { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:91](../../../../src/Meridian.Execution.Sdk/Models.cs#L91) |  |
+| <code>public required decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:92](../../../../src/Meridian.Execution.Sdk/Models.cs#L92) |  |
+| <code>public decimal? LimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:93](../../../../src/Meridian.Execution.Sdk/Models.cs#L93) |  |
+| <code>public decimal? StopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:94](../../../../src/Meridian.Execution.Sdk/Models.cs#L94) |  |
+| <code>public decimal? TrailPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:95](../../../../src/Meridian.Execution.Sdk/Models.cs#L95) |  |
+| <code>public decimal? TrailPercent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:96](../../../../src/Meridian.Execution.Sdk/Models.cs#L96) |  |
+| <code>public TimeInForce TimeInForce { get; init; } = TimeInForce.Day;</code> | [src/Meridian.Execution.Sdk/Models.cs:97](../../../../src/Meridian.Execution.Sdk/Models.cs#L97) |  |
+| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:98](../../../../src/Meridian.Execution.Sdk/Models.cs#L98) |  |
+| <code>public string? StrategyId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:99](../../../../src/Meridian.Execution.Sdk/Models.cs#L99) |  |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:100](../../../../src/Meridian.Execution.Sdk/Models.cs#L100) |  |
+| <code>public PositionIntent? PositionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:101](../../../../src/Meridian.Execution.Sdk/Models.cs#L101) |  |
+| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:102](../../../../src/Meridian.Execution.Sdk/Models.cs#L102) |  |
+| <code>public IReadOnlyList&lt;OrderLeg&gt;? Legs { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:103](../../../../src/Meridian.Execution.Sdk/Models.cs#L103) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:104](../../../../src/Meridian.Execution.Sdk/Models.cs#L104) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public OrderSessionIntent? SessionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:106](../../../../src/Meridian.Execution.Sdk/Models.cs#L106) |  |
+
 ## OrderResult
 
 Qualified name: <code>Meridian.Execution.Sdk.OrderResult</code>. Kind: `record`.

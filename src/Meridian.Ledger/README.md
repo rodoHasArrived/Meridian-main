@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ledger
 
+Optional intercompany agreement/revision, chart-node/binding and transaction identities retain
+source provenance on immutable journal legs. Null fields are omitted to preserve historic evidence
+serialization. Reviewed legacy-attribution sidecars add missing historical identity without editing
+posted legs; consolidation output remains a separate reviewed overlay. See
+[the domain dictionary](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
 Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
 economic face represented by that quantity and retains decimal unit-cost precision; share rounding
 is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each

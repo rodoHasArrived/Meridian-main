@@ -172,7 +172,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         {
             var store = new PostgresLedgerJournalStore(Physical.Options, backfillSecurityMaster: () => Physical.Securities,
                 backfillPositions: () => Physical.Positions, bondIncomeAuthority: () => Physical.IncomeAuthority,
-                couponRecognitionAuthority: () => _sourceReview);
+                couponRecognitionAuthority: () => _sourceReview,
+                postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
             Store = store;
             if (Service is not null)
                 BindService();

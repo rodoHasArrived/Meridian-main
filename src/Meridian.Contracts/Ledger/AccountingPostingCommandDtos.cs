@@ -89,6 +89,9 @@ public sealed record AccountingPostingCommandDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Actor { get; init; }
 
+    /// <summary>Exact approved transaction-date FX authority reviewed with intercompany amounts.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ConsolidationFxAmountDto? IntercompanyFx { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AssetAccountingPreparerAttestationDto? CashDividendAttestation { get; init; }
 
@@ -96,6 +99,9 @@ public sealed record AccountingPostingCommandDto(
         Evidence ?? [];
 
     public AccountingBookContextDto? BookContext { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? ControlledCloseAuthorizationId { get; init; }
 
     public Guid? BookPositionId { get; init; }
 

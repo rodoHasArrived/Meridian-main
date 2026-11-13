@@ -3,8 +3,10 @@ import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screen
 import {
   buildOrderRequirementText,
   buildOrderTicketAcknowledgementState,
+  buildOrderTicketControls,
   buildOrderTicketStatusAnnouncement,
-  buildOrderTicketSubmitDisabledReason
+  buildOrderTicketSubmitDisabledReason,
+  getOrderTicketInvalidField
 } from "./trading-screen.order-ticket-text";
 import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
@@ -3620,76 +3622,6 @@ export function buildOrderTicketState({
   };
 }
 
-function buildOrderTicketControls(
-  form: OrderSubmitRequest,
-  invalidField: OrderTicketField | null,
-  requirementId: string
-): OrderTicketControls {
-  return {
-    symbol: {
-      field: "symbol",
-      id: "order-ticket-symbol",
-      label: "Symbol",
-      value: form.symbol,
-      describedBy: requirementId,
-      ariaLabel: "Order symbol",
-      invalid: invalidField === "symbol",
-      required: true
-    },
-    side: {
-      field: "side",
-      id: "order-ticket-side",
-      label: "Side",
-      value: form.side,
-      describedBy: requirementId,
-      ariaLabel: "Order side",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Buy", label: "Buy" },
-        { value: "Sell", label: "Sell" }
-      ]
-    },
-    type: {
-      field: "type",
-      id: "order-ticket-type",
-      label: "Type",
-      value: form.type,
-      describedBy: requirementId,
-      ariaLabel: "Order type",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Market", label: "Market" },
-        { value: "Limit", label: "Limit" },
-        { value: "Stop", label: "Stop" }
-      ]
-    },
-    quantity: {
-      field: "quantity",
-      id: "order-ticket-quantity",
-      label: "Quantity",
-      value: form.quantity ? String(form.quantity) : "",
-      describedBy: requirementId,
-      ariaLabel: "Order quantity",
-      invalid: invalidField === "quantity",
-      required: true
-    },
-    limitPrice: orderTypeRequiresPrice(form.type)
-      ? {
-          field: "limitPrice",
-          id: "order-ticket-limit-price",
-          label: `${form.type} price`,
-          value: form.limitPrice ? String(form.limitPrice) : "",
-          describedBy: requirementId,
-          ariaLabel: `${form.type} order price`,
-          invalid: invalidField === "limitPrice",
-          required: true
-        }
-      : null
-  };
-}
-
 export function updateOrderTicketForm(
   current: OrderSubmitRequest,
   field: OrderTicketField,
@@ -3750,22 +3682,6 @@ export function validateOrderTicketForm(form: OrderSubmitRequest): string | null
 
   if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
     return `Enter a ${form.type.toLowerCase()} price greater than zero.`;
-  }
-
-  return null;
-}
-
-function getOrderTicketInvalidField(form: OrderSubmitRequest): OrderTicketField | null {
-  if (!normalizeOrderSymbol(form.symbol)) {
-    return "symbol";
-  }
-
-  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
-    return "quantity";
-  }
-
-  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
-    return "limitPrice";
   }
 
   return null;

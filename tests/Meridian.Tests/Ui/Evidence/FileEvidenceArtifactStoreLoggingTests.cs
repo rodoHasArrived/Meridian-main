@@ -71,6 +71,35 @@ public sealed class FileEvidenceArtifactStoreLoggingTests : IDisposable
         (await File.ReadAllBytesAsync(manifestPath)).Should().Equal(originalBytes);
     }
 
+    [Fact]
+    public async Task LockedPinnedArtifactVerificationFailsClosed_WithoutLoggingScopedPathsOrRawExceptions()
+    {
+        var store = new FileEvidenceArtifactStore(_root, _logger);
+        var intake = await RetainAsync(store);
+        var identity = intake.VaultIdentity;
+        intake.Document.Should().NotBeNull();
+        var document = intake.Document!;
+        var artifact = identity.Artifacts.Single(row => row.Document?.DocumentId == document.DocumentId);
+        var artifactPath = Path.Combine(_root, artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        (await store.VerifyDocumentContentAsync(identity.VaultId, document.DocumentId, artifact.ArtifactId,
+            intake.ContentHashSha256, Tenant, Scope)).Should().BeTrue();
+        using (var lease = new FileStream(artifactPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            _logger.Entries.Clear();
+
+            (await store.VerifyDocumentContentAsync(identity.VaultId, document.DocumentId, artifact.ArtifactId,
+                intake.ContentHashSha256, Tenant, Scope)).Should().BeFalse();
+
+            var warning = _logger.Entries.Should().ContainSingle().Which;
+            warning.LogLevel.Should().Be(LogLevel.Warning);
+            warning.Message.Should().Be("Evidence vault artifact could not be read for verification (IOException).");
+            AssertOperationalLogPrivacy();
+        }
+        (await store.VerifyDocumentContentAsync(identity.VaultId, document.DocumentId, artifact.ArtifactId,
+            intake.ContentHashSha256, Tenant, Scope)).Should().BeTrue();
+        (await File.ReadAllBytesAsync(artifactPath)).Should().Equal("synthetic retained source"u8.ToArray());
+    }
+
     private static Task<EvidenceVaultIntakeResponseDto> RetainAsync(FileEvidenceArtifactStore store)
         => store.WriteIntakeArtifactAsync(new("account", Subject, "api", "private-document-marker.txt",
             ContentBase64: Convert.ToBase64String("synthetic retained source"u8.ToArray()))

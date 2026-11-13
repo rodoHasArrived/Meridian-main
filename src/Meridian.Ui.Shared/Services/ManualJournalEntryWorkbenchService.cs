@@ -32,6 +32,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
     private readonly IBankTransactionSource? _bankTransactionSource;
     private readonly IPrivateCapitalStore? _privateCapitalAuthorityStore;
+    private readonly IControlledCloseAuthorizationStore? _controlledCloseAuthorizations;
+    private readonly Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority? _intercompanyPostingAuthority;
+    private readonly IConsolidationFxAuthority? _intercompanyFxAuthority;
+    private readonly Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority? _lifecycleCloseAuthority;
 
     public ManualJournalEntryWorkbenchService(
         IManualJournalEntryDraftStore draftStore,
@@ -50,7 +54,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService? assetAccountingSource = null,
         Func<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService?>? assetCandidatePostingFactory = null,
         Func<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService?>? assetAccountingSourceFactory = null,
-        IPrivateCapitalStore? privateCapitalStore = null)
+        IPrivateCapitalStore? privateCapitalStore = null,
+        IControlledCloseAuthorizationStore? controlledCloseAuthorizations = null,
+        Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority? lifecycleCloseAuthority = null,
+        Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority? intercompanyPostingAuthority = null,
+        IConsolidationFxAuthority? intercompanyFxAuthority = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -61,6 +69,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
         _privateCapitalAuthorityStore = privateCapitalStore;
+        _controlledCloseAuthorizations = controlledCloseAuthorizations;
+        _lifecycleCloseAuthority = lifecycleCloseAuthority;
+        _intercompanyPostingAuthority = intercompanyPostingAuthority;
+        _intercompanyFxAuthority = intercompanyFxAuthority;
         _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
         _recurringStore = recurringStore;
         _consolidationGuard = consolidationGuard;
@@ -320,6 +332,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             AutomationEvidenceAssessment = existing is null
                 ? request.Draft.AutomationEvidenceAssessment
                 : existing.AutomationEvidenceAssessment,
+            IntercompanyRefreshRequestId = trustedAutomatedIntake ? request.Draft.IntercompanyRefreshRequestId : existing?.IntercompanyRefreshRequestId,
+            IntercompanyRefreshRequestDigest = trustedAutomatedIntake ? request.Draft.IntercompanyRefreshRequestDigest : existing?.IntercompanyRefreshRequestDigest,
+            IntercompanyProposalId = existing?.IntercompanyProposalId ?? (trustedAutomatedIntake ? request.Draft.IntercompanyProposalId : null),
+            IntercompanyProposalSourceDigest = existing?.IntercompanyProposalSourceDigest ?? (trustedAutomatedIntake ? request.Draft.IntercompanyProposalSourceDigest : null),
+            IntercompanyFx = trustedAutomatedIntake && existing?.Status is ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected
+                ? request.Draft.IntercompanyFx : existing?.IntercompanyFx ?? (trustedAutomatedIntake ? request.Draft.IntercompanyFx : null),
             PrivateCapitalAuthorityJson = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.PrivateCapitalAuthorityJson : null)
                 : existing.PrivateCapitalAuthorityJson,
@@ -373,6 +391,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             RequiresConsolidationEvidence = (existing is not null && IsConsolidationDraft(existing)) ||
                 IsConsolidationDraft(request.Draft)
         }, allowIncomplete: true, ct).ConfigureAwait(false);
+        normalizedDraft = await RetainIntercompanyFxForSaveAsync(normalizedDraft, ct).ConfigureAwait(false);
         EnsureRequestedLedgerBookMatchesDraft(request.LedgerBookId, normalizedDraft);
         if (existing is not null)
         {
@@ -911,6 +930,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             period.Version,
             mergedEvidence,
             recordedAtUtc);
+        if (_controlledCloseAuthorizations is not null)
+        {
+            var closeAuthorization = await _controlledCloseAuthorizations.FindCloseAuthorizationAsync(
+                ledgerBookId, draft.JournalEntryId, draft.Version, ct).ConfigureAwait(false);
+            if (closeAuthorization is not null)
+                postingCommand = postingCommand with { ControlledCloseAuthorizationId = closeAuthorization.AuthorizationId };
+        }
         var write = await BuildManualJournalEntryWriteAsync(
                 draft,
                 ledgerBook,
@@ -959,7 +985,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AccountingPostingCommandDto postingCommand,
         IReadOnlyList<string> evidenceLinks,
         DateTimeOffset recordedAtUtc,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool retainPostingApproval = true)
     {
         if (IsConsolidationDraft(draft))
         {
@@ -968,7 +995,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 BookContext = new AccountingBookContextDto(ledgerBook.LedgerBookId, ledgerBook.FundProfileId,
                     ledgerBook.FundStructureNodeId, ledgerBook.FundStructureNodeKind, ledgerBook.DisplayName,
                     ledgerBook.BaseCurrency, ledgerBook.AccountingBasis, ledgerBook.AccountingPolicyId,
-                    ledgerBook.AccountingPolicyVersion, periodId)
+                    ledgerBook.AccountingPolicyVersion, periodId),
+                RulePackReference = Meridian.FinancialOperations.Consolidation.ConsolidationService.ReadEvidence(draft.ConsolidationEvidenceJson)?.RulePackReference
             };
         }
         var configuration = await _configurationService
@@ -1011,7 +1039,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
                 line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m,
                 description,
-                ToLedgerLineDimensions(line.Dimensions)));
+                ToLedgerLineDimensions(line.Dimensions),
+                line.TransactionCurrency is { } original
+                    ? new LedgerEntryCurrency(original.Currency, draft.Currency,
+                        line.Side == AccountingTemplateLineSideDto.Debit ? original.Amount : 0m,
+                        line.Side == AccountingTemplateLineSideDto.Credit ? original.Amount : 0m,
+                        original.FxRateToFunctional)
+                    : null));
         }
 
         var entry = new JournalEntry(
@@ -1031,11 +1065,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             ledgerBook.AccountingPolicyId,
             ledgerBook.AccountingPolicyVersion,
             IsConsolidationDraft(draft) ? Meridian.FinancialOperations.Consolidation.ConsolidationService.RuleId : "manual-journal-entry",
-            IsConsolidationDraft(draft) ? Meridian.FinancialOperations.Consolidation.ConsolidationService.RuleVersion : "v1",
+            IsConsolidationDraft(draft) ? (Meridian.FinancialOperations.Consolidation.ConsolidationService.ReadEvidence(draft.ConsolidationEvidenceJson)?.RuleVersion
+                ?? throw new InvalidOperationException("Consolidation rule evidence is unavailable.")) : "v1",
             postingCommand.SourceEventId,
             postingCommand.SourceJournalEntryId,
             BuildManualPostingKind(draft),
-            AdjustmentApproval: BuildManualAdjustmentApproval(draft, postingCommand, evidenceLinks, recordedAtUtc),
+            AdjustmentApproval: retainPostingApproval
+                ? BuildManualAdjustmentApproval(draft, postingCommand, evidenceLinks, recordedAtUtc) : null,
             PostingCommand: postingCommand,
             LedgerBookId: ledgerBook.LedgerBookId);
     }
@@ -1094,7 +1130,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             ActionOrigin: request.ActionOrigin,
             LedgerBookId: ledgerBookId)
         {
-            Actor = RequireText(request.Actor, nameof(request.Actor))
+            Actor = RequireText(request.Actor, nameof(request.Actor)),
+            IntercompanyFx = draft.IntercompanyFx
         };
     }
 
@@ -1116,6 +1153,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, "manualJournalEntryId", draft.JournalEntryId.ToString("D"));
         AddMetadataTag(tags, "manualJournalEntryStatus", draft.Status.ToString());
         AddMetadataTag(tags, "manualJournalEntryType", draft.EntryType.ToString());
+        AddMetadataTag(tags, "intercompany.proposalId", draft.IntercompanyProposalId?.ToString("D"));
+        AddMetadataTag(tags, "intercompany.sourceDigest", draft.IntercompanyProposalSourceDigest);
         AddMetadataTag(tags, "accountingBasis", draft.AccountingBasis.ToString());
         AddMetadataTag(tags, "ledgerBookId", draft.LedgerBookId?.ToString("D"));
         AddMetadataTag(tags, "periodId", draft.PeriodId);
@@ -1384,6 +1423,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
             PositionId = dimensions.PositionId,
+            AccountingArrangementId = NormalizeOptional(dimensions.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions.AccountingArrangementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId),
             IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
             IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };

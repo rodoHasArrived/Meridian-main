@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolStoragePage
+
+Qualified name: <code>Meridian.Wpf.Views.SymbolStoragePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:18](../../../../src/Meridian.Wpf/Views/Pages.cs#L18).
+
+```csharp
+public partial class SymbolStoragePage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs#L11).
+
+Symbol storage page showing per-symbol storage analytics, data type breakdown, file counts, and growth projections.
+
+```csharp
+public partial class SymbolStoragePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolStoragePage() : this(new SymbolStorageViewModel());</code> | [src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs#L15) |  |
+
+## SystemHealthPage
+
+Qualified name: <code>Meridian.Wpf.Views.SystemHealthPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:33](../../../../src/Meridian.Wpf/Views/Pages.cs#L33).
+
+```csharp
+public partial class SystemHealthPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs#L13).
+
+System health monitoring page — thin code-behind. All state, timers, and data-loading logic live in SystemHealthViewModel.
+
+```csharp
+public partial class SystemHealthPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SystemHealthPage();</code> | [src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs#L17) |  |
+
 ## TickerStripWindow
 
 Qualified name: <code>Meridian.Wpf.Views.TickerStripWindow</code>. Kind: `class`.
@@ -1071,35 +1119,4 @@ Provides a data-grid surface for workflow routing rows.
 
 ```csharp
 public sealed class RoutingMatrixControl : DataGrid
-```
-
-## DetailPaneControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.DetailPaneControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:30](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L30).
-
-Hosts detail content with an independently bindable open state.
-
-```csharp
-public sealed class DetailPaneControl : ContentControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty IsOpenProperty = DependencyProperty.Register(nameof(IsOpen), typeof(bool), typeof(DetailPaneControl), new PropertyMetadata(true));</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:32](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L32) |  |
-| <code>public bool IsOpen { get; set; }</code> | [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:35](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L35) |  |
-
-## DockablePanelHostControl
-
-Qualified name: <code>Meridian.Wpf.Workstation.Layout.DockablePanelHostControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs:16](../../../../src/Meridian.Wpf/Workstation/Layout/WorkstationLayoutControls.cs#L16).
-
-Provides a content host for dockable workstation panels.
-
-```csharp
-public sealed class DockablePanelHostControl : ContentControl
 ```

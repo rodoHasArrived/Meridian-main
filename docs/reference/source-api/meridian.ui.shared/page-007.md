@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterConflictEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.SecurityMasterConflictEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1059](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1059).
+
+Adds Security Master conflict and resolution evidence to an evidence graph.
+
+```csharp
+public sealed class SecurityMasterConflictEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterConflictEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1063](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1063) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1068](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1068) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1070](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1070) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1073](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1073) |  |
+
+## SinglePrincipalAttestationAuthority
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationAuthority</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:9](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L9).
+
+Server-derived authority; this type is never bound from an HTTP request body.
+
+```csharp
+public sealed record SinglePrincipalAttestationAuthority(string Actor, OperationsActionOriginDto Origin, bool CanRead, bool CanAdministerDeclaration = false, bool CanAttest = false, bool CanRevoke = false, bool CanModifyTarget = false, bool CanModifyDraftTarget = false);
+```
+
 ## SinglePrincipalAttestationException
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationException</code>. Kind: `class`.
@@ -665,6 +698,18 @@ Single compact reason entry shown in workstation surfaces.
 public sealed record ScoreReasonProjection(string Code, double Contribution);
 ```
 
+## IntercompanyOperationsJsonContext
+
+Qualified name: <code>Meridian.Ui.Shared.Serialization.IntercompanyOperationsJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Serialization/IntercompanyOperationsJsonContext.cs:21](../../../../src/Meridian.Ui.Shared/Serialization/IntercompanyOperationsJsonContext.cs#L21).
+
+Generated transport metadata for lifecycle and intercompany control operations.
+
+```csharp
+public partial class IntercompanyOperationsJsonContext : JsonSerializerContext;
+```
+
 ## W4AcceptanceFilter
 
 Qualified name: <code>Meridian.Ui.Shared.Services.Acceptance.W4AcceptanceFilter</code>. Kind: `class`.
@@ -816,6 +861,12 @@ Declared public members:
 | <code>public async Task&lt;AccountingRuleTestSuiteResultDto&gt; ExecuteRuleTestCasesAsync(ExecuteAccountingRuleTestCasesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:768](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L768) |  |
 | <code>public async Task&lt;AccountingConfigurationWorkspaceDto&gt; ActivateAsync(ActivateAccountingConfigurationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:826](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L826) |  |
 | <code>public Task&lt;IReadOnlyList&lt;AccountingActionAuditEventDto&gt;&gt; ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs:853](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs#L853) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs:6](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.IntercompanyValidation.cs#L6).
+
+```csharp
+public sealed partial class AccountingConfigurationService
+```
 
 Source: [src/Meridian.Ui.Shared/Services/AccountingConfigurationService.RuleValidation.cs:17](../../../../src/Meridian.Ui.Shared/Services/AccountingConfigurationService.RuleValidation.cs#L17).
 
@@ -978,44 +1029,3 @@ Declared public members:
 | <code>public decimal? TryGetReferencePrice(string symbol);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:540](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L540) |  |
 | <code>public PortfolioExposureSnapshot GetSnapshot();</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:547](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L547) |  |
 | <code>public PortfolioExposureSnapshot GetSnapshot(Guid? fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:654](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L654) |  |
-
-## AlpacaBrokerageConnectionService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AlpacaBrokerageConnectionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:20](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L20).
-
-Manages Alpaca Trading API-key connectivity for one tenant-owned provider connection.
-
-```csharp
-public sealed class AlpacaBrokerageConnectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AlpacaBrokerageConnectionService(ILogger&lt;AlpacaBrokerageConnectionService&gt; logger, ProviderConnectionLifecycleService lifecycle, IHttpClientFactory? httpClientFactory = null);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:37](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L37) |  |
-| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; GetStatusAsync(string? connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:53](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L53) | Reads the status of one Alpaca connection owned by tenantId. |
-| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; ConnectAsync(string? connectionId, string tenantId, AlpacaBrokerageConnectionRequestDto request, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:81](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L81) | Verifies the submitted keys against the connection&#x27;s retained account and environment, then stores them in that connection&#x27;s vault scope. Keys that cannot be shown to belong to the retained account are never stored, so they cannot replace a working credential. |
-| <code>public async Task&lt;BrokerageConnectionStatusDto&gt; RevokeAsync(string? connectionId, string tenantId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs:148](../../../../src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs#L148) | Deletes the credentials of one owned connection; other connections are untouched. |
-
-## ApprovalDecision
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:71](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L71).
-
-```csharp
-public sealed record ApprovalDecision(bool RequiresDualControl, IReadOnlyList<ApprovalStep> Steps);
-```
-
-## ApprovalPolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:65](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L65).
-
-```csharp
-public sealed record ApprovalPolicy(decimal DualControlThreshold, IReadOnlyDictionary<string, decimal> CurrencyThresholds, IReadOnlyDictionary<string, decimal> AccountThresholds, IReadOnlySet<string> HighRiskCounterparties);
-```

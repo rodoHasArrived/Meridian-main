@@ -9,6 +9,19 @@ namespace Meridian.Storage.Ledger;
 
 public sealed partial class PostgresLedgerJournalStore
 {
+    /// <summary>Native and ordinary writers both acquire entitlement before graph authority.</summary>
+    internal async Task<IAsyncDisposable> AcquireNativeBookStructureAuthorityAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, Guid ledgerBookId, CancellationToken ct)
+    {
+        // Keep this ordering indivisible at the producer: taking graph first can cycle with
+        // an ordinary entitlement holder and a queued legal-entity metadata writer.
+        await LockCashDividendBookAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false);
+        return await AcquireNativeStructureAuthorityAsync(ct).ConfigureAwait(false);
+    }
+
+    internal Task<IAsyncDisposable> AcquireNativeStructureAuthorityAsync(CancellationToken ct)
+        => (_postingAuthorities?.Invoke().OfType<ILedgerStructurePostingAuthority>().SingleOrDefault())
+            ?.AcquireStructureAuthorityAsync(ct) ?? Task.FromResult<IAsyncDisposable>(EmptyLedgerAuthorityLease.Instance);
     /// <summary>Serializes complete-book entitlement reads with every governed ledger append.</summary>
     public async Task LockCashDividendBookAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
         Guid ledgerBookId, CancellationToken ct = default)
@@ -62,6 +75,13 @@ public sealed partial class PostgresLedgerJournalStore
         await lease.EnsureCurrentAsync(actor, lease.Projection.LedgerBookId, entry.PeriodId,
             lease.Projection.DraftedCandidateFingerprint, lease.Projection.PostingIntentHash, ct).ConfigureAwait(false);
         RejectJournalOnlySuccessorPosting(entry);
+        // Only this producer-verified path may normalize native preparer authority. Generic
+        // eligibility remains mandatory and is retained by the outer case transaction's lease.
+        var postingAuthority = await AcquirePostingAuthorityCoreAsync(connection, transaction, [entry], true, ct,
+            lease.StructureAuthorityLease).ConfigureAwait(false);
+        try
+        { lease.RetainPostingAuthority(postingAuthority); }
+        catch { await postingAuthority.DisposeAsync().ConfigureAwait(false); throw; }
         await AppendCoreAsync(connection, transaction, entry, ct, verifiedCashDividendAttestation: true).ConfigureAwait(false);
     }
 

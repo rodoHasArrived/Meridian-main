@@ -6,6 +6,376 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StreamConnectionRegistry
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamConnectionRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:11](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L11).
+
+Tracks the number of concurrent quote-stream connections per session and enforces a per-session cap. A singleton hit concurrently by many request threads, so all counter mutations are atomic (compare-and-swap on a ConcurrentDictionary{TKey,TValue}).
+
+```csharp
+public sealed class StreamConnectionRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StreamConnectionRegistry(int maxConcurrentStreamsPerSession);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L16) |  |
+| <code>public bool TryReserve(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L25) | Atomically reserves a stream slot for the session. Returns false when the session is already at its cap. An empty session id is treated as unscoped and never capped. |
+| <code>public void Release(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:61](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L61) | Releases a previously reserved slot for the session. |
+| <code>public int ActiveCount(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:93](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L93) | Current number of active streams for the session. |
+| <code>public void CloseSession(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:97](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L97) | Drops all accounting for a session (e.g. on logout / session expiry). |
+
+## StreamSubscription (generic arity 1)
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamSubscription</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L12).
+
+A live subscription to a stream topic produced by StreamBroadcaster{TPayload}. Read coalesced payloads from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
+
+```csharp
+public sealed class StreamSubscription<TPayload>: IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChannelReader&lt;TPayload&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L23) | Coalesced payload feed for this subscription&#x27;s topic. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L25) |  |
+
+## StreamTopic
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamTopic</code>. Kind: `struct`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:14](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L14).
+
+Identifies a stream fan-out topic — the unit of subscription and one-build-per-tick sharing. The Key encodes the topic kind and its argument: quotes:&lt;symbols&gt; for a canonical, order- and case-independent symbol set (or the &quot;all tracked symbols&quot; sentinel), and a length-prefixed tenant/company/run identity for a scoped reporting run. Topic equality is by Key, so equivalent requests share one topic (and therefore one snapshot build per fan-out tick).
+
+```csharp
+public readonly struct StreamTopic : IEquatable<StreamTopic>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string AllQuotesKey = &quot;quotes:*&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L17) | Topic key for &quot;all tracked symbols&quot;. |
+| <code>public string Key =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:32](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L32) | Canonical, stable identifier for this topic. default(StreamTopic) resolves to AllQuotesKey so the default value behaves as AllQuotes. |
+| <code>public string Argument =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:38](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L38) | The argument passed to this topic&#x27;s snapshot builder: the comma-joined symbol filter for quote topics (empty string = &quot;all tracked symbols&quot;), or the run id for report-run topics. |
+| <code>public string SymbolFilter =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:41](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L41) | Back-compat alias for quote consumers: the symbol filter for a quotes topic. |
+| <code>public static StreamTopic AllQuotes { get; } = new (AllQuotesKey, string.Empty);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:44](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L44) | Topic covering every tracked symbol. |
+| <code>public static StreamTopic Quotes(string? symbolFilter);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L52) | Build a quotes topic from a raw or normalized symbol filter (comma-separated). Symbols are trimmed, upper-cased, de-duplicated, and sorted so equivalent requests collapse to the same topic. An empty/whitespace filter yields AllQuotes. |
+| <code>public static StreamTopic ReportRun(string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:79](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L79) | Build a legacy report-run topic keyed by the exact run id (trimmed). New tenant-bound subscriptions use the scoped overload below. |
+| <code>public static StreamTopic ReportRun(string tenantId, string companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L85) |  |
+| <code>public static bool TryParseScopedReportRun(string argument, out string tenantId, out string companyId, out string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:101](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L101) |  |
+| <code>public bool Equals(StreamTopic other) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:145](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L145) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:147](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L147) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:149](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L149) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:151](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L151) |  |
+| <code>public static bool operator == (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:153](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L153) |  |
+| <code>public static bool operator != (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:155](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L155) |  |
+
+## BuiltInWorkflowDefinitionProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.BuiltInWorkflowDefinitionProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L9).
+
+Built-in workflow library entries based on the current workstation surfaces.
+
+```csharp
+public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |
+
+## FileOperatorScopePreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorScopePreferenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L22).
+
+JSON-backed store under Meridian&#x27;s data root, keyed by tenant, company and user so one operator&#x27;s default never leaks to another. Writes go through the snapshot store&#x27;s atomic replace, like workflow presets.
+
+```csharp
+public sealed class FileOperatorScopePreferenceStore : JsonFileSnapshotStore<OperatorScopePreferenceSnapshot>, IOperatorScopePreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperatorScopePreferenceStore(string dataRoot, ILogger&lt;FileOperatorScopePreferenceStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorScopePreferenceJsonContext.Default.OperatorScopePreferenceSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L31) |  |
+| <code>public Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:41](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L41) |  |
+| <code>public async Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:53](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L53) |  |
+| <code>public static OperatingScopeValuesDto? Normalize(OperatingScopeValuesDto? scope);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:78](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L78) | Trims each value, drops blanks, and returns null for a scope with no values. |
+
+## FileOperatorSurfaceVisitStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorSurfaceVisitStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:24](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L24).
+
+JSON-backed store beside the operator scope preferences, keyed by tenant, company, user and surface. Writes go through the snapshot store&#x27;s atomic replace.
+
+```csharp
+public sealed partial class FileOperatorSurfaceVisitStore : JsonFileSnapshotStore<OperatorSurfaceVisitSnapshot>, IOperatorSurfaceVisitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileOperatorSurfaceVisitStore(string dataRoot, ILogger&lt;FileOperatorSurfaceVisitStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorSurfaceVisitJsonContext.Default.OperatorSurfaceVisitSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:32](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L32) |  |
+| <code>public Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:42](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L42) |  |
+| <code>public async Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:51](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L51) |  |
+| <code>public static string NormalizeSurface(string? surface);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:72](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L72) | Surface ids are short lowercase slugs, such as reconciliation-breaks. |
+
+## FileWorkflowPresetStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.FileWorkflowPresetStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L12).
+
+JSON-backed workflow preset store rooted under Meridian&#x27;s resolved data directory.
+
+```csharp
+public sealed class FileWorkflowPresetStore : JsonFileSnapshotStore<WorkflowPresetSnapshot>, IWorkflowPresetStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileWorkflowPresetStore(string dataRoot, ILogger&lt;FileWorkflowPresetStore&gt; logger) : base(ResolveSnapshotPath(dataRoot), WorkflowPresetJsonContext.Default.WorkflowPresetSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L22) |  |
+| <code>public Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L28) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/FileWorkflowPresetStore.cs#L31) |  |
+
+## IOperatorScopePreferenceStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorScopePreferenceStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L10).
+
+Durable per-operator default operating scope (C1).
+
+```csharp
+public interface IOperatorScopePreferenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorScopePreferenceDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L12) |  |
+| <code>Task&lt;OperatorScopePreferenceDto&gt; SetAsync(string operatorKey, OperatingScopeValuesDto? defaultScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L14) |  |
+
+## IOperatorSurfaceVisitStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IOperatorSurfaceVisitStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L11).
+
+Durable per-operator last visit to each workstation surface (C3).
+
+```csharp
+public interface IOperatorSurfaceVisitStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OperatorSurfaceVisitDto&gt; GetAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L14) | The last recorded visit, without recording one. |
+| <code>Task&lt;OperatorSurfaceVisitDto&gt; RecordVisitAsync(string operatorKey, string surface, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L17) | Records a visit now and returns the visit it replaced. |
+
+## IWorkflowActionCatalog
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowActionCatalog</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L8).
+
+Resolves workflow actions into shell page targets for summaries, queues, and UI.
+
+```csharp
+public interface IWorkflowActionCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L10) |  |
+| <code>IReadOnlyList&lt;WorkflowActionDto&gt; GetActions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L12) |  |
+| <code>WorkflowActionDto? ResolveAction(string? actionId);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:14](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L14) |  |
+| <code>WorkflowActionDto? ResolveOperatorWorkItem(OperatorWorkItemDto? workItem);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:16](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L16) |  |
+| <code>WorkflowActionDto? ResolveRoute(string? targetRoute);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:18](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L18) |  |
+| <code>string ResolveTargetPageTag(string? actionId, string fallbackPageTag);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs:20](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowActionCatalog.cs#L20) |  |
+
+## IWorkflowDefinitionProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowDefinitionProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L8).
+
+Supplies reusable workstation workflow definitions.
+
+```csharp
+public interface IWorkflowDefinitionProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions();</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs#L10) |  |
+
+## IWorkflowPresetStore
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.IWorkflowPresetStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L8).
+
+Durable store for operator-saved workflow presets.
+
+```csharp
+public interface IWorkflowPresetStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L10) |  |
+| <code>Task&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; UpdateAsync(Func&lt;IReadOnlyList&lt;WorkflowPresetDto&gt;, IReadOnlyList&lt;WorkflowPresetDto&gt;&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/IWorkflowPresetStore.cs#L12) |  |
+
+## OperatorScopePreferenceRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:141](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L141).
+
+```csharp
+public sealed record OperatorScopePreferenceRecord(string OperatorKey, OperatingScopeValuesDto DefaultScope, DateTimeOffset UpdatedAt);
+```
+
+## OperatorScopePreferenceSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorScopePreferenceSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs:143](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorScopePreferenceStore.cs#L143).
+
+```csharp
+public sealed record OperatorScopePreferenceSnapshot(int Version, IReadOnlyList<OperatorScopePreferenceRecord> Operators);
+```
+
+## OperatorSurfaceVisitRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:121](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L121).
+
+```csharp
+public sealed record OperatorSurfaceVisitRecord(string OperatorKey, string Surface, DateTimeOffset VisitedAt);
+```
+
+## OperatorSurfaceVisitSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.OperatorSurfaceVisitSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs:123](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorSurfaceVisitStore.cs#L123).
+
+```csharp
+public sealed record OperatorSurfaceVisitSnapshot(int Version, IReadOnlyList<OperatorSurfaceVisitRecord> Visits);
+```
+
+## WorkflowActionIds
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowActionIds</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:6](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L6).
+
+Stable identifiers for workstation workflow actions used across summaries and routing.
+
+```csharp
+public static class WorkflowActionIds
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string PrimaryOperatorImport = &quot;workflow.primary-operator.import&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L8) |  |
+| <code>public const string PrimaryOperatorValidate = &quot;workflow.primary-operator.validate&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L9) |  |
+| <code>public const string PrimaryOperatorReconcile = &quot;workflow.primary-operator.reconcile&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:10](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L10) |  |
+| <code>public const string PrimaryOperatorInvestigate = &quot;workflow.primary-operator.investigate&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L11) |  |
+| <code>public const string PrimaryOperatorApprove = &quot;workflow.primary-operator.approve&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L12) |  |
+| <code>public const string PrimaryOperatorReport = &quot;workflow.primary-operator.report&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:13](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L13) |  |
+| <code>public const string AccountingRecordsReviewSourceRecords = &quot;workflow.accounting-records.review-source-records&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:15](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L15) |  |
+| <code>public const string AccountingRecordsReviewNormalizedActivity = &quot;workflow.accounting-records.review-normalized-activity&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:16](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L16) |  |
+| <code>public const string AccountingRecordsReviewReconciliationCases = &quot;workflow.accounting-records.review-reconciliation-cases&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L17) |  |
+| <code>public const string AccountingRecordsReviewLedgerEvidence = &quot;workflow.accounting-records.review-ledger-evidence&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:18](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L18) |  |
+| <code>public const string AccountingRecordsReviewApprovals = &quot;workflow.accounting-records.review-approvals&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:19](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L19) |  |
+| <code>public const string AccountingRecordsReviewReportLineage = &quot;workflow.accounting-records.review-report-lineage&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:20](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L20) |  |
+| <code>public const string StrategyStartBacktest = &quot;workflow.strategy.start-backtest&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:22](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L22) |  |
+| <code>public const string StrategyReviewRuns = &quot;workflow.strategy.review-runs&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:23](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L23) |  |
+| <code>public const string StrategySendToTradingReview = &quot;workflow.strategy.send-to-trading-review&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:24](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L24) |  |
+| <code>public const string TradingChooseContext = &quot;workflow.trading.choose-context&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:26](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L26) |  |
+| <code>public const string TradingReviewPaperCandidate = &quot;workflow.trading.review-paper-candidate&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:27](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L27) |  |
+| <code>public const string TradingOpenCockpit = &quot;workflow.trading.open-cockpit&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:28](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L28) |  |
+| <code>public const string TradingReviewExecutionControls = &quot;workflow.trading.review-execution-controls&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:29](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L29) |  |
+| <code>public const string PortfolioOpen = &quot;workflow.portfolio.open&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:31](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L31) |  |
+| <code>public const string PortfolioReviewAggregate = &quot;workflow.portfolio.review-aggregate&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:32](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L32) |  |
+| <code>public const string PortfolioReviewRunPortfolio = &quot;workflow.portfolio.review-run-portfolio&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:33](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L33) |  |
+| <code>public const string PortfolioReviewBrokerageSync = &quot;workflow.portfolio.review-brokerage-sync&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:34](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L34) |  |
+| <code>public const string PortfolioImportSnapshots = &quot;workflow.portfolio.import-snapshots&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:35](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L35) |  |
+| <code>public const string AccountingChooseContext = &quot;workflow.accounting.choose-context&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:37](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L37) |  |
+| <code>public const string AccountingConfigure = &quot;workflow.accounting.configure&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:38](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L38) |  |
+| <code>public const string AccountingReviewLiveHandoff = &quot;workflow.accounting.review-live-handoff&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:39](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L39) |  |
+| <code>public const string AccountingReviewReconciliation = &quot;workflow.accounting.review-reconciliation-breaks&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:40](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L40) |  |
+| <code>public const string AccountingReviewLedgerContinuity = &quot;workflow.accounting.review-ledger-continuity&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:41](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L41) |  |
+| <code>public const string AccountingReviewOperationsContinuity = &quot;workflow.accounting.review-operations-continuity&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:42](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L42) |  |
+| <code>public const string AccountingReviewCloseReadiness = &quot;workflow.accounting.review-close-readiness&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:43](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L43) |  |
+| <code>public const string AccountingOpen = &quot;workflow.accounting.open&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:44](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L44) |  |
+| <code>public const string AccountingReviewAuditTrail = &quot;workflow.accounting.review-audit-trail&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:45](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L45) |  |
+| <code>public const string ReportingOpen = &quot;workflow.reporting.open&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:47](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L47) |  |
+| <code>public const string ReportingApproveReportPack = &quot;workflow.reporting.approve-report-pack&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:48](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L48) |  |
+| <code>public const string EvidenceOpenPacket = &quot;workflow.evidence.open-packet&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:50](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L50) |  |
+| <code>public const string EvidenceValidate = &quot;workflow.evidence.validate&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:51](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L51) |  |
+| <code>public const string EvidenceExportManifest = &quot;workflow.evidence.export-manifest&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:52](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L52) |  |
+| <code>public const string DataOpenProviderHealth = &quot;workflow.data.open-provider-health&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:54](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L54) |  |
+| <code>public const string DataOpenBackfillQueue = &quot;workflow.data.open-backfill-queue&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:55](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L55) |  |
+| <code>public const string DataOpenQueueOverview = &quot;workflow.data.open-queue-overview&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:56](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L56) |  |
+| <code>public const string DataReviewSecurityMaster = &quot;workflow.data.review-security-master&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:57](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L57) |  |
+| <code>public const string SettingsOpen = &quot;workflow.settings.open&quot;;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs:59](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs#L59) |  |
+
+## WorkflowLibraryService
+
+Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowLibraryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:8](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L8).
+
+Builds the shared workflow library payload exposed to hosts and desktop UI.
+
+```csharp
+public sealed class WorkflowLibraryService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowLibraryService(IWorkflowActionCatalog catalog);</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:12](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L12) |  |
+| <code>public WorkflowLibraryDto GetLibrary() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs:17](../../../../src/Meridian.Ui.Shared/Workflows/WorkflowLibraryService.cs#L17) |  |
+
 ## WorkflowPresetMutationResult
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.WorkflowPresetMutationResult</code>. Kind: `record`.

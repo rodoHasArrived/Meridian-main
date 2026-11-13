@@ -50,7 +50,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Instruments.FixedIncome.AccountBondIncomePlanningService</code>. Kind: `class`.
 
-Source: [src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs:12](../../../../src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs#L12).
+Source: [src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs:13](../../../../src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs#L13).
 
 Account planning from accepted custodian face and the shared retained bond model.
 
@@ -62,8 +62,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;AccountBondIncomePlanDto&gt; PlanAsync(AccountBondIncomePlanningRequest request, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs:19](../../../../src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs#L19) |  |
-| <code>public static string ObligationIdentity(AccountCashForecastScopeDto scope, Guid security, string kind, DateOnly payment, DateOnly accrual) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs:169](../../../../src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs#L169) |  |
+| <code>public async Task&lt;AccountBondIncomePlanDto&gt; PlanAsync(AccountBondIncomePlanningRequest request, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs:21](../../../../src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs#L21) |  |
+| <code>public static string ObligationIdentity(AccountCashForecastScopeDto scope, Guid security, string kind, DateOnly payment, DateOnly accrual) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs:181](../../../../src/Meridian.Instruments/FixedIncome/AccountBondIncomePlanningService.cs#L181) |  |
 
 ## BondAnalyticsService
 
@@ -176,7 +176,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Instruments.FixedIncome.BondMonitoringEngine</code>. Kind: `class`.
 
-Source: [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:11](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L11).
+Source: [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:12](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L12).
 
 Retained collection evidence and watch information; never posting or payment authority.
 
@@ -188,17 +188,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string LegacyEngineVersion = &quot;bond-monitoring-v1&quot;;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:13](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L13) |  |
-| <code>public const string EngineVersion = &quot;bond-monitoring-v2&quot;;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:14](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L14) |  |
-| <code>public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:16](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L16) |  |
-| <code>public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request, string? engineVersion);</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:18](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L18) |  |
-| <code>public static IReadOnlyList&lt;AccountCashFlowDto&gt; SelectActivePayments(IReadOnlyList&lt;AccountCashFlowDto&gt; payments) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:273](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L273) |  |
+| <code>public const string LegacyEngineVersion = &quot;bond-monitoring-v1&quot;;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:14](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L14) |  |
+| <code>public const string PreviousEngineVersion = &quot;bond-monitoring-v2&quot;;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:15](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L15) |  |
+| <code>public const string EngineVersion = &quot;bond-monitoring-v3&quot;;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:16](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L16) |  |
+| <code>public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:20](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L20) |  |
+| <code>public static BondMonitoringSnapshotDto Build(BondMonitoringCaptureRequest request, string? engineVersion) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:22](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L22) |  |
+| <code>public static IReadOnlyList&lt;AccountCashFlowDto&gt; SelectActivePayments(IReadOnlyList&lt;AccountCashFlowDto&gt; payments) =&gt; …;</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:319](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L319) |  |
 
 ## BondMonitoringService
 
 Qualified name: <code>Meridian.Instruments.FixedIncome.BondMonitoringService</code>. Kind: `class`.
 
-Source: [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:285](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L285).
+Source: [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:331](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L331).
 
 ```csharp
 public sealed partial class BondMonitoringService(IBondMonitoringStore store, IAccountBondHoldingsSource? holdings = null, IBondWorkflowService? bonds = null, IBondMarketDataService? market = null) : IBondMonitoringService
@@ -208,8 +209,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;BondMonitoringSnapshotDto&gt; CaptureAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:289](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L289) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BondMonitoringSnapshotDto&gt;&gt; GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:309](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L309) |  |
+| <code>public async Task&lt;BondMonitoringSnapshotDto&gt; CaptureAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:335](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L335) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BondMonitoringSnapshotDto&gt;&gt; GetHistoryAsync(AccountCashForecastScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs:355](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringEngine.cs#L355) |  |
 
 Source: [src/Meridian.Instruments/FixedIncome/BondMonitoringService.Authority.cs:6](../../../../src/Meridian.Instruments/FixedIncome/BondMonitoringService.Authority.cs#L6).
 

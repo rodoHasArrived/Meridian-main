@@ -67,7 +67,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     public async Task UnreadableRecurringQueue_BlocksCloseInsteadOfAssumingNothingIsOutstanding()
     {
         var activity = BuildActivity();
-        var service = new PrivateCapitalCloseCockpitService(new StubManualJournalEntryWorkbenchService(activity),
+        var service = CreateSourceBackedCockpitService(new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]),
             recurringJournalQueueSource: new RecurringQueue(null));
 
@@ -80,7 +80,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
 
     private static PrivateCapitalCloseCockpitService RecurringCockpit(PrivateCapitalActivityProjectionDto activity,
         IReadOnlyList<RecurringJournalOccurrenceDto> occurrences)
-        => new(new StubManualJournalEntryWorkbenchService(activity),
+        => CreateSourceBackedCockpitService(new StubManualJournalEntryWorkbenchService(activity),
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]),
             recurringJournalQueueSource: new RecurringQueue(occurrences));
 

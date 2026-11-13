@@ -274,6 +274,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapInitialAccountBootstrapEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs#L13) |  |
 
+## IntercompanyAccountingArrangementEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyAccountingArrangementEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L17).
+
+Accounting configuration and ledger-authorized approved legal/profile selection; native legal authoring stays separate.
+
+```csharp
+public static class IntercompanyAccountingArrangementEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyAccountingArrangementEndpoints(this IEndpointRouteBuilder app);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L19) |  |
+
 ## IntercompanyAgreementEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyAgreementEndpoints</code>. Kind: `class`.
@@ -291,6 +309,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapIntercompanyAgreementEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L21) |  |
+
+## IntercompanyOperationsEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.IntercompanyOperationsEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L15).
+
+```csharp
+public static class IntercompanyOperationsEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyOperationsEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L17) |  |
 
 ## IWorkstationTenantContextAccessor
 
@@ -383,6 +417,30 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs:13](.
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L12).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapConsolidationFxEndpoints(WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L14) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs#L13).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapConsolidationTransitionEndpoints(WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs#L15) |  |
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs#L23).
 
 ```csharp
@@ -401,17 +459,53 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Dimensions.cs:7](../..
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L15).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapEntityControlEndpoints(this WebApplication app, JsonSerializerOptions options);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L17) |  |
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs#L19).
 
 ```csharp
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs#L12).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapIntercompanyAccountBindingEndpoints(WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs#L14) |  |
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs#L14).
 
 ```csharp
 public static partial class LedgerEndpoints
 ```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs#L12).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapLegacyIntercompanyAttributionEndpoints(WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs#L14) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs#L14).
 
@@ -1041,27 +1135,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L34) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
-
-## QuantMetricDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantMetricDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L362).
-
-JSON-friendly metric entry (label/value).
-
-```csharp
-public sealed record QuantMetricDto(string Label, string Value);
-```
-
-## QuantParameterDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParameterDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:374](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L374).
-
-JSON-friendly description of a discovered script parameter.
-
-```csharp
-public sealed record QuantParameterDto(string Name, string Label, string TypeName, string? DefaultValue, double? Min, double? Max, string? Description);
-```

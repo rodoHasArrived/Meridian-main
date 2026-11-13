@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**10705 / 10709** items documented (**100.0%**) &mdash; Grade: **A**
+**10907 / 10907** items documented (**100.0%**) &mdash; Grade: **A**
 
 ```text
 [====================] 100.0%
@@ -15,26 +15,15 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 10172 | 10176 | 100.0% | A |
-| API Endpoints | 380 | 380 | 100.0% | A |
+| Public Classes / Interfaces | 10338 | 10338 | 100.0% | A |
+| API Endpoints | 416 | 416 | 100.0% | A |
 | Configuration Options | 142 | 142 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
-## Undocumented Items
-
-### Public Classes / Interfaces (4 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `BrokeragePositionValuationBasis` | `src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:139` |
-| `DemoWorkspaceSeedReport` | `src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:418` |
-| `Dk1PromotionTrustEvidenceProvider` | `src/Meridian.Ui.Shared/Services/Dk1PromotionTrustEvidenceProvider.cs:8` |
-| `DeterministicReportingCertifiedArtifactProducer` | `src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs:59` |
-
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 4 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
+1. All categories are fully documented. Great job!
 
 ---
 

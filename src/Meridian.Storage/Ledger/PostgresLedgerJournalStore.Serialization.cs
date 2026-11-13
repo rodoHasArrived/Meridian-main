@@ -106,6 +106,11 @@ public sealed partial class PostgresLedgerJournalStore
         AddDimension(values, "customerId", dimensions.CustomerId);
         AddDimension(values, "vendorId", dimensions.VendorId);
         AddDimension(values, "projectId", dimensions.ProjectId);
+        AddDimension(values, "accountingArrangementId", dimensions.AccountingArrangementId);
+        AddDimension(values, "accountingArrangementRevisionId", dimensions.AccountingArrangementRevisionId);
+        AddDimension(values, "chartAccountNodeId", dimensions.ChartAccountNodeId);
+        AddDimension(values, "accountBindingRevisionId", dimensions.AccountBindingRevisionId);
+        AddDimension(values, "intercompanyTransactionId", dimensions.IntercompanyTransactionId);
 
         if (values["externalGlDimensions"] is IReadOnlyDictionary<string, string> { Count: 0 })
         {
@@ -199,7 +204,12 @@ public sealed partial class PostgresLedgerJournalStore
         {
             PositionId = dimensions.PositionId,
             IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
-            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+            AccountingArrangementId = NormalizeOptional(dimensions.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions.AccountingArrangementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId)
         };
 
         return HasAnyLineDimension(canonical) ? canonical : null;
@@ -238,6 +248,11 @@ public sealed partial class PostgresLedgerJournalStore
            !string.IsNullOrWhiteSpace(dimensions.CustomerId) ||
            !string.IsNullOrWhiteSpace(dimensions.VendorId) ||
            !string.IsNullOrWhiteSpace(dimensions.ProjectId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountingArrangementRevisionId) ||
+           !string.IsNullOrWhiteSpace(dimensions.ChartAccountNodeId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountBindingRevisionId) ||
+           !string.IsNullOrWhiteSpace(dimensions.IntercompanyTransactionId) ||
            dimensions.ExternalGlDimensions.Any(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value));
 
     private static LedgerAdjustmentApprovalMetadataDto DeserializeAdjustmentApproval(string json)

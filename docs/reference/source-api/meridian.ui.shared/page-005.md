@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuantMetricDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantMetricDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:362](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L362).
+
+JSON-friendly metric entry (label/value).
+
+```csharp
+public sealed record QuantMetricDto(string Label, string Value);
+```
+
+## QuantParameterDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParameterDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:374](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L374).
+
+JSON-friendly description of a discovered script parameter.
+
+```csharp
+public sealed record QuantParameterDto(string Name, string Label, string TypeName, string? DefaultValue, double? Min, double? Max, string? Description);
+```
+
 ## QuantParametersRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantParametersRequest</code>. Kind: `record`.
@@ -662,7 +686,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1956](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1956).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1879](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1879).
 
 ```csharp
 public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
@@ -672,7 +696,7 @@ public sealed record TradingActionResult(string ActionId, string Status, string 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UiEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L25).
+Source: [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L29).
 
 Master extension methods for registering shared desktop/local API endpoints. Uses ServiceCompositionRoot for centralized service registration.
 
@@ -684,21 +708,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:33](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L33) | Registers all shared services required by UI endpoints using the centralized composition root. Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality. |
-| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:45](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L45) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:76](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L76) | Maps all UI API endpoints using default JSON serializer options. |
-| <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:90](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L90) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:101](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L101) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:292](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L292) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:311](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L311) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:317](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L317) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:326](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L326) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L37) | Registers all shared services required by UI endpoints using the centralized composition root. Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality. |
+| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:49](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L49) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
+| <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L116) | Maps all UI API endpoints with custom JSON serializer options. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:309](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L309) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:328](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L328) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:334](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L334) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:343](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L343) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1976](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1976).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1899](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1899).
 
 Request to update the global execution circuit breaker.
 
@@ -710,7 +734,7 @@ public sealed record UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? R
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1982](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1982).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1905](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1905).
 
 Request to update the default execution position limit.
 
@@ -722,7 +746,7 @@ public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPosi
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1987](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1987).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1910](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1910).
 
 Request to update or clear a symbol-specific execution position limit.
 
@@ -748,390 +772,4 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:539](..
 
 ```csharp
 public record ValidateMaintenanceCronRequest(string CronExpression, string? TimeZoneId = null);
-```
-
-## ValidateRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs:456](../../../../src/Meridian.Ui.Shared/Endpoints/PackagingEndpoints.cs#L456).
-
-Request model for package validation.
-
-```csharp
-public sealed record ValidateRequest(string PackagePath);
-```
-
-## WorkstationEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingCashFlow.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingCashFlow.cs#L10).
-
-Accounting cash-flow helpers for the workstation API surface: workspace and per-run cash-flow summaries and ledger cash balance / variance calculations. Split out of the WorkstationEndpoints core partial.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingWorkspace.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AccountingWorkspace.cs#L16).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ApprovalCollaboration.cs#L18).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.cs#L14).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ChartEvidence.cs#L16).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseChecklistHistory.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseChecklistHistory.cs#L10).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseReadiness.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CloseReadiness.cs#L18).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Collateral.cs#L48).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CollateralExposure.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CollateralExposure.cs#L14).
-
-Collateral exposure snapshot composition for the workstation API surface: builds the counterparty/product exposure, margin, collateral-call, threshold-breach, and trend view from collateral input rows. When no rows have been ingested the snapshot is honestly empty — fabricated demo rows are never substituted. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the inline collateral route lambda and the shared NormalizeOperatorInboxToken helper remain in core.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CrossScreenCounts.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.CrossScreenCounts.cs#L17).
-
-Cross-screen counts (A3): open orders, provider health and open breaks, counted once with CrossScreenCountDefinitions over the same sources the Trading, Data and Accounting workspaces read, so Settings, the shell, every workspace and the WPF desktop show one number.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:51](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L51).
-
-Endpoints for the desktop workstation API surface.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:59](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs#L59) |  |
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataOperationsAssurance.cs#L12).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs:53](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs#L53).
-
-Data provider workstation helpers: provider record/diagnostic builders, routing-binding and representative-connection/trust selection, provider trust rationale and gate-impact, and provider key/score/timestamp formatting. Split out of the WorkstationEndpoints core partial as a cohesive capability group. Using directives mirror the core header.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataSourceExports.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataSourceExports.cs#L17).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataTableExport.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataTableExport.cs#L11).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploads.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploads.cs#L19).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploadWorkbook.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataUploadWorkbook.cs#L20).
-
-Onboarding-workbook surface for the Data workspace. This partial adds a genuine multi-sheet .xlsx download (a pure projection of BuildDataUploadTemplateCatalog) and a workbook-scoped upload preview with per-cell and cross-sheet validation. The single-file CSV preview path in the sibling partial is left untouched.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Extensibility.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Extensibility.cs#L15).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FamilyOffice.cs#L13).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FeatureCapabilities.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FeatureCapabilities.cs#L13).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs#L14).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.IBResults.cs#L11).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsRegistration.cs#L48).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorInbox.cs#L22).
-
-Operator Inbox composition for the workstation API surface: builds the prioritized operator work-item inbox (trading-readiness work items, run-review packets, reconciliation-break work items), continuity metrics, operator navigation routing, and the inbox summary. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the inline inbox route lambda and the shared GetTradingOperatorReadinessAsync / NormalizeOperatorInboxToken helpers remain in core.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorScopePreference.cs#L16).
-
-The signed-in operator&#x27;s default operating scope (C1). Browser and WPF read it when a session opens with no scope in its link or local storage; only the operator themselves can read or set it.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorSurfaceVisits.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorSurfaceVisits.cs#L16).
-
-The signed-in operator&#x27;s last visit to a workstation surface (C3), the baseline for &quot;since your last visit&quot; markers in the browser and WPF. Only the operator themselves can read or record it.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperatorTriage.cs#L17).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PlotTool.cs:6](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PlotTool.cs#L6).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.PortfolioAggregation.cs#L12).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ProviderIntegrations.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ProviderIntegrations.cs#L14).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.QueryExecutions.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.QueryExecutions.cs#L15).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs#L20).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationBreaks.cs#L11).
-
-Resolves the immutable tenant and company scope used by all reconciliation queue reads and mutations. Queue publication belongs to the authoritative source workflow and never to a workstation read or casework request.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCalibration.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCalibration.cs#L12).
-
-Reconciliation calibration summary sub-helpers for the workstation API surface: auto-match / T0-closure rate math, calibration profile + status derivation, signoff predicates, and value normalization. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the shared BuildReconciliationCalibrationSummary entry (called from core and the Reconciliation partial) remains in core and reaches these helpers across the partial.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCasework.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationCasework.cs#L13).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReconciliationRegistration.cs#L48).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ReportingAuthority.cs#L13).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Routing.cs:5](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Routing.cs#L5).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityCoverage.cs:10](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityCoverage.cs#L10).
-
-Security Master coverage helpers for the workstation API surface: builds coverage payloads, resolved/missing security references, position-to-security lookups, and coverage review predicates. Split out of the WorkstationEndpoints core partial.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterMapping.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterMapping.cs#L13).
-
-Security Master DTO mapping helpers for the workstation API surface: maps security summary/detail records to workstation DTOs, identity drill-in, and economic-definition summaries, plus asset-class sub-type derivation. Split out of the WorkstationEndpoints core partial.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityMasterWorkbench.cs#L16).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs:48](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.SecurityReadRegistration.cs#L48).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Session.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Session.cs#L16).
-
-Workstation session bootstrap payload for the API surface: builds the typed session DTO (latest strategy-run digest, workspace summaries) and its display-name / role / environment / workspace mapping helpers. Split out of the WorkstationEndpoints core partial as a behavior-preserving relocation; the inline session route lambda and the shared BuildRunDigest helper remain in core (reached across the partial).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementCaseworkAuthority.cs#L11).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementConnectors.cs#L18).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StatementReconciliationReport.cs#L22).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs#L24).
-
-Strategy Designer and Strategy Engine endpoints for the workstation API surface, split out of the WorkstationEndpoints core partial as a capability group.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyBriefing.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyBriefing.cs#L12).
-
-Strategy run briefing helpers for the workstation API surface: run digests, run and strategy cards, insight feeds, saved comparisons, briefing alerts, what-changed items, drill-in links, timeline/mode-comparison cards, and run-mode parsing. Split out of the WorkstationEndpoints core partial. The shared ResolveModeVariant helper stays in core.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyWorkspace.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StrategyWorkspace.cs#L12).
-
-Strategy workspace payload and compatibility briefing projections for the workstation API.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Stream.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Stream.cs#L18).
-
-Workstation Server-Sent Events stream. Event-driven fan-out: connections subscribe to a topic on the IQuoteStreamBroadcaster, which rebuilds and coalesces each topic&#x27;s snapshot once per change and pushes it to every subscriber. One snapshot build is shared across all subscribers of a topic, and the market-data ingestion hot path is untouched.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StructuredReportingExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.StructuredReportingExport.cs#L14).
-
-Structured reporting export helpers for the workstation API surface: CSV/XLSX rendering, metadata/data-dictionary/validation/row-lineage worksheet rows, and export audit headers. Split out of the WorkstationEndpoints core partial as a capability group; the inline export endpoint lambda remains in the core file.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs#L16).
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Trading.cs#L24).
-
-Trading workspace payload composition for the workstation API surface: builds the live trading payload (positions, orders, fills, risk, brokerage, readiness). When neither the execution layer nor the strategy run read service is registered the builder returns null and the route responds 503 — fabricated fixture data is never served as live. The inline trading route lambda and the shared helpers (GetTradingOperatorReadinessAsync, NormalizeOperatorInboxToken, BuildTradingBrokerageNotes, ResolveLiveMark, ResolveRuntimeRiskDescriptorAsync, BuildModeComparisons, BuildRunDrillInLinks, FormatCurrency/FormatPercent) remain in core and are reached across the partial.
-
-```csharp
-public static partial class WorkstationEndpoints
-```
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs#L8).
-
-```csharp
-public static partial class WorkstationEndpoints
 ```

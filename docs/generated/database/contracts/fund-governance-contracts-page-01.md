@@ -2,7 +2,7 @@
 
 # `fund-governance-contracts` data objects - page 1 of 3
 
-Objects 1-80 of 174. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 201. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -176,6 +176,13 @@ classDiagram
         +FundStructureSharedDataAccessDto? SharedDataAccess
         +IReadOnlyList~AccountSummaryDto~ UnassignedAccounts
         +IReadOnlyList~InvestmentPortfolioSummaryDto~ UnassignedInvestmentPortfolios
+    }
+    class Meridian_Contracts_FundStructure_AppendEntityLifecycleRevisionRequestDto["AppendEntityLifecycleRevisionRequestDto"] {
+        +Guid EntityId
+        +string EvidenceReference
+        +long ExpectedRevision
+        +string Reason
+        +IReadOnlyList~EntityLifecycleStateDto~ Timeline
     }
     class Meridian_Contracts_FundStructure_AssignFundStructureNodeRequest["AssignFundStructureNodeRequest"] {
         +Guid AssignmentId
@@ -408,6 +415,19 @@ classDiagram
         +Guid FundId
         +string Name
     }
+    class Meridian_Contracts_FundStructure_CreateIntercompanyAccountingArrangementRequest["CreateIntercompanyAccountingArrangementRequest"] {
+        +Guid ArrangementId
+        +string ArrangementReference
+        +Guid CanonicalAgreementId
+        +int CanonicalAgreementVersion
+        +string CanonicalPayloadHash
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +Guid OrganizationId
+        +IReadOnlyList~IntercompanyPartyMappingDto~ PartyMappings
+        +Guid RequestId
+        +IntercompanyAccountingTemplateKindDto TemplateKind
+    }
     class Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest["CreateInvestmentPortfolioRequest"] {
         +string BaseCurrency
         +Guid BusinessId
@@ -519,6 +539,52 @@ classDiagram
         +string LoadedBy
         +string SourceFormat
     }
+    class Meridian_Contracts_FundStructure_EntityLifecycleEligibilityDto["EntityLifecycleEligibilityDto"] {
+        +bool Allowed
+        +string Message
+        +string ReasonCode
+        +long? Revision
+        +LegalEntityLifecycleStatusDto? Status
+        +bool Warning
+    }
+    class Meridian_Contracts_FundStructure_EntityLifecycleOperationDto["EntityLifecycleOperationDto"] {
+    }
+    class Meridian_Contracts_FundStructure_EntityLifecycleRevisionDto["EntityLifecycleRevisionDto"] {
+        +string ContentHash
+        +Guid EntityId
+        +string EvidenceReference
+        +bool LegacySnapshot
+        +string PreviousHash
+        +string Reason
+        +DateTimeOffset RecordedAtUtc
+        +string RecordedBy
+        +long Revision
+        +string TenantId
+        +IReadOnlyList~EntityLifecycleStateDto~ Timeline
+    }
+    class Meridian_Contracts_FundStructure_EntityLifecycleRevisionIntegrity["EntityLifecycleRevisionIntegrity"] {
+    }
+    class Meridian_Contracts_FundStructure_EntityLifecycleStateDto["EntityLifecycleStateDto"] {
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +LegalEntityLifecycleEventKindDto EventKind
+        +LegalEntityLifecycleStatusDto Status
+        +Guid? SuccessorEntityId
+        +Guid TransitionId
+    }
+    class Meridian_Contracts_FundStructure_EntityTimelineDto["EntityTimelineDto"] {
+        +IReadOnlyList~ResolvedIntercompanyAccountingArrangementDto~ AccountingArrangements
+        +IReadOnlyList~IntercompanyAgreementDetailDto~ Agreements
+        +DateTimeOffset AsOf
+        +IReadOnlyList~LedgerBookDto~ Books
+        +LegalEntitySummaryDto Entity
+        +IReadOnlyList~EntityLifecycleRevisionDto~ LifecycleRevisions
+        +Guid OrganizationId
+        +IReadOnlyList~OwnershipLinkDto~ OwnershipLinks
+        +IReadOnlyList~string~ Warnings
+    }
+    class Meridian_Contracts_FundStructure_EntityTimelineJsonContext["EntityTimelineJsonContext"] {
+    }
     class Meridian_Contracts_FundStructure_ExpireOwnershipLinkRequest["ExpireOwnershipLinkRequest"] {
         +DateTimeOffset EffectiveTo
         +string ExpiredBy
@@ -595,77 +661,6 @@ classDiagram
         +string Name
         +Guid NodeId
     }
-    class Meridian_Contracts_FundStructure_FundStructureNodeKindDto["FundStructureNodeKindDto"] {
-    }
-    class Meridian_Contracts_FundStructure_FundStructureQuery["FundStructureQuery"] {
-        +bool ActiveOnly
-        +DateTimeOffset? AsOf
-        +Guid? FundId
-        +Guid? NodeId
-        +FundStructureNodeKindDto? NodeKind
-    }
-    class Meridian_Contracts_FundStructure_FundStructureSetupAccountHandoffDraftDto["FundStructureSetupAccountHandoffDraftDto"] {
-        +string AccountCode
-        +AccountTypeDto AccountType
-        +string BaseCurrency
-        +string DisplayName
-        +string? Institution
-        +string? LedgerReference
-        +string? Notes
-    }
-    class Meridian_Contracts_FundStructure_FundStructureSetupBusinessDraftDto["FundStructureSetupBusinessDraftDto"] {
-        +string BaseCurrency
-        +Guid? BusinessId
-        +BusinessKindDto BusinessKind
-        +string Code
-        +string? Description
-        +string Name
-    }
-    class Meridian_Contracts_FundStructure_FundStructureSetupClientOrFundDraftDto["FundStructureSetupClientOrFundDraftDto"] {
-        +string BaseCurrency
-        +Guid? ClientId
-        +ClientSegmentKind ClientSegmentKind
-        +string Code
-        +bool CreateClient
-        +string? Description
-        +Guid? FundId
-        +string Name
-    }
-    class Meridian_Contracts_FundStructure_FundStructureSetupDraftDto["FundStructureSetupDraftDto"] {
-        +FundStructureSetupAccountHandoffDraftDto AccountHandoff
-        +FundStructureSetupBusinessDraftDto BusinessLane
-        +FundStructureSetupClientOrFundDraftDto ClientOrFund
-        +DateTimeOffset? EffectiveFrom
-        +IReadOnlyList~FundStructureSetupOwnershipLinkDraftDto~? InitialOwnershipLinks
-        +FundStructureSetupInvestmentPortfolioDraftDto InvestmentPortfolio
-        +FundStructureSetupLegalEntityDraftDto LegalEntity
-        +FundStructureSetupOrganizationDraftDto Organization
-        +string? RequestedBy
-        +FundStructureSetupVehicleDraftDto Vehicle
-    }
-    class Meridian_Contracts_FundStructure_FundStructureSetupInvestmentPortfolioDraftDto["FundStructureSetupInvestmentPortfolioDraftDto"] {
-        +string BaseCurrency
-        +string Code
-        +string? Description
-        +Guid? InvestmentPortfolioId
-        +string Name
-    }
-    class Meridian_Contracts_FundStructure_FundStructureSetupLegalEntityDraftDto["FundStructureSetupLegalEntityDraftDto"] {
-        +string BaseCurrency
-        +IReadOnlyList~BeneficialOwnerSummaryDto~? BeneficialOwners
-        +string Code
-        +string? Description
-        +Guid? EntityId
-        +LegalEntityTypeDto EntityType
-        +LegalEntityLifecycleEventKindDto InitialLifecycleEventKind
-        +string? InitialLifecycleEventSummary
-        +string? InitialLifecycleEvidenceReference
-        +string Jurisdiction
-        +LegalEntityFormDto LegalForm
-        +LegalEntityLifecycleStatusDto LifecycleStatus
-    }
-    class Meridian_Contracts_FundStructure_FundStructureSetupNodeAlias["FundStructureSetupNodeAlias"] {
-    }
     Meridian_Contracts_FundStructure_AccountReadinessIssueDto --> Meridian_Contracts_FundStructure_AccountReadinessSeverityDto
     Meridian_Contracts_FundStructure_AccountReadinessSnapshotDto --> Meridian_Contracts_FundStructure_AccountProviderLinkStatusDto
     Meridian_Contracts_FundStructure_AccountReadinessSnapshotDto --> Meridian_Contracts_FundStructure_AccountReadinessIssueDto
@@ -686,6 +681,7 @@ classDiagram
     Meridian_Contracts_FundStructure_AdvisoryStructureViewDto --> Meridian_Contracts_FundStructure_AccountSummaryDto
     Meridian_Contracts_FundStructure_AdvisoryStructureViewDto --> Meridian_Contracts_FundStructure_AdvisoryClientViewDto
     Meridian_Contracts_FundStructure_AdvisoryStructureViewDto --> Meridian_Contracts_FundStructure_BusinessSummaryDto
+    Meridian_Contracts_FundStructure_AppendEntityLifecycleRevisionRequestDto --> Meridian_Contracts_FundStructure_EntityLifecycleStateDto
     Meridian_Contracts_FundStructure_BankAccountDetailsEnvelopeDto --> Meridian_Contracts_FundStructure_AccountDetailsDto
     Meridian_Contracts_FundStructure_BankAccountDetailsEnvelopeDto --> Meridian_Contracts_FundStructure_BankAccountDetailsDto
     Meridian_Contracts_FundStructure_BondHoldingEconomicsDto --> Meridian_Contracts_FundStructure_BondHoldingInvoiceBasis
@@ -707,6 +703,8 @@ classDiagram
     Meridian_Contracts_FundStructure_CustodianHoldingSnapshotDto --> Meridian_Contracts_FundStructure_CustodianStatementBatchDto
     Meridian_Contracts_FundStructure_CustodianPositionLineDto --> Meridian_Contracts_FundStructure_BondHoldingEconomicsDto
     Meridian_Contracts_FundStructure_CustodianStatementBatchDto --> Meridian_Contracts_FundStructure_CustodianStatementAuthorityDto
+    Meridian_Contracts_FundStructure_EntityLifecycleRevisionDto --> Meridian_Contracts_FundStructure_EntityLifecycleStateDto
+    Meridian_Contracts_FundStructure_EntityTimelineDto --> Meridian_Contracts_FundStructure_EntityLifecycleRevisionDto
     Meridian_Contracts_FundStructure_FundAccountsDto --> Meridian_Contracts_FundStructure_AccountSummaryDto
     Meridian_Contracts_FundStructure_FundOperatingSliceDto --> Meridian_Contracts_FundStructure_AccountSummaryDto
     Meridian_Contracts_FundStructure_FundOperatingSliceDto --> Meridian_Contracts_FundStructure_FundSleeveOperatingViewDto
@@ -716,15 +714,4 @@ classDiagram
     Meridian_Contracts_FundStructure_FundSleeveOperatingViewDto --> Meridian_Contracts_FundStructure_AccountSummaryDto
     Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureAssignmentDto
     Meridian_Contracts_FundStructure_FundStructureGraphDto --> Meridian_Contracts_FundStructure_FundStructureNodeDto
-    Meridian_Contracts_FundStructure_FundStructureNodeDto --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
-    Meridian_Contracts_FundStructure_FundStructureQuery --> Meridian_Contracts_FundStructure_FundStructureNodeKindDto
-    Meridian_Contracts_FundStructure_FundStructureSetupAccountHandoffDraftDto --> Meridian_Contracts_FundStructure_AccountTypeDto
-    Meridian_Contracts_FundStructure_FundStructureSetupBusinessDraftDto --> Meridian_Contracts_FundStructure_BusinessKindDto
-    Meridian_Contracts_FundStructure_FundStructureSetupClientOrFundDraftDto --> Meridian_Contracts_FundStructure_ClientSegmentKind
-    Meridian_Contracts_FundStructure_FundStructureSetupDraftDto --> Meridian_Contracts_FundStructure_FundStructureSetupAccountHandoffDraftDto
-    Meridian_Contracts_FundStructure_FundStructureSetupDraftDto --> Meridian_Contracts_FundStructure_FundStructureSetupBusinessDraftDto
-    Meridian_Contracts_FundStructure_FundStructureSetupDraftDto --> Meridian_Contracts_FundStructure_FundStructureSetupClientOrFundDraftDto
-    Meridian_Contracts_FundStructure_FundStructureSetupDraftDto --> Meridian_Contracts_FundStructure_FundStructureSetupInvestmentPortfolioDraftDto
-    Meridian_Contracts_FundStructure_FundStructureSetupDraftDto --> Meridian_Contracts_FundStructure_FundStructureSetupLegalEntityDraftDto
-    Meridian_Contracts_FundStructure_FundStructureSetupLegalEntityDraftDto --> Meridian_Contracts_FundStructure_BeneficialOwnerSummaryDto
 ```
