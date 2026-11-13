@@ -5,13 +5,20 @@
 // regardless of host locale, and all accept null/undefined/non-finite input,
 // rendering the configurable `fallback` instead.
 //
-// SCOPE: this is the default formatting convention for the workstation. Accounting
-// surfaces (ledger, statements, journal grids) intentionally use the statement
-// convention in `components/accounting/money.ts` (parenthesized negatives, zero-dash);
-// the two conventions differ by design — see the note in that file.
+// MONEY: `formatMoney` below is the one money formatter. It reads numbers and decimal strings
+// exactly through `@/lib/exact-decimal` (the single rounding, sign and grouping implementation)
+// and spells them in one of two conventions: `screen` (Intl symbols, "-") for workstation screens
+// and `statement` (the accounting symbol table, U+2212 "−", optional parentheses and zero-dash)
+// for ledgers, statements and journal grids. `components/accounting/money.ts` is a thin
+// statement-convention wrapper over it.
 //
-// STYLE GUIDE: the "Number style" section of the dashboard README is the operator-facing
-// contract these helpers implement (signed P&L, the "P&L" spelling, currency codes, decimals).
+// STYLE GUIDE: the "Number style" and "Formatting" sections of the dashboard README are the
+// operator-facing contract these helpers implement (signed P&L, the "P&L" spelling, currency
+// codes, decimals, timestamps and the display time zone).
+
+import { formatExactMagnitude, parseExactDecimal, type MoneyValue } from "@/lib/exact-decimal";
+
+export type { MoneyValue } from "@/lib/exact-decimal";
 
 const FORMAT_LOCALE = "en-US";
 const DEFAULT_FALLBACK = "—";
@@ -271,44 +278,133 @@ export function formatCount(value: NullableNumber, options: Pick<SignableNumberF
  */
 export type MoneyContext = "accounting" | "trading" | "summary";
 
+/**
+ * How a money figure is spelled, independent of its reading context:
+ *  - `screen`: Intl en-US symbols ("$", "€", "CA$", "CHF "), "-" for negatives. The default.
+ *  - `statement`: the accounting statement symbol table (`currencySymbol`: "$", "€", "CHF ",
+ *    "CODE" + narrow no-break space for unmapped codes) and U+2212 "−" for negatives, as ledgers,
+ *    statements and journal grids print them.
+ */
+export type MoneyConvention = "screen" | "statement";
+
 export interface MoneyFormatOptions {
-  /** ISO 4217 code; `null` renders a bare amount with no symbol. @default "USD" */
+  /** ISO 4217 code; `null` (or "" under `statement`) renders a bare amount with no symbol. @default "USD" */
   currency?: string | null;
   /** @default "trading" */
   context?: MoneyContext;
   /** Fraction digits; overrides the context default (instrument precision for trading). */
   decimals?: number;
-  /** Positives get an explicit "+". */
+  /** Positives get an explicit "+". A value that rounds to zero is always unsigned. */
   signed?: boolean;
+  /** Negatives in parentheses, e.g. "($1,234.00)". @default true for the accounting context, else false */
+  parens?: boolean;
+  /** An exact zero renders as an em dash. @default false */
+  zeroDash?: boolean;
+  /** @default "screen" */
+  convention?: MoneyConvention;
+  /** Rendered when the value is null, undefined, not finite, or a string that is not a number. */
   fallback?: string;
 }
 
-/** Money for its reading context, e.g. accounting "(1,234.00)", trading "-$1,234.56", summary "$1,235". */
-export function formatMoney(value: NullableNumber, options: MoneyFormatOptions = {}): string {
-  const { currency, context = "trading", decimals, signed = false, fallback = DEFAULT_FALLBACK } = options;
-  if (!isRenderable(value)) {
+const STATEMENT_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CNY: "¥",
+  CHF: "CHF ",
+  CAD: "$",
+  AUD: "$"
+};
+
+/**
+ * Statement-convention currency symbol: code -> leading symbol. Unmapped codes render as "CODE"
+ * plus a narrow no-break space (U+202F); a blank code renders no symbol.
+ */
+export function currencySymbol(code?: string | null): string {
+  if (!code) return "";
+  return STATEMENT_SYMBOLS[code] ?? code + " ";
+}
+
+interface ScreenCurrencyLayout {
+  prefix: string;
+  suffix: string;
+  minorUnits: number;
+}
+
+const screenCurrencyLayouts = new Map<string, ScreenCurrencyLayout>();
+
+/** Intl's en-US symbol placement and minor units for a code, read once per code from a sample. */
+function screenCurrencyLayout(code: string): ScreenCurrencyLayout {
+  let layout = screenCurrencyLayouts.get(code);
+  if (layout) {
+    return layout;
+  }
+  try {
+    const formatter = new Intl.NumberFormat(FORMAT_LOCALE, { style: "currency", currency: code });
+    const parts = formatter.formatToParts(1);
+    const first = parts.findIndex((part) => part.type === "integer");
+    const last = parts.length - 1 - [...parts].reverse().findIndex((part) => part.type === "integer" || part.type === "fraction");
+    layout = {
+      prefix: parts.slice(0, first).map((part) => part.value).join(""),
+      suffix: parts.slice(last + 1).map((part) => part.value).join(""),
+      minorUnits: formatter.resolvedOptions().maximumFractionDigits ?? 2
+    };
+  } catch {
+    // A code Intl rejects outright renders after the amount's code, e.g. "US-D 1,234.56".
+    layout = { prefix: `${code} `, suffix: "", minorUnits: 2 };
+  }
+  screenCurrencyLayouts.set(code, layout);
+  return layout;
+}
+
+/**
+ * The one money formatter. A decimal string is formatted exactly from its digits (never through a
+ * float), and a number from its shortest decimal form; both round half away from zero. Examples:
+ * trading "-$1,234.56", summary "$1,235", accounting "($1,234.00)",
+ * `formatMoney("12345678901234.565")` -> "$12,345,678,901,234.57", and the statement convention
+ * `formatMoney(-42.5, { convention: "statement", currency: null })` -> "−42.50".
+ */
+export function formatMoney(value: MoneyValue, options: MoneyFormatOptions = {}): string {
+  const {
+    currency,
+    context = "trading",
+    decimals,
+    signed = false,
+    parens = context === "accounting",
+    zeroDash = false,
+    convention = "screen",
+    fallback = DEFAULT_FALLBACK
+  } = options;
+  const parsed = parseExactDecimal(value);
+  if (!parsed) {
     return fallback;
   }
-
-  const digits = decimals ?? (context === "summary" ? 0 : undefined);
-  const code = currency === null ? null : currency?.trim() || "USD";
-  let magnitude: string;
-  if (code === null) {
-    magnitude = Math.abs(value).toLocaleString(FORMAT_LOCALE, { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 });
-  } else try {
-    magnitude = new Intl.NumberFormat(FORMAT_LOCALE, {
-      style: "currency",
-      currency: code,
-      ...(digits === undefined ? {} : { minimumFractionDigits: digits, maximumFractionDigits: digits })
-    }).format(Math.abs(value));
-  } catch {
-    magnitude = `${code} ${Math.abs(value).toLocaleString(FORMAT_LOCALE, { minimumFractionDigits: digits ?? 2, maximumFractionDigits: digits ?? 2 })}`;
+  if (zeroDash && parsed.units === 0n) {
+    return "—";
   }
 
-  if (value < 0) {
-    return context === "accounting" ? `(${magnitude})` : `-${magnitude}`;
+  const code = currency === null ? null : currency === undefined ? "USD" : currency.trim() || (convention === "statement" ? null : "USD");
+  let prefix = "";
+  let suffix = "";
+  let minorUnits = 2;
+  if (code !== null && convention === "statement") {
+    prefix = currencySymbol(code);
+  } else if (code !== null) {
+    ({ prefix, suffix, minorUnits } = screenCurrencyLayout(code));
   }
-  return signed && value > 0 ? `+${magnitude}` : magnitude;
+
+  const digits = decimals ?? (context === "summary" ? 0 : minorUnits);
+  const magnitude = formatExactMagnitude(parsed, digits);
+  const amount = `${prefix}${magnitude.text}${suffix}`;
+  // A value that rounds to zero at this precision is shown unsigned.
+  if (magnitude.roundsToZero) {
+    return amount;
+  }
+  if (parsed.negative) {
+    return parens ? `(${amount})` : `${convention === "statement" ? "−" : "-"}${amount}`;
+  }
+  return signed ? `+${amount}` : amount;
 }
 
 /** Tone of a signed P&L figure: gain, loss, or flat/unknown. */

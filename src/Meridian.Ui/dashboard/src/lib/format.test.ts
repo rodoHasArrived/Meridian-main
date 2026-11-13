@@ -289,6 +289,48 @@ describe("formatMoney", () => {
     expect(formatMoney(3100.4, { context: "summary", signed: true })).toBe("+$3,100");
     expect(formatMoney(undefined)).toBe("—");
   });
+
+  it("formats decimal strings exactly from their digits, never through a float", () => {
+    // 12345678901234.565 has no exact binary float; parseFloat would round it to ...234.56.
+    expect(formatMoney("12345678901234.565")).toBe("$12,345,678,901,234.57");
+    expect(formatMoney("1.005")).toBe("$1.01");
+    expect(formatMoney("-1234.5", { context: "accounting" })).toBe("($1,234.50)");
+    expect(formatMoney("-0.0125", { decimals: 4 })).toBe("-$0.0125");
+    expect(formatMoney("3100.40", { context: "summary", signed: true })).toBe("+$3,100");
+    expect(formatMoney("1500", { currency: "JPY" })).toBe("¥1,500");
+    expect(formatMoney("99999999999999999999.995", { currency: null })).toBe("100,000,000,000,000,000,000.00");
+  });
+
+  it("reads money-ish strings and falls back for text that is not a number", () => {
+    expect(formatMoney("(1,234.00)")).toBe("-$1,234.00");
+    expect(formatMoney("1,234.00-", { context: "accounting", currency: "EUR" })).toBe("(€1,234.00)");
+    expect(formatMoney("not a number")).toBe("—");
+    expect(formatMoney("", { fallback: "Not recorded" })).toBe("Not recorded");
+    expect(formatMoney(Number.NaN)).toBe("—");
+  });
+
+  it("matches Intl for numbers, including ties and currencies Intl spells with a code", () => {
+    expect(formatMoney(1.005)).toBe("$1.01");
+    expect(formatMoney(2.675)).toBe("$2.68");
+    expect(formatMoney(1234.5, { currency: "CAD" })).toBe("CA$1,234.50");
+    expect(formatMoney(1234.5, { currency: "CHF" })).toBe("CHF 1,234.50");
+    expect(formatMoney(5, { currency: "US-D" })).toBe("US-D 5.00");
+  });
+
+  it("covers the statement options: parentheses, zero dash, explicit sign and U+2212 minus", () => {
+    expect(formatMoney("-42.5", { convention: "statement", currency: null })).toBe("−42.50");
+    expect(formatMoney("-1234", { convention: "statement", currency: "USD", parens: true })).toBe("($1,234.00)");
+    expect(formatMoney("5", { convention: "statement", currency: "ZZZ" })).toBe("ZZZ 5.00");
+    expect(formatMoney("0.00", { zeroDash: true })).toBe("—");
+    expect(formatMoney("18.4", { convention: "statement", currency: null, signed: true })).toBe("+18.40");
+    expect(formatMoney(-12.5, { context: "accounting", currency: null, parens: false })).toBe("-12.50");
+  });
+
+  it("shows a value that rounds to zero unsigned", () => {
+    expect(formatMoney("-0.001")).toBe("$0.00");
+    expect(formatMoney(0.001, { signed: true })).toBe("$0.00");
+    expect(formatMoney("-0.004", { context: "accounting" })).toBe("$0.00");
+  });
 });
 
 describe("formatQuantity", () => {
