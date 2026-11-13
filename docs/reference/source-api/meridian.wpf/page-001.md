@@ -250,6 +250,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public CashDividendAttestationPanel() =&gt; …;</code> | [src/Meridian.Wpf/Controls/CashDividendAttestationPanel.xaml.cs:7](../../../../src/Meridian.Wpf/Controls/CashDividendAttestationPanel.xaml.cs#L7) |  |
 
+## ConfigurationChangeBanner
+
+Qualified name: <code>Meridian.Wpf.Controls.ConfigurationChangeBanner</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs:8](../../../../src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs#L8).
+
+Owns only view lifetime and refresh wiring; status projection remains in the view model.
+
+```csharp
+public partial class ConfigurationChangeBanner : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationChangeBanner();</code> | [src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs:15](../../../../src/Meridian.Wpf/Controls/ConfigurationChangeBanner.xaml.cs#L15) |  |
+
 ## DataConfidenceExplanationButton
 
 Qualified name: <code>Meridian.Wpf.Controls.DataConfidenceExplanationButton</code>. Kind: `class`.
@@ -1232,24 +1250,3 @@ Declared public members:
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L51) |  |
 | <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:367](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L367) |  |
 | <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:369](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L369) |  |
-
-## DataFeatureModule
-
-Qualified name: <code>Meridian.Wpf.Features.Data.DataFeatureModule</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:33](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L33).
-
-Registers data desktop services and contributes the feature&#x27;s navigation pages and workspace metadata.
-
-```csharp
-public sealed class DataFeatureModule : IDesktopFeatureModule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:70](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L70) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:157](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L157) |  |
-| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:159](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L159) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:162](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L162) |  |

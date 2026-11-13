@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CommittedCommandMatch
+
+Qualified name: <code>Meridian.Application.DirectLending.CommittedCommandMatch</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:477](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L477).
+
+Outcome of DirectLendingServiceSupport.FindCommittedCommand.
+
+```csharp
+public enum CommittedCommandMatch
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:480](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L480) | The command id is not recorded: process the command. |
+| <code>Replay</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:483](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L483) | The same request already committed: return the committed state. |
+| <code>Conflict</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:486](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L486) | The command id was used for a different mutation or different inputs. |
+
 ## DailyAccrualWorker
 
 Qualified name: <code>Meridian.Application.DirectLending.DailyAccrualWorker</code>. Kind: `class`.
@@ -1322,13 +1342,3 @@ Declared public members:
 | <code>public static HttpClient CreateHttpClient(IProviderIntegrationHostResolver? resolver = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:17](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L17) | Creates the production client with connection-time DNS validation and address pinning. |
 | <code>public ProviderIntegrationHttpClientTransport(HttpClient httpClient, ILogger&lt;ProviderIntegrationHttpClientTransport&gt;? logger = null, IProviderIntegrationHostResolver? hostResolver = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:54](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L54) |  |
 | <code>public async Task&lt;ProviderIntegrationHttpResponse&gt; SendAsync(ProviderIntegrationHttpRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs:64](../../../../src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs#L64) |  |
-
-## ProviderIntegrationHttpRequest
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:24](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L24).
-
-```csharp
-public sealed record ProviderIntegrationHttpRequest(ProviderIntegrationHttpMethodDto Method, string Path, IReadOnlyDictionary<string, string> Headers, IReadOnlyDictionary<string, string> Query, string? BodyTemplate, string ApprovedBaseUri);
-```

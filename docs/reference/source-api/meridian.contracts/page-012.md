@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PendingPaymentDto
+
+Qualified name: <code>Meridian.Contracts.Banking.PendingPaymentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:31](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L31).
+
+A payment that is awaiting an approval decision.
+
+```csharp
+public sealed record PendingPaymentDto(Guid PendingPaymentId, Guid EntityId, decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, PaymentApprovalStatus Status, string? ReviewedBy, string? ReviewNotes, DateTimeOffset InitiatedAt, DateTimeOffset? ReviewedAt, string? Currency = null, string? CurrencyRemediatedBy = null, string? CurrencyRemediationReason = null, DateTimeOffset? CurrencyRemediatedAt = null);
+```
+
+## RecordPaymentBankEvidenceRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.RecordPaymentBankEvidenceRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:80](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L80).
+
+Record retained bank-side evidence for an approved Meridian payment intent.
+
+```csharp
+public sealed record RecordPaymentBankEvidenceRequest(string EvidenceType, DateOnly? TransactionDate = null, DateOnly? SettlementDate = null, decimal? Amount = null, string? Currency = null, string? ExternalRef = null, string? RecordedBy = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? EvidenceId = null);
+```
+
+## RejectPaymentRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.RejectPaymentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:74](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L74).
+
+Reject a pending payment request.
+
+```csharp
+public sealed record RejectPaymentRequest(string Reason, string? ReviewedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## RemediatePaymentCurrencyRequest
+
+Qualified name: <code>Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Banking/BankingModels.cs:61](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L61).
+
+Governed repair request for a legacy Pending payment whose currency was never retained. The command is compare-and-set: it cannot alter economics, replace an existing currency, or repair a payment after a review decision.
+
+```csharp
+public sealed record RemediatePaymentCurrencyRequest(string Currency, string Reason, string? RemediatedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
 ## BusinessDayAdjustment
 
 Qualified name: <code>Meridian.Contracts.Calendars.BusinessDayAdjustment</code>. Kind: `record`.
@@ -748,52 +796,4 @@ Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:75](..
 
 ```csharp
 public sealed record ContractualMakeWholeTerms(MakeWholeFormula Formula, string BenchmarkKey, decimal SpreadBps, int CompoundsPerYear, [property : JsonConverter(typeof(JsonStringEnumConverter<DayCountConvention>))] DayCountConvention DayCount, DateOnly? ParCallDate = null, string AccruedInterestTreatment = "CleanFloorAddAccrued");
-```
-
-## CreateContractualCashFlowRunRequest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.CreateContractualCashFlowRunRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:189](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L189).
-
-```csharp
-public sealed record CreateContractualCashFlowRunRequest(Guid RunId, ContractualCashFlowRequest Projection);
-```
-
-## ExerciseNoticeApprovalState
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeApprovalState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:6](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L6).
-
-```csharp
-public enum ExerciseNoticeApprovalState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Recorded = 0</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:8](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L8) |  |
-| <code>Approved = 1</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:9](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L9) |  |
-| <code>Rejected = 2</code> | [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:10](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L10) |  |
-
-## ExerciseNoticeDecisionRequest
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeDecisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:85](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L85).
-
-```csharp
-public sealed record ExerciseNoticeDecisionRequest(bool Approve, string? Reason = null);
-```
-
-## ExerciseNoticeVerification
-
-Qualified name: <code>Meridian.Contracts.CashFlows.ExerciseNoticeVerification</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs:87](../../../../src/Meridian.Contracts/CashFlows/BondExerciseNotice.cs#L87).
-
-```csharp
-public sealed record ExerciseNoticeVerification(bool Verified, string Reason, BondExerciseNoticeDto? Notice = null);
 ```

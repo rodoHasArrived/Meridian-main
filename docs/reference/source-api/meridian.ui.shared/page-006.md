@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunComparisonService
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyRunComparisonService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:9](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L9).
+
+Shared comparison service for run compare/diff endpoint flows.
+
+```csharp
+public sealed class StrategyRunComparisonService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunComparisonService(StrategyRunReadService readService);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L13) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L18) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L23) |  |
+| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:66](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L66) |  |
+| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L71) |  |
+
+## StrategyStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:519](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L519).
+
+Snapshot of a strategy&#x27;s current lifecycle state.
+
+```csharp
+public sealed record StrategyStatusDto(string StrategyId, string Status);
+```
+
 ## SubscriptionEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SubscriptionEndpoints</code>. Kind: `class`.
@@ -70,7 +104,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:17](../../..
 Registry-backed symbol mapping endpoints shared by browser and desktop hosts. Legacy configuration remains a migration/rollback input but is not a second write model.
 
 ```csharp
-public static class SymbolMappingEndpoints
+public static partial class SymbolMappingEndpoints
 ```
 
 Declared public members:
@@ -78,6 +112,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L21) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L15).
+
+```csharp
+public static partial class SymbolMappingEndpoints
+```
+
+## SymbolMappingRolloutRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolMappingRolloutRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs:115](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L115).
+
+```csharp
+public sealed record SymbolMappingRolloutRequest(SymbolResolutionMode Mode, SymbolResolutionMode ExpectedMode, long ReviewedMismatchCount, bool EvidenceReviewed = false, bool ConfirmArchivesNotRewritten = false, bool ConfirmSeriesRemainSeparate = false, string? Reason = null);
+```
 
 ## TradingActionResult
 
@@ -1211,62 +1261,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L10) |  |
-
-## IStatementImportEvidenceRetainer
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.IStatementImportEvidenceRetainer</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L22).
-
-Retains statement-import content as evidence for later verification and review.
-
-```csharp
-public interface IStatementImportEvidenceRetainer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L24) |  |
-
-## JournalEntryEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.JournalEntryEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L23).
-
-Adds journal-entry lifecycle and source evidence to an evidence graph.
-
-```csharp
-public sealed class JournalEntryEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JournalEntryEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L27) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L32) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L34) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L37) |  |
-
-## ManualEvidenceDocumentExtractor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ManualEvidenceDocumentExtractor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L18).
-
-Builds document extraction results from manual metadata or deterministic fixture inputs.
-
-```csharp
-public sealed class ManualEvidenceDocumentExtractor : IEvidenceDocumentExtractor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ExtractorId = &quot;manual-metadata-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L20) |  |
-| <code>public const string FixtureExtractorId = &quot;deterministic-fixture-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L21) |  |
-| <code>public Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L23) |  |

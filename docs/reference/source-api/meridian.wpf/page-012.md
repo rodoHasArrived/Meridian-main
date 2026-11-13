@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ChartingPageViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ChartingPageViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:25](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L25).
+
+Loads selected-symbol candlesticks and exposes chart series, timeframes, volume profiles, and indicator toggles.
+
+```csharp
+public sealed class ChartingPageViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;object&gt; SymbolItems { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L102) |  |
+| <code>public ObservableCollection&lt;ChartTimeframeOption&gt; TimeframeOptions { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L103) |  |
+| <code>public ObservableCollection&lt;ChartIndicatorToggle&gt; IndicatorToggles { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L104) |  |
+| <code>public ObservableCollection&lt;WpfVolumeBarVm&gt; VolumeItems { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L105) |  |
+| <code>public ObservableCollection&lt;WpfVolumeProfileBarVm&gt; VolumeProfileItems { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L106) |  |
+| <code>public ObservableCollection&lt;WpfIndicatorValueVm&gt; IndicatorValues { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L107) |  |
+| <code>public ISeries[] CandleSeries { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L111) |  |
+| <code>public ICartesianAxis[] CandleXAxes { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L114) |  |
+| <code>public ICartesianAxis[] CandleYAxes { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L117) |  |
+| <code>public string CurrentPrice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L119) |  |
+| <code>public string PriceChange { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L120) |  |
+| <code>public string PriceChangePercent { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L121) |  |
+| <code>public string OpenPrice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:122](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L122) |  |
+| <code>public string HighPrice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L123) |  |
+| <code>public string LowPrice { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L124) |  |
+| <code>public string Volume { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L125) |  |
+| <code>public string Poc { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:126](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L126) |  |
+| <code>public string Vah { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L127) |  |
+| <code>public string Val { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L128) |  |
+| <code>public string PeriodHigh { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L129) |  |
+| <code>public string PeriodLow { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L130) |  |
+| <code>public string PeriodVolume { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L131) |  |
+| <code>public string CandleCount { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L132) |  |
+| <code>public string ActiveIndicatorsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L133) |  |
+| <code>public string ChartSetupTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L134) |  |
+| <code>public string ChartSetupDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L135) |  |
+| <code>public string ChartSetupScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L136) |  |
+| <code>public bool CanRefreshChart { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L137) |  |
+| <code>public Visibility NoChartDataVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L138) |  |
+| <code>public Visibility NoVolumeProfileVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L139) |  |
+| <code>public Visibility NoIndicatorsVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L140) |  |
+| <code>public Visibility LoadingVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L141) |  |
+| <code>public Brush PriceChangeBrush { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L142) |  |
+| <code>public string NoChartDataMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L144) |  |
+| <code>public IAsyncRelayCommand RefreshChartCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L147) |  |
+| <code>public string? SelectedSymbol { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L149) |  |
+| <code>public ChartTimeframeOption? SelectedTimeframeOption { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L163) |  |
+| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:177](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L177) |  |
+| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L190) |  |
+| <code>public ChartingPageViewModel(SymbolManagementService symbolService) : this(new SymbolManagementChartingSymbolSource(symbolService), new ChartingDataClient(), autoRefreshOnSetupChanges : true);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L203) |  |
+| <code>public ChartingPageViewModel(IChartingSymbolSource symbolSource, IChartingDataClient chartingClient, bool autoRefreshOnSetupChanges = true);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:208](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L208) |  |
+| <code>public Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:240](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L240) |  |
+| <code>public void OnSymbolChanged(string? symbol);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:273](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L273) |  |
+| <code>public void OnTimeframeChanged(ChartTimeframe timeframe);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:278](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L278) |  |
+| <code>public void OnDateChanged(DateOnly? from, DateOnly? to);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:284](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L284) |  |
+| <code>public Task RefreshChartAsync() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L290) |  |
+| <code>public void RefreshChart() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:292](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L292) |  |
+| <code>public void OnIndicatorToggled(string id, bool isChecked);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:294](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L294) |  |
+
 ## ChartTimeframeOption
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ChartTimeframeOption</code>. Kind: `class`.
@@ -210,6 +275,30 @@ A single row in the comparison diff table.
 ```csharp
 public sealed record ComparisonRow(string Label, string ValueA, string ValueB);
 ```
+
+## ConfigurationChangeStatusViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ConfigurationChangeStatusViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:6](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L6).
+
+Displays the host&#x27;s shared activation evidence without inferring that a disk save applied.
+
+```csharp
+public sealed class ConfigurationChangeStatusViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConfigurationChangeStatusViewModel(Func&lt;CancellationToken, Task&lt;ConfigurationChangeStatus?&gt;&gt; load) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:15](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L15) |  |
+| <code>public string Title { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L18) |  |
+| <code>public string Detail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L19) |  |
+| <code>public string Paths { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L20) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L21) |  |
+| <code>public async Task RefreshAsync(bool hasLocalSave, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L23) |  |
+| <code>public void CancelPending();</code> | [src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/ConfigurationChangeStatusViewModel.cs#L71) |  |
 
 ## CoverageCellVm
 
@@ -1487,7 +1576,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.FeatureCapabilityToggleViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:909](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L909).
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:923](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L923).
 
 Binds a feature capability descriptor to its current enabled state and toggle availability.
 
@@ -1499,17 +1588,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FeatureCapabilityToggleViewModel(FeatureCapabilityDescriptor descriptor, IFeatureCapabilityGate gate);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:914](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L914) |  |
-| <code>public FeatureCapabilityDescriptor Descriptor { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:923](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L923) |  |
-| <code>public string CapabilityKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:925](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L925) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:927](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L927) |  |
-| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:929](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L929) |  |
-| <code>public bool IsPermanent =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:931](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L931) |  |
-| <code>public bool CanToggle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:933](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L933) |  |
-| <code>public string StateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:935](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L935) |  |
-| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L941) |  |
-| <code>public void Refresh() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:966](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L966) |  |
-| <code>public void Refresh(bool isEnabled);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:969](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L969) |  |
+| <code>public FeatureCapabilityToggleViewModel(FeatureCapabilityDescriptor descriptor, IFeatureCapabilityGate gate);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:928](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L928) |  |
+| <code>public FeatureCapabilityDescriptor Descriptor { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:937](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L937) |  |
+| <code>public string CapabilityKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:939](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L939) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L941) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:943](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L943) |  |
+| <code>public bool IsPermanent =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:945](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L945) |  |
+| <code>public bool CanToggle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:947](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L947) |  |
+| <code>public string StateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:949](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L949) |  |
+| <code>public bool IsEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:955](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L955) |  |
+| <code>public void Refresh() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:980](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L980) |  |
+| <code>public void Refresh(bool isEnabled);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.cs:983](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.cs#L983) |  |
 
 ## FillEventVm
 
@@ -1646,45 +1735,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static FinancialRecordExplorerRelationshipModel FromDto(FinancialRecordExplorerRelationshipDto relationship) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:790](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L790) |  |
-
-## FinancialRecordExplorerRowModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerRowModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:649](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L649).
-
-Presents a financial record&#x27;s identity, type, source, status, and inspection detail.
-
-```csharp
-public sealed class FinancialRecordExplorerRowModel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string RecordId { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:671](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L671) |  |
-| <code>public string RecordType { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:673](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L673) |  |
-| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:675](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L675) |  |
-| <code>public string Source { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:677](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L677) |  |
-| <code>public string Status { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:679](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L679) |  |
-| <code>public string Tone { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:681](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L681) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; Cells { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:683](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L683) |  |
-| <code>public FinancialRecordExplorerSelectedRecordDto Detail { get; }</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:685](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L685) |  |
-| <code>public static FinancialRecordExplorerRowModel FromDto(FinancialRecordExplorerRowDto row, IReadOnlyList&lt;FinancialRecordExplorerColumnDto&gt; columns);</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:687](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L687) |  |
-
-## FinancialRecordExplorerSavedViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel.FinancialRecordExplorerSavedViewModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:734](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L734).
-
-```csharp
-public sealed record FinancialRecordExplorerSavedViewModel(string ViewId, string Label, string Description, bool IsSystem, bool IsActive, string SearchText)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static FinancialRecordExplorerSavedViewModel FromDto(FinancialRecordExplorerSavedViewDto view) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:742](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L742) |  |

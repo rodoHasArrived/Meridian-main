@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Watchlist
+
+Qualified name: <code>Meridian.Wpf.Services.Watchlist</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/WatchlistService.cs:619](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L619).
+
+Represents a symbol watchlist.
+
+```csharp
+public sealed class Watchlist
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:622](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L622) | Unique watchlist identifier. |
+| <code>public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:625](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L625) | Display name for the watchlist. |
+| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:628](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L628) | Symbols in this watchlist. |
+| <code>public string? Color { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:631](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L631) | Color for UI display (hex format). |
+| <code>public int SortOrder { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:634](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L634) | Sort order for UI. |
+| <code>public bool IsPinned { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:637](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L637) | Whether this watchlist is pinned/favorited. |
+| <code>public bool IsActive { get; init; } = true;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:640](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L640) | Whether subscriptions are active for this watchlist. |
+| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:643](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L643) | When the watchlist was created. |
+| <code>public DateTimeOffset ModifiedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:646](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L646) | When the watchlist was last modified. |
+
 ## WatchlistChangeType
 
 Qualified name: <code>Meridian.Wpf.Services.WatchlistChangeType</code>. Kind: `enum`.
@@ -1137,34 +1163,3 @@ Declared public members:
 | <code>public PaneContentState? GetPaneContentState(int paneIndex, object? parameter = null);</code> | [src/Meridian.Wpf/Shell/ViewModels/PaneHostViewModel.cs:60](../../../../src/Meridian.Wpf/Shell/ViewModels/PaneHostViewModel.cs#L60) |  |
 | <code>public IReadOnlyList&lt;PaneContentState&gt; GetVisibleContentStates();</code> | [src/Meridian.Wpf/Shell/ViewModels/PaneHostViewModel.cs:82](../../../../src/Meridian.Wpf/Shell/ViewModels/PaneHostViewModel.cs#L82) |  |
 | <code>public int ApplyPaneDrop(string? pageTag, int targetPaneIndex, PaneDropAction action);</code> | [src/Meridian.Wpf/Shell/ViewModels/PaneHostViewModel.cs:96](../../../../src/Meridian.Wpf/Shell/ViewModels/PaneHostViewModel.cs#L96) |  |
-
-## WorkflowSummaryStripViewModel
-
-Qualified name: <code>Meridian.Wpf.Shell.ViewModels.WorkflowSummaryStripViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:15](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L15).
-
-Presents a primary workflow summary and expandable secondary summaries with navigation targets.
-
-```csharp
-public sealed class WorkflowSummaryStripViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkflowSummaryStripViewModel();</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:22](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L22) |  |
-| <code>public ReadOnlyObservableCollection&lt;WorkspaceWorkflowSummary&gt; Summaries { get; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:28](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L28) |  |
-| <code>public ReadOnlyObservableCollection&lt;WorkspaceWorkflowSummary&gt; SecondarySummaries { get; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:30](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L30) |  |
-| <code>public WorkspaceWorkflowSummary? PrimarySummary { get; private set; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:32](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L32) |  |
-| <code>public bool HasPrimarySummary =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:48](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L48) |  |
-| <code>public string PrimaryTargetText =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:50](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L50) |  |
-| <code>public bool HasSecondarySummaries =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:54](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L54) |  |
-| <code>public bool AreSecondarySummariesExpanded { get; private set; }</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:56](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L56) |  |
-| <code>public Visibility SecondarySummariesVisibility =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:72](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L72) |  |
-| <code>public string SecondaryToggleText =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:76](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L76) |  |
-| <code>public Visibility PrimaryDetailVisibility =&gt; …;</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:80](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L80) |  |
-| <code>public void Apply(IReadOnlyCollection&lt;WorkspaceWorkflowSummary&gt; summaries, string currentWorkspace);</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:85](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L85) |  |
-| <code>public void UpdatePrimary(string currentWorkspace);</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:91](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L91) |  |
-| <code>public void ToggleSecondarySummaries();</code> | [src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs:115](../../../../src/Meridian.Wpf/Shell/ViewModels/WorkflowSummaryStripViewModel.cs#L115) |  |

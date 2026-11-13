@@ -6,6 +6,94 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EnvironmentValidationIssueDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentValidationIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:134](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L134).
+
+```csharp
+public sealed record EnvironmentValidationIssueDto(EnvironmentValidationSeverity Severity, string Code, string Message, string? LaneId = null, string? NodeDefinitionId = null, string? RelationshipDefinitionId = null);
+```
+
+## EnvironmentValidationResultDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentValidationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:142](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L142).
+
+```csharp
+public sealed record EnvironmentValidationResultDto(bool IsValid, IReadOnlyList<EnvironmentValidationIssueDto> Issues);
+```
+
+## EnvironmentValidationSeverity
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.EnvironmentValidationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:40](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L40).
+
+```csharp
+public enum EnvironmentValidationSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:42](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L42) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:43](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L43) |  |
+| <code>Error</code> | [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:44](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L44) |  |
+
+## OrganizationEnvironmentDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.OrganizationEnvironmentDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:89](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L89).
+
+```csharp
+public sealed record OrganizationEnvironmentDefinitionDto(Guid OrganizationId, string OrganizationNodeDefinitionId, string OrganizationCode, string OrganizationName, string BaseCurrency, IReadOnlyList<EnvironmentLaneDefinitionDto> Lanes, IReadOnlyList<EnvironmentNodeDefinitionDto> Nodes, IReadOnlyList<EnvironmentRelationshipDefinitionDto> Relationships);
+```
+
+## PublishedEnvironmentNodeRuntimeDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentNodeRuntimeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:172](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L172).
+
+```csharp
+public sealed record PublishedEnvironmentNodeRuntimeDto(string NodeDefinitionId, Guid RuntimeNodeId, EnvironmentNodeKind NodeKind, string Name, string? ContextKey = null, string? LaneId = null);
+```
+
+## PublishedEnvironmentRuntimeDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentRuntimeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:202](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L202).
+
+```csharp
+public sealed record PublishedEnvironmentRuntimeDto(Guid OrganizationId, string OrganizationName, string BaseCurrency, OrganizationStructureGraphDto OrganizationGraph, IReadOnlyList<EnvironmentLaneRuntimeDto> Lanes, IReadOnlyList<PublishedEnvironmentNodeRuntimeDto> Nodes, IReadOnlyList<EnvironmentContextMappingDto> ContextMappings, IReadOnlyList<EnvironmentLedgerGroupRuntimeDto> LedgerGroups);
+```
+
+## PublishedEnvironmentVersionDto
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.PublishedEnvironmentVersionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:212](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L212).
+
+```csharp
+public sealed record PublishedEnvironmentVersionDto(Guid VersionId, Guid DraftId, Guid OrganizationId, string OrganizationName, string VersionLabel, DateTimeOffset PublishedAt, string PublishedBy, EnvironmentValidationResultDto Validation, PublishedEnvironmentRuntimeDto Runtime, IReadOnlyDictionary<string, Guid> RuntimeNodeMappings, string? Notes = null, bool IsCurrent = false);
+```
+
+## RollbackEnvironmentVersionRequest
+
+Qualified name: <code>Meridian.Contracts.EnvironmentDesign.RollbackEnvironmentVersionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs:129](../../../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs#L129).
+
+```csharp
+public sealed record RollbackEnvironmentVersionRequest(Guid VersionId, string RolledBackBy, string? Reason = null);
+```
+
 ## EquityReferenceDto
 
 Qualified name: <code>Meridian.Contracts.Equity.EquityReferenceDto</code>. Kind: `record`.
@@ -884,196 +972,3 @@ Declared public members:
 | <code>public string Extension { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:142](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L142) |  |
 | <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:143](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L143) |  |
 | <code>public bool SupportsCompression { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:144](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L144) |  |
-
-## ExportFormatsResponse
-
-Qualified name: <code>Meridian.Contracts.Export.ExportFormatsResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:289](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L289).
-
-Carries the export format choices returned by the API.
-
-```csharp
-public sealed class ExportFormatsResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;ExportFormatInfo&gt;? Formats { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:291](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L291) |  |
-
-## ExportFormatsResult
-
-Qualified name: <code>Meridian.Contracts.Export.ExportFormatsResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:129](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L129).
-
-Reports available export formats or the failure encountered while discovering them.
-
-```csharp
-public sealed class ExportFormatsResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:131](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L131) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:132](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L132) |  |
-| <code>public List&lt;ExportFormatInfo&gt; Formats { get; set; } = new ();</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:133](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L133) |  |
-
-## ExportPreset
-
-Qualified name: <code>Meridian.Contracts.Export.ExportPreset</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/ExportPreset.cs:9](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L9).
-
-Represents a saveable export preset configuration. Implements Feature Refinement #69 - Archive Export Presets.
-
-```csharp
-public sealed class ExportPreset
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;id&quot;)] public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:15](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L15) | Unique identifier for this preset. |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:21](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L21) | Human-readable name for the preset. |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string? Description { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:27](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L27) | Description of what this preset does. |
-| <code>[JsonPropertyName(&quot;format&quot;)] public ExportPresetFormat Format { get; set; } = ExportPresetFormat.Parquet;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:33](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L33) | Export format (Parquet, CSV, JSONL, Lean, XLSX, SQL). |
-| <code>[JsonPropertyName(&quot;compression&quot;)] public ExportPresetCompression Compression { get; set; } = ExportPresetCompression.Snappy;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:39](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L39) | Compression type. |
-| <code>[JsonPropertyName(&quot;destination&quot;)] public string Destination { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:46](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L46) | Destination path template with variable support. Variables: {year}, {month}, {day}, {symbol}, {date}, {format} |
-| <code>[JsonPropertyName(&quot;filenamePattern&quot;)] public string FilenamePattern { get; set; } = &quot;{symbol}_{date}.{format}&quot;;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:53](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L53) | Filename pattern template. Variables: {symbol}, {date}, {type}, {format} |
-| <code>[JsonPropertyName(&quot;filters&quot;)] public ExportPresetFilters Filters { get; set; } = new ();</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:59](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L59) | Filter settings for the export. |
-| <code>[JsonPropertyName(&quot;schedule&quot;)] public string? Schedule { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:66](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L66) | Optional cron schedule for automated exports. Format: &quot;0 6 * * *&quot; (minute hour day month weekday) |
-| <code>[JsonPropertyName(&quot;scheduleEnabled&quot;)] public bool ScheduleEnabled { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:72](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L72) | Whether the scheduled export is enabled. |
-| <code>[JsonPropertyName(&quot;postExportHook&quot;)] public string? PostExportHook { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:79](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L79) | Post-export hook command to run after export completes. Variables: {date}, {destination}, {symbol}, {files} |
-| <code>[JsonPropertyName(&quot;notifyOnComplete&quot;)] public bool NotifyOnComplete { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:85](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L85) | Whether to send a notification when export completes. |
-| <code>[JsonPropertyName(&quot;includeDataDictionary&quot;)] public bool IncludeDataDictionary { get; set; } = true;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:91](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L91) | Whether to include a data dictionary with the export. |
-| <code>[JsonPropertyName(&quot;includeLoaderScript&quot;)] public bool IncludeLoaderScript { get; set; } = true;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:97](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L97) | Whether to include loader scripts for the target format. |
-| <code>[JsonPropertyName(&quot;overwriteExisting&quot;)] public bool OverwriteExisting { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:103](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L103) | Whether to overwrite existing files. |
-| <code>[JsonPropertyName(&quot;createdAt&quot;)] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:109](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L109) | When this preset was created. |
-| <code>[JsonPropertyName(&quot;updatedAt&quot;)] public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:115](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L115) | When this preset was last modified. |
-| <code>[JsonPropertyName(&quot;lastUsedAt&quot;)] public DateTime? LastUsedAt { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:121](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L121) | When this preset was last used for an export. |
-| <code>[JsonPropertyName(&quot;useCount&quot;)] public int UseCount { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:127](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L127) | Number of times this preset has been used. |
-| <code>[JsonPropertyName(&quot;isBuiltIn&quot;)] public bool IsBuiltIn { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:133](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L133) | Whether this is a built-in preset (read-only). |
-| <code>[JsonPropertyName(&quot;columns&quot;)] public string[] Columns { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:140](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L140) | Specific columns to include in the export. Empty array means all available columns. |
-| <code>[JsonPropertyName(&quot;includeManifest&quot;)] public bool IncludeManifest { get; set; } = true;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:147](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L147) | Whether to include a manifest file with the export. The manifest documents what data was exported, quality metrics, and file checksums. |
-| <code>[JsonPropertyName(&quot;validation&quot;)] public ExportValidationRules? Validation { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:154](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L154) | Pre-export validation rules. When set, the export validates these conditions before writing any files and aborts if any error-level issues are found. |
-
-## ExportPresetCompression
-
-Qualified name: <code>Meridian.Contracts.Export.ExportPresetCompression</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Export/ExportPreset.cs:254](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L254).
-
-Compression types for export presets.
-
-```csharp
-public enum ExportPresetCompression : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:257](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L257) | No compression. |
-| <code>Gzip</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:259](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L259) | Gzip compression. |
-| <code>Snappy</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:261](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L261) | Snappy compression (fast, moderate ratio). |
-| <code>Zstd</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:263](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L263) | ZSTD compression (balanced). |
-| <code>Lz4</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:265](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L265) | LZ4 compression (fastest). |
-| <code>Zip</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:267](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L267) | ZIP archive. |
-
-## ExportPresetFilters
-
-Qualified name: <code>Meridian.Contracts.Export.ExportPresetFilters</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/ExportPreset.cs:160](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L160).
-
-Filter settings for export presets.
-
-```csharp
-public sealed class ExportPresetFilters
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;eventTypes&quot;)] public string[] EventTypes { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:167](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L167) | Event types to include (Trade, BboQuote, LOBSnapshot, HistoricalBar). Empty array means all event types. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:174](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L174) | Symbols to include. Empty array means all symbols. |
-| <code>[JsonPropertyName(&quot;dateRangeType&quot;)] public DateRangeType DateRangeType { get; set; } = DateRangeType.LastWeek;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:180](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L180) | Date range type for export. |
-| <code>[JsonPropertyName(&quot;customStartDate&quot;)] public DateTime? CustomStartDate { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:186](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L186) | Custom start date (used when DateRangeType is Custom). |
-| <code>[JsonPropertyName(&quot;customEndDate&quot;)] public DateTime? CustomEndDate { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:192](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L192) | Custom end date (used when DateRangeType is Custom). |
-| <code>[JsonPropertyName(&quot;sessionFilter&quot;)] public string SessionFilter { get; set; } = &quot;All&quot;;</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:198](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L198) | Session filter (All, RegularHours, PreMarket, AfterHours, ExtendedHours). |
-| <code>[JsonPropertyName(&quot;minQualityScore&quot;)] public double? MinQualityScore { get; set; }</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:204](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L204) | Minimum quality score (0-1). Exclude data below this threshold. |
-
-## ExportPresetFormat
-
-Qualified name: <code>Meridian.Contracts.Export.ExportPresetFormat</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Export/ExportPreset.cs:233](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L233).
-
-Supported export formats for presets.
-
-```csharp
-public enum ExportPresetFormat : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Parquet</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:236](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L236) | Apache Parquet columnar format. |
-| <code>Csv</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:238](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L238) | Comma-separated values. |
-| <code>Jsonl</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:240](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L240) | JSON Lines format. |
-| <code>Lean</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:242](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L242) | QuantConnect Lean native format. |
-| <code>Xlsx</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:244](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L244) | Microsoft Excel XLSX format. |
-| <code>Sql</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:246](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L246) | SQL statements for database import. |
-| <code>Raw</code> | [src/Meridian.Contracts/Export/ExportPreset.cs:248](../../../../src/Meridian.Contracts/Export/ExportPreset.cs#L248) | Raw format (copy without conversion). |
-
-## ExportProgressEventArgs
-
-Qualified name: <code>Meridian.Contracts.Export.ExportProgressEventArgs</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:9](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L9).
-
-Reports export progress, the active symbol, processed rows, and elapsed time.
-
-```csharp
-public sealed class ExportProgressEventArgs : EventArgs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public float Progress { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:11](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L11) |  |
-| <code>public string? CurrentSymbol { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:12](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L12) |  |
-| <code>public int RowsProcessed { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:13](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L13) |  |
-| <code>public TimeSpan Elapsed { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:14](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L14) |  |
-
-## ExportTemplate
-
-Qualified name: <code>Meridian.Contracts.Export.ExportTemplate</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:197](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L197).
-
-Groups reusable export format, aggregation, field, and metadata settings.
-
-```csharp
-public sealed class ExportTemplate
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:199](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L199) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:200](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L200) |  |
-| <code>public AnalysisExportFormat Format { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:201](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L201) |  |
-| <code>public DataAggregation Aggregation { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:202](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L202) |  |
-| <code>public string[]? IncludeFields { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:203](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L203) |  |
-| <code>public bool IncludeMetadata { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:204](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L204) |  |

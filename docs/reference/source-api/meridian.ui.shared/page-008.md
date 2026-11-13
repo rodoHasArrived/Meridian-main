@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingAuditChainAnchorException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccountingAuditChainAnchorException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:12](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L12).
+
+Raised when the external head journal is unreadable or internally inconsistent.
+
+```csharp
+public sealed class AccountingAuditChainAnchorException : MeridianException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingAuditChainAnchorException(string message, bool isIntegrityFailure = false, bool isUnsupportedSchemaVersion = false) : base(message);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:14](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L14) |  |
+| <code>public bool IsUnsupportedSchemaVersion { get; }</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:28](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L28) | True when a journal line was written under a schema version this build does not implement, the expected state during a rolling upgrade or downgrade rather than evidence of tampering. |
+| <code>public bool IsIntegrityFailure { get; }</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:34](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L34) | True when a readable journal line failed its own hash or predecessor binding: proven tampering with the head journal, as opposed to a line this build cannot read. |
+
+## AccountingAuditIntegrityService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccountingAuditIntegrityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs:20](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs#L20).
+
+Read-only verification tooling over every hash-chained accounting and ledger audit log the composition retains (W9-GOV-008 criterion three). Shared by the browser endpoint and available to the desktop shell so neither client derives its own integrity answer.
+
+```csharp
+public sealed class AccountingAuditIntegrityService(IAccountingActionAuditStore? accountingAuditStore, ILedgerEventAuditVerifier? ledgerEventAuditVerifier, TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;AccountingAuditIntegrityReportDto&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs:27](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs#L27) |  |
+
+## AccountingCertificationEvidenceResolutionRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccountingCertificationEvidenceResolutionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:41](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L41).
+
+```csharp
+public sealed record AccountingCertificationEvidenceResolutionRequest(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> EvidenceReferences);
+```
+
 ## AccountingCertificationEvidenceSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AccountingCertificationEvidenceSource</code>. Kind: `record`.
@@ -882,59 +930,3 @@ Declared public members:
 | <code>public BankFeedTransportService(IFundAccountService fundAccountService, IEnumerable&lt;IEtlSourceReader&gt; sourceReaders, IPlaidIngestionService? plaidIngestionService = null);</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:72](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L72) |  |
 | <code>public bool IsDue(BankFeedScheduleDefinition schedule, DateTimeOffset nowUtc);</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:82](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L82) |  |
 | <code>public async Task&lt;BankFeedTransportRunResult&gt; RunIfDueAsync(BankFeedScheduleDefinition schedule, DateTimeOffset nowUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:93](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L93) |  |
-
-## BondCollectionCaseworkProjection
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BondCollectionCaseworkProjection</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs:16](../../../../src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs#L16).
-
-Projects retained collection observations into the existing scoped reconciliation queue. Source clearing is evidence; governed resolution, signoff and reopening remain queue operations.
-
-```csharp
-public sealed class BondCollectionCaseworkProjection(IReconciliationBreakQueueRepository queue, IBondMonitoringService monitoring)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ProjectAsync(BondMonitoringSnapshotDto captured, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs:21](../../../../src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs#L21) |  |
-
-## BondExerciseNoticeReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BondExerciseNoticeReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:12](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L12).
-
-Workstation read model for upcoming exercise notice windows on one retained Bond row. It loads the security as analytics does (current, or recorded as of an explicit knowledge cutoff) and delegates to BondExerciseNoticeWatch, after the retained IBondCalculationPolicy cutover gate. Read-only: no terms are written and no notice is recorded.
-
-```csharp
-public sealed class BondExerciseNoticeReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BondExerciseNoticeReadService(ISecurityMasterQueryService query, IBusinessDayCalendarSource? calendars = null, IBondCalculationPolicy? policy = null);</code> | [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L18) |  |
-| <code>public async Task&lt;BondExerciseNoticeWatchResult?&gt; GetAsync(Guid securityId, DateTimeOffset asOf, int horizonDays, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:27](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L27) | Returns null when no security is retained under the id (or none is eligible at knownAt and none exists now). |
-
-## BondPerformanceSourceVerifier
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BondPerformanceSourceVerifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:9](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L9).
-
-Cached calculation receipts do not replace current source-byte and accepted-review authority.
-
-```csharp
-public sealed class BondPerformanceSourceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondPerformanceSourceVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:14](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L14) |  |
-| <code>public Task VerifyFxAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;AccountCashFxConversionDto&gt; conversions, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:24](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L24) |  |

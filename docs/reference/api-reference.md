@@ -904,7 +904,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**454 declarations** from **49 source files**.
+**459 declarations** from **52 source files**.
 
 
 ### HostAdapters
@@ -992,6 +992,14 @@ Source: [src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs](../
 | `/api/compliance/access-reviews/assess` | POST | `async (HttpContext http, AccessReviewRunRequest request, [FromServices]AccessReviewService reviews, CancellationToken ct) => …` | `Results.Ok` | — | [L88](../../src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs#L88) |
 | `/api/compliance/access-reviews/run` | POST | `async (HttpContext http, AccessReviewRunRequest request, [FromServices]AccessReviewService reviews, CancellationToken ct) => …` | `Results.Ok` | — | [L104](../../src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs#L104) |
 | `/api/compliance/access-reviews` | GET | `([FromServices]AccessReviewService reviews) => …` | `Results.Ok` | — | [L126](../../src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs#L126) |
+
+### ConfigEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/config/changes` | GET | `(ConfigStore store) => …` | `Produces<ConfigurationChangeStatus>(200)`; `Results.Json` | `WithName("GetConfigurationChangeStatus")`; `WithDescription("Saved setting impacts and changes awaiting provider reconnect or host restart; no setting values are returned.")` | [L43](../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L43) |
 
 ### DirectLendingEndpoints
 
@@ -1604,6 +1612,15 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs](../../src/Meridi
 | `/api/config/data-sources` | GET | `(ConfigStore store) => …` | `Produces(200)`; `Results.Json` | `WithName("GetDataSourcesAlias")`; `WithDescription("Alias for /api/config/datasources for backward compatibility.")` | [L684](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L684) |
 | `/api/config/data-sources` | POST | `async (HttpContext context, ConfigStore store, DataSourceConfigRequest req) => …` | `Produces(200)`; `Produces(400)`; `Produces(StatusCodes.Status401Unauthorized)`; `Produces(StatusCodes.Status403Forbidden)`; `Results.BadRequest`; `Results.Ok` | `WithName("UpsertDataSourceAlias")`; `WithDescription("Alias for /api/config/datasources POST for backward compatibility.")` | [L702](../../src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs#L702) |
 
+### ProviderValidationEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/providers/{providerName}/validation-profile` | GET | `(string providerName, [FromServices]ConfigStore store) => …` | `Results.Json` | `WithName("GetProviderValidationProfile")` | [L19](../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L19) |
+| `/api/providers/{providerName}/validation-profile` | PUT | `async (string providerName, ProviderValidationProfileRequest request, HttpContext context, [FromServices]ConfigStore store, [FromServices]ILoggerFactory loggerFactory, CancellationToken ct) => …` | `Results.Unauthorized`; `Results.Json` | `WithName("UpdateProviderValidationProfile")` | [L33](../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L33) |
+
 ### RiskEndpoints
 
 Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs)
@@ -1665,6 +1682,15 @@ Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs](../../s
 | `/api/strategies/{strategyId}/pause` | POST | `async (string strategyId, HttpContext context) => …` | `Produces<VerifiedOperationOutcome>(200)`; `Produces<VerifiedOperationOutcome>(409)`; `Produces<VerifiedOperationOutcome>(423)`; `Produces<VerifiedOperationOutcome>(404)`; `Produces<VerifiedOperationOutcome>(500)`; `Produces<VerifiedOperationOutcome>(503)`; `Produces(404)`; `Produces(503)` | `WithName("PauseStrategy")` | [L161](../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L161) |
 | `/api/strategies/{strategyId}/stop` | POST | `async (string strategyId, HttpContext context) => …` | `Produces<VerifiedOperationOutcome>(200)`; `Produces<VerifiedOperationOutcome>(409)`; `Produces<VerifiedOperationOutcome>(423)`; `Produces<VerifiedOperationOutcome>(404)`; `Produces<VerifiedOperationOutcome>(500)`; `Produces<VerifiedOperationOutcome>(503)`; `Produces(404)`; `Produces(503)` | `WithName("StopStrategy")` | [L240](../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L240) |
 | `/api/strategies/{strategyId}/reconcile` | POST | `async (string strategyId, HttpContext context) => …` | `Produces<VerifiedOperationOutcome>(200)`; `Produces<VerifiedOperationOutcome>(409)`; `Produces<VerifiedOperationOutcome>(423)`; `Produces<VerifiedOperationOutcome>(404)`; `Produces<VerifiedOperationOutcome>(500)`; `Produces<VerifiedOperationOutcome>(503)`; `Produces(404)`; `Produces(503)` | `WithName("ReconcileStrategyLifecycle")` | [L319](../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L319) |
+
+### SymbolMappingEndpoints.Rollout
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs](../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/` (relative declaration on `group`) | GET | `(ConfigStore store, IServiceProvider services) => …` | `Results.Json` | `WithName("GetSymbolMappingRollout")` | [L25](../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L25) |
+| `/{provider}` (relative declaration on `group`) | PUT | `async (string provider, SymbolMappingRolloutRequest request, ConfigStore store, IServiceProvider services, HttpContext context, ILoggerFactory loggerFactory, CancellationToken ct) => …` | `Results.Json` | `WithName("SaveSymbolMappingRollout")` | [L49](../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L49) |
 
 ### WorkstationEndpoints.CloseChecklistHistory
 

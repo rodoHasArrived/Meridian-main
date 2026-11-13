@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetentionAssuranceService
+
+Qualified name: <code>Meridian.Wpf.Services.RetentionAssuranceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:24](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L24).
+
+Service for retention policy assurance with guardrails, legal holds, and verification. Implements Feature Refinement #23 - File Retention Assurance. This service provides WPF-specific features (legal holds, guardrails, UI persistence) and delegates file operations to the core service via HTTP API endpoints: - /api/storage/health/check - File health checks with checksum validation - /api/storage/health/orphans - Find orphaned files - /api/storage/catalog - Storage catalog for file discovery - /api/storage/search/files - Search files by criteria
+
+```csharp
+public sealed class RetentionAssuranceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RetentionAssuranceService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:48](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L48) |  |
+| <code>public RetentionConfiguration Configuration =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:63](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L63) | Gets the current retention configuration. |
+| <code>public IReadOnlyList&lt;LegalHold&gt; LegalHolds =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:68](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L68) | Gets active legal holds. |
+| <code>public IReadOnlyList&lt;RetentionAuditReport&gt; AuditReports =&gt; …;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:73](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L73) | Gets recent audit reports. |
+| <code>public async Task LoadConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:78](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L78) | Loads configuration from storage. |
+| <code>public async Task SaveConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:122](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L122) | Saves configuration to storage. |
+| <code>public RetentionValidationResult ValidateRetentionPolicy(RetentionPolicy policy);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:151](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L151) | Validates a retention policy against guardrails. |
+| <code>public async Task&lt;RetentionDryRunResult&gt; PerformDryRunAsync(RetentionPolicy policy, string dataRoot, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:219](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L219) | Performs a dry run of retention cleanup using the core API for file discovery. Falls back to local scanning if the API is unavailable. |
+| <code>public async Task&lt;StorageHealthCheckResult?&gt; RunHealthCheckAsync(bool validateChecksums = true, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:361](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L361) | Runs a health check on storage via the core API. |
+| <code>public async Task&lt;OrphanFilesResult?&gt; FindOrphanedFilesAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:386](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L386) | Finds orphaned files via the core API. |
+| <code>public async Task&lt;ChecksumVerificationResult&gt; VerifyChecksumsAsync(IEnumerable&lt;FileToDelete&gt; files, string archiveManifestPath, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:545](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L545) | Verifies file checksums before deletion. |
+| <code>public async Task&lt;RetentionAuditReport&gt; ExecuteRetentionCleanupAsync(RetentionDryRunResult dryRun, bool verifyChecksums, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:601](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L601) | Executes retention cleanup with full audit trail. |
+| <code>public async Task CreateLegalHoldAsync(string name, string reason, IEnumerable&lt;string&gt; symbols, DateTime? expiresAt = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:686](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L686) | Creates a legal hold for specified symbols. |
+| <code>public async Task ReleaseLegalHoldAsync(string holdId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:712](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L712) | Releases a legal hold. |
+| <code>public HashSet&lt;string&gt; GetSymbolsUnderLegalHold();</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:728](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L728) | Gets all symbols currently under legal hold. |
+| <code>public Task&lt;string&gt; ExportAuditReportAsync(RetentionAuditReport report, string format = &quot;json&quot;);</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:746](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L746) | Exports audit report to file. |
+| <code>public event EventHandler&lt;LegalHoldEventArgs&gt;? LegalHoldCreated;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:792](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L792) | Event raised when a legal hold is created. |
+| <code>public event EventHandler&lt;LegalHoldEventArgs&gt;? LegalHoldReleased;</code> | [src/Meridian.Wpf/Services/RetentionAssuranceService.cs:797](../../../../src/Meridian.Wpf/Services/RetentionAssuranceService.cs#L797) | Event raised when a legal hold is released. |
+
 ## RunMatExecutionRequest
 
 Qualified name: <code>Meridian.Wpf.Services.RunMatExecutionRequest</code>. Kind: `class`.
@@ -1028,29 +1063,3 @@ Declared public members:
 | <code>public Type? ResolveViewModelType(Type pageType);</code> | [src/Meridian.Wpf/Services/ViewModelViewResolver.cs:27](../../../../src/Meridian.Wpf/Services/ViewModelViewResolver.cs#L27) |  |
 | <code>public void AutoWire(FrameworkElement page, IServiceProvider scope);</code> | [src/Meridian.Wpf/Services/ViewModelViewResolver.cs:41](../../../../src/Meridian.Wpf/Services/ViewModelViewResolver.cs#L41) |  |
 | <code>public void LogMissingViewModels(IShellPageRegistry pageRegistry);</code> | [src/Meridian.Wpf/Services/ViewModelViewResolver.cs:60](../../../../src/Meridian.Wpf/Services/ViewModelViewResolver.cs#L60) |  |
-
-## Watchlist
-
-Qualified name: <code>Meridian.Wpf.Services.Watchlist</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/WatchlistService.cs:619](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L619).
-
-Represents a symbol watchlist.
-
-```csharp
-public sealed class Watchlist
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:622](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L622) | Unique watchlist identifier. |
-| <code>public string Name { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:625](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L625) | Display name for the watchlist. |
-| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:628](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L628) | Symbols in this watchlist. |
-| <code>public string? Color { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:631](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L631) | Color for UI display (hex format). |
-| <code>public int SortOrder { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:634](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L634) | Sort order for UI. |
-| <code>public bool IsPinned { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:637](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L637) | Whether this watchlist is pinned/favorited. |
-| <code>public bool IsActive { get; init; } = true;</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:640](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L640) | Whether subscriptions are active for this watchlist. |
-| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:643](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L643) | When the watchlist was created. |
-| <code>public DateTimeOffset ModifiedAt { get; init; }</code> | [src/Meridian.Wpf/Services/WatchlistService.cs:646](../../../../src/Meridian.Wpf/Services/WatchlistService.cs#L646) | When the watchlist was last modified. |

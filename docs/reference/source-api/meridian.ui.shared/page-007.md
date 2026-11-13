@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IStatementImportEvidenceRetainer
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.IStatementImportEvidenceRetainer</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L22).
+
+Retains statement-import content as evidence for later verification and review.
+
+```csharp
+public interface IStatementImportEvidenceRetainer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L24) |  |
+
+## JournalEntryEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.JournalEntryEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L23).
+
+Adds journal-entry lifecycle and source evidence to an evidence graph.
+
+```csharp
+public sealed class JournalEntryEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JournalEntryEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L27) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L32) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L34) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/JournalEntryEvidenceContributor.cs#L37) |  |
+
+## ManualEvidenceDocumentExtractor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ManualEvidenceDocumentExtractor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L18).
+
+Builds document extraction results from manual metadata or deterministic fixture inputs.
+
+```csharp
+public sealed class ManualEvidenceDocumentExtractor : IEvidenceDocumentExtractor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ExtractorId = &quot;manual-metadata-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:20](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L20) |  |
+| <code>public const string FixtureExtractorId = &quot;deterministic-fixture-v1&quot;;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L21) |  |
+| <code>public Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L23) |  |
+
 ## OperationsApprovalEvidenceContributor
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.OperationsApprovalEvidenceContributor</code>. Kind: `class`.
@@ -958,52 +1017,4 @@ Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:18](../../
 
 ```csharp
 public sealed record AccessContext(string Actor, UserRole Role, string Team, string Entity, string SourceIp, string DeviceId, string CorrelationId, bool MfaSatisfied, IReadOnlyCollection<string>? SecondaryApprovers = null);
-```
-
-## AccountingAuditChainAnchorException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingAuditChainAnchorException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:12](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L12).
-
-Raised when the external head journal is unreadable or internally inconsistent.
-
-```csharp
-public sealed class AccountingAuditChainAnchorException : MeridianException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingAuditChainAnchorException(string message, bool isIntegrityFailure = false, bool isUnsupportedSchemaVersion = false) : base(message);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:14](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L14) |  |
-| <code>public bool IsUnsupportedSchemaVersion { get; }</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:28](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L28) | True when a journal line was written under a schema version this build does not implement, the expected state during a rolling upgrade or downgrade rather than evidence of tampering. |
-| <code>public bool IsIntegrityFailure { get; }</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs:34](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditChainAnchor.cs#L34) | True when a readable journal line failed its own hash or predecessor binding: proven tampering with the head journal, as opposed to a line this build cannot read. |
-
-## AccountingAuditIntegrityService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingAuditIntegrityService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs:20](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs#L20).
-
-Read-only verification tooling over every hash-chained accounting and ledger audit log the composition retains (W9-GOV-008 criterion three). Shared by the browser endpoint and available to the desktop shell so neither client derives its own integrity answer.
-
-```csharp
-public sealed class AccountingAuditIntegrityService(IAccountingActionAuditStore? accountingAuditStore, ILedgerEventAuditVerifier? ledgerEventAuditVerifier, TimeProvider? timeProvider = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AccountingAuditIntegrityReportDto&gt; VerifyAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs:27](../../../../src/Meridian.Ui.Shared/Services/AccountingAuditIntegrityService.cs#L27) |  |
-
-## AccountingCertificationEvidenceResolutionRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingCertificationEvidenceResolutionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:41](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L41).
-
-```csharp
-public sealed record AccountingCertificationEvidenceResolutionRequest(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> EvidenceReferences);
 ```
