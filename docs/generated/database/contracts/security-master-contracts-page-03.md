@@ -2,11 +2,45 @@
 
 # `security-master-contracts` data objects - page 3 of 7
 
-Objects 161-240 of 555. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 558. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_EdgarFundHolding["EdgarFundHolding"] {
+        +string AccessionNumber
+        +string? AssetCategory
+        +decimal? Balance
+        +string Cik
+        +string? Country
+        +decimal? CouponRate
+        +string? Currency
+        +string? Cusip
+        +string? FairValueLevel
+        +string Form
+        +string? HoldingName
+        +string? Isin
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarIngestRequest["EdgarIngestRequest"] {
+        +string? Cik
+        +bool DryRun
+        +bool IncludeFilingDocuments
+        +bool IncludeXbrl
+        +int? MaxFilers
+        +string Scope
+    }
+    class Meridian_Contracts_SecurityMaster_EdgarIngestResult["EdgarIngestResult"] {
+        +int ConflictsDetected
+        +bool DryRun
+        +IReadOnlyList~string~ Errors
+        +int FactsStored
+        +int FilersProcessed
+        +int SecuritiesAmended
+        +int SecuritiesCreated
+        +int SecuritiesSkipped
+        +int SecurityDataStored
+        +int TickerAssociationsStored
+    }
     class Meridian_Contracts_SecurityMaster_EdgarReferenceDataManifest["EdgarReferenceDataManifest"] {
         +int FactPartitionCount
         +int FilerPartitionCount
@@ -371,26 +405,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_OtcContractRules["OtcContractRules"] {
     }
-    class Meridian_Contracts_SecurityMaster_OtcContractStatus["OtcContractStatus"] {
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractValuationDto["OtcContractValuationDto"] {
-        +DateOnly AsOfDate
-        +IReadOnlyList~OtcValuationBlockerDto~ Blockers
-        +Guid ContractId
-        +string Currency
-        +IReadOnlyList~OtcValuationInputDto~ Inputs
-        +decimal? MarkToMarket
-        +string Method
-        +DataProvenance Provenance
-        +Guid SecurityId
-        +OtcValuationStatus Status
-    }
-    class Meridian_Contracts_SecurityMaster_OtcContractValuationRequest["OtcContractValuationRequest"] {
-        +DateOnly AsOfDate
-        +OtcContractDto Contract
-        +string Currency
-        +DateTimeOffset? KnowledgeAsOf
-    }
+    Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
     Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
@@ -409,10 +424,8 @@ classDiagram
     Meridian_Contracts_SecurityMaster_OtcCollateralHeldLineDto --> Meridian_Contracts_SecurityMaster_OtcCollateralKind
     Meridian_Contracts_SecurityMaster_OtcCompressionData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractDirection
-    Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractStatus
     Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractDto
     Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleKind
     Meridian_Contracts_SecurityMaster_OtcContractLifecycleEventDto --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleTarget
-    Meridian_Contracts_SecurityMaster_OtcContractValuationRequest --> Meridian_Contracts_SecurityMaster_OtcContractDto
 ```

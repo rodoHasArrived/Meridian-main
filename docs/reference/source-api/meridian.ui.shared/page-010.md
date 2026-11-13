@@ -6,6 +6,102 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailyValuationScheduleWorkItem
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduleWorkItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:22](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L22).
+
+Persisted, explicitly configured portfolio scope for one daily valuation schedule. Positions are resolved from named durable account snapshots unless an explicitly timestamped static override is selected; an unqualified retained position list is never replayed.
+
+```csharp
+public sealed record DailyValuationScheduleWorkItem(string ScheduleId, string FundProfileId, string Currency, string Actor, Guid LedgerBookId, Guid PeriodId, DateTimeOffset NextRunAtUtc, IReadOnlyList<MarkToMarketPosition> Positions, string PolicyId, string PolicyName, string ValuationMethod, string PolicyApprovedBy, DateTimeOffset PolicyApprovedAtUtc, string Reason, int MaximumMarkAgeDays = 3, DailyPortfolioPriceConfidence MinimumConfidence = DailyPortfolioPriceConfidence.Medium, bool RequireCompleteCoverage = true, bool IsEnabled = true, string? ClosePeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DailyValuationScheduleStateDto State = DailyValuationScheduleStateDto.Scheduled, DateTimeOffset? LastRunAtUtc = null, DateTimeOffset? LastScheduledForUtc = null, Guid? JournalEntryId = null, string? LastSummary = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<DailyValuationPositionSnapshotScope>? PositionSnapshotScopes = null, bool UseStaticPositionOverride = false, DateTimeOffset? StaticPositionsAsOfUtc = null, int MaximumPositionAgeDays = 1, string? StaticPositionHash = null, IReadOnlyList<Guid>? JournalEntryIds = null, string? BatchCorrelationId = null, string? CreatedBy = null, string? LastConfiguredBy = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:62](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L62) |  |
+| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:64](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L64) |  |
+| <code>public IReadOnlyList&lt;DailyValuationPositionSnapshotScope&gt; PositionSnapshotScopes { get; init; } = PositionSnapshotScopes??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:66](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L66) |  |
+| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:69](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L69) |  |
+
+## DemoTenantBlueprint
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:17](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L17).
+
+Deterministic definition of the Meridian sample demo tenant. This is the single source of truth consumed both by DemoTenantProvisioner (which writes it into the real, desk-read stores so the workstation is genuinely populated) and by FirstRunExperienceService (which surfaces it in onboarding so the &quot;Ready&quot; step shows a populated workspace, not a badge).
+
+```csharp
+public static class DemoTenantBlueprint
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SeededSourceType = &quot;seeded&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:24](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L24) | Blueprint-1 provenance stamp shared by every durable record the demo seeds. Carrying an explicit &quot;seeded&quot; source (rather than a generic &quot;sample&quot; tag) lets desk surfaces render the SeededProvenanceLabel and lets teardown and audit reason about demo data. |
+| <code>public const string SeededSourceSystem = &quot;Meridian Seeded Demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:27](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L27) | Human-facing source system stamped on seeded records and rendered on desk surfaces. |
+| <code>public const string SeededProvenanceLabel = &quot;Seeded&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:30](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L30) | The provenance label onboarding renders for the seeded workspace. |
+| <code>public const string TenantId = &quot;meridian-seeded-demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:33](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L33) | Fixed tenant/company authority for the isolated seeded demo workspace. |
+| <code>public const string CompanyId = &quot;meridian-seeded-demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:34](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L34) |  |
+| <code>public const string PortfolioName = &quot;Northstar Sample Portfolio&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:36](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L36) |  |
+| <code>public const decimal Cash = 125_000m;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:37](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L37) |  |
+| <code>public const string StrategyId = &quot;sample-covered-call&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:39](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L39) |  |
+| <code>public const string StrategyName = &quot;Sample Covered Call&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:40](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L40) |  |
+| <code>public const string StrategyRunId = &quot;SAMPLE-RUN-COVERED-CALL&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:41](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L41) |  |
+| <code>public const string PortfolioRoute = &quot;/portfolio&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:43](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L43) |  |
+| <code>public const string ReconciliationRoute = &quot;/accounting/reconciliation/match&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:44](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L44) |  |
+| <code>public const string ReportingRunRoute = &quot;/reporting/run&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:45](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L45) |  |
+| <code>public const string StrategyRoute = &quot;/strategy&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:46](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L46) |  |
+| <code>public const string DataRoute = &quot;/data&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:47](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L47) |  |
+| <code>public static IReadOnlyList&lt;string&gt; MarketHistorySymbolList =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:63](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L63) | Symbols the demo seeds durable market history for. |
+| <code>public static int MarketHistorySessionCount =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:66](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L66) | Trading sessions of durable market history the demo seeds per symbol. |
+| <code>public const string MarketHistorySource = MarketDataSources.Sample;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:73](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L73) | Source identity stamped on every seeded market event. The repository&#x27;s existing sample-data identity is used rather than a vendor name, so nothing the Data desk attributes to a provider can be seeded history (W9-TRUTH-001). |
+| <code>public const string MarketHistoryVenue = &quot;SIMULATED&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:76](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L76) | Venue stamped on seeded trade prints; names the simulation, not an exchange. |
+| <code>public static readonly Guid FundAccountId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000001&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:79](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L79) | Fixed identity of the seeded demo fund account. |
+| <code>public const string FundAccountCode = &quot;SAMPLE-001&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:80](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L80) |  |
+| <code>public const string FundAccountDisplayName = &quot;Northstar Sample Fund Account&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:81](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L81) |  |
+| <code>public const string BaseCurrency = &quot;USD&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:82](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L82) |  |
+| <code>public const string FundProfileId = &quot;meridian-seeded-demo&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:85](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L85) | Fund profile the seeded accounting records (journal drafts) belong to. |
+| <code>public static readonly Guid ReportPackId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000002&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:88](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L88) | Fixed identity of the seeded governed report pack. |
+| <code>public const string ReportPackDisplayName = &quot;Sample portfolio review&quot;;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:89](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L89) |  |
+| <code>public static readonly Guid AccruedFeeDraftId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000003&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:92](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L92) | Fixed identities of the seeded manual journal drafts (ledger-desk records). |
+| <code>public static readonly Guid DividendDraftId = Guid.Parse(&quot;5eeded00-de30-4a7d-9b1c-000000000004&quot;);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:93](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L93) |  |
+| <code>public static IReadOnlyList&lt;SampleTradePrint&gt; BuildMarketHistory(string symbol, DateOnly lastSessionUtc);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:105](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L105) | Builds the deterministic market-history trade prints for one symbol: one print per trading session (weekdays only), walking back MarketHistorySessionCount sessions from lastSessionUtc. Prices derive from a fixed per-symbol anchor and a stable per-date hash, so re-seeding the same day is idempotent and two installs seeded on the same day agree exactly. |
+| <code>public static IReadOnlyList&lt;SampleBreakDefinition&gt; BreakDefinitions { get; } = [new SampleBreakDefinition(&quot;SAMPLE-BRK-001&quot;, &quot;Cash variance&quot;, ReconciliationBreakCategory.CashMismatch, ReconciliationBreakSeverity.High, 1_250.00m, &quot;Custodian cash balance is $1,250.00 above the internal ledger for the sample account.&quot;), new SampleBreakDefinition(&quot;SAMPLE-BRK-002&quot;, &quot;Unmatched fee&quot;, ReconciliationBreakCategory.AmountMismatch, ReconciliationBreakSeverity.Medium, 42.50m, &quot;A $42.50 custodian fee has no matching ledger entry in the sample statement.&quot;)];</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:164](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L164) | Sample reconciliation breaks. These are seeded into the reconciliation break queue and shown in onboarding. Identifiers are prefixed SAMPLE- so they are unmistakably demo casework. |
+| <code>public static IReadOnlyList&lt;SampleHoldingDto&gt; Holdings =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:182](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L182) |  |
+| <code>public static decimal PortfolioValue =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:184](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L184) |  |
+| <code>public static decimal UnrealizedPnl =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:186](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L186) |  |
+| <code>public static SampleWorkspaceDto BuildSampleWorkspace(bool reconciliationLoaded = true, bool strategyLoaded = true);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:193](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L193) | Builds the populated snapshot surfaced to onboarding clients. Desk highlights (with links) are included only for surfaces that actually loaded, so a click-through never contradicts what onboarding claimed; the illustrative sample portfolio is always shown as a preview. |
+
+## SampleBreakDefinition
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleBreakDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:279](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L279).
+
+Fixed definition of a sample reconciliation break, before it is stamped with timestamps.
+
+```csharp
+public sealed record SampleBreakDefinition(string Id, string Title, ReconciliationBreakCategory Category, ReconciliationBreakSeverity Severity, decimal Variance, string Summary);
+```
+
+## SampleTradePrint
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleTradePrint</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:96](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L96).
+
+One deterministic seeded trade print for durable market history.
+
+```csharp
+public sealed record SampleTradePrint(DateTimeOffset Timestamp, decimal Price, long Size);
+```
+
 ## DemoTenantProvisioner
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioner</code>. Kind: `class`.
@@ -410,11 +506,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FamilyOfficeReadService(IFundStructureService? fundStructureService, IFundAccountService? fundAccountService, StrategyRunReadService? strategyRunReadService = null, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:25](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L25) |  |
-| <code>public async Task&lt;FamilyOfficeOverviewDto&gt; GetOverviewAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:37](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L37) |  |
-| <code>public async Task&lt;FamilyOfficeBalanceSheetResponseDto&gt; GetBalanceSheetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:101](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L101) |  |
-| <code>public async Task&lt;FamilyOfficeEntitiesResponseDto&gt; GetEntitiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:107](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L107) |  |
-| <code>public async Task&lt;FamilyOfficeOwnershipGraphResponseDto&gt; GetOwnershipGraphAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:113](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L113) |  |
+| <code>public FamilyOfficeReadService(IFundStructureService? fundStructureService, IFundAccountService? fundAccountService, StrategyRunReadService? strategyRunReadService = null, TimeProvider? timeProvider = null, IPrivateCapitalLifecycleSource? privateCapitalSource = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:26](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L26) |  |
+| <code>public async Task&lt;FamilyOfficeOverviewDto&gt; GetOverviewAsync(CancellationToken ct = default, DateOnly? ownershipAsOf = null);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:40](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L40) |  |
+| <code>public async Task&lt;FamilyOfficeBalanceSheetResponseDto&gt; GetBalanceSheetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:145](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L145) |  |
+| <code>public async Task&lt;FamilyOfficeEntitiesResponseDto&gt; GetEntitiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:151](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L151) |  |
+| <code>public async Task&lt;FamilyOfficeOwnershipGraphResponseDto&gt; GetOwnershipGraphAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs:157](../../../../src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs#L157) |  |
 
 ## FeatureCapabilitySettingsService
 
@@ -834,62 +930,3 @@ Declared public members:
 | <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:188](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L188) |  |
 | <code>public async Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:207](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L207) |  |
 | <code>public async Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:210](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L210) |  |
-
-## ManualJournalEntryDraftSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileManualJournalEntryDraftStore.ManualJournalEntryDraftSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:256](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L256).
-
-```csharp
-public sealed record ManualJournalEntryDraftSnapshot(IReadOnlyList<ManualJournalEntryDraftDto> Drafts);
-```
-
-## FileManualJournalMutationRecoveryStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileManualJournalMutationRecoveryStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:60](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L60).
-
-Durable receipts and a cross-process lease beside the manual draft snapshot.
-
-```csharp
-public sealed class FileManualJournalMutationRecoveryStore : IManualJournalMutationRecoveryStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileManualJournalMutationRecoveryStore(string directory, ManualJournalMutationRecoveryOptions? options = null, TimeProvider? clock = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:66](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L66) |  |
-| <code>public async Task&lt;IManualJournalMutationSession&gt; OpenSessionAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:78](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L78) |  |
-
-## FileOnboardingWorkspaceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:9](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L9).
-
-Atomic, version-checked retention of onboarding inputs, history and frozen packets.
-
-```csharp
-public sealed class FileOnboardingWorkspaceStore(string snapshotPath) : JsonFileSnapshotStore<FileOnboardingWorkspaceStore.Snapshot>(snapshotPath, JsonOptions), IOnboardingWorkspaceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt; ListAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:51](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L51) |  |
-| <code>public Task&lt;OnboardingWorkspaceDto?&gt; GetAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:59](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L59) |  |
-| <code>public async Task SaveAsync(OnboardingWorkspaceDto workspace, int? expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:66](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L66) |  |
-
-## Snapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore.Snapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs#L14).
-
-```csharp
-public sealed record Snapshot(IReadOnlyList<OnboardingWorkspaceDto> Workspaces);
-```

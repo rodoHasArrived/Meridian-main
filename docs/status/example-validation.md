@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12345 |
-| Valid | 11844 |
+| Total code blocks | 12357 |
+| Valid | 11856 |
 | Invalid | 0 |
 | Skipped | 501 |
 
@@ -20,7 +20,7 @@
 | `(none)` | 119 | 0 | 0 | 119 |
 | `bash` | 271 | 271 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
-| `csharp` | 11468 | 11468 | 0 | 0 |
+| `csharp` | 11480 | 11480 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
 | `fsharp` | 54 | 0 | 0 | 54 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -240,8 +240,8 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-051.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-052.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-053.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-054.md` | 51 |
-| `docs/reference/source-api/meridian.contracts/page-055.md` | 51 |
+| `docs/reference/source-api/meridian.contracts/page-054.md` | 50 |
+| `docs/reference/source-api/meridian.contracts/page-055.md` | 52 |
 | `docs/reference/source-api/meridian.contracts/page-056.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-057.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-058.md` | 50 |
@@ -260,7 +260,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.contracts/page-071.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-072.md` | 50 |
 | `docs/reference/source-api/meridian.contracts/page-073.md` | 50 |
-| `docs/reference/source-api/meridian.contracts/page-074.md` | 3 |
+| `docs/reference/source-api/meridian.contracts/page-074.md` | 7 |
 | `docs/reference/source-api/meridian.core/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.core/page-003.md` | 50 |
@@ -366,11 +366,11 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ui.services/page-016.md` | 12 |
 | `docs/reference/source-api/meridian.ui.shared/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-002.md` | 50 |
-| `docs/reference/source-api/meridian.ui.shared/page-003.md` | 53 |
+| `docs/reference/source-api/meridian.ui.shared/page-003.md` | 54 |
 | `docs/reference/source-api/meridian.ui.shared/page-004.md` | 81 |
 | `docs/reference/source-api/meridian.ui.shared/page-005.md` | 59 |
-| `docs/reference/source-api/meridian.ui.shared/page-006.md` | 111 |
-| `docs/reference/source-api/meridian.ui.shared/page-007.md` | 63 |
+| `docs/reference/source-api/meridian.ui.shared/page-006.md` | 110 |
+| `docs/reference/source-api/meridian.ui.shared/page-007.md` | 64 |
 | `docs/reference/source-api/meridian.ui.shared/page-008.md` | 52 |
 | `docs/reference/source-api/meridian.ui.shared/page-009.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-010.md` | 50 |
@@ -381,7 +381,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ui.shared/page-015.md` | 53 |
 | `docs/reference/source-api/meridian.ui.shared/page-016.md` | 59 |
 | `docs/reference/source-api/meridian.ui.shared/page-017.md` | 67 |
-| `docs/reference/source-api/meridian.ui.shared/page-018.md` | 23 |
+| `docs/reference/source-api/meridian.ui.shared/page-018.md` | 30 |
 | `docs/reference/source-api/meridian.workflow/page-001.md` | 11 |
 | `docs/reference/source-api/meridian.wpf/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-002.md` | 50 |

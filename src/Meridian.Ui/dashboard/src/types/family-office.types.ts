@@ -172,6 +172,20 @@ export interface CapitalCommitment {
   reconciliationStatus: string;
   lastReviewedBy?: string | null;
   lastReviewedAtUtc?: string | null;
+  /** False means numeric legacy fields are unavailable placeholders, never genuine zero balances. */
+  balancesAvailable?: boolean;
+  balanceStatus?: "Retained" | "Provisional" | "Settled" | "Unavailable" | string;
+  snapshotId?: string | null;
+  sourceRevision?: number | null;
+  sourceContentSha256?: string | null;
+  recordedAtUtc?: string | null;
+  exactBalances?: {
+    commitmentAmount: string;
+    calledAmount: string;
+    unfundedAmount: string;
+    distributedAmount: string;
+    currentNav: string;
+  } | null;
 }
 
 export interface CapitalActivity {

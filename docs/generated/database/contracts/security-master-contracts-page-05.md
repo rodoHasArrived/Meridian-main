@@ -2,11 +2,30 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 555. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 558. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAliasDto["SecurityAliasDto"] {
+        +Guid AliasId
+        +string AliasKind
+        +string AliasValue
+        +DateTimeOffset CreatedAt
+        +string CreatedBy
+        +bool IsEnabled
+        +string? Provider
+        +string? Reason
+        +SecurityAliasScope Scope
+        +Guid SecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAliasHistoryConflictException["SecurityAliasHistoryConflictException"] {
+        +Guid AliasId
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
         +IReadOnlyList~string~ AssetClasses
         +IReadOnlyList~string~ AssetOperationsCapableAssetClasses
@@ -468,21 +487,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleKind["SecurityEconomicScheduleKind"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleParser["SecurityEconomicScheduleParser"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicScheduleValidation["SecurityEconomicScheduleValidation"] {
-        +SecurityScheduleParseResult~StructuredFactorScheduleEntry~ FactorSchedule
-        +SecurityScheduleParseResult~StructuredPrincipalScheduleEntry~ PrincipalSchedule
-        +SecurityScheduleParseResult~StructuredStepCouponEntry~ StepCouponSchedule
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster["SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"] {
-        +IReadOnlyList~string~ BridgedModules
-        +IReadOnlyList~string~ DroppedModules
-        +IReadOnlyList~string~ EconomicTermsModules
-        +SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster Instance
-        +IReadOnlyList~string~ ModulesAddedAfterIdentityGate
-        +IReadOnlyList~string~ ShapeRuleModules
-    }
+    Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint
@@ -533,5 +538,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy
     Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
     Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
-    Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
+    Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityAliasDto
 ```

@@ -1084,7 +1084,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.CreatePaperSessionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1847](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1847).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1859](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1859).
 
 Request to create a new paper session.
 

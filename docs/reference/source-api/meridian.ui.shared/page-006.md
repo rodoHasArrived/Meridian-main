@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UpdateExecutionDefaultPositionLimitRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1839](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1839).
+
+Request to update the default execution position limit.
+
+```csharp
+public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
+```
+
+## UpdateExecutionSymbolPositionLimitRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1844](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1844).
+
+Request to update or clear a symbol-specific execution position limit.
+
+```csharp
+public sealed record UpdateExecutionSymbolPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
+```
+
+## UpdateMaintenanceScheduleRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateMaintenanceScheduleRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:518](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L518).
+
+```csharp
+public record UpdateMaintenanceScheduleRequest(string? Name = null, string? Description = null, string? CronExpression = null, string? TimeZoneId = null, string? TaskType = null, string? Priority = null, bool? Enabled = null, int? MaxDurationMinutes = null, int? MaxRetries = null, string[]? TargetPaths = null, string[]? Tags = null, MaintenanceOptionsDto? Options = null);
+```
+
+## ValidateMaintenanceCronRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateMaintenanceCronRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:539](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L539).
+
+```csharp
+public record ValidateMaintenanceCronRequest(string CronExpression, string? TimeZoneId = null);
+```
+
 ## ValidateRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateRequest</code>. Kind: `record`.
@@ -1224,94 +1268,3 @@ Declared public members:
 | <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:980](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L980) |  |
 | <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:982](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L982) |  |
 | <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:986](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L986) |  |
-
-## ReconciliationEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReconciliationEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:112](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L112).
-
-Adds reconciliation runs, breaks, and casework evidence to an evidence graph.
-
-```csharp
-public sealed partial class ReconciliationEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:116](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L116) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:121](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L121) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L123) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:128](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L128) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/ReconciliationEvidenceContributor.StatementRuns.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/ReconciliationEvidenceContributor.StatementRuns.cs#L18).
-
-```csharp
-public sealed partial class ReconciliationEvidenceContributor
-```
-
-## ReportingStatementImportEvidenceRetainer
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportingStatementImportEvidenceRetainer</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L17).
-
-Production statement-evidence adapter. It copies the import service&#x27;s retained source bytes into the statement workflow&#x27;s content-addressed authority and projects the verified source into the shared Evidence Workbench without moving reconciliation or reporting authority.
-
-```csharp
-public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportEvidenceRetainer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingStatementImportEvidenceRetainer(IStatementReconciliationReportAuthorityStore authorityStore, string dataRoot) : this(authorityStore, dataRoot, new FileEvidenceArtifactStore(dataRoot, NullLogger&lt;FileEvidenceArtifactStore&gt;.Instance));</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L32) |  |
-| <code>public ReportingStatementImportEvidenceRetainer(IStatementReconciliationReportAuthorityStore authorityStore, string dataRoot, IEvidenceArtifactStore evidenceStore);</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:44](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L44) |  |
-| <code>public IStatementReconciliationReportAuthorityStore AuthorityStore =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:66](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L66) | Durable authority used for raw, canonical, and run-evidence retention. Exposed so production composition can prove the workflow and evidence adapter share one authority. |
-| <code>public bool RetainsCanonicalRunEvidence =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:69](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L69) | True because this adapter retains hash-verified canonical run evidence. |
-| <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L71) |  |
-
-## ReportPackDeliveryEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackDeliveryEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:363](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L363).
-
-Adds retained report-pack delivery attempts and artifacts to an evidence graph.
-
-```csharp
-public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportPackDeliveryEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:367](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L367) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:372](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L372) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:374](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L374) |  |
-| <code>public Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:377](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L377) |  |
-
-## ReportPackEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:172](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L172).
-
-Adds report-pack lifecycle and supporting output evidence to an evidence graph.
-
-```csharp
-public sealed class ReportPackEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportPackEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:176](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L176) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:181](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L181) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L183) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:187](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L187) |  |

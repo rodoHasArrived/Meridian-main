@@ -684,8 +684,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:106](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L106) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? SpreadDv01 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:113](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L113) | Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models. |
+| <code>public IReadOnlyList&lt;BondExerciseYield&gt; RedemptionScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:107](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L107) | Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield. |
+| <code>public IReadOnlyList&lt;BondExerciseYield&gt; YieldToWorstScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:108](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L108) |  |
+| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:109](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L109) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? SpreadDv01 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:116](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L116) | Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models. |
 
 ## BondCalculationContext
 

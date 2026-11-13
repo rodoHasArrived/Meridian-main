@@ -6,6 +6,87 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountingProductionCertificationCommandService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccountingProductionCertificationCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:268](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L268).
+
+The only shared command that creates certified accounting artifacts. Browser and WPF clients submit desired controls and Evidence Vault locators; all status, lane, actor, time, source, and retained-evidence bindings are generated here from authoritative evidence.
+
+```csharp
+public sealed class AccountingProductionCertificationCommandService(IAccountingProductionCertificationProfileStore profileStore, IAccountingProductionCertificationEvidenceAuthority evidenceAuthority, IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null, TimeProvider? timeProvider = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;AccountingProductionCertificationProfileDto&gt; CertifyAsync(AccountingProductionCertificationProfileUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:277](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L277) |  |
+
+## AccountingProductionReadinessService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccountingProductionReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:13](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L13).
+
+Assesses accounting production readiness from configuration, certification, and migration evidence.
+
+```csharp
+public sealed class AccountingProductionReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AccountingProductionReadinessService(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L19) |  |
+| <code>public async Task&lt;AccountingProductionReadinessDto&gt; AssessAsync(AccountingProductionReadinessRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:24](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L24) |  |
+
+## AccountingWorkspaceReadScope
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccountingWorkspaceReadScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs:68](../../../../src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs#L68).
+
+Which embedded families the caller may see inside the accounting workspace payload, which the governance workspace serves under a second name from the same builder. The workspace admits a deliberately wide set, because it is the screen the reconciliation, direct-lending, Security Master and trading desks all open to see where the period stands. What it may not do is treat that admission as authority for everything it aggregates: the payload carries the break queue, the manual-journal workbench, and the authoritative reporting projection, each of which is served head-on by a route with a strictly narrower gate. A composite&#x27;s admission is the narrowest of what it carries, not the widest. Each flag mirrors the permissions of the route that serves that family directly, so a caller sees through the workspace exactly what it could fetch on its own and nothing more. An unreadable family is not loaded at all rather than loaded and discarded, so withholding it also costs nothing. Headline counters are deliberately outside this scope. Metrics and the workspace summary are counts - open breaks, timing drift, security gaps, audit-ready runs - and a count is what the workspace exists to show every desk it admits. Withholding the number as well as the records would make the screen blank for the operators it was widened for, without withholding anything the records do not already disclose in far more detail.
+
+```csharp
+public sealed record AccountingWorkspaceReadScope(bool BreakQueue, bool ManualJournal, bool Reporting, bool StrategyRuns, bool KernelObservability)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly AccountingWorkspaceReadScope All = new (BreakQueue : true, ManualJournal : true, Reporting : true, StrategyRuns : true, KernelObservability : true);</code> | [src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs:75](../../../../src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs#L75) |  |
+
+## AggregatePortfolioExposureProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AggregatePortfolioExposureProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:32](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L32).
+
+Feeds IPortfolioExposureProvider from the live IAggregatePortfolioService, so the portfolio-aware pre-trade rules (gross exposure, symbol concentration, order notional) evaluate against the same aggregated cross-run positions the Portfolio workspace reports. Positions are valued at the same live marks the trading screen shows (quote mid, then last trade) — but only while those marks are still fresh, since a stalled feed would otherwise price risk at a quote the market has left behind — falling back to each contribution&#x27;s cost basis when no current mark exists. Portfolio value spans the same scope as the positions: the sum across every portfolio registered in the PortfolioRegistry (the host state is itself registered, so it is counted exactly once), falling back to the host IPortfolioState and finally to gross exposure so concentration percentages stay defined for thinner compositions. Accepted-but-unfilled orders reserve their remaining exposure in the snapshot, so a burst of working orders cannot each observe a flat book and collectively breach a ceiling that none of them breaches alone.
+
+```csharp
+public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolioExposureProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly TimeSpan DefaultMarkMaxAge = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:51](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L51) | How old a quote or trade may be and still price an order. A stalled feed keeps serving its last mark forever; valuing risk at one would let a symbol cached before an outage measure orders at a price the market left behind. |
+| <code>public AggregatePortfolioExposureProvider(IAggregatePortfolioService aggregatePortfolio, IPortfolioState? portfolioState = null, PortfolioRegistry? registry = null, QuoteCollector? quotes = null, TradeDataCollector? trades = null, Func&lt;IOrderManager?&gt;? orderManagerAccessor = null, TimeSpan? markMaxAge = null, Func&lt;DateTimeOffset&gt;? clock = null, Func&lt;ILiveFeedAdapter?&gt;? liveFeedAccessor = null, Func&lt;bool&gt;? paperMatchingIsAuthoritative = null, Func&lt;LiveBrokeragePortfolioSyncService?&gt;? livePortfolioAccessor = null);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:53](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L53) |  |
+| <code>public decimal? TryGetExecutablePrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:97](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L97) |  |
+| <code>public decimal? TryGetTouchPrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:104](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L104) |  |
+| <code>public decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:189](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L189) | Resolves the stop-trigger reference from the same observation the matcher will consume, rather than reconstructing it here. Reconstruction was the bug. Every accessor above filters its sources through DefaultMarkMaxAge, because valuing risk off a stalled feed is how a symbol cached before an outage measures a 1,000-share order at a price the market left behind. The matcher applies no such filter: PaperMarketObservation.Capture takes the feed&#x27;s cached last trade, bar, and quote as they are. So a six-minute-old print at 130 with a fresh 100 ask fires a buy stop at 125 immediately, while an age-filtered reconstruction drops that print, falls to the 100 ask, and approves the order as resting. Reconstructing the precedence and the freshness policy correctly is not something to get right twice — so this reads the matcher&#x27;s observation directly and resolves through the matcher&#x27;s own PaperMarketObservation.ResolveStopTriggerPrice. The question this accessor answers is not &quot;what is this worth&quot; but &quot;will the engine fire this&quot;, and where the two disagree the engine is the authority. That is also why the age filter is deliberately absent here and deliberately present everywhere else on this class. Against a live broker the same resolution is the best available proxy, and it errs toward the most recent print — the conservative direction for catching a wrong-side stop. With no feed composed there is no matcher observation to share, so this falls back to the interface default: last trade, then bar close, then touch, from the collectors. |
+| <code>public decimal? TryGetLastTradePrice(string symbol);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:220](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L220) |  |
+| <code>public decimal? TryGetReferencePrice(string symbol);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:540](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L540) |  |
+| <code>public PortfolioExposureSnapshot GetSnapshot();</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:547](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L547) |  |
+| <code>public PortfolioExposureSnapshot GetSnapshot(Guid? fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:654](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L654) |  |
+
 ## AlpacaBrokerageConnectionService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AlpacaBrokerageConnectionService</code>. Kind: `class`.
@@ -61,7 +142,7 @@ public sealed record ApprovalStep(string StepId, string Role, string Approver, b
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExplorerService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:14](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L14).
+Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:15](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L15).
 
 Projects execution audit records into the shared cross-object audit timeline contract.
 
@@ -73,18 +154,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int MaximumExportEntries = 250_000;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:16](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L16) |  |
-| <code>public bool HasSource =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:19](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L19) |  |
-| <code>public AuditTrailExplorerService(ExecutionAuditTrailService? auditTrail = null, IOperationsContinuityWorkflowService? operationsContinuity = null);</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:21](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L21) |  |
-| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAsync(AuditTrailExplorerQueryDto? query = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:29](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L29) |  |
-| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:35](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L35) | HTTP reads authorize each operations source before loading its timeline. |
-| <code>public Task&lt;AuditTrailExplorerResultDto&gt; ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:40](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L40) | Every authorized retained match; the browser/1,000-row browse cap is never an export limit. |
+| <code>public const int MaximumExportEntries = 250_000;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:17](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L17) |  |
+| <code>public bool HasSource =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:21](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L21) |  |
+| <code>public AuditTrailExplorerService(ExecutionAuditTrailService? auditTrail = null, IOperationsContinuityWorkflowService? operationsContinuity = null, PaperSessionPersistenceService? paperSessions = null);</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:23](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L23) |  |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAsync(AuditTrailExplorerQueryDto? query = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:33](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L33) |  |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:39](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L39) | HTTP reads authorize each operations source before loading its timeline. |
+| <code>public Task&lt;AuditTrailExplorerResultDto&gt; ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query, Func&lt;OperationsContinuityWorkflowSummaryDto, CancellationToken, Task&lt;bool&gt;&gt; canReadWorkflow, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:44](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L44) | Every authorized retained match; the browser/1,000-row browse cap is never an export limit. |
 
 ## AuditTrailExportLimitException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AuditTrailExportLimitException</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:9](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L9).
+Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:10](../../../../src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs#L10).
 
 ```csharp
 public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
@@ -859,80 +940,3 @@ Declared public members:
 | <code>public async Task&lt;BrokeragePortfolioPerformanceDto&gt; GetPerformanceAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:506](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L506) |  |
 | <code>public async Task&lt;BrokerageCashFlowSummaryDto&gt; GetCashFlowAsync(Guid fundAccountId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:570](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L570) |  |
 | <code>public async Task&lt;BrokerageHouseholdPortfolioDto&gt; GetHouseholdAsync(string? providerId, Func&lt;IReadOnlyCollection&lt;Guid&gt;, CancellationToken, Task&lt;IReadOnlySet&lt;Guid&gt;&gt;&gt; authorizeFundAccounts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs:606](../../../../src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs#L606) |  |
-
-## BrokerageSyncActualCashActivitySource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageSyncActualCashActivitySource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:17](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L17).
-
-Reads the income and principal cash a brokerage reported for held securities from the retained brokerage sync projection, so expected coupons and paydowns reconcile against broker evidence.
-
-```csharp
-public sealed class BrokerageSyncActualCashActivitySource : ISecurityActualCashActivitySource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SourceName = &quot;brokerage-sync&quot;;</code> | [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:19](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L19) |  |
-| <code>public BrokerageSyncActualCashActivitySource(Func&lt;Guid, CancellationToken, Task&lt;FundAccountBrokerageSyncActivityDto?&gt;&gt; loadActivity, Func&lt;Guid, CancellationToken, Task&lt;IReadOnlyList&lt;FundAccountBrokerageCashTransactionDto&gt;&gt;&gt;? loadCashHistory = null);</code> | [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:31](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L31) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs:40](../../../../src/Meridian.Ui.Shared/Services/BrokerageSyncActualCashActivitySource.cs#L40) |  |
-
-## CanonicalOpenLotSuccessorEvidence
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CanonicalOpenLotSuccessorEvidence</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:140](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L140).
-
-Reconciles immutable posted successor snapshots with the approved plan before Reporting retains them. Current open lots are deliberately never consulted: subsequent disposal cannot rewrite the basis, acquisition FX, holding period or Schedule D evidence of an earlier report.
-
-```csharp
-public static class CanonicalOpenLotSuccessorEvidence
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string InstructionFingerprintTag = OpenLotSuccessors.JournalFingerprintTag;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:142](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L142) |  |
-| <code>public static void Validate(AtomicTaxLotJournalResult batch, LedgerJournalEntryRecord journal, Guid ledgerBookId, string functionalCurrency);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:144](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L144) |  |
-| <code>public static string Serialize(AtomicTaxLotJournalResult batch) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:256](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L256) |  |
-
-## CapitalAccountWorkbenchService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalAccountWorkbenchService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L10).
-
-Builds capital-account workbench projections from subledgers, allocation rules, and statement lineage.
-
-```csharp
-public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CapitalAccountWorkbenchService(IManualJournalEntryWorkbenchService manualJournalEntryWorkbenchService, ReportPackWorkflowService? reportPackWorkflowService = null);</code> | [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L31) |  |
-| <code>public async Task&lt;CapitalAccountWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, string? fundEventId = null, string? capitalAccountId = null, string? investorId = null, string? currency = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs:39](../../../../src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs#L39) |  |
-
-## CapitalCallCommitmentInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallCommitmentInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:13](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L13).
-
-Compatibility projection of one commitment-register line backing a capital call. Native intake resolves its terms from the approved durable commitment revision; caller totals are consistency checks. Each line carries retained register evidence; called-to-date is never taken from the caller — it is recomputed server-side from commitment-scoped posting receipts before any native draft is produced.
-
-```csharp
-public sealed record CapitalCallCommitmentInput(string CommitmentId, string CapitalAccountId, string InvestorId, decimal TotalCommitment, DateOnly CommitmentDate, CommitmentStatus Status = CommitmentStatus.Active, DateOnly? InvestmentPeriodEndDate = null, IReadOnlyList<string>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:23](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L23) |  |

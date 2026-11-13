@@ -31,6 +31,12 @@ on a closed lot. Accounting yield certificates distinguish the declared period r
 market cash-flow yields; the purchased-coupon tail admits only the evidenced nonaccreting par case.
 New optional proof fields omit null values so legacy contract bytes remain unchanged.
 
+Workflow v3 replaces the natural balloon once in final-payment exercise scenarios while retaining
+coupons and explicit installments. Retained workflow v1/v2 keep their original replay arithmetic;
+adopted accrual-v2 accounting remains explicitly pinned to workflow v2.
+
+Analytical read contracts add explicit election-cutoff evidence, exact order/source-coverage status, retained sweep parameter coordinates and server-authored bond redemption/YTW scenario identities. Election timestamps retain their supplied offsets; only maturity and eligible issuer calls determine callable yield to worst, with holder puts separately identified. Additive browser visualization metadata does not change legacy numerical analytics or posting authority.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native

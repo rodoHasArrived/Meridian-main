@@ -261,6 +261,48 @@ Summary for assets that require valuation evidence instead of exchange-traded ma
 public sealed record PrivateAssetSummaryDto(string PrivateAssetId, string EntityId, string DisplayName, string AssetType, string Currency, decimal CurrentValue, decimal? CommitmentAmount, decimal? CalledCapital, decimal? DistributedCapital, string? ValuationMethod, string SourceSystem, string? SourceDocumentId, DateOnly AsOfDate, DateOnly? ValuationDate, string EvidenceCompleteness, string ReconciliationStatus, string? LastReviewedBy, DateTimeOffset? LastReviewedAtUtc);
 ```
 
+## PrivateCapitalActivitySourceDto
+
+Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalActivitySourceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:219](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L219).
+
+```csharp
+public sealed record PrivateCapitalActivitySourceDto(string FamilyOfficeId, DateTimeOffset RecordedAtUtc, CapitalActivityDto Activity);
+```
+
+## PrivateCapitalExactBalancesDto
+
+Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalExactBalancesDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:203](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L203).
+
+```csharp
+public sealed record PrivateCapitalExactBalancesDto(string CommitmentAmount, string CalledAmount, string UnfundedAmount, string DistributedAmount, string CurrentNav);
+```
+
+## PrivateCapitalLifecycleDocumentDto
+
+Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalLifecycleDocumentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:207](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L207).
+
+Retained source revisions, never inferred from ownership assignments or posting intent.
+
+```csharp
+public sealed record PrivateCapitalLifecycleDocumentDto(int SchemaVersion, IReadOnlyList<PrivateCapitalSnapshotDto> Snapshots, IReadOnlyList<PrivateCapitalActivitySourceDto> Activities);
+```
+
+## PrivateCapitalSnapshotDto
+
+Qualified name: <code>Meridian.Ui.Shared.Contracts.PrivateCapitalSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs:212](../../../../src/Meridian.Ui.Shared/Contracts/FamilyOfficeContracts.cs#L212).
+
+```csharp
+public sealed record PrivateCapitalSnapshotDto(string FamilyOfficeId, string SnapshotId, int Revision, DateTimeOffset RecordedAtUtc, CapitalCommitmentDto Commitment);
+```
+
 ## ReconciliationState
 
 Qualified name: <code>Meridian.Ui.Shared.Contracts.ReconciliationState</code>. Kind: `enum`.
@@ -762,75 +804,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs#L19) |  |
-
-## BrokerageConnectionEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.BrokerageConnectionEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs#L14).
-
-Maps brokerage connection setup and lifecycle operations within the workstation tenant scope.
-
-```csharp
-public static class BrokerageConnectionEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapBrokerageConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs#L16) |  |
-
-## CalendarEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.CalendarEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs#L14).
-
-Extension methods for registering trading calendar API endpoints. Provides market status, holidays, and trading day information.
-
-```csharp
-public static class CalendarEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapCalendarEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs#L16) |  |
-
-## CanonicalizationEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.CanonicalizationEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs#L14).
-
-Extension methods for registering canonicalization parity dashboard endpoints. Provides Phase 2 validation metrics: match rates, unresolved counts, and per-provider breakdowns.
-
-```csharp
-public static class CanonicalizationEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapCanonicalizationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs#L16) |  |
-
-## CatalogEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.CatalogEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs#L16).
-
-Endpoints for the Data Catalog — unified search and discovery over stored market data. Supports natural-language and structured queries, timeline coverage, and symbol summaries.
-
-```csharp
-public static class CatalogEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapCatalogEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/CatalogEndpoints.cs#L18) |  |

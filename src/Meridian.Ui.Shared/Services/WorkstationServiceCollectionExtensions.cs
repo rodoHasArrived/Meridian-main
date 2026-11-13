@@ -954,10 +954,13 @@ public static class WorkstationServiceCollectionExtensions
         }
         services.TryAddSingleton<LedgerAmountProvenanceService>();
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+        services.TryAddSingleton<IPrivateCapitalLifecycleSource>(sp =>
+            new FilePrivateCapitalLifecycleSource(ResolveWorkstationDataDirectory(sp)));
         services.TryAddSingleton(sp => new FamilyOfficeReadService(
             sp.GetService<IFundStructureService>(),
             sp.GetService<Meridian.PortfolioRecords.FundAccounts.IFundAccountService>(),
-            sp.GetService<StrategyRunReadService>()));
+            sp.GetService<StrategyRunReadService>(),
+            privateCapitalSource: sp.GetService<IPrivateCapitalLifecycleSource>()));
         services.TryAddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
         services.TryAddSingleton<IOperationsContinuityRepository>(sp =>
         {

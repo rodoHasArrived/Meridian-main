@@ -18,10 +18,9 @@ namespace Meridian.Tests.Application;
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
 /// The frozen legacy row codec preserves the original nested-member pins. Current calculated rows
 /// explicitly declare row version 2 and retain measured interest intervals and principal-basis
-/// segments when the v5 fixed-rate walk supplies them. Both contracts pin every nested member
+/// segments when the v5 fixed-rate walk supplies them. Current and frozen contracts pin every nested member
 /// independently. Top-level and resolved terms members remain unchanged; only a declared projection
-/// adds <c>scheduleEvidence</c>. A stray
-/// or malformed convention block still projects exactly as its clean twin.
+/// adds <c>scheduleEvidence</c>. A stray or malformed convention block still projects exactly as its clean twin.
 /// </summary>
 /// <remarks>
 /// The service reads the wall clock for its as-of date and drops periods paid before it, so every case
@@ -302,15 +301,28 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                 start.Should().BeBefore(end);
                 end.Should().Be(DateOnly.FromDateTime(row["periodDate"]!.GetValue<DateTimeOffset>().UtcDateTime));
                 var segments = row["interestSegments"]!.AsArray();
-                segments.Should().NotBeEmpty("the current fixed-rate walk retains its interest basis even at a zero rate");
+                segments.Should().NotBeEmpty("version-2 bond rows retain their measured interest basis");
                 segments[0]!["start"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
                 segments[^1]!["end"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
+                var cursor = start;
+                var interest = 0m;
                 foreach (var segment in segments)
                 {
-                    segment!["periodStart"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
+                    var segmentStart = DateOnly.Parse(segment!["start"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    var segmentEnd = DateOnly.Parse(segment["end"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    segmentStart.Should().Be(cursor);
+                    segmentEnd.Should().BeAfter(segmentStart).And.BeOnOrBefore(end);
+                    segment["periodStart"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
                     segment["periodEnd"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
+                    var factor = segment["factor"]!.GetValue<decimal>();
+                    segment["referencePrincipal"]!.GetValue<decimal>().Should().Be(1000m * factor);
+                    segment["factorAfter"]!.GetValue<decimal>().Should().BeInRange(0m, factor);
                     segment["unroundedInterestAmount"]!.GetValue<decimal>().Should().Be(0m);
+                    interest += segment["unroundedInterestAmount"]!.GetValue<decimal>();
+                    cursor = segmentEnd;
                 }
+                cursor.Should().Be(end);
+                interest.Should().Be(row["interestAmount"]!.GetValue<decimal>());
             }
         }
         if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))

@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderModuleEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderModuleEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L16).
+
+API endpoints for provider module setup: discovery, configuration, enable/disable, remove, test, and restart. All endpoints live under /api/providers/modules and require the workstation tenant scope.
+
+```csharp
+public static class ProviderModuleEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderModuleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L18) |  |
+
+## ProviderRoutingEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderRoutingEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L14).
+
+Endpoint mapping for the relationship-aware provider routing layer.
+
+```csharp
+public static class ProviderRoutingEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L16) |  |
+
+## QuantDiagnosticDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantDiagnosticDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:359](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L359).
+
+JSON-friendly Roslyn diagnostic.
+
+```csharp
+public sealed record QuantDiagnosticDto(string Severity, string Message, int Line, int Column);
+```
+
+## QuantLabEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantLabEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L28).
+
+HTTP endpoints that expose the Meridian QuantScript engine (the &quot;Quant Lab&quot;) to the browser workstation. Endpoints are only meaningful when an IScriptRunner has been registered (gated by QuantLab:Enabled); when not registered, calls return 503 Service Unavailable.
+
+```csharp
+public static class QuantLabEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L34) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
+
 ## QuantMetricDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantMetricDto</code>. Kind: `record`.
@@ -686,7 +752,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1879](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1879).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1813](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1813).
 
 ```csharp
 public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
@@ -722,54 +788,10 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1899](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1899).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1833](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1833).
 
 Request to update the global execution circuit breaker.
 
 ```csharp
 public sealed record UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? Reason = null, string? CorrelationId = null);
-```
-
-## UpdateExecutionDefaultPositionLimitRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1905](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1905).
-
-Request to update the default execution position limit.
-
-```csharp
-public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
-```
-
-## UpdateExecutionSymbolPositionLimitRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1910](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1910).
-
-Request to update or clear a symbol-specific execution position limit.
-
-```csharp
-public sealed record UpdateExecutionSymbolPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
-```
-
-## UpdateMaintenanceScheduleRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateMaintenanceScheduleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:518](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L518).
-
-```csharp
-public record UpdateMaintenanceScheduleRequest(string? Name = null, string? Description = null, string? CronExpression = null, string? TimeZoneId = null, string? TaskType = null, string? Priority = null, bool? Enabled = null, int? MaxDurationMinutes = null, int? MaxRetries = null, string[]? TargetPaths = null, string[]? Tags = null, MaintenanceOptionsDto? Options = null);
-```
-
-## ValidateMaintenanceCronRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateMaintenanceCronRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:539](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L539).
-
-```csharp
-public record ValidateMaintenanceCronRequest(string CronExpression, string? TimeZoneId = null);
 ```

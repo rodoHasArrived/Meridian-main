@@ -182,6 +182,12 @@ public sealed class BondAnalyticsServiceTests
         result.YieldToWorst.Should().Be(Math.Min(result.YieldToMaturity!.Value,
             result.ExerciseYields.Single(static item => item.Kind == "Call").Yield));
         result.ExerciseYields.Should().OnlyContain(static item => item.LatestNoticeDate == new DateOnly(2026, 12, 16));
+        result.RedemptionScenarios.Should().HaveCount(3);
+        result.RedemptionScenarios.Should().ContainSingle(static item => item.Kind == "Maturity");
+        result.YieldToWorstScenarios.Should().NotBeEmpty().And.OnlyContain(item =>
+            item.Kind != "Put" && item.Yield == result.YieldToWorst);
+        result.YieldToWorstScenarios.Should().BeEquivalentTo(result.RedemptionScenarios
+            .Where(item => item.Kind != "Put" && item.Yield == result.YieldToWorst));
     }
 
     [Fact]

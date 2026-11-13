@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ReconciliationEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:112](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L112).
+
+Adds reconciliation runs, breaks, and casework evidence to an evidence graph.
+
+```csharp
+public sealed partial class ReconciliationEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:116](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L116) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:121](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L121) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L123) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:128](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L128) |  |
+
+Source: [src/Meridian.Ui.Shared/Evidence/ReconciliationEvidenceContributor.StatementRuns.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/ReconciliationEvidenceContributor.StatementRuns.cs#L18).
+
+```csharp
+public sealed partial class ReconciliationEvidenceContributor
+```
+
+## ReportingStatementImportEvidenceRetainer
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportingStatementImportEvidenceRetainer</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L17).
+
+Production statement-evidence adapter. It copies the import service&#x27;s retained source bytes into the statement workflow&#x27;s content-addressed authority and projects the verified source into the shared Evidence Workbench without moving reconciliation or reporting authority.
+
+```csharp
+public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportEvidenceRetainer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingStatementImportEvidenceRetainer(IStatementReconciliationReportAuthorityStore authorityStore, string dataRoot) : this(authorityStore, dataRoot, new FileEvidenceArtifactStore(dataRoot, NullLogger&lt;FileEvidenceArtifactStore&gt;.Instance));</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L32) |  |
+| <code>public ReportingStatementImportEvidenceRetainer(IStatementReconciliationReportAuthorityStore authorityStore, string dataRoot, IEvidenceArtifactStore evidenceStore);</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:44](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L44) |  |
+| <code>public IStatementReconciliationReportAuthorityStore AuthorityStore =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:66](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L66) | Durable authority used for raw, canonical, and run-evidence retention. Exposed so production composition can prove the workflow and evidence adapter share one authority. |
+| <code>public bool RetainsCanonicalRunEvidence =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:69](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L69) | True because this adapter retains hash-verified canonical run evidence. |
+| <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L71) |  |
+
+## ReportPackDeliveryEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackDeliveryEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:363](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L363).
+
+Adds retained report-pack delivery attempts and artifacts to an evidence graph.
+
+```csharp
+public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportPackDeliveryEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:367](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L367) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:372](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L372) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:374](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L374) |  |
+| <code>public Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:377](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L377) |  |
+
+## ReportPackEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportPackEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:172](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L172).
+
+Adds report-pack lifecycle and supporting output evidence to an evidence graph.
+
+```csharp
+public sealed class ReportPackEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportPackEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:176](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L176) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:181](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L181) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L183) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:187](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L187) |  |
+
 ## SecurityMasterConflictEvidenceContributor
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.SecurityMasterConflictEvidenceContributor</code>. Kind: `class`.
@@ -948,84 +1039,3 @@ Declared public members:
 | <code>public const string ScopeEvidence = &quot;AccountingProductionCertificationScope&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:18](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L18) |  |
 | <code>public const string EvidenceVaultSubjectKind = &quot;accounting-production-certification&quot;;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L19) |  |
 | <code>public static string BuildScopeSubjectId(string tenantId, string companyId, string fundProfileId, Guid ledgerBookId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:21](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L21) |  |
-
-## AccountingProductionCertificationCommandService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingProductionCertificationCommandService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:268](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L268).
-
-The only shared command that creates certified accounting artifacts. Browser and WPF clients submit desired controls and Evidence Vault locators; all status, lane, actor, time, source, and retained-evidence bindings are generated here from authoritative evidence.
-
-```csharp
-public sealed class AccountingProductionCertificationCommandService(IAccountingProductionCertificationProfileStore profileStore, IAccountingProductionCertificationEvidenceAuthority evidenceAuthority, IAccountingTenantAdministrationProfileStore? tenantAdministrationProfileStore = null, TimeProvider? timeProvider = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;AccountingProductionCertificationProfileDto&gt; CertifyAsync(AccountingProductionCertificationProfileUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs:277](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationCommandService.cs#L277) |  |
-
-## AccountingProductionReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingProductionReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:13](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L13).
-
-Assesses accounting production readiness from configuration, certification, and migration evidence.
-
-```csharp
-public sealed class AccountingProductionReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AccountingProductionReadinessService(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L19) |  |
-| <code>public async Task&lt;AccountingProductionReadinessDto&gt; AssessAsync(AccountingProductionReadinessRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs:24](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionReadinessService.cs#L24) |  |
-
-## AccountingWorkspaceReadScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AccountingWorkspaceReadScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs:68](../../../../src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs#L68).
-
-Which embedded families the caller may see inside the accounting workspace payload, which the governance workspace serves under a second name from the same builder. The workspace admits a deliberately wide set, because it is the screen the reconciliation, direct-lending, Security Master and trading desks all open to see where the period stands. What it may not do is treat that admission as authority for everything it aggregates: the payload carries the break queue, the manual-journal workbench, and the authoritative reporting projection, each of which is served head-on by a route with a strictly narrower gate. A composite&#x27;s admission is the narrowest of what it carries, not the widest. Each flag mirrors the permissions of the route that serves that family directly, so a caller sees through the workspace exactly what it could fetch on its own and nothing more. An unreadable family is not loaded at all rather than loaded and discarded, so withholding it also costs nothing. Headline counters are deliberately outside this scope. Metrics and the workspace summary are counts - open breaks, timing drift, security gaps, audit-ready runs - and a count is what the workspace exists to show every desk it admits. Withholding the number as well as the records would make the screen blank for the operators it was widened for, without withholding anything the records do not already disclose in far more detail.
-
-```csharp
-public sealed record AccountingWorkspaceReadScope(bool BreakQueue, bool ManualJournal, bool Reporting, bool StrategyRuns, bool KernelObservability)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly AccountingWorkspaceReadScope All = new (BreakQueue : true, ManualJournal : true, Reporting : true, StrategyRuns : true, KernelObservability : true);</code> | [src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs:75](../../../../src/Meridian.Ui.Shared/Services/AccountingWorkspaceReadScope.cs#L75) |  |
-
-## AggregatePortfolioExposureProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AggregatePortfolioExposureProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:32](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L32).
-
-Feeds IPortfolioExposureProvider from the live IAggregatePortfolioService, so the portfolio-aware pre-trade rules (gross exposure, symbol concentration, order notional) evaluate against the same aggregated cross-run positions the Portfolio workspace reports. Positions are valued at the same live marks the trading screen shows (quote mid, then last trade) — but only while those marks are still fresh, since a stalled feed would otherwise price risk at a quote the market has left behind — falling back to each contribution&#x27;s cost basis when no current mark exists. Portfolio value spans the same scope as the positions: the sum across every portfolio registered in the PortfolioRegistry (the host state is itself registered, so it is counted exactly once), falling back to the host IPortfolioState and finally to gross exposure so concentration percentages stay defined for thinner compositions. Accepted-but-unfilled orders reserve their remaining exposure in the snapshot, so a burst of working orders cannot each observe a flat book and collectively breach a ceiling that none of them breaches alone.
-
-```csharp
-public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolioExposureProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly TimeSpan DefaultMarkMaxAge = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:51](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L51) | How old a quote or trade may be and still price an order. A stalled feed keeps serving its last mark forever; valuing risk at one would let a symbol cached before an outage measure orders at a price the market left behind. |
-| <code>public AggregatePortfolioExposureProvider(IAggregatePortfolioService aggregatePortfolio, IPortfolioState? portfolioState = null, PortfolioRegistry? registry = null, QuoteCollector? quotes = null, TradeDataCollector? trades = null, Func&lt;IOrderManager?&gt;? orderManagerAccessor = null, TimeSpan? markMaxAge = null, Func&lt;DateTimeOffset&gt;? clock = null, Func&lt;ILiveFeedAdapter?&gt;? liveFeedAccessor = null, Func&lt;bool&gt;? paperMatchingIsAuthoritative = null, Func&lt;LiveBrokeragePortfolioSyncService?&gt;? livePortfolioAccessor = null);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:53](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L53) |  |
-| <code>public decimal? TryGetExecutablePrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:97](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L97) |  |
-| <code>public decimal? TryGetTouchPrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:104](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L104) |  |
-| <code>public decimal? TryGetTriggerReferencePrice(string symbol, OrderSide side);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:189](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L189) | Resolves the stop-trigger reference from the same observation the matcher will consume, rather than reconstructing it here. Reconstruction was the bug. Every accessor above filters its sources through DefaultMarkMaxAge, because valuing risk off a stalled feed is how a symbol cached before an outage measures a 1,000-share order at a price the market left behind. The matcher applies no such filter: PaperMarketObservation.Capture takes the feed&#x27;s cached last trade, bar, and quote as they are. So a six-minute-old print at 130 with a fresh 100 ask fires a buy stop at 125 immediately, while an age-filtered reconstruction drops that print, falls to the 100 ask, and approves the order as resting. Reconstructing the precedence and the freshness policy correctly is not something to get right twice — so this reads the matcher&#x27;s observation directly and resolves through the matcher&#x27;s own PaperMarketObservation.ResolveStopTriggerPrice. The question this accessor answers is not &quot;what is this worth&quot; but &quot;will the engine fire this&quot;, and where the two disagree the engine is the authority. That is also why the age filter is deliberately absent here and deliberately present everywhere else on this class. Against a live broker the same resolution is the best available proxy, and it errs toward the most recent print — the conservative direction for catching a wrong-side stop. With no feed composed there is no matcher observation to share, so this falls back to the interface default: last trade, then bar close, then touch, from the collectors. |
-| <code>public decimal? TryGetLastTradePrice(string symbol);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:220](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L220) |  |
-| <code>public decimal? TryGetReferencePrice(string symbol);</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:540](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L540) |  |
-| <code>public PortfolioExposureSnapshot GetSnapshot();</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:547](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L547) |  |
-| <code>public PortfolioExposureSnapshot GetSnapshot(Guid? fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs:654](../../../../src/Meridian.Ui.Shared/Services/AggregatePortfolioExposureProvider.cs#L654) |  |

@@ -69,6 +69,7 @@ public sealed class BondWorkflowCurveSelectionTests
 
     [Theory]
     [InlineData(BondWorkflowModelVersions.Legacy)]
+    [InlineData(BondWorkflowModelVersions.Previous)]
     [InlineData(BondWorkflowModelVersions.Current)]
     public async Task ResolvedPinsKeepReplayIndependentOfLaterCatalogAmbiguity(string model)
     {

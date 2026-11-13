@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundProfileScopeEndpointFilters
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundProfileScopeEndpointFilters</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs#L37).
+
+Endpoint filter that applies the fund-profile tenant ownership gate (SEC-005 slice 3) to fund-scoped read routes. When a request carries a fundProfileId query value that the authoritative IFundProfileTenantGuard reports as owned by a different tenant, the route is refused with 403 before any fund-partitioned data is loaded. Read-side counterpart to the governed-write guard on the Security Master workbench field-edit route. Its strictness follows the deployment&#x27;s TenantScopeEnforcementOptions. Under TenantScopeEnforcementMode.DeploymentBoundary it is fail-open: a blank fund, a caller with no tenant scope, a fund the registry does not positively attribute to another tenant, or an unavailable registry all pass — the single-company-per-deployment boundary remains the control and a legitimate read is never blocked. Under TenantScopeEnforcementMode.FailClosed each of those four becomes a refusal, because each is a scope that could not be resolved, and the exit criterion is categorical: an unresolvable scope is rejected rather than defaulted. The unavailable-registry case is the one most easily missed and the most important — a gate that cannot reach its authority has not decided that the caller is entitled, it has merely failed to ask. The tenantless-caller refusal is evaluated before the absent-fund short circuit, so omitting fundProfileId entirely is not a way past it. The routes attached to this filter have no separate tenant gate behind it, and their stores treat a null tenant with no fund as no filter at all — so under fail-closed the omission has to be refused here or nowhere. See docs/security/security-remediation-backlog.md (SEC-005) and W9-GOV-008 criterion 2.
+
+```csharp
+public static class FundProfileScopeEndpointFilters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RouteHandlerBuilder RequireFundProfileTenantScope(this RouteHandlerBuilder builder, params UserPermission[] readPermissions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs:52](../../../../src/Meridian.Ui.Shared/Endpoints/FundProfileScopeEndpointFilters.cs#L52) | Adds the fund-profile tenant ownership gate to a fund-scoped read endpoint. The gate reads the fundProfileId query value and denies only a fund positively owned by another tenant. Pass the route&#x27;s read permission(s) so the ownership check runs only for callers who can already read this route. Endpoint filters execute before the route delegate&#x27;s own permission check, so without this an unauthorized caller would receive the ownership 403 for a foreign fund but fall through to the handler&#x27;s plain 403 for an own/unbound fund — distinguishing cross-tenant ownership to callers who should see neither. When no permissions are supplied the check always runs (the route has no read gate to defer to). |
+
+## FundProfileTenantDecision
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundProfileTenantDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs:35](../../../../src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs#L35).
+
+Outcome of an IFundProfileTenantGuard evaluation.
+
+```csharp
+public sealed record FundProfileTenantDecision(bool IsAllowed, string Reason)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FundProfileTenantDecision Allow(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs#L37) |  |
+| <code>public static FundProfileTenantDecision Deny(string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs:39](../../../../src/Meridian.Ui.Shared/Endpoints/IFundProfileTenantGuard.cs#L39) |  |
+
+## FundScopedWriteTenantEndpointFilters
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundScopedWriteTenantEndpointFilters</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:225](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L225).
+
+SEC-005 slice 4c-iii: gates fund-scoped write/evaluate routes on a server-resolved tenant. Strict host composition refuses a tenantless caller with 403. Explicit compatibility composition may retain detection-only writes while operators complete migration. Resource-owner checks still decide whether a scoped caller may act on the requested fund artifact.
+
+```csharp
+public static class FundScopedWriteTenantEndpointFilters
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RouteHandlerBuilder RequireFundScopedWriteTenant(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:230](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L230) |  |
+
+## FundScopedWriteTenantOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundScopedWriteTenantOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:214](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L214).
+
+SEC-005 slice 4c-iii deployment/startup switch for the fund-scoped write tenant gate — read once at startup during DI registration, so changing it requires a restart. Strict host composition enables this gate. Explicit deployment-boundary compatibility may retain detection-only writes; MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED=true tightens that compatibility posture.
+
+```csharp
+public sealed record FundScopedWriteTenantOptions(bool Enforce)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly FundScopedWriteTenantOptions Disabled = new (Enforce : false);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:216](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L216) |  |
+
 ## FundStructureEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundStructureEndpoints</code>. Kind: `class`.
@@ -1069,69 +1142,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22) |  |
-
-## ProviderModuleEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderModuleEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L16).
-
-API endpoints for provider module setup: discovery, configuration, enable/disable, remove, test, and restart. All endpoints live under /api/providers/modules and require the workstation tenant scope.
-
-```csharp
-public static class ProviderModuleEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderModuleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs#L18) |  |
-
-## ProviderRoutingEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderRoutingEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L14).
-
-Endpoint mapping for the relationship-aware provider routing layer.
-
-```csharp
-public static class ProviderRoutingEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L16) |  |
-
-## QuantDiagnosticDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantDiagnosticDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:359](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L359).
-
-JSON-friendly Roslyn diagnostic.
-
-```csharp
-public sealed record QuantDiagnosticDto(string Severity, string Message, int Line, int Column);
-```
-
-## QuantLabEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantLabEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L28).
-
-HTTP endpoints that expose the Meridian QuantScript engine (the &quot;Quant Lab&quot;) to the browser workstation. Endpoints are only meaningful when an IScriptRunner has been registered (gated by QuantLab:Enabled); when not registered, calls return 503 Service Unavailable.
-
-```csharp
-public static class QuantLabEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L34) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |

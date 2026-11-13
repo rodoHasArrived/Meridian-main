@@ -20,6 +20,8 @@ Unknown account attribution and unreviewed accepted rows block; an other-account
 exact authenticated identity. A rejected-row replay does not supply a complete corrected statement.
 See [bond import and account workflows](../../docs/operators/bond-workflows.md).
 
+Corporate-action inbox projections read actual election cutoffs only from the retained, versioned `electionCalendar` companion. Staged proposals and durable cases preserve source offsets and evidence; absent or malformed companions remain unavailable and never inherit operational SLA or ex-date deadlines.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native

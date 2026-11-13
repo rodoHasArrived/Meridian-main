@@ -77,6 +77,34 @@ public sealed class BacktestStudioRunOrchestratorTests
     }
 
     [Fact]
+    public async Task SweepHash_GroupsParameterPointsButSeparatesWindowsAndCosts()
+    {
+        var store = new StrategyRunStore();
+        var engine = new StubBacktestStudioEngine();
+        await using var orchestrator = new BacktestStudioRunOrchestrator(
+            store, [engine], NullLogger<BacktestStudioRunOrchestrator>.Instance);
+        var request = BuildValidStudioRequest("sensitivity", "Sensitivity") with
+        {
+            SweepId = "experiment-1",
+            SweepObjective = "TotalReturn",
+            DatasetReference = "dataset:retained-v1",
+            Parameters = new Dictionary<string, string> { ["lookback"] = "10", ["threshold"] = "1" }
+        };
+        await orchestrator.StartAsync(request);
+        var first = (await store.GetLatestRunAsync("sensitivity"))!.SweepDefinitionHash;
+        await orchestrator.StartAsync(request with
+        {
+            Parameters = new Dictionary<string, string> { ["threshold"] = "2", ["lookback"] = "20" }
+        });
+        (await store.GetLatestRunAsync("sensitivity"))!.SweepDefinitionHash.Should().Be(first);
+        await orchestrator.StartAsync(request with { NativeRequest = request.NativeRequest with { To = request.NativeRequest.To.AddDays(1) } });
+        (await store.GetLatestRunAsync("sensitivity"))!.SweepDefinitionHash.Should().NotBe(first);
+        await orchestrator.StartAsync(request with { NativeRequest = request.NativeRequest with { CommissionRate = 0.02m } });
+        (await store.GetLatestRunAsync("sensitivity"))!.SweepDefinitionHash.Should().NotBe(first);
+        first.Should().StartWith("sweep-v2:");
+    }
+
+    [Fact]
     public async Task StartAsync_RecordsBacktestEvidenceLoopOnRunLineage()
     {
         var store = new StrategyRunStore();
