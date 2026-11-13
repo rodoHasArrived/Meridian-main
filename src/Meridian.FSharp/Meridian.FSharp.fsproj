@@ -74,6 +74,7 @@
     <Compile Include="Interop.CashFlow.fs" />
     <Compile Include="Interop.BondWorkflow.fs" />
     <Compile Include="Interop.SecurityTermsWriteVersion.fs" />
+    <Compile Include="Interop.SecurityFlatWriterParts.fs" />
     <Compile Include="Interop.SecurityMaster.GeneratedWriter.fs" />
     <Compile Include="Interop.SecurityMaster.fs" />
     <Compile Include="Interop.SecurityStructures.fs" />

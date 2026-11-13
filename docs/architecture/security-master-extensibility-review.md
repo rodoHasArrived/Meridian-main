@@ -942,6 +942,43 @@ entry, is the first such field on a generated class.
 
 Behaviour is unchanged: no golden, corpus or fixture moved, and no existing test changed.
 
+#### Cohort 3 — the five structural classes — 2026-11-13
+
+Bond, Swap, DirectLoan, StructuredCredit and CommitmentGuarantee now have both codec arms
+generated, so 29 of the 32 classes are generated. Three row kinds and two class settings were
+added:
+
+| Addition | Meaning | Used by |
+| --- | --- | --- |
+| `Listed` row | A list member read by its own decode and written entry by entry, each entry key named against an entry member | covenants, principal schedules, the dated factor schedule |
+| `Computed` row | A member read through its own conversion and written as a converted value (an F# expression, not a property) | Bond payment frequency and subclass, StructuredCredit kind, Swap legs |
+| `WrittenAs` row | One of several keys a single member is written as, read back by that member's decode row | Bond's coupon structure, written as ten keys |
+| Decode inputs | Whether the decode also takes the parsed economic schedules, the versioned-terms decoding (outside the declared-schedule flag) or the profile-resolved terms document | Bond, DirectLoan, StructuredCredit; Swap; CommitmentGuarantee |
+| Conventions flag | Whether the writer takes the schedule-conventions version flag for a block nested in a list entry | Swap legs |
+
+An optional module other than the rate convention may now be built whole by a module row (Bond's
+`Workflow`). The coverage test excludes `bondWorkflow` with `rateUnit`: the snapshot wrapper writes
+both after the class's document is stamped, and `bondWorkflow` is absent rather than null when
+undeclared.
+
+The table names a few hand-written helpers rather than restating them. On the decode side these
+are the coupon structure (`ToBondCouponStructure`, the coupon half of the former `ToBondTerms`),
+the validated principal and factor schedules, covenants and swap legs. On the writer side,
+`FlatWriterParts` (new, compiled before the generated writer) holds the coupon union's per-key
+projections and the swap-leg payload with and without its block. Those were the inline
+expressions of the hand-written arms, moved unchanged.
+
+Behaviour is unchanged. One ordering detail needed care: the generated decode builds a record's
+fields in order, so Bond's dates now come before its coupon. A write still reads the coupon
+contract first (`DecodeBond`), so a floating coupon with no index and no maturity is still refused
+for the index. A new theory pins that; without the coupon-first read it reports the missing
+maturity instead. Reads were already ordered by the legacy read-order guard. No golden, corpus or
+fixture moved. The schema-bound decode ratchet and existing comments now name
+`ToBondCouponStructure`.
+
+Still hand-written (3): Equity, InvestmentFund and CustomAsset, for the bespoke reasons in the
+cohort-1 table.
+
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 7,059 passed, 1 skipped; adjacent suites — 5,145 passed, 134 skipped;
 `Meridian.FSharp.Tests` — 642 passed; `Meridian.Contracts.UnitTests` — 384 passed;
