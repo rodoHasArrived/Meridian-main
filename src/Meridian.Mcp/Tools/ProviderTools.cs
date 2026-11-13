@@ -104,7 +104,10 @@ public sealed class ProviderTools(RepoPathService repo)
             if (trimmed.StartsWith("public sealed class ") || trimmed.StartsWith("public class "))
             {
                 var parts = trimmed.Split(' ');
-                return parts.Length >= 3 ? parts[2].Split('(')[0].Split(':')[0].Trim() : "Unknown";
+                var classIndex = Array.IndexOf(parts, "class");
+                return classIndex >= 0 && classIndex + 1 < parts.Length
+                    ? parts[classIndex + 1].Split('(')[0].Split(':')[0].Trim()
+                    : "Unknown";
             }
         }
         return "Unknown";

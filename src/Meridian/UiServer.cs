@@ -280,11 +280,15 @@ public sealed class UiServer : IAsyncDisposable
                     sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
             builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
             builder.Services.AddSingleton<ExecutionAuditTrailService>();
+            builder.Services.AddSingleton<Meridian.Execution.Sdk.IRiskControlAuditWriter>(sp =>
+                sp.GetRequiredService<ExecutionAuditTrailService>());
             builder.Services.AddSingleton(new ExecutionOperatorControlOptions(
                 Path.Combine(resolvedDataRoot, "execution", "controls"),
                 FailClosedOnMissingOrCorruptSnapshot:
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
             builder.Services.AddSingleton<ExecutionOperatorControlService>();
+            builder.Services.AddSingleton<Meridian.Execution.Sdk.IRiskCircuitBreakerControl>(sp =>
+                sp.GetRequiredService<ExecutionOperatorControlService>());
             // Governed-approval queue snapshots belong under the writable data root; the
             // queue's AppContext.BaseDirectory default is read-only in installed deployments.
             builder.Services.AddSingleton(new RiskEscalationQueueOptions(

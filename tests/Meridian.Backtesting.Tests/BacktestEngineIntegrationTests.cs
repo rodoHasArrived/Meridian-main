@@ -99,6 +99,46 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     //  Buy-and-hold order placement                                       //
     // ------------------------------------------------------------------ //
 
+    [Theory]
+    [InlineData(20)]
+    [InlineData(-10)]
+    public async Task RunAsync_ZeroFinancingRates_ProcessesOpenDebitOrShortThroughDayEnd(long quantity)
+    {
+        var from = new DateOnly(2024, 1, 5);
+        WriteBarJsonl("SPY", from, from.AddDays(3), basePrice: 100m);
+        var request = new BacktestRequest(from, from.AddDays(3), Symbols: ["SPY"],
+            InitialCash: 1_000m, DataRoot: _dataRoot, AnnualMarginRate: 0,
+            AnnualShortRebateRate: 0, CommissionKind: BacktestCommissionKind.Free,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(request, new BuyFirstBarStrategy("SPY", quantity));
+
+        result.Fills.Should().ContainSingle();
+        result.Snapshots.Should().HaveCount(4);
+        result.CashFlows.OfType<MarginInterestCashFlow>().Should().BeEmpty();
+        result.CashFlows.OfType<ShortRebateCashFlow>().Should().BeEmpty();
+        result.Ledger.Journal.Should().OnlyContain(journal => journal.IsBalanced);
+    }
+
+    [Fact]
+    public async Task RunAsync_CashInterestAccruesOnWeekendUsingCalendarDayBasis()
+    {
+        var from = new DateOnly(2024, 1, 5); // Friday through Monday includes both weekend dates.
+        WriteBarJsonl("SPY", from, from.AddDays(3), basePrice: 100m);
+        var request = new BacktestRequest(from, from.AddDays(3), Symbols: ["SPY"],
+            DataRoot: _dataRoot, InitialCash: 1_000m,
+            Accounts: [new FinancialAccount(BacktestDefaults.DefaultBrokerageAccountId, "Test brokerage",
+                FinancialAccountKind.Brokerage, InitialCash: 1_000m,
+                Rules: new FinancialAccountRules(AnnualCashInterestRate: 0.0365))]);
+
+        var result = await _engine.RunAsync(request, new NoOpStrategy());
+
+        result.CashFlows.OfType<CashInterestCashFlow>().Should().HaveCount(4);
+        var expected = Enumerable.Range(0, 4).Aggregate(1_000m, (balance, _) => balance * 1.0001m);
+        result.Metrics.FinalEquity.Should().BeApproximately(expected, 0.00000000001m);
+        result.Snapshots.Select(snapshot => snapshot.Date).Should().Contain(from.AddDays(1)).And.Contain(from.AddDays(2));
+    }
+
     [Fact]
     public async Task RunAsync_BuyAndHoldStrategy_ProducesPositiveEquity()
     {
@@ -483,6 +523,45 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
             "the first accepted slice should keep the order pending so remaining quantity can fill later");
     }
 
+    [Theory]
+    [InlineData(102, 0)]
+    [InlineData(150, 1)]
+    public async Task RunAsync_RejectedBookSlice_DoesNotConsumeCommissionMinimum(decimal initialCash, int acceptedFills)
+    {
+        var date = new DateOnly(2024, 1, 2);
+        var timestamp = new DateTimeOffset(2024, 1, 2, 15, 0, 0, TimeSpan.Zero);
+        var symbolDirectory = Path.Combine(_dataRoot, "SPY");
+        Directory.CreateDirectory(symbolDirectory);
+        var snapshot = new LOBSnapshot(timestamp, "SPY",
+            Bids: [new OrderBookLevel(OrderBookSide.Bid, 0, 99m, 100)],
+            Asks: [new OrderBookLevel(OrderBookSide.Ask, 0, 100m, 100),
+                new OrderBookLevel(OrderBookSide.Ask, 1, 101m, 1)]);
+        var evt = MarketEvent.L2Snapshot(timestamp, "SPY", snapshot, source: "TEST");
+        await File.WriteAllTextAsync(Path.Combine(symbolDirectory, "SPY_l2snapshot_2024-01-02.jsonl"),
+            JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions) + "\n");
+        var account = new FinancialAccount(BacktestDefaults.DefaultBrokerageAccountId,
+            "No margin", FinancialAccountKind.Brokerage, InitialCash: initialCash,
+            Rules: new FinancialAccountRules(AllowMargin: false));
+        var request = new BacktestRequest(date, date, Symbols: ["SPY"], DataRoot: _dataRoot,
+            Accounts: [account], CommissionMinimum: 2m, CommissionRate: 0.005m,
+            FillTiming: FillTiming.SameBar);
+
+        var result = await _engine.RunAsync(request, new BuyOnInitializeStrategy("SPY", 101));
+
+        result.Fills.Should().HaveCount(acceptedFills);
+        if (acceptedFills > 0)
+        {
+            result.Fills.Single().Commission.Should().Be(2m);
+            result.Metrics.TotalCommissions.Should().Be(2m);
+            result.Snapshots.Single().Cash.Should().Be(initialCash - 103m);
+        }
+        else
+        {
+            result.Snapshots.Single().Cash.Should().Be(initialCash,
+                "the only affordable quantity still needs its order's unconsumed minimum fee");
+        }
+    }
+
     // ------------------------------------------------------------------ //
     //  Progress reporting                                                 //
     // ------------------------------------------------------------------ //
@@ -802,6 +881,19 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
 // ------------------------------------------------------------------ //
 //  Minimal strategy implementations used by the tests above          //
 // ------------------------------------------------------------------ //
+
+file sealed class BuyOnInitializeStrategy(string symbol, long quantity) : IBacktestStrategy
+{
+    public string Name => "BuyOnInitialize";
+    public void Initialize(IBacktestContext ctx) => ctx.PlaceMarketOrder(symbol, quantity);
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx) { }
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+}
 
 file sealed class NoOpStrategy : IBacktestStrategy
 {

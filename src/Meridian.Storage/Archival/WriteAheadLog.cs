@@ -839,6 +839,15 @@ public sealed class WriteAheadLog : IAsyncDisposable
     {
         await using var stream = new FileStream(
             walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        // A record is framed by a newline. A crash can leave a partial final write;
+        // distinguish that uncommitted suffix from corruption of a complete record.
+        var terminatedTail = true;
+        if (stream.Length > 0)
+        {
+            stream.Position = stream.Length - 1;
+            terminatedTail = stream.ReadByte() == '\n';
+            stream.Position = 0;
+        }
         using var reader = new StreamReader(stream);
 
         // Skip header
@@ -901,9 +910,15 @@ public sealed class WriteAheadLog : IAsyncDisposable
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
+            var incompleteTail = !terminatedTail && reader.EndOfStream;
             var parts = line.Split('|', 5);
             if (parts.Length < 5)
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning(
                     "Malformed WAL record skipped in {File}: expected 5 fields but found {FieldCount}",
                     walFile, parts.Length);
@@ -914,6 +929,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             if (!long.TryParse(parts[0], out var sequence))
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning("Malformed WAL record skipped in {File}: unable to parse sequence", walFile);
                 Interlocked.Increment(ref _corruptedRecordCount);
                 Interlocked.Increment(ref _skippedRecordCount);
@@ -922,6 +942,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
             if (!DateTime.TryParse(parts[1], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var timestamp))
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning(
                     "Malformed WAL record skipped in {File}: unable to parse timestamp for sequence {Sequence}",
                     walFile, sequence);
@@ -938,6 +963,11 @@ public sealed class WriteAheadLog : IAsyncDisposable
             var expectedChecksum = WalChecksum.Compute(sequence, timestamp, recordType, payload, version);
             if (!string.Equals(checksum, expectedChecksum, StringComparison.Ordinal))
             {
+                if (incompleteTail)
+                {
+                    _log.Information("Incomplete final WAL write ignored in {File}; complete preceding records remain recoverable", walFile);
+                    yield break;
+                }
                 _log.Warning(
                     "Invalid checksum for WAL record with sequence {Sequence} in {File}, skipping",
                     sequence, walFile);

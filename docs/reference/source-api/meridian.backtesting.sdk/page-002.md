@@ -792,3 +792,35 @@ Human-readable audit ticket that explains why a trading or asset-event cash move
 ```csharp
 public sealed record TradeTicket(Guid TicketId, DateTimeOffset Timestamp, string ActivityType, string? Symbol, string Narrative, decimal CashImpact, long? Quantity = null, decimal? UnitPrice = null, string? AccountId = null, Guid? OrderId = null, Guid? FillId = null);
 ```
+
+## UnavailableMetricJsonConverter
+
+Qualified name: <code>Meridian.Backtesting.Sdk.UnavailableMetricJsonConverter</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs:7](../../../../src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs#L7).
+
+Preserves an uncomputed metric as JSON null and named infinite profit factors.
+
+```csharp
+public class UnavailableMetricJsonConverter : JsonConverter<double>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override bool HandleNull =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs:11](../../../../src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs#L11) |  |
+| <code>public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options);</code> | [src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs:13](../../../../src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs#L13) |  |
+| <code>public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options);</code> | [src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs:37](../../../../src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs#L37) |  |
+
+## UnavailableWinRateJsonConverter
+
+Qualified name: <code>Meridian.Backtesting.Sdk.UnavailableWinRateJsonConverter</code>. Kind: `class`.
+
+Source: [src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs:53](../../../../src/Meridian.Backtesting.Sdk/UnavailableMetricJsonConverter.cs#L53).
+
+Win rate has no meaningful infinite outcome; null still denotes unavailable evidence.
+
+```csharp
+public sealed class UnavailableWinRateJsonConverter : UnavailableMetricJsonConverter
+```

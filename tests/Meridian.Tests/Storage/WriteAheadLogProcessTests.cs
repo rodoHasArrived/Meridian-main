@@ -23,8 +23,8 @@ public sealed class WriteAheadLogProcessTests
         };
         foreach (var argument in new[]
         {
-            "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.deps.json"),
-            "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, "Meridian.Tests.runtimeconfig.json"),
+            "exec", "--depsfile", Path.Combine(AppContext.BaseDirectory, $"{typeof(WriteAheadLogProcessTests).Assembly.GetName().Name}.deps.json"),
+            "--runtimeconfig", Path.Combine(AppContext.BaseDirectory, $"{typeof(WriteAheadLogProcessTests).Assembly.GetName().Name}.runtimeconfig.json"),
             typeof(ProcessTestHelperMarker).Assembly.Location, "wal-append-and-wait", root, ready, marker
         })
             start.ArgumentList.Add(argument);

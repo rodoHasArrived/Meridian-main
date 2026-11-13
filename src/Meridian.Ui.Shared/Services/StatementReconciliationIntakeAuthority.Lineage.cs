@@ -3,7 +3,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.Strategies.Services;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -88,7 +88,7 @@ public sealed partial class StatementReconciliationIntakeAuthority
            && StatementDurabilityHashing.FixedTimeEquals(matchArtifact.Sha256, StatementDurabilityHashing.Hash(artifact));
 
     internal static string ComparisonSourceIdentity(CanonicalStatementImport import,
-        Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact, string institution)
+        Meridian.DataIntegration.Reconciliation.StatementRunMatchArtifact artifact, string institution)
         => JsonSerializer.Serialize(new
         {
             institution,
@@ -98,7 +98,7 @@ public sealed partial class StatementReconciliationIntakeAuthority
             artifact.SourceComparisonPopulationKinds
         });
 
-    internal static bool CanCompareSourceRun(Meridian.Infrastructure.Reconciliation.StatementRunMatchArtifact artifact)
+    internal static bool CanCompareSourceRun(Meridian.DataIntegration.Reconciliation.StatementRunMatchArtifact artifact)
         => artifact.SourceComparisonComplete == true
            && Meridian.Contracts.Integrity.Sha256Digest.IsWellFormed(artifact.SourceComparisonPolicyFingerprint)
            && Meridian.Contracts.Integrity.Sha256Digest.IsWellFormed(artifact.SourceComparisonMappingFingerprint)

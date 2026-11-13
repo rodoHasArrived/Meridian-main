@@ -11,6 +11,10 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.FinancialOperations
 
+Unreadable operations-close snapshots report the exception type without the workflow path,
+identity or exception payload. Reviewed posting candidates require trusted human authority before
+store access; nonhuman and undefined origins cannot append a journal.
+
 `AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
 default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
 candidate through existing accounting authority, checks the declared receivable/income account

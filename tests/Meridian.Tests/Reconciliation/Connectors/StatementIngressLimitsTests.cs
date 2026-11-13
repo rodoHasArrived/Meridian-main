@@ -10,7 +10,7 @@ using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Xunit;
 
 namespace Meridian.Tests.Reconciliation.Connectors;

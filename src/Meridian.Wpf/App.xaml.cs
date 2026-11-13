@@ -193,6 +193,9 @@ public partial class App : System.Windows.Application
                 ex);
         }
 
+        // Prime the immutable root snapshot before any synchronous DI factory can resolve.
+        await WpfServices.ConfigService.Instance.InitializeAsync();
+
         // Configure the host with dependency injection
         try
         {

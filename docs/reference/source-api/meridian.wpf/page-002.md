@@ -968,8 +968,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs:43](../../../../src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs#L43) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs:255](../../../../src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs#L255) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs:257](../../../../src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs#L257) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs:251](../../../../src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs#L251) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs:253](../../../../src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs#L253) |  |
 
 ## TradingFeatureModule
 

@@ -1,7 +1,7 @@
 using Meridian.Storage.Archival;
 using System.Text.Json;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 
 namespace Meridian.Tests.Reconciliation;
 
