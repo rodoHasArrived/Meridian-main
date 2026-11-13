@@ -89,6 +89,45 @@ describe("private-capital lifecycle", () => {
     expect(vi.mocked(api.accept).mock.calls[0][0]).toEqual({ batchId: "batch", fingerprint: "fingerprint", commandId: expect.any(String) });
   });
 
+  it("blocks observation acceptance until an uncertain registration is resolved", async () => {
+    const api = client({ ...records, canManage: true });
+    vi.mocked(api.preview).mockResolvedValue({ batchId: "batch", fingerprint: "fingerprint", rows: [snapshot], evidence,
+      rationale: "Review source", createdAt: "2026-11-12T00:00:00Z", createdBy: "operator" });
+    vi.mocked(api.register).mockRejectedValueOnce(new Error("Registration response lost"))
+      .mockResolvedValueOnce({ ...commitment, commitmentId: "c2" });
+    render(<PrivateCapitalLifecyclePanel api={api} />);
+    fireEvent.click(await screen.findByText("Register or import source observations"));
+    fireEvent.change(screen.getByLabelText("Evidence vault ID"), { target: { value: "vault" } });
+    fireEvent.change(screen.getByLabelText("Evidence document ID"), { target: { value: "source" } });
+    fireEvent.change(screen.getByLabelText("Evidence SHA-256"), { target: { value: evidence.contentHash } });
+    fireEvent.change(screen.getByLabelText("Registered commitment"), { target: { value: "c1" } });
+    fireEvent.change(screen.getByLabelText("Financial as-of date"), { target: { value: "2026-09-30" } });
+    fireEvent.change(screen.getByLabelText("Observation source reference"), { target: { value: "statement" } });
+    fireEvent.change(screen.getByLabelText("Review or correction rationale"), { target: { value: "Review source" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Preview private-capital observations" }));
+    const accept = await screen.findByRole("button", { name: "Accept reviewed observations" });
+    fireEvent.click(screen.getByLabelText("I reviewed these source amounts and correction references."));
+    expect(accept).toBeEnabled();
+
+    fireEvent.change(screen.getByLabelText("Holder entity"), { target: { value: "entity" } });
+    fireEvent.change(screen.getByLabelText("Private-fund vehicle"), { target: { value: "vehicle" } });
+    fireEvent.change(screen.getByLabelText("Commitment currency"), { target: { value: "USD" } });
+    fireEvent.change(screen.getByLabelText("Register source reference"), { target: { value: "second commitment" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Register private-capital commitment" }));
+    await screen.findByText("Registration response lost");
+    expect(accept).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Retry same registration" })).toBeEnabled();
+    fireEvent.click(accept);
+    expect(api.accept).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry same registration" }));
+    await screen.findByText("Commitment registered. Add its source-reported observation below.");
+    expect(api.register).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(api.register).mock.calls[1][0]).toBe(vi.mocked(api.register).mock.calls[0][0]);
+    expect(screen.queryByRole("button", { name: "Retry same registration" })).not.toBeInTheDocument();
+    expect(accept).toBeEnabled();
+  });
+
   it("does not resurrect corrected evidence for earlier financial dates and refuses conflicts", () => {
     const correction = { ...snapshot, snapshotId: "s2", supersedesSnapshotId: "s1", asOfDate: "2026-10-31" };
     expect(buildCapitalRows([commitment], [snapshot, correction], "vintage", "2026-09-30")[0].snapshot).toBeNull();

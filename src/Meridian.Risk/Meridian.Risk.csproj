@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
-    <ProjectReference Include="..\Meridian.Execution\Meridian.Execution.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.FSharp\Meridian.FSharp.fsproj" />
   </ItemGroup>

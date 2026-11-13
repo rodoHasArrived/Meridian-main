@@ -54,6 +54,32 @@ describe("option broker assessment evidence", () => {
     expect(screen.getByText(/Restrictions \/ collateral evidence: Account restricted/)).toBeInTheDocument();
     expect(screen.getByText(/A historical match establishes no present broker acceptance/)).toBeInTheDocument();
   });
+  it("requires a fresh preview after loading retained assessment fields for the same basket", async () => {
+    api.list.mockResolvedValue([retained]);
+    api.preview.mockResolvedValueOnce({ ...preview, previewFingerprint: "draft-preview", assessment: { ...assessment, brokerReference: "draft-report" } })
+      .mockResolvedValueOnce(preview);
+    const user = userEvent.setup(); mount();
+    await user.click(screen.getByRole("button", { name: "Load assessment history" }));
+    await screen.findByRole("button", { name: "Use exact assessed basket" });
+    await user.type(screen.getByLabelText("Broker assessment reference"), "draft-report");
+    await user.upload(screen.getByLabelText(/Original broker source document/), new File(["broker source"], "source.txt", { type: "text/plain" }));
+    await screen.findByText("source.txt attached");
+    await user.click(screen.getByRole("button", { name: "Preview evidence import" }));
+    await screen.findByRole("region", { name: "Reviewed broker assessment preview" });
+
+    await user.click(screen.getByRole("button", { name: "Use exact assessed basket" }));
+    expect(screen.getByLabelText("Broker assessment reference")).toHaveValue("report-1");
+    expect(screen.queryByRole("region", { name: "Reviewed broker assessment preview" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Accept reviewed evidence import" })).not.toBeInTheDocument();
+    expect(api.accept).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole("button", { name: "Preview evidence import" }));
+    await user.click(await screen.findByRole("button", { name: "Accept reviewed evidence import" }));
+    await screen.findByText(/Retained broker assessment record-a/);
+    expect(api.preview).toHaveBeenCalledTimes(2);
+    expect(api.preview.mock.calls[0][1].assessment.brokerReference).toBe("draft-report");
+    expect(api.accept.mock.calls[0][1]).toMatchObject({ previewFingerprint: "preview-hash", import: { assessment: { brokerReference: "report-1" } } });
+  });
   it("preserves an uncertain import across a forbidden retry until the same command succeeds", async () => {
     api.accept.mockRejectedValueOnce(new Error("response lost after dispatch"))
       .mockRejectedValueOnce(new ApiError({ path: "/accept", status: 403, detail: "The entity grant is unavailable." }))

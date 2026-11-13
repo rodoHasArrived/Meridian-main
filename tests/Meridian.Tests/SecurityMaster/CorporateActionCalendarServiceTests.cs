@@ -52,6 +52,34 @@ public sealed class CorporateActionCalendarServiceTests
     }
 
     [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" \t")]
+    public void AccountFilters_KeepDeadlinesWithAbsentOptionalApplicability_AndExcludeExplicitMismatches(string? absentAccount)
+    {
+        var proposal = Proposal(Week.AddMonths(-1), null);
+        var processingCase = Case(proposal);
+        var issuer = Deadline(processingCase.CaseId, 2, new(Guid.NewGuid(), "IssuerElection", "Issuer", Date: Week,
+            FinancialAccountId: absentAccount, CustodyAccountId: absentAccount));
+        var broker = Deadline(processingCase.CaseId, 3, new(Guid.NewGuid(), "BrokerElection", "Broker A", Date: Week,
+            FinancialAccountId: "account-a", CustodyAccountId: absentAccount));
+        var custodian = Deadline(processingCase.CaseId, 4, new(Guid.NewGuid(), "CustodianElection", "Custodian A", Date: Week,
+            FinancialAccountId: absentAccount, CustodyAccountId: "custody-a"));
+        var snapshot = new CorporateActionCalendarReadSet([proposal], [processingCase], [issuer, broker, custodian]);
+
+        var matching = CorporateActionCalendarService.ProjectCalendar(snapshot, Week, Week.AddDays(6), "account-a", "custody-a");
+
+        matching.Select(item => item.DateKind).Should().BeEquivalentTo(new[] { "IssuerElection", "BrokerElection", "CustodianElection" });
+        var retainedIssuer = matching.Single(item => item.DateKind == "IssuerElection").Deadline!;
+        retainedIssuer.Deadline.FinancialAccountId.Should().Be(absentAccount);
+        retainedIssuer.Deadline.CustodyAccountId.Should().Be(absentAccount);
+        CorporateActionCalendarService.ProjectCalendar(snapshot, Week, Week.AddDays(6), "account-b", "custody-a")
+            .Select(item => item.DateKind).Should().BeEquivalentTo(new[] { "IssuerElection", "CustodianElection" });
+        CorporateActionCalendarService.ProjectCalendar(snapshot, Week, Week.AddDays(6), "account-a", "custody-b")
+            .Select(item => item.DateKind).Should().BeEquivalentTo(new[] { "IssuerElection", "BrokerElection" });
+    }
+
+    [Theory]
     [InlineData("2026-11-12T16:00:00", false)]
     [InlineData("2026-11-12T16:00:00-05:00", true)]
     [InlineData("2026-11-12T21:00:00Z", true)]

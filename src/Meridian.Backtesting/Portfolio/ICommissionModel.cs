@@ -1,6 +1,6 @@
 namespace Meridian.Backtesting.Portfolio;
 
-/// <summary>Computes brokerage commission for a single fill.</summary>
+/// <summary>Computes total brokerage commission for the executed portion of one order.</summary>
 public interface ICommissionModel
 {
     decimal Calculate(string symbol, long quantity, decimal fillPrice);
@@ -35,5 +35,17 @@ public sealed class PercentageCommissionModel(
         var notional = Math.Abs(quantity) * fillPrice;
         var raw = notional * (basisPoints / 10_000m);
         return Math.Max(raw, minimumPerOrder);
+    }
+}
+
+/// <summary>Allocates per-order fees incrementally, including fills at different prices.</summary>
+internal static class OrderCommission
+{
+    public static decimal CalculateIncrement(ICommissionModel model, Order order, long quantity, decimal price)
+    {
+        var executed = Math.Abs(order.FilledQuantity) + Math.Abs(quantity);
+        var notional = order.FilledNotional + Math.Abs(quantity) * price;
+        var cumulative = model.Calculate(order.Symbol, executed, notional / executed);
+        return Math.Max(0m, cumulative - order.CommissionCharged);
     }
 }

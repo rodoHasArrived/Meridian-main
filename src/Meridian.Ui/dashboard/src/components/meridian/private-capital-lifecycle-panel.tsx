@@ -140,7 +140,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
     finally { if (epoch.current === revision) setBusy(false); }
   };
   const accept = async () => {
-    if (!preview || !writable || busy || !confirmed) return;
+    if (!preview || !writable || busy || !confirmed || uncertain === "register") return;
     const request = acceptRequest.current ?? { batchId: preview.batchId, fingerprint: preview.fingerprint, commandId: crypto.randomUUID() };
     acceptRequest.current = request;
     const revision = epoch.current; setBusy(true); setError("");
@@ -255,7 +255,7 @@ export function PrivateCapitalLifecyclePanel({ holderEntityIds, scopeKey = "", a
             <tbody>{preview.rows.map((item, index) => <tr key={`${item.commitmentId}-${index}`}><th className="p-2 text-left font-normal">{item.commitmentId} · {item.asOfDate}{item.supersedesSnapshotId ? ` · corrects ${item.supersedesSnapshotId}` : ""}</th>{capitalMeasures.map(([key]) => <td className="p-2 text-right font-mono" key={key}>{textAmount(item[key])}</td>)}</tr>)}</tbody></table></div>
           <p className="break-all text-xs">Source document {preview.evidence.documentId} · fingerprint {preview.fingerprint}</p>
           <label htmlFor={`${id}-confirm`} className="flex gap-2 text-sm"><input id={`${id}-confirm`} type="checkbox" checked={confirmed} disabled={locked} onChange={event => setConfirmed(event.target.checked)} />I reviewed these source amounts and correction references.</label>
-          <Button disabled={busy || !confirmed} onClick={() => void accept()}>{uncertain === "accept" ? "Retry same acceptance" : "Accept reviewed observations"}</Button>
+          <Button disabled={busy || !confirmed || uncertain === "register"} onClick={() => void accept()}>{uncertain === "accept" ? "Retry same acceptance" : "Accept reviewed observations"}</Button>
         </section>}
       </details>}
     </CardContent>

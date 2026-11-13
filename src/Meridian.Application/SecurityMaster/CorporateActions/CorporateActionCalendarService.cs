@@ -152,8 +152,8 @@ public sealed class CorporateActionCalendarService(
                 foreach (var record in ProjectHistory(snapshot.Evidence.Where(e => e.CaseId == processingCase.CaseId).ToArray()).Where(e => e.IsCurrent && !e.Deadline.Withdrawn))
                 {
                     var deadline = record.Deadline;
-                    if (account is not null && deadline.FinancialAccountId is not null && deadline.FinancialAccountId != account ||
-                        custody is not null && deadline.CustodyAccountId is not null && deadline.CustodyAccountId != custody)
+                    if (account is not null && !string.IsNullOrWhiteSpace(deadline.FinancialAccountId) && deadline.FinancialAccountId != account ||
+                        custody is not null && !string.IsNullOrWhiteSpace(deadline.CustodyAccountId) && deadline.CustodyAccountId != custody)
                         continue;
                     var date = deadline.Date ?? DateOnly.FromDateTime(deadline.At!.Value.DateTime);
                     if (date < from || date > to)

@@ -194,7 +194,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Policies.ParsedPathMetadata</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:554](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L554).
+Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:559](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L559).
 
 Metadata extracted from a storage file path.
 

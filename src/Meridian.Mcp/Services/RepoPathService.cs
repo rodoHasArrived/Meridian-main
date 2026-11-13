@@ -27,6 +27,15 @@ public sealed class RepoPathService
         Root = Discover();
     }
 
+    // An explicit root keeps embedded hosts and tests independent of process-global state.
+    internal RepoPathService(string root)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(root);
+        Root = Path.GetFullPath(root);
+        if (!File.Exists(Path.Combine(Root, SolutionFileName)))
+            throw new InvalidOperationException($"Repository root does not contain '{SolutionFileName}'.");
+    }
+
     private static string Discover()
     {
         var fromEnv = Environment.GetEnvironmentVariable(EnvVar);

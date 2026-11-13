@@ -461,7 +461,7 @@ Qualified name: <code>Meridian.Backtesting.Portfolio.ICommissionModel</code>. Ki
 
 Source: [src/Meridian.Backtesting/Portfolio/ICommissionModel.cs:4](../../../../src/Meridian.Backtesting/Portfolio/ICommissionModel.cs#L4).
 
-Computes brokerage commission for a single fill.
+Computes total brokerage commission for the executed portion of one order.
 
 ```csharp
 public interface ICommissionModel

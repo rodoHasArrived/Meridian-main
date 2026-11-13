@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui/dashboard
@@ -21,6 +21,24 @@ issuer-side `private-capital.api.ts` workflow retains its existing call/funding 
 Authoritative imports have explicit permissions, source evidence, preview/acceptance, correction
 history and replay identities. See `docs/operators/financial-visualizations.md` from the repo root
 for meaning, entry paths and recovery. Focused tests live beside the panels and API consumers.
+
+Settings provider runtime evidence and integration setup components are owned by
+`settings-provider-integration.tsx`; the Settings screen composes them without changing routes
+or mutation authority. Accounting Security Master selection/search state belongs to
+`accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
+instrument-passport projections belong to `accounting-screen.security-projections.ts`.
+The existing view-model entrypoint re-exports their public contracts for current callers.
+The design-system source contract checks the projection owner, those re-exports and the screen's
+schedules-view binding together.
+The existing four fixed-number and one signed-money formatting ratchet allowances follow their
+unchanged declarations into the projections module; aggregate ceilings remain unchanged.
+The Settings typography allowance likewise follows the unchanged JSX: 16 occurrences remain in
+the screen and 45 belong to the provider components, retaining the prior aggregate ceiling of 61.
+Strategy overview composition lives in `strategy-overview-hub.tsx`; equity-path comparison state,
+load results and presentation live in `strategy-screen.equity-paths.view-model.ts` and
+`strategy-screen.equity-paths.tsx`. The existing Strategy
+view-model entrypoint retains its public exports while both screen entrypoints stay within their
+file-size limits. Curve sampling, reported returns and promotion selection behavior are unchanged.
 
 The Evidence Workbench's retained-document panel reads shared single-principal declaration,
 source-snapshot and receipt endpoints without development fallback. Evidence acknowledgment is

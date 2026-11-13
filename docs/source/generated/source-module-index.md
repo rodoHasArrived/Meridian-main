@@ -52,8 +52,10 @@ do_not_edit: true
 | `SRC-MCP` | Meridian MCP host | `src/Meridian.Mcp` | MCP | active | Docs and Automation | `src/Meridian.Mcp/README.md` |
 | `SRC-PROVIDER-SDK` | Provider SDK | `src/Meridian.ProviderSdk` | Provider SDK | active | Data Confidence and Validation | `src/Meridian.ProviderSdk/README.md` |
 | `SRC-QUANTSCRIPT` | QuantScript | `src/Meridian.QuantScript` | Strategy Analytics | active | Strategy Analytics | `src/Meridian.QuantScript/README.md` |
+| `SRC-REPORTING-READMODELS` | Reporting and journal-backed read models | `src/Meridian.Reporting.ReadModels` | Read Model Adapter | active | Workstation Shell and UX | `src/Meridian.Reporting.ReadModels/README.md` |
 | `SRC-RISK` | Meridian risk | `src/Meridian.Risk` | Risk | active | Execution and Fund Accounts | `src/Meridian.Risk/README.md` |
-| `SRC-STORAGE` | Meridian storage | `src/Meridian.Storage` | Storage | active | Accounting and Ledger | `src/Meridian.Storage/README.md` |
+| `SRC-STORAGE` | Meridian storage primitives | `src/Meridian.Storage` | Storage | active | Accounting and Ledger | `src/Meridian.Storage/README.md` |
+| `SRC-STORAGE-ACCOUNTING` | Meridian accounting persistence adapters | `src/Meridian.Storage.Accounting` | Storage Adapter | active | Accounting and Ledger | `src/Meridian.Storage.Accounting/README.md` |
 | `SRC-STRATEGIES` | Meridian strategies | `src/Meridian.Strategies` | Strategies | active | Strategy Analytics | `src/Meridian.Strategies/README.md` |
 | `SRC-UI` | Meridian UI asset host | `src/Meridian.Ui` | UI Host Assets | active | Workstation Shell and UX | `src/Meridian.Ui/README.md` |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `src/Meridian.Ui/dashboard` | UI Surface | active | Workstation Shell and UX | `src/Meridian.Ui/dashboard/README.md` |

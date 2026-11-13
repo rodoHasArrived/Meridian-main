@@ -1,11 +1,11 @@
 {
-  "total_files": 1197,
-  "orphaned_count": 397,
+  "total_files": 1200,
+  "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
-  "todo_count": 330,
+  "todo_count": 332,
   "health_score": 84,
-  "signal_digest": "sha256:e2559042135474648c1293435e270db4518d94f1ea503138d3e2338165f7481b",
+  "signal_digest": "sha256:ae35e53be34ed97ea9b4378d3d693f3cdf76a8bded171f857e046e6ef610e5f7",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -348,6 +348,7 @@
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
     "docs/engineering/archive-compression-replay-safety.md",
+    "docs/engineering/plans/review-remediation-2026-11-12.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
@@ -1735,6 +1736,13 @@
       "stale": false
     },
     {
+      "path": "docs/architecture/review-boundary-extractions.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/architecture/runtime-component-state-boundaries.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2541,6 +2549,13 @@
     },
     {
       "path": "docs/engineering/plans/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/review-remediation-2026-11-12.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4732,13 +4747,6 @@
     },
     {
       "path": "docs/reference/source-api/meridian.infrastructure/page-007.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/reference/source-api/meridian.infrastructure/page-008.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -8735,6 +8743,13 @@
       "stale": false
     },
     {
+      "path": "src/Meridian.Reporting.ReadModels/README.md",
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "src/Meridian.Reporting/README.md",
       "has_heading": true,
       "todo_count": 1,
@@ -8752,6 +8767,13 @@
       "path": "src/Meridian.Setup/README.md",
       "has_heading": true,
       "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Storage.Accounting/README.md",
+      "has_heading": true,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
