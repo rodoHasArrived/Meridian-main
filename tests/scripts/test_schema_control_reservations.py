@@ -427,6 +427,109 @@ class SchemaControlReservationTests(unittest.TestCase):
 
         self.assertEqual([], self._findings())
 
+    def _retire(self, *ordinals: int) -> None:
+        self.register["migration_sets"][0]["retired"] = [
+            {"ordinal": ordinal, "reason": f"Ordinal {ordinal} was skipped; never reuse."}
+            for ordinal in ordinals
+        ]
+        self._save_register()
+
+    def test_register_without_retired_key_still_loads_with_no_retired_ordinals(self) -> None:
+        register = load_reservation_register(self.root, self.config)
+
+        self.assertEqual((), register.set_for("ledger").retired)
+
+    def test_retired_ordinals_load_sorted_and_reject_malformed_entries(self) -> None:
+        self._retire(63, 61)
+        register = load_reservation_register(self.root, self.config)
+        self.assertEqual([61, 63], [item.ordinal for item in register.set_for("ledger").retired])
+
+        original = copy.deepcopy(self.register)
+        cases = {
+            "not a list": {"ordinal": 61, "reason": "x"},
+            "zero ordinal": [{"ordinal": 0, "reason": "x"}],
+            "string ordinal": [{"ordinal": "61", "reason": "x"}],
+            "boolean ordinal": [{"ordinal": True, "reason": "x"}],
+            "empty reason": [{"ordinal": 61, "reason": "  "}],
+            "missing reason": [{"ordinal": 61}],
+            "extra key": [{"ordinal": 61, "reason": "x", "blueprint": "x.md"}],
+            "duplicate": [{"ordinal": 61, "reason": "x"}, {"ordinal": 61, "reason": "y"}],
+            "also reserved": [{"ordinal": 42, "reason": "x"}],
+        }
+        for label, retired in cases.items():
+            with self.subTest(label=label):
+                self.register = copy.deepcopy(original)
+                self.register["migration_sets"][0]["retired"] = retired
+                self._save_register()
+                with self.assertRaises(ValueError):
+                    load_reservation_register(self.root, self.config)
+
+    def test_file_at_retired_ordinal_is_reported_and_prevents_scaffolding(self) -> None:
+        self._retire(41)
+        reused = self._migration(41, "reused_retired_number")
+
+        findings = self._findings()
+
+        retired = [item for item in findings if item.rule_id == "migration-ordinal-retired"]
+        self.assertEqual(1, len(retired), findings)
+        self.assertEqual("error", retired[0].severity)
+        self.assertEqual(reused.relative_to(self.root).as_posix(), retired[0].path)
+        self.assertIn("41", retired[0].message)
+        before = self._snapshot()
+        with self.assertRaises(ValueError):
+            scaffold_migration(self.root, self.config, "ledger", "new_feature")
+        self.assertEqual(before, self._snapshot())
+
+    def test_retired_number_rejected_for_explicit_ordinal_without_writes(self) -> None:
+        self._migration(40, "current")
+        self._retire(43)
+        before = self._snapshot()
+
+        with self.assertRaisesRegex(ValueError, r"(?i)retired"):
+            scaffold_migration(self.root, self.config, "ledger", "new_feature", ordinal=43)
+        self.assertEqual(before, self._snapshot())
+
+    def test_automatic_allocation_skips_retired_and_reserved_numbers(self) -> None:
+        self._migration(40, "current")
+        self._retire(41, 43)
+
+        created = scaffold_migration(self.root, self.config, "ledger", "new_feature")
+
+        self.assertEqual("V_ledger_044__new_feature.sql", created.name)
+
+    def test_generated_docs_list_retired_ordinals_only_when_present(self) -> None:
+        self._migration(41, "current")
+        self.assertTrue(generate_migration_docs(self.root, self.config))
+        self.assertNotIn("Retired ordinal", self.docs_path.read_text(encoding="utf-8"))
+
+        self._retire(39)
+        self.assertFalse(generate_migration_docs(self.root, self.config, check=True))
+        self.assertTrue(generate_migration_docs(self.root, self.config))
+        rendered = self.docs_path.read_text(encoding="utf-8")
+
+        self.assertIn("| Migration set | Retired ordinal | Reason |", rendered)
+        self.assertIn("| `ledger` | `039` | Ordinal 39 was skipped; never reuse. |", rendered)
+        self.assertTrue(generate_migration_docs(self.root, self.config, check=True))
+
+    def test_repository_register_retires_security_master_061_and_063(self) -> None:
+        repository = Path(__file__).resolve().parents[2]
+        config = json.loads((repository / "database/schema-control.json").read_text(encoding="utf-8"))
+
+        register = load_reservation_register(repository, config)
+        inventory = build_migration_inventory(repository, config)
+
+        self.assertEqual(
+            [61, 63],
+            [item.ordinal for item in register.set_for("security-master").retired],
+        )
+        self.assertEqual(
+            [],
+            [
+                item for item in reservation_findings(inventory, register)
+                if item.rule_id == "migration-ordinal-retired"
+            ],
+        )
+
     def test_same_ordinal_in_different_migration_sets_is_allowed(self) -> None:
         self._migration(8, "ledger_feature")
         self.config["migration_sets"].append(

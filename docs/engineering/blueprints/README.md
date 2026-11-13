@@ -122,13 +122,20 @@ Historical Ledger ordinal `008` is shared by `V_ledger_008__closing_entry_postin
 | `ledger` | `048` | `V_ledger_048__valuation_attempt.sql` | [Valuation attempt and retained-draft association (Phase 2)](w10-mark-001-fail-closed-marks.md) |
 | `ledger` | `049` | `V_ledger_049__mark_override.sql` | [Mark override and audit (Phase 3)](w10-mark-001-fail-closed-marks.md) |
 
+Retired ordinals are never reused; scaffolding and validation refuse them.
+
+| Migration set | Retired ordinal | Reason |
+|---|---:|---|
+| `security-master` | `061` | No 061 script ever shipped; 062 followed 060 directly. Never reuse: the migration runner refuses an unapplied ordinal below the highest applied one. |
+| `security-master` | `063` | No 063 script ever shipped; 064 followed 062 directly. Never reuse: the migration runner refuses an unapplied ordinal below the highest applied one. |
+
 <!-- migration-reservations:end -->
 
 Scaffold new work with
 `python build/scripts/schema-control.py new-migration --migration-set ledger --name example`.
 The command selects the next ordinal after the highest on disk, skips pending reservations, and
-refreshes this generated block. An explicit `--ordinal N` must also be free: occupied and reserved
-numbers are refused.
+refreshes this generated block. An explicit `--ordinal N` must also be free: occupied, reserved, and
+retired numbers are refused.
 
 Reservations describe planning work only. When implementing a reserved migration, release that
 pending claim in the register before scaffolding it, and regenerate this block. Move pending

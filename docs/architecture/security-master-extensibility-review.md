@@ -9972,7 +9972,7 @@ databases (10 edge-case rows, 200,000 rows and 2,000,000 rows).
 | F3. One replacement's revisions did not share a recorded time, so a recorded-as-of read could return an identifier set the projection never held | Fixed. Every revision of one replacement now carries one recorded time, after everything the security already holds. A PostgreSQL test reproduces the case and fails against the previous writer |
 | F4. The backfill is one statement with a per-row foreign-key check and the runner sets no command timeout: 2.8 s at 200,000 rows, 37.9 s at 2,000,000 | Recorded as an apply condition above about one million identifier rows |
 | F5. No test ran 062's own backfill on a populated pre-062 schema | Added: `SecurityMasterIdentifierRevisionMigrationTests` covers failure, retry and restart |
-| F6. Ordinals 061 and 063 are skipped and not reserved | Not changed. The reservation register has no way to mark an ordinal retired |
+| F6. Ordinals 061 and 063 are skipped and not reserved | Fixed later (slice F). `database/migration-reservations.json` now records both as retired, schema-control refuses a file or scaffold at a retired ordinal, and the shared migration runner refuses any unapplied ordinal below the highest applied one |
 | F7. A pre-migration security with no identifier rows reports history as available before the migration | Not changed. The domain requires a primary identifier, so such a security should not exist |
 | F8. The waiver text omitted the index, comments and function, and stated no apply condition | Updated in `database/policies/migration-waivers.json`. It still says no owner authorization is recorded |
 

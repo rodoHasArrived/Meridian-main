@@ -95,11 +95,18 @@ is generated from that register and the SQL files on disk.
 
 `new-migration --migration-set <id> --name <snake_case_name>` selects the next ordinal after the
 highest file ordinal, skips reservations, writes a SQL scaffold, and refreshes the documentation
-table. Add `--ordinal N` to request a particular free number. Occupied numbers and reserved numbers
+table. Add `--ordinal N` to request a particular free number. Occupied, reserved, and retired numbers
 are always refused, including the historical duplicate Ledger ordinal `008`.
 Generated repository-relative paths use forward slashes on Windows and Unix. Externally supplied
 reservation-register and blueprint paths still reject backslashes, parent traversal, and paths
 outside the repository.
+
+A migration set may also list `retired` ordinals (`{"ordinal": N, "reason": "..."}`): numbers that
+were skipped or withdrawn and must never be reused. Validation reports a SQL file at a retired
+ordinal as `migration-ordinal-retired`, `new-migration` skips retired numbers and refuses them for
+`--ordinal N`, and the generated block lists them. Security Master `061` and `063` are retired. At
+runtime the shared migration runner enforces the same rule for ordinal-tracked sets: it refuses to
+start when an unapplied script's ordinal is below the highest applied ordinal.
 
 Reservations are pending plans. To implement a reserved migration, remove its pending claim from
 the register before scaffolding that number. Move remaining reservations when delivery sequencing

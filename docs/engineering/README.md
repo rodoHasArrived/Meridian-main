@@ -401,7 +401,8 @@ for evidence paths and local working-tree details.
 The [machine-readable migration reservation register](../../database/migration-reservations.json)
 owns pending ordinal claims; the [blueprint table](blueprints/README.md#ledger-migration-ordinals)
 is generated from it and existing SQL filenames. `new-migration` advances past the highest on-disk
-ordinal and skips reservations. An explicit `--ordinal N` also refuses occupied or reserved numbers.
+ordinal and skips reservations and retired ordinals. An explicit `--ordinal N` also refuses occupied,
+reserved, or retired numbers (Security Master `061` and `063` are retired and never reused).
 Release a pending claim before scaffolding its implementation, and run
 `python build/scripts/schema-control.py generate-migration-docs` after editing reservations.
 Preserve applied filenames and ordinals, including the two historical Ledger `008` scripts.

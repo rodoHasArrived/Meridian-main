@@ -8,7 +8,9 @@ namespace Meridian.Storage.SecurityMaster;
 /// Applies the Security Master schema migrations in ordinal order. Applied scripts are recorded in a
 /// durable <c>schema_migrations</c> ledger so each migration runs exactly once, and the runner refuses
 /// to start when two scripts collide on the same numeric ordinal — the ordering across scripts is then
-/// well-defined rather than decided by the rest of the filename.
+/// well-defined rather than decided by the rest of the filename. It also refuses an unapplied script
+/// whose ordinal is below the highest applied one, so retired ordinals (061 and 063, recorded in
+/// <c>database/migration-reservations.json</c>) and other gaps can never be filled in later.
 /// </summary>
 public sealed class SecurityMasterMigrationRunner
 {
