@@ -53,7 +53,7 @@ public sealed partial class StorageCatalogServiceTests
     }
 
     [Fact]
-    public async Task ConcurrentCatalogVersions_StalePublisherCannotOverwriteCurrentOrItsDirectorySnapshot()
+    public async Task StaleCatalogVersion_CannotOverwriteCurrentOrItsDirectorySnapshot()
     {
         await _service.InitializeAsync();
         var other = NewCatalog();
@@ -229,6 +229,30 @@ public sealed partial class StorageCatalogServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => _service.SaveCatalogAsync());
         File.Exists(manifest).Should().BeFalse();
         revisions.Should().OnlyContain(path => File.Exists(path));
+    }
+
+    [Fact]
+    public async Task ConcurrentPublishers_ExactlyOneGenerationBecomesCurrent()
+    {
+        var publishers = new[] { NewCatalog(), NewCatalog() };
+        await publishers[0].InitializeAsync();
+        await publishers[1].InitializeAsync();
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var writes = publishers.Select((publisher, index) => Task.Run(async () =>
+        {
+            await gate.Task;
+            return await Record.ExceptionAsync(() => publisher.UpdateFileEntryAsync(new IndexedFileEntry
+            { RelativePath = $"S/{index}.jsonl", Symbol = "S", EventCount = index + 1 }));
+        })).ToArray();
+        gate.SetResult();
+        var outcomes = await Task.WhenAll(writes).WaitAsync(TimeSpan.FromSeconds(10));
+
+        outcomes.Should().ContainSingle(exception => exception is null);
+        outcomes.Should().ContainSingle(exception => exception is InvalidOperationException);
+        var restarted = NewCatalog();
+        await restarted.InitializeAsync();
+        restarted.GetFilesForSymbol("S").Should().ContainSingle();
+        restarted.GetStatistics().TotalFiles.Should().Be(1);
     }
 
     private sealed class InlineVerificationProgress(Action<CatalogVerificationProgress> report) : IProgress<CatalogVerificationProgress>
