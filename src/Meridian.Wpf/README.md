@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Wpf
 
+The existing agreement and entity controls expose native structured terms, date previews,
+external-review attestations, advisory obligations and reviewed legacy coverage successors.
+They consume shared APIs and preserve drafts on failed commands. WPF runtime verification requires
+Windows; cross-compilation alone does not establish that proof.
+
 The retained run ledger page offers an inclusive UTC date filter through the shared strategy-run read service. Clearing the picker restores the complete retained run. Delayed reads from an earlier run or date cannot overwrite the current selection. Journal, trial balance and posting counts use one economic-time cut.
 
 Intercompany accounting profiles link to the canonical legal registry through exact approved

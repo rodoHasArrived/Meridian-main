@@ -27,3 +27,10 @@ export function mutateIntercompanyAgreement(action: AgreementMutation, command: 
     ? apiPutJson<AgreementCommandResult>(path, command, authoritative(options))
     : apiPostJson<AgreementCommandResult>(path, command, authoritative(options));
 }
+
+export function previewIntercompanyAgreementSchedule(agreementId: string, query: { asOf: string; version?: number; proposalId?: string }, options: ApiRequestOptions = {}) {
+  const parameters = new URLSearchParams({ asOf: query.asOf });
+  if (query.version !== undefined) parameters.set("version", String(query.version));
+  if (query.proposalId) parameters.set("proposalId", query.proposalId);
+  return apiGetJson<import("@/types/intercompany-agreements").AgreementSchedulePreview>(`${detailPath(agreementId)}/schedule?${parameters}`, authoritative(options));
+}

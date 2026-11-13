@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+Native intercompany agreement editors capture structured terms without calculating charges.
+Externally reviewed attestations retain the operator and external reviewer separately. The entity
+workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or
+revocations; close advisories stay outside blockers. See [intercompany controls](../../../docs/operators/intercompany-entity-controls.md).
+
 ## Fixed-income and accounting journeys
 
 Security Master exposes **Curves: definitions, pillars and historical versions** before security

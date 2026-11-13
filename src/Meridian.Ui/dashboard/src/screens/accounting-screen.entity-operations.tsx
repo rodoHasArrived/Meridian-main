@@ -11,11 +11,12 @@ import { EntityBookControls } from "./accounting-screen.entity-book-controls";
 import { EntityCounterpartProposals } from "./accounting-screen.entity-proposals";
 import { EntityFxAuthority } from "./accounting-screen.entity-fx";
 import { EntityAccountBindings } from "./accounting-screen.entity-account-bindings";
+import { EntityObligationMonitor } from "./accounting-screen.entity-obligations";
 import { EntityPerimeterTransition } from "./accounting-screen.entity-perimeter-transition";
 import { OperationError, useEntityData } from "./accounting-screen.entity-operations.shared";
 
 const tabs = [
-  { id: "profiles", label: "Accounting profiles" }, { id: "timeline", label: "Entity timeline" },
+  { id: "profiles", label: "Accounting profiles" }, { id: "obligations", label: "Obligation monitor" }, { id: "timeline", label: "Entity timeline" },
   { id: "controls", label: "Book controls" }, { id: "accounts", label: "Account roles" },
   { id: "proposals", label: "Counterpart proposals" }, { id: "fx", label: "FX authority" }, { id: "perimeter", label: "Perimeter cutover" }
 ];
@@ -25,7 +26,7 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
   const capabilities = useEntityData<EntityOperationCapabilities>(endpoints.capabilities);
   const graph = useEntityData<EntityOperationGraph>(capabilities.data?.canManageAgreements || capabilities.data?.canManageLifecycle ? endpoints.graph : null);
   const books = useEntityData<LedgerBook[]>(capabilities.data ? endpoints.books : null);
-  const [active, setActive] = useState("profiles");
+  const [active, setActive] = useState(() => { const requested = new URLSearchParams(window.location.search).get("entityTab"); return tabs.some((tab) => tab.id === requested) ? requested! : "profiles"; });
   const scope: EntityOperationScope | null = capabilities.data ? { book, books: books.data ?? [book], graph: graph.data, capabilities: capabilities.data } : null;
   return <Card id="entity-operations" className="panel-surface min-w-0" aria-labelledby="entity-operations-title"><CardHeader>
     <CardTitle id="entity-operations-title">Entity operations</CardTitle>
@@ -37,6 +38,7 @@ export function EntityOperationsPanel({ book }: { book: LedgerBook }) {
     {capabilities.error ? <Button type="button" variant="outline" onClick={capabilities.refresh}>Retry operation permissions</Button> : null}
     {scope ? <Tabs value={active} tabs={tabs} onValueChange={setActive} aria-label="Entity operations">
       <TabPanel>{active === "profiles" ? <EntityAccountingArrangements scope={scope} /> : null}</TabPanel>
+      <TabPanel>{active === "obligations" ? <EntityObligationMonitor scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "timeline" ? <EntityLifecycleTimeline key={graph.data ? "graph-ready" : "graph-pending"} scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "controls" ? <EntityBookControls scope={scope} /> : null}</TabPanel>
       <TabPanel>{active === "accounts" ? <EntityAccountBindings scope={scope} /> : null}</TabPanel>

@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Services
 
+The existing accounting agreement workspace/client carries optional structured legal declarations,
+dates-only schedule previews and explicit external-review attestations through the native host API.
+It keeps exact decimal strings, submitted hashes and reviewer/operator roles distinct. Obligation
+monitoring uses the canonical posted schedule and remains advisory rather than a local calculation
+or approval. See [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native

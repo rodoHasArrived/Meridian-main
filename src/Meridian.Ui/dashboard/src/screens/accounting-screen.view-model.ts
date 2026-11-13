@@ -1983,6 +1983,7 @@ export interface CloseCommandCenterActionViewModel {
 }
 
 export interface CloseCommandCenterViewState {
+  intercompanyAdvisories?: import("@/types/intercompany-obligations").IntercompanyObligationMonitor | null;
   title: string;
   description: string;
   ariaLabel: string;
