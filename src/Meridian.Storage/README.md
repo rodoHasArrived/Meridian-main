@@ -216,6 +216,11 @@ writes and flushes remain concurrent. Local, UNC and extended-length paths use t
 Existing destination access rules are explicitly copied and persisted before publication, retaining
 protected DACLs on the replacement as well as its backup.
 
+Windows diagnostic run `43327730266` passed 2,777 tests and failed one backup descriptor
+assertion: the backup retained the same access rules but returned `D:P` instead of `D:PAI`.
+The staged backup now reapplies the original access descriptor after creation and before either
+publication. Exact auto-inherited flag preservation still requires the Windows rerun.
+
 `ReplaceAsync` stages and flushes the previous generation in a recovery file created with the
 original DACL, then prepares both live and backup publications. A failure before the live commit
 preserves the destination and existing `.bak`. After the live rename commits, the staged snapshot

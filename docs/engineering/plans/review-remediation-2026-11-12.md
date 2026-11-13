@@ -272,3 +272,12 @@ files only; their assertions are unchanged. The synchronized inventory contains 
 The later `f65ab80d30d0bb7cff6279ad0a2f61fe17ec0871` synchronization changes documentation
 and tooling only, with no executable source changes. Required hosted checks on the final
 published head remain the merge authority.
+
+### Latest Windows backup-descriptor correction
+
+Diagnostic Windows run `43327730266` passed 2,777 tests and failed one backup DACL assertion.
+Destination ACL and publication cases passed; the backup retained the same access rules but its
+descriptor was `D:P` instead of the expected `D:PAI`. The repair reapplies the original access
+descriptor to the staged backup after creation, before either live or backup publication. Independent
+review accepted lifecycle and access safety; exact auto-inherited flag preservation remains subject
+to a new Windows execution of the unchanged assertions. This record does not claim that rerun passed.

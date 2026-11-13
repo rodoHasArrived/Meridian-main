@@ -616,6 +616,9 @@ public static partial class AtomicFileWriter
                     await source.CopyToAsync(backup, ct).ConfigureAwait(false);
                     backup.Flush(flushToDisk: true);
                 }
+                // Creation enforces the original DACL immediately, but Windows can drop its
+                // auto-inherited flag. Persist the complete access descriptor before publication.
+                ApplyWindowsAccessRules(backupTempPath, destinationSecurity!);
                 // Acquire both source and destination handles before the live commit, so a
                 // denied/read-only backup fails without changing either published generation.
                 backupPublication = WindowsRename.Prepare(backupTempPath, backupPath);
