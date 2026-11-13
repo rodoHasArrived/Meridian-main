@@ -35,6 +35,8 @@ public sealed partial class PostgresLedgerJournalStore :
     private readonly Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? _backfillSecurityMaster;
     private readonly Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? _backfillPositions;
     private readonly Func<IConsolidationPostingAuthority?>? _consolidationAuthority;
+    private readonly Func<Meridian.Contracts.Accounting.Lots.IBondIncomeService?>? _bondIncomeAuthority;
+    private readonly Func<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?>? _couponRecognitionAuthority;
     private readonly Func<IEnumerable<ILedgerPostingAuthority>>? _postingAuthorities;
     private readonly Func<IEnumerable<ILedgerBookControlPreflight>>? _controlPreflights;
     private readonly Func<IIntercompanyAgreementPostingAuthority?>? _intercompanyAgreementAuthority;
@@ -48,7 +50,9 @@ public sealed partial class PostgresLedgerJournalStore :
         Func<IConsolidationPostingAuthority?>? consolidationAuthority = null,
         Func<IEnumerable<ILedgerPostingAuthority>>? postingAuthorities = null,
         Func<IEnumerable<ILedgerBookControlPreflight>>? controlPreflights = null,
-        Func<IIntercompanyAgreementPostingAuthority?>? intercompanyAgreementAuthority = null)
+        Func<IIntercompanyAgreementPostingAuthority?>? intercompanyAgreementAuthority = null,
+        Func<Meridian.Contracts.Accounting.Lots.IBondIncomeService?>? bondIncomeAuthority = null,
+        Func<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?>? couponRecognitionAuthority = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
@@ -57,6 +61,8 @@ public sealed partial class PostgresLedgerJournalStore :
         _backfillSecurityMaster = backfillSecurityMaster;
         _backfillPositions = backfillPositions;
         _consolidationAuthority = consolidationAuthority;
+        _bondIncomeAuthority = bondIncomeAuthority;
+        _couponRecognitionAuthority = couponRecognitionAuthority;
         _postingAuthorities = postingAuthorities;
         _controlPreflights = controlPreflights;
         _intercompanyAgreementAuthority = intercompanyAgreementAuthority;
@@ -121,6 +127,8 @@ public sealed partial class PostgresLedgerJournalStore :
 
     private static void RejectJournalOnlySuccessorPosting(LedgerJournalEntryWrite entry)
     {
+        if (entry.PostingCommand?.LotAmortization?.BondIncome is not null)
+            throw new LedgerValidationException("Bond income carrying-value journals require the atomic journal/lot posting boundary.");
         if (entry.PostingCommand?.LotCapitalReturn is not null
             || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.JournalFingerprintTag) == true)
             throw new LedgerValidationException("Capital-return journals require the atomic journal/lot posting boundary.");
@@ -226,6 +234,7 @@ public sealed partial class PostgresLedgerJournalStore :
             LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         entry = RetainPostingAuthorityDecision(transaction, entry, period);
+        await ValidateAndRecordCouponRecognitionAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
         await ValidateAgreementReversalNotAlreadyPostedAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);

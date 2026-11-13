@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
-using Meridian.Execution.Logging;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -1274,7 +1274,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("Robinhood failed to fetch equity order {OrderId} ({ErrorKind})", LogSanitizer.Sanitize(orderId), ex.GetType().Name);
+            _logger.LogWarning("Robinhood failed to fetch equity order {OrderHash} ({FailureType}).",
+                Sha256Digest.ComputeUtf8(orderId ?? string.Empty), ex.GetType().Name);
             return null;
         }
     }
@@ -1300,7 +1301,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("Robinhood failed to fetch option order {OrderId} ({ErrorKind})", LogSanitizer.Sanitize(orderId), ex.GetType().Name);
+            _logger.LogWarning("Robinhood failed to fetch option order {OrderHash} ({FailureType}).",
+                Sha256Digest.ComputeUtf8(orderId ?? string.Empty), ex.GetType().Name);
             return null;
         }
     }

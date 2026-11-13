@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashBalanceSourceRow
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashBalanceSourceRow</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L9).
+
+The original row payload remains independent of its normalized comparison amounts.
+
+```csharp
+public sealed record AccountCashBalanceSourceRow(NormalizedCashEntry Row, string OriginalPayload);
+```
+
+## AccountCashCaseAssignment
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:44](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L44).
+
+```csharp
+public sealed record AccountCashCaseAssignment(string Owner, string Actor, string Reason, DateTimeOffset AssignedAtUtc);
+```
+
+## AccountCashCaseObservation
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashCaseObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:43](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L43).
+
+```csharp
+public sealed record AccountCashCaseObservation(string RunId, DateTimeOffset ObservedAtUtc, string State, string ResultHash);
+```
+
+## AccountCashComparison
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs#L30).
+
+```csharp
+public sealed record AccountCashComparison(string Currency, string ObservationState, IReadOnlyList<MatchGroup> Matches, IReadOnlyList<BreakRecord> Breaks, IReadOnlyList<MatchEvidence> Evidence);
+```
+
 ## AccountCashReconciliationCase
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.AccountCashReconciliationCase</code>. Kind: `record`.
@@ -797,72 +839,3 @@ Describes a statement connector so operators can discover what formats can be im
 ```csharp
 public sealed record StatementConnectorDescriptor(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
 ```
-
-## StatementConnectorLimits
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorLimits</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L16).
-
-Defines the maximum accepted statement source file size.
-
-```csharp
-public static class StatementConnectorLimits
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const long MaxFileBytes = 20L * 1024 * 1024;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementImportService.cs#L24) | Maximum accepted statement file size (20 MiB). IB Flex XML exports routinely exceed the general 5 MB data-upload cap, so statement imports get their own, larger bound. Shared by the workstation upload endpoint and the CLI import/validate commands so neither path buffers an unbounded caller-supplied file into memory. |
-
-## StatementConnectorRegistry
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementConnectorRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L8).
-
-Resolves statement connectors by id and auto-detects the right connector for an uploaded document. The CSV connector is consulted last because it is the text catch-all; structured formats (OFX, Flex XML, activity snapshots) sniff first.
-
-```csharp
-public sealed class StatementConnectorRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementConnectorRegistry(IEnumerable&lt;IStatementConnector&gt; connectors);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L12) |  |
-| <code>public IReadOnlyList&lt;StatementConnectorDescriptor&gt; List() =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L21) |  |
-| <code>public IStatementConnector Resolve(string connectorId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L24) |  |
-| <code>public IStatementConnector? Detect(StatementSourceDocument document) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorRegistry.cs#L32) |  |
-
-## StatementFetchAuthorizationCommand
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchAuthorizationCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementFetchScheduleRunner.cs#L8).
-
-```csharp
-public sealed record StatementFetchAuthorizationCommand(string TenantId, string CompanyId, string FundAccountId, string ExternalAccountId, string SourceInstitution, DateOnly PeriodStart, DateOnly PeriodEnd, StatementAccountingScope AccountingScope);
-```
-
-## StatementFetchDatasets
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementFetchDatasets</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:196](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L196).
-
-Which remote datasets a fetch-capable connector should pull.
-
-```csharp
-public enum StatementFetchDatasets
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Activity = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:198](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L198) |  |
-| <code>Positions = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:199](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L199) |  |
-| <code>All = Activity &#124; Positions</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:200](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L200) |  |

@@ -2,7 +2,6 @@ using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
-using Meridian.Execution.Logging;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -275,11 +274,11 @@ public static partial class ExecutionEndpoints
 
             if (result.Success)
             {
-                logger.LogInformation("Trading action {ActionId}: cancel order {OrderId} — succeeded", actionId, LogSanitizer.Sanitize(orderId));
+                logger.LogInformation("Trading action {ActionId}: cancel order — succeeded", actionId);
             }
             else
             {
-                logger.LogWarning("Trading action {ActionId}: cancel order {OrderId} — rejected: {Reason}", actionId, LogSanitizer.Sanitize(orderId), LogSanitizer.Sanitize(result.ErrorMessage));
+                logger.LogWarning("Trading action {ActionId}: cancel order — rejected", actionId);
             }
 
             var actionResult = new TradingActionResult(
@@ -1331,83 +1330,6 @@ public static partial class ExecutionEndpoints
             .ConfigureAwait(false);
 
         return decision.IsAllowed ? null : EndpointHelpers.Forbidden();
-    }
-
-    private static IResult? TryRejectClientControlledExecutionMetadata(
-        OrderRequest request,
-        JsonSerializerOptions jsonOptions)
-    {
-        if (!ContainsServerOwnedExecutionMetadata(request.Metadata))
-        {
-            return null;
-        }
-
-        var blocked = new OrderResult
-        {
-            Success = false,
-            OrderId = request.ClientOrderId ?? "blocked",
-            ErrorMessage = "Broker account routing and execution-control metadata must be resolved server-side; server-owned execution metadata is not accepted from client order requests."
-        };
-        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
-    }
-
-    private static bool ContainsServerOwnedExecutionMetadata(IReadOnlyDictionary<string, string>? metadata)
-    {
-        if (metadata is null)
-        {
-            return false;
-        }
-
-        return ExecutionOrderMetadataPolicy.ContainsClientRejectedServerOwnedKey(metadata);
-    }
-
-    private static IReadOnlyDictionary<string, string>? RemoveServerOwnedExecutionMetadata(
-        IReadOnlyDictionary<string, string>? metadata)
-    {
-        if (metadata is null)
-        {
-            return null;
-        }
-
-        return ExecutionOrderMetadataPolicy.RemoveClientRejectedServerOwnedKeys(metadata);
-    }
-
-    private static bool ContainsRestrictedBrokerRoutingMetadata(IReadOnlyDictionary<string, string>? metadata)
-    {
-        if (metadata is null || metadata.Count == 0)
-        {
-            return false;
-        }
-
-        return metadata.Keys.Any(static key => key.Equals("asset_class", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("broker_account_id", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("alpaca:broker_account_id", StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static Dictionary<string, string> MergeMetadata(
-        IReadOnlyDictionary<string, string>? metadata,
-        params (string Key, string? Value)[] additions)
-    {
-        var merged = metadata is null
-            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            : new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var (key, value) in additions)
-        {
-            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
-            {
-                continue;
-            }
-
-            merged[key] = value;
-        }
-
-        return merged;
     }
 
     private static async Task<ExecutionAuditEntry?> RecordOperatorAuditAsync(

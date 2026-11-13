@@ -104,7 +104,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.AccountInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:148](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L148).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:150](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L150).
 
 Account balance and buying power information from a broker.
 
@@ -116,30 +116,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PreviousCloseEquity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:152](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L152) | Provider-reported equity at the previous regular-session close; absent means unknown. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? EquityEvidenceComplete { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:155](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L155) | Whether the provider reported valid equity evidence, rather than a legacy numeric fallback. |
-| <code>public required string AccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:157](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L157) | Account identifier at the broker. |
-| <code>public decimal Equity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:160](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L160) | Total equity value (cash + positions at mark). |
-| <code>public decimal Cash { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:163](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L163) | Available cash balance. |
-| <code>public decimal BuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:166](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L166) | Buying power available for new orders. |
-| <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:169](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L169) | Currency code (e.g., &quot;USD&quot;). |
-| <code>public string Status { get; init; } = &quot;active&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:172](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L172) | Account status (e.g., &quot;active&quot;, &quot;restricted&quot;). |
-| <code>public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:175](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L175) | Timestamp when this info was retrieved. |
-| <code>public decimal? MarginMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:178](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L178) | Provider-reported margin multiplier. One normally indicates a cash account. |
-| <code>public decimal? RegTBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:180](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L180) |  |
-| <code>public decimal? InitialMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:182](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L182) |  |
-| <code>public decimal? MaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:184](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L184) |  |
-| <code>public decimal? LastMaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:186](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L186) |  |
-| <code>public decimal? SpecialMemorandumAccount { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:188](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L188) |  |
-| <code>public decimal? LongMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:190](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L190) |  |
-| <code>public decimal? ShortMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:192](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L192) |  |
-| <code>public decimal? NonMarginableBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:194](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L194) |  |
-| <code>public bool TradingBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:196](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L196) |  |
-| <code>public bool TransfersBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:198](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L198) |  |
-| <code>public bool AccountBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:200](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L200) |  |
-| <code>public bool ShortingEnabled { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:202](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L202) |  |
-| <code>public int? OptionsApprovedLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:204](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L204) |  |
-| <code>public int? OptionsTradingLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:206](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L206) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? PreviousCloseEquity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:154](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L154) | Provider-reported equity at the previous regular-session close; absent means unknown. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? EquityEvidenceComplete { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:157](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L157) | Whether the provider reported valid equity evidence, rather than a legacy numeric fallback. |
+| <code>public required string AccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:159](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L159) | Account identifier at the broker. |
+| <code>public decimal Equity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:162](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L162) | Total equity value (cash + positions at mark). |
+| <code>public decimal Cash { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:165](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L165) | Available cash balance. |
+| <code>public decimal BuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:168](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L168) | Buying power available for new orders. |
+| <code>public string Currency { get; init; } = &quot;USD&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:171](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L171) | Currency code (e.g., &quot;USD&quot;). |
+| <code>public string Status { get; init; } = &quot;active&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:174](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L174) | Account status (e.g., &quot;active&quot;, &quot;restricted&quot;). |
+| <code>public DateTimeOffset RetrievedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:177](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L177) | Timestamp when this info was retrieved. |
+| <code>public decimal? MarginMultiplier { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:180](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L180) | Provider-reported margin multiplier. One normally indicates a cash account. |
+| <code>public decimal? RegTBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:182](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L182) |  |
+| <code>public decimal? InitialMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:184](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L184) |  |
+| <code>public decimal? MaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:186](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L186) |  |
+| <code>public decimal? LastMaintenanceMargin { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:188](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L188) |  |
+| <code>public decimal? SpecialMemorandumAccount { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:190](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L190) |  |
+| <code>public decimal? LongMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:192](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L192) |  |
+| <code>public decimal? ShortMarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:194](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L194) |  |
+| <code>public decimal? NonMarginableBuyingPower { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:196](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L196) |  |
+| <code>public bool TradingBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:198](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L198) |  |
+| <code>public bool TransfersBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:200](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L200) |  |
+| <code>public bool AccountBlocked { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:202](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L202) |  |
+| <code>public bool ShortingEnabled { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:204](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L204) |  |
+| <code>public int? OptionsApprovedLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:206](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L206) |  |
+| <code>public int? OptionsTradingLevel { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:208](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L208) |  |
 
 ## BracketOrderMetadata
 
@@ -168,7 +168,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageAccountSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:155](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L155).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:166](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L166).
 
 Canonical point-in-time external account evidence. Nullable monetary fields mean the provider did not report the value; callers must not reinterpret absence as zero.
 
@@ -192,7 +192,7 @@ public sealed record BrokerageAccountSummaryDto(string AccountId, string Display
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageActivityCategory</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:187](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L187).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:198](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L198).
 
 High-level economic category shared by provider activity feeds.
 
@@ -204,24 +204,24 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Other = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:189](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L189) |  |
-| <code>Trade = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:190](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L190) |  |
-| <code>Cash = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:191](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L191) |  |
-| <code>Fee = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:192](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L192) |  |
-| <code>Interest = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:193](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L193) |  |
-| <code>Dividend = 5</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:194](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L194) |  |
-| <code>Transfer = 6</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:195](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L195) |  |
-| <code>Journal = 7</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:196](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L196) |  |
-| <code>CorporateAction = 8</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:197](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L197) |  |
-| <code>OptionLifecycle = 9</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:198](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L198) |  |
-| <code>Borrow = 10</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:199](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L199) |  |
-| <code>Tax = 11</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:200](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L200) |  |
+| <code>Other = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:200](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L200) |  |
+| <code>Trade = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:201](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L201) |  |
+| <code>Cash = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:202](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L202) |  |
+| <code>Fee = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:203](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L203) |  |
+| <code>Interest = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:204](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L204) |  |
+| <code>Dividend = 5</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:205](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L205) |  |
+| <code>Transfer = 6</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:206](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L206) |  |
+| <code>Journal = 7</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:207](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L207) |  |
+| <code>CorporateAction = 8</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:208](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L208) |  |
+| <code>OptionLifecycle = 9</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:209](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L209) |  |
+| <code>Borrow = 10</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:210](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L210) |  |
+| <code>Tax = 11</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:211](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L211) |  |
 
 ## BrokerageActivityCursorDto
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageActivityCursorDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:261](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L261).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:272](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L272).
 
 Completeness evidence for one provider activity retrieval.
 
@@ -233,7 +233,7 @@ public sealed record BrokerageActivityCursorDto(string? LastEventId, DateTimeOff
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageActivityEventDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:243](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L243).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:254](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L254).
 
 One canonical provider activity with retained vendor code and correction lineage.
 
@@ -245,7 +245,7 @@ public sealed record BrokerageActivityEventDto(string EventId, string ProviderCo
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageActivitySnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:130](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L130).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:141](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L141).
 
 ```csharp
 public sealed record BrokerageActivitySnapshotDto(string ProviderId, string AccountId, DateTimeOffset RetrievedAt, IReadOnlyList<BrokerageOrderSnapshotDto> Orders, IReadOnlyList<BrokerageFillSnapshotDto> Fills, IReadOnlyList<BrokerageCashTransactionDto> CashTransactions, IReadOnlyList<BrokerageCorporateActionSnapshotDto>? CorporateActions = null, IReadOnlyList<BrokerageActivityEventDto>? Activities = null, BrokerageActivityCursorDto? Cursor = null);
@@ -255,7 +255,7 @@ public sealed record BrokerageActivitySnapshotDto(string ProviderId, string Acco
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageActivitySubtype</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:204](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L204).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:215](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L215).
 
 Canonical subtype for provider financial-state activity.
 
@@ -267,46 +267,46 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Other = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:206](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L206) |  |
-| <code>TradeFill = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:207](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L207) |  |
-| <code>TradeCorrection = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:208](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L208) |  |
-| <code>TradeBust = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:209](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L209) |  |
-| <code>CashDeposit = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:210](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L210) |  |
-| <code>CashWithdrawal = 5</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:211](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L211) |  |
-| <code>Fee = 6</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:212](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L212) |  |
-| <code>CryptoFee = 7</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:213](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L213) |  |
-| <code>PassThroughCharge = 8</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:214](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L214) |  |
-| <code>PassThroughRebate = 9</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:215](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L215) |  |
-| <code>CreditInterest = 10</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:216](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L216) |  |
-| <code>MarginInterest = 11</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:217](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L217) |  |
-| <code>BorrowFee = 12</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:218](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L218) |  |
-| <code>BorrowRebate = 13</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:219](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L219) |  |
-| <code>CashDividend = 14</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:220](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L220) |  |
-| <code>StockDividend = 15</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:221](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L221) |  |
-| <code>CapitalGainDistribution = 16</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:222](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L222) |  |
-| <code>ReturnOfCapital = 17</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:223](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L223) |  |
-| <code>DividendWithholding = 18</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:224](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L224) |  |
-| <code>CashTransfer = 19</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:225](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L225) |  |
-| <code>SecurityTransfer = 20</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:226](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L226) |  |
-| <code>AcatsCash = 21</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:227](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L227) |  |
-| <code>AcatsSecurity = 22</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:228](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L228) |  |
-| <code>CashJournal = 23</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:229](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L229) |  |
-| <code>SecurityJournal = 24</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:230](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L230) |  |
-| <code>OptionAssignment = 25</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:231](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L231) |  |
-| <code>OptionExercise = 26</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:232](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L232) |  |
-| <code>OptionExpiration = 27</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:233](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L233) |  |
-| <code>StockSplit = 28</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:234](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L234) |  |
-| <code>Merger = 29</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:235](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L235) |  |
-| <code>Spinoff = 30</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:236](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L236) |  |
-| <code>SymbolChange = 31</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:237](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L237) |  |
-| <code>Reorganization = 32</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:238](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L238) |  |
-| <code>TaxWithholding = 33</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:239](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L239) |  |
+| <code>Other = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:217](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L217) |  |
+| <code>TradeFill = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:218](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L218) |  |
+| <code>TradeCorrection = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:219](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L219) |  |
+| <code>TradeBust = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:220](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L220) |  |
+| <code>CashDeposit = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:221](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L221) |  |
+| <code>CashWithdrawal = 5</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:222](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L222) |  |
+| <code>Fee = 6</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:223](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L223) |  |
+| <code>CryptoFee = 7</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:224](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L224) |  |
+| <code>PassThroughCharge = 8</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:225](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L225) |  |
+| <code>PassThroughRebate = 9</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:226](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L226) |  |
+| <code>CreditInterest = 10</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:227](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L227) |  |
+| <code>MarginInterest = 11</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:228](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L228) |  |
+| <code>BorrowFee = 12</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:229](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L229) |  |
+| <code>BorrowRebate = 13</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:230](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L230) |  |
+| <code>CashDividend = 14</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:231](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L231) |  |
+| <code>StockDividend = 15</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:232](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L232) |  |
+| <code>CapitalGainDistribution = 16</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:233](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L233) |  |
+| <code>ReturnOfCapital = 17</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:234](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L234) |  |
+| <code>DividendWithholding = 18</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:235](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L235) |  |
+| <code>CashTransfer = 19</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:236](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L236) |  |
+| <code>SecurityTransfer = 20</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:237](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L237) |  |
+| <code>AcatsCash = 21</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:238](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L238) |  |
+| <code>AcatsSecurity = 22</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:239](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L239) |  |
+| <code>CashJournal = 23</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:240](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L240) |  |
+| <code>SecurityJournal = 24</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:241](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L241) |  |
+| <code>OptionAssignment = 25</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:242](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L242) |  |
+| <code>OptionExercise = 26</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:243](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L243) |  |
+| <code>OptionExpiration = 27</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:244](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L244) |  |
+| <code>StockSplit = 28</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:245](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L245) |  |
+| <code>Merger = 29</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:246](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L246) |  |
+| <code>Spinoff = 30</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:247](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L247) |  |
+| <code>SymbolChange = 31</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:248](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L248) |  |
+| <code>Reorganization = 32</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:249](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L249) |  |
+| <code>TaxWithholding = 33</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:250](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L250) |  |
 
 ## BrokerageBalanceSnapshotDto
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageBalanceSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:110](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L110).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:112](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L112).
 
 ```csharp
 public sealed record BrokerageBalanceSnapshotDto(decimal Cash, decimal Equity, decimal BuyingPower, string Currency, decimal MarginBalance = 0m);
@@ -316,7 +316,7 @@ public sealed record BrokerageBalanceSnapshotDto(decimal Cash, decimal Equity, d
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageBorrowPositionSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:292](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L292).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:303](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L303).
 
 Provider-reported stock-borrow or securities-lending state.
 
@@ -328,7 +328,7 @@ public sealed record BrokerageBorrowPositionSnapshotDto(string Symbol, decimal Q
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageBorrowStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:280](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L280).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:291](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L291).
 
 ```csharp
 public enum BrokerageBorrowStatus
@@ -338,19 +338,19 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:282](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L282) |  |
-| <code>EasyToBorrow = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:283](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L283) |  |
-| <code>HardToBorrow = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:284](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L284) |  |
-| <code>LocateRequired = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:285](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L285) |  |
-| <code>Located = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:286](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L286) |  |
-| <code>Recalled = 5</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:287](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L287) |  |
-| <code>Unavailable = 6</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:288](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L288) |  |
+| <code>Unknown = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:293](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L293) |  |
+| <code>EasyToBorrow = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:294](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L294) |  |
+| <code>HardToBorrow = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:295](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L295) |  |
+| <code>LocateRequired = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:296](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L296) |  |
+| <code>Located = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:297](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L297) |  |
+| <code>Recalled = 5</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:298](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L298) |  |
+| <code>Unavailable = 6</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:299](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L299) |  |
 
 ## BrokerageCapabilities
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageCapabilities</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:36](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L36).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:38](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L38).
 
 Describes the brokerage-specific capabilities exposed by a gateway.
 
@@ -362,24 +362,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required IReadOnlySet&lt;OrderType&gt; SupportedOrderTypes { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:39](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L39) | Supported order types. |
-| <code>public required IReadOnlySet&lt;TimeInForce&gt; SupportedTimeInForce { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:42](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L42) | Supported time-in-force values. |
-| <code>public bool SupportsOrderModification { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:45](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L45) | Supports order modification (amend price/qty on working orders). |
-| <code>public bool SupportsPartialFills { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:48](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L48) | Supports partial fills. |
-| <code>public bool SupportsShortSelling { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:51](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L51) | Supports short selling. |
-| <code>public bool SupportsFractionalShares { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:54](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L54) | Supports fractional shares. |
-| <code>public bool SupportsExtendedHours { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:57](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L57) | Supports extended/after-hours trading. |
-| <code>public IReadOnlyList&lt;string&gt; SupportedAssetClasses { get; init; } = [&quot;equity&quot;];</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:60](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L60) | Supported asset classes (e.g., &quot;equity&quot;, &quot;option&quot;, &quot;crypto&quot;, &quot;futures&quot;). |
-| <code>public IReadOnlyList&lt;string&gt; SupportedMarkets { get; init; } = [&quot;US&quot;];</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:63](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L63) | Supported markets/exchanges. |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; Extensions { get; init; } = new Dictionary&lt;string, string&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:66](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L66) | Provider-specific extension hints (e.g., &quot;maxOrdersPerSecond&quot;). |
-| <code>public static BrokerageCapabilities UsEquity(bool modification = true, bool partialFills = true, bool shortSelling = true, bool fractional = false, bool extendedHours = false) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:70](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L70) | Standard brokerage capabilities for US equity brokers. |
-| <code>public static BrokerageCapabilities UsEquityAndFixedIncome(bool modification = true, bool partialFills = true, bool shortSelling = true, bool fractional = true, bool extendedHours = false) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:103](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L103) | Brokerage capabilities for brokers that support both US equities and fixed income instruments (US Treasuries, corporate bonds, municipal bonds). Fixed income orders may use notional (dollar-amount) sizing in addition to share qty. |
+| <code>public required IReadOnlySet&lt;OrderType&gt; SupportedOrderTypes { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:41](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L41) | Supported order types. |
+| <code>public required IReadOnlySet&lt;TimeInForce&gt; SupportedTimeInForce { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:44](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L44) | Supported time-in-force values. |
+| <code>public bool SupportsOrderModification { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:47](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L47) | Supports order modification (amend price/qty on working orders). |
+| <code>public bool SupportsPartialFills { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:50](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L50) | Supports partial fills. |
+| <code>public bool SupportsShortSelling { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:53](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L53) | Supports short selling. |
+| <code>public bool SupportsFractionalShares { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:56](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L56) | Supports fractional shares. |
+| <code>public bool SupportsExtendedHours { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:59](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L59) | Supports extended/after-hours trading. |
+| <code>public IReadOnlyList&lt;string&gt; SupportedAssetClasses { get; init; } = [&quot;equity&quot;];</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:62](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L62) | Supported asset classes (e.g., &quot;equity&quot;, &quot;option&quot;, &quot;crypto&quot;, &quot;futures&quot;). |
+| <code>public IReadOnlyList&lt;string&gt; SupportedMarkets { get; init; } = [&quot;US&quot;];</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:65](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L65) | Supported markets/exchanges. |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; Extensions { get; init; } = new Dictionary&lt;string, string&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:68](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L68) | Provider-specific extension hints (e.g., &quot;maxOrdersPerSecond&quot;). |
+| <code>public static BrokerageCapabilities UsEquity(bool modification = true, bool partialFills = true, bool shortSelling = true, bool fractional = false, bool extendedHours = false) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:72](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L72) | Standard brokerage capabilities for US equity brokers. |
+| <code>public static BrokerageCapabilities UsEquityAndFixedIncome(bool modification = true, bool partialFills = true, bool shortSelling = true, bool fractional = true, bool extendedHours = false) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:105](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L105) | Brokerage capabilities for brokers that support both US equities and fixed income instruments (US Treasuries, corporate bonds, municipal bonds). Fixed income orders may use notional (dollar-amount) sizing in addition to share qty. |
 
 ## BrokerageCashTransactionDto
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageCashTransactionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:345](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L345).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:356](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L356).
 
 ```csharp
 public sealed record BrokerageCashTransactionDto(string TransactionId, string TransactionType, decimal Amount, string Currency, DateTimeOffset PostedAt, string? Symbol = null, string? Description = null);
@@ -419,7 +419,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageCorporateActionSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:354](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L354).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:365](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L365).
 
 ```csharp
 public sealed record BrokerageCorporateActionSnapshotDto(string EventId, string EventType, string? Symbol, DateOnly? EffectiveDate, DateOnly? ExDate, decimal? Amount = null, decimal? Quantity = null, decimal? Factor = null, string? Currency = null, string? Description = null);
@@ -429,7 +429,7 @@ public sealed record BrokerageCorporateActionSnapshotDto(string EventId, string 
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageExternalAccountDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:90](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L90).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:92](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L92).
 
 ```csharp
 public sealed record BrokerageExternalAccountDto(string ProviderId, string AccountId, string DisplayName, string Status, string Currency, DateTimeOffset RetrievedAt, IReadOnlyDictionary<string, string>? Metadata = null);
@@ -439,7 +439,7 @@ public sealed record BrokerageExternalAccountDto(string ProviderId, string Accou
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageExternalAccountMetadata</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:81](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L81).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:83](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L83).
 
 Well-known keys of BrokerageExternalAccountDto.Metadata.
 
@@ -451,13 +451,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string AccountIdAliases = &quot;accountIdAliases&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:87](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L87) | Comma-separated identifiers the provider also uses for the same account. A link retained under one of them still refers to this catalog entry. |
+| <code>public const string AccountIdAliases = &quot;accountIdAliases&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:89](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L89) | Comma-separated identifiers the provider also uses for the same account. A link retained under one of them still refers to this catalog entry. |
 
 ## BrokerageFillSnapshotDto
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageFillSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:333](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L333).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:344](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L344).
 
 ```csharp
 public sealed record BrokerageFillSnapshotDto(string FillId, string? OrderId, string Symbol, OrderSide Side, decimal Quantity, decimal Price, DateTimeOffset FilledAt, string? Venue = null, decimal? Commission = null, decimal? RealizedPnl = null);
@@ -467,7 +467,7 @@ public sealed record BrokerageFillSnapshotDto(string FillId, string? OrderId, st
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageMarginRegime</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:142](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L142).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:153](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L153).
 
 Broker-neutral margin regime reported for an external account.
 
@@ -479,17 +479,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:144](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L144) |  |
-| <code>Cash = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:145](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L145) |  |
-| <code>RegulationT = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:146](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L146) |  |
-| <code>PortfolioMargin = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:147](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L147) |  |
-| <code>Other = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:148](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L148) |  |
+| <code>Unknown = 0</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:155](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L155) |  |
+| <code>Cash = 1</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:156](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L156) |  |
+| <code>RegulationT = 2</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:157](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L157) |  |
+| <code>PortfolioMargin = 3</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:158](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L158) |  |
+| <code>Other = 4</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:159](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L159) |  |
 
 ## BrokerageOptionLifecycleSnapshotDto
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageOptionLifecycleSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:269](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L269).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:280](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L280).
 
 Typed option exercise, assignment, expiration, or trade evidence.
 
@@ -537,7 +537,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageOrderSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:319](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L319).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:330](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L330).
 
 ```csharp
 public sealed record BrokerageOrderSnapshotDto(string OrderId, string? ClientOrderId, string Symbol, OrderSide Side, OrderType Type, OrderStatus Status, decimal Quantity, decimal FilledQuantity, decimal? LimitPrice, decimal? StopPrice, DateTimeOffset CreatedAt, DateTimeOffset? UpdatedAt = null);
@@ -547,7 +547,7 @@ public sealed record BrokerageOrderSnapshotDto(string OrderId, string? ClientOrd
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokeragePortfolioSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:99](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L99).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:101](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L101).
 
 ```csharp
 public sealed record BrokeragePortfolioSnapshotDto(BrokerageExternalAccountDto Account, BrokerageBalanceSnapshotDto Balance, IReadOnlyList<BrokeragePositionSnapshotDto> Positions, DateTimeOffset RetrievedAt, BrokerageAccountSnapshotDto? AccountSnapshot = null, IReadOnlyList<BrokerageTaxLotSnapshotDto>? TaxLots = null, IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null, bool IsComplete = false, IReadOnlyList<string>? CompletenessIssues = null);
@@ -569,11 +569,38 @@ public sealed record BrokeragePositionDto(string Symbol, decimal Quantity, decim
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokeragePositionSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:117](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L117).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:119](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L119).
 
 ```csharp
-public sealed record BrokeragePositionSnapshotDto(string Symbol, decimal Quantity, decimal AverageEntryPrice, decimal MarketPrice, decimal MarketValue, decimal UnrealizedPnl, string AssetClass, string? Description = null, string? PositionId = null, string? Currency = null, IReadOnlyDictionary<string, string>? Metadata = null);
+public sealed record BrokeragePositionSnapshotDto(string Symbol, decimal Quantity, decimal AverageEntryPrice, decimal MarketPrice, decimal MarketValue, decimal UnrealizedPnl, string AssetClass, string? Description = null, string? PositionId = null, string? Currency = null, IReadOnlyDictionary<string, string>? Metadata = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:133](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L133) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public BrokeragePositionValuationBasis ValuationBasis { get; init; } = BrokeragePositionValuationBasis.Unavailable;</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:135](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L135) |  |
+
+## BrokeragePositionValuationBasis
+
+Qualified name: <code>Meridian.Execution.Sdk.BrokeragePositionValuationBasis</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:139](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L139).
+
+Whether the value is an observed mark or a cost-derived placeholder.
+
+```csharp
+public enum BrokeragePositionValuationBasis
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unavailable</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:139](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L139) |  |
+| <code>ProviderReported</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:139](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L139) |  |
+| <code>CostDerived</code> | [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:139](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L139) |  |
 
 ## BrokerageRequestNotSentException
 
@@ -598,7 +625,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerageTaxLotSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:306](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L306).
+Source: [src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs:317](../../../../src/Meridian.Execution.Sdk/IBrokerageAccountSync.cs#L317).
 
 Provider-reported or explicitly calculated tax-lot evidence.
 
@@ -681,7 +708,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerHealthStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:305](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L305).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:311](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L311).
 
 Health check result for a brokerage gateway.
 
@@ -693,13 +720,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required bool IsHealthy { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:308](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L308) | Whether the gateway is healthy and can accept orders. |
-| <code>public bool IsConnected { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:311](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L311) | Whether the connection to the broker is alive. |
-| <code>public bool? IsMarketOpen { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:314](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L314) | Whether the market is currently open for trading. |
-| <code>public string? Message { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:317](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L317) | Human-readable status message. |
-| <code>public DateTimeOffset CheckedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:320](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L320) | Timestamp of the health check. |
-| <code>public static BrokerHealthStatus Healthy(string? message = null) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:322](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L322) |  |
-| <code>public static BrokerHealthStatus Unhealthy(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:325](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L325) |  |
+| <code>public required bool IsHealthy { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:314](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L314) | Whether the gateway is healthy and can accept orders. |
+| <code>public bool IsConnected { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:317](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L317) | Whether the connection to the broker is alive. |
+| <code>public bool? IsMarketOpen { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:320](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L320) | Whether the market is currently open for trading. |
+| <code>public string? Message { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:323](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L323) | Human-readable status message. |
+| <code>public DateTimeOffset CheckedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:326](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L326) | Timestamp of the health check. |
+| <code>public static BrokerHealthStatus Healthy(string? message = null) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:328](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L328) |  |
+| <code>public static BrokerHealthStatus Unhealthy(string reason) =&gt; …;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:331](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L331) |  |
 
 ## BrokerNotionalMetadata
 
@@ -724,7 +751,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerOrder</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:266](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L266).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:272](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L272).
 
 An open order at the broker.
 
@@ -736,23 +763,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:269](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L269) | Broker-assigned order ID. |
-| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:272](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L272) | Client-assigned order ID. |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:275](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L275) | Ticker symbol. |
-| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:278](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L278) | Order side. |
-| <code>public required OrderType Type { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:281](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L281) | Order type. |
-| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:284](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L284) | Total requested quantity. |
-| <code>public decimal FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:287](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L287) | Quantity filled so far. |
-| <code>public decimal? LimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:290](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L290) | Limit price (if applicable). |
-| <code>public decimal? StopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:293](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L293) | Stop price (if applicable). |
-| <code>public required OrderStatus Status { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:296](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L296) | Current order status. |
-| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:299](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L299) | When the order was created. |
+| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:275](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L275) | Broker-assigned order ID. |
+| <code>public string? ClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:278](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L278) | Client-assigned order ID. |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:281](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L281) | Ticker symbol. |
+| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:284](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L284) | Order side. |
+| <code>public required OrderType Type { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:287](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L287) | Order type. |
+| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:290](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L290) | Total requested quantity. |
+| <code>public decimal FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:293](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L293) | Quantity filled so far. |
+| <code>public decimal? LimitPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:296](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L296) | Limit price (if applicable). |
+| <code>public decimal? StopPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:299](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L299) | Stop price (if applicable). |
+| <code>public required OrderStatus Status { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:302](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L302) | Current order status. |
+| <code>public DateTimeOffset CreatedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:305](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L305) | When the order was created. |
 
 ## BrokerPosition
 
 Qualified name: <code>Meridian.Execution.Sdk.BrokerPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:212](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L212).
+Source: [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:214](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L214).
 
 A position held at the broker.
 
@@ -764,21 +791,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? PositionId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:215](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L215) | Stable provider-side identifier for this position. |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:218](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L218) | Ticker symbol. |
-| <code>public string? UnderlyingSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:221](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L221) | Underlying symbol for derivatives; defaults to Symbol for spot assets. |
-| <code>public string? Description { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:224](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L224) | Human-readable description suitable for blotter-style UIs. |
-| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:227](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L227) | Signed quantity (negative for short positions). |
-| <code>public decimal AverageEntryPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:230](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L230) | Average entry price. |
-| <code>public decimal MarketPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:233](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L233) | Current market price. |
-| <code>public decimal MarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:236](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L236) | Market value (absolute quantity * market price). |
-| <code>public decimal UnrealizedPnl { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:239](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L239) | Unrealized P&amp;L. |
-| <code>public string AssetClass { get; init; } = &quot;equity&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:242](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L242) | Asset class (e.g., &quot;equity&quot;, &quot;us_treasury&quot;, &quot;bond&quot;). |
-| <code>public DateOnly? Expiration { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:245](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L245) | Expiration date for derivative positions when available. |
-| <code>public decimal? Strike { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:248](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L248) | Strike price for option positions when available. |
-| <code>public string? Right { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:251](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L251) | Option right or derivative-side classification (e.g., &quot;call&quot;, &quot;put&quot;). |
-| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:254](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L254) | Provider-specific metadata required to manage the position. |
-| <code>public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:260](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L260) | Accrued interest for fixed income positions (bonds, treasuries). Null for non-fixed-income positions. |
+| <code>public string? PositionId { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:217](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L217) | Stable provider-side identifier for this position. |
+| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:220](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L220) | Ticker symbol. |
+| <code>public string? UnderlyingSymbol { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:223](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L223) | Underlying symbol for derivatives; defaults to Symbol for spot assets. |
+| <code>public string? Description { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:226](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L226) | Human-readable description suitable for blotter-style UIs. |
+| <code>public decimal Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:229](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L229) | Signed quantity (negative for short positions). |
+| <code>public decimal AverageEntryPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:232](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L232) | Average entry price. |
+| <code>public decimal MarketPrice { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:235](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L235) | Current market price. |
+| <code>public decimal MarketValue { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:238](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L238) | Market value (absolute quantity * market price). |
+| <code>public decimal UnrealizedPnl { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:241](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L241) | Unrealized P&amp;L. |
+| <code>public string AssetClass { get; init; } = &quot;equity&quot;;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:244](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L244) | Asset class (e.g., &quot;equity&quot;, &quot;us_treasury&quot;, &quot;bond&quot;). |
+| <code>public DateOnly? Expiration { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:247](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L247) | Expiration date for derivative positions when available. |
+| <code>public decimal? Strike { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:250](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L250) | Strike price for option positions when available. |
+| <code>public string? Right { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:253](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L253) | Option right or derivative-side classification (e.g., &quot;call&quot;, &quot;put&quot;). |
+| <code>public IReadOnlyDictionary&lt;string, string&gt;? Metadata { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:256](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L256) | Provider-specific metadata required to manage the position. |
+| <code>public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:262](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L262) | Accrued interest for fixed income positions (bonds, treasuries). Null for non-fixed-income positions. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public BrokeragePositionValuationBasis ValuationBasis { get; init; } = BrokeragePositionValuationBasis.Unavailable;</code> | [src/Meridian.Execution.Sdk/IBrokerageGateway.cs:266](../../../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs#L266) | Cost-derived amounts do not establish an observed market valuation. |
 
 ## BrokerValidationGateOptions
 
@@ -938,23 +966,3 @@ Declared public members:
 | <code>public string? Category { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:286](../../../../src/Meridian.Execution.Sdk/Models.cs#L286) |  |
 | <code>public string? Severity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:287](../../../../src/Meridian.Execution.Sdk/Models.cs#L287) |  |
 | <code>public string? RecommendedAction { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:288](../../../../src/Meridian.Execution.Sdk/Models.cs#L288) |  |
-
-## ExecutionMode
-
-Qualified name: <code>Meridian.Execution.Sdk.ExecutionMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution.Sdk/Models.cs:4](../../../../src/Meridian.Execution.Sdk/Models.cs#L4).
-
-Execution mode determines whether orders are routed to live brokers or simulated.
-
-```csharp
-public enum ExecutionMode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Paper</code> | [src/Meridian.Execution.Sdk/Models.cs:7](../../../../src/Meridian.Execution.Sdk/Models.cs#L7) | Orders are simulated locally (no broker connection). |
-| <code>Live</code> | [src/Meridian.Execution.Sdk/Models.cs:10](../../../../src/Meridian.Execution.Sdk/Models.cs#L10) | Orders are routed to a live broker for real execution. |
-| <code>Simulation</code> | [src/Meridian.Execution.Sdk/Models.cs:13](../../../../src/Meridian.Execution.Sdk/Models.cs#L13) | Orders are simulated using historical replay data. |

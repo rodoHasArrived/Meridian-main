@@ -2,11 +2,25 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-571 of 571. References crossing pages remain available in the dependency manifest.
+Objects 561-572 of 572. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
+        +DateTimeOffset AsOf
+        +decimal? CircuitBreakerThresholdPct
+        +decimal? ContractMultiplier
+        +bool? IsEasyToBorrow
+        +bool? IsFractionable
+        +bool? IsMarginable
+        +bool? IsShortable
+        +decimal? LotSize
+        +decimal? MarginRequirementPct
+        +decimal? MinimumOrderSize
+        +decimal? MinimumTradeIncrement
+        +decimal? PriceIncrement
+    }
     class Meridian_Contracts_SecurityMaster_TransitionCorporateActionCaseRequestDto["TransitionCorporateActionCaseRequestDto"] {
         +string Actor
         +string? AssignedTo

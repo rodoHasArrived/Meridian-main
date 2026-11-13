@@ -1187,6 +1187,24 @@ Declared public members:
 | <code>public Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:12](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L12) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L16) |  |
 
+## BondHoldingImportService
+
+Qualified name: <code>Meridian.Application.Integrations.BondHoldingImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/BondHoldingImportService.cs:12](../../../../src/Meridian.Application/Integrations/BondHoldingImportService.cs#L12).
+
+Reviewed staging to observed account statements; never creates lots or journals.
+
+```csharp
+public sealed class BondHoldingImportService(IProviderIntegrationManifestStore manifests, IAccountManagementService management, IAccountQueryService accounts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;CustodianStatementBatchDto&gt; AcceptAsync(string tenantId, string actor, BondHoldingImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/BondHoldingImportService.cs:17](../../../../src/Meridian.Application/Integrations/BondHoldingImportService.cs#L17) |  |
+
 ## IProviderIntegrationHostResolver
 
 Qualified name: <code>Meridian.Application.Integrations.IProviderIntegrationHostResolver</code>. Kind: `interface`.
@@ -1313,14 +1331,4 @@ Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunServ
 
 ```csharp
 public sealed record ProviderIntegrationHttpRequest(ProviderIntegrationHttpMethodDto Method, string Path, IReadOnlyDictionary<string, string> Headers, IReadOnlyDictionary<string, string> Query, string? BodyTemplate, string ApprovedBaseUri);
-```
-
-## ProviderIntegrationHttpResponse
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs#L32).
-
-```csharp
-public sealed record ProviderIntegrationHttpResponse(int StatusCode, IReadOnlyDictionary<string, string> Headers, string Body);
 ```

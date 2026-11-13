@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TradingActionResult
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:79](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L79).
+
+```csharp
+public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
+```
+
 ## UiEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UiEndpoints</code>. Kind: `class`.
@@ -27,10 +37,10 @@ Declared public members:
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
 | <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
 | <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L116) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:310](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L310) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:329](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L329) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:335](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L335) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:344](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L344) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:311](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L311) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:330](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L330) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:336](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L336) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:345](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L345) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -570,7 +580,7 @@ public sealed class WorkstationTenantScopeMetadata;
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastEvidenceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:29](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L29).
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L37).
 
 Exact supported source economics and accepted review, scoped to a single account/book.
 
@@ -582,13 +592,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:39](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L39) |  |
+| <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
+| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |
 
 ## AccountCashForecastSourceAuthorityException
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceAuthorityException</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:26](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L26).
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L34).
 
 Indicates that cash-forecast source evidence could not satisfy its authority requirements.
 
@@ -600,19 +611,29 @@ public sealed class AccountCashForecastSourceAuthorityException(string message) 
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceDocument</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:11](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L11).
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:12](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L12).
 
 Supported independently reviewed JSON source; provenance is resolved from the vault.
 
 ```csharp
-public sealed record AccountCashForecastSourceDocument(int SchemaVersion, string Kind, string SourceDomain, string SourceEntityId, long EvidenceVersion, string AccountId, string BookId, DateOnly EffectiveDate, AccountCashEvidenceRole Role, AccountCashSourceBalance? Balance = null, AccountCashSourceFlow? Flow = null, AccountCashSourceFx? Fx = null);
+public sealed record AccountCashForecastSourceDocument(int SchemaVersion, string Kind, string SourceDomain, string SourceEntityId, long EvidenceVersion, string AccountId, string BookId, DateOnly EffectiveDate, AccountCashEvidenceRole Role, AccountCashSourceBalance? Balance = null, AccountCashSourceFlow? Flow = null, AccountCashSourceFx? Fx = null, AccountCashSourceAllocation? Allocation = null, AccountCashSourceReceiptRevision? ReceiptRevision = null, AccountCashSourceWatchObservation? WatchObservation = null);
+```
+
+## AccountCashSourceAllocation
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceAllocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:25](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L25).
+
+```csharp
+public sealed record AccountCashSourceAllocation(string AllocationId, string ExpectedFlowId, string ActualVersionId, decimal NetAmount, decimal GrossAmount, decimal WithholdingTax, decimal Fees);
 ```
 
 ## AccountCashSourceBalance
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceBalance</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L15).
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L18).
 
 ```csharp
 public sealed record AccountCashSourceBalance(DateOnly AsOfDate, decimal Amount, string Currency, bool IsSettled);
@@ -622,7 +643,7 @@ public sealed record AccountCashSourceBalance(DateOnly AsOfDate, decimal Amount,
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFlow</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:16](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L16).
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L19).
 
 ```csharp
 public sealed record AccountCashSourceFlow(string FlowId, string VersionId, AccountCashFlowStatus Status, string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate, DateOnly? CashReceiptDate, Guid? SecurityId = null, Guid? ProjectionRunId = null, string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null, string? SupersedesVersionId = null);
@@ -632,11 +653,49 @@ public sealed record AccountCashSourceFlow(string FlowId, string VersionId, Acco
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFx</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L21).
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L24).
 
 ```csharp
 public sealed record AccountCashSourceFx(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit);
 ```
+
+## AccountCashSourceReceiptRevision
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceReceiptRevision</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L27).
+
+```csharp
+public sealed record AccountCashSourceReceiptRevision(string ExpectedFlowId, DateOnly ReceiptDate);
+```
+
+## AccountCashSourceWatchObservation
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceWatchObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L28).
+
+```csharp
+public sealed record AccountCashSourceWatchObservation(string ObservationId, Guid SecurityId, string Kind, DateOnly EffectiveDate, string Value, string? Agency, string? SupersedesObservationId);
+```
+
+## BondCouponRecognitionEvidenceVerifier
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.BondCouponRecognitionEvidenceVerifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L8).
+
+Rechecks exact observed bank cash and independently reviewed deductions before recognition.
+
+```csharp
+public sealed class BondCouponRecognitionEvidenceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondCouponRecognitionEvidenceVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task VerifyAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;BondCouponRecognizedCashDto&gt; cash, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L13) |  |
 
 ## ContractualCashFlowDraftAttestationSubjectResolver
 
@@ -979,8 +1038,8 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;EvidenceVaultIdentityDto&gt;&gt; FindByLinkageAsync(EvidenceVaultLookupRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:304](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L304) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;EvidenceVaultRequestListEntryDto&gt;&gt; ListRequestListsAsync(EvidenceVaultRequestListQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:353](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L353) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:434](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L434) |  |
-| <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] public Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:790](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L790) |  |
-| <code>public async Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:797](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L797) |  |
+| <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] public Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:788](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L788) |  |
+| <code>public async Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs:795](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.VaultAccess.cs#L795) |  |
 
 ## FileStatementReconciliationReportAuthorityStore
 
@@ -1211,104 +1270,3 @@ Trusted server read authority, never a request-body contract.
 ```csharp
 public sealed record PreparerAttestationEvidenceReadContext(SinglePrincipalAttestationScopeDto Scope, SinglePrincipalAttestationAuthority Authority, Func<string, string, bool> CanReadSourceSubject);
 ```
-
-## PreparerAttestationProofFile
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.PreparerAttestationProofFile</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L8).
-
-```csharp
-public sealed record PreparerAttestationProofFile(byte[] Content, string ContentHashSha256, DateTimeOffset RecordedAt, string FileName);
-```
-
-## PrivateCapitalFundEventEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.PrivateCapitalFundEventEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1509](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1509).
-
-Adds private-capital fund-event workflow and output evidence to an evidence graph.
-
-```csharp
-public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PrivateCapitalFundEventEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1513](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1513) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1518](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1518) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1520](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1520) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:1523](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L1523) |  |
-
-## ProviderTrustEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ProviderTrustEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:971](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L971).
-
-Adds provider trust and readiness observations to an evidence graph.
-
-```csharp
-public sealed class ProviderTrustEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderTrustEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:975](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L975) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:980](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L980) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:982](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L982) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:986](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L986) |  |
-
-## ReconciliationEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReconciliationEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:112](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L112).
-
-Adds reconciliation runs, breaks, and casework evidence to an evidence graph.
-
-```csharp
-public sealed partial class ReconciliationEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:116](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L116) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:121](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L121) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L123) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:128](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L128) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/ReconciliationEvidenceContributor.StatementRuns.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/ReconciliationEvidenceContributor.StatementRuns.cs#L18).
-
-```csharp
-public sealed partial class ReconciliationEvidenceContributor
-```
-
-## ReportingStatementImportEvidenceRetainer
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.ReportingStatementImportEvidenceRetainer</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L17).
-
-Production statement-evidence adapter. It copies the import service&#x27;s retained source bytes into the statement workflow&#x27;s content-addressed authority and projects the verified source into the shared Evidence Workbench without moving reconciliation or reporting authority.
-
-```csharp
-public sealed class ReportingStatementImportEvidenceRetainer : IStatementImportEvidenceRetainer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingStatementImportEvidenceRetainer(IStatementReconciliationReportAuthorityStore authorityStore, string dataRoot) : this(authorityStore, dataRoot, new FileEvidenceArtifactStore(dataRoot, NullLogger&lt;FileEvidenceArtifactStore&gt;.Instance));</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L32) |  |
-| <code>public ReportingStatementImportEvidenceRetainer(IStatementReconciliationReportAuthorityStore authorityStore, string dataRoot, IEvidenceArtifactStore evidenceStore);</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:44](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L44) |  |
-| <code>public IStatementReconciliationReportAuthorityStore AuthorityStore =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:66](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L66) | Durable authority used for raw, canonical, and run-evidence retention. Exposed so production composition can prove the workflow and evidence adapter share one authority. |
-| <code>public bool RetainsCanonicalRunEvidence =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:69](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L69) | True because this adapter retains hash-verified canonical run evidence. |
-| <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/ReportingStatementImportEvidenceRetainer.cs#L71) |  |

@@ -35,6 +35,7 @@ public static partial class LedgerEndpoints
         MapLegacyIntercompanyAttributionEndpoints(app, jsonOptions);
         MapEntityControlEndpoints(app, jsonOptions);
         MapAccountOversightEndpoints(app, jsonOptions);
+        app.MapLedgerBondWorkflowEndpoints();
         MapPrivateCapitalEndpoints(app, jsonOptions);
         MapPostedPeriodComparisonEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (

@@ -32,6 +32,7 @@ export type {
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
 export type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
 export { resolveProviderIntegrationIdentity } from "./api/provider-integration-identity.api";
+export { readOrderSubmissionRefusal } from "./api-errors";
 
 import type {
   BackfillPreviewResult,
@@ -2669,35 +2670,6 @@ export function submitOrder(request: OrderSubmitRequest) {
   return postJson<OrderResult>(EXECUTION_API_ENDPOINTS.ordersSubmit, { ...request,
     type: request.type === "Stop" ? "StopMarket" : request.type,
     ...(request.type === "Stop" ? { stopPrice: request.limitPrice, limitPrice: null } : {}) });
-}
-
-export function readOrderSubmissionRefusal(error: unknown): string | null {
-  if (!isApiError(error) || error.path !== EXECUTION_API_ENDPOINTS.ordersSubmit) {
-    return null;
-  }
-
-  // The submit route reserves these responses for validation, authorization, rate limits,
-  // and confirmed rejections. Timeouts and unqualified server errors carry no such proof.
-  const refusalStatus = [400, 401, 403, 404, 405, 413, 415, 422, 429].includes(error.status);
-  if (!refusalStatus && error.status !== 503) {
-    return null;
-  }
-
-  let body: { type?: unknown; success?: unknown; errorMessage?: unknown; requiresOrderReconciliation?: unknown } | null = null;
-  try {
-    body = error.responseBody ? JSON.parse(error.responseBody) : null;
-  } catch {
-    // A definitive response can have a plain-text or empty body.
-  }
-  const unavailableBeforeDispatch = error.status === 503
-    && body?.type === "https://meridian.io/errors/execution-pre-dispatch-unavailable";
-  if ((!refusalStatus && !unavailableBeforeDispatch) || body?.requiresOrderReconciliation === true) {
-    return null;
-  }
-
-  return body?.success === false && typeof body.errorMessage === "string" && body.errorMessage.trim()
-    ? body.errorMessage.trim()
-    : error.message;
 }
 
 export function cancelOrder(orderId: string) {

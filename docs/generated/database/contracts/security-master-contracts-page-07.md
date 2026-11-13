@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 571. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 572. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityQuotationConvention["SecurityQuotationConvention"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityQuoteConvention["SecurityQuoteConvention"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityQuoteStatus["SecurityQuoteStatus"] {
@@ -438,20 +440,6 @@ classDiagram
         +Guid? RightsSecurityId
         +Guid? SuccessorSecurityId
         +decimal? UnitsPerRight
-    }
-    class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
-        +DateTimeOffset AsOf
-        +decimal? CircuitBreakerThresholdPct
-        +decimal? ContractMultiplier
-        +bool? IsEasyToBorrow
-        +bool? IsFractionable
-        +bool? IsMarginable
-        +bool? IsShortable
-        +decimal? LotSize
-        +decimal? MarginRequirementPct
-        +decimal? MinimumOrderSize
-        +decimal? MinimumTradeIncrement
-        +decimal? PriceIncrement
     }
     Meridian_Contracts_SecurityMaster_SecurityRateFieldUnits --> Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration
     Meridian_Contracts_SecurityMaster_SecurityRateIngestionPointDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto

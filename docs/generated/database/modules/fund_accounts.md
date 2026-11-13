@@ -186,6 +186,8 @@ erDiagram
         integer line_count
         timestamp_with_time_zone ingested_at
         text loaded_by
+        jsonb authority
+        text content_sha256
     }
     fund_accounts_fund_account_legacy_import_receipt {
         text source_hash PK
@@ -231,7 +233,7 @@ erDiagram
 | `bank_statement_batch` | table | 10 | `batch_id` | 1 | 1 | - |
 | `bank_statement_line` | table | 12 | `statement_line_id` | 2 | 3 | - |
 | `custodian_position_line` | table | 13 | `position_line_id` | 2 | 2 | - |
-| `custodian_statement_batch` | table | 9 | `batch_id` | 1 | 1 | - |
+| `custodian_statement_batch` | table | 11 | `batch_id` | 1 | 2 | - |
 | `fund_account_legacy_import_receipt` | table | 3 | `source_hash` | 0 | 1 | - |
 | `fund_account_schema_migrations` | table | 3 | `filename` | 0 | 1 | - |
 | `private_capital_record` | table | 6 | `tenant_id`, `company_id`, `record_kind`, `record_id` | 0 | 2 | Append-only, tenant/company-scoped private-capital source records and replay receipts; financial authority follows explicit correction links. |

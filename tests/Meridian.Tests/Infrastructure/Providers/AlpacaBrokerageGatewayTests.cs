@@ -1456,6 +1456,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         position.Currency.Should().Be(expectedCurrency);
         position.MarketValue.Should().Be(1850m);
         position.AverageEntryPrice.Should().Be(180m);
+        position.ValuationBasis.Should().Be(BrokeragePositionValuationBasis.ProviderReported);
     }
 
     [Fact]

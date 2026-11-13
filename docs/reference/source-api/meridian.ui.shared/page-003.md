@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondWorkflowEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondWorkflowEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs#L15).
+
+Shared retained-input bond analysis. A calculation never grants financial write authority.
+
+```csharp
+public static class BondWorkflowEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs#L19) |  |
+
 ## BrokerageConnectionEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BrokerageConnectionEndpoints</code>. Kind: `class`.
@@ -731,7 +749,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Audit.cs:13](../../
 public static partial class ExecutionEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L24).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L23).
 
 REST endpoints for the paper-trading cockpit and execution dashboard. Exposes positions, orders, portfolio state, and gateway controls.
 
@@ -743,7 +761,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L28) |  |
+| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L27) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs#L7).
+
+```csharp
+public static partial class ExecutionEndpoints
+```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Positions.cs#L14).
 
@@ -852,21 +876,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static JsonSerializerOptions Options(JsonSerializerOptions source);</code> | [src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs#L13) |  |
-
-## FundAccountEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundAccountEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L20).
-
-Maps fund-account management and brokerage synchronization operations with account-specific authorization.
-
-```csharp
-public static class FundAccountEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L22) |  |

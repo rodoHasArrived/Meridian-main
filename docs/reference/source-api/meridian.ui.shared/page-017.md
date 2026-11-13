@@ -6,6 +6,149 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RiskRuleRuntimeOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:18](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L18).
+
+Location of the persisted operator-tuned risk-rule thresholds (drawdown %, order-rate ceiling), and optionally the first-run ceilings seeded before any operator snapshot exists.
+
+```csharp
+public sealed record RiskRuleRuntimeOptions(string SnapshotPath, RiskRuleFirstRunDefaults? FirstRunDefaults = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static RiskRuleRuntimeOptions Default { get; } = new (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), &quot;Meridian&quot;, &quot;workstation&quot;, &quot;risk-rules.json&quot;));</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:22](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L22) |  |
+
+## RiskRuleRuntimeService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:115](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L115).
+
+Single source of truth for operator-managed risk guardrail thresholds: it powers the read-only risk dashboard (GetAllStatusesAsync, config get/update) and supplies the live thresholds and drawdown evaluation that the enforced pre-trade validator — Meridian.Risk&#x27;s CompositeRiskValidator, registered as the IRiskValidator the OMS invokes — reads on every order. Position limits are additionally enforced by the operator-controls gate (ExecutionOperatorControlService) that the OMS runs earlier in the pipeline with its manual-override/bypass semantics.
+
+```csharp
+public sealed class RiskRuleRuntimeService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RiskRuleRuntimeService(IServiceProvider services, ILogger&lt;RiskRuleRuntimeService&gt; logger, RiskRuleRuntimeOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:146](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L146) |  |
+| <code>public int MaxOrdersPerMinute =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:222](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L222) | Operator-tuned order-rate ceiling, read per evaluation by the enforced order-rate throttle rule so hot updates take effect immediately. |
+| <code>public Func&lt;int&gt;? OrderRateUsageProbe { get; set; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:234](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L234) | Reads live consumed rate capacity from the throttle instance that actually enforces the ceiling. Set by the composition root; null when no reserving throttle is composed, in which case the status falls back to counting audit entries. The fallback cannot see reservations taken for orders still in flight, so it under-reports exactly when the desk is closest to the ceiling — the dashboard would show room the gate will refuse to give. The probe reports the number the gate itself compares. |
+| <code>public decimal? MaxGrossExposure { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:240](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L240) | Operator-tuned portfolio-wide gross exposure ceiling, read per evaluation by the enforced gross-exposure rule. Null when unconfigured (the rule approves). |
+| <code>public decimal? MaxSymbolConcentrationPercent { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:246](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L246) | Operator-tuned single-symbol concentration cap as a percentage of portfolio value, read per evaluation by the enforced concentration rule. Null when unconfigured. |
+| <code>public decimal? MaxOrderNotional { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:252](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L252) | Operator-tuned hard per-order notional ceiling, read per evaluation by the enforced order-notional rule. Null when unconfigured. |
+| <code>public decimal? EscalateOrderNotional { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:258](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L258) | Operator-tuned notional band at or above which an order parks for governed approval, read per evaluation by the enforced order-notional rule. Null when unconfigured. |
+| <code>public decimal? MaxOrderQuantity { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:264](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L264) | Operator-tuned absolute per-order quantity ceiling, read per evaluation by the enforced fat-finger rule. Null when unconfigured (the quantity limb approves). |
+| <code>public decimal? MaxPriceDeviationPercent { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:271](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L271) | Operator-tuned maximum aggressive price deviation from the market reference, in percent, read per evaluation by the enforced fat-finger rule. Null when unconfigured (the price limb approves, and a priced order with no reference price is no longer refused). |
+| <code>public FatFingerThresholds FatFingerThresholds { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:280](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L280) | Both fat-finger limbs read under one lock, which is what the enforced rule consumes. Reading the two properties above separately would let an evaluation straddle an update and observe a pair that was never configured — a two-field change from (null quantity, 50% band) to (100 quantity, null band) can otherwise be seen as (null, null), which the rule treats as entirely unconfigured and approves through. |
+| <code>public PriceCollarThresholds PriceCollarThresholds { get; }</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:291](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L291) | The collar band the escalating price rule consumes, read under the same lock. A single value needs no atomic pairing of its own, but it is exposed as a record so the rule takes a threshold type rather than a bare decimal and cannot be handed the fat-finger band by mistake. |
+| <code>public RiskValidationResult EvaluateDrawdownGuardrail();</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:302](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L302) | Evaluates the drawdown circuit breaker against the same live portfolio state and operator-tuned threshold this service reports on the dashboard, so the guardrail can never show &quot;Healthy&quot; while it silently fails to gate an order. Invoked by the enforced pre-trade validator on every order. |
+| <code>public async Task&lt;IReadOnlyList&lt;RiskRuleStatusDto&gt;&gt; GetAllStatusesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:345](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L345) |  |
+| <code>public async Task&lt;RiskRuleStatusDto?&gt; GetStatusAsync(string ruleName, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:421](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L421) |  |
+| <code>public RiskRuleConfigDto? GetConfig(string ruleName);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:436](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L436) |  |
+| <code>public async Task&lt;RiskRuleConfigDto?&gt; UpdateConfigAsync(string ruleName, RiskRuleConfigUpdateRequest request, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:509](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L509) |  |
+
+## RiskRuleRuntimeSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleRuntimeSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:1842](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L1842).
+
+```csharp
+public sealed record RiskRuleRuntimeSnapshot(decimal MaxDrawdownPercent, int MaxOrdersPerMinute, DateTimeOffset UpdatedAt, string UpdatedBy, string? Reason, decimal? MaxGrossExposure = null, decimal? MaxSymbolConcentrationPercent = null, decimal? MaxOrderNotional = null, decimal? EscalateOrderNotional = null, decimal? MaxOrderQuantity = null, decimal? MaxPriceDeviationPercent = null, decimal? PriceCollarPercent = null);
+```
+
+## RiskRuleStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RiskRuleStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs:64](../../../../src/Meridian.Ui.Shared/Services/RiskRuleRuntimeService.cs#L64).
+
+```csharp
+public sealed record RiskRuleStatusDto(string RuleName, string State, string Summary, bool IsBreached, string Threshold, string CurrentValue, DateTimeOffset AsOf, IReadOnlyList<string> RecentViolations, decimal? UtilizationPercent = null, string? Severity = null);
+```
+
+## RunCapitalCallDefaultInterestDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallDefaultInterestDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L28).
+
+Accrue default interest on the unfunded part of a posted capital call through a date.
+
+```csharp
+public sealed record RunCapitalCallDefaultInterestDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly AccrueThrough, IReadOnlyList<CapitalCallDefaultTermsInput> Defaults, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
+## RunCapitalCallFundingDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallFundingDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs#L30).
+
+Request to record LP cash receipts against an issued capital call and land the per-LP funding drafts (Dr Cash / Cr Capital Call Receivable) in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything, and partial funding leaves the receivable open.
+
+```csharp
+public sealed record RunCapitalCallFundingDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, DateOnly ReceivedDate, IReadOnlyList<CapitalCallFundingInput> Fundings, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
+## RunCapitalCallIssuanceDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunCapitalCallIssuanceDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:32](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L32).
+
+Request to plan a fund-level capital call over the supplied commitment register and land the per-LP issuance drafts in the manual journal workbench queue. Drafts flow through the same governed submit → approve → post lifecycle as every other automated intake lane; this run never posts anything.
+
+```csharp
+public sealed record RunCapitalCallIssuanceDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string CallId, decimal AmountToCall, DateOnly NoticeDate, DateOnly DueDate, IReadOnlyList<CapitalCallCommitmentInput> Commitments, CapitalCallAllocationBasis AllocationBasis = CapitalCallAllocationBasis.ProRataByUncalled, string? Purpose = null, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
+## RunDailyMarkToMarketDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunDailyMarkToMarketDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:74](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L74).
+
+Explicitly governed end-of-day valuation request. Prices are resolved server-side from the registered historical provider chain; callers provide positions and policy, never the closing prices that enter the books.
+
+```csharp
+public sealed record RunDailyMarkToMarketDraftIntakeRequest(string FundProfileId, string Currency, string Actor, Guid LedgerBookId, Guid PeriodId, DateTimeOffset AsOf, IReadOnlyList<MarkToMarketPosition> Positions, string PolicyId, string PolicyName, string ValuationMethod, string PolicyApprovedBy, DateTimeOffset PolicyApprovedAtUtc, string Reason, int MaximumMarkAgeDays = 3, DailyPortfolioPriceConfidence MinimumConfidence = DailyPortfolioPriceConfidence.Medium, bool RequireCompleteCoverage = true, string? EntityId = null, string? TenantId = null, string? CompanyId = null, string? BatchCorrelationId = null, string? ScheduleId = null);
+```
+
+## RunDistributionDeclarationDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunDistributionDeclarationDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:55](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L55).
+
+Declare a distribution and split it through the European waterfall for each investor.
+
+```csharp
+public sealed record RunDistributionDeclarationDraftIntakeRequest(string FundProfileId, string Currency, string Actor, string DistributionId, DateOnly EffectiveDate, decimal CarryRate, decimal CatchUpRate, IReadOnlyList<DistributionInvestorInput> Investors, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, DateTimeOffset? AsOf = null);
+```
+
+## RunDividendDraftIntakeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.RunDividendDraftIntakeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:14](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L14).
+
+Request to produce dividend events from Security Master corporate actions and land them in the manual journal workbench queue for the fund profile.
+
+```csharp
+public sealed record RunDividendDraftIntakeRequest(string FundProfileId, string Currency, string Actor, IReadOnlyList<DividendAccrualPosition> Positions, DateOnly WindowStart, DateOnly WindowEnd, Guid? LedgerBookId = null, string? PeriodId = null, string? EntityId = null, string? TenantId = null, string? CompanyId = null, decimal WithholdingTaxRate = 0m, DateTimeOffset? AsOf = null, decimal MinimumEvidenceConfidence = 0.75m, int MaximumPositionAgeDays = 7);
+```
+
 ## RunFeeAccrualDraftIntakeRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Services.RunFeeAccrualDraftIntakeRequest</code>. Kind: `record`.
@@ -714,182 +857,3 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:23](../
 ```csharp
 public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncValidationIssue> Issues);
 ```
-
-## ThresholdBreach
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdBreach</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:33](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L33).
-
-```csharp
-public sealed record ThresholdBreach(string Counterparty, ThresholdSeverity Severity, decimal CoverageRatio, decimal EarlyWarningLevel, decimal HardBreachLevel, string Message);
-```
-
-## ThresholdSeverity
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ThresholdSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:7](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L7).
-
-```csharp
-public enum ThresholdSeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Normal</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:9](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L9) |  |
-| <code>EarlyWarning</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L10) |  |
-| <code>HardBreach</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:11](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L11) |  |
-
-## TradingOperatorLiveOrderReadinessGate
-
-Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorLiveOrderReadinessGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:21](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L21).
-
-Adapts the shared W7 operator-readiness projection into the execution-layer live order gate.
-
-```csharp
-public sealed class TradingOperatorLiveOrderReadinessGate : ILiveOrderReadinessGate, ILiveOrderReadinessPreview
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingOperatorLiveOrderReadinessGate(ITradingOperatorReadinessProvider readinessProvider, ILogger&lt;TradingOperatorLiveOrderReadinessGate&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:26](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L26) |  |
-| <code>public async Task&lt;LiveOrderReadinessDecision&gt; EvaluateAsync(LiveOrderReadinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:34](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L34) |  |
-| <code>public LiveOrderReadinessDecision? Observe(LiveOrderReadinessRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs:52](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorLiveOrderReadinessGate.cs#L52) |  |
-
-## TradingOperatorReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.TradingOperatorReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.BrokerageRecovery.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.BrokerageRecovery.cs#L8).
-
-```csharp
-public sealed partial class TradingOperatorReadinessService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L19).
-
-Builds the shared operator-readiness model consumed by the Trading cockpit.
-
-```csharp
-public sealed partial class TradingOperatorReadinessService : ITradingOperatorReadinessProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingOperatorReadinessDto? Observe(Guid accountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:22](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L22) |  |
-| <code>public TradingOperatorReadinessService(IServiceProvider services, ILogger&lt;TradingOperatorReadinessService&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:51](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L51) |  |
-| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:59](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L59) |  |
-| <code>public Task&lt;TradingOperatorReadinessDto&gt; GetAsync(Guid? fundAccountId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs:64](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs#L64) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs:8](../../../../src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strategy.cs#L8).
-
-```csharp
-public sealed partial class TradingOperatorReadinessService
-```
-
-## UpsertProviderModuleRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
-
-Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
-
-```csharp
-public sealed record UpsertProviderModuleRequest(string ModuleId, bool Enabled = true, int Priority = 100, Dictionary<string, string?>? CredentialValues = null, Dictionary<string, string?>? Settings = null);
-```
-
-## WorkstationIntercompanyAgreementEvidenceAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationIntercompanyAgreementEvidenceAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:51](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L51).
-
-Resolves accepted, scoped Evidence Vault documents and verifies their retained bytes.
-
-```csharp
-public sealed class WorkstationIntercompanyAgreementEvidenceAuthority(IHttpContextAccessor accessor, IEvidenceArtifactStore evidenceStore) : IIntercompanyAgreementEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:54](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L54) |  |
-
-## WorkstationPersonalTableViewRecord
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationPersonalTableViewRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:219](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L219).
-
-```csharp
-public sealed record WorkstationPersonalTableViewRecord(string TenantId, string OperatorId, string TableId, WorkstationTableViewDto View);
-```
-
-## WorkstationServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:86](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L86).
-
-Registers the shared web-workstation service graph consumed by endpoint and host surfaces.
-
-```csharp
-public static class WorkstationServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:88](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L88) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1491](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1491) |  |
-
-## WorkstationWorkflowReadScope
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowReadScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:28](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L28).
-
-Which workspace families a caller may read in the shared workflow summary. The summary is shell furniture that composes one card per canonical workspace, so its route admits the union of the per-workspace read permissions — otherwise a reporting or strategy reader loses the whole strip. Admission is therefore not authorization: without this projection a caller admitted by any one family receives every family&#x27;s card, and the strategy and accounting cards carry real record content (candidate strategy names, promotion state and reasons, open break counts, ledger continuity posture). Cards backed by no record content — Portfolio, Reporting and Settings, which vary only on whether an operating context is selected — are not gated here; there is nothing in them to withhold. There is deliberately no default: every caller of WorkstationWorkflowSummaryService.GetAsync states a scope, because the desktop lane reaches that service in process with no endpoint filter in between, and an optional argument there is a grant to whichever caller forgets it. Browser requests resolve theirs through ForRequest; the desktop resolves its operator&#x27;s through its own authenticated session.
-
-```csharp
-public sealed record WorkstationWorkflowReadScope(bool Trading, bool Accounting, bool Strategy, bool Data)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly WorkstationWorkflowReadScope All = new (Trading : true, Accounting : true, Strategy : true, Data : true);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:38](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L38) | Every family readable. For a caller whose authority is already established to cover all of them, and for tests; never a stand-in for a scope that was not resolved. |
-| <code>public bool NeedsStrategyRuns =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:49](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L49) | True when any family whose card is built from strategy runs is readable. Trading and Accounting both read the governed (paper and live) runs and Strategy reads the backtest queue, so a caller holding none of the three needs no run load at all. |
-| <code>public static WorkstationWorkflowReadScope ForRequest(HttpContext context) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs:71](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs#L71) | The families the current request may read. Each is the permission set already declared by the route that serves that family&#x27;s data directly, so the summary card and the surface it summarises admit the same callers and neither becomes the other&#x27;s second door: Trading — UserPermission.ViewTrades, as the trading read surface. Accounting — the reconciliation break queue&#x27;s set, which the accounting card&#x27;s open-break and continuity posture is drawn from. Strategy — the run-ledger routes&#x27; UserPermission.ViewStrategies and UserPermission.ManageStrategies. Data — the Data workspace&#x27;s own set. The card summarises that workspace and its next action opens it, so the two admit the same callers; the workspace payload reads the same provider metrics the card counts, so nothing reaches the card that the workspace withholds. UserPermission.AdminMaintenance is not a universal override: it appears only in the accounting set, because the reconciliation break queue accepts it and the trading, strategy and data workspaces do not. A profile carrying it alone administers maintenance routines; it is not thereby entitled to strategy candidates or trading posture. |
-
-## WorkstationWorkflowSummaryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.WorkstationWorkflowSummaryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:12](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L12).
-
-Builds a shell-facing workflow summary that keeps next-action ordering shared across hosts.
-
-```csharp
-public sealed class WorkstationWorkflowSummaryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkstationWorkflowSummaryService(StrategyRunReadService runReadService, StrategyRunContinuityService? continuityService = null, IReconciliationRunService? reconciliationRunService = null, Meridian.Application.UI.ConfigStore? configStore = null, IWorkflowActionCatalog? actionCatalog = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, IFundProfileTenancyRegistry? tenancyRegistry = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:22](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L22) |  |
-| <code>public async Task&lt;OperatorWorkflowHomeSummary&gt; GetAsync(WorkstationWorkflowReadScope readScope, bool hasOperatingContext = false, string? operatingContextDisplayName = null, string? fundProfileId = null, string? fundAccountId = null, string? fundDisplayName = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs:43](../../../../src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs#L43) |  |

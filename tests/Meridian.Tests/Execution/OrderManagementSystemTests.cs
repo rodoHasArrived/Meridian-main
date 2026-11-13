@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -1491,8 +1492,9 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         oms.GetOpenOrders().Should().BeEmpty("rejected orders must not be tracked");
         var audit = (await auditTrail.GetRecentAsync(10)).Single(entry => entry.Action == "OrderRejected");
         audit.Message.Should().Be(reason);
-        logger.Entries.Should().Contain(entry => entry.Message.Contains("FORGED", StringComparison.Ordinal));
-        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
+        logger.Entries.Should().Contain(entry => entry.Message.Contains(Sha256Digest.ComputeUtf8(reason), StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains("FORGED", StringComparison.Ordinal)
+            && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
     }
 
     [Fact]

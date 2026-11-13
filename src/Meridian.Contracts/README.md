@@ -20,6 +20,30 @@ source time. Typed corporate-action deadline evidence carries precision, origina
 correction identity outside economic payload fingerprints. Additive read fields preserve older
 payload compatibility; missing observations are not reported zeros or inferred approvals.
 
+`BondMarketDataContracts` distinguishes retained fixings, inflation levels, principal factors,
+agency ratings and categorized clean/dirty quotes with settlement basis and provider yields.
+Source revisions retain economic/publication/knowledge dates and content identities; importing a
+quote does not select a golden copy. `SecurityCurveRatePolicy.SignedRates` is an explicit immutable
+curve-definition opt-in; omitted policy retains legacy nonnegative admission and receipt JSON.
+
+`BondWorkflow*`, `BondPerformance*`, `BondIncome*` and coupon-recognition contracts keep signed
+analytical cash, observed transactions, accounting-income instructions and posting receipts distinct.
+Workflow v2 pins active accrual separately from deferred earned coupons; literal v1 replay keeps
+its original fields and arithmetic. The nullable `bond-income-accrual-v2` subpolicy is explicitly
+captured at acquisition, preserving old policy bytes when absent. Purchased opening interest,
+raw earning targets and native obligation-boundary rounding remain separate, including signed sides.
+See the [operator workflow and source schemas](../../docs/operators/bond-workflows.md).
+
+Terminal principal retains exact earned-coupon receipts or an actual acquisition-opening authority
+for separately purchased interest. Later signed cash clears those frozen rights without accruing
+on a closed lot. Accounting yield certificates distinguish the declared period recurrence from
+market cash-flow yields; the purchased-coupon tail admits only the evidenced nonaccreting par case.
+New optional proof fields omit null values so legacy contract bytes remain unchanged.
+
+Workflow v3 replaces the natural balloon once in final-payment exercise scenarios while retaining
+coupons and explicit installments. Retained workflow v1/v2 keep their original replay arithmetic;
+adopted accrual-v2 accounting remains explicitly pinned to workflow v2.
+
 Run ledger accounting-package downloads use the shared `RunsLedgerExport` route, mirrored by the
 maintained TypeScript route generator. The existing summary, trial-balance and journal routes
 accept an optional inclusive `asOf` economic timestamp.

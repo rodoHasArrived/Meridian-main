@@ -17,6 +17,15 @@ use the scoped retained date population before pagination and bind cursors to th
 Deadline capture and CSV import reuse the append-only case evidence lifecycle, source precision,
 predecessor validation, frozen-case checks and durable command replay without changing economics.
 
+`BondHoldingImportService` bridges tenant-scoped raw/mapped integration evidence and retained
+reconciliation handoffs into the account statement authority. It rejects omitted unreviewed rows,
+unresolved identities, mismatched dates/currencies and cost-derived marks. The versioned fixed-income
+workflow template adds explicit terms and nested bond holdings without changing retained v1 manifests.
+Full-snapshot admission verifies completed source counts, quarantine and failed-page evidence.
+Unknown account attribution and unreviewed accepted rows block; an other-account exclusion requires
+exact authenticated identity. A rejected-row replay does not supply a complete corrected statement.
+See [bond import and account workflows](../../docs/operators/bond-workflows.md).
+
 Corporate-action inbox projections read actual election cutoffs only from the retained, versioned `electionCalendar` companion. Staged proposals and durable cases preserve source offsets and evidence; absent or malformed companions remain unavailable and never inherit operational SLA or ex-date deadlines.
 
 Intercompany accounting profiles link to the canonical legal registry through exact approved

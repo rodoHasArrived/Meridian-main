@@ -6,6 +6,184 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingPrimaryDocumentRenderer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRenderer</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:108](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L108).
+
+Renders the primary PDF/XLSX artifact of a governed reporting run. This is the seam that lets the certified artifact producer stay the single orchestrator (declarations, hashing, retained manifest, provenance) while the client-grade document bytes are produced by Meridian.Documents. Implementations must be deterministic: identical manifests must yield identical bytes, because artifacts are hash-verified on read-back.
+
+```csharp
+public interface IReportingPrimaryDocumentRenderer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>byte[] RenderPdf(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L110) |  |
+| <code>byte[] RenderWorkbook(ReportingOutputManifest manifest);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:112](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L112) |  |
+
+## IReportingPrimaryDocumentRendererWithLedgerReportPack
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRendererWithLedgerReportPack</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:120](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L120).
+
+Extended primary-document contract for renderers that can consume the exact checkpoint-bound ledger report pack supplied by the certified artifact producer. The complete PDF/XLSX pair is returned from one call so callers cannot produce format-dependent accounting presentations.
+
+```csharp
+public interface IReportingPrimaryDocumentRendererWithLedgerReportPack : IReportingPrimaryDocumentRenderer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LedgerClientReportDocumentPackage RenderClientPackage(ReportingOutputManifest manifest, LedgerFinancialReportPack certifiedLedgerReportPack);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:123](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L123) |  |
+
+## IReportingProviderReceiptAuthenticator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingProviderReceiptAuthenticator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L20).
+
+Authenticates provider callbacks before reporting delivery receipts are retained.
+
+```csharp
+public interface IReportingProviderReceiptAuthenticator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L22) |  |
+
+## IReportingRecipientDestinationResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRecipientDestinationResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:145](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L145).
+
+Resolves transport destinations from a governed principal. Deployments must replace the rejecting implementation with their tenant-bound identity or recipient directory adapter.
+
+```csharp
+public interface IReportingRecipientDestinationResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsConfigured { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L147) |  |
+| <code>IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:154](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L154) | Transport ids referenced by the deployment-owned recipient directory. A resolver that cannot enumerate its configured transports leaves this empty so deployment readiness fails closed instead of assuming an adapter exists. |
+| <code>ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:156](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L156) |  |
+
+## IReportingReconciliationEvidenceSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingReconciliationEvidenceSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L12).
+
+Resolves retained reconciliation evidence receipts for reporting certification.
+
+```csharp
+public interface IReportingReconciliationEvidenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingReconciliationEvidenceReceipt&gt; ResolveAsync(ReportingRunParametersDto parameters, ReportingAuthoritativeSourceCheckpoint source, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportingReconciliationEvidenceSource.cs#L14) |  |
+
+## IReportingRestatementCertificationInputProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRestatementCertificationInputProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:176](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L176).
+
+Resolves authoritative certification inputs for a reporting restatement.
+
+```csharp
+public interface IReportingRestatementCertificationInputProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingRestatementCertificationInput&gt; ResolveAsync(ReportingRestatementRequest request, GovernedReportingRun releasedPredecessor, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:178](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L178) |  |
+
+## IReportingRestatementChangedLineResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRestatementChangedLineResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:155](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L155).
+
+Server-owned source for the changed-line disclosure on a restatement request.
+
+```csharp
+public interface IReportingRestatementChangedLineResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ImmutableArray&lt;ReportingRestatementChangedLine&gt;&gt; ResolveAsync(GovernedReportingRun releasedPredecessor, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:157](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L157) |  |
+
+## IReportingRunReadinessDependencyEvaluator
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingRunReadinessDependencyEvaluator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L17).
+
+Evaluates dependency readiness checks for a requested reporting run.
+
+```csharp
+public interface IReportingRunReadinessDependencyEvaluator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;ReportingRunReadinessCheckDto&gt;&gt; EvaluateAsync(ReportingRunRequestDto request, ReportingTemplateMetadata template, ReportingRunParametersDto parameters, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L19) |  |
+
+## IReportingSchedulePeriodResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingSchedulePeriodResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:14](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L14).
+
+Resolves the accounting period a period-close reporting schedule should report on for a given date. The ledger store is the authority on period identity: fiscal periods need not follow calendar months, so a selector must never be derived from the date alone.
+
+```csharp
+public interface IReportingSchedulePeriodResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ReportingSchedulePeriodMatch?&gt; ResolvePeriodAsync(ReportingRunParametersDto parameters, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L21) | Returns the one accounting period of the parameters&#x27; ledger book that contains date, or null when the book or a unique containing period cannot be found. |
+| <code>Task&lt;ReportingSchedulePeriodMatch?&gt; ResolveNextClosePeriodAsync(ReportingRunParametersDto parameters, DateOnly currentPeriodEnd, ReportingSchedulePeriodFrequencyDto frequency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:40](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L40) | Returns the accounting period a period-close schedule should close next, after the period ending on currentPeriodEnd: Monthly: the period that starts the following day. Quarterly: the quarter-end period (period number 3, 6, 9 or 12) of the fiscal quarter that the following day falls in. Annually: the last period (number 12) of the fiscal year that the following day falls in. Quarter and year ends are defined by the ledger&#x27;s own period numbers, so only fiscal years with exactly twelve periods numbered 1 to 12 are supported for those cadences. Returns null whenever the ledger cannot name one period. |
+
+## IReportingScheduleStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingScheduleStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs:26](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleStore.cs#L26).
+
+Stores reporting schedules and coordinates execution claims and leases.
+
+```csharp
+public interface IReportingScheduleStore : Meridian.Reporting.IReportingScheduleStore
+```
+
 ## IReportingStarterKitStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingStarterKitStore</code>. Kind: `interface`.
@@ -857,185 +1035,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddOperatorTriageStorage(this IServiceCollection services, CompositionConfiguration configuration, bool isProduction);</code> | [src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/OperatorTriageServiceCollectionExtensions.cs#L12) |  |
-
-## OptionAssessmentImportService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OptionAssessmentImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:10](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L10).
-
-Retains imported broker claims and their exact source bytes. No broker or OMS is called.
-
-```csharp
-public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArtifactStore evidence, TimeProvider clock)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxSourceBytes = 8 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:12](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L12) |  |
-| <code>public OptionAssessmentImportPreview Preview(OptionAssessmentImportRequest request);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L16) |  |
-| <code>public async Task&lt;RetainedOptionAssessment&gt; AcceptAsync(string tenant, string company, string actor, Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:40](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L40) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;RetainedOptionAssessment&gt;&gt; ListAsync(string tenant, string company, Guid account, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs:100](../../../../src/Meridian.Ui.Shared/Services/OptionAssessmentImportService.cs#L100) |  |
-
-## OptionScreeningService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OptionScreeningService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:9](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L9).
-
-Bounded, current-snapshot option exploration. Does not evaluate account or execution permission.
-
-```csharp
-public sealed class OptionScreeningService(OptionsChainService chains, TimeProvider timeProvider)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaximumExpirations = 12;</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:11](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L11) |  |
-| <code>public async Task&lt;OptionScreenResult&gt; ScreenAsync(OptionScreenRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OptionScreeningService.cs:13](../../../../src/Meridian.Ui.Shared/Services/OptionScreeningService.cs#L13) |  |
-
-## OwnedProviderConnection
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:676](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L676).
-
-Identity of a retained connection one tenant owns; carries no credential material.
-
-```csharp
-public sealed record OwnedProviderConnection(string ConnectionId, string CredentialEnvironment);
-```
-
-## PaperFuturesSettlementOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:15](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L15).
-
-Options for the paper futures end-of-day variation-margin settlement job.
-
-```csharp
-public sealed class PaperFuturesSettlementOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionKey = &quot;PaperTrading:FuturesSettlement&quot;;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:18](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L18) | Configuration section bound to these options. |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:21](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L21) | Whether the job runs. Off by default, so hosts opt in. |
-| <code>public TimeSpan PollInterval { get; set; } = TimeSpan.FromMinutes(15);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:24](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L24) | How often the job looks for closed, unsettled trading days. |
-| <code>public int MaxCatchUpTradingDays { get; set; } = 5;</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:31](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L31) | The most recent closed trading days one pass settles per position, oldest first. A longer outage settles from its last days only; the total cash is the same, because each settlement moves the change since the previous one. |
-
-## PaperFuturesSettlementService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:44](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L44).
-
-Settles the daily variation margin of every open paper futures position once per trading day, after the regular close. Each pass walks the active paper sessions; for every variation-margin position it settles each closed trading day after its last settlement (and after the position opened), oldest first, at that day&#x27;s mark from IMarkPriceSource. The close stands in for the exchange settlement price, which is not modelled yet. A day with no price is skipped with a warning and never settled on a stale price. Settlements go through PaperSessionPersistenceService.RecordSettlementAsync, which persists before applying and ignores a day already settled, so overlapping or repeated passes are safe.
-
-```csharp
-public sealed class PaperFuturesSettlementService(IServiceProvider serviceProvider, IOptions<PaperFuturesSettlementOptions> options, ILogger<PaperFuturesSettlementService> logger, TimeProvider? timeProvider = null) : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;int&gt; RunOnceAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:98](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L98) | Runs one settlement pass at the current time and returns how many settlements it applied. Does nothing when the job is disabled or paper sessions or a mark price source are not registered. |
-
-## PaperFuturesSettlementServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaperFuturesSettlementServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:199](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L199).
-
-Registers the paper futures end-of-day settlement job.
-
-```csharp
-public static class PaperFuturesSettlementServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPaperFuturesSettlement(this IServiceCollection services, IConfiguration configuration);</code> | [src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs:206](../../../../src/Meridian.Ui.Shared/Services/PaperFuturesSettlementService.cs#L206) | Binds PaperFuturesSettlementOptions from PaperFuturesSettlementOptions.SectionKey and registers the job as a singleton and hosted service. It stays idle unless enabled and a mark price source is registered. |
-
-## PaymentInstruction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PaymentInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:27](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L27).
-
-```csharp
-public sealed record PaymentInstruction(string InstructionId, string AccountId, string Counterparty, string Currency, decimal Amount, DateOnly ValueDate, string Purpose, string Status);
-```
-
-## PerformanceFeeAccrualCalculation
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PerformanceFeeAccrualCalculation</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:241](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L241).
-
-Performance fee accrued to its cumulative amount above the high-water mark and hurdle. Net asset value before the fee is the ledger&#x27;s net assets plus the performance fee already accrued and payable, and only the change from that accrued amount is drafted. Terms: performanceFeeRate, highWaterMark, hurdleAmount, crystallize (0 or 1). After a fee is crystallized and settled, register a new schedule version with the new mark.
-
-```csharp
-public sealed class PerformanceFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string CalculationKind = &quot;performance-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:243](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L243) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:245](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L245) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:247](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L247) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:249](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L249) |  |
-
-## PlaidWebhookVerifier
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PlaidWebhookVerifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:27](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L27).
-
-Verifies the Plaid-Verification header a Plaid webhook carries, against a configured ES256 public key. The header is a JWS whose payload states the SHA-256 of the request body. Verification is therefore two independent checks, and both must hold: the token must be signed by the configured key, and the body actually received must hash to the value the signed token claims. Checking only the hash would authenticate nothing, because the caller supplies both the body and the hash. Plaid&#x27;s own documentation resolves the key by kid from its key-rotation endpoint. This implementation verifies against a key supplied in configuration instead, which keeps an inbound callback from depending on an outbound call to the same provider; when a key id is configured as well, a token minted under a different key is refused rather than checked against the wrong key.
-
-```csharp
-public static class PlaidWebhookVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static VerificationOutcome Verify(PlaidOptions options, string? verificationHeader, ReadOnlySpan&lt;byte&gt; body, DateTimeOffset utcNow);</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:52](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L52) | Verifies verificationHeader over body. |
-
-## VerificationOutcome
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PlaidWebhookVerifier.VerificationOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:32](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L32).
-
-```csharp
-public enum VerificationOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Verified</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:34](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L34) |  |
-| <code>NotConfigured</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:35](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L35) |  |
-| <code>MissingHeader</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:36](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L36) |  |
-| <code>MalformedToken</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:37](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L37) |  |
-| <code>UnsupportedAlgorithm</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:38](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L38) |  |
-| <code>UnknownKeyId</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:39](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L39) |  |
-| <code>SignatureMismatch</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:40](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L40) |  |
-| <code>BodyHashMismatch</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:41](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L41) |  |
-| <code>Expired</code> | [src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs:42](../../../../src/Meridian.Ui.Shared/Services/PlaidWebhookVerifier.cs#L42) |  |

@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationMatchKernel
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchKernel</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L12).
+
+Deterministic matching primitives shared by the canonical reconciliation floor and, by design, the W9-INGEST-009 statement/ledger sided matcher: stable best-first assignment over scored candidate pairs, bounded same-sign split (one-to-many / many-to-one) discovery, and content-derived identifiers so identical inputs reproduce identical match artifacts across re-runs. Nothing here allocates randomness or reads clocks — determinism is the contract.
+
+```csharp
+public static class ReconciliationMatchKernel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxSplitSearchCandidates = 24;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L18) | Upper bound on the candidate set a split search will consider. Callers pre-rank candidates; anything beyond this bound is deterministically ignored rather than exploding the search. |
+| <code>public static IReadOnlyList&lt;TPair&gt; SelectDeterministicAssignment&lt;TPair&gt;(IEnumerable&lt;TPair&gt; orderedAdmissiblePairs, Func&lt;TPair, IReadOnlyList&lt;string&gt;&gt; memberKeys);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L26) | Selects a non-overlapping assignment from candidate pairs that MUST already be ordered best-first with a total, deterministic order (score, then domain tie-breakers, then member ids). Walks the ranking once and takes each pair whose member keys are all unconsumed. Member keys must be unique across both populations — prefix keys per side when raw ids can collide. |
+| <code>public static bool TryFindSplit(decimal targetAmount, IReadOnlyList&lt;SplitCandidate&gt; candidates, decimal tolerance, int maxLegs, out IReadOnlyList&lt;SplitCandidate&gt; legs, out decimal residual) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:76](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L76) | Searches for the best bounded subset of same-sign candidate legs whose sum lands within tolerance of targetAmount. &quot;Best&quot; is total and deterministic: smallest absolute residual, then fewest legs, then the lexicographically smallest sorted leg-id sequence. A split needs at least two legs — single-leg matches belong to the pair stages. Candidates whose sign differs from the target are ignored (netting mixed-sign groups is casework, not floor matching), and only the MaxSplitSearchCandidates largest candidates by magnitude participate. |
+| <code>public static bool TryFindSplit(decimal targetAmount, IReadOnlyList&lt;SplitCandidate&gt; candidates, decimal tolerance, int maxLegs, Func&lt;IReadOnlyList&lt;SplitCandidate&gt;, bool&gt;? accept, out IReadOnlyList&lt;SplitCandidate&gt; legs, out decimal residual);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L91) | TryFindSplit(decimal, IReadOnlyList{SplitCandidate}, decimal, int, out IReadOnlyList{SplitCandidate}, out decimal) with a caller-supplied acceptance validator: only subsets the validator approves compete for &quot;best&quot;, so a subset that wins on the summed amount but fails a secondary constraint (for example aggregate market value on a position split) does not shadow a fully valid subset. |
+| <code>public static string CreateDeterministicId(string prefix, IReadOnlyList&lt;string&gt; parts);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:216](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L216) | Derives a stable identifier from match content (idempotency seed, rule, member ids…): the same inputs always produce the same id, so re-evaluating a cached run re-produces identical match-group, break, and evidence identifiers instead of minting fresh GUIDs per call. |
+
+## SplitCandidate
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchKernel.SplitCandidate</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L65).
+
+One candidate leg offered to TryFindSplit.
+
+```csharp
+public sealed record SplitCandidate(string Id, decimal Amount);
+```
+
+## ReconciliationMatchTier
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:3](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L3).
+
+```csharp
+public enum ReconciliationMatchTier
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Exact</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L5) |  |
+| <code>Tolerance</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:6](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L6) |  |
+| <code>Heuristic</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L7) |  |
+| <code>Unmatched</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L8) |  |
+
+## ReconciliationNormalizationService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationNormalizationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L14).
+
+Normalizes captured positions and cash entries onto the run&#x27;s canonical axes: instrument identifiers resolve through the mapping service, currency amounts convert through the same fail-closed IReconciliationFxRateProvider seam the statement lane uses, and accounting periods resolve through the business calendar from the entry&#x27;s own posting timestamp. When no FX rate is available the line keeps its source currency and amount — the matcher&#x27;s currency-identity guard then surfaces it as a break instead of silently comparing incompatible currencies at a fabricated rate.
+
+```csharp
+public sealed class ReconciliationNormalizationService(IInstrumentMappingService instrumentMapping, IReconciliationFxRateProvider fxRateProvider, IAccountingCalendar accountingCalendar)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public NormalizedPosition NormalizePosition(NormalizedPosition input, string baseCurrency, DateTimeOffset runTimestampUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L19) |  |
+| <code>public NormalizedCashEntry NormalizeCashEntry(NormalizedCashEntry input, string baseCurrency, DateTimeOffset runTimestampUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L40) |  |
+
 ## ReconciliationOrchestrationResilienceOptions
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationOrchestrationResilienceOptions</code>. Kind: `record`.
@@ -763,63 +835,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const int CurrentSchemaVersion = 1;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:99](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L99) |  |
-
-## StatementRunRecoveryConflictException
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:105](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L105).
-
-Indicates conflicting retained state during statement-run recovery.
-
-```csharp
-public sealed class StatementRunRecoveryConflictException(string message) : InvalidOperationException(message)
-```
-
-## StatementRunRecoveryStage
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryStage</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L58).
-
-```csharp
-public enum StatementRunRecoveryStage
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Imported = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L60) |  |
-| <code>Matched = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:61](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L61) |  |
-| <code>BreaksMaterialized = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L62) |  |
-| <code>CasesMaterialized = 4</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L63) |  |
-| <code>Completed = 5</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:64](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L64) |  |
-
-## StatementRunRecoveryStatus
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:67](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L67).
-
-```csharp
-public enum StatementRunRecoveryStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Running</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L69) |  |
-| <code>Failed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:70](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L70) |  |
-| <code>Completed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:71](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L71) |  |
-
-## StatementRunStageArtifact
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunStageArtifact</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:74](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L74).
-
-```csharp
-public sealed record StatementRunStageArtifact(string Sha256, int Count);
-```

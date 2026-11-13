@@ -43,7 +43,7 @@ namespace Meridian.Tests.Ui;
 /// named operator scenarios that guard against paper-session replay drift and
 /// promotion decisions that are not visibly auditable.
 /// </summary>
-public sealed class ExecutionWriteEndpointsTests
+public sealed partial class ExecutionWriteEndpointsTests
 {
     private const string ApprovedLiveRunId = "run-live-approved";
 

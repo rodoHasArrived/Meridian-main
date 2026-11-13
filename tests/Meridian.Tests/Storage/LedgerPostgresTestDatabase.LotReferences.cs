@@ -67,7 +67,7 @@ internal sealed partial class LedgerPostgresTestDatabase
             at.AddMinutes(2), "preparer", AssetAccountingEvidenceSubjects.Event, eventId.ToString("D"));
         var origin = new EconomicEventReferenceDto(eventId, "Trade", 1, date, at, "custodian", "lot-position-origin")
         { SecurityId = securityId, BookPositionId = positionId, RetainedEvidence = [evidence], EvidenceLinks = [evidence.EvidenceUri] };
-        var role = new InstrumentRoleDto(Guid.NewGuid(), securityId, book.FundProfileId, "Fund", InstrumentRoleKinds.Holder,
+        var role = new InstrumentRoleDto(Guid.NewGuid(), securityId, book.FundProfileId, book.FundStructureNodeKind.ToString(), InstrumentRoleKinds.Holder,
             InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, date, OriginEvent: origin,
             EvidenceLinks: [evidence.EvidenceUri])
         { RetainedEvidence = [evidence] };

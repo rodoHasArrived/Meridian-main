@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
@@ -188,8 +189,9 @@ public sealed class PaperSessionPersistenceServiceTests
         service.GetSession(sessionId)!.Summary.SessionId.Should().Be(sessionId);
         await store.Received(1).SaveSessionMetadataAsync(
             Arg.Is<PersistedSessionRecord>(saved => saved.SessionId == sessionId && !saved.IsActive), Arg.Any<CancellationToken>());
-        logger.Entries.Should().Contain(entry => entry.Message.Contains("PAPER-retained__FORGED", StringComparison.Ordinal));
-        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
+        logger.Entries.Should().Contain(entry => entry.Message.Contains(Sha256Digest.ComputeUtf8(sessionId), StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains("PAPER-retained", StringComparison.Ordinal)
+            && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
     }
 
     [Fact]
@@ -223,6 +225,7 @@ public sealed class PaperSessionPersistenceServiceTests
             (await File.ReadAllBytesAsync(path)).Should().Equal(retained);
             logger.Entries.Should().NotBeEmpty();
             logger.Entries.Should().OnlyContain(entry => entry.Exception == null
+                && !entry.Message.Contains(root, StringComparison.Ordinal)
                 && !entry.Message.Contains("invalid-private-record", StringComparison.Ordinal)
                 && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
         }

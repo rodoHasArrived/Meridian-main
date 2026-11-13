@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -485,8 +486,9 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
 
         report.OrderId.Should().Be(orderId);
         report.ReportType.Should().Be(ExecutionReportType.CancelRejected);
-        logger.Entries.Should().Contain(entry => entry.Message.Contains("client-order__FORGED", StringComparison.Ordinal));
+        logger.Entries.Should().Contain(entry => entry.Message.Contains(Sha256Digest.ComputeUtf8(orderId), StringComparison.Ordinal));
         logger.Entries.Should().OnlyContain(entry => entry.Exception == null
+            && !entry.Message.Contains("FORGED", StringComparison.Ordinal)
             && !entry.Message.Contains(privateFailure, StringComparison.Ordinal)
             && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
     }

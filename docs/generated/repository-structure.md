@@ -1979,6 +1979,7 @@ Meridian-main
 │   │   └── service-level-objectives.md
 │   ├── operators
 │   │   ├── account-oversight.md
+│   │   ├── bond-workflows.md
 │   │   ├── browser-workstation-installer.md
 │   │   ├── business-day-calendar-files.md
 │   │   ├── deployment-packaging.md
@@ -2158,7 +2159,10 @@ Meridian-main
 │   │   │   │   ├── page-068.md
 │   │   │   │   ├── page-069.md
 │   │   │   │   ├── page-070.md
-│   │   │   │   └── page-071.md
+│   │   │   │   ├── page-071.md
+│   │   │   │   ├── page-072.md
+│   │   │   │   ├── page-073.md
+│   │   │   │   └── page-074.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -2212,7 +2216,8 @@ Meridian-main
 │   │   │   │   ├── page-004.md
 │   │   │   │   ├── page-005.md
 │   │   │   │   ├── page-006.md
-│   │   │   │   └── page-007.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   └── page-008.md
 │   │   │   ├── meridian.instruments
 │   │   │   │   ├── page-001.md
 │   │   │   │   └── page-002.md
@@ -5246,6 +5251,7 @@ Meridian-main
 │   │   │   │   └── StatusEndpointHandlers.cs
 │   │   │   └── ConfigStore.cs
 │   │   ├── Integrations
+│   │   │   ├── BondHoldingImportService.cs
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
 │   │   │   ├── ProviderIntegrationActivationService.cs
 │   │   │   ├── ProviderIntegrationBondValueNormalization.cs
@@ -5396,6 +5402,7 @@ Meridian-main
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
 │   │   │   ├── SecurityCashFlowScheduleRowCodec.cs
 │   │   │   ├── SecurityDayCountWriteGuard.cs
+│   │   │   ├── SecurityEconomicDefinitionAdapter.BondWorkflow.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.CapitalHomes.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.DebtHomes.cs
@@ -5637,6 +5644,17 @@ Meridian-main
 │   ├── Meridian.Contracts
 │   │   ├── Accounting
 │   │   │   └── Lots
+│   │   │       ├── BondCouponRecognitionDtos.cs
+│   │   │       ├── BondIncomeAcquisitionOwnership.cs
+│   │   │       ├── BondIncomeBookedPrecision.cs
+│   │   │       ├── BondIncomeCalculator.cs
+│   │   │       ├── BondIncomeCouponRounding.cs
+│   │   │       ├── BondIncomeDtos.cs
+│   │   │       ├── BondIncomePeriodMath.cs
+│   │   │       ├── BondIncomePurchasedCouponTail.cs
+│   │   │       ├── BondIncomeScheduledPrincipal.cs
+│   │   │       ├── BondIncomeTerminalCoupon.cs
+│   │   │       ├── BondIncomeZeroCouponMath.cs
 │   │   │       ├── OpenLotAmortization.cs
 │   │   │       ├── OpenLotAmortizationContinuation.cs
 │   │   │       ├── OpenLotBackfillDtos.cs
@@ -5683,6 +5701,7 @@ Meridian-main
 │   │   ├── Archive
 │   │   │   └── ArchiveHealthModels.cs
 │   │   ├── AssetOperations
+│   │   │   ├── AccountBondHoldingsDtos.cs
 │   │   │   ├── AccountCashForecastDtos.cs
 │   │   │   ├── AccountCashForecastJsonContext.cs
 │   │   │   ├── AssetAccountingEventDtos.cs
@@ -5849,6 +5868,7 @@ Meridian-main
 │   │   │   ├── CoreExtensibilityContracts.cs
 │   │   │   └── CoreExtensibilityContractsJsonContext.cs
 │   │   ├── FixedIncome
+│   │   │   ├── AccountBondIncomePlanningDtos.cs
 │   │   │   ├── BondAnalyticsDtos.cs
 │   │   │   ├── BondCalculationContext.cs
 │   │   │   ├── BondContractualEconomics.cs
@@ -5856,17 +5876,31 @@ Meridian-main
 │   │   │   ├── BondExerciseEconomics.cs
 │   │   │   ├── BondExerciseNoticeWatch.cs
 │   │   │   ├── BondFloatingRateEvidence.cs
+│   │   │   ├── BondMarketDataContracts.cs
 │   │   │   ├── BondMigrationApiRequests.cs
 │   │   │   ├── BondMigrationDtos.cs
+│   │   │   ├── BondMonitoringDtos.cs
 │   │   │   ├── BondObservedFixings.cs
+│   │   │   ├── BondPerformanceDtos.cs
+│   │   │   ├── BondPerformanceTransactions.cs
+│   │   │   ├── BondPortfolioWorkflowDtos.cs
 │   │   │   ├── BondPricingMath.cs
+│   │   │   ├── BondProviderIntakeDtos.cs
 │   │   │   ├── BondReferenceDtos.cs
+│   │   │   ├── BondScreeningDtos.cs
 │   │   │   ├── BondSettlementConsideration.cs
+│   │   │   ├── BondWorkflowDtos.cs
+│   │   │   ├── BondWorkflowPricing.cs
+│   │   │   ├── BondWorkflowProjection.cs
+│   │   │   ├── BondWorkflowTermsRules.cs
 │   │   │   ├── DiscountMath.cs
 │   │   │   └── IBondAnalyticsService.cs
 │   │   ├── FundStructure
 │   │   │   ├── AccountManagementDtos.cs
 │   │   │   ├── AccountManagementOptions.cs
+│   │   │   ├── BondHoldingEconomicsDto.cs
+│   │   │   ├── BondHoldingImportRequest.cs
+│   │   │   ├── CustodianHoldingSnapshotSelector.cs
 │   │   │   ├── EntityLifecycleDtos.cs
 │   │   │   ├── EntityLifecycleRevisionIntegrity.cs
 │   │   │   ├── EntityTimelineDto.cs
@@ -6073,6 +6107,7 @@ Meridian-main
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEconomicScheduleParser.cs
 │   │   │   ├── SecurityEconomicScheduleValidation.cs
+│   │   │   ├── SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.BondWorkflow.cs
 │   │   │   ├── SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.DeclaredSchedules.cs
 │   │   │   ├── SecurityEvents.cs
 │   │   │   ├── SecurityFactorHistory.cs
@@ -6729,6 +6764,7 @@ Meridian-main
 │   │   │   ├── AccountingJournalDraftService.cs
 │   │   │   ├── AccountingPolicyService.cs
 │   │   │   ├── AccountingPostingCandidatePostService.ApprovalBoundary.cs
+│   │   │   ├── AccountingPostingCandidatePostService.BondAcquisition.cs
 │   │   │   ├── AccountingPostingCandidatePostService.CapitalReturn.cs
 │   │   │   ├── AccountingPostingCandidatePostService.CashDividendAttestation.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
@@ -6737,12 +6773,26 @@ Meridian-main
 │   │   │   ├── AccountingPostingCandidatePostService.FactorPaydownReplay.cs
 │   │   │   ├── AccountingPostingCandidatePostService.JournalIntentBinding.cs
 │   │   │   ├── AccountingPostingCandidatePostService.ReferenceAuthority.cs
+│   │   │   ├── AccountingPostingCandidateService.BondAcquisition.cs
+│   │   │   ├── AccountingPostingCandidateService.BondIncome.cs
 │   │   │   ├── AccountingPostingCandidateService.CashFlow.cs
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
+│   │   │   ├── AssetAccountingEventSpineService.BondCouponRecognition.cs
 │   │   │   ├── AssetAccountingEventSpineService.cs
 │   │   │   ├── AssetAccountingEventSpineService.PreparationRevision.cs
 │   │   │   ├── BondAmortizationPolicyGuard.cs
+│   │   │   ├── BondCouponClosedLotAuthority.cs
+│   │   │   ├── BondCouponRecognitionClosingHistory.cs
+│   │   │   ├── BondCouponRecognitionNoncashHistory.cs
+│   │   │   ├── BondCouponRecognitionOpeningGuard.cs
+│   │   │   ├── BondCouponRecognitionReversal.cs
+│   │   │   ├── BondCouponRecognitionService.cs
+│   │   │   ├── BondIncomeAcquisitionJournalPrecision.cs
+│   │   │   ├── BondIncomeEntitlementHistoryGuard.cs
+│   │   │   ├── BondIncomePreparationService.cs
+│   │   │   ├── BondIncomeService.cs
+│   │   │   ├── BondIncomeTerminalCouponGuard.cs
 │   │   │   ├── BondSettlementConsiderationService.cs
 │   │   │   ├── BondSettlementPostingGuard.cs
 │   │   │   ├── CanonicalLotAmortizationService.cs
@@ -6943,6 +6993,7 @@ Meridian-main
 │   │   │   ├── ValidationPipeline.fs
 │   │   │   └── ValidationTypes.fs
 │   │   ├── Interop.AccountDetails.fs
+│   │   ├── Interop.BondWorkflow.fs
 │   │   ├── Interop.CashFlow.fs
 │   │   ├── Interop.DirectLending.fs
 │   │   ├── Interop.fs
@@ -7101,6 +7152,7 @@ Meridian-main
 │   │   │   │   └── FinnhubSymbolSearchProvider.cs
 │   │   │   ├── Fred
 │   │   │   │   ├── FredHistoricalDataProvider.cs
+│   │   │   │   ├── FredHistoricalDataProvider.EconomicObservations.cs
 │   │   │   │   ├── FredProviderModule.cs
 │   │   │   │   └── FredSymbolSearchProvider.cs
 │   │   │   ├── InteractiveBrokers
@@ -7137,6 +7189,7 @@ Meridian-main
 │   │   │   │   ├── NYSEOptions.cs
 │   │   │   │   └── NYSEServiceExtensions.cs
 │   │   │   ├── OpenFigi
+│   │   │   │   ├── BondFigiLookupResult.cs
 │   │   │   │   ├── OpenFigiClient.cs
 │   │   │   │   ├── OpenFigiRequestCredentials.cs
 │   │   │   │   └── OpenFigiSymbolResolver.cs
@@ -7232,6 +7285,7 @@ Meridian-main
 │   ├── Meridian.Instruments
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastEngine.cs
+│   │   │   ├── AccountCashForecastEngine.V2.cs
 │   │   │   ├── AccountCashForecastProjectionAdapter.cs
 │   │   │   ├── AccountCashForecastService.cs
 │   │   │   ├── AssetObligationProjectionService.cs
@@ -7275,12 +7329,23 @@ Meridian-main
 │   │   │   ├── EquityProjectionService.cs
 │   │   │   └── IEquityReferenceService.cs
 │   │   ├── FixedIncome
+│   │   │   ├── AccountBondIncomePlanningService.cs
 │   │   │   ├── BondAnalyticsService.cs
 │   │   │   ├── BondAnalyticsService.ObservedFixings.cs
+│   │   │   ├── BondMarketDataService.cs
+│   │   │   ├── BondMarketWorkflowObservationSource.cs
 │   │   │   ├── BondMigrationService.cs
+│   │   │   ├── BondMonitoringEngine.cs
+│   │   │   ├── BondMonitoringMarketWatch.cs
+│   │   │   ├── BondMonitoringService.Authority.cs
+│   │   │   ├── BondPerformanceService.cs
+│   │   │   ├── BondPortfolioHoldingQuote.cs
+│   │   │   ├── BondPortfolioWorkflowServices.cs
 │   │   │   ├── BondProjectionService.cs
 │   │   │   ├── BondProjectionService.Paging.cs
 │   │   │   ├── BondReferenceTermMapper.cs
+│   │   │   ├── BondScreeningService.cs
+│   │   │   ├── BondWorkflowService.cs
 │   │   │   ├── FileBondCalculationPolicy.cs
 │   │   │   ├── IBondReferenceService.cs
 │   │   │   └── UnavailableBondMigrationService.cs
@@ -7587,6 +7652,7 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.PortfolioRecords
 │   │   ├── Accounts
+│   │   │   ├── AccountBondHoldingsSource.cs
 │   │   │   ├── IAccountManagementService.cs
 │   │   │   └── IAccountQueryService.cs
 │   │   ├── FundAccounts
@@ -7901,6 +7967,10 @@ Meridian-main
 │   │   │   ├── PreflightRule.cs
 │   │   │   ├── SpreadsheetFormulaGuard.cs
 │   │   │   └── XlsxWorkbookWriter.cs
+│   │   ├── FixedIncome
+│   │   │   ├── BondMonitoringFileStore.cs
+│   │   │   ├── BondWorkspaceSnapshotStore.cs
+│   │   │   └── FileBondPerformanceTransactionStore.cs
 │   │   ├── FundAccounts
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_fund_accounts.sql
@@ -7911,7 +7981,8 @@ Meridian-main
 │   │   │   │   ├── 006_sync_history_correlation.sql
 │   │   │   │   ├── 007_bank_statement_authority.sql
 │   │   │   │   ├── 008_plaid_transaction_feed_backfill.sql
-│   │   │   │   └── 009_private_capital_records.sql
+│   │   │   │   ├── 009_custodian_snapshot_authority.sql
+│   │   │   │   └── 010_private_capital_records.sql
 │   │   │   ├── FilePrivateCapitalRecordStore.cs
 │   │   │   ├── FundAccountMigrationRunner.cs
 │   │   │   ├── FundAccountStoreOptions.cs
@@ -8017,6 +8088,7 @@ Meridian-main
 │   │   │   │   ├── V_ledger_052__tax_lot_current_factor.sql
 │   │   │   │   ├── V_ledger_053__atomic_lot_factor_paydown.sql
 │   │   │   │   ├── V_ledger_054__private_capital_authority.sql
+│   │   │   │   ├── V_ledger_055__bond_coupon_recognition.sql
 │   │   │   │   ├── V_ledger_057__intercompany_account_bindings.sql
 │   │   │   │   ├── V_ledger_061__entity_controls.sql
 │   │   │   │   ├── V_ledger_062__intercompany_proposals.sql
@@ -8038,6 +8110,7 @@ Meridian-main
 │   │   │   ├── ConsolidationTransitionRules.cs
 │   │   │   ├── CorporateActionSuccessorAncestry.cs
 │   │   │   ├── DurableAutomatedJournalPoster.cs
+│   │   │   ├── FileBondIncomePreparationEvidenceStore.cs
 │   │   │   ├── FileIntercompanyAccountBindingStore.cs
 │   │   │   ├── FileLegacyIntercompanyAttributionStore.cs
 │   │   │   ├── GovernedLedgerPostingTarget.cs
@@ -8080,6 +8153,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
+│   │   │   ├── PostgresLedgerJournalStore.BondCouponRecognition.cs
 │   │   │   ├── PostgresLedgerJournalStore.CapitalReturn.cs
 │   │   │   ├── PostgresLedgerJournalStore.CashDividendAttestation.cs
 │   │   │   ├── PostgresLedgerJournalStore.Consolidation.cs
@@ -8262,9 +8336,12 @@ Meridian-main
 │   │   │   │   ├── 062_security_master_identifier_revisions.sql
 │   │   │   │   ├── 064_custom_asset_profile_field_projection.sql
 │   │   │   │   ├── 065_security_price_quotation_evidence.sql
-│   │   │   │   └── 066_corporate_action_cash_dividend_attestations.sql
+│   │   │   │   ├── 066_corporate_action_cash_dividend_attestations.sql
+│   │   │   │   └── 067_security_curve_rate_policy.sql
 │   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
+│   │   │   ├── FileBondMarketDataStore.cs
+│   │   │   ├── FileBondProviderResponseStore.cs
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -8746,6 +8823,12 @@ Meridian-main
 │   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── account-balance-history-chart.tsx
+│   │   │   │   │   │   ├── account-bond-performance-panel.test.tsx
+│   │   │   │   │   │   ├── account-bond-performance-panel.tsx
+│   │   │   │   │   │   ├── account-bond-planning-panel.test.tsx
+│   │   │   │   │   │   ├── account-bond-planning-panel.tsx
+│   │   │   │   │   │   ├── account-bond-tools.test.tsx
+│   │   │   │   │   │   ├── account-bond-tools.tsx
 │   │   │   │   │   │   ├── accounting-preparer-attestation.test.tsx
 │   │   │   │   │   │   ├── accounting-preparer-attestation.tsx
 │   │   │   │   │   │   ├── activity-center.tsx
@@ -8758,15 +8841,28 @@ Meridian-main
 │   │   │   │   │   │   ├── bias-disclosure-panel.tsx
 │   │   │   │   │   │   ├── bond-analytics-panel.test.tsx
 │   │   │   │   │   │   ├── bond-analytics-panel.tsx
+│   │   │   │   │   │   ├── bond-coupon-recognition-panel.test.tsx
+│   │   │   │   │   │   ├── bond-coupon-recognition-panel.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.retained-scenarios.test.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.test.tsx
 │   │   │   │   │   │   ├── bond-economics-horizon.tsx
+│   │   │   │   │   │   ├── bond-income-panel.test.tsx
+│   │   │   │   │   │   ├── bond-income-panel.tsx
+│   │   │   │   │   │   ├── bond-market-inputs-panel.test.tsx
+│   │   │   │   │   │   ├── bond-market-inputs-panel.tsx
 │   │   │   │   │   │   ├── bond-migration-preview-panel.test.tsx
 │   │   │   │   │   │   ├── bond-migration-preview-panel.tsx
 │   │   │   │   │   │   ├── bond-observed-fixing-panel.test.tsx
 │   │   │   │   │   │   ├── bond-observed-fixing-panel.tsx
+│   │   │   │   │   │   ├── bond-provider-intake-panel.test.tsx
+│   │   │   │   │   │   ├── bond-provider-intake-panel.tsx
 │   │   │   │   │   │   ├── bond-reference-ladder-panel.test.tsx
 │   │   │   │   │   │   ├── bond-reference-ladder-panel.tsx
+│   │   │   │   │   │   ├── bond-saved-comparison.tsx
+│   │   │   │   │   │   ├── bond-screening-panel.test.tsx
+│   │   │   │   │   │   ├── bond-screening-panel.tsx
+│   │   │   │   │   │   ├── bond-workflow-panel.test.tsx
+│   │   │   │   │   │   ├── bond-workflow-panel.tsx
 │   │   │   │   │   │   ├── cash-dividend-attestation-panel.test.tsx
 │   │   │   │   │   │   ├── cash-dividend-attestation-panel.tsx
 │   │   │   │   │   │   ├── close-checklist-history-chart.test.tsx
@@ -9128,6 +9224,8 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-migration.api.ts
 │   │   │   │   │   │   ├── bond-observed-fixings.api.ts
 │   │   │   │   │   │   ├── bond-reference.api.ts
+│   │   │   │   │   │   ├── bond-workflow.api.test.ts
+│   │   │   │   │   │   ├── bond-workflow.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
 │   │   │   │   │   │   ├── chart-evidence.api.test.ts
@@ -9990,6 +10088,7 @@ Meridian-main
 │   │   │   │   │   ├── bond-cutover.types.ts
 │   │   │   │   │   ├── bond-migration.types.ts
 │   │   │   │   │   ├── bond-reference.types.ts
+│   │   │   │   │   ├── bond-workflow.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
 │   │   │   │   │   ├── cash-dividend-attestation.ts
@@ -10268,6 +10367,7 @@ Meridian-main
 │   │   │   ├── BondMigrationEndpoints.cs
 │   │   │   ├── BondReferenceEndpoints.cs
 │   │   │   ├── BondReferencePagingEndpoints.cs
+│   │   │   ├── BondWorkflowEndpoints.cs
 │   │   │   ├── BrokerageConnectionEndpoints.cs
 │   │   │   ├── CalendarEndpoints.cs
 │   │   │   ├── CanonicalizationEndpoints.cs
@@ -10297,6 +10397,7 @@ Meridian-main
 │   │   │   ├── ExecutionEndpointDtos.cs
 │   │   │   ├── ExecutionEndpoints.Audit.cs
 │   │   │   ├── ExecutionEndpoints.cs
+│   │   │   ├── ExecutionEndpoints.Metadata.cs
 │   │   │   ├── ExecutionEndpoints.Positions.cs
 │   │   │   ├── ExecutionEndpoints.Workflows.cs
 │   │   │   ├── ExportEndpoints.cs
@@ -10330,6 +10431,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
 │   │   │   ├── LedgerEndpoints.AccountOversight.cs
 │   │   │   ├── LedgerEndpoints.AuditIntegrity.cs
+│   │   │   ├── LedgerEndpoints.BondWorkflows.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
 │   │   │   ├── LedgerEndpoints.ClosePreparation.cs
 │   │   │   ├── LedgerEndpoints.Consolidation.cs
@@ -10465,6 +10567,7 @@ Meridian-main
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
 │   │   │   ├── AccountCashForecastEvidenceAdapter.cs
+│   │   │   ├── BondCouponRecognitionEvidenceVerifier.cs
 │   │   │   ├── ContractualCashFlowDraftAttestationSubjectResolver.cs
 │   │   │   ├── EvidenceAttestationSubjectResolver.cs
 │   │   │   ├── EvidenceContribution.cs
@@ -10565,7 +10668,13 @@ Meridian-main
 │   │   │   ├── BackfillExecutionContractProjection.cs
 │   │   │   ├── BacktestLedgerExportMapper.cs
 │   │   │   ├── BankFeedTransportService.cs
+│   │   │   ├── BondCollectionCaseworkProjection.cs
 │   │   │   ├── BondExerciseNoticeReadService.cs
+│   │   │   ├── BondPerformanceSourceVerifier.cs
+│   │   │   ├── BondPerformanceTransactionSource.cs
+│   │   │   ├── BondProviderIntakeService.cs
+│   │   │   ├── BondWorkflowConnectionReadinessService.cs
+│   │   │   ├── BondWorkflowServiceRegistration.cs
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
@@ -11870,6 +11979,9 @@ Meridian-main
 │   │   ├── XirrCalculatorTests.cs
 │   │   └── YahooFinanceBacktestIntegrationTests.cs
 │   ├── Meridian.Contracts.UnitTests
+│   │   ├── Accounting
+│   │   │   ├── BondCouponRecognitionTests.cs
+│   │   │   └── BondIncomeCalculatorTests.cs
 │   │   ├── Contracts
 │   │   │   ├── Api
 │   │   │   │   └── UiApiClientTests.cs
@@ -12342,6 +12454,8 @@ Meridian-main
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
 │   │   │   ├── Integrations
+│   │   │   │   ├── BondHoldingImportServiceTests.cs
+│   │   │   │   ├── BondHoldingTemplateImportTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationReadinessServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationBondValueNormalizationTests.cs
@@ -12724,6 +12838,7 @@ Meridian-main
 │   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionJournalAttemptTests.cs
+│   │   │   ├── ExecutionLogBoundaryTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── ExecutionReportHubTests.cs
 │   │   │   ├── ExecutionWorkflowTests.cs
@@ -12843,6 +12958,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.AcquisitionAdmission.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.BondAcquisitionOwnership.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.BondSettlement.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.CapitalReturn.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.CashFlowReplay.cs
@@ -12853,6 +12969,11 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.PreparationRevision.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
+│   │   │   │   ├── BondCouponRecognitionClosingHistoryTests.cs
+│   │   │   │   ├── BondCouponRecognitionNoncashHistoryTests.cs
+│   │   │   │   ├── BondCouponRecognitionOpeningGuardTests.cs
+│   │   │   │   ├── BondCouponRecognitionServiceTests.cs
+│   │   │   │   ├── BondIncomeServiceTests.cs
 │   │   │   │   ├── BondSettlementConsiderationTests.cs
 │   │   │   │   ├── BondSettlementRetainedObservationTests.cs
 │   │   │   │   ├── CashDividendPreparerPostingContractTests.cs
@@ -12889,6 +13010,8 @@ Meridian-main
 │   │   │   ├── RecurringJournalEvidencePinStoreTests.cs
 │   │   │   └── RecurringJournalStoreTests.cs
 │   │   ├── FixedIncome
+│   │   │   ├── AccountBondIncomePlanningEntitlementTests.cs
+│   │   │   ├── AccountBondIncomePlanningTests.cs
 │   │   │   ├── BondAnalyticsFloatingTests.cs
 │   │   │   ├── BondAnalyticsMathTests.cs
 │   │   │   ├── BondAnalyticsScheduleRefusalTests.cs
@@ -12899,9 +13022,28 @@ Meridian-main
 │   │   │   ├── BondExerciseDelayedCouponTests.cs
 │   │   │   ├── BondExerciseDelayedCouponTests.RetainedDeclarations.cs
 │   │   │   ├── BondExerciseNoticeWatchTests.cs
+│   │   │   ├── BondMarketDataServiceTests.cs
 │   │   │   ├── BondMigrationServiceTests.cs
+│   │   │   ├── BondMonitoringAndNativeCashTests.cs
+│   │   │   ├── BondMonitoringCouponRevisionTests.cs
+│   │   │   ├── BondMonitoringCultureTests.cs
+│   │   │   ├── BondMonitoringMarketWatchTests.cs
+│   │   │   ├── BondMonitoringVersionAuthorityTests.cs
+│   │   │   ├── BondPerformanceServiceTests.cs
+│   │   │   ├── BondPortfolioWorkflowRealPricingTests.cs
+│   │   │   ├── BondPortfolioWorkflowServiceTests.cs
 │   │   │   ├── BondProjectionServiceTests.cs
+│   │   │   ├── BondProviderResponseStoreTests.cs
 │   │   │   ├── BondReferenceExpansionTests.cs
+│   │   │   ├── BondScreeningServiceTests.cs
+│   │   │   ├── BondWorkflowCurveSelectionTests.cs
+│   │   │   ├── BondWorkflowPricingTests.cs
+│   │   │   ├── BondWorkflowProjectionTests.cs
+│   │   │   ├── BondWorkflowServiceTests.cs
+│   │   │   ├── BondWorkflowServiceTests.DirtyRounding.cs
+│   │   │   ├── BondWorkflowServiceTests.FinalExercise.cs
+│   │   │   ├── BondWorkflowServiceTests.InflationCutoff.cs
+│   │   │   ├── BondWorkspaceSnapshotStoreTests.cs
 │   │   │   └── DeclaredExerciseNonBondClassTests.cs
 │   │   ├── FundStructure
 │   │   │   ├── GovernanceCashFlowTransactionFeedTests.cs
@@ -13000,8 +13142,10 @@ Meridian-main
 │   │   │   │   ├── FinnhubCorporateActionProviderTests.cs
 │   │   │   │   ├── FinnhubHistoricalDataProviderTests.cs
 │   │   │   │   ├── FinnhubSymbolSearchProviderTests.cs
+│   │   │   │   ├── FredEconomicObservationsTests.cs
 │   │   │   │   ├── FredHistoricalDataProviderTests.cs
 │   │   │   │   ├── FredSymbolSearchProviderTests.cs
+│   │   │   │   ├── FredTypedHttpRetryTests.cs
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
@@ -13296,6 +13440,7 @@ Meridian-main
 │   │   │   └── FundAccounts
 │   │   │       ├── AccountReconciliationChecksTests.cs
 │   │   │       ├── BankStatementClosingBalanceAuthorityTests.cs
+│   │   │       ├── BondHoldingSnapshotTests.cs
 │   │   │       ├── FundAccountReadServiceParityTests.cs
 │   │   │       ├── FundAccountServiceContractTests.cs
 │   │   │       ├── FundAccountServiceTests.cs
@@ -13416,6 +13561,7 @@ Meridian-main
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.RateUnit.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.ScheduleAuthoring.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.StaleProposal.cs
+│   │   │   │   ├── BondWorkflowTermsAdmissionTests.cs
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
 │   │   │   │   ├── LedgerBookAffectedResolverTests.cs
 │   │   │   │   ├── LedgerPeriodLockReaderTests.cs
@@ -13436,6 +13582,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
 │   │   │   ├── BondCalculationReplayTests.cs
 │   │   │   ├── BondProjectionGoldenTests.cs
+│   │   │   ├── BondWorkflowCanonicalModuleTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── ClassificationLabelReaderTests.cs
 │   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
@@ -13701,6 +13848,7 @@ Meridian-main
 │   │   │   │   ├── FundAccountDatabaseFixture.cs
 │   │   │   │   ├── PostgresFundAccountStorePlaidMigrationTests.cs
 │   │   │   │   ├── PostgresFundAccountStoreTenantAdmissionTests.cs
+│   │   │   │   ├── PostgresFundAccountStoreTests.BondSnapshots.cs
 │   │   │   │   ├── PostgresFundAccountStoreTests.cs
 │   │   │   │   └── PostgresPrivateCapitalRecordStoreTests.cs
 │   │   │   ├── FundStructure
@@ -13745,15 +13893,24 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AdvanceRefundingReport.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AssetApprovalBridge.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.AtomicEntitlementBoundary.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AverageCost.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.BackfillLockOrder.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.BondAcquisitionOwnership.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.BondCouponRecognition.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.BondIncomePaydownHistory.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.BondIncomePrincipal.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.BondIncomeTerminalCoupon.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CapitalReturn.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CapitalReturnPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CarryDateLineage.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CouponHistoryBoundary.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CouponHistoryDividendBoundary.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentFactor.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DeferralRecipients.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.DelayedCouponAccrual.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Direction.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DirectWrites.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ExtendedAmortization.cs
@@ -13964,6 +14121,7 @@ Meridian-main
 │   │   │   └── StrategySessionShutdownTests.cs
 │   │   ├── SymbolSearch
 │   │   │   ├── BoundedSearchCacheTests.cs
+│   │   │   ├── OpenFigiBondLookupTests.cs
 │   │   │   ├── OpenFigiClientAmbiguityTests.cs
 │   │   │   ├── OpenFigiClientTests.cs
 │   │   │   ├── OpenFigiSymbolResolverTests.cs
@@ -14075,10 +14233,19 @@ Meridian-main
 │   │   │   ├── BankFeedTransportServiceTests.cs
 │   │   │   ├── BankStatementCsvImportAuthorityTests.cs
 │   │   │   ├── BondAnalyticsEndpointsTests.cs
+│   │   │   ├── BondCollectionCaseworkProjectionTests.cs
+│   │   │   ├── BondCouponRecognitionEvidenceVerifierTests.cs
 │   │   │   ├── BondExerciseNoticeEndpointsTests.cs
+│   │   │   ├── BondFamilyAcceptance.cs
+│   │   │   ├── BondIncomeAuthorityCompositionTests.cs
 │   │   │   ├── BondMigrationEndpointsTests.cs
 │   │   │   ├── BondObservedFixingEndpointsTests.cs
+│   │   │   ├── BondPerformanceSourceVerifierTests.cs
+│   │   │   ├── BondPerformanceTransactionSourceTests.cs
+│   │   │   ├── BondProviderIntakeServiceTests.cs
 │   │   │   ├── BondReferenceEndpointsTests.cs
+│   │   │   ├── BondWorkflowConnectionReadinessTests.cs
+│   │   │   ├── BondWorkflowEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionIsolationTests.cs
 │   │   │   ├── BrokerageContractMultiplierTests.cs
@@ -14124,6 +14291,7 @@ Meridian-main
 │   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionRouteContractParityTests.cs
 │   │   │   ├── ExecutionWriteEndpointsTests.cs
+│   │   │   ├── ExecutionWriteEndpointsTests.Security.cs
 │   │   │   ├── ExportEndpointsTests.cs
 │   │   │   ├── FamilyOfficeContractTests.cs
 │   │   │   ├── FamilyOfficeReadServiceTests.cs
@@ -14211,6 +14379,7 @@ Meridian-main
 │   │   │   ├── ProviderDataProjectionEndpointsTests.cs
 │   │   │   ├── ProviderEndpointProjectionTests.cs
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.cs
+│   │   │   ├── ProviderLedgerReconciliationServiceTests.CustodianRevisions.cs
 │   │   │   ├── ProviderReadinessEndpointTests.cs
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
 │   │   │   ├── QuantLabParameterExtractionEndpointTests.cs
@@ -14326,6 +14495,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.AccountOversight.cs
 │   │   │   ├── WorkstationEndpointsTests.ApprovalCollaboration.cs
 │   │   │   ├── WorkstationEndpointsTests.AuditIntegrity.cs
+│   │   │   ├── WorkstationEndpointsTests.BondWorkflows.cs
 │   │   │   ├── WorkstationEndpointsTests.BulkCasework.cs
 │   │   │   ├── WorkstationEndpointsTests.ClosePreparation.cs
 │   │   │   ├── WorkstationEndpointsTests.CloseReadiness.cs

@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CanonicalDisposalHistoryProjector
+
+Qualified name: <code>Meridian.Storage.Ledger.CanonicalDisposalHistoryProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs:8](../../../../src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs#L8).
+
+Certifies disposal economics against retained current basis while preserving acquisition evidence.
+
+```csharp
+public static class CanonicalDisposalHistoryProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LedgerTaxLotReliefProjection Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency);</code> | [src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs:10](../../../../src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs#L10) |  |
+
+## CanonicalOpenLotDisposalGuard
+
+Qualified name: <code>Meridian.Storage.Ledger.CanonicalOpenLotDisposalGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs:7](../../../../src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs#L7).
+
+Production cutover guard over the locked lots of record, in durable storage units.
+
+```csharp
+public static class CanonicalOpenLotDisposalGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static OpenLotReliefResultDto Validate(IReadOnlyList&lt;LedgerTaxLotRecord&gt; openLots, IReadOnlyList&lt;LedgerTaxLotDisposalSelection&gt; selections, LedgerTaxLotReliefMethod method, string functionalCurrency);</code> | [src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs:9](../../../../src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs#L9) |  |
+
+## ConsolidationFxCurrencyRules
+
+Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxCurrencyRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:7](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L7).
+
+Governed FX requires a recognized monetary currency with a defined minor-unit scale.
+
+```csharp
+public static class ConsolidationFxCurrencyRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsSupported(string? currency) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:9](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L9) |  |
+| <code>public static void RequireSupported(string currency);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:14](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L14) |  |
+| <code>public static void Validate(ConsolidationFxRateSetDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:20](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L20) |  |
+| <code>public static void Validate(ConsolidationFxPolicyDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:30](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L30) |  |
+| <code>public static void Validate(ConsolidationFxBookConfigurationDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:36](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L36) |  |
+
 ## ConsolidationFxFileStore
 
 Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxFileStore</code>. Kind: `class`.
@@ -253,6 +311,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static EmptyLedgerAuthorityLease Instance { get; } = new ();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:62](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L62) |  |
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:64](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L64) |  |
+
+## FileBondIncomePreparationEvidenceStore
+
+Qualified name: <code>Meridian.Storage.Ledger.FileBondIncomePreparationEvidenceStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs:11](../../../../src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs#L11).
+
+Immutable scoped calculation artifacts used as the canonical income event source.
+
+```csharp
+public sealed class FileBondIncomePreparationEvidenceStore(string root) : IBondIncomePreparationEvidenceStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task VerifyAsync(RetainedEvidenceIdentityDto expected, OpenLotAmortizationInstructionDto instruction, Guid periodId, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs:15](../../../../src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs#L15) |  |
+| <code>public async Task&lt;RetainedEvidenceIdentityDto&gt; RetainAsync(BondIncomePreparationArtifactDto artifact, string actor, DateTimeOffset preparedAtUtc, bool mustExist, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs:40](../../../../src/Meridian.Storage/Ledger/FileBondIncomePreparationEvidenceStore.cs#L40) |  |
 
 ## FileIntercompanyAccountBindingStore
 
@@ -898,57 +975,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:362](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L362) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
-
-## LedgerAccountTaxLotPolicyRecord
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountTaxLotPolicyRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:393](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L393).
-
-```csharp
-public sealed record LedgerAccountTaxLotPolicyRecord(Guid PolicyRecordId, Guid LedgerBookId, LedgerAccount Account, LedgerTaxLotReliefMethod ReliefMethod, string PolicyId, DateOnly EffectiveDate, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Rationale = null, WashSalePolicy? WashSalePolicy = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:406](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L406) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
-
-## LedgerBookControlPreflightLease
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerBookControlPreflightLease</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:58](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L58).
-
-```csharp
-public sealed record LedgerBookControlPreflightLease(IReadOnlyList<LedgerControlDecisionDto> Decisions, IAsyncDisposable Lease);
-```
-
-## LedgerBookNotFoundException
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerBookNotFoundException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:40](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L40).
-
-Signals that a requested ledger book or accounting period could not be found.
-
-```csharp
-public sealed class LedgerBookNotFoundException : LedgerBookServiceException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerBookNotFoundException(string message) : base(message);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:42](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L42) |  |
-
-## LedgerBookRecord
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerBookRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:365](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L365).
-
-```csharp
-public sealed record LedgerBookRecord(Guid LedgerBookId, string FundProfileId, Guid FundStructureNodeId, FundStructureNodeKindDto FundStructureNodeKind, string DisplayName, string BaseCurrency, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Description = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
-```

@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundAccountEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundAccountEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L20).
+
+Maps fund-account management and brokerage synchronization operations with account-specific authorization.
+
+```csharp
+public static class FundAccountEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs#L22) |  |
+
 ## FundProfileScopeEndpointFilters
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundProfileScopeEndpointFilters</code>. Kind: `class`.
@@ -459,6 +477,18 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:13](
 ```csharp
 public static partial class LedgerEndpoints
 ```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L20).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapLedgerBondWorkflowEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L23) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseExecution.cs:8](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseExecution.cs#L8).
 
@@ -1113,23 +1143,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapProviderCredentialOwnershipEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs#L16) |  |
-
-## ProviderDataProjectionEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderDataProjectionEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L12).
-
-Exposes one provider-neutral projection for every workstation client.
-
-```csharp
-public static class ProviderDataProjectionEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderDataProjectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L14) |  |
-| <code>public static ProviderDataProjectionSnapshot CreateProjection(ProviderDataReadModelService service) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L34) |  |
-| <code>public static ProviderDataProjectionSnapshot CreateProjection(ProviderDataReadModelService service, string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L37) |  |

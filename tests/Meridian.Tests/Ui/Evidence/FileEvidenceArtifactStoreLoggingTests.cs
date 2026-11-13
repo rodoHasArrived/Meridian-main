@@ -1,7 +1,6 @@
-using System.Text;
 using FluentAssertions;
-using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.Extensions.Logging;
 
@@ -9,118 +8,113 @@ namespace Meridian.Tests.Ui.Evidence;
 
 public sealed class FileEvidenceArtifactStoreLoggingTests : IDisposable
 {
-    private const string Tenant = "tenant-a";
-    private const string Scope = "company-a";
-    private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-logs",
-        Guid.NewGuid().ToString("N"), "path\u2028FORGED");
+    private const string Tenant = "private-tenant-marker", Scope = "private-company-marker";
+    private const string Subject = "private-account-marker\r\nFORGED operational log entry";
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "private-evidence-path-marker-" + Guid.NewGuid().ToString("N"));
+    private readonly RecordingLogger<FileEvidenceArtifactStore> _logger = new();
 
     [Fact]
-    public async Task Intake_EscapesLogValuesWithoutChangingRetainedSubjectOrContent()
+    public async Task IntakeRetainsExactSubjectAndSourceBytes_WhileLoggingOnlyItsGeneratedVaultIdentity()
     {
-        const string subjectId = "report\r\nFORGED\u0085NEXT\u2028LINE\u2029END";
-        var bytes = Encoding.UTF8.GetBytes("exact retained evidence\r\nwith its original bytes");
-        var logger = new RecordingLogger();
-        var store = new FileEvidenceArtifactStore(_root, logger);
+        var store = new FileEvidenceArtifactStore(_root, _logger);
+        var intake = await RetainAsync(store);
 
-        var retained = await store.WriteIntakeArtifactAsync(Intake(subjectId, bytes));
-        var loaded = await store.TryGetVaultIdentityAsync(retained.VaultIdentity.VaultId, Tenant, Scope);
-
-        retained.SubjectId.Should().Be(subjectId);
-        loaded.Should().NotBeNull();
-        loaded!.SubjectId.Should().Be(subjectId);
-        retained.ContentHashSha256.Should().Be(Sha256Digest.Compute(bytes));
-        (await File.ReadAllBytesAsync(Path.Combine(_root, retained.RelativePath))).Should().Equal(bytes);
-        (await store.VerifyRetainedContentAsync(retained.VaultIdentity.VaultId, Tenant, Scope)).Should().BeTrue();
-
-        var entry = logger.Entries.Should().ContainSingle(item => item.Level == LogLevel.Information).Which;
-        entry.Values["SubjectId"].Should().Be("report\\r\\nFORGED\\u0085NEXT\\u2028LINE\\u2029END");
-        AssertSingleLine(entry);
+        intake.SubjectKind.Should().Be("account");
+        intake.SubjectId.Should().Be(Subject);
+        var identity = await store.TryGetVaultIdentityAsync(intake.VaultIdentity.VaultId, Tenant, Scope);
+        identity.Should().NotBeNull();
+        identity!.SubjectId.Should().Be(Subject);
+        (await File.ReadAllBytesAsync(Path.Combine(_root, intake.RelativePath))).Should().Equal("synthetic retained source"u8.ToArray());
+        var entry = _logger.Entries.Should().ContainSingle().Which;
+        entry.LogLevel.Should().Be(LogLevel.Information);
+        entry.Message.Should().Be($"Retained evidence vault intake {identity.VaultId}.");
+        entry.Message.Should().MatchRegex("^Retained evidence vault intake ev-[a-f0-9]{24}\\.$");
+        AssertOperationalLogPrivacy();
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task CorruptRetainedFile_KeepsDiagnosticsSafeWithoutChangingEvidence(bool corruptIndex)
+    public async Task UnreadableRetainedManifestFailsClosed_WithoutLoggingScopedPathsOrRawExceptions(bool locked)
     {
-        var bytes = Encoding.UTF8.GetBytes("retained original content");
-        var logger = new RecordingLogger();
-        var store = new FileEvidenceArtifactStore(_root, logger);
-        var retained = await store.WriteIntakeArtifactAsync(Intake("report-a", bytes));
-        var targetPath = corruptIndex
-            ? Path.Combine(_root, "workstation", "evidence", "_vault", retained.VaultIdentity.VaultId + ".json")
-            : Path.Combine(_root, retained.VaultIdentity.ManifestPath);
-        const string corruptJson = "{ malformed retained json";
-        await File.WriteAllTextAsync(targetPath, corruptJson);
-        logger.Entries.Clear();
-
-        if (corruptIndex)
-            (await store.TryGetVaultIdentityAsync(retained.VaultIdentity.VaultId, Tenant, Scope)).Should().BeNull();
-        else
-            (await store.TryOpenManifestByVaultIdAsync(retained.VaultIdentity.VaultId, Tenant, Scope)).Should().BeNull();
-
-        var warnings = logger.Entries.Where(item => item.Level == LogLevel.Warning).ToArray();
-        warnings.Should().NotBeEmpty();
-        foreach (var entry in warnings)
+        var store = new FileEvidenceArtifactStore(_root, _logger);
+        var intake = await RetainAsync(store);
+        var manifestPath = Path.Combine(_root, intake.VaultIdentity.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var originalBytes = await File.ReadAllBytesAsync(manifestPath);
+        FileStream? lease = null;
+        try
         {
-            AssertSingleLine(entry);
-            if (corruptIndex)
-            {
-                entry.Values["ErrorKind"].Should().Be(nameof(System.Text.Json.JsonException));
-                entry.Values.Keys.Should().BeEquivalentTo(new[] { "ErrorKind", "{OriginalFormat}" });
-                entry.Values.Should().NotContainKey("IndexPath").And.NotContainKey("Error");
-                var diagnostics = string.Join(" ", entry.Values.Values.Select(value => value?.ToString()).Append(entry.Message));
-                diagnostics.Should().NotContain(_root).And.NotContain("FORGED").And.NotContain(corruptJson)
-                    .And.NotContain(typeof(System.Text.Json.JsonException).FullName!);
-            }
+            if (locked)
+                lease = new FileStream(manifestPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             else
-            {
-                entry.Values["ManifestPath"]!.ToString().Should().Contain("path\\u2028FORGED");
-                entry.Values["Error"]!.ToString().Should().Contain(nameof(System.Text.Json.JsonException));
-            }
+                await File.WriteAllTextAsync(manifestPath, "{\"private-manifest-field-marker\": invalid-json");
+            _logger.Entries.Clear();
+
+            (await store.TryGetVaultIdentityAsync(intake.VaultIdentity.VaultId, Tenant, Scope)).Should().BeNull();
+
+            var warning = _logger.Entries.Should().ContainSingle().Which;
+            warning.LogLevel.Should().Be(LogLevel.Warning);
+            warning.Message.Should().Be(locked
+                ? "Evidence vault manifest could not be read (IOException)."
+                : "Evidence vault manifest could not be deserialized (JsonException).");
+            AssertOperationalLogPrivacy();
         }
-        (await File.ReadAllTextAsync(targetPath)).Should().Be(corruptJson, "a failed read must not rewrite retained evidence");
-        (await File.ReadAllBytesAsync(Path.Combine(_root, retained.RelativePath))).Should().Equal(bytes);
-        retained.ContentHashSha256.Should().Be(Sha256Digest.Compute(bytes));
+        finally
+        {
+            lease?.Dispose();
+            await File.WriteAllBytesAsync(manifestPath, originalBytes);
+        }
+        // The read failure never promotes stale locator data or rewrites retained authority.
+        var restored = await store.TryGetVaultIdentityAsync(intake.VaultIdentity.VaultId, Tenant, Scope);
+        restored.Should().NotBeNull();
+        restored!.SubjectId.Should().Be(Subject);
+        (await File.ReadAllBytesAsync(manifestPath)).Should().Equal(originalBytes);
     }
 
-    private static EvidenceVaultIntakeRequestDto Intake(string subjectId, byte[] bytes)
-        => new("report-pack", subjectId, "api", "report.dat", Convert.ToBase64String(bytes))
-        {
-            TenantId = Tenant,
-            Scope = Scope
-        };
-
-    private static void AssertSingleLine(LogEntry entry)
+    [Fact]
+    public async Task LockedPinnedArtifactVerificationFailsClosed_WithoutLoggingScopedPathsOrRawExceptions()
     {
-        entry.Exception.Should().BeNull("unescaped exception text can repeat untrusted file paths");
-        foreach (var text in entry.Values.Values.Select(value => value?.ToString()).Append(entry.Message))
+        var store = new FileEvidenceArtifactStore(_root, _logger);
+        var intake = await RetainAsync(store);
+        var identity = intake.VaultIdentity;
+        intake.Document.Should().NotBeNull();
+        var document = intake.Document!;
+        var artifact = identity.Artifacts.Single(row => row.Document?.DocumentId == document.DocumentId);
+        var artifactPath = Path.Combine(_root, artifact.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        (await store.VerifyDocumentContentAsync(identity.VaultId, document.DocumentId, artifact.ArtifactId,
+            intake.ContentHashSha256, Tenant, Scope)).Should().BeTrue();
+        using (var lease = new FileStream(artifactPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
         {
-            text.Should().NotBeNull();
-            text!.IndexOfAny(['\r', '\n', '\u0085', '\u2028', '\u2029']).Should().Be(-1);
+            _logger.Entries.Clear();
+
+            (await store.VerifyDocumentContentAsync(identity.VaultId, document.DocumentId, artifact.ArtifactId,
+                intake.ContentHashSha256, Tenant, Scope)).Should().BeFalse();
+
+            var warning = _logger.Entries.Should().ContainSingle().Which;
+            warning.LogLevel.Should().Be(LogLevel.Warning);
+            warning.Message.Should().Be("Evidence vault artifact could not be read for verification (IOException).");
+            AssertOperationalLogPrivacy();
+        }
+        (await store.VerifyDocumentContentAsync(identity.VaultId, document.DocumentId, artifact.ArtifactId,
+            intake.ContentHashSha256, Tenant, Scope)).Should().BeTrue();
+        (await File.ReadAllBytesAsync(artifactPath)).Should().Equal("synthetic retained source"u8.ToArray());
+    }
+
+    private static Task<EvidenceVaultIntakeResponseDto> RetainAsync(FileEvidenceArtifactStore store)
+        => store.WriteIntakeArtifactAsync(new("account", Subject, "api", "private-document-marker.txt",
+            ContentBase64: Convert.ToBase64String("synthetic retained source"u8.ToArray()))
+        { TenantId = Tenant, Scope = Scope });
+
+    private void AssertOperationalLogPrivacy()
+    {
+        foreach (var entry in _logger.Entries)
+        {
+            entry.Exception.Should().BeNull("raw exception messages and paths are not operational logging fields");
+            foreach (var marker in new[] { Subject, Tenant, Scope, _root, "FORGED", "private-manifest-field-marker", "private-document-marker" })
+                entry.Message.Should().NotContain(marker);
+            entry.Message.Should().NotContain("\r").And.NotContain("\n");
         }
     }
 
-    private sealed record LogEntry(LogLevel Level, string Message, Exception? Exception,
-        IReadOnlyDictionary<string, object?> Values);
-
-    private sealed class RecordingLogger : ILogger<FileEvidenceArtifactStore>
-    {
-        public List<LogEntry> Entries { get; } = [];
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-        public bool IsEnabled(LogLevel logLevel) => true;
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
-            Func<TState, Exception?, string> formatter)
-        {
-            var values = ((IEnumerable<KeyValuePair<string, object?>>)state!)
-                .ToDictionary(pair => pair.Key, pair => pair.Value);
-            Entries.Add(new(logLevel, formatter(state, exception), exception, values));
-        }
-    }
-
-    public void Dispose()
-    {
-        var testDirectory = Directory.GetParent(_root)!.FullName;
-        if (Directory.Exists(testDirectory))
-            Directory.Delete(testDirectory, recursive: true);
-    }
+    public void Dispose() { if (Directory.Exists(_root)) Directory.Delete(_root, true); }
 }

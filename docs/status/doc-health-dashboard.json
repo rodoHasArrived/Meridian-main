@@ -1,11 +1,11 @@
 {
-  "total_files": 1210,
+  "total_files": 1215,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 84,
-  "signal_digest": "sha256:e0efccfe094c2349e50d05b9d22e3b833db5ca21d54b32817ba9212f2b41a999",
+  "signal_digest": "sha256:80b29a9dbe39c3a04231afe54ffd5674dde824f6fcfd537e99414a8c07d05fdc",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -3143,6 +3143,13 @@
       "stale": false
     },
     {
+      "path": "docs/operators/bond-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/browser-workstation-installer.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4515,6 +4522,27 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-072.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-073.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-074.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4803,6 +4831,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.infrastructure/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-008.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

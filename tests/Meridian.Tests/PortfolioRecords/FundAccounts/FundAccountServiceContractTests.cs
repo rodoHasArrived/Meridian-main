@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 
 namespace Meridian.Tests.PortfolioRecords.FundAccounts;
@@ -395,6 +396,100 @@ public abstract class FundAccountServiceContractTests
 
         (await service.GetCustodianPositionsAsync(account.AccountId, asOf, cts.Token))
             .Should().HaveCount(2, "a replayed statement must not duplicate positions");
+    }
+
+    protected async Task ReconcileAccountAsync_AcceptedFullRevisionDoesNotUnionRetainedHoldings_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeCustodyRequest());
+        var date = Today();
+        var original = MakeCustodianStatementRequest(account.AccountId, date, 2) with
+        { Authority = new(1, "reviewed-original", new string('a', 64)) };
+        var originalBatch = await service.IngestCustodianStatementAsync(original);
+        var revised = MakeCustodianStatementRequest(account.AccountId, date, 1) with
+        { Authority = new(2, "reviewed-correction", new string('b', 64), SupersedesBatchId: original.BatchId) };
+        revised = revised with { Lines = [revised.Lines[0] with { Quantity = 110m, MarketValue = 11_000m }] };
+        await service.IngestCustodianStatementAsync(revised);
+        var current = (await service.GetCustodianPositionsAsync(account.AccountId, date)).Should().ContainSingle().Subject;
+        current.Should().Be(revised.Lines[0]);
+        current.Quantity.Should().Be(110m, "the original 100 and corrected 110 are separate retained populations");
+        var historical = await ((IAccountQueryService)service).GetCustodianSnapshotAsync(account.AccountId, date, originalBatch.IngestedAt);
+        historical.Should().NotBeNull();
+        historical!.Lines.Should().BeEquivalentTo(original.Lines, "selecting current holdings cannot erase the immutable earlier population");
+
+        var run = await service.ReconcileAccountAsync(new(account.AccountId, date, "reviewer"));
+        var position = (await service.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single(row => row.Category == "Positions");
+        position.Status.Should().Be("Matched");
+        position.ExpectedAmount.Should().Be(1m);
+        position.ActualAmount.Should().Be(1m, "the superseded population cannot be counted as current holdings");
+
+        var flat = MakeCustodianStatementRequest(account.AccountId, date, 0) with
+        { Authority = new(3, "reviewed-flat-account", new string('c', 64), SupersedesBatchId: revised.BatchId) };
+        await service.IngestCustodianStatementAsync(flat);
+        (await service.GetCustodianPositionsAsync(account.AccountId, date)).Should().BeEmpty();
+        (await ((IAccountQueryService)service).GetCustodianSnapshotAsync(account.AccountId, date, originalBatch.IngestedAt))!
+            .Lines.Should().BeEquivalentTo(original.Lines);
+        var flatRun = await service.ReconcileAccountAsync(new(account.AccountId, date, "reviewer"));
+        var flatPosition = (await service.GetReconciliationResultsAsync(flatRun.ReconciliationRunId)).Single(row => row.Category == "Positions");
+        flatPosition.Status.Should().Be("Matched");
+        flatPosition.ExpectedAmount.Should().Be(0m);
+        flatPosition.ActualAmount.Should().Be(0m, "an accepted empty full state replaces the prior population");
+    }
+
+    protected async Task ReconcileAccountAsync_InvalidCanonicalFullStateCannotFallbackToLegacyHoldings_Core()
+    {
+        foreach (var accepted in new[] { false, true })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeCustodyRequest());
+            var date = Today();
+            await service.IngestCustodianStatementAsync(MakeCustodianStatementRequest(account.AccountId, date, 1));
+            var canonical = MakeCustodianStatementRequest(account.AccountId, date, 1) with
+            { Authority = new(1, "canonical-full-source", new string('a', 64), IsAccepted: accepted) };
+            await service.IngestCustodianStatementAsync(canonical);
+            if (accepted)
+                await service.IngestCustodianStatementAsync(MakeCustodianStatementRequest(account.AccountId, date, 1) with
+                { Authority = new(1, "competing-full-source", new string('b', 64)) });
+            await service.Invoking(value => value.ReconcileAccountAsync(new(account.AccountId, date, "reviewer")))
+                .Should().ThrowAsync<InvalidOperationException>();
+            await service.Invoking(value => value.GetCustodianPositionsAsync(account.AccountId, date))
+                .Should().ThrowAsync<InvalidOperationException>();
+            (await service.GetReconciliationRunsAsync(account.AccountId)).Should().BeEmpty(
+                "unaccepted or competing canonical states cannot produce a run from legacy observations");
+        }
+    }
+
+    protected async Task GetCustodianPositionsAsync_CurrentRevisionPreservesExactDateAccountAndRetryScope_Core()
+    {
+        foreach (var correctionFirst in new[] { false, true })
+        {
+            var service = CreateService();
+            var account = await service.CreateAccountAsync(MakeCustodyRequest());
+            var other = await service.CreateAccountAsync(MakeCustodyRequest());
+            var date = Today();
+            var original = MakeCustodianStatementRequest(account.AccountId, date, 1) with
+            { Authority = new(1, "reviewed-original", new string('a', 64)) };
+            var correction = MakeCustodianStatementRequest(account.AccountId, date, 1) with
+            { Authority = new(2, "reviewed-correction", new string('b', 64)) };
+            correction = correction with { Lines = [correction.Lines[0] with { Quantity = 110m, MarketValue = 11_000m }] };
+            original.Lines[0].Quantity.Should().Be(100m);
+            correction.Lines[0].LineId.Should().NotBe(original.Lines[0].LineId);
+            await service.IngestCustodianStatementAsync(correctionFirst ? correction : original);
+            await service.IngestCustodianStatementAsync(correctionFirst ? original : correction);
+            await service.IngestCustodianStatementAsync(original);
+            await service.IngestCustodianStatementAsync(MakeCustodianStatementRequest(other.AccountId, date, 1) with
+            { Authority = new(99, "other-account", new string('c', 64)) });
+            await service.IngestCustodianStatementAsync(MakeCustodianStatementRequest(account.AccountId, date.AddDays(1), 1) with
+            { Authority = new(99, "future-date", new string('d', 64)) });
+
+            (await service.GetCustodianPositionsAsync(account.AccountId, date)).Should().ContainSingle()
+                .Which.Should().Be(correction.Lines[0]);
+            (await service.GetCustodianPositionsAsync(other.AccountId, date)).Should().ContainSingle()
+                .Which.AccountId.Should().Be(other.AccountId);
+            (await service.GetCustodianPositionsAsync(account.AccountId, date.AddDays(-1))).Should().BeEmpty();
+            (await service.GetCustodianPositionsAsync(account.AccountId, date.AddDays(2))).Should().BeEmpty(
+                "the current-position API is an exact-date read, not a carry-forward snapshot query");
+        }
     }
 
     protected async Task IngestCustodianStatementAsync_SuspendedAccount_IsAllowed_Core()

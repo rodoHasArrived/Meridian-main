@@ -28,6 +28,8 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
+import { BondWorkflowPanel } from "@/components/meridian/bond-workflow-panel";
+import { BondIncomePanel } from "@/components/meridian/bond-income-panel";
 import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-preview-panel";
 import { SecurityRatesIngestionPanel } from "@/components/meridian/security-rates-ingestion-panel";
 import { BondObservedFixingPanel } from "@/components/meridian/bond-observed-fixing-panel";
@@ -3288,6 +3290,8 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                               panel?.scrollIntoView({ block: "nearest" });
                             }} />
                         </div>
+                        <BondWorkflowPanel securityId={securityMaster.selectedSecurityId} />
+                        <BondIncomePanel key={`income-${securityMaster.selectedSecurityId}`} />
                         <section id="bond-conventions-review" tabIndex={-1} aria-label="Bond convention review">
                           <Button type="button" variant="outline" size="sm" onClick={() => {
                             const panel = document.getElementById("bond-calculation-context");

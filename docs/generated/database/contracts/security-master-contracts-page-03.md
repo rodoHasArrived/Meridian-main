@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 8
 
-Objects 161-240 of 571. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 572. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -41,6 +41,7 @@ classDiagram
         +string? IndexName
         +SecurityCurveInterpolation Interpolation
         +SecurityCurveKind Kind
+        +SecurityCurveRatePolicy RatePolicy
         +string Source
         +string? Tenor
     }

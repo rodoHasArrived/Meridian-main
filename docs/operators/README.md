@@ -49,6 +49,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Intercompany and entity controls | [Intercompany and Entity Controls](intercompany-entity-controls.md) | agreement evidence, new/legacy book controls, counterpart review, lifecycle and versioned consolidation |
 | Durable account oversight | [Bounded Account Oversight](account-oversight.md) | cash-balance continuity, immutable reviewed price sets and source-backed cash forecasts |
 | Financial charts and source entry | [Financial Visualization Workflows](financial-visualizations.md) | ten investigation views, private-capital observations, election deadlines and dated broker option assessments |
+| Bond holdings, income, collections and risk | [Bond Workflows](bond-workflows.md) | scoped imports, signed/floating/indexed models, reviewed cash, performance and explicit book-policy adoption |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | Security Master cross-instance edit rollout | [Governed Edit Rollout](security-master-governed-edit-rollout.md) | independent schema/Storage review, old-writer drain, migration and operator-acceptance receipts |

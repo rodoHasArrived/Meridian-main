@@ -6,6 +6,125 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQualityScoringService
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityScoringService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:16](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L16).
+
+Service that computes quality scores for stored data files and performs best-of-breed selection when multiple sources provide overlapping data. Quality scores are based on completeness, sequence integrity, latency, and cross-source consistency.
+
+```csharp
+public sealed class DataQualityScoringService : IDataQualityScoringService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataQualityScoringService(StorageOptions options, ILogger&lt;DataQualityScoringService&gt; logger, ISourceRegistry? sourceRegistry = null, IMetadataTagService? metadataService = null);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:27](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L27) |  |
+| <code>public async Task&lt;QualityAssessment&gt; ScoreFileAsync(string filePath, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:41](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L41) |  |
+| <code>public async Task&lt;BestOfBreedResult&gt; SelectBestSourceAsync(string symbol, string eventType, DateTimeOffset? date = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:107](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L107) |  |
+| <code>public async Task&lt;DataQualityScoringReport&gt; GenerateReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityScoringService.cs:166](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L166) |  |
+
+## DataQualityService
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:18](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L18).
+
+Service for data quality scoring, best-of-breed selection, and quality monitoring.
+
+```csharp
+public sealed class DataQualityService : IDataQualityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataQualityService(StorageOptions options, ISourceRegistry? sourceRegistry = null, IQualityTrendStore? trendStore = null, ILogger&lt;DataQualityService&gt;? logger = null);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:27](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L27) |  |
+| <code>public async Task&lt;DataQualityScore&gt; ScoreAsync(string path, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:39](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L39) |  |
+| <code>public async Task&lt;DataQualityReport&gt; GenerateReportAsync(QualityReportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:382](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L382) |  |
+| <code>public Task&lt;DataQualityScore[]&gt; GetHistoricalScoresAsync(string path, TimeSpan window, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:509](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L509) |  |
+| <code>public async Task&lt;SourceRanking[]&gt; RankSourcesAsync(string symbol, DateTimeOffset date, MarketEventType type, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:520](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L520) |  |
+| <code>public async Task&lt;ConsolidatedDataset&gt; CreateGoldenRecordAsync(string symbol, DateTimeOffset date, ConsolidationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:595](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L595) |  |
+| <code>public async Task&lt;QualityTrend&gt; GetTrendAsync(string symbol, TimeSpan window, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:656](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L656) |  |
+| <code>public Task&lt;QualityAlert[]&gt; GetQualityAlertsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/DataQualityService.cs:811](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L811) |  |
+
+## DataReplacementCostByEventType
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostByEventType</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:203](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L203).
+
+Per-event-type slice of the symbol-day cost basis.
+
+```csharp
+public sealed record DataReplacementCostByEventType(string EventType, long SymbolDays, decimal EstimatedUsd);
+```
+
+## DataReplacementCostEstimate
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimate</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:173](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L173).
+
+Replacement-cost estimate for the local market-data store.
+
+```csharp
+public sealed record DataReplacementCostEstimate(DateTimeOffset GeneratedAtUtc, string Currency, decimal ConservativeEstimateUsd, decimal SymbolDayBasisUsd, decimal VolumeBasisUsd, int TotalSymbols, long TotalSymbolDays, decimal TotalGigabytes, IReadOnlyList<DataReplacementCostByEventType> EventTypeBreakdown, string RateCardSource, string RateCardLastVerified, string MethodologyNote)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DataReplacementCostEstimate Empty(DataReplacementCostOptions options) =&gt; …;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:187](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L187) |  |
+
+## DataReplacementCostEstimator
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimator</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:12](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L12).
+
+Estimates what the locally collected market-data store would cost to repurchase from commercial metered vendors, priced against a configurable rate card. Estimates are deliberately conservative: two independent bases are computed (per symbol-day and per gigabyte) and the lower one is reported as the headline figure. This is a pure post-processing pass over the StorageCatalog; it never touches the data files.
+
+```csharp
+public static class DataReplacementCostEstimator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DataReplacementCostEstimate Estimate(StorageCatalog catalog, DataReplacementCostOptions options);</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:19](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L19) | Computes a replacement-cost estimate for catalog using options. Returns a zero-valued estimate when the catalog is empty or the meter is disabled. |
+
+## DataReplacementCostOptions
+
+Qualified name: <code>Meridian.Storage.Services.DataReplacementCostOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:140](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L140).
+
+Rate card and toggles for the data replacement-cost meter, bound from the DataReplacementCost configuration section. Defaults are conservative low-end list prices as of the recorded verification date; operators should refresh them from current vendor rate cards rather than treating them as quotes.
+
+```csharp
+public sealed class DataReplacementCostOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;DataReplacementCost&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:142](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L142) |  |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:144](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L144) |  |
+| <code>public string Currency { get; set; } = &quot;USD&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:146](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L146) |  |
+| <code>public Dictionary&lt;string, decimal&gt;? HistoricalRatePerSymbolDayUsd { get; set; } = new (StringComparer.OrdinalIgnoreCase) {[&quot;Trade&quot;]= 0.10m, [&quot;Quote&quot;]= 0.10m, [&quot;Depth&quot;]= 0.25m, [&quot;OrderBook&quot;]= 0.25m, };</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:149](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L149) | Historical per-symbol-day rates keyed by event type (e.g. Trade, Quote, Depth). |
+| <code>public decimal DefaultRatePerSymbolDayUsd { get; set; } = 0.10m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:159](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L159) | Fallback rate applied to event types not present in the rate card. |
+| <code>public decimal RatePerGigabyteUsd { get; set; } = 5.00m;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:162](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L162) | Metered per-gigabyte rate applied to uncompressed stored volume. |
+| <code>public string RateCardSource { get; set; } = &quot;Conservative low-end of published metered vendor list prices (per-symbol-day historical and per-GB tick data).&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:165](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L165) | Provenance note for the configured rates. |
+| <code>public string RateCardLastVerified { get; set; } = &quot;2026-07-01&quot;;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:169](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L169) | Date the rate card values were last checked against vendor pricing pages. |
+
 ## DateIndex
 
 Qualified name: <code>Meridian.Storage.Services.DateIndex</code>. Kind: `record`.
@@ -783,130 +902,3 @@ Enum declarations:
 | <code>Info</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
 | <code>Warning</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
 | <code>Critical</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
-
-## IssueType
-
-Qualified name: <code>Meridian.Storage.Services.IssueType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:883](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L883).
-
-```csharp
-public enum IssueType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ChecksumMismatch</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:885](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L885) |  |
-| <code>SequenceGap</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:886](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L886) |  |
-| <code>EmptyFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:887](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L887) |  |
-| <code>TruncatedFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:888](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L888) |  |
-| <code>UnreadableFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:889](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L889) |  |
-| <code>PermissionDenied</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:890](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L890) |  |
-| <code>OrphanedFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:891](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L891) |  |
-| <code>SchemaViolation</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:892](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L892) |  |
-| <code>MissingChecksum</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:893](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L893) |  |
-
-## IStorageSearchService
-
-Qualified name: <code>Meridian.Storage.Services.IStorageSearchService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:725](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L725).
-
-Interface for storage search service.
-
-```csharp
-public interface IStorageSearchService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SearchResult&lt;FileSearchResult&gt;&gt; SearchFilesAsync(FileSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:727](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L727) |  |
-| <code>Task&lt;SearchResult&lt;EventSearchResult&gt;&gt; SearchEventsAsync(EventSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:728](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L728) |  |
-| <code>Task&lt;DataCatalog&gt; DiscoverAsync(DiscoveryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:729](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L729) |  |
-| <code>Task&lt;FacetedSearchResult&gt; SearchWithFacetsAsync(FacetedSearchQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:730](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L730) |  |
-| <code>StorageQuery? ParseNaturalLanguageQuery(string naturalQuery);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:731](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L731) |  |
-| <code>Task UpdateIndexAsync(string filePath, IndexUpdateType updateType, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:732](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L732) |  |
-| <code>Task&lt;IndexRebuildVerification&gt; RebuildIndexAsync(string[] paths, RebuildOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/StorageSearchService.cs:733](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L733) |  |
-
-## ITierMigrationService
-
-Qualified name: <code>Meridian.Storage.Services.ITierMigrationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:560](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L560).
-
-Interface for tier migration service.
-
-```csharp
-public interface ITierMigrationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:562](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L562) |  |
-| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:563](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L563) |  |
-| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:564](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L564) |  |
-| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:565](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L565) |  |
-
-## JobExecutionStatus
-
-Qualified name: <code>Meridian.Storage.Services.JobExecutionStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1676](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1676).
-
-```csharp
-public sealed record JobExecutionStatus(string JobId, MaintenanceType Type, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, JobStatus Status, int Progress, string Message, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1687](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1687) |  |
-| <code>public bool AdmissionRetained { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1688](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1688) |  |
-
-## JobPriority
-
-Qualified name: <code>Meridian.Storage.Services.JobPriority</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1627](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1627).
-
-```csharp
-public enum JobPriority : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Critical</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1629](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1629) |  |
-| <code>High</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1630](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1630) |  |
-| <code>Normal</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1631](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1631) |  |
-| <code>Low</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1632](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1632) |  |
-| <code>Deferred</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1633](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1633) |  |
-
-## JobStatus
-
-Qualified name: <code>Meridian.Storage.Services.JobStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1666](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1666).
-
-```csharp
-public enum JobStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1668](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1668) |  |
-| <code>Running</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1669](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1669) |  |
-| <code>Completed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1670](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1670) |  |
-| <code>Failed</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1671](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1671) |  |
-| <code>Cancelled</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1672](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1672) |  |
-| <code>Blocked</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1673](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1673) |  |

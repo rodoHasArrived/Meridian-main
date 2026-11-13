@@ -23,6 +23,31 @@ expiration coverage before DTE filtering. Screening treats unavailable discovery
 successfully discovered dates outside the requested DTE range produce a valid empty screen.
 The existing list-only expiration read keeps its compatibility behavior.
 
+`BondMarketDataService` imports and reads typed source revisions within an explicit authenticated
+tenant, retaining the first identity on exact retry and refusing conflicting revisions atomically.
+Exact-date queries never substitute a prior fixing, and future observed values require forecast
+curves. `BondMarketWorkflowObservationSource` supplies eligible retained inputs and exact quote
+identities to the workflow model; fixing and inflation roles remain distinct even when a series name
+matches, and conflicting source values require explicit review. Performance attribution first
+reconciles model settlement cash and index ratios to the accepted mark.
+
+`BondWorkflowService` prices the explicit signed fixed/floating/overnight/indexed model and preserves
+legacy dispatch. Account planning, collection monitoring, risk and sequential performance consume
+accepted holdings and retained inputs; accounting amortization is excluded from market attribution.
+New workflow v2 requests explicitly pin their model; old null-selector v1 receipts replay v1.
+Resolved curve/version pins retain definitions admitted at the knowledge cutoff. Planning and
+capture combine same-identity principal installments before native rounding while retaining coupon
+rights separately. Monitoring v2 and native forecast v3 age residuals from evidenced revised dates;
+historical monitoring v1 and native forecast v2 retain their original replay rules.
+Risk scenarios reuse the selected baseline request/version, and monitoring verifies each retained
+obligation's exact model evidence. Screening drops expired verified European/Bermudan exercises;
+continuous, ambiguous and unresolved calendar-adjusted rights remain conservative or unverified.
+See [bond operations and limits](../../docs/operators/bond-workflows.md).
+
+New analytical requests default to workflow v3, replacing only the natural balloon in final-payment
+exercise scenarios. Retained v1/v2 keep their original arithmetic. Monitoring v3 adds invariant watch
+text and date identities; older localized receipts require exact complete-snapshot replay.
+
 Fixed/zero-coupon analytics also return authoritative maturity/exercise alternatives and all governing yield-to-worst ties for the browser horizon. Issuer calls and maturity govern YTW; holder puts remain distinct. Interest and principal retain per-100-face units and maturity projection semantics. Floating v3 keeps its separate observed/forecast evidence and does not gain unsupported callable analytics.
 
 Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing

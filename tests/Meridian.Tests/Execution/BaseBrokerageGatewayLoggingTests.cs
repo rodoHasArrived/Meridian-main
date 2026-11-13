@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Sdk;
 using Meridian.Tests.TestHelpers;
@@ -20,8 +21,9 @@ public sealed class BaseBrokerageGatewayLoggingTests
 
         gateway.CancelledOrderId.Should().Be(orderId);
         report.OrderId.Should().Be(orderId);
-        logger.Entries.Should().Contain(entry => entry.Message.Contains("client-order__FORGED", StringComparison.Ordinal));
-        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
+        logger.Entries.Should().Contain(entry => entry.Message.Contains(Sha256Digest.ComputeUtf8(orderId), StringComparison.Ordinal));
+        logger.Entries.Should().OnlyContain(entry => !entry.Message.Contains("FORGED", StringComparison.Ordinal)
+            && !entry.Message.Contains('\r') && !entry.Message.Contains('\n'));
     }
 
     private sealed class RecordingGateway(ILogger logger) : BaseBrokerageGateway(logger)

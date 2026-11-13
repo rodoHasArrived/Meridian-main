@@ -526,7 +526,11 @@ public sealed partial class IBBrokerageGateway :
                 position.Position.Description,
                 position.Position.PositionId,
                 position.Currency ?? account.Currency,
-                position.Position.Metadata)).ToArray(),
+                position.Position.Metadata)
+            {
+                AccruedInterest = position.Position.AccruedInterest,
+                ValuationBasis = position.Position.ValuationBasis
+            }).ToArray(),
             DateTimeOffset.UtcNow);
     }
 
@@ -916,7 +920,8 @@ public sealed partial class IBBrokerageGateway :
                 UnrealizedPnl = 0m,
                 AssetClass = IBCanonicalPayloadMapper.MapAssetClass(update.SecurityType, update.Metadata),
                 Metadata = update.Metadata,
-                AccruedInterest = accruedInterest
+                AccruedInterest = accruedInterest,
+                ValuationBasis = BrokeragePositionValuationBasis.CostDerived
             });
     }
 

@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureTenantBackfillRow
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L6).
+
+Maintenance-only snapshot; this is not an operator-session read API.
+
+```csharp
+public sealed record FundStructureTenantBackfillRow(string Table, Guid Id, string Kind, bool IsNode, string? TenantId, IReadOnlyList<Guid> Parents, IReadOnlyList<Guid> Children, JsonElement RetainedRow, bool IsInferred = false);
+```
+
+## FundStructureTenantBackfillSnapshot
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L14).
+
+```csharp
+public sealed record FundStructureTenantBackfillSnapshot(string SourceIdentity, string SchemaIdentity, IReadOnlyList<FundStructureTenantBackfillRow> Rows, IReadOnlyList<FundStructureTenantBackfillEvidence> Evidence, IReadOnlyList<JsonElement> RetainedQuarantine, bool SupportsAtomicApply = true);
+```
+
+## FundStructureTenantBackfillStamp
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillStamp</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:20](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L20).
+
+```csharp
+public sealed record FundStructureTenantBackfillStamp(string Table, Guid Id, string TenantId);
+```
+
 ## FundStructureTenantMap
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantMap</code>. Kind: `record`.
@@ -1004,7 +1036,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write, bool requirePostingCommand = false, bool requireExpectedVersion = false, bool allowPreparerAttestation = false);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:22](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L22) |  |
-| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:716](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L716) | Unversioned legacy metadata never supplies command actor attribution. |
+| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:717](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L717) | Unversioned legacy metadata never supplies command actor attribution. |
 
 ## AtomicLotReferenceVersions
 
@@ -1084,61 +1116,3 @@ Enum declarations:
 | <code>CorporateAction = 4</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:469](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L469) |  |
 | <code>CapitalReturn = 5</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:470](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L470) |  |
 | <code>FactorPaydown = 6</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:473](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L473) |  |
-
-## CanonicalDisposalHistoryProjector
-
-Qualified name: <code>Meridian.Storage.Ledger.CanonicalDisposalHistoryProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs:8](../../../../src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs#L8).
-
-Certifies disposal economics against retained current basis while preserving acquisition evidence.
-
-```csharp
-public static class CanonicalDisposalHistoryProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerTaxLotReliefProjection Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency);</code> | [src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs:10](../../../../src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs#L10) |  |
-
-## CanonicalOpenLotDisposalGuard
-
-Qualified name: <code>Meridian.Storage.Ledger.CanonicalOpenLotDisposalGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs:7](../../../../src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs#L7).
-
-Production cutover guard over the locked lots of record, in durable storage units.
-
-```csharp
-public static class CanonicalOpenLotDisposalGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static OpenLotReliefResultDto Validate(IReadOnlyList&lt;LedgerTaxLotRecord&gt; openLots, IReadOnlyList&lt;LedgerTaxLotDisposalSelection&gt; selections, LedgerTaxLotReliefMethod method, string functionalCurrency);</code> | [src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs:9](../../../../src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs#L9) |  |
-
-## ConsolidationFxCurrencyRules
-
-Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxCurrencyRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:7](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L7).
-
-Governed FX requires a recognized monetary currency with a defined minor-unit scale.
-
-```csharp
-public static class ConsolidationFxCurrencyRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsSupported(string? currency) =&gt; …;</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:9](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L9) |  |
-| <code>public static void RequireSupported(string currency);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:14](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L14) |  |
-| <code>public static void Validate(ConsolidationFxRateSetDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:20](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L20) |  |
-| <code>public static void Validate(ConsolidationFxPolicyDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:30](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L30) |  |
-| <code>public static void Validate(ConsolidationFxBookConfigurationDto value);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs:36](../../../../src/Meridian.Storage/Ledger/ConsolidationFxCurrencyRules.cs#L36) |  |

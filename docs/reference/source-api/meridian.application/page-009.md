@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterActiveImportStatus
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterActiveImportStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterIngestStatusService.cs#L13).
+
+Active Security Master ingest progress.
+
+```csharp
+public sealed record SecurityMasterActiveImportStatus(string FileExtension, int Total, int Processed, int Imported, int Skipped, int Failed, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc);
+```
+
 ## SecurityMasterAmortizationLedgerBridge
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge</code>. Kind: `class`.
@@ -1079,27 +1091,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityMasterWriteRefusedException(string message) : base(message);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L21) |  |
 | <code>public SecurityMasterWriteRefusedException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWriteRefusedException.cs#L26) |  |
-
-## SecurityProjectionChangeOutcome
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityProjectionChangeOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L9).
-
-What SecurityMasterProjectionChangeHandler did with one notification.
-
-```csharp
-public enum SecurityProjectionChangeOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Malformed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L12) | The payload could not be parsed; it was logged and ignored. |
-| <code>IgnoredOwnNode</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L15) | The notification came from this node, whose own write path already updated the cache. |
-| <code>Refreshed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L18) | The security was re-read from the durable store and installed. |
-| <code>KeptNewer</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L21) | The durable re-read was older than the cached record, which was kept. |
-| <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L24) | The security is gone from the durable store and was evicted (or was never cached). |
-| <code>Resynchronized</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L27) | The whole cache was re-synchronised from the durable store. |
-| <code>Failed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L30) | The durable re-read failed; the listener schedules a full resynchronization retry. |

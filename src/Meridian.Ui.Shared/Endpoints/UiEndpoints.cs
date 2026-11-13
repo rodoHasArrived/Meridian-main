@@ -231,6 +231,7 @@ public static class UiEndpoints
         app.MapBondReferenceEndpoints(jsonOptions);
         app.MapBondReferencePagingEndpoints(jsonOptions);
         app.MapBondAnalyticsEndpoints(jsonOptions);
+        app.MapBondWorkflowEndpoints();
         app.MapBondMigrationEndpoints(jsonOptions);
         app.MapOptionReferenceEndpoints(jsonOptions);
         app.MapOptionChainEndpoints(jsonOptions);

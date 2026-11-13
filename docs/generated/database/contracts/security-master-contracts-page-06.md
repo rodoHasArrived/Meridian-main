@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 571. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 572. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -18,8 +18,8 @@ classDiagram
         +string? IndexName
         +SecurityCurveInterpolation Interpolation
         +SecurityCurveKind Kind
+        +SecurityCurveRatePolicy RatePolicy
         +string Source
-        +string? Tenor
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation["SecurityCurveInterpolation"] {
     }
@@ -30,6 +30,8 @@ classDiagram
         +SecurityRatePointEvidenceDto? RateEvidence
         +string? Tenor
         +decimal Value
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy["SecurityCurveRatePolicy"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurveRules["SecurityCurveRules"] {
     }
@@ -426,10 +428,9 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityProjectionRecordExtensions["SecurityProjectionRecordExtensions"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityQuotationConvention["SecurityQuotationConvention"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveInterpolation
     Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveKind
+    Meridian_Contracts_SecurityMaster_SecurityCurveDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCurveRatePolicy
     Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
     Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
@@ -456,6 +457,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
     Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityPriceBasis
-    Meridian_Contracts_SecurityMaster_SecurityPriceQuotationEvidence --> Meridian_Contracts_SecurityMaster_SecurityQuotationConvention
     Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
 ```

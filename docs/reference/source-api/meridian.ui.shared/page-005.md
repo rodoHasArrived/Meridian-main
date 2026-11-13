@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderDataProjectionEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderDataProjectionEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L12).
+
+Exposes one provider-neutral projection for every workstation client.
+
+```csharp
+public static class ProviderDataProjectionEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderDataProjectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L14) |  |
+| <code>public static ProviderDataProjectionSnapshot CreateProjection(ProviderDataReadModelService service) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L34) |  |
+| <code>public static ProviderDataProjectionSnapshot CreateProjection(ProviderDataReadModelService service, string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs#L37) |  |
+
 ## ProviderEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderEndpoints</code>. Kind: `class`.
@@ -789,13 +809,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L21) |  |
-
-## TradingActionResult
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:79](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L79).
-
-```csharp
-public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
-```

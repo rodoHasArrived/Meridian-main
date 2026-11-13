@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 50
-- Functions/procedures: 28
-- Triggers: 54
+- Relations: 52
+- Functions/procedures: 29
+- Triggers: 56
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -155,6 +155,32 @@ erDiagram
         jsonb corporate_action_instruction
         jsonb capital_return_instruction
         jsonb factor_paydown_instruction
+    }
+    ledger_bond_coupon_cash_consumption {
+        uuid ledger_book_id PK
+        uuid account_id PK
+        text payment_version_id
+        text payment_flow_id
+        uuid tax_lot_record_id FK
+        text expected_flow_id
+        text allocation_id PK
+        text receipt_id PK,FK
+        numeric_38_12_ net_amount
+        numeric_38_12_ gross_amount
+        numeric_38_12_ withholding_tax
+        numeric_38_12_ fees
+    }
+    ledger_bond_coupon_recognition {
+        text receipt_id PK
+        uuid ledger_book_id FK
+        uuid account_id
+        uuid tax_lot_record_id FK
+        text run_id
+        text previous_receipt_id FK
+        text reverses_receipt_id FK
+        uuid journal_entry_id FK
+        timestamp_with_time_zone posted_at
+        text payload
     }
     ledger_consolidation_fx_book_configurations {
         uuid ledger_book_id PK,FK
@@ -669,6 +695,9 @@ erDiagram
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_last_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_tax_lots : "tax_lots_originating_mutation_batch_id_fkey"
     ledger_atomic_tax_lot_posting_batches ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_disposal_mutation_batch_id_fkey"
+    ledger_bond_coupon_recognition ||--o{ ledger_bond_coupon_cash_consumption : "bond_coupon_cash_consumption_receipt_id_fkey"
+    ledger_bond_coupon_recognition ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_previous_receipt_id_fkey"
+    ledger_bond_coupon_recognition ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_reverses_receipt_id_fkey"
     ledger_consolidation_fx_rate_sets ||--o{ ledger_consolidation_fx_book_configurations : "consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey"
     ledger_consolidation_transition_previews ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_preview_id_fkey"
     ledger_consolidation_transition_receipts ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_previous_transition_id_fkey"
@@ -676,6 +705,7 @@ erDiagram
     ledger_intercompany_proposals ||--o{ ledger_intercompany_proposal_links : "intercompany_proposal_links_proposal_id_fkey"
     ledger_intercompany_proposals ||--o{ ledger_intercompany_proposal_retries : "intercompany_proposal_retries_proposal_id_fkey"
     ledger_journal_entries ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_journal_entry_id_fkey"
+    ledger_journal_entries ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_intercompany_proposals : "intercompany_proposals_source_journal_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_entry_integrity_seals : "journal_entry_integrity_seals_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_entry_open_postings : "journal_entry_open_postings_journal_entry_id_fkey"
@@ -685,6 +715,7 @@ erDiagram
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_atomic_tax_lot_posting_batches : "atomic_tax_lot_posting_batches_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_consolidation_fx_book_configurations : "consolidation_fx_book_configurations_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_new_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_consolidation_transition_receipts : "consolidation_transition_receipts_previous_book_id_fkey"
@@ -710,6 +741,8 @@ erDiagram
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
     ledger_private_capital_calls ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profile_fkey"
     ledger_private_capital_commitments ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profil_fkey1"
+    ledger_tax_lots ||--o{ ledger_bond_coupon_cash_consumption : "bond_coupon_cash_consumption_tax_lot_record_id_fkey"
+    ledger_tax_lots ||--o{ ledger_bond_coupon_recognition : "bond_coupon_recognition_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_tax_lot_record_id_fkey"
@@ -729,6 +762,8 @@ erDiagram
 | `accounting_periods` | table | 14 | `period_id` | 1 | 8 | - |
 | `accounting_policies` | table | 14 | `accounting_policy_key` | 0 | 3 | - |
 | `atomic_tax_lot_posting_batches` | table | 21 | `mutation_batch_id` | 4 | 5 | - |
+| `bond_coupon_cash_consumption` | table | 12 | `ledger_book_id`, `account_id`, `allocation_id`, `receipt_id` | 2 | 3 | - |
+| `bond_coupon_recognition` | table | 10 | `receipt_id` | 5 | 4 | - |
 | `consolidation_fx_book_configurations` | table | 10 | `ledger_book_id`, `revision` | 2 | 1 | - |
 | `consolidation_fx_rate_sets` | table | 6 | `tenant_id`, `company_id`, `rate_set_id`, `revision` | 0 | 1 | - |
 | `consolidation_transition_previews` | table | 9 | `preview_id` | 0 | 2 | - |

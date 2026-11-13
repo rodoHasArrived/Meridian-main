@@ -6,6 +6,84 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ValidationError
+
+Qualified name: <code>Meridian.Storage.Packaging.ValidationError</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Packaging/PackageResult.cs:313](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L313).
+
+Details of a validation error during import.
+
+```csharp
+public sealed class ValidationError
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;filePath&quot;)] public string FilePath { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:316](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L316) |  |
+| <code>[JsonPropertyName(&quot;errorType&quot;)] public string ErrorType { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:319](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L319) |  |
+| <code>[JsonPropertyName(&quot;expectedValue&quot;)] public string? ExpectedValue { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:322](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L322) |  |
+| <code>[JsonPropertyName(&quot;actualValue&quot;)] public string? ActualValue { get; set; }</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:325](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L325) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Packaging/PackageResult.cs:328](../../../../src/Meridian.Storage/Packaging/PackageResult.cs#L328) |  |
+
+## PartitionDimension
+
+Qualified name: <code>Meridian.Storage.PartitionDimension</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:310](../../../../src/Meridian.Storage/StorageOptions.cs#L310).
+
+Partition dimension for multi-dimensional partitioning.
+
+```csharp
+public enum PartitionDimension : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Date</code> | [src/Meridian.Storage/StorageOptions.cs:313](../../../../src/Meridian.Storage/StorageOptions.cs#L313) | Partition by date. |
+| <code>Symbol</code> | [src/Meridian.Storage/StorageOptions.cs:315](../../../../src/Meridian.Storage/StorageOptions.cs#L315) | Partition by symbol. |
+| <code>EventType</code> | [src/Meridian.Storage/StorageOptions.cs:317](../../../../src/Meridian.Storage/StorageOptions.cs#L317) | Partition by event type. |
+| <code>Source</code> | [src/Meridian.Storage/StorageOptions.cs:319](../../../../src/Meridian.Storage/StorageOptions.cs#L319) | Partition by data source. |
+| <code>AssetClass</code> | [src/Meridian.Storage/StorageOptions.cs:321](../../../../src/Meridian.Storage/StorageOptions.cs#L321) | Partition by asset class. |
+| <code>Exchange</code> | [src/Meridian.Storage/StorageOptions.cs:323](../../../../src/Meridian.Storage/StorageOptions.cs#L323) | Partition by exchange. |
+
+## PartitionStrategy
+
+Qualified name: <code>Meridian.Storage.PartitionStrategy</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:329](../../../../src/Meridian.Storage/StorageOptions.cs#L329).
+
+Multi-dimensional partition strategy.
+
+```csharp
+public sealed record PartitionStrategy(PartitionDimension Primary, PartitionDimension? Secondary = null, PartitionDimension? Tertiary = null, DatePartition DateGranularity = DatePartition.Daily);
+```
+
+## JsonlStoragePolicy
+
+Qualified name: <code>Meridian.Storage.Policies.JsonlStoragePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:12](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L12).
+
+Storage policy that generates file paths based on configurable naming conventions. Supports multiple directory structures and date partitioning strategies.
+
+```csharp
+public sealed class JsonlStoragePolicy : IStoragePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlStoragePolicy(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:18](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L18) |  |
+| <code>public string GetPath(MarketEvent evt);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:28](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L28) | Generates the file path for a market event based on configured naming convention. |
+| <code>public string GetPathPreview();</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:59](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L59) | Gets a preview of the file path pattern for display purposes. |
+| <code>public ParsedPathMetadata? TryParsePath(string filePath);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:231](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L231) | Attempts to parse metadata from a file path based on the configured naming convention. This is the inverse of GetPath() and provides a centralized parser for storage search/indexing. |
+
 ## ParsedPathMetadata
 
 Qualified name: <code>Meridian.Storage.Policies.ParsedPathMetadata</code>. Kind: `record`.
@@ -903,44 +981,4 @@ Aliases / AliasRevisionsSynchronized: revisions appended by projection replaceme
 
 ```csharp
 public sealed record AliasRevisionsSynchronizedPayload(int AppendedRevisions) : ISecurityGovernancePayload;
-```
-
-## BondAccrualConventionProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.BondAccrualConventionProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:74](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L74).
-
-```csharp
-public sealed record BondAccrualConventionProjectionRow(Guid SecurityId, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version);
-```
-
-## BondLifecycleProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.BondLifecycleProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:57](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L57).
-
-```csharp
-public sealed record BondLifecycleProjectionRow(Guid SecurityId, string LifecycleStat, DateOnly? IssueDate, DateOnly? CallDate, DateOnly MaturityDate, bool IsCallable, long Version, string? Subclass = null, decimal? Par = null, string? PaymentFrequency = null, DateOnly? LegalFinalMaturity = null, DateOnly? PreRefundDate = null, DateOnly? MandatoryPutDate = null, DateOnly? EffectiveTo = null);
-```
-
-## BondProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.BondProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:27](../../../../src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs#L27).
-
-```csharp
-public sealed record BondProjectionRow(Guid SecurityId, string DisplayName, string Currency, string PrimaryIdentifierValue, string? IssuerName, string? Seniority, DateOnly? MaturityDate, string? LifecycleStat, DateOnly? IssueDate, DateOnly? CallDate, bool? IsCallable, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version, string? Subclass = null, decimal? Par = null, string? PaymentFrequency = null, DateOnly? LegalFinalMaturity = null, DateOnly? PreRefundDate = null, DateOnly? MandatoryPutDate = null, JsonElement? CanonicalTerms = null, DateOnly? EffectiveTo = null);
-```
-
-## CertificateOfDepositProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CertificateOfDepositProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record CertificateOfDepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string IssuerName, DateOnly Maturity, decimal? CouponRate, DateOnly? CallableDate, string? DayCount, string PrimaryIdentifierValue, long Version);
 ```
