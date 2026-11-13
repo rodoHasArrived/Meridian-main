@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Storage
 
+`ListTaxLotAccrualSnapshotsAsync` reads one tenant/book/security/position scope under repeatable
+read. It reconstructs daily open shares and pre-paydown interest factors from retained mutations,
+including the final interest day of a fully paid-down lot. It preserves same-day disposals and
+refuses incomplete quantity histories or missing acquisition face terms. The read does not
+change posted journals, lot facts or current concurrency versions.
+
 Ledger-period reopen and shared instrument-role approval validation reject reserved W14 preparer
 assertion references before governed writes. Instrument-role validation applies to both in-memory
 and PostgreSQL projection stores. A preparer assertion cannot supply ordinary write approval.

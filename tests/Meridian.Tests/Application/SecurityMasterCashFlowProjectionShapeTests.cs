@@ -17,9 +17,10 @@ namespace Meridian.Tests.Application;
 /// case goes through the public <see cref="SecurityMasterCashFlowService.GetProjectionAsync"/> seam and
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
 /// The frozen legacy row codec preserves the original nested-member pins. Current calculated rows
-/// explicitly declare row version 1 and retain measured interest intervals when the legacy coupon
-/// walk supplies them. Both contracts pin every nested member independently. Top-level and resolved
-/// terms members remain unchanged; only a declared projection adds <c>scheduleEvidence</c>. A stray
+/// explicitly declare row version 2 and retain measured interest intervals and principal segments
+/// when the calculated coupon walk supplies them. Both contracts pin every nested member independently.
+/// Top-level and resolved terms members remain unchanged; only a declared projection adds
+/// <c>scheduleEvidence</c>. A stray
 /// or malformed convention block still projects exactly as its clean twin.
 /// </summary>
 /// <remarks>
@@ -147,13 +148,19 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             ["Swap.zeroRateTwoLeg"] = [ScheduleRowPaths, SwapLegPaths],
         };
 
-    // Exact additions in current row contract 1. Contractual-principal and netted multi-leg rows
-    // do not claim measured intervals that their calculation path cannot supply.
+    // Exact additions in row contract 2. Fixed-rate bullets and contractual-principal schedules
+    // retain measured intervals and principal segments; netted multi-leg rows retain neither.
     private static string[] CurrentRowAdditions(string caseName) => caseName switch
     {
-        "Bond.zeroRateBullet" =>
-        ["schedule[].rowVersion", "schedule[].interestMeasuredFrom", "schedule[].interestMeasuredTo"],
-        "Bond.zeroRateContractualSchedule" => ["schedule[].rowVersion"],
+        "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule" =>
+        [
+            "schedule[].rowVersion", "schedule[].interestMeasuredFrom", "schedule[].interestMeasuredTo",
+            "schedule[].interestSegments",
+            "schedule[].interestSegments[].start", "schedule[].interestSegments[].end",
+            "schedule[].interestSegments[].referencePrincipal", "schedule[].interestSegments[].unroundedInterestAmount",
+            "schedule[].interestSegments[].factor", "schedule[].interestSegments[].periodStart",
+            "schedule[].interestSegments[].periodEnd", "schedule[].interestSegments[].factorAfter"
+        ],
         "Swap.zeroRateTwoLeg" => ["schedule[].rowVersion", "legSchedules[].schedule[].rowVersion"],
         _ => []
     };
@@ -268,10 +275,10 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             expected,
             $"the undeclared '{caseName}' projection writes exactly the current row contract");
         foreach (var row in projection["schedule"]!.AsArray())
-            row!["rowVersion"]!.GetValue<int>().Should().Be(1);
+            row!["rowVersion"]!.GetValue<int>().Should().Be(2);
         foreach (var leg in projection["legSchedules"]?.AsArray() ?? [])
             foreach (var row in leg!["schedule"]!.AsArray())
-                row!["rowVersion"]!.GetValue<int>().Should().Be(1);
+                row!["rowVersion"]!.GetValue<int>().Should().Be(2);
         if (caseName == "Bond.zeroRateBullet")
         {
             projection["schedule"]!.AsArray().Should().NotBeEmpty();
@@ -367,7 +374,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             row!.AsObject().Select(static member => member.Key).Should().Equal(
                 "periodDate", "principalAmount", "interestAmount", "factor", "unadjustedStart",
                 "unadjustedEnd", "accrualStart", "accrualEnd", "rowVersion");
-            row["rowVersion"]!.GetValue<int>().Should().Be(1);
+            row["rowVersion"]!.GetValue<int>().Should().Be(2);
         }
     }
 

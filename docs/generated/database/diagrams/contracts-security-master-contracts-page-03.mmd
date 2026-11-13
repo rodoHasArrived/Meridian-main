@@ -44,6 +44,15 @@ classDiagram
         +bool? IsVoluntary
         +Guid? SuccessorSecurityId
     }
+    class Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding["FaceValueAccrualHolding"] {
+        +decimal AccrualFactor
+        +BondAmortizationMethod? AmortizationMethod
+        +DateOnly Date
+        +FaceValueLot Lot
+        +decimal OpenShare
+        +Guid? TaxLotRecordId
+        +long? Version
+    }
     class Meridian_Contracts_SecurityMaster_FaceValueLot["FaceValueLot"] {
         +DateOnly AcquiredDate
         +decimal BookedFactor
@@ -376,8 +385,7 @@ classDiagram
         +string Currency
         +DateTimeOffset? KnowledgeAsOf
     }
-    class Meridian_Contracts_SecurityMaster_OtcContractsJsonContext["OtcContractsJsonContext"] {
-    }
+    Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FundUnitLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
