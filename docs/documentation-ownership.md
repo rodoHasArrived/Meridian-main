@@ -79,6 +79,16 @@ Before adding or moving docs:
   supporting lane, or archive historical material under `archive/docs/`.
 - The validator still warns on missing lifecycle fields so legacy files can be cleaned up in batches instead of blocking unrelated slices.
 
+### Immutable evidence documents
+
+The structure validator expands only the exact Markdown entries listed by the registered
+`docs/testing/evidence/wal-checksum-2026-10-07/manifest.json`. It verifies that manifest's checksum
+and each listed Markdown file's size and SHA-256 before classifying the file as an immutable
+snapshot. It reports these separately from generated output and maintained guides. Unlisted files
+in the same packet still need lifecycle metadata; checksum drift or missing evidence is an error
+even without `--strict`. Preserve snapshot bytes and original evidence dates instead of adding
+current review headers to them. Run the packet's `verify-evidence.py` for its full integrity check.
+
 ## Retained binary evidence
 
 New PNG revisions under `docs/diagrams`, `docs/screenshots`, and `docs/testing/evidence`

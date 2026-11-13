@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-12T17:22:14Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-13T09:16:45Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 78 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 65 |
-| `src/Meridian.Application/README.md` | Host and Composition | `01649c7a44` (2026-11-12T16:06:18Z) | 54 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 31 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 27 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 22 |
-| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 20 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 17 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 16 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `01649c7a44` (2026-11-12T16:06:18Z) | 12 |
-| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `01649c7a44` (2026-11-12T16:06:18Z) | 9 |
-| `src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 9 |
-| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 8 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 8 |
-| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.tsx` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 7 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `c24129bb68` (2026-11-13T09:12:02Z) | 88 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `c24129bb68` (2026-11-13T09:12:02Z) | 83 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 35 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `c24129bb68` (2026-11-13T09:12:02Z) | 12 |
+| `src/Meridian.Execution.Sdk/README.md` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 7 |
+| `src/Meridian.Risk/README.md` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 6 |
+| `src/Meridian.Strategies/Live/BacktestStrategyLiveAdapter.cs` | Execution, Risk, and Strategies | `c24129bb68` (2026-11-13T09:12:02Z) | 2 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `e28650fd27` (2026-11-13T08:49:29Z) | 26 |
+| `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` | Providers and Storage | `e28650fd27` (2026-11-13T08:49:29Z) | 3 |
+| `src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs` | Providers and Storage | `e28650fd27` (2026-11-13T08:49:29Z) | 3 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `cf2f0e0735` (2026-11-13T02:44:01Z) | 8 |
+| `src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs` | Desktop and UI Workflows | `cf2f0e0735` (2026-11-13T02:44:01Z) | 2 |
+| `src/Meridian.Strategies/Storage/StrategyRunStore.cs` | Execution, Risk, and Strategies | `cf2f0e0735` (2026-11-13T02:44:01Z) | 1 |
+| `src/Meridian.Application/README.md` | Host and Composition | `ad80338ec2` (2026-11-13T01:51:21Z) | 62 |
+| `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` | Desktop and UI Workflows | `ad80338ec2` (2026-11-13T01:51:21Z) | 12 |
 

@@ -1106,6 +1106,8 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ExecutionGovernanceEndpointsTests|FullyQualifiedName~EquityOrderSessionPolicyTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementEndpointTests|FullyQualifiedName~IntercompanyAgreementAuthorityTests|FullyQualifiedName~IntercompanyAgreementJournalProjectionTests|FullyQualifiedName~ManualJournalAgreementReviewTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"

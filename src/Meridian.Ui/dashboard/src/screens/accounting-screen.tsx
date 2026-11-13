@@ -2,7 +2,7 @@ import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCa
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
-import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
+import { selectCurrentDailyValuationSchedule, useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -59,7 +59,7 @@ import { buildAccountingSectionVisibility, buildAccountingTaskMode, resolveAccou
 import { buildAccountingLoadingViewState, buildCloseCommandCenterViewState, buildAccountingWorkflowLaunchViewState, SECURITY_IDENTITY_DETAIL_PANEL_ID, useAccountingCloseReportPackageViewModel, useCapitalAccountWorkbenchViewModel, useAccountingConfigurationViewModel, useAccountingCashFlowViewModel, useManualJournalEntryWorkbenchViewModel, useAccountingReconciliationViewModel, useAccountingReportingViewModel, useReconciliationResolveDialogViewModel, useSecurityMasterViewModel } from "@/screens/accounting-screen.view-model";
 import { buildMultiAssetCoveragePanel } from "@/screens/portfolio-screen.view-model";
 import type { CloseCommandCenterViewState, SecuritySearchResultRowViewModel } from "@/screens/accounting-screen.view-model";
-import type { AccountingSystemImportDetail, AccountingSystemExportPackageRequest, ExternalGlExportPackage, ExternalGlExportPackageManifest, ExternalGlMappingProfile, AccountingSystemProvider, AccountingSystemReconciliationSummary, AccountingWorkspaceResponse, DailyValuationScheduleWorkItem, FinancialRecordExplorerDto, FinancialRecordExplorerSavedViewSaveRequestDto, MultiAssetCoverageSummary, PrivateCapitalCloseCockpit, SessionInfo } from "@/types";
+import type { AccountingSystemImportDetail, AccountingSystemExportPackageRequest, ExternalGlExportPackage, ExternalGlExportPackageManifest, ExternalGlMappingProfile, AccountingSystemProvider, AccountingSystemReconciliationSummary, AccountingWorkspaceResponse, FinancialRecordExplorerDto, FinancialRecordExplorerSavedViewSaveRequestDto, MultiAssetCoverageSummary, SessionInfo } from "@/types";
 import { formatApprovalError } from "@/screens/accounting-screen.approvals";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
@@ -90,32 +90,6 @@ function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
     periodId: normalizeOptionalQueryValue(params.get("periodId")),
     status: normalizeOptionalQueryValue(params.get("workflowStatus"))
   };
-}
-
-function selectCurrentDailyValuationSchedule(
-  schedules: DailyValuationScheduleWorkItem[],
-  status: PrivateCapitalCloseCockpit["dailyValuationStatus"] | null | undefined,
-  query: CloseWorkflowQuery
-): DailyValuationScheduleWorkItem | null {
-  const expectedScheduleId = status?.scheduleId?.trim() || null;
-  const expectedFundProfileId = status?.fundProfileId?.trim() || query.fundProfileId || null;
-  const expectedLedgerBookId = status?.ledgerBookId?.trim() || query.ledgerBookId || null;
-  const expectedPeriodId = status?.periodId?.trim() || query.periodId || null;
-  const expectedEntityId = status?.entityId?.trim() || null;
-  const expectedTenantId = status?.tenantId?.trim() || null;
-  const expectedCompanyId = status?.companyId?.trim() || null;
-  const matches = (actual: string | null | undefined, expected: string | null) =>
-    !expected || actual?.trim().localeCompare(expected, undefined, { sensitivity: "accent" }) === 0;
-
-  return schedules.find((schedule) =>
-    matches(schedule.scheduleId, expectedScheduleId) &&
-    matches(schedule.fundProfileId, expectedFundProfileId) &&
-    matches(schedule.ledgerBookId, expectedLedgerBookId) &&
-    matches(schedule.periodId, expectedPeriodId) &&
-    matches(schedule.entityId, expectedEntityId) &&
-    matches(schedule.tenantId, expectedTenantId) &&
-    matches(schedule.companyId, expectedCompanyId)
-  ) ?? null;
 }
 
 function normalizeOptionalQueryValue(value: string | null): string | undefined {
