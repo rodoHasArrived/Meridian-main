@@ -4,15 +4,19 @@ using FluentAssertions;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.FundStructure;
 using Meridian.Application.SecurityMaster.CorporateActions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.FundStructure;
 using Meridian.Storage.SecurityMaster;
 using Meridian.TestSupport;
 using Meridian.Tests.Storage;
@@ -54,7 +58,32 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         await SecurityMasterTestCapabilityFloor.InitializeAndActivateAsync(server, securityOptions, ct);
         await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync(ct);
 
-        var journal = new PostgresLedgerJournalStore(ledgerOptions);
+        var ownerId = Guid.NewGuid();
+        var lifecycleStatus = LegalEntityLifecycleStatusDto.Active;
+        var lifecycleLeases = 0;
+        var lifecycleStart = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var structure = Substitute.For<IFundStructureService>();
+        structure.GetOrganizationStructureAsync(Arg.Any<OrganizationStructureQuery>(), Arg.Any<CancellationToken>())
+            .Returns(new OrganizationStructureGraphDto([], [], [], [], [], [],
+                [new(ownerId, LegalEntityTypeDto.Fund, "DIV", "Dividend entity", "US", "USD", true, lifecycleStart, null)], [], [],
+                [new(ownerId, FundStructureNodeKindDto.Entity, "DIV", "Dividend entity", null, true, lifecycleStart, null)], [], []));
+        var lifecycleHistory = Substitute.For<IEntityLifecycleStore>();
+        lifecycleHistory.GetLatestAsync(Tenant, ownerId, Arg.Any<CancellationToken>()).Returns(_ =>
+            new EntityLifecycleRevisionDto(Tenant, ownerId, 1, lifecycleStart, "reviewer", "fixture lifecycle", "evidence", "",
+                new string(lifecycleStatus == LegalEntityLifecycleStatusDto.Active ? 'a' : 'd', 64),
+                [new(Guid.NewGuid(), lifecycleStart, null, lifecycleStatus, LegalEntityLifecycleEventKindDto.Formation)]));
+        lifecycleHistory.AcquireReadLeaseAsync(Tenant, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>()).Returns(_ =>
+        {
+            Interlocked.Increment(ref lifecycleLeases);
+            return new NativeDividendLifecycleLease(() => Interlocked.Decrement(ref lifecycleLeases));
+        });
+        var lifecycle = new LifecycleLedgerPostingAuthority(structure, lifecycleHistory, () => null);
+        var tenants = Substitute.For<IFundScopeTenantAccessor>();
+        tenants.ResolveCallerTenant().Returns(Tenant);
+        var journal = new PostgresLedgerJournalStore(ledgerOptions, tenants, postingAuthorities: () =>
+            new ILedgerPostingAuthority[] { lifecycle }.Concat(LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities()
+                .Where(authority => authority.ControlName != "entity-lifecycle")));
+        await new PostgresFundProfileTenancyRegistry(ledgerOptions).BindAsync(Fund, Tenant, Company, ct);
         var books = new PostgresLedgerBookService(journal);
         var assets = new PostgresAssetOperationsProjectionStore(assetOptions, journal);
         var operations = new PostgresCorporateActionOperationsStore(securityOptions, journal);
@@ -63,10 +92,9 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         var securityQuery = await CreateSecurityAsync(securityOptions, securityId, ct);
         var bookId = Guid.NewGuid();
         var periodId = Guid.NewGuid();
-        var ownerId = Guid.NewGuid();
         var now = DateTimeOffset.UtcNow;
         await journal.SaveLedgerBookAsync(new LedgerBookRecord(
-            bookId, Fund, ownerId, FundStructureNodeKindDto.Fund, "Dividend GAAP book", "USD", now, now,
+            bookId, Fund, ownerId, FundStructureNodeKindDto.Entity, "Dividend GAAP book", "USD", now, now,
             AccountingBasis: AccountingBasisKindDto.Gaap, AccountingPolicyId: Policy, AccountingPolicyVersion: "v1"), ct);
         var period = await journal.SavePeriodAsync(new LedgerAccountingPeriod(
             periodId, bookId, PeriodStart.Year, PeriodStart.Month, PeriodStart.ToString("yyyy-MM", CultureInfo.InvariantCulture),
@@ -94,7 +122,7 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
             assets, assets, securityQuery, books, policies, configuration, candidateBuilder, journal);
         var positionId = Guid.NewGuid();
         var eventId = processingCase.CorporateActionId;
-        var dimensions = new LedgerDimensionSetDto(FundId: Fund, EntityId: Company,
+        var dimensions = new LedgerDimensionSetDto(FundId: Fund, EntityId: ownerId.ToString("D"),
             InstrumentId: securityId, BookId: bookId.ToString("D"))
         { PositionId = positionId };
         var sourceHash = CorporateActionEconomicFingerprint.Compute(
@@ -119,10 +147,10 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
             BookPositionId = positionId,
             RetainedEvidence = [retainedEvidence]
         };
-        var bookContext = new AccountingBookContextDto(bookId, Fund, ownerId, FundStructureNodeKindDto.Fund,
+        var bookContext = new AccountingBookContextDto(bookId, Fund, ownerId, FundStructureNodeKindDto.Entity,
             "Dividend GAAP book", "USD", AccountingBasisKindDto.Gaap, Policy, "v1", periodId, dimensions);
         var roleId = Guid.NewGuid();
-        var role = new InstrumentRoleDto(roleId, securityId, Fund, "Fund", InstrumentRoleKinds.Holder,
+        var role = new InstrumentRoleDto(roleId, securityId, Fund, "Entity", InstrumentRoleKinds.Holder,
             InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, new DateOnly(2026, 1, 1),
             Version: 1, OriginEvent: economicEvent, EvidenceLinks: [retainedEvidence.EvidenceUri]);
         var position = await assets.UpsertAsync(role, new BookPositionDto(positionId, securityId, roleId,
@@ -286,6 +314,18 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         (await operations.GetCaseAsync(ready.CaseId, Tenant, Company, ct))!.State.Should().Be(CorporateActionCaseStates.PreparerAttested);
         await Assert.ThrowsAsync<CorporateActionValidationException>(() => escapedLease!.EnsureCurrentAsync(Preparer,
             bookId, periodId, attached.Projection.DraftedCandidateFingerprint, attached.Projection.PostingIntentHash, ct));
+        lifecycleLeases.Should().Be(0);
+
+        // Native preparer authority does not waive the real entity lifecycle policy. Refusal
+        // rolls back the attested spine together with the journal and keeps the case reviewable.
+        lifecycleStatus = LegalEntityLifecycleStatusDto.Dissolved;
+        await Assert.ThrowsAsync<LedgerValidationException>(() => operations.ExecuteAttestedCashDividendPostingAsync(
+            postRequest, PostNative, new string('f', 64), ct));
+        (await journal.GetByPeriodAsync(periodId, ct)).Should().BeEmpty();
+        (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.Stages[^1].Stage.Should().Be(AssetAccountingLifecycleStageDto.Drafted);
+        (await operations.GetCaseAsync(ready.CaseId, Tenant, Company, ct))!.State.Should().Be(CorporateActionCaseStates.PreparerAttested);
+        lifecycleLeases.Should().Be(0);
+        lifecycleStatus = LegalEntityLifecycleStatusDto.Active;
 
         var postingHeld = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var releasePosting = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -328,6 +368,7 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
             if (ReferenceEquals(enteredOrFailed, postingTask))
                 await postingTask;
             await postingHeld.Task.WaitAsync(TimeSpan.FromSeconds(15), ct);
+            lifecycleLeases.Should().Be(1, "native eligibility authority must remain held until the outer case transaction commits");
             // An ordinary lot writer must wait for the complete-book entitlement boundary;
             // updating a sibling quantity cannot slip between preview recheck and journal commit.
             var ordinaryLotWrite = historicalSeed.SaveTaxLotAsync(lot with { OpenQuantity = 499m }, ct);
@@ -349,6 +390,7 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
             (await concurrentWithdrawal).Declaration.Enabled.Should().BeFalse();
         }
         finally { releasePosting.TrySetResult(true); }
+        lifecycleLeases.Should().Be(0, "native eligibility leases release after the case transaction commits");
         posted.Replayed.Should().BeFalse();
         posted.Case.State.Should().Be(CorporateActionCaseStates.Posted);
         var journalRecord = (await journal.GetByPeriodAsync(periodId, ct)).Should().ContainSingle().Subject;
@@ -362,6 +404,7 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         journalEntry.Metadata.Symbol.Should().Be(drafted.DraftedCandidate.InstrumentSymbol);
         journalEntry.Metadata.PreparerAttestation!.Receipt.AttestationId.Should().Be(attested.Attestation.AttestationId);
         journalEntry.Metadata.Tags!.Should().NotContainKey("approvalId");
+        journalEntry.Metadata.Tags["controls.eligibility"].Should().Contain("entity-lifecycle");
         var latest = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
         latest.Stages.Select(stage => stage.Stage).Should().Equal(AssetAccountingLifecycleStageDto.Expected,
             AssetAccountingLifecycleStageDto.Projected, AssetAccountingLifecycleStageDto.Drafted,
@@ -407,6 +450,17 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         (await reservationReader.ReadAsync(ct)).Should().BeTrue();
         reservationReader.GetInt64(0).Should().Be(1);
         reservationReader.GetDecimal(1).Should().Be(Amount);
+    }
+
+    private sealed class NativeDividendLifecycleLease(Action onDispose) : IAsyncDisposable
+    {
+        private bool _disposed;
+        public ValueTask DisposeAsync()
+        {
+            if (!_disposed)
+            { _disposed = true; onDispose(); }
+            return ValueTask.CompletedTask;
+        }
     }
 
     private static async Task ConfigureReceivableDividendRuleAsync(AccountingConfigurationService configuration,

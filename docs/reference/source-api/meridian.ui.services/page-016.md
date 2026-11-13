@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WindowBounds
+
+Qualified name: <code>Meridian.Ui.Services.WindowBounds</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:99](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L99).
+
+Window bounds for multi-monitor support.
+
+```csharp
+public sealed class WindowBounds
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double X { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:101](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L101) |  |
+| <code>public double Y { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:102](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L102) |  |
+| <code>public double Width { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:103](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L103) |  |
+| <code>public double Height { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:104](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L104) |  |
+| <code>public string? MonitorId { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:105](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L105) |  |
+| <code>public bool IsMaximized { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:106](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L106) |  |
+
+## WorkspaceCategory
+
+Qualified name: <code>Meridian.Ui.Services.WorkspaceCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:38](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L38).
+
+Persisted workspace category. Numeric values are stable because saved workspace state may contain them. Legacy member names remain as aliases for source and persisted-state compatibility.
+
+```csharp
+public enum WorkspaceCategory : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Strategy = 0</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:40](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L40) |  |
+| <code>Trading</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:41](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L41) |  |
+| <code>Data</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:42](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L42) |  |
+| <code>Accounting</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:43](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L43) |  |
+| <code>Custom</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:44](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L44) |  |
+| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:45](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L45) |  |
+| <code>[Obsolete(&quot;Use Data. DataOperations is retained only as a compatibility alias.&quot;)] DataOperations = Data</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:47](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L47) |  |
+| <code>[Obsolete(&quot;Use Accounting. Governance is retained only as a compatibility alias.&quot;)] Governance = Accounting</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:49](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L49) |  |
+
+## WorkspaceCategoryExtensions
+
+Qualified name: <code>Meridian.Ui.Services.WorkspaceCategoryExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:56](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L56).
+
+Maps persisted workspace categories to canonical operator-facing workspace names.
+
+```csharp
+public static class WorkspaceCategoryExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string ToDisplayName(this WorkspaceCategory category);</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:58](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L58) |  |
+
+## WorkspaceEventArgs
+
+Qualified name: <code>Meridian.Ui.Services.WorkspaceEventArgs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:199](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L199).
+
+Workspace event args.
+
+```csharp
+public sealed class WorkspaceEventArgs : EventArgs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceTemplate? Workspace { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:201](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L201) |  |
+
 ## WorkspaceLayoutPreset
 
 Qualified name: <code>Meridian.Ui.Services.WorkspaceLayoutPreset</code>. Kind: `class`.

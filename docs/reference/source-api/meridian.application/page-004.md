@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailyAccrualWorker
+
+Qualified name: <code>Meridian.Application.DirectLending.DailyAccrualWorker</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/DirectLending/DailyAccrualWorker.cs:22](../../../../src/Meridian.Application/DirectLending/DailyAccrualWorker.cs#L22).
+
+Background service that posts daily interest and commitment-fee accruals for all active loans. Runs once per day at the UTC midnight boundary, or immediately on startup if the current day has not yet been processed. Each batch catches up every missing accrual date since the loan&#x27;s last accrual, in strict date order, so worker downtime or a temporarily blocked accounting period does not silently under-accrue interest. For loans whose terms carry the opt-in servicing schedules, each date runs in a fixed order: apply the due scheduled rate reset, post the accrual, then capitalize PIK on a capitalization date. A missing index fixing stops that loan&#x27;s catch-up and raises an operator work item (fail closed) instead of accruing at a stale or zero rate.
+
+```csharp
+public sealed class DailyAccrualWorker : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DailyAccrualWorker(IDirectLendingOperationsStore operationsStore, IDirectLendingQueryService queryService, IDirectLendingCommandService commandService, ILogger&lt;DailyAccrualWorker&gt; logger, ILedgerJournalStore? ledgerJournalStore = null, IOperatorInboxService? operatorInbox = null);</code> | [src/Meridian.Application/DirectLending/DailyAccrualWorker.cs:38](../../../../src/Meridian.Application/DirectLending/DailyAccrualWorker.cs#L38) |  |
+
 ## DirectLendingEventRebuilder
 
 Qualified name: <code>Meridian.Application.DirectLending.DirectLendingEventRebuilder</code>. Kind: `class`.
@@ -683,6 +701,26 @@ Declared public members:
 | <code>public async Task&lt;LoanContractDetailDto?&gt; RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs:189](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs#L189) |  |
 | <code>public async Task&lt;LoanServicingStateDto?&gt; AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs:192](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingService.cs#L192) |  |
 
+## EntityLifecycleService
+
+Qualified name: <code>Meridian.Application.FundStructure.EntityLifecycleService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:10](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L10).
+
+Authorizes history against the scoped graph; storage owns immutable concurrency.
+
+```csharp
+public sealed class EntityLifecycleService(IFundStructureService structure, IEntityLifecycleStore store, IFundScopeTenantAccessor tenantAccessor) : IEntityLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:28](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L28) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:37](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L37) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/EntityLifecycleService.cs:44](../../../../src/Meridian.Application/FundStructure/EntityLifecycleService.cs#L44) |  |
+
 ## FundStructureOwnershipEdge
 
 Qualified name: <code>Meridian.Application.FundStructure.FundStructureOwnershipEdge</code>. Kind: `record struct`.
@@ -895,49 +933,82 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.FundStructure.InMemoryFundStructureService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:20](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L20).
+Source: [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:21](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L21).
 
 Thread-safe governance structure service backed by an in-memory working set with optional durable JSON snapshot persistence for local-first workflows.
 
 ```csharp
-public sealed partial class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
+public sealed partial class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService, IEntityLifecycleProjectionSink
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService) : this(fundAccountService, sharedDataAccessService : null, securityMasterQueryService : null, persistencePath : null);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:51](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L51) |  |
-| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService, string? persistencePath) : this(fundAccountService, sharedDataAccessService : null, securityMasterQueryService : null, persistencePath);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:56](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L56) |  |
-| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService, IGovernanceSharedDataAccessService? sharedDataAccessService, string? persistencePath) : this(fundAccountService, sharedDataAccessService, securityMasterQueryService : null, persistencePath);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:61](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L61) |  |
-| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService, IGovernanceSharedDataAccessService? sharedDataAccessService, ISecurityMasterQueryService? securityMasterQueryService, string? persistencePath);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:69](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L69) |  |
-| <code>public async Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:100](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L100) |  |
-| <code>public async Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:130](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L130) |  |
-| <code>public async Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:172](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L172) |  |
-| <code>public async Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:212](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L212) |  |
-| <code>public async Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:264](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L264) |  |
-| <code>public async Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:304](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L304) |  |
-| <code>public async Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:352](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L352) |  |
-| <code>public async Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:388](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L388) |  |
-| <code>public async Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:431](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L431) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:554](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L554) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:623](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L623) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:667](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L667) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:695](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L695) |  |
-| <code>public Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:771](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L771) |  |
-| <code>public async Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:787](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L787) |  |
-| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:835](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L835) |  |
-| <code>public async Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:851](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L851) |  |
-| <code>public async Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:864](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L864) |  |
-| <code>public async Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:880](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L880) |  |
-| <code>public async Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:896](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L896) |  |
-| <code>public async Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:912](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L912) |  |
+| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService) : this(fundAccountService, sharedDataAccessService : null, securityMasterQueryService : null, persistencePath : null);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:54](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L54) |  |
+| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService, string? persistencePath) : this(fundAccountService, sharedDataAccessService : null, securityMasterQueryService : null, persistencePath);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:59](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L59) |  |
+| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService, IGovernanceSharedDataAccessService? sharedDataAccessService, string? persistencePath) : this(fundAccountService, sharedDataAccessService, securityMasterQueryService : null, persistencePath);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:64](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L64) |  |
+| <code>public InMemoryFundStructureService(IFundAccountService fundAccountService, IGovernanceSharedDataAccessService? sharedDataAccessService, ISecurityMasterQueryService? securityMasterQueryService, string? persistencePath, IEntityLifecycleStore? entityLifecycleStore = null, IFundScopeTenantAccessor? lifecycleTenantAccessor = null);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:72](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L72) |  |
+| <code>public async Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:107](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L107) |  |
+| <code>public async Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:137](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L137) |  |
+| <code>public async Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:179](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L179) |  |
+| <code>public async Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:219](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L219) |  |
+| <code>public async Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:271](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L271) |  |
+| <code>public async Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:311](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L311) |  |
+| <code>public async Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:359](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L359) |  |
+| <code>public async Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:399](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L399) |  |
+| <code>public async Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:445](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L445) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:568](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L568) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:637](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L637) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:681](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L681) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:709](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L709) |  |
+| <code>public Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:785](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L785) |  |
+| <code>public async Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:801](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L801) |  |
+| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:849](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L849) |  |
+| <code>public async Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:867](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L867) |  |
+| <code>public async Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:880](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L880) |  |
+| <code>public async Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:896](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L896) |  |
+| <code>public async Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:912](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L912) |  |
+| <code>public async Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs:928](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs#L928) |  |
+
+Source: [src/Meridian.Application/FundStructure/InMemoryFundStructureService.Lifecycle.cs:5](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.Lifecycle.cs#L5).
+
+```csharp
+public sealed partial class InMemoryFundStructureService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/InMemoryFundStructureService.Lifecycle.cs:8](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.Lifecycle.cs#L8) |  |
 
 Source: [src/Meridian.Application/FundStructure/InMemoryFundStructureService.Persistence.cs:5](../../../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.Persistence.cs#L5).
 
 ```csharp
 public sealed partial class InMemoryFundStructureService
 ```
+
+## IntercompanyAccountingArrangementLegalAuthority
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAccountingArrangementLegalAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:7](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L7).
+
+Bridges accounting configuration to the single native legal registry without another legal workflow.
+
+```csharp
+public sealed class IntercompanyAccountingArrangementLegalAuthority(IIntercompanyAgreementStore store) : IIntercompanyAccountingArrangementLegalAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IntercompanyAgreementRevisionDto&gt; GetRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:10](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L10) |  |
+| <code>public async Task&lt;IntercompanyAgreementRevisionDto&gt; GetEffectiveRevisionAsync(string tenantId, IntercompanyCanonicalAgreementReferenceDto reference, DateOnly economicDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:13](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L13) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L16) |  |
+| <code>public async Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L29) |  |
 
 ## IntercompanyAgreementRules
 
@@ -967,25 +1038,25 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:8](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L8).
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L9).
 
 Agreement commands execute under the store&#x27;s durable authority lock, including approval rechecks.
 
 ```csharp
-public sealed partial class IntercompanyAgreementService(IIntercompanyAgreementStore store, IIntercompanyAgreementAccessAuthority access, IIntercompanyAgreementEvidenceAuthority evidence, TimeProvider? timeProvider = null) : IIntercompanyAgreementService
+public sealed partial class IntercompanyAgreementService(IIntercompanyAgreementStore store, IIntercompanyAgreementAccessAuthority access, IIntercompanyAgreementEvidenceAuthority evidence, TimeProvider? timeProvider = null, IEntityLifecycleStore? lifecycleStore = null, IFundStructureStore? structureStore = null) : IIntercompanyAgreementService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:14](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L14) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateProposalAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L16) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SaveDraftAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L18) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SubmitAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L20) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; ApproveAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L22) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; RejectAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:24](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L24) |  |
-| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:26](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L26) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L16) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateProposalAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L18) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SaveDraftAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L20) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; SubmitAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L22) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; ApproveAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:24](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L24) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; RejectAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:26](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L26) |  |
+| <code>public Task&lt;IntercompanyAgreementCommandResultDto&gt; WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs:28](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs#L28) |  |
 
 Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs:6](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs#L6).
 
@@ -1029,6 +1100,27 @@ Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs
 public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
 ```
 
+## LifecycleLedgerPostingAuthority
+
+Qualified name: <code>Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:11](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L11).
+
+Resolves entity identity and lifecycle from authoritative structure and retained revisions.
+
+```csharp
+public sealed class LifecycleLedgerPostingAuthority(IFundStructureService structure, IEntityLifecycleStore history, Func<IControlledCloseAuthorizationStore?> closeAuthorizations, Func<CancellationToken, Task<IAsyncDisposable>>? structureAuthority = null) : ILedgerPostingAuthority, ILedgerBookControlPreflight, ILedgerStructurePostingAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ControlName =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:15](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L15) |  |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireStructureAuthorityAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L16) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:18](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L18) |  |
+| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs:128](../../../../src/Meridian.Application/FundStructure/LifecycleLedgerPostingAuthority.cs#L128) |  |
+
 ## PostgresFundStructureService
 
 Qualified name: <code>Meridian.Application.FundStructure.PostgresFundStructureService</code>. Kind: `class`.
@@ -1045,28 +1137,28 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public PostgresFundStructureService(IFundStructureStore store, IFundAccountService fundAccountService, IFundStructurePolicyService policyService, IGovernanceSharedDataAccessService? sharedDataAccessService = null, ISecurityMasterQueryService? securityMasterQueryService = null, IFundScopeTenantAccessor? tenantAccessor = null, TenantScopeEnforcementOptions? tenantScope = null);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:41](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L41) |  |
-| <code>public async Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:61](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L61) |  |
-| <code>public async Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:95](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L95) |  |
-| <code>public async Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:135](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L135) |  |
-| <code>public async Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:173](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L173) |  |
-| <code>public async Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:218](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L218) |  |
-| <code>public async Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:256](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L256) |  |
-| <code>public async Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:300](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L300) |  |
-| <code>public async Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:342](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L342) |  |
-| <code>public async Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:390](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L390) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:460](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L460) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:514](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L514) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:556](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L556) |  |
-| <code>public async Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:581](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L581) |  |
-| <code>public async Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:641](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L641) |  |
-| <code>public async Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:654](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L654) |  |
-| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:705](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L705) |  |
-| <code>public async Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:721](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L721) |  |
-| <code>public async Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:735](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L735) |  |
-| <code>public async Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:751](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L751) |  |
-| <code>public async Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:767](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L767) |  |
-| <code>public async Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:783](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L783) |  |
+| <code>public PostgresFundStructureService(IFundStructureStore store, IFundAccountService fundAccountService, IFundStructurePolicyService policyService, IGovernanceSharedDataAccessService? sharedDataAccessService = null, ISecurityMasterQueryService? securityMasterQueryService = null, IFundScopeTenantAccessor? tenantAccessor = null, TenantScopeEnforcementOptions? tenantScope = null, IEntityLifecycleStore? entityLifecycleStore = null);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:42](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L42) |  |
+| <code>public async Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:64](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L64) |  |
+| <code>public async Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:98](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L98) |  |
+| <code>public async Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:138](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L138) |  |
+| <code>public async Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:176](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L176) |  |
+| <code>public async Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:221](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L221) |  |
+| <code>public async Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:259](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L259) |  |
+| <code>public async Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:303](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L303) |  |
+| <code>public async Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:349](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L349) |  |
+| <code>public async Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:400](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L400) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:470](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L470) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:524](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L524) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:566](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L566) |  |
+| <code>public async Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:591](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L591) |  |
+| <code>public async Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:651](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L651) |  |
+| <code>public async Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:664](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L664) |  |
+| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:715](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L715) |  |
+| <code>public async Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:733](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L733) |  |
+| <code>public async Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:747](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L747) |  |
+| <code>public async Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:763](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L763) |  |
+| <code>public async Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:779](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L779) |  |
+| <code>public async Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresFundStructureService.cs:795](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.cs#L795) |  |
 
 Source: [src/Meridian.Application/FundStructure/PostgresFundStructureService.Tenancy.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresFundStructureService.Tenancy.cs#L16).
 
@@ -1085,14 +1177,15 @@ Source: [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPos
 Validates exact approved provenance while retaining structure locks through ledger commit.
 
 ```csharp
-public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyAgreementStore store) : IIntercompanyAgreementPostingAuthority
+public sealed class PostgresIntercompanyAgreementPostingAuthority(IIntercompanyAgreementStore store) : IIntercompanyAgreementBatchPostingAuthority
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:12](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L12) |  |
+| <code>public Task&lt;IAsyncDisposable&gt; AcquireValidatedLeaseAsync(IntercompanyAgreementPostingRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:12](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L12) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/PostgresIntercompanyAgreementPostingAuthority.cs#L16) |  |
 
 ## IProviderIntegrationHostResolver
 
@@ -1231,86 +1324,3 @@ Source: [src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunServ
 ```csharp
 public sealed record ProviderIntegrationHttpResponse(int StatusCode, IReadOnlyDictionary<string, string> Headers, string Body);
 ```
-
-## ProviderIntegrationIdentityResolutionPreviewService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationIdentityResolutionPreviewService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:14](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L14).
-
-Previews security identity candidates for staged provider integration data.
-
-```csharp
-public sealed class ProviderIntegrationIdentityResolutionPreviewService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationIdentityResolutionPreviewService(IProviderIntegrationManifestStore store, ISecurityMasterQueryService? securityMaster = null, ILogger&lt;ProviderIntegrationIdentityResolutionPreviewService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L23) |  |
-| <code>public async Task&lt;ProviderIntegrationStagingIdentityResolutionPreviewDto&gt; PreviewAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:33](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L33) |  |
-| <code>public async Task&lt;ProviderIntegrationStagingIdentityResolutionPreviewDto&gt; PreviewAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:39](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L39) |  |
-| <code>public async Task&lt;ProviderIntegrationIdentityDecisionDto&gt; ResolveAsync(string? tenantId, string connectionId, ProviderIntegrationIdentityResolutionRequestDto request, string reviewedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:50](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L50) |  |
-
-## ProviderIntegrationMonitoringService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationMonitoringService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L10).
-
-Builds connection monitoring views and sync-run history from retained integration state.
-
-```csharp
-public sealed class ProviderIntegrationMonitoringService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationMonitoringService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationMonitoringService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L18) |  |
-| <code>public async Task&lt;ProviderIntegrationConnectionMonitorDto&gt; GetConnectionMonitorAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L26) |  |
-| <code>public async Task&lt;ProviderIntegrationConnectionMonitorDto&gt; GetConnectionMonitorAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L32) |  |
-| <code>public async Task&lt;ProviderIntegrationSyncRunHistoryDto&gt; GetConnectionSyncRunsAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:74](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L74) |  |
-| <code>public async Task&lt;ProviderIntegrationSyncRunHistoryDto&gt; GetConnectionSyncRunsAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:80](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L80) |  |
-
-## ProviderIntegrationOpenApiImportService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationOpenApiImportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:13](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L13).
-
-Imports OpenAPI descriptions into provider integration setup manifests.
-
-```csharp
-public sealed class ProviderIntegrationOpenApiImportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationOpenApiImportService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationOpenApiImportService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:39](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L39) |  |
-| <code>public async Task&lt;ProviderIntegrationOpenApiImportResultDto&gt; ImportAsync(ProviderIntegrationOpenApiImportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:47](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L47) |  |
-| <code>public async Task&lt;ProviderIntegrationOpenApiImportResultDto&gt; ImportAsync(string? tenantId, ProviderIntegrationOpenApiImportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:52](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L52) |  |
-
-## ProviderIntegrationPromotionReadinessService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationPromotionReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L10).
-
-Previews whether staged provider data meets the requirements for promotion.
-
-```csharp
-public sealed class ProviderIntegrationPromotionReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationPromotionReadinessService(ProviderIntegrationIdentityResolutionPreviewService identityResolution, ILogger&lt;ProviderIntegrationPromotionReadinessService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L18) |  |
-| <code>public async Task&lt;ProviderIntegrationPromotionReadinessPreviewDto&gt; PreviewAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L26) |  |
-| <code>public async Task&lt;ProviderIntegrationPromotionReadinessPreviewDto&gt; PreviewAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L32) |  |

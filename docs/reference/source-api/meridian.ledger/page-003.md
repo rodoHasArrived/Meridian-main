@@ -345,7 +345,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.LedgerLineDimensionSet</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/LedgerLineDimensionSet.cs:6](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L6).
+Source: [src/Meridian.Ledger/LedgerLineDimensionSet.cs:8](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L8).
 
 Optional dimensional accounting scope attached to one immutable ledger line.
 
@@ -357,10 +357,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid? PositionId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:26](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L26) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? IntercompanyAgreementId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:29](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L29) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public int? IntercompanyAgreementVersion { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:32](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L32) |  |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; ExternalGlDimensions { get; init; } = ExternalGlDimensions?? new Dictionary&lt;string, string&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:34](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L34) |  |
+| <code>public Guid? PositionId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:28](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L28) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingArrangementId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:31](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L31) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingArrangementRevisionId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:34](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L34) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? ChartAccountNodeId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:37](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L37) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountBindingRevisionId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:40](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L40) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? IntercompanyTransactionId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:43](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L43) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? IntercompanyAgreementId { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:46](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L46) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public int? IntercompanyAgreementVersion { get; init; }</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:49](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L49) |  |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; ExternalGlDimensions { get; init; } = ExternalGlDimensions?? new Dictionary&lt;string, string&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ledger/LedgerLineDimensionSet.cs:51](../../../../src/Meridian.Ledger/LedgerLineDimensionSet.cs#L51) |  |
 
 ## LedgerPartnersCapitalRollForward
 

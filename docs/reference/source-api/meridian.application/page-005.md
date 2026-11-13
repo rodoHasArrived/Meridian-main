@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationIdentityResolutionPreviewService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationIdentityResolutionPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:14](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L14).
+
+Previews security identity candidates for staged provider integration data.
+
+```csharp
+public sealed class ProviderIntegrationIdentityResolutionPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationIdentityResolutionPreviewService(IProviderIntegrationManifestStore store, ISecurityMasterQueryService? securityMaster = null, ILogger&lt;ProviderIntegrationIdentityResolutionPreviewService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L23) |  |
+| <code>public async Task&lt;ProviderIntegrationStagingIdentityResolutionPreviewDto&gt; PreviewAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:33](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L33) |  |
+| <code>public async Task&lt;ProviderIntegrationStagingIdentityResolutionPreviewDto&gt; PreviewAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:39](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L39) |  |
+| <code>public async Task&lt;ProviderIntegrationIdentityDecisionDto&gt; ResolveAsync(string? tenantId, string connectionId, ProviderIntegrationIdentityResolutionRequestDto request, string reviewedBy, CancellationToken ct = default);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs:50](../../../../src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs#L50) |  |
+
+## ProviderIntegrationMonitoringService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationMonitoringService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L10).
+
+Builds connection monitoring views and sync-run history from retained integration state.
+
+```csharp
+public sealed class ProviderIntegrationMonitoringService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationMonitoringService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationMonitoringService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L18) |  |
+| <code>public async Task&lt;ProviderIntegrationConnectionMonitorDto&gt; GetConnectionMonitorAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L26) |  |
+| <code>public async Task&lt;ProviderIntegrationConnectionMonitorDto&gt; GetConnectionMonitorAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L32) |  |
+| <code>public async Task&lt;ProviderIntegrationSyncRunHistoryDto&gt; GetConnectionSyncRunsAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:74](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L74) |  |
+| <code>public async Task&lt;ProviderIntegrationSyncRunHistoryDto&gt; GetConnectionSyncRunsAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs:80](../../../../src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs#L80) |  |
+
+## ProviderIntegrationOpenApiImportService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationOpenApiImportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:13](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L13).
+
+Imports OpenAPI descriptions into provider integration setup manifests.
+
+```csharp
+public sealed class ProviderIntegrationOpenApiImportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationOpenApiImportService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationOpenApiImportService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:39](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L39) |  |
+| <code>public async Task&lt;ProviderIntegrationOpenApiImportResultDto&gt; ImportAsync(ProviderIntegrationOpenApiImportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:47](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L47) |  |
+| <code>public async Task&lt;ProviderIntegrationOpenApiImportResultDto&gt; ImportAsync(string? tenantId, ProviderIntegrationOpenApiImportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs:52](../../../../src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs#L52) |  |
+
+## ProviderIntegrationPromotionReadinessService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationPromotionReadinessService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:10](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L10).
+
+Previews whether staged provider data meets the requirements for promotion.
+
+```csharp
+public sealed class ProviderIntegrationPromotionReadinessService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationPromotionReadinessService(ProviderIntegrationIdentityResolutionPreviewService identityResolution, ILogger&lt;ProviderIntegrationPromotionReadinessService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L18) |  |
+| <code>public async Task&lt;ProviderIntegrationPromotionReadinessPreviewDto&gt; PreviewAsync(string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L26) |  |
+| <code>public async Task&lt;ProviderIntegrationPromotionReadinessPreviewDto&gt; PreviewAsync(string? tenantId, string connectionId, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs:32](../../../../src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs#L32) |  |
+
 ## ProviderIntegrationQuarantineReplayService
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationQuarantineReplayService</code>. Kind: `class`.
@@ -989,79 +1072,3 @@ Declared public members:
 | <code>public static ValidationResult Valid =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:38](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L38) | Returns a cached valid result (no allocation on the hot path). |
 | <code>public static ValidationResult Failed(params string[] errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:44](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L44) | Creates a failed validation result with one or more error messages. |
 | <code>public static ValidationResult Failed(IReadOnlyList&lt;string&gt; errors) =&gt; …;</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:51](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L51) | Creates a failed validation result from a list of error messages. |
-
-## BestOfBreedProviderSelector
-
-Qualified name: <code>Meridian.Application.ProviderRouting.BestOfBreedProviderSelector</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:21](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L21).
-
-Selects provider routes using configured capability, preference, and availability evidence.
-
-```csharp
-public sealed class BestOfBreedProviderSelector : IBestOfBreedProviderSelector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BestOfBreedProviderSelector(ProviderRoutingService routingService, IProviderConnectionHealthSource healthSource, ConfigStore store, IDataQualityService? dataQualityService = null);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:34](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L34) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:46](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L46) |  |
-| <code>public Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:49](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L49) |  |
-
-## IBestOfBreedProviderSelector
-
-Qualified name: <code>Meridian.Application.ProviderRouting.IBestOfBreedProviderSelector</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:11](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L11).
-
-Selects a provider route for a request, including tenant-scoped routing.
-
-```csharp
-public interface IBestOfBreedProviderSelector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ProviderRouteResult&gt; SelectAsync(ProviderRouteContext context, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:13](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L13) |  |
-| <code>Task&lt;ProviderRouteResult&gt; SelectForTenantAsync(ProviderRouteContext context, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs:14](../../../../src/Meridian.Application/ProviderRouting/BestOfBreedProviderSelector.cs#L14) |  |
-
-## IProviderFamilyCatalogService
-
-Qualified name: <code>Meridian.Application.ProviderRouting.IProviderFamilyCatalogService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:504](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L504).
-
-Exposes the provider-family adapters available to routing.
-
-```csharp
-public interface IProviderFamilyCatalogService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;IProviderFamilyAdapter&gt; GetFamilies();</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:506](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L506) |  |
-| <code>IProviderFamilyAdapter? GetFamily(string providerFamilyId);</code> | [src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:508](../../../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs#L508) |  |
-
-## IProviderRuntimeCredentialApplier
-
-Qualified name: <code>Meridian.Application.ProviderRouting.IProviderRuntimeCredentialApplier</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:19](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L19).
-
-Opt-in seam that recycles a provider&#x27;s running instances under a changed host binding. Hosts without an in-process recycle keep the default, which never activates anything hot.
-
-```csharp
-public interface IProviderRuntimeCredentialApplier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ProviderRuntimeCredentialApplyOutcome&gt; ApplyAsync(ProviderRuntimeCredentialBinding binding, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs:21](../../../../src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialApplication.cs#L21) |  |

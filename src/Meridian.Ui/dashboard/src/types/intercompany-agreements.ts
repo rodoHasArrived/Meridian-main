@@ -35,6 +35,7 @@ export interface AgreementRevision {
 export interface AgreementAudit {
   eventId: string; proposalId: string; action: string; actor: string; recordedAtUtc: string;
   aggregateVersion: number; rationale?: string | null; snapshot?: AgreementDraft | null;
+  migrationWarnings?: string[] | null;
 }
 export interface AgreementCapabilities {
   canEdit: boolean; canSubmit: boolean; canApprove: boolean; canReject: boolean; canWithdraw: boolean;
@@ -48,6 +49,7 @@ export interface AgreementDetail {
   latestApprovedVersion?: number | null; applicableRevision?: AgreementRevision | null;
   proposals: AgreementProposal[]; revisions: AgreementRevision[]; history: AgreementAudit[];
   capabilities: AgreementCapabilities;
+  migrationWarnings?: string[] | null;
 }
 export interface AgreementList { items: AgreementDetail[]; nextCursor?: string | null; canCreate?: boolean; referencePostingSupported?: boolean }
 export interface AgreementCommand {

@@ -45,6 +45,16 @@ public static partial class LedgerEndpoints
             signature += $"|intercompanyAgreementId={filter.IntercompanyAgreementId}";
         if (filter.IntercompanyAgreementVersion is not null)
             signature += $"|intercompanyAgreementVersion={filter.IntercompanyAgreementVersion}";
+        if (filter.AccountingArrangementId is not null)
+            signature += "|accountingArrangementId=" + Uri.EscapeDataString(filter.AccountingArrangementId);
+        if (filter.AccountingArrangementRevisionId is not null)
+            signature += "|accountingArrangementRevisionId=" + Uri.EscapeDataString(filter.AccountingArrangementRevisionId);
+        if (filter.ChartAccountNodeId is not null)
+            signature += "|chartAccountNodeId=" + Uri.EscapeDataString(filter.ChartAccountNodeId);
+        if (filter.AccountBindingRevisionId is not null)
+            signature += "|accountBindingRevisionId=" + Uri.EscapeDataString(filter.AccountBindingRevisionId);
+        if (filter.IntercompanyTransactionId is not null)
+            signature += "|intercompanyTransactionId=" + Uri.EscapeDataString(filter.IntercompanyTransactionId);
         return signature;
     }
 
@@ -83,7 +93,8 @@ public static partial class LedgerEndpoints
         var withPosition = dimensions.PositionId.HasValue
             ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
             : signature;
-        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "|");
+        return LedgerAccountingArrangementDimensions.AppendSignature(
+            LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "|"), dimensions);
     }
 
     private static LedgerDimensionReportFilter BuildDimensionReportFilter(IQueryCollection query)
@@ -133,6 +144,11 @@ public static partial class LedgerEndpoints
             ProjectId: NormalizeOptional(GetFirstQueryValue(query, "dimensionProjectId", "projectId")),
             ExternalGlDimensions: externalGlDimensions)
         {
+            AccountingArrangementId = NormalizeOptional(GetFirstQueryValue(query, "dimensionAccountingArrangementId", "accountingArrangementId")),
+            AccountingArrangementRevisionId = NormalizeOptional(GetFirstQueryValue(query, "dimensionAccountingArrangementRevisionId", "accountingArrangementRevisionId")),
+            ChartAccountNodeId = NormalizeOptional(GetFirstQueryValue(query, "dimensionChartAccountNodeId", "chartAccountNodeId")),
+            AccountBindingRevisionId = NormalizeOptional(GetFirstQueryValue(query, "dimensionAccountBindingRevisionId", "accountBindingRevisionId")),
+            IntercompanyTransactionId = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyTransactionId", "intercompanyTransactionId")),
             IntercompanyAgreementId = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyAgreementId", "intercompanyAgreementId")),
             IntercompanyAgreementVersion = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyAgreementVersion", "intercompanyAgreementVersion"))
         });

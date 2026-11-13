@@ -928,7 +928,8 @@ const linkKinds: EvidenceDocumentLinkKind[] = [
   "Journal",
   "ReconciliationCase",
   "ReportLine",
-  "CloseTask"
+  "CloseTask",
+  "IntercompanyAgreement"
 ];
 
 function EvidenceVaultQueueFilters({
@@ -1010,14 +1011,21 @@ function EvidenceVaultQueueFilters({
 }
 
 function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidenceWorkbenchViewModel> }) {
+  const intakeDefaults = new URLSearchParams(useLocation().search);
   const [file, setFile] = useState<File | null>(null);
   const [sourceKind, setSourceKind] = useState<EvidenceDocumentIntakeSourceKind>("UploadedContent");
-  const [classification, setClassification] = useState<EvidenceDocumentClassification>("BankStatement");
+  const [classification, setClassification] = useState<EvidenceDocumentClassification>(() => {
+    const requested = intakeDefaults.get("classification") as EvidenceDocumentClassification;
+    return documentClassifications.includes(requested) ? requested : "BankStatement";
+  });
   const [sourceChannel, setSourceChannel] = useState("upload");
   const [sourceSystem, setSourceSystem] = useState("");
   const [sourceReference, setSourceReference] = useState("");
-  const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>("CloseTask");
-  const [objectId, setObjectId] = useState("");
+  const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>(() => {
+    const requested = intakeDefaults.get("linkKind") as EvidenceDocumentLinkKind;
+    return linkKinds.includes(requested) ? requested : "CloseTask";
+  });
+  const [objectId, setObjectId] = useState(() => intakeDefaults.get("objectId") ?? "");
   const [formError, setFormError] = useState<string | null>(null);
 
   const selectedSubject = vm.selectedSubjectLabel;
@@ -1190,9 +1198,14 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
               </label>
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Linked object id
-                <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+                <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy}
+                  required={linkKind === "IntercompanyAgreement"}
+                  pattern={linkKind === "IntercompanyAgreement" ? "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" : undefined} />
               </label>
             </div>
+            {linkKind === "IntercompanyAgreement" ? <p className="text-xs leading-5 text-muted-foreground">
+              Link the signed document to its saved agreement record ID. Use Agreement classification, then accept the document review before attaching it to that agreement.
+            </p> : null}
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="submit"

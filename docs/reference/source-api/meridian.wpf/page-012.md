@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ChartTimeframeOption
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ChartTimeframeOption</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:766](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L766).
+
+Pairs a chart timeframe value with its selector label.
+
+```csharp
+public sealed class ChartTimeframeOption
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChartTimeframeOption(string label, ChartTimeframe timeframe);</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:768](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L768) |  |
+| <code>public string Label { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:774](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L774) |  |
+| <code>public ChartTimeframe Timeframe { get; }</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:776](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L776) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs:778](../../../../src/Meridian.Wpf/ViewModels/ChartingPageViewModel.cs#L778) |  |
+
 ## CleanupFileDisplayItem
 
 Qualified name: <code>Meridian.Wpf.ViewModels.CleanupFileDisplayItem</code>. Kind: `class`.
@@ -1667,15 +1688,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static FinancialRecordExplorerSavedViewModel FromDto(FinancialRecordExplorerSavedViewDto view) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs:742](../../../../src/Meridian.Wpf/ViewModels/FinancialRecordExplorerViewModel.cs#L742) |  |
-
-## FundAccountProviderBindingItem
-
-Qualified name: <code>Meridian.Wpf.ViewModels.FundAccountProviderBindingItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/FundAccountProviderPanelModels.cs:6](../../../../src/Meridian.Wpf/ViewModels/FundAccountProviderPanelModels.cs#L6).
-
-One scoped provider binding shown for the selected account.
-
-```csharp
-public sealed record FundAccountProviderBindingItem(string Capability, string ConnectionLabel, string ConnectionType, string ScopeLabel, string SafetyMode, string TrustLabel, string StatusLabel);
-```

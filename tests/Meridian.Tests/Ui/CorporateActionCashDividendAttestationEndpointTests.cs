@@ -64,11 +64,21 @@ public sealed class CorporateActionCashDividendAttestationEndpointTests
         await using var fixture = await Fixture.CreateAsync();
         fixture.Permissions = Read | UserPermission.PostCorporateActionAccounting;
 
-        (await fixture.Client.PostAsJsonAsync(Route + "/post", PostBody(), Json)).EnsureSuccessStatusCode();
+        var body = PostBody();
+        body["correlationId"] = "caller-supplied-trace";
+        (await fixture.Client.PostAsJsonAsync(Route + "/post", body, Json)).EnsureSuccessStatusCode();
 
         fixture.PostCommand!.CaseId.Should().Be(CaseId);
+        fixture.PostCommand.TenantId.Should().Be("tenant-a");
+        fixture.PostCommand.CompanyId.Should().Be("company-a");
         fixture.PostCommand.Actor.Should().Be("principal-a");
         fixture.PostCommand.ScopeAssertion.Should().Be(fixture.Case.Scope);
+        fixture.PostCommand.ExpectedVersion.Should().Be(8);
+        fixture.PostCommand.IdempotencyKey.Should().Be("synthetic-post-v8");
+        fixture.PostCommand.ProjectionId.Should().Be(ProjectionId);
+        fixture.PostCommand.AttestationId.Should().Be(AttestationId);
+        fixture.PostCommand.Reason.Should().Be("Post the exact retained attested declaration");
+        fixture.PostCommand.CorrelationId.Should().NotBeNullOrWhiteSpace().And.NotBe("caller-supplied-trace");
         fixture.PostCommand.Authority.Should().Be(new CorporateActionCashDividendDecisionAuthorityDto(false, true));
         fixture.AttestCommand.Should().BeNull();
     }
