@@ -4,6 +4,8 @@ from __future__ import annotations
 import importlib.util
 import os
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest import mock
@@ -41,6 +43,52 @@ class SandboxTests(unittest.TestCase):
         with mock.patch.object(sandbox.subprocess, "run") as run, self.assertRaises(ValueError):
             sandbox.run(self.root, self.output, "repair-test", "--evil", "2" * 40)
         run.assert_not_called()
+
+    def test_pointer_only_checkout_is_cloned_without_fetching_lfs_payloads(self):
+        self.assertIsNotNone(shutil.which("git-lfs"), "Git LFS is required for this clone regression")
+        repo = self.root / "repo"
+        repo.mkdir()
+        pointer = ("version https://git-lfs.github.com/spec/v1\n"
+                   f"oid sha256:{'1' * 64}\nsize 42\n")
+        clean_env = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1",
+                         GIT_TERMINAL_PROMPT="0", GIT_CONFIG_COUNT="0")
+        clean_env.pop("GIT_LFS_SKIP_SMUDGE", None)
+        clean_env.pop("GIT_LFS_SKIP_DOWNLOAD_ERRORS", None)
+        git = ["git", "-C", str(repo), "-c", "core.hooksPath=/dev/null"]
+        for args in (("init",), ("config", "user.name", "Synthetic clone test"),
+                     ("config", "user.email", "synthetic@example.invalid")):
+            subprocess.run([*git, *args], env=clean_env, check=True, capture_output=True)
+        (repo / ".gitattributes").write_text("*.png filter=lfs diff=lfs merge=lfs -text\n")
+        (repo / "evidence.png").write_text(pointer)
+        subprocess.run([*git, "add", "."], env=clean_env, check=True, capture_output=True)
+        subprocess.run([*git, "commit", "-m", "Pointer-only synthetic checkout"],
+                       env=clean_env, check=True, capture_output=True)
+        head = subprocess.check_output([*git, "rev-parse", "HEAD"], env=clean_env, text=True).strip()
+        lfs_env = dict(clean_env, GIT_CONFIG_COUNT="2", GIT_CONFIG_KEY_0="filter.lfs.process",
+                       GIT_CONFIG_VALUE_0="git-lfs filter-process", GIT_CONFIG_KEY_1="filter.lfs.required",
+                       GIT_CONFIG_VALUE_1="true")
+        failed = subprocess.run(["git", "clone", "--no-hardlinks", str(repo), str(self.root / "unprepared")],
+                                env=lfs_env, text=True, capture_output=True)
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn("remote missing object", failed.stderr)
+
+        real_run = subprocess.run
+
+        def run_with_fake_container(command, **kwargs):
+            if command[0] != "docker":
+                return real_run(command, **kwargs)
+            mounts = [command[index + 1] for index, value in enumerate(command) if value == "--mount"]
+            work = Path(next(value for value in mounts if "target=/work" in value).split("source=", 1)[1].split(",", 1)[0])
+            raw = Path(next(value for value in mounts if "target=/output" in value).split("source=", 1)[1].split(",", 1)[0])
+            self.assertEqual((work / "repo" / "evidence.png").read_text(), pointer)
+            (raw / "report.json").write_text('{"status":"noop"}')
+            return subprocess.CompletedProcess(command, 0)
+
+        with mock.patch.dict(os.environ, lfs_env, clear=True), \
+                mock.patch.object(sandbox.subprocess, "run", side_effect=run_with_fake_container):
+            self.assertEqual(sandbox.run(repo, self.output, "repair-test", head, head), 0)
+        self.assertEqual((self.output / "report.json").read_text(), '{"status":"noop"}')
+        self.assertEqual((repo / "evidence.png").read_text(), pointer)
 
     def test_only_bounded_regular_exports_are_copied(self):
         (self.raw / "repair.patch").write_text("patch")
