@@ -16,6 +16,7 @@
 // operator-facing contract these helpers implement (signed P&L, the "P&L" spelling, currency
 // codes, decimals, timestamps and the display time zone).
 
+import { DEFAULT_DISPLAY_TIME_ZONE, getDisplayTimeZone } from "@/lib/display-time-zone";
 import { formatExactMagnitude, parseExactDecimal, type MoneyValue } from "@/lib/exact-decimal";
 
 export type { MoneyValue } from "@/lib/exact-decimal";
@@ -470,21 +471,102 @@ export function formatQuantity(value: NullableNumber, options: QuantityFormatOpt
 
 const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
 
-function padTwo(value: number): string {
-  return String(value).padStart(2, "0");
+
+// TIMESTAMPS: an instant renders as "Jun 30, 2026, 18:05 UTC" — month, day and year, a fixed
+// 24-hour clock and the zone label — in the operator's display time zone (Settings > Preferences,
+// "UTC" until they pick one). `formatTimestamp` is that format; `formatRelativeTime` is the "5m ago"
+// form, and `<TimeText>` (components/ui/time-text) renders one with the other on hover.
+export {
+  COMMON_DISPLAY_TIME_ZONES,
+  DEFAULT_DISPLAY_TIME_ZONE,
+  getDisplayTimeZone,
+  isValidTimeZone,
+  setDisplayTimeZone,
+  subscribeDisplayTimeZone
+} from "@/lib/display-time-zone";
+
+/** An instant as a formatter accepts it: a `Date`, epoch milliseconds, or an ISO datetime string. */
+export type TimestampInput = Date | number | string;
+
+function toDate(value: TimestampInput): Date {
+  return value instanceof Date ? value : new Date(value);
+}
+
+export interface TimestampFormatOptions {
+  /** IANA zone to render in, overriding the operator's display zone, e.g. "UTC" for a UTC-defined label. */
+  timeZone?: string;
+}
+
+const timestampFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function timestampFormatter(timeZone: string): Intl.DateTimeFormat {
+  let formatter = timestampFormatters.get(timeZone);
+  if (!formatter) {
+    try {
+      formatter = new Intl.DateTimeFormat(FORMAT_LOCALE, {
+        timeZone,
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+        timeZoneName: "short"
+      });
+    } catch {
+      // An unknown zone (a stale preference from another runtime) reads in UTC rather than failing.
+      return timestampFormatter(DEFAULT_DISPLAY_TIME_ZONE);
+    }
+    timestampFormatters.set(timeZone, formatter);
+  }
+  return formatter;
 }
 
 /**
- * UTC timestamp label that always carries the year, e.g. "Jun 30, 2026, 18:05 UTC". The year
- * is never dropped: a ledger or evidence timestamp has to be unambiguous, and a label that
- * omitted it for the current year would read differently as the calendar turns. An invalid
- * date renders "Invalid Date", as `toLocaleString` does.
+ * The one timestamp format: "Jun 30, 2026, 18:05 UTC" in the operator's display time zone, e.g.
+ * "Jun 30, 2026, 14:05 EDT" for America/New_York or "Jul 1, 2026, 03:05 GMT+9" for Asia/Tokyo.
+ * The clock is always 24-hour and the year is never dropped: a ledger or evidence timestamp has to
+ * be unambiguous. The zone label is the runtime's short name (an abbreviation where en-US has one,
+ * else a GMT offset). An invalid date renders "Invalid Date", as `toLocaleString` does.
  */
-export function formatUtcTimestamp(date: Date): string {
+export function formatTimestamp(value: TimestampInput, options: TimestampFormatOptions = {}): string {
+  const date = toDate(value);
   if (Number.isNaN(date.getTime())) {
     return "Invalid Date";
   }
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}, ${padTwo(date.getUTCHours())}:${padTwo(date.getUTCMinutes())} UTC`;
+  const fields: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
+  for (const part of timestampFormatter(options.timeZone ?? getDisplayTimeZone()).formatToParts(date)) {
+    fields[part.type] = part.value;
+  }
+  return `${fields.month} ${fields.day}, ${fields.year}, ${fields.hour}:${fields.minute} ${fields.timeZoneName}`;
+}
+
+/**
+ * Timestamp fixed to UTC whatever the operator's display zone, e.g. "Jun 30, 2026, 18:05 UTC".
+ * Only for labels defined on the UTC clock (a UTC cut-off, a column headed "UTC"); an
+ * operator-facing time goes through `formatTimestamp`.
+ */
+export function formatUtcTimestamp(date: Date): string {
+  return formatTimestamp(date, { timeZone: DEFAULT_DISPLAY_TIME_ZONE });
+}
+
+/**
+ * Compact relative time from `now`, e.g. "30s ago", "5m ago", "3d ago", or "in 2h" for a future
+ * instant. Units round to the nearest whole second, minute, hour and day. Pair it with the absolute
+ * `formatTimestamp` (`<TimeText>` puts that in the hover title). An invalid date renders "Invalid Date".
+ */
+export function formatRelativeTime(value: TimestampInput, now: TimestampInput = Date.now()): string {
+  const timestamp = toDate(value).getTime();
+  const reference = toDate(now).getTime();
+  if (Number.isNaN(timestamp) || Number.isNaN(reference)) {
+    return "Invalid Date";
+  }
+  const diff = reference - timestamp;
+  const seconds = Math.round(Math.abs(diff) / 1000);
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.round(minutes / 60);
+  const amount = seconds < 60 ? `${seconds}s` : minutes < 60 ? `${minutes}m` : hours < 24 ? `${hours}h` : `${Math.round(hours / 24)}d`;
+  return diff < 0 && seconds > 0 ? `in ${amount}` : `${amount} ago`;
 }
 
 /** UTC calendar date with the year, e.g. "Jun 30, 2026". */

@@ -16,6 +16,7 @@ import type { SettingsScreenViewModel } from "@/screens/settings-screen.view-mod
 import type { ProviderHealthCount } from "@/lib/cross-screen-counts";
 import { SettingsChip, settingsBannerTone, setupStepToneClass } from "@/screens/settings-screen.section-primitives";
 import { toSeverity } from "@/design-system/status-styles";
+import { SettingsTimeZonePreference } from "@/screens/settings-screen.time-zone-preference";
 
 interface SettingsAccessPostureSectionProps {
   vm: SettingsScreenViewModel;
@@ -172,7 +173,7 @@ export function SettingsAppearanceSection() {
           Appearance
         </CardTitle>
         <CardDescription className="mt-2">
-          Choose the workstation theme and screen density for this browser.
+          Choose the workstation theme, screen density and display time zone for this browser.
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
@@ -184,6 +185,7 @@ export function SettingsAppearanceSection() {
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Density</div>
           <DensityToggle persist="meridian.workstation.density.v1" fullWidth />
         </div>
+        <SettingsTimeZonePreference />
       </CardContent>
     </Card>
   );
