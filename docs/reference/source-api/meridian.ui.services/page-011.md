@@ -911,36 +911,37 @@ Declared public members:
 | <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L79) |  |
 | <code>public IntercompanyAgreementDetailDto? SelectedRow { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L80) |  |
 | <code>public IntercompanyAgreementDetailDto? Detail { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:81](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L81) |  |
-| <code>public IntercompanyAgreementRevisionDto? SelectedRevision { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:82](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L82) |  |
-| <code>public string SelectedRevisionSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:87](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L87) |  |
-| <code>public string PreviousRevisionSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:88](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L88) |  |
-| <code>public string ConflictSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:89](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L89) |  |
-| <code>public string LedgerBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:94](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L94) |  |
-| <code>public string JournalStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:95](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L95) |  |
-| <code>public string Code { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:96](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L96) |  |
-| <code>public string Name { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:97](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L97) |  |
-| <code>public string PartyOne { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:98](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L98) |  |
-| <code>public string PartyTwo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:99](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L99) |  |
-| <code>public string PartyOneRole { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:100](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L100) |  |
-| <code>public string PartyTwoRole { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:101](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L101) |  |
-| <code>public string Currency { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:102](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L102) |  |
-| <code>public IntercompanyAgreementTypeDto AgreementType { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:103](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L103) |  |
-| <code>public string EffectiveFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:104](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L104) |  |
-| <code>public string EffectiveTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:105](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L105) |  |
-| <code>public string TerminationDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:106](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L106) |  |
-| <code>public string FixedAnnualRate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:107](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L107) |  |
-| <code>public string RateDescription { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:108](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L108) |  |
-| <code>public string Schedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:109](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L109) |  |
-| <code>public string Allocation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:110](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L110) |  |
-| <code>public string SettlementDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:111](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L111) |  |
-| <code>public string Notes { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:112](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L112) |  |
-| <code>public string Purpose { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:113](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L113) |  |
-| <code>public string EvidenceReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:114](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L114) |  |
-| <code>public string EvidenceArtifact { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:115](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L115) |  |
-| <code>public string Rationale { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:116](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L116) |  |
-| <code>public string EditorAction =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:117](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L117) |  |
-| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:403](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L403) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:432](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L432) |  |
+| <code>public string MigrationWarnings =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:82](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L82) |  |
+| <code>public IntercompanyAgreementRevisionDto? SelectedRevision { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:83](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L83) |  |
+| <code>public string SelectedRevisionSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:88](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L88) |  |
+| <code>public string PreviousRevisionSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:89](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L89) |  |
+| <code>public string ConflictSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:90](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L90) |  |
+| <code>public string LedgerBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:95](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L95) |  |
+| <code>public string JournalStatus { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:96](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L96) |  |
+| <code>public string Code { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:97](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L97) |  |
+| <code>public string Name { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:98](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L98) |  |
+| <code>public string PartyOne { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:99](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L99) |  |
+| <code>public string PartyTwo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:100](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L100) |  |
+| <code>public string PartyOneRole { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:101](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L101) |  |
+| <code>public string PartyTwoRole { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:102](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L102) |  |
+| <code>public string Currency { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:103](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L103) |  |
+| <code>public IntercompanyAgreementTypeDto AgreementType { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:104](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L104) |  |
+| <code>public string EffectiveFrom { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:105](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L105) |  |
+| <code>public string EffectiveTo { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:106](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L106) |  |
+| <code>public string TerminationDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:107](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L107) |  |
+| <code>public string FixedAnnualRate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:108](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L108) |  |
+| <code>public string RateDescription { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:109](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L109) |  |
+| <code>public string Schedule { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:110](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L110) |  |
+| <code>public string Allocation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:111](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L111) |  |
+| <code>public string SettlementDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:112](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L112) |  |
+| <code>public string Notes { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:113](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L113) |  |
+| <code>public string Purpose { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:114](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L114) |  |
+| <code>public string EvidenceReference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:115](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L115) |  |
+| <code>public string EvidenceArtifact { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:116](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L116) |  |
+| <code>public string Rationale { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:117](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L117) |  |
+| <code>public string EditorAction =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:118](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L118) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:404](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L404) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs:433](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs#L433) |  |
 
 ## IWorkstationAccountingCloseApiClient
 
@@ -953,6 +954,28 @@ Governed server close management for operator workstations.
 ```csharp
 public interface IWorkstationAccountingCloseApiClient : IAccountingCloseManagementService;
 ```
+
+## IWorkstationEntityConsolidationApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationEntityConsolidationApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L9).
+
+Shared governed entity and consolidation projections; no workstation calculations.
+
+```csharp
+public interface IWorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OrganizationStructureGraphDto&gt; GetStructureAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L11) |  |
+| <code>Task&lt;EntityTimelineDto&gt; GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L12) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; GetPeriodsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L13) |  |
+| <code>Task&lt;ConsolidationViewDto&gt; PreviewAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L14) |  |
+| <code>Task&lt;ConsolidationViewDto&gt; CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L15) |  |
 
 ## IWorkstationIntercompanyAgreementApiClient
 
@@ -974,6 +997,18 @@ Declared public members:
 | <code>Task&lt;ApiResponse&lt;IntercompanyAgreementDetailDto&gt;&gt; GetAsync(Guid agreementId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L11) |  |
 | <code>Task&lt;ApiResponse&lt;IntercompanyAgreementJournalLinesDto&gt;&gt; GetJournalLinesAsync(Guid agreementId, Guid ledgerBookId, DateOnly asOf, string? cursor = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L12) |  |
 | <code>Task&lt;ApiResponse&lt;IntercompanyAgreementCommandResultDto&gt;&gt; ExecuteAsync(string action, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L13) |  |
+
+## IWorkstationManualJournalApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationManualJournalApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L7).
+
+The existing journal workbench through the authenticated server&#x27;s authority.
+
+```csharp
+public interface IWorkstationManualJournalApiClient : IManualJournalEntryWorkbenchService, IManualJournalEntryLifecycleService;
+```
 
 ## PostedLedgerProjection
 
@@ -1053,6 +1088,26 @@ Declared public members:
 | <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodAsync(ReopenClosePeriodRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L59) |  |
 | <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodScopedAsync(ReopenClosePeriodRequestDto request, string actor, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L63) |  |
 
+## WorkstationEntityConsolidationApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationEntityConsolidationApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L18).
+
+```csharp
+public sealed class WorkstationEntityConsolidationApiClient(ApiClientService api) : IWorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetStructureAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L20) |  |
+| <code>public async Task&lt;EntityTimelineDto&gt; GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L23) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; GetPeriodsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L32) |  |
+| <code>public async Task&lt;ConsolidationViewDto&gt; PreviewAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L40) |  |
+| <code>public async Task&lt;ConsolidationViewDto&gt; CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:46](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L46) |  |
+
 ## WorkstationIntercompanyAgreementApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationIntercompanyAgreementApiClient</code>. Kind: `class`.
@@ -1072,6 +1127,29 @@ Declared public members:
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyAgreementJournalLinesDto&gt;&gt; GetJournalLinesAsync(Guid agreementId, Guid ledgerBookId, DateOnly asOf, string? cursor = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L44) |  |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyAgreementCommandResultDto&gt;&gt; ExecuteAsync(string action, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L53) |  |
 
+## WorkstationManualJournalApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationManualJournalApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L9).
+
+```csharp
+public sealed class WorkstationManualJournalApiClient(ApiClientService api) : IWorkstationManualJournalApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L11) |  |
+| <code>public async Task&lt;ManualJournalEntryWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L15) |  |
+| <code>public async Task&lt;PrivateCapitalActivityProjectionDto&gt; GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L25) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L30) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L40) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L44) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L48) |  |
+| <code>public Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L52) |  |
+
 ## AcknowledgeResponse
 
 Qualified name: <code>Meridian.Ui.Services.Services.AcknowledgeResponse</code>. Kind: `class`.
@@ -1090,96 +1168,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:126](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L126) |  |
 | <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:127](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L127) |  |
-
-## AnalysisExportService
-
-Qualified name: <code>Meridian.Ui.Services.Services.AnalysisExportService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:17](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L17).
-
-Analysis export service that provides export operations, format queries, aggregation options, and templates. Uses ApiClientService directly for all API communication.
-
-```csharp
-public sealed class AnalysisExportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AnalysisExportService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:20](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L20) |  |
-| <code>public event EventHandler&lt;ExportProgressEventArgs&gt;? ProgressChanged;</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:22](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L22) |  |
-| <code>public async Task&lt;AnalysisExportResult&gt; ExportAsync(AnalysisExportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:46](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L46) |  |
-| <code>public async Task&lt;ExportFormatsResult&gt; GetAvailableFormatsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:61](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L61) |  |
-| <code>public Task&lt;List&lt;AggregationOption&gt;&gt; GetAggregationOptionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:96](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L96) |  |
-| <code>public async Task&lt;QualityReportResult&gt; GenerateQualityReportAsync(QualityReportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:104](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L104) |  |
-| <code>public async Task&lt;AnalysisExportResult&gt; ExportOrderFlowAsync(OrderFlowExportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:128](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L128) |  |
-| <code>public async Task&lt;AnalysisExportResult&gt; ExportIntegrityEventsAsync(IntegrityExportOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:154](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L154) |  |
-| <code>public async Task&lt;ResearchPackageResult&gt; CreateResearchPackageAsync(ResearchPackageOptions options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:179](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L179) |  |
-| <code>public Task&lt;List&lt;ExportTemplate&gt;&gt; GetExportTemplatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/AnalysisExportService.cs:208](../../../../src/Meridian.Ui.Services/Services/AnalysisExportService.cs#L208) |  |
-
-## AnomalyEvent
-
-Qualified name: <code>Meridian.Ui.Services.Services.AnomalyEvent</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:169](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L169).
-
-Describes a detected symbol anomaly with severity and structured diagnostic details.
-
-```csharp
-public sealed class AnomalyEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:171](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L171) |  |
-| <code>public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:172](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L172) |  |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:173](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L173) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:174](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L174) |  |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:175](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L175) |  |
-| <code>public DateTime DetectedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:176](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L176) |  |
-| <code>public Dictionary&lt;string, object&gt; Details { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:177](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L177) |  |
-
-## BackendInstallationInfo
-
-Qualified name: <code>Meridian.Ui.Services.Services.BackendInstallationInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:40](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L40).
-
-Records the installed backend executable and installation time.
-
-```csharp
-public sealed class BackendInstallationInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ExecutablePath { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:42](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L42) |  |
-| <code>public DateTime InstalledAtUtc { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:43](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L43) |  |
-
-## BackendRuntimeInfo
-
-Qualified name: <code>Meridian.Ui.Services.Services.BackendRuntimeInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:49](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L49).
-
-Records backend process identity, launch arguments, working directory, and shutdown token.
-
-```csharp
-public sealed class BackendRuntimeInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int ProcessId { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:51](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L51) |  |
-| <code>public DateTime StartedAtUtc { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:52](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L52) |  |
-| <code>public string? ExecutablePath { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:53](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L53) |  |
-| <code>public string? WorkingDirectory { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:54](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L54) |  |
-| <code>public string[] Arguments { get; init; } = [];</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:55](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L55) |  |
-| <code>public string? ShutdownToken { get; init; }</code> | [src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs:56](../../../../src/Meridian.Ui.Services/Services/BackendServiceManagerBase.cs#L56) |  |

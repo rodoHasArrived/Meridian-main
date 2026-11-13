@@ -6340,6 +6340,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.AppendEntityLifecycleRevisionRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest"
     },
     {
@@ -6466,6 +6472,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest"
     },
     {
@@ -6515,6 +6527,48 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.CustodianStatementBatchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleOperationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionIntegrity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityTimelineJsonContext"
     },
     {
       "kind": "contract-set-member",
@@ -6766,6 +6820,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalLease"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.ILegalEntityReadAuthorityLease"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IngestBankStatementRequest"
     },
     {
@@ -6773,6 +6845,60 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementRevisionResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto"
     },
     {
       "kind": "contract-set-member",
@@ -6928,6 +7054,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyCanonicalAgreementReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyEntityLifecycleReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyPartyMappingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto"
     },
     {
@@ -7013,6 +7157,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof"
     },
     {
       "kind": "contract-set-member",
@@ -7133,6 +7283,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.ReplaceOwnershipLinkRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.ResolvedIntercompanyAccountingArrangementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.ReviseIntercompanyAccountingArrangementRequest"
     },
     {
       "kind": "contract-set-member",
@@ -8098,6 +8260,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AllocationRuleBasisDto"
     },
     {
@@ -8105,6 +8273,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AllocationRuleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AppendIntercompanyAccountBindingRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ApproveConsolidationTransitionRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -8452,6 +8638,102 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAccountRuleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAmountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxClosingDateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxContextDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxHistoricalFactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxPolicyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxReserveDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxSourceLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslatedLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto"
     },
     {
@@ -8464,13 +8746,61 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationRuleEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
     },
     {
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -8632,7 +8962,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IConsolidationBookPolicyValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IConsolidationDraftGuard"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyAccountBindingStore"
     },
     {
       "kind": "contract-set-member",
@@ -8645,6 +8987,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ILedgerEventAuditVerifier"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ILegacyIntercompanyAttributionStore"
     },
     {
       "kind": "contract-set-member",
@@ -8675,6 +9023,96 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountBindingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleIssueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleRowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBreakDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyRefreshPreviewDto"
     },
     {
       "kind": "contract-set-member",
@@ -8752,6 +9190,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAccountingArrangementDimensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
     },
     {
@@ -8765,6 +9209,24 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAgreementDimensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookControlModeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookControlPreflightDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookControlProfileDto"
     },
     {
       "kind": "contract-set-member",
@@ -8819,6 +9281,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerBookSetupCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerControlDecisionDto"
     },
     {
       "kind": "contract-set-member",
@@ -8992,6 +9460,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LinkIntercompanyCounterpartRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LockClosePeriodRequestDto"
     },
     {
@@ -9029,6 +9515,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryWorkbenchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalLineCurrencyDto"
     },
     {
       "kind": "contract-set-member",
@@ -9400,6 +9892,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RefreshIntercompanyProposalRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RejectedIntercompanyDraftEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ReopenClosePeriodRequestDto"
     },
     {
@@ -9449,6 +9953,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RetryIntercompanyProposalRequest"
     },
     {
       "kind": "contract-set-member",
@@ -14003,6 +14513,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Services.IConnectivityProbeService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Services.IEntityLifecycleProjectionSink"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Services.IEntityLifecycleService"
     },
     {
       "kind": "contract-set-member",
@@ -22396,6 +22918,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.AppendEntityLifecycleRevisionRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest"
     },
     {
@@ -22522,6 +23050,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest"
     },
     {
@@ -22571,6 +23105,48 @@
       "label": "",
       "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.CustodianStatementBatchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleOperationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionIntegrity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityTimelineJsonContext"
     },
     {
       "kind": "contract-set-member",
@@ -22822,6 +23398,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalLease"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.ILegalEntityReadAuthorityLease"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IngestBankStatementRequest"
     },
     {
@@ -22829,6 +23423,60 @@
       "label": "",
       "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementRevisionResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto"
     },
     {
       "kind": "contract-set-member",
@@ -22984,6 +23632,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyCanonicalAgreementReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyEntityLifecycleReferenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyPartyMappingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto"
     },
     {
@@ -23069,6 +23735,12 @@
       "label": "",
       "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof"
     },
     {
       "kind": "contract-set-member",
@@ -23189,6 +23861,18 @@
       "label": "",
       "source": "contract-set:fund-governance-contracts",
       "target": "contract:Meridian.Contracts.FundStructure.ReplaceOwnershipLinkRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.ResolvedIntercompanyAccountingArrangementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:fund-governance-contracts",
+      "target": "contract:Meridian.Contracts.FundStructure.ReviseIntercompanyAccountingArrangementRequest"
     },
     {
       "kind": "contract-set-member",
@@ -24340,6 +25024,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AllocationRuleBasisDto"
     },
     {
@@ -24347,6 +25037,24 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.AllocationRuleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AppendIntercompanyAccountBindingRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ApproveConsolidationTransitionRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -24694,6 +25402,102 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAccountRuleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAmountDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxClosingDateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxContextDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxHistoricalFactDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxPolicyDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateKindDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxReserveDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxSourceLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslatedLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslationResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxValidation"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto"
     },
     {
@@ -24706,13 +25510,61 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationRuleEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
     },
     {
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionLineageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionPreviewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto"
     },
     {
       "kind": "contract-set-member",
@@ -24874,7 +25726,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IConsolidationBookPolicyValidator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IConsolidationDraftGuard"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyAccountBindingStore"
     },
     {
       "kind": "contract-set-member",
@@ -24887,6 +25751,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ILedgerEventAuditVerifier"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ILegacyIntercompanyAttributionStore"
     },
     {
       "kind": "contract-set-member",
@@ -24917,6 +25787,96 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountBindingDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleIssueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleRowDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBreakDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceLineDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalStatusDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyRefreshPreviewDto"
     },
     {
       "kind": "contract-set-member",
@@ -24994,6 +25954,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAccountingArrangementDimensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
     },
     {
@@ -25007,6 +25973,24 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAgreementDimensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookControlModeDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookControlPreflightDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookControlProfileDto"
     },
     {
       "kind": "contract-set-member",
@@ -25061,6 +26045,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerBookSetupCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerControlDecisionDto"
     },
     {
       "kind": "contract-set-member",
@@ -25234,6 +26224,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LinkIntercompanyCounterpartRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LockClosePeriodRequestDto"
     },
     {
@@ -25271,6 +26279,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryWorkbenchDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalLineCurrencyDto"
     },
     {
       "kind": "contract-set-member",
@@ -25642,6 +26656,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RefreshIntercompanyProposalRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RejectedIntercompanyDraftEvidenceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.ReopenClosePeriodRequestDto"
     },
     {
@@ -25691,6 +26717,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.RetryIntercompanyProposalRequest"
     },
     {
       "kind": "contract-set-member",
@@ -35211,6 +36243,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.AppendEntityLifecycleRevisionRequestDto",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.BankAccountDetailsEnvelopeDto",
       "target": "contract:Meridian.Contracts.FundStructure.AccountDetailsDto"
     },
@@ -35283,6 +36321,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyPartyMappingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.CreateLegalEntityRequest",
       "target": "contract:Meridian.Contracts.FundStructure.BeneficialOwnerSummaryDto"
     },
@@ -35321,6 +36371,66 @@
       "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.CustodianAccountDetailsEnvelopeDto",
       "target": "contract:Meridian.Contracts.FundStructure.CustodianAccountDetailsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto",
+      "target": "contract:Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityLifecycleStateDto",
+      "target": "contract:Meridian.Contracts.FundStructure.LegalEntityLifecycleEventKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityLifecycleStateDto",
+      "target": "contract:Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementDetailDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto",
+      "target": "contract:Meridian.Contracts.FundStructure.LegalEntitySummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto",
+      "target": "contract:Meridian.Contracts.FundStructure.OwnershipLinkDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto",
+      "target": "contract:Meridian.Contracts.FundStructure.ResolvedIntercompanyAccountingArrangementDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookDto"
     },
     {
       "kind": "contract-reference",
@@ -35759,6 +36869,48 @@
       "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest",
       "target": "contract:Meridian.Contracts.FundStructure.CustodianPositionLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyEntityLifecycleReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyPartyMappingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementHistoryDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto"
     },
     {
       "kind": "contract-reference",
@@ -36239,6 +37391,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.FundStructure.ReplaceOwnershipLinkRequest",
       "target": "contract:Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.ResolvedIntercompanyAccountingArrangementDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.ResolvedIntercompanyAccountingArrangementDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementRevisionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.ReviseIntercompanyAccountingArrangementRequest",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FundStructure.ReviseIntercompanyAccountingArrangementRequest",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyPartyMappingDto"
     },
     {
       "kind": "contract-reference",
@@ -37396,6 +38572,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAmountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AccountingPostingCommandDto",
       "target": "contract:Meridian.Contracts.Ledger.TreasuryLedgerContextDto"
     },
     {
@@ -37641,6 +38823,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest",
+      "target": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ApprovePostingRulePromotionRequest",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
     },
@@ -37805,6 +38993,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.CertifyAccountingReportPackageRequestDto",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ChartOfAccountsNodeDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
     },
     {
       "kind": "contract-reference",
@@ -38152,6 +39346,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.AccountingRulePackReferenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationBookVersionDto"
     },
     {
@@ -38164,7 +39364,31 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationRuleEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionLineageDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountBindingDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto",
+      "target": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto"
     },
     {
       "kind": "contract-reference",
@@ -38175,8 +39399,110 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxAccountRuleDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxHistoricalFactDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxPolicyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxContextDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxContextDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxPolicyDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAccountRuleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxPolicyDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxClosingDateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateSetDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslatedLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateKindDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslatedLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxSourceLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslationResultDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxReserveDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslationResultDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslatedLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionReceiptDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationEvidenceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionReceiptDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionRequestDto"
     },
     {
       "kind": "contract-reference",
@@ -38201,6 +39527,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto",
       "target": "contract:Meridian.Contracts.Ledger.ConsolidationRequestDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleOperationDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto",
+      "target": "contract:Meridian.Contracts.FundStructure.EntityLifecycleOperationDto"
     },
     {
       "kind": "contract-reference",
@@ -38409,6 +39747,60 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAccountBindingDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleIssueDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleRowDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleRowDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyProposalDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyProposalDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyProposalDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceLineDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyRefreshPreviewDto",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.InvestorCapitalStatementDto",
       "target": "contract:Meridian.Contracts.Ledger.AccountingCertificationStateDto"
     },
@@ -38501,6 +39893,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerBookControlPreflightDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerControlDecisionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerBookControlProfileDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerBookControlModeDto"
     },
     {
       "kind": "contract-reference",
@@ -38878,6 +40282,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
+      "target": "contract:Meridian.Contracts.Ledger.ConsolidationFxAmountDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto",
       "target": "contract:Meridian.Contracts.Ledger.JournalEntryLifecycleTransitionDto"
     },
     {
@@ -38945,6 +40355,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryLineDto",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDimensionSetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.ManualJournalEntryLineDto",
+      "target": "contract:Meridian.Contracts.Ledger.ManualJournalLineCurrencyDto"
     },
     {
       "kind": "contract-reference",
@@ -53017,6 +54433,68 @@
       "target": "database:fund_structure.fund_structure_legacy_import_receipt.source_hash"
     },
     {
+      "constraint": "entity_lifecycle_legacy_baseline_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "entity_id",
+      "source": "database:fund_structure.entity_lifecycle_legacy_baseline",
+      "target": "database:fund_structure.legal_entity"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_legacy_baseline_entity_id_fkey on fund_structure.entity_lifecycle_legacy_baseline",
+      "target": "database:fund_structure.legal_entity.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_legacy_baseline_entity_id_fkey on fund_structure.entity_lifecycle_legacy_baseline",
+      "target": "database:fund_structure.legal_entity_pkey"
+    },
+    {
+      "constraint": "entity_lifecycle_revision_entity_id_fkey",
+      "kind": "foreign-key",
+      "label": "entity_id",
+      "source": "database:fund_structure.entity_lifecycle_revision",
+      "target": "database:fund_structure.legal_entity"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_revision_content_hash_check on fund_structure.entity_lifecycle_revision",
+      "target": "database:fund_structure.entity_lifecycle_revision.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_revision_entity_id_fkey on fund_structure.entity_lifecycle_revision",
+      "target": "database:fund_structure.legal_entity.entity_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_revision_entity_id_fkey on fund_structure.entity_lifecycle_revision",
+      "target": "database:fund_structure.legal_entity_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_revision_recorded_by_check on fund_structure.entity_lifecycle_revision",
+      "target": "database:fund_structure.entity_lifecycle_revision.recorded_by"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_revision_revision_check on fund_structure.entity_lifecycle_revision",
+      "target": "database:fund_structure.entity_lifecycle_revision.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.entity_lifecycle_revision_tenant_id_check on fund_structure.entity_lifecycle_revision",
+      "target": "database:fund_structure.entity_lifecycle_revision.tenant_id"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_operator_id_check on fund_structure.fund_structure_tenant_backfill_receipt",
@@ -53045,6 +54523,18 @@
       "label": "",
       "source": "database:fund_structure.fund_structure_tenant_backfill_receipt_stamped_rows_check on fund_structure.fund_structure_tenant_backfill_receipt",
       "target": "database:fund_structure.fund_structure_tenant_backfill_receipt.stamped_rows"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_accounting_arrangement_eve_aggregate_version_check on fund_structure.intercompany_accounting_arrangement_events",
+      "target": "database:fund_structure.intercompany_accounting_arrangement_events.aggregate_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:fund_structure.intercompany_accounting_arrangement_events_tenant_id_check on fund_structure.intercompany_accounting_arrangement_events",
+      "target": "database:fund_structure.intercompany_accounting_arrangement_events.tenant_id"
     },
     {
       "constraint": "intercompany_agreement_snapshot_pointer",
@@ -54072,6 +55562,487 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:ledger.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_rate_sets.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_rate_sets.rate_set_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_rate_sets.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_rate_sets.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_rate_sets_pkey"
+    },
+    {
+      "constraint": "consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey",
+      "kind": "foreign-key",
+      "label": "tenant_id, company_id, rate_set_id, rate_set_revision",
+      "source": "database:ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "constraint": "consolidation_fx_book_configurations_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.effective_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.effective_to"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.effective_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.rate_set_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.rate_set_revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_content_hash_check on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_document_check on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_ledger_book_id_fkey on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_ledger_book_id_fkey on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_book_configurations_revision_check on ledger.consolidation_fx_book_configurations",
+      "target": "database:ledger.consolidation_fx_book_configurations.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.rate_set_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_company_id_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_content_hash_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_document_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_revision_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_fx_rate_sets_tenant_id_check on ledger.consolidation_fx_rate_sets",
+      "target": "database:ledger.consolidation_fx_rate_sets.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.fingerprint"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.organization_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.ownership_root_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.preview_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.transition_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_document_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_fingerprint_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.fingerprint"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_previews_tenant_id_check on ledger.consolidation_transition_previews",
+      "target": "database:ledger.consolidation_transition_previews.tenant_id"
+    },
+    {
+      "constraint": "consolidation_transition_receipts_preview_id_fkey",
+      "kind": "foreign-key",
+      "label": "preview_id",
+      "source": "database:ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_previews"
+    },
+    {
+      "constraint": "consolidation_transition_receipts_previous_transition_id_fkey",
+      "kind": "foreign-key",
+      "label": "previous_transition_id",
+      "source": "database:ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts"
+    },
+    {
+      "constraint": "consolidation_transition_receipts_new_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "new_book_id",
+      "source": "database:ledger.consolidation_transition_receipts",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "constraint": "consolidation_transition_receipts_previous_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "previous_book_id",
+      "source": "database:ledger.consolidation_transition_receipts",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.new_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.previous_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.cutover_date"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.new_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.organization_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.ownership_root_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.preview_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.previous_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.previous_transition_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.root_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.transition_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_content_hash_check on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.content_hash"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_document_check on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.document"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_new_book_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_new_book_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_preview_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_previews.preview_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_preview_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_previews_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_previous_book_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_previous_book_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_previous_transition_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.transition_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_previous_transition_id_fkey on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_root_version_check on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.root_version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.consolidation_transition_receipts_tenant_id_check on ledger.consolidation_transition_receipts",
+      "target": "database:ledger.consolidation_transition_receipts.tenant_id"
+    },
+    {
+      "constraint": "entity_controlled_close_authorization_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.entity_controlled_close_authorization",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
       "target": "database:ledger.journal_entries.journal_entry_id"
     },
@@ -54080,6 +56051,156 @@
       "label": "",
       "source": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
       "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "constraint": "intercompany_account_binding_revisions_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.intercompany_account_binding_revisions",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_account_binding_revisions_check on ledger.intercompany_account_binding_revisions",
+      "target": "database:ledger.intercompany_account_binding_revisions.effective_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_account_binding_revisions_check on ledger.intercompany_account_binding_revisions",
+      "target": "database:ledger.intercompany_account_binding_revisions.effective_to"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_account_binding_revisions_ledger_book_id_fkey on ledger.intercompany_account_binding_revisions",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_account_binding_revisions_ledger_book_id_fkey on ledger.intercompany_account_binding_revisions",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_account_binding_revisions_revision_number_check on ledger.intercompany_account_binding_revisions",
+      "target": "database:ledger.intercompany_account_binding_revisions.revision_number"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions",
+      "target": "database:ledger.intercompany_account_binding_revisions.tenant_id"
+    },
+    {
+      "constraint": "intercompany_counterpart_reservations_proposal_id_fkey",
+      "kind": "foreign-key",
+      "label": "proposal_id",
+      "source": "database:ledger.intercompany_counterpart_reservations",
+      "target": "database:ledger.intercompany_proposals"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations",
+      "target": "database:ledger.intercompany_proposals.proposal_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations",
+      "target": "database:ledger.intercompany_proposals_pkey"
+    },
+    {
+      "constraint": "intercompany_proposal_links_proposal_id_fkey",
+      "kind": "foreign-key",
+      "label": "proposal_id",
+      "source": "database:ledger.intercompany_proposal_links",
+      "target": "database:ledger.intercompany_proposals"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposal_links_proposal_id_fkey on ledger.intercompany_proposal_links",
+      "target": "database:ledger.intercompany_proposals.proposal_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposal_links_proposal_id_fkey on ledger.intercompany_proposal_links",
+      "target": "database:ledger.intercompany_proposals_pkey"
+    },
+    {
+      "constraint": "intercompany_proposal_retries_proposal_id_fkey",
+      "kind": "foreign-key",
+      "label": "proposal_id",
+      "source": "database:ledger.intercompany_proposal_retries",
+      "target": "database:ledger.intercompany_proposals"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposal_retries_proposal_id_fkey on ledger.intercompany_proposal_retries",
+      "target": "database:ledger.intercompany_proposals.proposal_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposal_retries_proposal_id_fkey on ledger.intercompany_proposal_retries",
+      "target": "database:ledger.intercompany_proposals_pkey"
+    },
+    {
+      "constraint": "intercompany_proposals_source_journal_id_fkey",
+      "kind": "foreign-key",
+      "label": "source_journal_id",
+      "source": "database:ledger.intercompany_proposals",
+      "target": "database:ledger.journal_entries"
+    },
+    {
+      "constraint": "intercompany_proposals_source_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "source_book_id",
+      "source": "database:ledger.intercompany_proposals",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposals_source_book_id_fkey on ledger.intercompany_proposals",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposals_source_book_id_fkey on ledger.intercompany_proposals",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposals_source_journal_id_fkey on ledger.intercompany_proposals",
+      "target": "database:ledger.journal_entries.journal_entry_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposals_source_journal_id_fkey on ledger.intercompany_proposals",
+      "target": "database:ledger.journal_entries_journal_entry_id_key"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposals_status_check on ledger.intercompany_proposals",
+      "target": "database:ledger.intercompany_proposals.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.intercompany_proposals_tenant_id_check on ledger.intercompany_proposals",
+      "target": "database:ledger.intercompany_proposals.tenant_id"
     },
     {
       "constraint": "journal_entry_integrity_seals_journal_entry_id_fkey",
@@ -54164,6 +56285,56 @@
       "target": "database:ledger.journal_entries"
     },
     {
+      "constraint": "ledger_book_control_activation_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.ledger_book_control_activation",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_book_control_activation_ledger_book_id_fkey on ledger.ledger_book_control_activation",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_book_control_activation_ledger_book_id_fkey on ledger.ledger_book_control_activation",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "constraint": "ledger_book_controls_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.ledger_book_controls",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_book_controls_ledger_book_id_fkey on ledger.ledger_book_controls",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_book_controls_ledger_book_id_fkey on ledger.ledger_book_controls",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_book_controls_mode_check on ledger.ledger_book_controls",
+      "target": "database:ledger.ledger_book_controls.mode"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.ledger_book_controls_version_check on ledger.ledger_book_controls",
+      "target": "database:ledger.ledger_book_controls.version"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:ledger.ledger_event_audit_events_chain_sequence_check on ledger.ledger_event_audit_events",
@@ -54240,6 +56411,37 @@
       "label": "",
       "source": "database:ledger.ledger_event_audit_head_next_sequence_check on ledger.ledger_event_audit_head",
       "target": "database:ledger.ledger_event_audit_head.next_sequence"
+    },
+    {
+      "constraint": "legacy_intercompany_attributions_ledger_book_id_fkey",
+      "kind": "foreign-key",
+      "label": "ledger_book_id",
+      "source": "database:ledger.legacy_intercompany_attributions",
+      "target": "database:ledger.ledger_books"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.legacy_intercompany_attributions_ledger_book_id_fkey on ledger.legacy_intercompany_attributions",
+      "target": "database:ledger.ledger_books.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.legacy_intercompany_attributions_ledger_book_id_fkey on ledger.legacy_intercompany_attributions",
+      "target": "database:ledger.ledger_books_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.legacy_intercompany_attributions_revision_check on ledger.legacy_intercompany_attributions",
+      "target": "database:ledger.legacy_intercompany_attributions.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.legacy_intercompany_attributions_tenant_id_check on ledger.legacy_intercompany_attributions",
+      "target": "database:ledger.legacy_intercompany_attributions.tenant_id"
     },
     {
       "constraint": "open_lot_backfill_evidence_ledger_book_id_fkey",
@@ -59713,6 +61915,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:fund_structure",
+      "target": "database:fund_structure.entity_lifecycle_legacy_baseline"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.entity_lifecycle_revision"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
       "target": "database:fund_structure.fund"
     },
     {
@@ -59750,6 +61964,12 @@
       "label": "",
       "source": "schema:fund_structure",
       "target": "database:fund_structure.fund_structure_tenant_quarantine"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:fund_structure",
+      "target": "database:fund_structure.intercompany_accounting_arrangement_events"
     },
     {
       "kind": "contains",
@@ -59919,7 +62139,67 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.consolidation_transition_previews"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.consolidation_transition_receipts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.entity_controlled_close_authorization"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.fund_profile_tenancy"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.intercompany_account_binding_revisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.intercompany_counterpart_reservations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.intercompany_proposal_links"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.intercompany_proposal_retries"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.intercompany_proposals"
     },
     {
       "kind": "contains",
@@ -59967,6 +62247,18 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.ledger_book_control_activation"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.ledger_book_controls"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.ledger_books"
     },
     {
@@ -59992,6 +62284,12 @@
       "label": "",
       "source": "schema:ledger",
       "target": "database:ledger.ledger_journal_schema_migrations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
+      "target": "database:ledger.legacy_intercompany_attributions"
     },
     {
       "kind": "contains",
@@ -61133,7 +63431,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bd57c008eb82b106099e85f3cfd83a10bb4ee18555f5d6d4c72e452157947a5d",
+  "fingerprint": "72d8fc915dca0abf2927660548a4f3074dffb4c8a8ca05e50a8943c3cf9c1b17",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -67523,6 +69821,12 @@
       "label": "Meridian.Contracts.FundStructure.AdvisoryStructureViewDto"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.AppendEntityLifecycleRevisionRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.AppendEntityLifecycleRevisionRequestDto"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.FundStructure.AssignFundStructureNodeRequest",
       "kind": "contract-type",
@@ -67650,6 +69954,12 @@
     },
     {
       "classification": "request",
+      "id": "contract:Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest"
+    },
+    {
+      "classification": "request",
       "id": "contract:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest"
@@ -67701,6 +70011,48 @@
       "id": "contract:Meridian.Contracts.FundStructure.CustodianStatementBatchDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.CustodianStatementBatchDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.EntityLifecycleEligibilityDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.EntityLifecycleOperationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.EntityLifecycleOperationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.EntityLifecycleRevisionDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.EntityLifecycleRevisionIntegrity",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.EntityLifecycleRevisionIntegrity"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.EntityLifecycleStateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.EntityLifecycleStateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.EntityTimelineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.EntityTimelineDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.EntityTimelineJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.EntityTimelineJsonContext"
     },
     {
       "classification": "request",
@@ -67949,6 +70301,24 @@
       "label": "Meridian.Contracts.FundStructure.HistoricalPriceAccessSummaryDto"
     },
     {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalAuthority"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalLease",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IIntercompanyAccountingArrangementLegalLease"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.FundStructure.ILegalEntityReadAuthorityLease",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.ILegalEntityReadAuthorityLease"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.FundStructure.IngestBankStatementRequest",
       "kind": "contract-type",
@@ -67959,6 +70329,60 @@
       "id": "contract:Meridian.Contracts.FundStructure.IngestCustodianStatementRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.IngestCustodianStatementRequest"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementActionRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementEventDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementHistoryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementHistoryDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementRevisionResolver",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementRevisionResolver"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementStatusDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementsJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingArrangementsJsonContext"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyAccountingTemplateKindDto"
     },
     {
       "classification": "enum",
@@ -68112,6 +70536,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyCanonicalAgreementReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyCanonicalAgreementReferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyEntityLifecycleReferenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyEntityLifecycleReferenceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.IntercompanyPartyMappingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.IntercompanyPartyMappingDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.InvestmentPortfolioSummaryDto"
@@ -68199,6 +70641,12 @@
       "id": "contract:Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.LegalEntityLifecycleStatusDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.LegalEntityReadAuthorityProof"
     },
     {
       "classification": "dto",
@@ -68319,6 +70767,18 @@
       "id": "contract:Meridian.Contracts.FundStructure.ReplaceOwnershipLinkRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.FundStructure.ReplaceOwnershipLinkRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.FundStructure.ResolvedIntercompanyAccountingArrangementDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.ResolvedIntercompanyAccountingArrangementDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.FundStructure.ReviseIntercompanyAccountingArrangementRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.FundStructure.ReviseIntercompanyAccountingArrangementRequest"
     },
     {
       "classification": "dto",
@@ -69281,6 +71741,12 @@
       "label": "Meridian.Contracts.Ledger.ActivateAccountingConfigurationRequest"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto"
+    },
+    {
       "classification": "enum",
       "id": "contract:Meridian.Contracts.Ledger.AllocationRuleBasisDto",
       "kind": "contract-type",
@@ -69291,6 +71757,24 @@
       "id": "contract:Meridian.Contracts.Ledger.AllocationRuleDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.AllocationRuleDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.AppendIntercompanyAccountBindingRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AppendIntercompanyAccountBindingRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.AppendLegacyIntercompanyAttributionRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ApproveConsolidationTransitionRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ApproveConsolidationTransitionRequestDto"
     },
     {
       "classification": "request",
@@ -69636,6 +72120,102 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxAccountRuleDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxAccountRuleDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxAmountDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxAmountDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxBookConfigurationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxClosingDateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxClosingDateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxContextDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxContextDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxHistoricalFactDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxHistoricalFactDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxPolicyDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxPolicyDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxRateDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateKindDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxRateKindDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxRateSetDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxRateSetDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxReserveDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxReserveDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxSourceLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxSourceLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslatedLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxTranslatedLineDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxTranslationResultDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxTranslationResultDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationFxValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationFxValidation"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.ConsolidationMatchDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ConsolidationMatchDto"
@@ -69648,15 +72228,63 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationRuleEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationRuleEvidenceDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.ConsolidationSourceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ConsolidationSourceDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationTransitionJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionLineageDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationTransitionLineageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationTransitionPreviewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationTransitionReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ConsolidationTransitionRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ConsolidationTransitionRequestDto"
     },
     {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.ConsolidationViewDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ConsolidationViewDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto"
     },
     {
       "classification": "request",
@@ -69816,9 +72444,21 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IConsolidationBookPolicyValidator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IConsolidationBookPolicyValidator"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Ledger.IConsolidationDraftGuard",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IConsolidationDraftGuard"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IIntercompanyAccountBindingStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IIntercompanyAccountBindingStore"
     },
     {
       "classification": "service_contract",
@@ -69831,6 +72471,12 @@
       "id": "contract:Meridian.Contracts.Ledger.ILedgerEventAuditVerifier",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ILedgerEventAuditVerifier"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.ILegacyIntercompanyAttributionStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ILegacyIntercompanyAttributionStore"
     },
     {
       "classification": "service_contract",
@@ -69861,6 +72507,96 @@
       "id": "contract:Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ImportPrivateCapitalBankObservationRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccountBindingDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccountBindingDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccountContractsJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccountContractsJsonContext"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAccountRoleDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAccountRoleDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceScheduleDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleIssueDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceScheduleIssueDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceScheduleJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceScheduleRowDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBalanceScheduleRowDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyBreakDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyBreakDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyCounterpartLinkDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyProposalDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyProposalDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyProposalJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyProposalJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyProposalSourceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyProposalSourceLineDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyProposalSourceLineDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyProposalStatusDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyProposalStatusDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyRefreshPreviewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyRefreshPreviewDto"
     },
     {
       "classification": "dto",
@@ -69935,6 +72671,12 @@
       "label": "Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerAccountingArrangementDimensions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerAccountingArrangementDimensions"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto",
       "kind": "contract-type",
@@ -69951,6 +72693,24 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerAgreementDimensions",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerAgreementDimensions"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerBookControlModeDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerBookControlModeDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerBookControlPreflightDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerBookControlPreflightDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerBookControlProfileDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerBookControlProfileDto"
     },
     {
       "classification": "dto",
@@ -70005,6 +72765,12 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerBookSetupCandidateDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerBookSetupCandidateDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerControlDecisionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerControlDecisionDto"
     },
     {
       "classification": "dto",
@@ -70176,6 +72942,24 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LegacyIntercompanyAttributionDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.LegacyIntercompanyAttributionJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LegacyIntercompanyAttributionJsonContext"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.LinkIntercompanyCounterpartRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LinkIntercompanyCounterpartRequest"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.LockClosePeriodRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LockClosePeriodRequestDto"
@@ -70215,6 +72999,12 @@
       "id": "contract:Meridian.Contracts.Ledger.ManualJournalEntryWorkbenchDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.ManualJournalEntryWorkbenchDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.ManualJournalLineCurrencyDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.ManualJournalLineCurrencyDto"
     },
     {
       "classification": "dto",
@@ -70583,6 +73373,18 @@
       "label": "Meridian.Contracts.Ledger.RealizedGainLossReportDto"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.RefreshIntercompanyProposalRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.RefreshIntercompanyProposalRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.RejectedIntercompanyDraftEvidenceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.RejectedIntercompanyDraftEvidenceDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Ledger.ReopenClosePeriodRequestDto",
       "kind": "contract-type",
@@ -70635,6 +73437,12 @@
       "id": "contract:Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.RetryIntercompanyProposalRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.RetryIntercompanyProposalRequest"
     },
     {
       "classification": "dto",
@@ -75189,6 +77997,18 @@
       "id": "contract:Meridian.Contracts.Services.IConnectivityProbeService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Services.IConnectivityProbeService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Services.IEntityLifecycleProjectionSink",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Services.IEntityLifecycleProjectionSink"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Services.IEntityLifecycleService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Services.IEntityLifecycleService"
     },
     {
       "classification": "service_contract",
@@ -82829,6 +85649,68 @@
       "schema": "fund_structure"
     },
     {
+      "id": "database:fund_structure.entity_lifecycle_legacy_baseline",
+      "kind": "database-table",
+      "label": "fund_structure.entity_lifecycle_legacy_baseline",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_legacy_baseline_entity_id_fkey on fund_structure.entity_lifecycle_legacy_baseline",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_legacy_baseline_entity_id_fkey on fund_structure.entity_lifecycle_legacy_baseline"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision",
+      "kind": "database-table",
+      "label": "fund_structure.entity_lifecycle_revision",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision.content_hash",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision.content_hash"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision.recorded_by",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision.recorded_by"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision.revision",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision.revision"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision.tenant_id",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision.tenant_id"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision_content_hash_check on fund_structure.entity_lifecycle_revision",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision_content_hash_check on fund_structure.entity_lifecycle_revision"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision_entity_id_fkey on fund_structure.entity_lifecycle_revision",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision_entity_id_fkey on fund_structure.entity_lifecycle_revision"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision_recorded_by_check on fund_structure.entity_lifecycle_revision",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision_recorded_by_check on fund_structure.entity_lifecycle_revision"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision_revision_check on fund_structure.entity_lifecycle_revision",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision_revision_check on fund_structure.entity_lifecycle_revision"
+    },
+    {
+      "id": "database:fund_structure.entity_lifecycle_revision_tenant_id_check on fund_structure.entity_lifecycle_revision",
+      "kind": "database-object",
+      "label": "fund_structure.entity_lifecycle_revision_tenant_id_check on fund_structure.entity_lifecycle_revision"
+    },
+    {
       "id": "database:fund_structure.fund",
       "kind": "database-table",
       "label": "fund_structure.fund",
@@ -82924,6 +85806,32 @@
       "kind": "database-table",
       "label": "fund_structure.fund_structure_tenant_quarantine",
       "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_accounting_arrangement_eve_aggregate_version_check on fund_structure.intercompany_accounting_arrangement_events",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_accounting_arrangement_eve_aggregate_version_check on fund_structure.intercompany_accounting_arrangement_events"
+    },
+    {
+      "id": "database:fund_structure.intercompany_accounting_arrangement_events",
+      "kind": "database-table",
+      "label": "fund_structure.intercompany_accounting_arrangement_events",
+      "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.intercompany_accounting_arrangement_events.aggregate_version",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_accounting_arrangement_events.aggregate_version"
+    },
+    {
+      "id": "database:fund_structure.intercompany_accounting_arrangement_events.tenant_id",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_accounting_arrangement_events.tenant_id"
+    },
+    {
+      "id": "database:fund_structure.intercompany_accounting_arrangement_events_tenant_id_check on fund_structure.intercompany_accounting_arrangement_events",
+      "kind": "database-object",
+      "label": "fund_structure.intercompany_accounting_arrangement_events_tenant_id_check on fund_structure.intercompany_accounting_arrangement_events"
     },
     {
       "id": "database:fund_structure.intercompany_agreement",
@@ -83066,6 +85974,16 @@
       "kind": "database-table",
       "label": "fund_structure.legal_entity",
       "schema": "fund_structure"
+    },
+    {
+      "id": "database:fund_structure.legal_entity.entity_id",
+      "kind": "database-object",
+      "label": "fund_structure.legal_entity.entity_id"
+    },
+    {
+      "id": "database:fund_structure.legal_entity_pkey",
+      "kind": "database-object",
+      "label": "fund_structure.legal_entity_pkey"
     },
     {
       "id": "database:fund_structure.organization",
@@ -83649,6 +86567,376 @@
       "label": "ledger.ck_wash_sale_deferrals_window on ledger.wash_sale_deferrals"
     },
     {
+      "id": "database:ledger.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey on ledger.consolidation_fx_book_configurations",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configu_tenant_id_company_id_rate_se_fkey on ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations",
+      "kind": "database-table",
+      "label": "ledger.consolidation_fx_book_configurations",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.company_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.company_id"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.content_hash",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.content_hash"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.document",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.document"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.effective_from",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.effective_from"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.effective_to",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.effective_to"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.ledger_book_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.ledger_book_id"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.rate_set_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.rate_set_id"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.rate_set_revision",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.rate_set_revision"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.revision",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.revision"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations.tenant_id"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations_check on ledger.consolidation_fx_book_configurations",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations_check on ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations_check1 on ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations_content_hash_check on ledger.consolidation_fx_book_configurations",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations_content_hash_check on ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations_document_check on ledger.consolidation_fx_book_configurations",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations_document_check on ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations_ledger_book_id_fkey on ledger.consolidation_fx_book_configurations",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations_ledger_book_id_fkey on ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_book_configurations_revision_check on ledger.consolidation_fx_book_configurations",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_book_configurations_revision_check on ledger.consolidation_fx_book_configurations"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets",
+      "kind": "database-table",
+      "label": "ledger.consolidation_fx_rate_sets",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets.company_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets.company_id"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets.content_hash",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets.content_hash"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets.document",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets.document"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets.rate_set_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets.rate_set_id"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets.revision",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets.revision"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets.tenant_id"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets_check on ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets_company_id_check on ledger.consolidation_fx_rate_sets",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets_company_id_check on ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets_content_hash_check on ledger.consolidation_fx_rate_sets",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets_content_hash_check on ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets_document_check on ledger.consolidation_fx_rate_sets",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets_document_check on ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets_pkey",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets_pkey"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets_revision_check on ledger.consolidation_fx_rate_sets",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets_revision_check on ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "id": "database:ledger.consolidation_fx_rate_sets_tenant_id_check on ledger.consolidation_fx_rate_sets",
+      "kind": "database-object",
+      "label": "ledger.consolidation_fx_rate_sets_tenant_id_check on ledger.consolidation_fx_rate_sets"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews",
+      "kind": "database-table",
+      "label": "ledger.consolidation_transition_previews",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.company_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.company_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.document",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.document"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.fingerprint",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.fingerprint"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.organization_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.organization_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.ownership_root_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.ownership_root_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.preview_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.preview_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.tenant_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews.transition_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews.transition_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews_check on ledger.consolidation_transition_previews"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews_document_check on ledger.consolidation_transition_previews",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews_document_check on ledger.consolidation_transition_previews"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews_fingerprint_check on ledger.consolidation_transition_previews",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews_fingerprint_check on ledger.consolidation_transition_previews"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews_pkey",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews_pkey"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_previews_tenant_id_check on ledger.consolidation_transition_previews",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_previews_tenant_id_check on ledger.consolidation_transition_previews"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts",
+      "kind": "database-table",
+      "label": "ledger.consolidation_transition_receipts",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.company_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.company_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.content_hash",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.content_hash"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.cutover_date",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.cutover_date"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.document",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.document"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.new_book_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.new_book_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.organization_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.organization_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.ownership_root_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.ownership_root_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.preview_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.preview_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.previous_book_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.previous_book_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.previous_transition_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.previous_transition_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.root_version",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.root_version"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.tenant_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts.transition_id",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts.transition_id"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_check on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_check on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_check1 on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_content_hash_check on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_content_hash_check on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_document_check on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_document_check on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_new_book_id_fkey on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_new_book_id_fkey on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_pkey",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_pkey"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_preview_id_fkey on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_preview_id_fkey on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_previous_book_id_fkey on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_previous_book_id_fkey on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_previous_transition_id_fkey on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_previous_transition_id_fkey on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_root_version_check on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_root_version_check on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.consolidation_transition_receipts_tenant_id_check on ledger.consolidation_transition_receipts",
+      "kind": "database-object",
+      "label": "ledger.consolidation_transition_receipts_tenant_id_check on ledger.consolidation_transition_receipts"
+    },
+    {
+      "id": "database:ledger.entity_controlled_close_authorization",
+      "kind": "database-table",
+      "label": "ledger.entity_controlled_close_authorization",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization",
+      "kind": "database-object",
+      "label": "ledger.entity_controlled_close_authorization_ledger_book_id_fkey on ledger.entity_controlled_close_authorization"
+    },
+    {
       "id": "database:ledger.fk_journal_legs_journal_entry on ledger.journal_legs",
       "kind": "database-object",
       "label": "ledger.fk_journal_legs_journal_entry on ledger.journal_legs"
@@ -83658,6 +86946,131 @@
       "kind": "database-table",
       "label": "ledger.fund_profile_tenancy",
       "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions",
+      "kind": "database-table",
+      "label": "ledger.intercompany_account_binding_revisions",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions.effective_from",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions.effective_from"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions.effective_to",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions.effective_to"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions.revision_number",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions.revision_number"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions.tenant_id"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions_check on ledger.intercompany_account_binding_revisions",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions_check on ledger.intercompany_account_binding_revisions"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions_ledger_book_id_fkey on ledger.intercompany_account_binding_revisions",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions_ledger_book_id_fkey on ledger.intercompany_account_binding_revisions"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions_revision_number_check on ledger.intercompany_account_binding_revisions",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions_revision_number_check on ledger.intercompany_account_binding_revisions"
+    },
+    {
+      "id": "database:ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions",
+      "kind": "database-object",
+      "label": "ledger.intercompany_account_binding_revisions_tenant_id_check on ledger.intercompany_account_binding_revisions"
+    },
+    {
+      "id": "database:ledger.intercompany_counterpart_reservations",
+      "kind": "database-table",
+      "label": "ledger.intercompany_counterpart_reservations",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations",
+      "kind": "database-object",
+      "label": "ledger.intercompany_counterpart_reservations_proposal_id_fkey on ledger.intercompany_counterpart_reservations"
+    },
+    {
+      "id": "database:ledger.intercompany_proposal_links",
+      "kind": "database-table",
+      "label": "ledger.intercompany_proposal_links",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_proposal_links_proposal_id_fkey on ledger.intercompany_proposal_links",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposal_links_proposal_id_fkey on ledger.intercompany_proposal_links"
+    },
+    {
+      "id": "database:ledger.intercompany_proposal_retries",
+      "kind": "database-table",
+      "label": "ledger.intercompany_proposal_retries",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_proposal_retries_proposal_id_fkey on ledger.intercompany_proposal_retries",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposal_retries_proposal_id_fkey on ledger.intercompany_proposal_retries"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals",
+      "kind": "database-table",
+      "label": "ledger.intercompany_proposals",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals.proposal_id",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals.proposal_id"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals.status",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals.status"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals.tenant_id"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals_pkey",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals_pkey"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals_source_book_id_fkey on ledger.intercompany_proposals",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals_source_book_id_fkey on ledger.intercompany_proposals"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals_source_journal_id_fkey on ledger.intercompany_proposals",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals_source_journal_id_fkey on ledger.intercompany_proposals"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals_status_check on ledger.intercompany_proposals",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals_status_check on ledger.intercompany_proposals"
+    },
+    {
+      "id": "database:ledger.intercompany_proposals_tenant_id_check on ledger.intercompany_proposals",
+      "kind": "database-object",
+      "label": "ledger.intercompany_proposals_tenant_id_check on ledger.intercompany_proposals"
     },
     {
       "id": "database:ledger.journal_entries",
@@ -83795,6 +87208,48 @@
       "id": "database:ledger.journal_legs.transaction_debit",
       "kind": "database-object",
       "label": "ledger.journal_legs.transaction_debit"
+    },
+    {
+      "id": "database:ledger.ledger_book_control_activation",
+      "kind": "database-table",
+      "label": "ledger.ledger_book_control_activation",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_book_control_activation_ledger_book_id_fkey on ledger.ledger_book_control_activation",
+      "kind": "database-object",
+      "label": "ledger.ledger_book_control_activation_ledger_book_id_fkey on ledger.ledger_book_control_activation"
+    },
+    {
+      "id": "database:ledger.ledger_book_controls",
+      "kind": "database-table",
+      "label": "ledger.ledger_book_controls",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.ledger_book_controls.mode",
+      "kind": "database-object",
+      "label": "ledger.ledger_book_controls.mode"
+    },
+    {
+      "id": "database:ledger.ledger_book_controls.version",
+      "kind": "database-object",
+      "label": "ledger.ledger_book_controls.version"
+    },
+    {
+      "id": "database:ledger.ledger_book_controls_ledger_book_id_fkey on ledger.ledger_book_controls",
+      "kind": "database-object",
+      "label": "ledger.ledger_book_controls_ledger_book_id_fkey on ledger.ledger_book_controls"
+    },
+    {
+      "id": "database:ledger.ledger_book_controls_mode_check on ledger.ledger_book_controls",
+      "kind": "database-object",
+      "label": "ledger.ledger_book_controls_mode_check on ledger.ledger_book_controls"
+    },
+    {
+      "id": "database:ledger.ledger_book_controls_version_check on ledger.ledger_book_controls",
+      "kind": "database-object",
+      "label": "ledger.ledger_book_controls_version_check on ledger.ledger_book_controls"
     },
     {
       "id": "database:ledger.ledger_books",
@@ -83960,6 +87415,37 @@
       "kind": "database-table",
       "label": "ledger.ledger_journal_schema_migrations",
       "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.legacy_intercompany_attributions",
+      "kind": "database-table",
+      "label": "ledger.legacy_intercompany_attributions",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.legacy_intercompany_attributions.revision",
+      "kind": "database-object",
+      "label": "ledger.legacy_intercompany_attributions.revision"
+    },
+    {
+      "id": "database:ledger.legacy_intercompany_attributions.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.legacy_intercompany_attributions.tenant_id"
+    },
+    {
+      "id": "database:ledger.legacy_intercompany_attributions_ledger_book_id_fkey on ledger.legacy_intercompany_attributions",
+      "kind": "database-object",
+      "label": "ledger.legacy_intercompany_attributions_ledger_book_id_fkey on ledger.legacy_intercompany_attributions"
+    },
+    {
+      "id": "database:ledger.legacy_intercompany_attributions_revision_check on ledger.legacy_intercompany_attributions",
+      "kind": "database-object",
+      "label": "ledger.legacy_intercompany_attributions_revision_check on ledger.legacy_intercompany_attributions"
+    },
+    {
+      "id": "database:ledger.legacy_intercompany_attributions_tenant_id_check on ledger.legacy_intercompany_attributions",
+      "kind": "database-object",
+      "label": "ledger.legacy_intercompany_attributions_tenant_id_check on ledger.legacy_intercompany_attributions"
     },
     {
       "id": "database:ledger.open_lot_backfill_evidence",
@@ -89581,11 +93067,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3856,
-    "contract_set_memberships": 4888,
-    "edges": 10157,
-    "foreign_keys": 174,
+    "contract_references": 3920,
+    "contract_set_memberships": 5060,
+    "edges": 10537,
+    "foreign_keys": 192,
     "logical_references": 6,
-    "nodes": 4938
+    "nodes": 5155
   }
 }

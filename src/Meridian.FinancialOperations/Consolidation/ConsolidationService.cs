@@ -3,17 +3,23 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.FinancialOperations.Intercompany;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.Consolidation;
 
 /// <summary>Builds a reviewed overlay; source entity books are never changed by eliminations.</summary>
-public sealed class ConsolidationService(
+public sealed partial class ConsolidationService(
     ConsolidationPerimeterResolver perimeterResolver,
     ILedgerJournalStore journals,
     IAccountingPolicyService policies,
-    IAccountingJournalDraftService journalDrafts) : IConsolidationDraftGuard
+    IAccountingJournalDraftService journalDrafts,
+    IIntercompanyAccountBindingStore? accountBindings = null,
+    IConsolidationFxAuthority? fxAuthority = null,
+    ILegacyIntercompanyAttributionStore? legacyAttributions = null,
+    IConsolidationTransitionStore? transitions = null,
+    IntercompanyAccountingArrangementService? arrangements = null) : IConsolidationDraftGuard
 {
     public const string RuleId = "consolidation.receivable-payable";
     public const string RuleVersion = "w10-v1";
@@ -21,15 +27,18 @@ public sealed class ConsolidationService(
     public const string PayableAccount = "Liabilities:Intercompany Payable";
     public const string EvidenceTag = "consolidation.evidence";
     public const string DigestTag = "consolidation.digest";
+    private static readonly JsonSerializerOptions EvidenceReadJsonOptions = new(JsonSerializerDefaults.Web);
 
-    public async Task<ConsolidationCalculation> CalculateAsync(ConsolidationRequestDto request,
-        CancellationToken ct = default)
+    private async Task<ConsolidationCalculation> CalculateUnroutedAsync(ConsolidationRequestDto request,
+        CancellationToken ct = default, IReadOnlySet<string>? formerMembers = null)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var perimeter = await perimeterResolver.ResolveAsync(request.OrganizationId, request.OwnershipRootId,
-            new DateTimeOffset(request.AsOf.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
         var book = await journals.GetLedgerBookAsync(request.EliminationBookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The elimination book is unavailable.");
+        if (book.AccountingPolicyVersion is "w10-v2" or "w10-v3" or "w10-v4")
+            return await CalculateGovernedAsync(request, book, ct, formerMembers).ConfigureAwait(false);
+        var perimeter = await perimeterResolver.ResolveAsync(request.OrganizationId, request.OwnershipRootId,
+            new DateTimeOffset(request.AsOf.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
         if (book.FundStructureNodeId != request.OwnershipRootId || book.FundStructureNodeKind != FundStructureNodeKindDto.Fund ||
             book.AccountingBasis != AccountingBasisKindDto.Primary ||
             !string.Equals(book.BaseCurrency, perimeter.Currency, StringComparison.OrdinalIgnoreCase))
@@ -192,13 +201,14 @@ public sealed class ConsolidationService(
         var id = new Guid(Sha256Digest.ComputeBytesUtf8(key).AsSpan(0, 16));
         var evidenceLinks = calculation.Sources.Select(x => x.DrillThrough)
             .Concat(calculation.Perimeter.OwnershipEvidence.Select(x => $"ownership:{x.OwnershipLinkId:D}"))
-            .Append($"policy:{calculation.Policy.PolicyId}/{RuleId}/{RuleVersion}")
+            .Append($"policy:{calculation.Policy.PolicyId}/{RuleId}/{calculation.Evidence.RuleVersion}")
             .Concat(calculation.Posted.Select(x => $"correction:{x.Entry.JournalEntryId:D}"))
+            .Concat(calculation.Evidence.TransitionLineage?.Select(x => $"consolidation-transition:{x.TransitionId:D}/{x.ContentHash}") ?? [])
             .Distinct().ToArray();
         var typed = await journalDrafts.BuildDraftAsync(new AccountingJournalDraftRequest(id,
             calculation.Request.PeriodId, new DateTimeOffset(calculation.Request.AsOf.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
             "Consolidation elimination", calculation.ProposedLines.Select(x => new AccountingJournalDraftLineRequest(
-                new LedgerAccount(x.AccountPath, x.AccountPath == ReceivableAccount ? LedgerAccountType.Asset : LedgerAccountType.Liability),
+                new LedgerAccount(DraftAccountName(calculation, x.AccountPath), DraftAccountType(calculation, x.AccountPath)),
                 x.Side == AccountingTemplateLineSideDto.Debit ? x.Amount : 0m,
                 x.Side == AccountingTemplateLineSideDto.Credit ? x.Amount : 0m,
                 x.Description, evidenceLinks, x.Dimensions)).ToArray(),
@@ -270,7 +280,7 @@ public sealed class ConsolidationService(
         if (string.IsNullOrWhiteSpace(json))
             return null;
         try
-        { return JsonSerializer.Deserialize<ConsolidationEvidenceDto>(json); }
+        { return JsonSerializer.Deserialize<ConsolidationEvidenceDto>(json, EvidenceReadJsonOptions); }
         catch (JsonException) { return null; }
     }
 }
@@ -280,4 +290,10 @@ public sealed record ConsolidationCalculation(ConsolidationRequestDto Request, L
     IReadOnlyList<ConsolidationSourceDto> Sources, IReadOnlyList<LedgerJournalEntryRecord> SourceRecords,
     IReadOnlyList<LedgerJournalEntryRecord> Posted, IReadOnlyList<ConsolidationMatchDto> Matches,
     IReadOnlyList<ManualJournalEntryLineDto> ProposedLines, ConsolidationEvidenceDto Evidence,
-    IReadOnlyList<string> Blockers);
+    IReadOnlyList<string> Blockers)
+{
+    public IReadOnlyList<ConsolidationSourceDto>? GovernedSources { get; init; }
+    public IReadOnlyDictionary<string, decimal>? TranslationReserve { get; init; }
+    public IReadOnlyDictionary<string, decimal>? TranslationDifferences { get; init; }
+    public IReadOnlyDictionary<string, decimal>? RoundingDifferences { get; init; }
+}

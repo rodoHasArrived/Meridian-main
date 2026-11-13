@@ -1081,43 +1081,6 @@ public sealed partial class FinancialRecordExplorerReadService
         ];
     }
 
-    private static bool RowMatchesFilters(
-        FinancialRecordExplorerRowDto row,
-        IReadOnlyList<FinancialRecordExplorerFilterDto> filters)
-        => filters.Count == 0 || filters.All(filter =>
-        {
-            var filterId = NormalizeSearchToken(filter.FilterId);
-            // Agreement identity is dimensional scope: matching another field's text (or version
-            // 10 when version 1 was requested) must not admit an unrelated row.
-            var agreementField = filterId switch
-            {
-                "intercompanyagreementid" => "Agreement",
-                "intercompanyagreementversion" => "Agreement version",
-                _ when filter.FilterId.StartsWith("dimension-intercompany-agreement-version-", StringComparison.OrdinalIgnoreCase) => "Agreement version",
-                _ when filter.FilterId.StartsWith("dimension-intercompany-agreement-", StringComparison.OrdinalIgnoreCase) => "Agreement",
-                _ => null
-            };
-            if (agreementField is not null)
-            {
-                return row.Detail.Fields.Any(field =>
-                    string.Equals(field.Label, agreementField, StringComparison.Ordinal) &&
-                    string.Equals(field.Value.Trim(), filter.Value.Trim(), StringComparison.OrdinalIgnoreCase));
-            }
-
-            var expected = NormalizeSearchToken(filter.Value);
-            if (string.IsNullOrWhiteSpace(expected))
-            {
-                return true;
-            }
-
-            var directCell = string.IsNullOrWhiteSpace(filterId)
-                ? null
-                : row.Cells.FirstOrDefault(cell => string.Equals(NormalizeSearchToken(cell.ColumnId), filterId, StringComparison.Ordinal));
-            return directCell is not null
-                ? CellMatchesToken(directCell, expected)
-                : RowMatchesSearch(row, expected);
-        });
-
     private static bool RowMatchesSearch(FinancialRecordExplorerRowDto row, string? searchText)
     {
         var token = NormalizeSearchToken(searchText);
@@ -1455,6 +1418,11 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+        AddDimensionFilter(filters, "accounting-arrangement", "Accounting arrangement", dimensions.Select(static value => value.AccountingArrangementId));
+        AddDimensionFilter(filters, "accounting-arrangement-revision", "Accounting arrangement revision", dimensions.Select(static value => value.AccountingArrangementRevisionId));
+        AddDimensionFilter(filters, "chart-account-node", "Chart account node", dimensions.Select(static value => value.ChartAccountNodeId));
+        AddDimensionFilter(filters, "account-binding-revision", "Account binding revision", dimensions.Select(static value => value.AccountBindingRevisionId));
+        AddDimensionFilter(filters, "intercompany-transaction", "Intercompany transaction", dimensions.Select(static value => value.IntercompanyTransactionId));
         AddDimensionFilter(filters, "intercompany-agreement", "Agreement", dimensions.Select(static value => value.IntercompanyAgreementId?.ToString("D")));
         AddDimensionFilter(filters, "intercompany-agreement-version", "Agreement version", dimensions.Select(static value => value.IntercompanyAgreementVersion?.ToString(CultureInfo.InvariantCulture)));
         AddDimensionFilter(filters, "organization", "Organization", dimensions.Select(static value => value.OrganizationId));
@@ -1517,6 +1485,11 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionField(fields, "Counterparty", dimensions.CounterpartyId);
         AddDimensionField(fields, "Agreement", dimensions.IntercompanyAgreementId?.ToString("D"));
         AddDimensionField(fields, "Agreement version", dimensions.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        AddDimensionField(fields, "Accounting arrangement", dimensions.AccountingArrangementId);
+        AddDimensionField(fields, "Accounting arrangement revision", dimensions.AccountingArrangementRevisionId);
+        AddDimensionField(fields, "Chart account node", dimensions.ChartAccountNodeId);
+        AddDimensionField(fields, "Account binding revision", dimensions.AccountBindingRevisionId);
+        AddDimensionField(fields, "Intercompany transaction", dimensions.IntercompanyTransactionId);
         AddDimensionField(fields, "Organization", dimensions.OrganizationId);
         AddDimensionField(fields, "Customer", dimensions.CustomerId);
         AddDimensionField(fields, "Vendor", dimensions.VendorId);

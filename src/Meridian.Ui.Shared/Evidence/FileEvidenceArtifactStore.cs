@@ -77,6 +77,10 @@ public interface IEvidenceArtifactStore
     Task<EvidenceManifestFile?> TryOpenDocumentContentAsync(string vaultId, string documentId,
         string tenantId, string scope, CancellationToken ct = default) => Task.FromResult<EvidenceManifestFile?>(null);
 
+    /// <summary>Streams and verifies one exact pinned artifact within the vault's configured document limits.</summary>
+    Task<bool> VerifyDocumentContentAsync(string vaultId, string documentId, string artifactId, string contentHashSha256,
+        string tenantId, string scope, CancellationToken ct = default) => Task.FromResult(false);
+
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
         CancellationToken ct = default);
@@ -418,8 +422,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         _logger.LogInformation(
             "Retained evidence vault intake {VaultId} for {SubjectKind}/{SubjectId}.",
             vaultId,
-            subjectKind,
-            subjectId);
+            EscapeLogValue(subjectKind),
+            EscapeLogValue(subjectId));
 
         return new EvidenceVaultIntakeResponseDto(
             IntakeId: artifactId,
@@ -2003,20 +2007,32 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be deserialized.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest '{ManifestPath}' could not be deserialized. {Error}",
+                EscapeLogValue(manifestPath), EscapeLogValue(ex.ToString()));
             return null;
         }
         catch (IOException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be read.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest '{ManifestPath}' could not be read. {Error}",
+                EscapeLogValue(manifestPath), EscapeLogValue(ex.ToString()));
             return null;
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Evidence vault manifest '{ManifestPath}' could not be accessed.", manifestPath);
+            _logger.LogWarning("Evidence vault manifest '{ManifestPath}' could not be accessed. {Error}",
+                EscapeLogValue(manifestPath), EscapeLogValue(ex.ToString()));
             return null;
         }
     }
+
+    // Escape only at the logging boundary: retained identifiers, paths, bytes and their hashes
+    // remain exact. Exception text must use the same boundary because it can repeat a file path.
+    private static string EscapeLogValue(string value)
+        => value.Replace("\r", "\\r", StringComparison.Ordinal)
+            .Replace("\n", "\\n", StringComparison.Ordinal)
+            .Replace("\u0085", "\\u0085", StringComparison.Ordinal)
+            .Replace("\u2028", "\\u2028", StringComparison.Ordinal)
+            .Replace("\u2029", "\\u2029", StringComparison.Ordinal);
 
     private string? ResolveSubjectManifestPath(
         string subjectKind,

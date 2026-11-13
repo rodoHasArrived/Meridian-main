@@ -9,9 +9,9 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 18 | 2 | 5 | 0 | `c9c7114b8157` |
 | [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `13eb85175584` |
 | [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 13 | 0 | 0 | 0 | `a45acfa4cd40` |
-| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 20 | 3 | 12 | 0 | `4232435a7c9b` |
+| [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 23 | 5 | 18 | 0 | `ad4a8d01d990` |
 | [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
-| [`ledger`](modules/ledger.md) | `ledger` | 37 | 18 | 26 | 0 | `c9cdfce41ee8` |
+| [`ledger`](modules/ledger.md) | `ledger` | 50 | 28 | 54 | 0 | `4338aa665a62` |
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
 | [`operator_triage`](modules/operator_triage.md) | `operator-triage` | 2 | 0 | 0 | 0 | `48b74e6e5f43` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |

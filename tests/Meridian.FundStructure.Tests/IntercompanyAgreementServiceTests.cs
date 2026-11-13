@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Meridian.FundStructure.Tests;
 
-public sealed class IntercompanyAgreementServiceTests
+public sealed partial class IntercompanyAgreementServiceTests
 {
     private static readonly DateOnly January = new(2026, 1, 1);
 
@@ -218,7 +218,7 @@ public sealed class IntercompanyAgreementServiceTests
         public EvidenceAuthority Evidence { get; } = new();
         public IntercompanyAgreementDraftDto Draft { get; }
         public IntercompanyAgreementService Service { get; }
-        public Fixture()
+        public Fixture(IEntityLifecycleStore? lifecycle = null)
         {
             var first = Guid.NewGuid();
             var second = Guid.NewGuid();
@@ -226,7 +226,7 @@ public sealed class IntercompanyAgreementServiceTests
                 "USD", January, Terms: new(FixedAnnualRate: 0.05m), Evidence: [new("vault:agreement")]);
             Store.Entities[first] = Entity(first);
             Store.Entities[second] = Entity(second);
-            Service = new(Store, Access, Evidence, new Clock());
+            Service = new(Store, Access, Evidence, new Clock(), lifecycleStore: lifecycle);
         }
         public IntercompanyAgreementCommandDto Command(IntercompanyAgreementDraftDto? draft = null, Guid? proposalId = null) =>
             new(Guid.NewGuid(), AgreementId, Store.State?.AggregateVersion ?? 0, proposalId ?? Guid.NewGuid(), draft, "Reviewed synthetic rationale");

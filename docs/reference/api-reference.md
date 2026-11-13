@@ -904,7 +904,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**415 declarations** from **41 source files**.
+**454 declarations** from **48 source files**.
 
 
 ### HostAdapters
@@ -1377,6 +1377,20 @@ Source: [src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs](.
 | `/setup/account` | GET | `(InitialAccountBootstrapService bootstrap) => …` | `Results.Content`; `Results.Redirect` | — | [L15](../../src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs#L15) |
 | `/api/auth/bootstrap` | POST | `async (HttpContext context, BootstrapAccountRequest request, InitialAccountBootstrapService bootstrap, CancellationToken ct) => …` | `Results.Json`; `Results.Ok` | — | [L22](../../src/Meridian.Ui.Shared/Endpoints/InitialAccountBootstrapEndpoints.cs#L22) |
 
+### IntercompanyAccountingArrangementEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/intercompany-accounting-arrangements` | GET | `(Guid? organizationId, Guid? bookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json` | — | [L23](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L23) |
+| `/api/ledger/intercompany-accounting-arrangements/legal-agreements` | GET | `(Guid bookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json` | — | [L61](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L61) |
+| `/api/ledger/intercompany-accounting-arrangements/{id}` | GET | `(Guid id, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L72](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L72) |
+| `/api/ledger/intercompany-accounting-arrangements/{id}/history` | GET | `(Guid id, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L81](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L81) |
+| `/api/ledger/intercompany-accounting-arrangements` | POST | `(CreateIntercompanyAccountingArrangementRequest request, HttpContext context) => …` | `Results.Json` | — | [L91](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L91) |
+| `/api/ledger/intercompany-accounting-arrangements/{id}/revisions` | POST | `(Guid id, ReviseIntercompanyAccountingArrangementRequest request, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L104](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L104) |
+| `/api/ledger/intercompany-accounting-arrangements/{id}/{action}` | POST | `(Guid id, string action, IntercompanyAccountingArrangementActionRequest request, HttpContext context) => …` | `Results.BadRequest`; `Results.NotFound`; `Results.Json` | — | [L115](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAccountingArrangementEndpoints.cs#L115) |
+
 ### IntercompanyAgreementEndpoints
 
 Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs)
@@ -1392,6 +1406,22 @@ Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs](../
 | `/api/fund-structure/intercompany-agreements/{id}/proposals` | POST | `async (Guid id, IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("CreateIntercompanyAgreementProposal")` | [L130](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L130) |
 | `/api/fund-structure/intercompany-agreements/{id}/proposals/{proposalId}` | PUT | `async (Guid id, Guid proposalId, IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("SaveIntercompanyAgreementDraft")` | [L134](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L134) |
 
+### IntercompanyOperationsEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/intercompany/capabilities` | GET | `(HttpContext context) => …` | `Results.Json` | — | [L19](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L19) |
+| `/api/fund-structure/entities/{entityId}/timeline` | GET | `async (Guid entityId, Guid organizationId, DateTimeOffset? asOf, HttpContext context) => …` | `Results.Problem`; `Results.Json`; `Results.Conflict` | — | [L34](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L34) |
+| `/api/ledger/intercompany/proposals` | GET | `async (Guid sourceBookId, HttpContext context) => …` | `Results.Json` | — | [L52](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L52) |
+| `/api/ledger/intercompany/balance-schedule` | GET | `async (Guid ledgerBookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json`; `Results.Conflict` | — | [L64](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L64) |
+| `/api/ledger/intercompany/proposals/{proposalId}/refresh-preview` | GET | `async (Guid proposalId, HttpContext context) => …` | `Results.Json`; `Results.Conflict` | — | [L82](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L82) |
+| `/api/ledger/intercompany/proposals/{proposalId}/refresh` | POST | `async (Guid proposalId, RefreshIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L100](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L100) |
+| `/api/ledger/intercompany/breaks` | GET | `async (Guid sourceBookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json` | — | [L122](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L122) |
+| `/api/ledger/intercompany/proposals/{proposalId}/retry` | POST | `async (Guid proposalId, RetryIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L135](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L135) |
+| `/api/ledger/intercompany/proposals/{proposalId}/link` | POST | `async (Guid proposalId, LinkIntercompanyCounterpartRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L158](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L158) |
+
 ### LedgerEndpoints.Consolidation
 
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs)
@@ -1400,6 +1430,64 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs](../.
 | --- | --- | --- | --- | --- | --- |
 | `/api/ledger/consolidation/preview` | GET | `async (Guid organizationId, Guid ownershipRootId, Guid eliminationBookId, Guid periodId, DateOnly asOf, HttpContext context) => …` | `Produces<ConsolidationViewDto>()`; `Produces(StatusCodes.Status400BadRequest)` | `WithName("PreviewConsolidation")` | [L17](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs#L17) |
 | `/api/ledger/consolidation/drafts` | POST | `async (ConsolidationRequestDto request, HttpContext context) => …` | `Produces<ConsolidationViewDto>()` | `WithName("DraftConsolidation")` | [L26](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs#L26) |
+
+### LedgerEndpoints.ConsolidationFx
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/consolidation/fx/rate-sets` | GET | `(Func<HttpContext, Task<IResult>>) (async (HttpContext context) => …` | `Results.Json` | — | [L17](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L17) |
+| `/api/ledger/consolidation/fx/rate-sets/{rateSetId}/revisions/{revision}` | GET | `async (Guid rateSetId, int revision, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L26](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L26) |
+| `/api/ledger/consolidation/fx/rate-sets/approve` | POST | `async (ConsolidationFxRateSetDto request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json` | — | [L36](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L36) |
+| `/api/ledger/consolidation/fx/books/{bookId}/configuration` | GET | `async (Guid bookId, DateOnly asOf, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L59](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L59) |
+| `/api/ledger/consolidation/fx/books/{bookId}/configuration/{revision}` | GET | `async (Guid bookId, int revision, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L70](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L70) |
+| `/api/ledger/consolidation/fx/books/{bookId}/configuration/approve` | POST | `async (Guid bookId, ConsolidationFxBookConfigurationDto request, HttpContext context) => …` | `Results.Unauthorized`; `Results.BadRequest`; `Results.Json` | — | [L81](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationFx.cs#L81) |
+
+### LedgerEndpoints.ConsolidationTransitions
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/consolidation/transitions` | GET | `async (Guid organizationId, Guid ownershipRootId, HttpContext context) => …` | `Results.Json` | — | [L20](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs#L20) |
+| `/api/ledger/consolidation/transitions/previews/{previewId}` | GET | `async (Guid previewId, HttpContext context) => …` | `Results.NotFound`; `Results.Json` | — | [L35](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs#L35) |
+| `/api/ledger/consolidation/transitions/preview` | POST | `async (ConsolidationTransitionRequestDto request, HttpContext context) => …` | `Results.Json`; `Results.Conflict`; `Results.BadRequest` | — | [L51](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs#L51) |
+| `/api/ledger/consolidation/transitions/activate` | POST | `async (ApproveConsolidationTransitionRequestDto request, HttpContext context) => …` | `Results.NotFound`; `Results.Json`; `Results.Conflict`; `Results.BadRequest` | — | [L68](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ConsolidationTransitions.cs#L68) |
+
+### LedgerEndpoints.EntityControls
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/books/{bookId}/controls` | GET | `async (Guid bookId, HttpContext context) => …` | `Results.Json` | — | [L22](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L22) |
+| `/api/ledger/books/{bookId}/controls/preflight` | POST | `async (Guid bookId, HttpContext context) => …` | `Results.Json`; `Results.Conflict` | — | [L29](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L29) |
+| `/api/ledger/books/{bookId}/controls/activate` | POST | `async (Guid bookId, ActivateLedgerBookControlsRequestDto request, HttpContext context) => …` | `Results.Json`; `Results.Conflict` | — | [L40](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L40) |
+| `/api/ledger/controlled-close/authorizations` | POST | `async (ControlledCloseAuthorizationRequestDto request, HttpContext context) => …` | `Results.Json`; `Results.Conflict` | — | [L55](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L55) |
+| `/api/fund-structure/entities/{entityId}/lifecycle` | GET | `async (Guid entityId, long? revision, HttpContext context) => …` | `Results.Json` | — | [L80](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L80) |
+| `/api/fund-structure/entities/{entityId}/lifecycle/history` | GET | `async (Guid entityId, HttpContext context) => …` | `Results.Json` | — | [L85](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L85) |
+| `/api/fund-structure/entities/{entityId}/lifecycle/revisions` | POST | `async (Guid entityId, AppendEntityLifecycleRevisionRequestDto request, HttpContext context) => …` | `Results.BadRequest`; `Results.Json`; `Results.Conflict` | — | [L90](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.EntityControls.cs#L90) |
+
+### LedgerEndpoints.IntercompanyAccountBindings
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/intercompany/account-bindings` | GET | `async (Guid ledgerBookId, DateOnly asOf, HttpContext context) => …` | `Produces<IReadOnlyList<IntercompanyAccountBindingDto>>()`; `Results.Json` | `WithName("ListIntercompanyAccountBindings")` | [L16](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs#L16) |
+| `/api/ledger/intercompany/account-bindings/history` | GET | `async (Guid ledgerBookId, HttpContext context) => …` | `Produces<IReadOnlyList<IntercompanyAccountBindingDto>>()`; `Results.Json` | `WithName("ListIntercompanyAccountBindingHistory")` | [L35](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs#L35) |
+| `/api/ledger/intercompany/account-bindings` | POST | `async (AppendIntercompanyAccountBindingRequest request, HttpContext context) => …` | `Produces<IntercompanyAccountBindingDto>()`; `Results.BadRequest`; `Results.Json`; `Results.Conflict` | `WithName("AppendIntercompanyAccountBinding")` | [L54](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs#L54) |
+
+### LedgerEndpoints.LegacyIntercompanyAttributions
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/intercompany/legacy-attributions` | GET | `async (Guid ledgerBookId, HttpContext context) => …` | `Results.Json` | — | [L16](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs#L16) |
+| `/api/ledger/intercompany/legacy-attributions/candidates` | GET | `async (Guid ledgerBookId, HttpContext context) => …` | `Results.Json` | — | [L29](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs#L29) |
+| `/api/ledger/intercompany/legacy-attributions` | POST | `async (AppendLegacyIntercompanyAttributionRequest request, HttpContext context) => …` | `Results.BadRequest`; `Results.Json`; `Results.Conflict` | — | [L63](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs#L63) |
 
 ### LedgerEndpoints.PeriodComparison
 

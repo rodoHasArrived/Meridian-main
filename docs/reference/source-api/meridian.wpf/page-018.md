@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsRecordReleasePage
+
+Qualified name: <code>Meridian.Wpf.Views.OperationsRecordReleasePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs#L11).
+
+Provides the desktop page to follow the release path from source data through accounting record to report pack.
+
+```csharp
+public partial class OperationsRecordReleasePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperationsRecordReleasePage(OperationsRecordReleaseViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperationsRecordReleasePage.xaml.cs#L15) |  |
+
+## OperatorReadinessConsolePage
+
+Qualified name: <code>Meridian.Wpf.Views.OperatorReadinessConsolePage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs#L11).
+
+Hosts operator readiness checks and the resulting blockers and next actions.
+
+```csharp
+public partial class OperatorReadinessConsolePage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OperatorReadinessConsolePage(OperatorReadinessConsoleViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperatorReadinessConsolePage.xaml.cs#L15) |  |
+
 ## OptionsPage
 
 Qualified name: <code>Meridian.Wpf.Views.OptionsPage</code>. Kind: `class`.
@@ -1047,51 +1083,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public SymbolsPage(WpfServices.ConfigService configService, WpfServices.WatchlistService watchlistService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/Views/SymbolsPage.xaml.cs:27](../../../../src/Meridian.Wpf/Views/SymbolsPage.xaml.cs#L27) |  |
-
-## SymbolStoragePage
-
-Qualified name: <code>Meridian.Wpf.Views.SymbolStoragePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:18](../../../../src/Meridian.Wpf/Views/Pages.cs#L18).
-
-```csharp
-public partial class SymbolStoragePage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs#L11).
-
-Symbol storage page showing per-symbol storage analytics, data type breakdown, file counts, and growth projections.
-
-```csharp
-public partial class SymbolStoragePage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SymbolStoragePage() : this(new SymbolStorageViewModel());</code> | [src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/SymbolStoragePage.xaml.cs#L15) |  |
-
-## SystemHealthPage
-
-Qualified name: <code>Meridian.Wpf.Views.SystemHealthPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:33](../../../../src/Meridian.Wpf/Views/Pages.cs#L33).
-
-```csharp
-public partial class SystemHealthPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs#L13).
-
-System health monitoring page — thin code-behind. All state, timers, and data-loading logic live in SystemHealthViewModel.
-
-```csharp
-public partial class SystemHealthPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SystemHealthPage();</code> | [src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/SystemHealthPage.xaml.cs#L17) |  |

@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuantDiagnosticDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantDiagnosticDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:359](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L359).
+
+JSON-friendly Roslyn diagnostic.
+
+```csharp
+public sealed record QuantDiagnosticDto(string Severity, string Message, int Line, int Column);
+```
+
+## QuantLabEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantLabEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L28).
+
+HTTP endpoints that expose the Meridian QuantScript engine (the &quot;Quant Lab&quot;) to the browser workstation. Endpoints are only meaningful when an IScriptRunner has been registered (gated by QuantLab:Enabled); when not registered, calls return 503 Service Unavailable.
+
+```csharp
+public static class QuantLabEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapQuantLabEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:34](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L34) | Maps Quant Lab routes onto the application. Safe to call regardless of whether the QuantScript engine is registered — endpoints respond with 503 when it is missing. |
+
 ## QuantMetricDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantMetricDto</code>. Kind: `record`.
@@ -702,7 +732,7 @@ public sealed record TradingActionResult(string ActionId, string Status, string 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UiEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L25).
+Source: [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L29).
 
 Master extension methods for registering shared desktop/local API endpoints. Uses ServiceCompositionRoot for centralized service registration.
 
@@ -714,15 +744,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:33](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L33) | Registers all shared services required by UI endpoints using the centralized composition root. Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality. |
-| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:45](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L45) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:76](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L76) | Maps all UI API endpoints using default JSON serializer options. |
-| <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:90](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L90) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
-| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:101](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L101) | Maps all UI API endpoints with custom JSON serializer options. |
-| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:293](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L293) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
-| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:312](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L312) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
-| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:318](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L318) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
-| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:327](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L327) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
+| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:37](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L37) | Registers all shared services required by UI endpoints using the centralized composition root. Replaces the core BackfillCoordinator with the UI-extended version that includes preview functionality. |
+| <code>public static IServiceCollection AddUiSharedServices(this IServiceCollection services, ApplicationStatusEndpointHandlers statusHandlers, string? configPath = null, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:49](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L49) | Registers shared services with a pre-configured StatusEndpointHandlers instance. Use this when the workstation host supplies an existing handler instance. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L80) | Maps all UI API endpoints using default JSON serializer options. |
+| <code>public static JsonSerializerOptions CreateEndpointJsonOptions(bool writeIndented = false) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:94](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L94) | Creates the standard JsonSerializerOptions used by UI API endpoints. Uses camelCase naming and a DefaultJsonTypeInfoResolver so callers can extend the type-info chain without reflection falling back to a null resolver. |
+| <code>public static WebApplication MapUiEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions, JsonSerializerOptions? jsonOptionsIndented = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L116) | Maps all UI API endpoints with custom JSON serializer options. |
+| <code>public static WebApplication MapUiEndpointsWithStatus(this WebApplication app, ApplicationStatusEndpointHandlers statusHandlers);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:310](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L310) | Maps all UI API endpoints including status endpoints. Use this when StatusEndpointHandlers has been registered in DI. |
+| <code>public const string MutationRateLimitPolicy = &quot;mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:329](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L329) | Rate limiting policy name applied to mutation (POST/PUT/DELETE) endpoints. |
+| <code>public const string DirectLendingMutationRateLimitPolicy = &quot;direct-lending-mutation&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:335](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L335) | Direct-lending command limiter. Kept separate from the general mutation budget so loan servicing writes have an explicit, independently auditable abuse-control boundary. |
+| <code>public static IServiceCollection AddMutationRateLimiter(this IServiceCollection services, bool forceEnable = false, IConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs:344](../../../../src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs#L344) | Registers a per-IP fixed-window rate limiter for mutation endpoints. Allows 10 requests per minute per IP with a small queue for bursts. Set the MDC_DISABLE_RATE_LIMIT=true environment variable to bypass rate limiting only in explicit development/test hosts outside production, packaged and customer postures. Rejections expose the fixed-window retry delay through Retry-After. |
 
 ## UpdateExecutionCircuitBreakerRequest
 
@@ -758,24 +788,4 @@ Request to update or clear a symbol-specific execution position limit.
 
 ```csharp
 public sealed record UpdateExecutionSymbolPositionLimitRequest(decimal? MaxPositionSize, string? Reason = null);
-```
-
-## UpdateMaintenanceScheduleRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateMaintenanceScheduleRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:518](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L518).
-
-```csharp
-public record UpdateMaintenanceScheduleRequest(string? Name = null, string? Description = null, string? CronExpression = null, string? TimeZoneId = null, string? TaskType = null, string? Priority = null, bool? Enabled = null, int? MaxDurationMinutes = null, int? MaxRetries = null, string[]? TargetPaths = null, string[]? Tags = null, MaintenanceOptionsDto? Options = null);
-```
-
-## ValidateMaintenanceCronRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ValidateMaintenanceCronRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs:539](../../../../src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs#L539).
-
-```csharp
-public record ValidateMaintenanceCronRequest(string CronExpression, string? TimeZoneId = null);
 ```

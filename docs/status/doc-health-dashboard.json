@@ -1,11 +1,11 @@
 {
-  "total_files": 1202,
+  "total_files": 1209,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 84,
-  "signal_digest": "sha256:148f94f6621b03a72356d312d81bb536f166e20506270ce5e45b62c3474f6f17",
+  "signal_digest": "sha256:6f95d2a44ab5216d7123d7801d9f9c3e131cdf764fb1874968a1817e99c26aa4",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2233,6 +2233,13 @@
       "stale": false
     },
     {
+      "path": "docs/domain/intercompany-agreements-and-entity-lifecycle.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/intercompany-agreements.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2555,6 +2562,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/intercompany-entity-controls.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/README.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2794,6 +2808,13 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-05.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-06.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3186,6 +3207,13 @@
     },
     {
       "path": "docs/operators/governed-reporting-operations.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4473,6 +4501,20 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-070.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-071.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -5034,6 +5076,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.storage/page-014.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-015.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

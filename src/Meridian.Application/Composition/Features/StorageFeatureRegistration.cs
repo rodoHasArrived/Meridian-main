@@ -282,7 +282,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ILedgerBookService>(sp =>
                 new PostgresLedgerBookService(
                     sp.GetRequiredService<ILedgerJournalStore>(),
-                    sp.GetService<IOperatorInboxService>()));
+                    sp.GetService<IOperatorInboxService>(),
+                    sp.GetService<IConsolidationBookPolicyValidator>()));
         }
 
         // Analysis export service for data export operations
@@ -686,10 +687,12 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 var securityMasterQueryService = sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
                 var persistencePath = Path.Combine(storageOptions.RootPath, "governance", "fund-structure.json");
                 return new TenantGuardedLocalFundStructureService(new InMemoryFundStructureService(
-                    fundAccountService, sharedDataAccessService, securityMasterQueryService, persistencePath),
+                    fundAccountService, sharedDataAccessService, securityMasterQueryService, persistencePath,
+                    sp.GetRequiredService<IEntityLifecycleStore>(), sp.GetRequiredService<IFundScopeTenantAccessor>()),
                     sp.GetRequiredService<LocalTenantMigrationGate>());
             });
         }
+        services.AddIntercompanyEntityServices(configuration);
         // ── Banking ──────────────────────────────────────────────────────────
         if (configuration.IsConfigured(BankingStartup.ConnectionStringVariable))
         {

@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IApplicationLifecycleCoordinator
+
+Qualified name: <code>Meridian.Application.Composition.Startup.IApplicationLifecycleCoordinator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:11](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L11).
+
+Compatibility process-lifetime contract retained while callers migrate to IRuntimeLifecycleControlPlane.
+
+```csharp
+public interface IApplicationLifecycleCoordinator : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DateTimeOffset StartedAtUtc { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:13](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L13) |  |
+| <code>bool IsShutdownRequested { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:14](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L14) |  |
+| <code>string? ShutdownReason { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:15](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L15) |  |
+| <code>CancellationToken ShutdownToken { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:16](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L16) |  |
+| <code>string? LocalShutdownToken { get; }</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:17](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L17) |  |
+| <code>Task RequestShutdownAsync(string reason, string? detail = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs:19](../../../../src/Meridian.Application/Composition/Startup/ApplicationLifecycleCoordinator.cs#L19) |  |
+
 ## IHostDashboardServer
 
 Qualified name: <code>Meridian.Application.Composition.Startup.IHostDashboardServer</code>. Kind: `interface`.
@@ -982,21 +1005,3 @@ Enum declarations:
 | <code>None</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:480](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L480) | The command id is not recorded: process the command. |
 | <code>Replay</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:483](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L483) | The same request already committed: return the committed state. |
 | <code>Conflict</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:486](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L486) | The command id was used for a different mutation or different inputs. |
-
-## DailyAccrualWorker
-
-Qualified name: <code>Meridian.Application.DirectLending.DailyAccrualWorker</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/DirectLending/DailyAccrualWorker.cs:22](../../../../src/Meridian.Application/DirectLending/DailyAccrualWorker.cs#L22).
-
-Background service that posts daily interest and commitment-fee accruals for all active loans. Runs once per day at the UTC midnight boundary, or immediately on startup if the current day has not yet been processed. Each batch catches up every missing accrual date since the loan&#x27;s last accrual, in strict date order, so worker downtime or a temporarily blocked accounting period does not silently under-accrue interest. For loans whose terms carry the opt-in servicing schedules, each date runs in a fixed order: apply the due scheduled rate reset, post the accrual, then capitalize PIK on a capitalization date. A missing index fixing stops that loan&#x27;s catch-up and raises an operator work item (fail closed) instead of accruing at a stale or zero rate.
-
-```csharp
-public sealed class DailyAccrualWorker : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DailyAccrualWorker(IDirectLendingOperationsStore operationsStore, IDirectLendingQueryService queryService, IDirectLendingCommandService commandService, ILogger&lt;DailyAccrualWorker&gt; logger, ILedgerJournalStore? ledgerJournalStore = null, IOperatorInboxService? operatorInbox = null);</code> | [src/Meridian.Application/DirectLending/DailyAccrualWorker.cs:38](../../../../src/Meridian.Application/DirectLending/DailyAccrualWorker.cs#L38) |  |

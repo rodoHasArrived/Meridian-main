@@ -6,6 +6,86 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityProjectionRefreshResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityProjectionRefreshResult</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L100).
+
+Outcome of SecurityMasterProjectionService.RefreshSecurityAsync.
+
+```csharp
+public enum SecurityProjectionRefreshResult
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Refreshed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:103](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L103) | The durable record was installed in the cache. |
+| <code>KeptNewer</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:106](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L106) | The cache already held a newer version; the durable read did not downgrade it. |
+| <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:109](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L109) | The durable store no longer holds the security; the cached entry was evicted. |
+| <code>NotFound</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:112](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L112) | Neither the durable store nor the cache holds the security. |
+
+## SecurityResolver
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L10).
+
+Resolves security identifiers against canonical Security Master records.
+
+```csharp
+public sealed class SecurityResolver : ISecurityResolver # pragma warning restore CS0618
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L15) |  |
+| <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L20) |  |
+
+## SecurityResolverCompatibilityAdapter
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityResolverCompatibilityAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:5](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L5).
+
+```csharp
+public sealed class SecurityResolverCompatibilityAdapter : ISecurityResolver # pragma warning restore CS0618
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityResolverCompatibilityAdapter(Meridian.Contracts.SecurityMaster.ISecurityResolver resolver);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L10) |  |
+| <code>public Task&lt;Guid?&gt; ResolveAsync(Meridian.Contracts.SecurityMaster.ResolveSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolverCompatibilityAdapter.cs#L15) |  |
+
+## StaleFieldProposalException
+
+Qualified name: <code>Meridian.Application.SecurityMaster.StaleFieldProposalException</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:9](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L9).
+
+An approved field-edit revision whose canonical field changed after the proposal was drafted. Publishing it would overwrite a newer value the reviewer never saw, so publication refuses it. The revision stays Approved, and retrying will not help. Discard it and stage the edit again against the current value. The workbench publish route answers 409.
+
+```csharp
+public sealed class StaleFieldProposalException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StaleFieldProposalException(Guid securityId, Guid revisionId, string fieldPath, long baseVersion, long currentVersion) : base($&quot;Revision &#x27;{revisionId:D}&#x27; proposes &#x27;{fieldPath}&#x27; against security &#x27;{securityId:D}&#x27; version {baseVersion}, &quot; + $&quot;but that field changed by version {currentVersion}. Publishing it would overwrite the newer value; &quot; + &quot;discard the revision and stage the edit again against the current value.&quot;);</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:11](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L11) |  |
+| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:23](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L23) |  |
+| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:25](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L25) |  |
+| <code>public string FieldPath { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:27](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L27) |  |
+| <code>public long BaseVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:29](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L29) |  |
+| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs:31](../../../../src/Meridian.Application/SecurityMaster/StaleFieldProposalException.cs#L31) |  |
+
 ## SymbolResolutionMismatchTracker
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SymbolResolutionMismatchTracker</code>. Kind: `class`.
@@ -891,90 +971,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ExecutionSimulationResult&gt; RunAsync(ExecutionSimulationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:44](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L44) |  |
-
-## PreflightChecker
-
-Qualified name: <code>Meridian.Application.Services.PreflightChecker</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:19](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L19).
-
-Performs comprehensive pre-flight checks before starting data collection. Verifies disk space, network connectivity, file permissions, and system resources to catch issues early and provide actionable error messages.
-
-```csharp
-public sealed class PreflightChecker
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PreflightChecker(PreflightConfig? config = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:24](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L24) |  |
-| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:36](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L36) | Runs all pre-flight checks and returns a comprehensive result. |
-| <code>public async Task&lt;PreflightResult&gt; RunChecksAsync(string dataRoot, string? activeDataSource, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:44](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L44) | Runs all pre-flight checks including provider credential validation. |
-| <code>public async Task EnsureReadyAsync(string dataRoot, CancellationToken ct = default, DataSourceKind? activeDataSource = null);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:112](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L112) | Runs checks and throws if any critical check fails. |
-| <code>public PreflightCheckResult ValidateProviderCredentials(string activeDataSource);</code> | [src/Meridian.Application/Services/PreflightChecker.cs:552](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L552) | Validates that all enabled providers have their required credentials configured. Returns a detailed table of missing credentials with the exact env var names to set. |
-
-## PreflightCheckResult
-
-Qualified name: <code>Meridian.Application.Services.PreflightCheckResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:797](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L797).
-
-Result of a single pre-flight check.
-
-```csharp
-public readonly record struct PreflightCheckResult(string Name, PreflightCheckStatus Status, string Message, string? Remediation, IReadOnlyDictionary<string, object>? Details)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PreflightCheckResult Passed(string name, string message, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:805](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L805) |  |
-| <code>public static PreflightCheckResult Warning(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:808](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L808) |  |
-| <code>public static PreflightCheckResult Failed(string name, string message, string? remediation = null, Dictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:811](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L811) |  |
-
-## PreflightCheckStatus
-
-Qualified name: <code>Meridian.Application.Services.PreflightCheckStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:818](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L818).
-
-Status of a pre-flight check.
-
-```csharp
-public enum PreflightCheckStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Passed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:820](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L820) |  |
-| <code>Warning</code> | [src/Meridian.Application/Services/PreflightChecker.cs:821](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L821) |  |
-| <code>Failed</code> | [src/Meridian.Application/Services/PreflightChecker.cs:822](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L822) |  |
-
-## PreflightConfig
-
-Qualified name: <code>Meridian.Application.Services.PreflightConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Services/PreflightChecker.cs:744](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L744).
-
-Configuration for pre-flight checks.
-
-```csharp
-public sealed record PreflightConfig
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double MinDiskSpaceGb { get; init; } = 1.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:747](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L747) | Minimum required disk space in GB. |
-| <code>public double WarnDiskSpaceGb { get; init; } = 5.0;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:750](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L750) | Disk space warning threshold in GB. |
-| <code>public double MinMemoryMb { get; init; } = 256;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:753](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L753) | Minimum required memory in MB. |
-| <code>public double WarnMemoryMb { get; init; } = 512;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:756](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L756) | Memory warning threshold in MB. |
-| <code>public int NetworkTimeoutMs { get; init; } = 5000;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:759](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L759) | Network connectivity check timeout in milliseconds. |
-| <code>public bool CheckNetworkConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:762](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L762) | Whether to check basic network connectivity (DNS, HTTP endpoints). |
-| <code>public bool CheckProviderConnectivity { get; init; } = true;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:765](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L765) | Whether to check provider endpoint connectivity. |
-| <code>public static PreflightConfig Default =&gt; …;</code> | [src/Meridian.Application/Services/PreflightChecker.cs:767](../../../../src/Meridian.Application/Services/PreflightChecker.cs#L767) |  |
