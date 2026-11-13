@@ -43,6 +43,13 @@ compiled by `Meridian.Storage.Accounting`, keeping the primitives assembly indep
 The business adapters in the linked FundStructure and Ledger folders compile into
 `Meridian.Storage.Accounting`; generic storage primitives remain in `Meridian.Storage`.
 
+The linked ledger adapter commits immutable native balance checkpoints with governed book
+hard-close events and their audited digests. Its as-of balance capability combines the retained
+prefix with a verified journal tail in one repeatable-read transaction, preserving reopened and
+backdated activity, future-dated postings, exact dimensions and known zero accounts. See the
+[accounting adapter guide](../Meridian.Storage.Accounting/README.md#durable-balance-checkpoints)
+for the audit boundary and compatibility-store fallback.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native

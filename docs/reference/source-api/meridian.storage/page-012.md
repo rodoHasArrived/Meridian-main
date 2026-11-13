@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQualityScore
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityScore</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1131](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1131).
+
+```csharp
+public sealed record DataQualityScore(string Path, DateTimeOffset EvaluatedAt, double OverallScore, QualityDimension[] Dimensions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1138](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1138) |  |
+
+## DataQualityScoringReport
+
+Qualified name: <code>Meridian.Storage.Services.DataQualityScoringReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:488](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L488).
+
+```csharp
+public sealed record DataQualityScoringReport(DateTime GeneratedAtUtc, IReadOnlyList<QualityAssessment> Assessments, QualityReportSummary Summary);
+```
+
 ## DataQualityScoringService
 
 Qualified name: <code>Meridian.Storage.Services.DataQualityScoringService</code>. Kind: `class`.
@@ -863,42 +889,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task AppendAsync(QualityTrendPoint point, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:16](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L16) |  |
 | <code>Task&lt;IReadOnlyList&lt;QualityTrendPoint&gt;&gt; GetPointsAsync(string symbol, DateTimeOffset fromInclusive, DateTimeOffset toInclusive, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QualityTrendStore.cs:17](../../../../src/Meridian.Storage/Services/QualityTrendStore.cs#L17) |  |
-
-## IQuotaEnforcementService
-
-Qualified name: <code>Meridian.Storage.Services.IQuotaEnforcementService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Services/QuotaEnforcementService.cs:347](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L347).
-
-Interface for quota enforcement service.
-
-```csharp
-public interface IQuotaEnforcementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QuotaCheckResult CheckQuota(string symbol, string source, string eventType, long additionalBytes);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:349](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L349) |  |
-| <code>void RecordUsage(string filePath, long bytes);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:350](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L350) |  |
-| <code>Task&lt;QuotaScanResult&gt; ScanAndUpdateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:351](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L351) |  |
-| <code>QuotaStatusReport GetStatus();</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:352](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L352) |  |
-
-## IssueSeverity
-
-Qualified name: <code>Meridian.Storage.Services.IssueSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881).
-
-```csharp
-public enum IssueSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
-| <code>Warning</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |
-| <code>Critical</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:881](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L881) |  |

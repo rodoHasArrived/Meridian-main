@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PreferredReturnResult
+
+Qualified name: <code>Meridian.Ledger.PreferredReturnResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PreferredReturnCalculator.cs:30](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L30).
+
+Result of accruing preferred return to a valuation date.
+
+```csharp
+public sealed record PreferredReturnResult(decimal ContributedCapital, decimal ReturnedCapital, decimal AccruedPreferredReturn, IReadOnlyList<PreferredReturnSegment> Segments)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal OutstandingCapital =&gt; …;</code> | [src/Meridian.Ledger/PreferredReturnCalculator.cs:37](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L37) | Contributed capital not yet returned. |
+
+## PreferredReturnSegment
+
+Qualified name: <code>Meridian.Ledger.PreferredReturnSegment</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/PreferredReturnCalculator.cs:23](../../../../src/Meridian.Ledger/PreferredReturnCalculator.cs#L23).
+
+One accrual segment between two cash-flow boundaries.
+
+```csharp
+public sealed record PreferredReturnSegment(DateOnly From, DateOnly To, decimal Base, decimal AccruedInterest);
+```
+
 ## PrivateCapitalAuthorityRules
 
 Qualified name: <code>Meridian.Ledger.PrivateCapitalAuthorityRules</code>. Kind: `class`.
@@ -898,40 +928,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Subscription = 0</code> | [src/Meridian.Ledger/ShareClass.cs:17](../../../../src/Meridian.Ledger/ShareClass.cs#L17) |  |
 | <code>Redemption = 1</code> | [src/Meridian.Ledger/ShareClass.cs:18](../../../../src/Meridian.Ledger/ShareClass.cs#L18) |  |
-
-## ValuationFreshnessPolicy
-
-Qualified name: <code>Meridian.Ledger.ValuationFreshnessPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:9](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L9).
-
-Single owner of valuation mark admission. Compatibility settings may tighten these controls; disabled, allow, flag and incomplete-coverage settings cannot authorize unsupported numbers.
-
-```csharp
-public sealed record ValuationFreshnessPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ValuationFreshnessPolicy(int maximumAgeDays = 3, DailyPortfolioPriceConfidence minimumConfidence = DailyPortfolioPriceConfidence.Medium, string version = &quot;mark-freshness-v1&quot;);</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:11](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L11) |  |
-| <code>public static ValuationFreshnessPolicy Default { get; } = new ();</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:27](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L27) |  |
-| <code>public int MaximumAgeDays { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:28](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L28) |  |
-| <code>public DailyPortfolioPriceConfidence MinimumConfidence { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:29](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L29) |  |
-| <code>public string Version { get; }</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:30](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L30) |  |
-| <code>public bool RequireCompleteCoverage =&gt; …;</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:31](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L31) |  |
-| <code>public bool RequireObservedDate =&gt; …;</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:32](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L32) |  |
-| <code>public MarkFreshnessAssessmentDto Assess(string symbol, Guid? securityId, string? financialAccountId, DateOnly valuationDate, DateOnly? observedOn, DailyPortfolioPriceConfidence? confidence, decimal? price);</code> | [src/Meridian.Ledger/ValuationFreshnessPolicy.cs:34](../../../../src/Meridian.Ledger/ValuationFreshnessPolicy.cs#L34) |  |
-
-## ValuationMarkEvidence
-
-Qualified name: <code>Meridian.Ledger.ValuationMarkEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/ValuationMarkEvidence.cs:7](../../../../src/Meridian.Ledger/ValuationMarkEvidence.cs#L7).
-
-Immutable input facts retained with each security/account valuation journal.
-
-```csharp
-public sealed record ValuationMarkEvidence(string FundId, string Symbol, Guid? SecurityId, string? FinancialAccountId, DateOnly ValuationDate, DateOnly? ObservedOn, decimal Price, DailyPortfolioPriceConfidence Confidence, int MaximumAgeDays, DailyPortfolioPriceConfidence MinimumConfidence, string PolicyVersion, string EvidenceReference, string? EntityId = null);
-```

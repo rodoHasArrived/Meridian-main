@@ -566,7 +566,7 @@ Qualified name: <code>Meridian.Ui.Shared.Services.LedgerMarkToMarketCarryingValu
 
 Source: [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L13).
 
-Hydrates the requested ledger book once and returns the durable securities-account carrying value for every requested security/account key within the requested entity. Missing accounts are explicit null results; present zero-balance accounts remain zero.
+Reads the requested ledger book&#x27;s as-of trial balance once and returns the durable securities-account carrying value for every requested security/account key within the requested entity. Missing accounts are explicit null results; present zero-balance accounts remain zero.
 
 ```csharp
 public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore store) : IMarkToMarketCarryingValueSource
