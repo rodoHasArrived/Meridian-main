@@ -280,6 +280,20 @@
       "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
     },
     {
+      "path": "Directory.Build.props",
+      "bytes": 371,
+      "sha256": "506b4560b211562997851e20810de7e8701f78c1f578b2e0f4c84a1254cb4af3",
+      "encoding": "verbatim",
+      "source": "Repository build-isolation metadata introduced by main commit 01649c7a44; retained during cleanup integration, not a measured diagnostic source snapshot."
+    },
+    {
+      "path": "Directory.Packages.props",
+      "bytes": 296,
+      "sha256": "dcc15c754c6c43820a14ef0cf83f220f16f6cd59d7efd7b14838fa992f8e970d",
+      "encoding": "verbatim",
+      "source": "Repository build-isolation metadata introduced by main commit 01649c7a44; retained during cleanup integration, not a measured diagnostic source snapshot."
+    },
+    {
       "path": "README.md",
       "bytes": 5510,
       "sha256": "8f4ec00f118016a139e9ee8db9ef6b9e79bc1768d83c582297f6e591ae2b5f4c",
