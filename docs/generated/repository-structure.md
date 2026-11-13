@@ -8927,6 +8927,7 @@ Meridian-main
 │   │   │   │   │   │   ├── historical-chart.tsx
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
 │   │   │   │   │   │   ├── historical-chart.view-model.ts
+│   │   │   │   │   │   ├── income-movement-waterfall.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.test.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.tsx
 │   │   │   │   │   │   ├── layout-switcher.test.tsx
@@ -8954,6 +8955,8 @@ Meridian-main
 │   │   │   │   │   │   ├── option-screening-map.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.test.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.tsx
+│   │   │   │   │   │   ├── position-value-graphic.test.tsx
+│   │   │   │   │   │   ├── position-value-graphic.tsx
 │   │   │   │   │   │   ├── preparer-attestation-evidence.test.tsx
 │   │   │   │   │   │   ├── preparer-attestation-evidence.tsx
 │   │   │   │   │   │   ├── preparer-draft-check-panel.test.tsx
@@ -8978,6 +8981,7 @@ Meridian-main
 │   │   │   │   │   │   ├── quant-plot.test.tsx
 │   │   │   │   │   │   ├── quant-plot.tsx
 │   │   │   │   │   │   ├── quant-plot.view-model.ts
+│   │   │   │   │   │   ├── report-writer-chart-preview.test.tsx
 │   │   │   │   │   │   ├── report-writer-chart-preview.tsx
 │   │   │   │   │   │   ├── report-writer-grid-diff-view.tsx
 │   │   │   │   │   │   ├── reporting-hub.selection.ts
@@ -9432,6 +9436,8 @@ Meridian-main
 │   │   │   │   │   ├── fund-account-scope.ts
 │   │   │   │   │   ├── identifiers.test.ts
 │   │   │   │   │   ├── identifiers.ts
+│   │   │   │   │   ├── income-movement-waterfall.test.ts
+│   │   │   │   │   ├── income-movement-waterfall.ts
 │   │   │   │   │   ├── keymap.test.ts
 │   │   │   │   │   ├── keymap.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
@@ -9458,6 +9464,8 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
+│   │   │   │   │   ├── position-value-graphic.test.ts
+│   │   │   │   │   ├── position-value-graphic.ts
 │   │   │   │   │   ├── positive-decimal.test.ts
 │   │   │   │   │   ├── positive-decimal.ts
 │   │   │   │   │   ├── posted-period-comparison-api.test.ts

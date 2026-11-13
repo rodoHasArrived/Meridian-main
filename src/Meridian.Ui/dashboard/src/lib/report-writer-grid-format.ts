@@ -37,9 +37,11 @@ export function cellStyleClassName(style: ReportWriterCellStyle | null | undefin
 export interface ChartBar {
   seriesKey: string;
   seriesLabel: string;
-  value: number;
-  /** Magnitude as a 0-100 percentage of the largest absolute value across the chart. */
+  /** Missing, non-numeric and non-finite observations stay unavailable. */
+  value: number | null;
+  /** Width and offset on a symmetric scale with zero at 50%. */
   widthPct: number;
+  leftPct: number;
   isNegative: boolean;
 }
 
@@ -54,40 +56,36 @@ export interface ChartViz {
   hasNegative: boolean;
 }
 
-/**
- * Normalizes a chart render into bar geometry: one group per category, one bar per
- * series, each sized relative to the largest absolute value in the chart. Works as a
- * compact magnitude view for every chart type the engine emits (bar, line, area, pie).
- */
+/** Builds a signed value summary, never an imitation of the configured chart type. */
 export function buildChartViz(chart: ReportWriterChartRender): ChartViz {
   const categories = chart.categories ?? [];
   const series = chart.series ?? [];
-
+  // Only observations with a displayed category participate in the common scale.
   let maxAbs = 0;
   let hasNegative = false;
   for (const seriesItem of series) {
-    for (const value of seriesItem.values ?? []) {
-      const magnitude = Math.abs(value);
-      if (magnitude > maxAbs) {
-        maxAbs = magnitude;
-      }
-
-      if (value < 0) {
-        hasNegative = true;
-      }
+    for (let index = 0; index < categories.length; index += 1) {
+      const value = seriesItem.values?.[index];
+      if (typeof value !== "number" || !Number.isFinite(value)) continue;
+      maxAbs = Math.max(maxAbs, Math.abs(value));
+      hasNegative ||= value < 0;
     }
   }
 
   const built: ChartCategory[] = categories.map((category, index) => ({
     category: category.length > 0 ? category : "(blank)",
     bars: series.map((seriesItem) => {
-      const value = seriesItem.values?.[index] ?? 0;
+      const observation = seriesItem.values?.[index];
+      const value = typeof observation === "number" && Number.isFinite(observation) ? observation : null;
+      const widthPct = value === null || maxAbs === 0 ? 0 : (Math.abs(value) / maxAbs) * 50;
+      const isNegative = value !== null && value < 0;
       return {
         seriesKey: seriesItem.key,
         seriesLabel: seriesItem.label || seriesItem.key,
         value,
-        widthPct: maxAbs === 0 ? 0 : Math.round((Math.abs(value) / maxAbs) * 100),
-        isNegative: value < 0
+        widthPct,
+        leftPct: isNegative ? 50 - widthPct : 50,
+        isNegative
       };
     })
   }));
