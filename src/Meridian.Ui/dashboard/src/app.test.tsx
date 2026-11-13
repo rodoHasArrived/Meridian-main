@@ -637,8 +637,9 @@ describe("App", () => {
     ["Decisions", "Providers", "Provenance", "Workspace data"].forEach((label) => {
       expect(within(status.querySelector("dl") as HTMLElement).getByText(label)).toBeInTheDocument();
     });
-    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).getByText(/^Brokerage sync failed \+\d+ more issues?$/))
-      .toBeInTheDocument();
+    // The masthead names the issue; the footer holds connectivity and freshness only (P1).
+    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).queryByText(/Brokerage sync failed/))
+      .not.toBeInTheDocument();
 
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();

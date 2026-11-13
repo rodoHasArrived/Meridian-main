@@ -1014,7 +1014,6 @@ function AppShell({
           workspaceLabel: headerWorkspace.label,
           refreshing: loading || refreshStatus.inFlight,
           hasError: Boolean(error),
-          attention: shell.attention,
           pageFreshness
         })}
       />

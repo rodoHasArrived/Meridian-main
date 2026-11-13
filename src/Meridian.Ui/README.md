@@ -140,7 +140,9 @@ It also carries the Phase 3 trust fixes from the same plan:
 - Data overview shows a provider's "Latency" only as a reported duration or "Latency not
   reported"; the "Trust / last good" column keeps the last response time.
 - Today lists the finance queue that the sidebar badges count, above the operator inbox, and each
-  count names its unit (for example "+5 more issues" in the status bar).
+  count names its unit (for example "+5 more issues" in the masthead trust strip).
+- The bottom status bar holds connectivity and freshness only; the masthead trust strip is the one
+  shell place that names the worst open issue.
 - Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
   account is in scope in a non-live brokerage environment; live, unknown and failed states still
   block.

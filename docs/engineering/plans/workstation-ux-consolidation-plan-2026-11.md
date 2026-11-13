@@ -73,11 +73,15 @@ Each phase ships on its own, behind the existing browser smoke tests and screens
   - Example: `"12345678901234.565"` now renders `12,345,678,901,234.57`, and `"1.005"` renders
     `1.01` (previously `1.00`).
 
+**P1 first step (landed 2026-11-13):** the bottom status bar no longer repeats the
+masthead's worst issue ("Cash variance needs review +5 more"). It holds Sync and page Freshness
+only, so the trust strip is the one shell place that names the worst open issue.
+
 **Remaining in Phase 1:**
 - Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
 - Bring the `localMoneyFormatters` (24) and `handRolledNumberFormatting` (75) ratchets to 0.
 - One date format with a time-zone preference.
-- The P1 attention de-duplication and the P4 scope bar.
+- The rest of P1 (per-screen trust rows show only differences; one merged Today queue) and the P4 scope bar.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the
