@@ -167,6 +167,9 @@ reload retained state under that lease, and publish only after durable persisten
 unsupported, incomplete or missing previously observed snapshots fail closed instead of erasing
 history. Contention and cancellation do not publish unfinished writes. Focused synthetic coverage
 lives in `StorageCatalogServiceTests`, `DataLineageServiceTests`, and `MetadataTagServiceTests`.
+The catalog and provider-manifest/replay fixtures run in `tests/Meridian.Tests`; metadata, lineage,
+and catalog-sink fixtures run in `tests/Meridian.Storage.Tests`. Shared compile ownership includes
+both metadata/lineage partial files, so discovery does not split their fixture state across assemblies.
 
 `FileProviderIntegrationManifestStore` stores identity decisions under each sync run's
 `identity-decisions` directory. Entity locking protects append-only retention: identical retries
