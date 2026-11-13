@@ -11,6 +11,10 @@ import type { BondReferencePage, BondReferenceRow } from "@/types/bond-reference
 type LadderMode = "issuer" | "maturity";
 const PAGE_SIZE = 100;
 
+export function bondLadderRowId(securityId: string): string {
+  return `bond-ladder-security-${securityId}`;
+}
+
 export interface BondReferenceLadderPanelProps {
   onSelectSecurity?: (securityId: string) => void;
   api?: {
@@ -92,7 +96,7 @@ export function BondReferenceLadderPanel({ onSelectSecurity, api = {} }: BondRef
     {
       id: "name", label: "Bond",
       render: (row) => onSelectSecurity
-        ? <button type="button" className="text-left font-medium text-foreground underline-offset-2 hover:underline" onClick={() => onSelectSecurity(row.securityId)}>{row.displayName}</button>
+        ? <button id={bondLadderRowId(row.securityId)} type="button" className="text-left font-medium text-foreground underline-offset-2 hover:underline" onClick={() => onSelectSecurity(row.securityId)}>{row.displayName}</button>
         : <span className="font-medium text-foreground">{row.displayName}</span>
     },
     { id: "identifier", label: "Identifier", render: (row) => <span className="font-mono">{row.primaryIdentifier}</span> },

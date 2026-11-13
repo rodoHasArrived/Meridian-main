@@ -16,9 +16,10 @@ import {
 } from "@/lib/api/contractual-cash-flow.api";
 import { ExactCurveInputs } from "@/components/meridian/exact-curve-inputs";
 import type { ExactCurvePin } from "@/types/security-curves.types";
-import { buildScenarioPrepayments, ScenarioPrepaymentInputs, type ScenarioPrepaymentDraft } from "./scenario-prepayment-inputs";
+import { buildScenarioPrepayments, type ScenarioPrepaymentDraft } from "./scenario-prepayment-inputs";
 import { bondDecimalText, DECIMAL_LITERAL, utcInstantFromLocalInput } from "@/lib/bond-decimal-format";
 import {
+  PREPAYMENT_METHODS,
   RATE_SCENARIOS,
   type CashFlowExerciseEligibility,
   type ContractualCashFlowEvent,
@@ -27,7 +28,9 @@ import {
   type ContractualCashFlowRun,
   type ContractualCashFlowRunComparison,
   type ContractualCashFlowSubjectKind,
+  type PrepaymentMethod,
   type RateScenario,
+  type RecastPolicy,
   type SelectedCashFlowExercise
 } from "@/types/contractual-cash-flow.types";
 
@@ -40,7 +43,7 @@ export interface ContractualCashFlowWorkbenchProps {
 interface ExerciseChoice {
   include: boolean;
   exerciseDate: string;
-  /** Date the notice was (or would be) given; blank means the exercise date itself. */
+  /** Explicit date the notice was (or would be) given. */
   noticeDate: string;
   amount: string;
   /** Identity of an approved exercise notice; when set the exercise is retained rather than hypothetical. */
@@ -72,7 +75,7 @@ const eventColumns: DenseDataTableColumn<ContractualCashFlowEvent>[] = [
 
 /**
  * Cash-flow scenario workbench over the shared contractual cash-flow routes: hypothetical valuation date,
- * knowledge cutoff, horizon, rate shock, exercise selections, immutable curve pins and dated prepayment assumptions; the result
+ * knowledge cutoff, horizon, rate shock, explicit notice dates, immutable curve pins and multiple dated prepayment assumptions; the result
  * ladder with blockers; retained runs under a client-generated identity; and a retained-run browser that
  * verifies replay by comparing the retained output hash with a fresh preview of the retained request.
  * Nothing here changes terms or posts anything, and displayed amounts are never resubmitted.
@@ -83,6 +86,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   const [horizon, setHorizon] = useState("");
   const [rateScenario, setRateScenario] = useState<RateScenario>("Base");
   const [prepayments, setPrepayments] = useState<ScenarioPrepaymentDraft[]>([]);
+  const [streams, setStreams] = useState<Array<{ streamId: string; prepaymentAllowed: boolean }>>([]);
   const [curvePins, setCurvePins] = useState<ExactCurvePin[]>([]);
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [exerciseChoices, setExerciseChoices] = useState<Record<string, ExerciseChoice>>({});
@@ -114,6 +118,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     setCompareRunId("");
     setEligibility([]);
     setExerciseChoices({});
+    setStreams([]);
     setError(null);
     setRunId(newRunId());
     return () => inFlight.current?.abort();
@@ -138,16 +143,18 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     for (const entry of eligibility) {
       const choice = exerciseChoices[eligibilityKey(entry)];
       if (!choice?.include) continue;
-      if (!choice.exerciseDate || !DECIMAL_LITERAL.test(choice.amount.trim()))
-        return `Choose an exercise date and a decimal amount for the ${entry.side.toLowerCase()} on ${entry.streamId}.`;
-      const noticeDate = choice.noticeDate || choice.exerciseDate;
-      if (noticeDate > choice.exerciseDate)
+      if (!choice.exerciseDate || !choice.noticeDate || !DECIMAL_LITERAL.test(choice.amount.trim()))
+        return `Choose an exercise date, a notice date and a decimal amount for the ${entry.side.toLowerCase()} on ${entry.streamId}.`;
+      if (choice.noticeDate > choice.exerciseDate)
         return `The notice date for the ${entry.side.toLowerCase()} on ${entry.streamId} cannot follow its exercise date.`;
+      const noticeEvidenceId = choice.noticeEvidenceId.trim();
+      if (!noticeEvidenceId && choice.noticeDate < valuationDate)
+        return "A hypothetical notice date must be on/after valuation. Contractual notice windows are checked by the service.";
       exercises.push({
         side: entry.side, entryStartDate: entry.entryStartDate, streamId: entry.streamId,
-        exerciseDate: choice.exerciseDate, noticeDate, amount: choice.amount.trim(),
-        hypotheticalNotice: !choice.noticeEvidenceId.trim(),
-        noticeEvidenceId: choice.noticeEvidenceId.trim() || null
+        exerciseDate: choice.exerciseDate, noticeDate: choice.noticeDate, amount: choice.amount.trim(),
+        hypotheticalNotice: !noticeEvidenceId,
+        noticeEvidenceId: noticeEvidenceId || null
       });
     }
     if (horizon && horizon < valuationDate) return "The scenario horizon cannot precede the valuation date.";
@@ -202,6 +209,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       if (signal.aborted) return;
       setResult(next);
       setEligibility(next.exerciseEligibility);
+      setStreams(next.resolvedContract?.streams ?? [...new Set(next.events.map((event) => event.streamId))].map((streamId) => ({ streamId, prepaymentAllowed: true })));
     }, "Cash-flow scenario could not be previewed.");
   }
 
@@ -296,7 +304,55 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           </Select>
         </label>
 
-        <ScenarioPrepaymentInputs rows={prepayments} onChange={(rows) => edit(() => setPrepayments(rows))} />
+        <fieldset className="grid gap-3 md:col-span-4">
+          <legend className="font-medium text-muted-foreground">Prepayment assumptions</legend>
+          <p className="text-muted-foreground">Intervals include the start and exclude the end. Intervals on one stream must not overlap.
+            CPR/SMM use fractions (0.06 = 6%); PSA uses multiples (1 = 100% PSA). Amount is cash on the start date.
+            Preview first to discover contractual streams; the service checks whether prepayment is supported.</p>
+          {prepayments.map((assumption, index) => {
+            const update = (next: Partial<ScenarioPrepaymentDraft>) => edit(() => setPrepayments((previous) => previous.map((item) => item.id === assumption.id ? { ...item, ...next } : item)));
+            return (
+              <fieldset key={assumption.id} className="grid gap-2 rounded-md border border-border/60 p-3 md:grid-cols-4">
+                <legend className="px-1 font-medium">Prepayment {index + 1}</legend>
+                <label className="grid gap-1">Contractual stream
+                  <Select value={assumption.streamId} aria-label={`Prepayment ${index + 1} stream`} onChange={(event) => update({ streamId: event.target.value })}>
+                    <option value="">Choose a stream</option>
+                    {streams.map((stream) => <option key={stream.streamId} value={stream.streamId} disabled={!stream.prepaymentAllowed}>{stream.streamId}{!stream.prepaymentAllowed ? " · prepayment unavailable" : ""}</option>)}
+                  </Select>
+                </label>
+                <label className="grid gap-1">Start (inclusive)
+                  <Input type="date" value={assumption.startDate} aria-label={`Prepayment ${index + 1} start date`} onChange={(event) => update({ startDate: event.target.value })} />
+                </label>
+                <label className="grid gap-1">End (exclusive)
+                  <Input type="date" value={assumption.endDate} aria-label={`Prepayment ${index + 1} end date`} onChange={(event) => update({ endDate: event.target.value })} />
+                </label>
+                <label className="grid gap-1">Method
+                  <Select value={assumption.method} aria-label={`Prepayment ${index + 1} method`} onChange={(event) => update({ method: event.target.value as PrepaymentMethod })}>
+                    {PREPAYMENT_METHODS.map((method) => <option key={method} value={method}>{method.toUpperCase()}</option>)}
+                  </Select>
+                </label>
+                <label className="grid gap-1">Value ({assumption.method === "Psa" ? "multiple" : assumption.method === "Amount" ? "cash amount" : "fraction"})
+                  <Input value={assumption.value} aria-label={`Prepayment ${index + 1} value`} onChange={(event) => update({ value: event.target.value })} />
+                </label>
+                {assumption.method === "Psa" ? (
+                  <label className="grid gap-1">Seasoning origin
+                    <Input type="date" value={assumption.seasoningOrigin} aria-label={`Prepayment ${index + 1} seasoning origin`} onChange={(event) => update({ seasoningOrigin: event.target.value })} />
+                  </label>
+                ) : null}
+                <label className="grid gap-1">Recast policy
+                  <Select value={assumption.policy} aria-label={`Prepayment ${index + 1} recast policy`} onChange={(event) => update({ policy: event.target.value as RecastPolicy })}>
+                    <option value="PreservePayments">Preserve payments</option>
+                    <option value="Recast">Recast</option>
+                  </Select>
+                </label>
+                <Button type="button" size="sm" variant="outline" className="self-end" aria-label={`Remove prepayment ${index + 1}`} onClick={() => edit(() => setPrepayments((previous) => previous.filter((item) => item.id !== assumption.id)))}>Remove assumption</Button>
+              </fieldset>
+            );
+          })}
+          {streams.length > 0 && !streams.some((stream) => stream.prepaymentAllowed) ? <p className="text-muted-foreground" role="status">The resolved contractual streams do not support prepayments.</p> : null}
+          <Button type="button" size="sm" variant="outline" className="justify-self-start" disabled={!streams.some((stream) => stream.prepaymentAllowed)}
+            onClick={() => edit(() => setPrepayments((previous) => [...previous, { id: newRunId(), streamId: "", startDate: valuationDate, endDate: "", method: "Cpr", value: "", seasoningOrigin: "", policy: "PreservePayments" }]))}>Add prepayment assumption</Button>
+        </fieldset>
         <div className="md:col-span-4">
           <p className="mb-2 text-muted-foreground">Some scenarios require benchmark pins. Use the benchmark key declared by the contract (for example SOFR); missing economic inputs appear as calculation blockers.</p>
           <ExactCurveInputs roleLabel="Benchmark key" pins={curvePins} onChange={(pins) => edit(() => setCurvePins(pins))} />
@@ -322,8 +378,10 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
                     <Input type="date" value={choice.exerciseDate} disabled={!choice.include} aria-label={`Exercise date for ${entry.streamId}`}
                       onChange={(e) => update({ exerciseDate: e.target.value })} />
                   )}
-                  <Input type="date" value={choice.noticeDate} disabled={!choice.include} aria-label={`Notice date for ${entry.streamId}`}
-                    title="Notice date; blank notices on the exercise date" onChange={(e) => update({ noticeDate: e.target.value })} />
+                  <label className="grid gap-1">Notice date
+                    <Input type="date" value={choice.noticeDate} disabled={!choice.include} aria-label={`Notice date for ${entry.streamId}`}
+                      onChange={(e) => update({ noticeDate: e.target.value })} />
+                  </label>
                   <Input placeholder="Amount" value={choice.amount} disabled={!choice.include} aria-label={`Exercise amount for ${entry.streamId}`}
                     onChange={(e) => update({ amount: e.target.value })} />
                   <Input placeholder="Approved notice id (optional)" value={choice.noticeEvidenceId} disabled={!choice.include} aria-label={`Notice evidence for ${entry.streamId}`}

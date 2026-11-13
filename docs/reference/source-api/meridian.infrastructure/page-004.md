@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FredSymbolSearchProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredSymbolSearchProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L24).
+
+Symbol search provider for FRED economic series discovery.
+
+```csharp
+public sealed class FredSymbolSearchProvider : BaseSymbolSearchProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:26](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L26) |  |
+| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L27) |  |
+| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L28) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L43) |  |
+| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L48) |  |
+| <code>public FredSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredSymbolSearchProvider.cs#L53) |  |
+
 ## ContractFactory
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.ContractFactory</code>. Kind: `class`.
@@ -1543,7 +1566,8 @@ Declared public members:
 | <code>public NasdaqDataLinkCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;NasdaqDataLinkCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L41) |  |
 | <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L53) |  |
 | <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L55) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L59) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L59) |  |
+| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs:66](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkCorporateActionProvider.cs#L66) |  |
 
 ## NasdaqDataLinkHistoricalDataProvider
 
@@ -1573,26 +1597,3 @@ Declared public members:
 | <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:79](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L79) |  |
 | <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:96](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L96) |  |
 | <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs:106](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkHistoricalDataProvider.cs#L106) |  |
-
-## NasdaqDataLinkSymbolSearchProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.NasdaqDataLink.NasdaqDataLinkSymbolSearchProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:25](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L25).
-
-Symbol/reference search provider for Nasdaq Data Link dataset discovery.
-
-```csharp
-public sealed class NasdaqDataLinkSymbolSearchProvider : BaseSymbolSearchProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:27](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L27) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:28](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L28) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L29) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:45](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L45) |  |
-| <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L50) |  |
-| <code>public NasdaqDataLinkSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(apiKey, httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/NasdaqDataLink/NasdaqDataLinkSymbolSearchProvider.cs#L58) |  |

@@ -60,6 +60,42 @@ describe("FinancialRecordExplorerShell", () => {
     await waitFor(() => expect(onSelectRecord).toHaveBeenCalledWith("security:11111111-1111-1111-1111-111111111111"));
   });
 
+  it("keeps a linked record authoritative until an explicit row selection and controlled update", async () => {
+    const user = userEvent.setup();
+    const explorer = createExplorerDto();
+    const onSelectRecord = vi.fn();
+    const controlledExplorer = (activeRecordId: string) => <FinancialRecordExplorerShell
+      explorerLabel="Accounting" title="Ledger Explorer" description="Linked record"
+      scopeItems={[]} savedViews={[]} summaryItems={[]} appliedFilters={[]}
+      explorer={explorer} activeRecordId={activeRecordId} onSelectRecord={onSelectRecord}
+    ><div>Fallback static content</div></FinancialRecordExplorerShell>;
+    const { rerender } = render(controlledExplorer("ledger:linked-outside-rows"));
+
+    const cash = screen.getByRole("row", { name: /cash assets/i });
+    const revenue = screen.getByRole("row", { name: /revenue income aapl/i });
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(revenue).toHaveAttribute("aria-selected", "false");
+    expect(onSelectRecord).not.toHaveBeenCalled();
+
+    // The source's default row must still be explicitly selectable while a linked record is absent.
+    await user.click(cash);
+    expect(onSelectRecord).toHaveBeenCalledExactlyOnceWith("ledger:run-1:cash");
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    rerender(controlledExplorer("ledger:run-1:cash"));
+    expect(cash).toHaveAttribute("aria-selected", "true");
+    expect(revenue).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("dialog", { name: "Cash proof detail" })).toBeInTheDocument();
+    expect(onSelectRecord).toHaveBeenCalledTimes(1);
+
+    rerender(controlledExplorer("ledger:run-1:revenue"));
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(revenue).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+    expect(onSelectRecord).toHaveBeenCalledTimes(1);
+  });
+
   it("opens row proof detail via keyboard activation", async () => {
     const user = userEvent.setup();
     renderExplorer();
