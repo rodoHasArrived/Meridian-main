@@ -369,6 +369,7 @@ public static class UiApiRoutes
     public const string SecurityMasterSearch = "/api/security-master/search";
     public const string SecurityMasterAssetClasses = "/api/security-master/asset-classes";
     public const string SecurityMasterAssetClassDefinition = "/api/security-master/asset-classes/{assetClass}";
+    public const string SecurityMasterRegistryProjection = "/api/security-master/projections/{assetClass}/{securityId:guid}";
     public const string SecurityMasterAssetProfiles = "/api/security-master/asset-profiles";
     public const string SecurityMasterAssetProfilePromotionCandidates = "/api/security-master/asset-profiles/promotion-candidates";
     public const string SecurityMasterAssetProfileLineage = "/api/security-master/asset-profiles/{profileId}/lineage";

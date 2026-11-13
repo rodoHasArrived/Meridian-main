@@ -1432,6 +1432,11 @@ public static partial class SecurityMasterEndpoints
             is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
+        // The generic registry projection read is composed with Security Master storage; a host
+        // without it leaves the route unmapped rather than inferring the service as a body.
+        if (app.Services.GetService<IRegistryProjectionReadService>() is not null)
+            MapRegistryProjectionEndpoints(group, jsonOptions);
+
         MapOtcContractEndpoints(group, jsonOptions);
         MapOtcCollateralEndpoints(app, group, jsonOptions);
         MapCurveAndValuationEndpoints(app, group, jsonOptions);

@@ -852,6 +852,46 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### Terms storage consolidation slice C — one generic reader for registry tables, and reads for the newer classes — 2026-11-13
+
+**The write side was already done.** `SecurityTermsProjectionRegistry.Descriptors` writes 30
+classes: DirectLoan and StructuredCredit (registry-native), ten of the eleven writers that predate
+the registry (Option's alone stays hand-written, by decision — see the slice 6 disposition), the
+twelve classes migration 044 added and the six from 046 and 047. With Option's specialized writer
+and CustomAsset's profile-keyed table (migration 064), every one of the catalog's 32 classes is
+projected. The registry's header comment said nine of eleven writers had moved; it now says ten
+and carries these counts. What remained was the read side: eleven near-duplicate typed readers
+over registry tables, and no read path at all for the eighteen classes added by 044, 046 and 047.
+
+- `RegistryReferenceProjectionStore<TRow>` (`src/Meridian.Storage/SecurityMaster/`) is the generic
+  read of one registry table, parent or child, built on `PostgresReferenceProjectionReader`. A
+  class supplies only its asset class (and child table), its row mapper and its named
+  `RegistryProjectionQuery` predicates; every query is declared up front and its SQL is built from
+  the descriptor at construction. The eleven stores — CryptoCurrency, Deposit, MoneyMarketFund,
+  CertificateOfDeposit; Equity, FxSpot, Swap, Commodity, Future; DirectLoan and StructuredCredit
+  with their child tables — now delegate to it. Their `I*ReferenceProjectionStore` interfaces,
+  row records, the `*ProjectionService`s and the per-class endpoints are unchanged. Bond (joins to
+  `securities`, keyset paging) and Option (contract-keyed, dual-writer) keep their stores.
+- `IRegistryProjectionReadService.GetAsync(assetClass, securityId)` reads any descriptor as
+  column-to-value data (`SecurityTermsProjectionReadDto`): the parent row, each child table's rows
+  in ordinal order and each satellite's row. It resolves catalog aliases and casing, gates on the
+  security's current class from `ISecurityMasterStore.GetProjectionAsync`, and returns null for a
+  class without a descriptor (Option, CustomAsset, unknown), a missing security, a mismatched class
+  or a gated-out row. SQL `date` columns read as ISO dates and numerics keep their exact text.
+- `GET /api/security-master/projections/{assetClass}/{securityId:guid}`
+  (`SecurityMasterEndpoints.RegistryProjections.cs`, route `UiApiRoutes.SecurityMasterRegistryProjection`)
+  serves it behind the Security Master view permission and answers 404 for each null case. It is
+  registered in `StorageFeatureRegistration` with the other Security Master stores and mapped only
+  when the service is composed. No browser or WPF screen consumes it yet.
+
+`PostgresReferenceProjectionReaderTests.RegistryStores_SendExactlyTheSqlTheHandWrittenStoresSent`
+pins every converted store's queries to literal copies of the predicates the hand-written stores
+appended, so the move changes no SQL; `EveryStoreOnTheRegistry_NamesItsDescriptor` also checks each
+generic store's class and child table. `RegistryProjectionReadServiceTests` and
+`SecurityMasterRegistryProjectionEndpointsTests` run over every descriptor, and
+`RegistryProjectionReadPostgresTests` (Integration) reads CommercialPaper and DirectLoan rows back
+from a migrated database. Typed-reader behavior is unchanged.
+
 ### Terms storage consolidation slice B — brokerage asset-class codes come from one table — 2026-11-13
 
 Brokerage asset-class codes were spelled by hand at each execution site: Alpaca's order builder

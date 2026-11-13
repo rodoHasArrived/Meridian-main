@@ -303,6 +303,7 @@ export const UI_API_ROUTES = {
   SecurityMasterSearch: "/api/security-master/search",
   SecurityMasterAssetClasses: "/api/security-master/asset-classes",
   SecurityMasterAssetClassDefinition: "/api/security-master/asset-classes/{assetClass}",
+  SecurityMasterRegistryProjection: "/api/security-master/projections/{assetClass}/{securityId:guid}",
   SecurityMasterAssetProfiles: "/api/security-master/asset-profiles",
   SecurityMasterAssetProfilePromotionCandidates: "/api/security-master/asset-profiles/promotion-candidates",
   SecurityMasterAssetProfileLineage: "/api/security-master/asset-profiles/{profileId}/lineage",

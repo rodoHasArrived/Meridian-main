@@ -10,42 +10,37 @@ public sealed class PostgresSwapReferenceProjectionStore : ISwapReferenceProject
 {
     internal const string AssetClass = "Swap";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery BySwapType = new(nameof(BySwapType),
+        """
+        where lower(swap_type) = lower(@swap_type)
+        order by maturity_date
+        """);
+
+    internal static readonly RegistryProjectionQuery MaturingBefore = new(nameof(MaturingBefore),
+        """
+        where maturity_date < @before_date
+          and lifecycle_stat not in ('Matured', 'Terminated')
+        order by maturity_date
+        """);
+
+    private readonly RegistryReferenceProjectionStore<SwapProjectionRow> _store;
 
     public PostgresSwapReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<SwapProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [BySwapType, MaturingBefore]);
+
     public Task<SwapProjectionRow?> GetSwapAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<SwapProjectionRow>> GetBySwapTypeAsync(string swapType, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(swap_type) = lower(@swap_type)
-                order by maturity_date
-                """),
-            [new NpgsqlParameter("swap_type", swapType)],
-            MapRow,
-            ct);
+        => _store.ListAsync(BySwapType, [new NpgsqlParameter("swap_type", swapType)], ct);
 
     public Task<IReadOnlyList<SwapProjectionRow>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where maturity_date < @before_date
-                  and lifecycle_stat not in ('Matured', 'Terminated')
-                order by maturity_date
-                """),
-            [new NpgsqlParameter("before_date", beforeDate.ToDateTime(TimeOnly.MinValue))],
-            MapRow,
-            ct);
+        => _store.ListAsync(MaturingBefore, [new NpgsqlParameter("before_date", beforeDate.ToDateTime(TimeOnly.MinValue))], ct);
 
     internal static SwapProjectionRow MapRow(ProjectionRow row)
         => new(

@@ -11,66 +11,65 @@ public sealed class PostgresStructuredCreditReferenceProjectionStore : IStructur
     internal const string AssetClass = "StructuredCredit";
     internal const string FactorScheduleTable = "structured_credit_factor_schedule_projection";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByPool = new(nameof(ByPool),
+        """
+        where lower(pool_id) = lower(@pool_id)
+        order by tranche, display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery ByCollateralType = new(nameof(ByCollateralType),
+        """
+        where lower(collateral_type) = lower(@collateral_type)
+        order by maturity_date nulls last, display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery FactorScheduleBySecurity = new(nameof(FactorScheduleBySecurity),
+        """
+        where security_id = @security_id
+        order by ordinal
+        """);
+
+    internal static readonly RegistryProjectionQuery FactorAsOf = new(nameof(FactorAsOf),
+        """
+        where security_id = @security_id and as_of_date <= @as_of_date
+        order by as_of_date desc, ordinal desc
+        limit 1
+        """);
+
+    private readonly RegistryReferenceProjectionStore<StructuredCreditProjectionRow> _tranches;
+    private readonly RegistryReferenceProjectionStore<StructuredCreditFactorScheduleRow> _factorSchedule;
 
     public PostgresStructuredCreditReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _tranches = CreateTrancheStore(options);
+        _factorSchedule = CreateFactorScheduleStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<StructuredCreditProjectionRow> CreateTrancheStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapTrancheRow, [ByPool, ByCollateralType]);
+
+    internal static RegistryReferenceProjectionStore<StructuredCreditFactorScheduleRow> CreateFactorScheduleStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapFactorScheduleRow, [FactorScheduleBySecurity, FactorAsOf], FactorScheduleTable);
+
     public Task<StructuredCreditProjectionRow?> GetStructuredCreditAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapTrancheRow,
-            ct);
+        => _tranches.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<StructuredCreditProjectionRow>> GetByPoolAsync(string poolId, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(pool_id) = lower(@pool_id)
-                order by tranche, display_name
-                """),
-            [new NpgsqlParameter("pool_id", poolId.Trim())],
-            MapTrancheRow,
-            ct);
+        => _tranches.ListAsync(ByPool, [new NpgsqlParameter("pool_id", poolId.Trim())], ct);
 
     public Task<IReadOnlyList<StructuredCreditProjectionRow>> GetByCollateralTypeAsync(string collateralType, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(collateral_type) = lower(@collateral_type)
-                order by maturity_date nulls last, display_name
-                """),
-            [new NpgsqlParameter("collateral_type", collateralType.Trim())],
-            MapTrancheRow,
-            ct);
+        => _tranches.ListAsync(ByCollateralType, [new NpgsqlParameter("collateral_type", collateralType.Trim())], ct);
 
     public Task<IReadOnlyList<StructuredCreditFactorScheduleRow>> GetFactorScheduleAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectChildSql(AssetClass, FactorScheduleTable,
-                """
-                where security_id = @security_id
-                order by ordinal
-                """),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapFactorScheduleRow,
-            ct);
+        => _factorSchedule.ListAsync(FactorScheduleBySecurity, [new NpgsqlParameter("security_id", securityId)], ct);
 
     public Task<StructuredCreditFactorScheduleRow?> GetFactorAsOfAsync(Guid securityId, DateOnly asOfDate, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectChildSql(AssetClass, FactorScheduleTable,
-                """
-                where security_id = @security_id and as_of_date <= @as_of_date
-                order by as_of_date desc, ordinal desc
-                limit 1
-                """),
+        => _factorSchedule.SingleAsync(
+            FactorAsOf,
             [
                 new NpgsqlParameter("security_id", securityId),
                 new NpgsqlParameter("as_of_date", asOfDate.ToDateTime(TimeOnly.MinValue))
             ],
-            MapFactorScheduleRow,
             ct);
 
     internal static StructuredCreditProjectionRow MapTrancheRow(ProjectionRow row)

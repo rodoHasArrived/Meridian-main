@@ -363,6 +363,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ICertificateOfDepositReferenceProjectionStore, PostgresCertificateOfDepositReferenceProjectionStore>();
             services.AddSingleton<IDirectLoanReferenceProjectionStore, PostgresDirectLoanReferenceProjectionStore>();
             services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
+            // The descriptor-driven read for every registry class, gated on the security's current
+            // asset class; served at /api/security-master/projections/{assetClass}/{securityId}.
+            services.AddSingleton<IRegistryProjectionReadService, RegistryProjectionReadService>();
             services.AddSingleton<ICustomAssetProfileFieldProjectionStore, PostgresCustomAssetProfileFieldProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();

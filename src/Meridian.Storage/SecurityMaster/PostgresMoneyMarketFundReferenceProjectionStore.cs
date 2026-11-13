@@ -10,41 +10,36 @@ public sealed class PostgresMoneyMarketFundReferenceProjectionStore : IMoneyMark
 {
     internal const string AssetClass = "MoneyMarketFund";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByFundFamily = new(nameof(ByFundFamily),
+        """
+        where lower(fund_family) = lower(@fund_family)
+        order by display_name
+        """);
+
+    internal static readonly RegistryProjectionQuery BySweepEligibility = new(nameof(BySweepEligibility),
+        """
+        where sweep_eligible = @sweep_eligible
+        order by display_name
+        """);
+
+    private readonly RegistryReferenceProjectionStore<MoneyMarketFundProjectionRow> _store;
 
     public PostgresMoneyMarketFundReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<MoneyMarketFundProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByFundFamily, BySweepEligibility]);
+
     public Task<MoneyMarketFundProjectionRow?> GetMoneyMarketFundAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<MoneyMarketFundProjectionRow>> GetByFundFamilyAsync(string fundFamily, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(fund_family) = lower(@fund_family)
-                order by display_name
-                """),
-            [new NpgsqlParameter("fund_family", fundFamily)],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByFundFamily, [new NpgsqlParameter("fund_family", fundFamily)], ct);
 
     public Task<IReadOnlyList<MoneyMarketFundProjectionRow>> GetBySweepEligibilityAsync(bool sweepEligible, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where sweep_eligible = @sweep_eligible
-                order by display_name
-                """),
-            [new NpgsqlParameter("sweep_eligible", sweepEligible)],
-            MapRow,
-            ct);
+        => _store.ListAsync(BySweepEligibility, [new NpgsqlParameter("sweep_eligible", sweepEligible)], ct);
 
     internal static MoneyMarketFundProjectionRow MapRow(ProjectionRow row)
         => new(

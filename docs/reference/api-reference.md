@@ -738,6 +738,15 @@ Reads (including `POST .../search`) require `ViewSecurityMaster` or `ModifySecur
 | POST | `/api/security-master/money-market-funds/{securityId}/rebuild` | Rebuild projections for one MMF |
 | GET | `/api/security-master/money-market-funds/rebuild/checkpoints` | Projection rebuild checkpoints |
 
+### Registry projection read (`/api/security-master/projections/*`)
+
+Requires `ViewSecurityMaster` or `ModifySecurityMaster`. Mapped only when Security Master storage
+is configured.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/security-master/projections/{assetClass}/{securityId:guid}` | One security's relational terms projection for any class the projection registry writes, read from the registry descriptor as column-to-value data: the parent row, each child table's rows in ordinal order, and each satellite table's row (`SecurityTermsProjectionReadDto`). `assetClass` accepts a catalog name or alias in any casing. Returns 404 when the class has no registry projection (Option, CustomAsset, an unknown name), when the security does not exist, when its current asset class is a different class, or when it has no projection row. |
+
 ### Packaging (`/api/packaging/*`)
 
 | Method | Route | Description |
