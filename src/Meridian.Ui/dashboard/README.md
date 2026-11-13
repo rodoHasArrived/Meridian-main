@@ -625,7 +625,10 @@ not been recorded.
   blocked, info), the same set WPF uses. `SeverityBadge` and `DesignSystemStatus` are aliases of
   it. Labels of one or two words are tracked caps; longer labels render in sentence case. Product
   maturity appears in the workspace About disclosure and the navigation tooltip, not as a badge.
-  The `adHocStatusBadges` ratchet counts hand-styled chips.
+  The `adHocStatusBadges` ratchet counts hand-styled chips. `@/design-system/status-styles` is
+  the only status-to-look mapping: `toSeverity` reads any status, tone or badge variant onto the
+  five severities, and `statusBadgeVariant`, `statusPanelClass`, `statusTextClass` and
+  `statusMetricTone` give each severity one style. Screens do not keep local tone maps.
 - **Formatting.** `@/lib/format` is the only module that calls Intl. It provides `formatCount`,
   `formatMoney` (`accounting` puts negatives in parentheses at the currency's minor units,
   `trading` uses a minus sign at instrument precision, `summary` shows whole units),
@@ -652,6 +655,9 @@ not been recorded.
   - *Decimals*: currency minor units for money, instrument precision for prices and
     quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
     figure. Figures render in tabular numerals.
+  - *Exact amounts*: the accounting helpers in `@/components/accounting/money` read amounts as
+    exact decimals (`parseExactDecimal`); `formatMoney` formats a decimal string from its digits
+    and `sumAmounts` sums exactly, so a server amount is never rounded through a float.
   - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
     counts `.toFixed(` in screens, which skips separators and the sign convention;
     `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
@@ -679,9 +685,9 @@ not been recorded.
   - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
     measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
     its comparison (`3 new since your last visit`) and descriptive captions pass through.
-  - *Basis*: a strip prints the basis its figures share once, and "Not declared by source"
-    when the source declares none (`metricBasisValue`). Cards omit an undeclared basis; the
-    figure passport says "Basis not declared by source" (`metricBasisLabel`).
+  - *Basis*: a strip prints the basis its figures share once, and nothing when no figure
+    declares a basis or an as-of time (`hasMetricBasisDetail`). Cards omit an undeclared basis;
+    the figure passport says "Basis not declared by source" (`metricBasisLabel`).
   - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
     the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
     assistive technology. Staleness is decided per payload: a payload whose own reload failed

@@ -144,9 +144,12 @@ It also carries the Phase 3 trust fixes from the same plan:
 - Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
   account is in scope in a non-live brokerage environment; live, unknown and failed states still
   block.
-- A metric basis the source does not declare reads "Not declared by source" once per strip.
-- The screenshot harness fails a route that shows a time under "Latency" or a "Basis unavailable"
-  or "Saved views unavailable" placeholder.
+- A figures strip prints a basis line only when its source declares a basis or an as-of time;
+  the figure passport still states an undeclared basis.
+- The screenshot harness fails a route that shows a time under "Latency", a "Basis unavailable"
+  or "Saved views unavailable" placeholder, or a status badge whose text is clipped
+  (`truncated-badge`). Badges never truncate: one- or two-word badges keep their width and
+  longer ones wrap.
 
 No shared contract changed.
 
