@@ -1438,6 +1438,8 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));
+        AddDimensionFilter(filters, "agreement", "Agreement", dimensions.Select(static value => value.IntercompanyAgreementId?.ToString("D")));
+        AddDimensionFilter(filters, "agreement-version", "Agreement version", dimensions.Select(static value => value.IntercompanyAgreementVersion?.ToString(CultureInfo.InvariantCulture)));
         AddDimensionFilter(filters, "organization", "Organization", dimensions.Select(static value => value.OrganizationId));
         AddDimensionFilter(filters, "customer", "Customer", dimensions.Select(static value => value.CustomerId));
         AddDimensionFilter(filters, "vendor", "Vendor", dimensions.Select(static value => value.VendorId));

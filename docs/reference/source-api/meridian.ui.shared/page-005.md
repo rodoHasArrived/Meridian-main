@@ -674,7 +674,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.TradingActionResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1974](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1974).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1694](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1694).
 
 ```csharp
 public sealed record TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null, IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null, bool? BrokerViewUnavailable = null);
@@ -710,7 +710,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionCircuitBreakerRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1994](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1994).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1714](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1714).
 
 Request to update the global execution circuit breaker.
 
@@ -722,7 +722,7 @@ public sealed record UpdateExecutionCircuitBreakerRequest(bool IsOpen, string? R
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionDefaultPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:2000](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L2000).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1720](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1720).
 
 Request to update the default execution position limit.
 
@@ -734,7 +734,7 @@ public sealed record UpdateExecutionDefaultPositionLimitRequest(decimal? MaxPosi
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.UpdateExecutionSymbolPositionLimitRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:2005](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L2005).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:1725](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L1725).
 
 Request to update or clear a symbol-specific execution position limit.
 

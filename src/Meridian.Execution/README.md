@@ -112,6 +112,11 @@ Before retaining a new source, admission reads the authoritative period and vali
 book, dates, open status and expected version, normalizes the complete posting command, and requires
 the retained book's identity, Primary basis and policy/version to match the command. Dedicated
 consolidation books are refused. The amount must fit the journal's numeric(38,10) storage exactly.
+New assessments retain the normalized book base currency before acceptance and post native
+transaction amounts on both legs with an exchange rate of one. Legacy accepted or posted
+assessments keep their original null-currency journal format during recovery; currency is not
+inferred from today's book. Financing sources do not retain entity dimensions, so the UI's
+prior-period correction workflow remains unavailable when it requires retained entity scope.
 A rejected assessment creates
 no pending source and does not block the next valid assessment. Existing accepted-source retries keep
 their immutable context and can confirm already-posted journals after the period closes.

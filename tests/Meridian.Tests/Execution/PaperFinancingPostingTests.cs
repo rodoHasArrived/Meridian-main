@@ -14,7 +14,7 @@ using Meridian.Contracts.Ledger;
 
 namespace Meridian.Tests.Execution;
 
-public sealed class PaperFinancingPostingTests
+public sealed partial class PaperFinancingPostingTests
 {
     private static readonly TradeFillLedgerPostingContext Scope = new("financing-tests",
         Guid.Parse("11111111-1111-1111-1111-111111111111"),

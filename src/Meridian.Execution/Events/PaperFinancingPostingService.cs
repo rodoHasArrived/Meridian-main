@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Serialization;
@@ -74,8 +75,8 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
                 throw new InvalidDataException($"Financing source '{charge.SourceEventId}' was reused with different content.");
             if (isNew)
             {
-                await ValidateNewAssessmentAsync(charge, ct).ConfigureAwait(false);
-                state = new(charge, Posted: false);
+                var currency = await ValidateNewAssessmentAsync(charge, ct).ConfigureAwait(false);
+                state = new(charge, Posted: false, NativeCurrency: currency);
                 await RetainAsync(state, "FinancingAccepted").ConfigureAwait(false);
             }
 
@@ -85,7 +86,7 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
         finally { _gate.Release(); }
     }
 
-    private async Task ValidateNewAssessmentAsync(PaperFinancingCharge charge, CancellationToken ct)
+    private async Task<string> ValidateNewAssessmentAsync(PaperFinancingCharge charge, CancellationToken ct)
     {
         try
         {
@@ -94,17 +95,21 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
             if (charge.Amount >= 10000000000000000000000000000m
                 || decimal.Round(charge.Amount, 10, MidpointRounding.AwayFromZero) != charge.Amount)
                 throw new LedgerValidationException("The financing amount must fit the journal's numeric(38,10) precision exactly.");
-            var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildWrite(charge),
-                requirePostingCommand: true, requireExpectedVersion: true);
             var period = await _readPeriod(_context.PeriodId, ct).ConfigureAwait(false)
                 ?? throw new LedgerValidationException("The financing accounting period is unavailable.");
             if (period.PeriodId != _context.PeriodId || period.LedgerBookId != _context.LedgerBookId)
                 throw new LedgerValidationException("The financing accounting period does not belong to the bound ledger scope.");
             if (period.Version != _context.ExpectedPeriodVersion)
                 throw new LedgerValidationException("The financing accounting period version differs from the bound posting context.");
-            LedgerPeriodPostingGuard.Validate(write, period);
             var book = await _readBook(_context.LedgerBookId, ct).ConfigureAwait(false)
                 ?? throw new LedgerValidationException("The financing ledger book is unavailable.");
+            if (string.IsNullOrWhiteSpace(book.BaseCurrency))
+                throw new LedgerValidationException("The financing ledger book's native currency is unavailable.");
+            // Capture native denomination before acceptance. Legacy states have no pin and
+            // deliberately keep their original null-currency journals during every replay.
+            var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildWrite(charge, book.BaseCurrency),
+                requirePostingCommand: true, requireExpectedVersion: true);
+            LedgerPeriodPostingGuard.Validate(write, period);
             if (book.LedgerBookId != _context.LedgerBookId || book.AccountingBasis != write.AccountingBasis)
                 throw new LedgerValidationException("The financing ledger book identity or accounting basis differs from the bound posting command.");
             if (!AuthoritativeTextMatches(book.AccountingPolicyId, write.AccountingPolicyId)
@@ -115,6 +120,7 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
             if (AuthoritativeTextMatches(book.AccountingPolicyId, "consolidation-v1"))
                 throw new LedgerValidationException("Dedicated consolidation books do not accept ordinary financing assessments.");
             ct.ThrowIfCancellationRequested();
+            return write.Entry.Lines[0].Currency!.FunctionalCurrency;
         }
         catch (Exception error)
         {
@@ -166,14 +172,14 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
 
     private async Task PostCoreAsync(PaperFinancingPostingState state)
     {
-        var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildWrite(state.Charge));
+        var write = AccountingPostingCommandValidator.NormalizeAndValidate(BuildWrite(state.Charge, state.NativeCurrency));
         var confirmation = await _target.PostAndConfirmAsync(write, CancellationToken.None).ConfigureAwait(false);
         DurableLedgerPostingTarget.VerifyRetainedEntry(confirmation.RetainedRecord, write);
         if (!state.Posted)
             await RetainAsync(state with { Posted = true }, "FinancingPosted").ConfigureAwait(false);
     }
 
-    internal LedgerJournalEntryWrite BuildWrite(PaperFinancingCharge charge)
+    internal LedgerJournalEntryWrite BuildWrite(PaperFinancingCharge charge, string? nativeCurrency = null)
     {
         var source = charge.SourceEventId;
         var journalId = PaperFinancingCharge.Identity("journal", _context.PostingScope, source.ToString("D"));
@@ -185,9 +191,11 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
         var entry = new JournalEntry(journalId, charge.OccurredAt, description,
         [
             new(PaperFinancingCharge.Identity("debit", journalId.ToString("D")), journalId,
-                charge.OccurredAt, expense, charge.Amount, 0m, description),
+                charge.OccurredAt, expense, charge.Amount, 0m, description,
+                currency: nativeCurrency is null ? null : new(nativeCurrency, nativeCurrency, charge.Amount, 0m, 1m)),
             new(PaperFinancingCharge.Identity("credit", journalId.ToString("D")), journalId,
-                charge.OccurredAt, LedgerAccounts.CashFor(accountId), 0m, charge.Amount, description)
+                charge.OccurredAt, LedgerAccounts.CashFor(accountId), 0m, charge.Amount, description,
+                currency: nativeCurrency is null ? null : new(nativeCurrency, nativeCurrency, 0m, charge.Amount, 1m))
         ], new JournalEntryMetadata(ActivityType: "margin-interest", FinancialAccountId: accountId,
             LedgerBook: _context.LedgerBookId.ToString("D"), EffectiveDate: charge.AccrualDate,
             IdempotencyKey: key, Tags: new Dictionary<string, string>
@@ -244,7 +252,7 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
                 throw new InvalidDataException("Financing source snapshot scope or version is invalid.");
             foreach (var state in snapshot.States)
             {
-                state.Charge.Validate();
+                ValidateRetainedState(state);
                 if (!_charges.TryAdd(state.Charge.SourceEventId, state))
                     throw new InvalidDataException("Financing snapshot repeats a source identity.");
             }
@@ -302,15 +310,23 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
 
     private void Apply(PaperFinancingPostingState state)
     {
-        state.Charge.Validate();
+        ValidateRetainedState(state);
         if (_charges.TryGetValue(state.Charge.SourceEventId, out var retained))
         {
-            if (retained.Charge != state.Charge || retained.Posted && !state.Posted)
+            if (retained.Charge != state.Charge || retained.NativeCurrency != state.NativeCurrency || retained.Posted && !state.Posted)
                 throw new InvalidDataException("Financing source content or posting state conflicts with retained evidence.");
         }
         else if (state.Posted)
             throw new InvalidDataException("Financing acknowledgement has no accepted source assessment.");
         _charges[state.Charge.SourceEventId] = state;
+    }
+
+    private static void ValidateRetainedState(PaperFinancingPostingState state)
+    {
+        state.Charge.Validate();
+        if (state.NativeCurrency is { } currency && (currency.Length != 3
+            || !currency.All(static character => character is >= 'A' and <= 'Z')))
+            throw new InvalidDataException("Financing source currency must retain its canonical native denomination.");
     }
 
     public async ValueTask DisposeAsync()
@@ -329,7 +345,8 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
     }
 }
 
-internal sealed record PaperFinancingPostingState(PaperFinancingCharge Charge, bool Posted);
+internal sealed record PaperFinancingPostingState(PaperFinancingCharge Charge, bool Posted,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? NativeCurrency = null);
 internal sealed record PaperFinancingInitializationMarker(int Version, TradeFillLedgerPostingContext Scope);
 internal sealed record PaperFinancingWalPayload(TradeFillLedgerPostingContext Scope, PaperFinancingPostingState State);
 internal sealed record PaperFinancingPostingSnapshot(int Version, TradeFillLedgerPostingContext Scope,
