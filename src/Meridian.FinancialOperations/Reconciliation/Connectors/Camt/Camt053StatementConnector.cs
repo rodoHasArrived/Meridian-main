@@ -28,6 +28,7 @@ public sealed class Camt053StatementConnector : IStatementConnector
     public const string ConnectorId = "camt053";
 
     private readonly StatementIngressLimits _limits;
+    private readonly string _balanceCode;
 
     public Camt053StatementConnector()
         : this(StatementIngressLimits.Default)
@@ -35,9 +36,24 @@ public sealed class Camt053StatementConnector : IStatementConnector
     }
 
     public Camt053StatementConnector(StatementIngressLimits limits)
+        : this(limits, StatementBalanceRole.Closing)
+    {
+    }
+
+    /// <summary>
+    /// Creates a connector that emits the closing booked balance (CLBD, the default used by every
+    /// reconciliation run) or, only when explicitly requested, the opening booked balance (OPBD).
+    /// </summary>
+    public Camt053StatementConnector(StatementIngressLimits limits, StatementBalanceRole balanceRole)
     {
         ArgumentNullException.ThrowIfNull(limits);
         _limits = limits;
+        _balanceCode = balanceRole switch
+        {
+            StatementBalanceRole.Closing => "CLBD",
+            StatementBalanceRole.Opening => "OPBD",
+            _ => throw new ArgumentOutOfRangeException(nameof(balanceRole))
+        };
     }
 
     public StatementConnectorDescriptor Descriptor { get; } = new(
@@ -251,9 +267,10 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
-                            // Only the closing booked balance (CLBD) is reconciled; opening and interim/available
-                            // balances are informational and would otherwise double-count against the ledger.
-                            if (!string.Equals(BalanceCode(balance), "CLBD", StringComparison.OrdinalIgnoreCase))
+                            // Only one booked balance is emitted: the closing balance (CLBD) for reconciliation runs,
+                            // or the opening balance (OPBD) when onboarding opts in. Other balances are informational
+                            // and would otherwise double-count against the ledger.
+                            if (!string.Equals(BalanceCode(balance), _balanceCode, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }

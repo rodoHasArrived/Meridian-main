@@ -66,4 +66,45 @@ public sealed class ClosePublicationWorkerAuthorityTests
         blockers.Should().ContainSingle(blocker => blocker.Code == "CLOSE_READINESS_UNAVAILABLE",
             "valid worker authority reaches the evidence authority and still cannot close without it");
     }
+
+    [Fact]
+    public async Task ShadowBook_CannotHardCloseAsBookOfRecord_BeforeReadingEvidence()
+    {
+        var factoryCalls = 0;
+        var bookOfRecord = new FixedBookOfRecordGuard(isBookOfRecord: false);
+        var guard = new ClosePublicationReadinessGuard(() => { factoryCalls++; return null; }, bookOfRecordGuard: bookOfRecord);
+        using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "retained close publication");
+
+        var blockers = await guard.ValidateAsync(Guid.NewGuid(), 1, Scope, "tenant-alpha", "company-alpha");
+
+        blockers.Should().ContainSingle(blocker => blocker.Code == "CLOSE_SHADOW_BOOK");
+        bookOfRecord.Requests.Should().Equal([("tenant-alpha", (string?)"company-alpha", Scope.LedgerBookId!.Value)]);
+        factoryCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task BookOfRecord_ProceedsToEvidenceValidation()
+    {
+        var factoryCalls = 0;
+        var guard = new ClosePublicationReadinessGuard(() => { factoryCalls++; return null; },
+            bookOfRecordGuard: new FixedBookOfRecordGuard(isBookOfRecord: true));
+        using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "retained close publication");
+
+        var blockers = await guard.ValidateAsync(Guid.NewGuid(), 1, Scope, "tenant-alpha", "company-alpha");
+
+        factoryCalls.Should().Be(1);
+        blockers.Should().ContainSingle(blocker => blocker.Code == "CLOSE_READINESS_UNAVAILABLE");
+    }
+
+    private sealed class FixedBookOfRecordGuard(bool isBookOfRecord) : IBookOfRecordGuard
+    {
+        public List<(string Tenant, string? Company, Guid Book)> Requests { get; } = [];
+
+        public Task<BookOfRecordStatusDto> GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default)
+        {
+            Requests.Add((tenantId, companyId, ledgerBookId));
+            return Task.FromResult(new BookOfRecordStatusDto(ledgerBookId, isBookOfRecord,
+                isBookOfRecord ? null : OnboardingShadowStates.Shadow, null, isBookOfRecord ? "Authoritative." : "Shadow book in parallel run."));
+        }
+    }
 }

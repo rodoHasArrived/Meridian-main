@@ -68,7 +68,7 @@ Snapshot date: 2026-11-12
 | W11-PASSPORT-001 | Number Passport contract across amount surfaces | planned | green | high | Workstation Shell and UX |
 | W11-COVER-001 | Verified Coverage measurement and operator surface | planned | green | high | Accounting and Ledger |
 | W11-STAKE-001 | Governed stakeholder verification access on delivered packages | planned | green | medium | Platform Security and Governance |
-| W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | planned | green | medium | Data Confidence and Validation |
+| W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | in_progress | green | medium | Data Confidence and Validation |
 | W11-PACK-001 | Governed contract-pack lifecycle on the Security Master asset-class registry | planned | green | medium | Accounting and Ledger |
 | W11-EXEC-001 | Trading and Execution bounded-context ownership | planned | green | low | Execution and Fund Accounts |
 | W12-BOOK-001 | Accounting book, basis, and FX control workbench | planned | green | medium | Accounting and Ledger |
