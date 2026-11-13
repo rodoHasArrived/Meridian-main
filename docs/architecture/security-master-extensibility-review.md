@@ -855,7 +855,7 @@ GitHub `Meridian CI / quality-gate` remains authoritative.
 ### Terms storage consolidation slice A — required-field read order comes from the schema — 2026-11-13
 
 The read path's historical refusal order for required flat fields (which key a reconstruction
-names first when a stored row lacks several) was a hand-written 30-case switch in
+names first when a stored row lacks several) was a hand-written 28-case switch in
 `SecurityMasterMapping.EnsureLegacyRequiredReadOrder`, a second statement of facts the schema
 already held. The schema now states it:
 
@@ -879,8 +879,10 @@ already held. The schema now states it:
 `SecurityMasterRequiredReadOrderTests` was committed first and run green against the old
 switch: its expected table is a literal copy of that switch, not derived from the schema, so a
 reordered declaration fails there. It also holds the ratchets — a `Req(...).Since(n > 1)` field
-must declare an absence default, every absence default is one a read is shown to absorb, and
-`ReadsProfileResolvedTerms` agrees with `SecurityClassCodecBinding.ReadsResolvedTerms`. Behavior
+must declare an absence default, every absence default is one a read test shows a read absorbs,
+each declared default is the value the read takes (a row without the field decodes to the same
+kind as one carrying the declared default; an enveloped CustomAsset row without
+`profileVersion` reads as version 1), and `ReadsProfileResolvedTerms` agrees with `SecurityClassCodecBinding.ReadsResolvedTerms`. Behavior
 is unchanged.
 
 ### ADR-027 stage-3 — the flat codec is generated from a binding table (cohort 1) — 2026-11-11

@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.Domain;
 using Xunit;
 
 namespace Meridian.Tests.SecurityMaster;
@@ -77,6 +78,17 @@ public sealed class SecurityMasterRequiredReadOrderTests
         ("CommercialPaper", "isAssetBacked")
     ];
 
+    /// <summary>
+    /// The CustomAsset envelope fields whose absence a READ absorbs, each pinned by its own read
+    /// test: <c>customProfileId</c> by <see cref="StoredCustomAssetWithoutAnEnvelope_SalvagesToOtherSecurity"/>
+    /// and <c>profileVersion</c> by <see cref="StoredCustomAssetEnvelopeWithoutProfileVersion_ReadsAsTheDeclaredDefault"/>.
+    /// </summary>
+    private static readonly (string AssetClass, string Key)[] ReadsAbsentCustomAssetEnvelopeFields =
+    [
+        ("CustomAsset", "customProfileId"),
+        ("CustomAsset", "profileVersion")
+    ];
+
     public static TheoryData<string, int> RefusalCases()
     {
         var data = new TheoryData<string, int>();
@@ -145,6 +157,56 @@ public sealed class SecurityMasterRequiredReadOrderTests
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, ToElement(terms)));
 
         read.Should().NotThrow($"a stored {assetClass} row without '{key}' reads it as its absence default");
+    }
+
+    [Theory]
+    [MemberData(nameof(AbsorbedAbsenceCases))]
+    public void StoredRowMissingAnAbsorbedRequiredField_ReadsAsTheDeclaredDefault(string assetClass, string key)
+    {
+        var field = SecurityAssetTermsSchema.Field(assetClass, key);
+        field.Should().NotBeNull();
+        field!.AbsentReadDefault.Should().NotBeNull($"{assetClass}.{key} is absorbed on read, so it must declare what it reads as");
+
+        var absent = Twin(assetClass);
+        absent.Remove(key).Should().BeTrue($"the {assetClass} twin must carry '{key}' for the absence to be meaningful");
+
+        var explicitDefault = Twin(assetClass);
+        explicitDefault[key] = DeclaredDefaultNode(field);
+
+        var readAbsent = SecurityMasterMapping.ToRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, ToElement(absent)));
+        var readExplicit = SecurityMasterMapping.ToRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, ToElement(explicitDefault)));
+
+        readAbsent.Kind.Should().Be(readExplicit.Kind,
+            $"a stored {assetClass} row without '{key}' must read exactly as one carrying the declared default '{field.AbsentReadDefault}'");
+    }
+
+    [Fact]
+    public void StoredCustomAssetEnvelopeWithoutProfileVersion_ReadsAsTheDeclaredDefault()
+    {
+        var declared = SecurityAssetTermsSchema.Field("CustomAsset", "profileVersion")!.AbsentReadDefault;
+        declared.Should().Be("1");
+
+        var terms = Twin("CustomAsset");
+        terms["customProfileId"]!.GetValue<string>().Should().NotBeNullOrWhiteSpace("the row keeps its envelope");
+        terms.Remove("profileVersion").Should().BeTrue("the CustomAsset twin must carry 'profileVersion' for the absence to be meaningful");
+
+        var record = SecurityMasterMapping.ToRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("CustomAsset", ToElement(terms)));
+
+        var custom = record.Kind.Should().BeOfType<SecurityKind.CustomAsset>(
+            "an enveloped CustomAsset row without 'profileVersion' still reads as a profile-backed custom asset").Subject;
+        custom.Item.ProfileVersion.Should().Be(int.Parse(declared!, System.Globalization.CultureInfo.InvariantCulture),
+            "the declared absence default is the profile version a read takes");
+    }
+
+    [Fact]
+    public void CustomAssetProfileIdAbsenceDefault_IsTheEnvelopeLessSalvage()
+    {
+        // The salvage itself is read-tested by StoredCustomAssetWithoutAnEnvelope_SalvagesToOtherSecurity.
+        SecurityAssetTermsSchema.Field("CustomAsset", "customProfileId")!.AbsentReadDefault
+            .Should().Be(SecurityAssetTermField.EnvelopeLessSalvage);
     }
 
     [Fact]
@@ -245,8 +307,8 @@ public sealed class SecurityMasterRequiredReadOrderTests
             .ToArray();
 
         declared.Should().BeEquivalentTo(
-            ReadsAbsentRequiredFields.Concat([("CustomAsset", "customProfileId"), ("CustomAsset", "profileVersion")]),
-            "every declared absence default must be one a read is shown to absorb, and vice versa");
+            ReadsAbsentRequiredFields.Concat(ReadsAbsentCustomAssetEnvelopeFields),
+            "every declared absence default must be one a read test shows a read absorbs, and vice versa");
         declared.Should().OnlyContain(
             entry => SecurityAssetTermsSchema.Field(entry.assetClass, entry.Key)!.Required,
             "an absence default only means something on a required field");
@@ -287,6 +349,14 @@ public sealed class SecurityMasterRequiredReadOrderTests
     private static JsonObject Twin(string assetClass)
         => JsonNode.Parse(SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
             assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]).GetRawText())!.AsObject();
+
+    private static JsonNode DeclaredDefaultNode(SecurityAssetTermField field) => field.Type switch
+    {
+        SecurityAssetTermFieldType.Boolean => JsonValue.Create(bool.Parse(field.AbsentReadDefault!)),
+        SecurityAssetTermFieldType.Integer => JsonValue.Create(int.Parse(field.AbsentReadDefault!, System.Globalization.CultureInfo.InvariantCulture)),
+        SecurityAssetTermFieldType.String => JsonValue.Create(field.AbsentReadDefault!),
+        var other => throw new NotSupportedException($"No JSON spelling for an absence default of type {other}.")
+    };
 
     private static JsonElement ToElement(JsonObject terms)
         => JsonDocument.Parse(terms.ToJsonString()).RootElement.Clone();
