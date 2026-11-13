@@ -221,7 +221,8 @@ external-GL, approvals, case-workbench, manual-journal, and configuration panels
 `accounting-screen.*.tsx` modules. `settings-screen.tsx` is down to about 3,890 lines after its
 profile, brokerage, diagnostics, and capability sections moved into `settings-screen.*.tsx` modules; the
 state-heavy operations, scoped-access, asset-profile, and provider sections remain and need their
-state moved with them.) `accounting-screen.view-model.ts` (7,147) and
+state moved with them. `lib/api.ts` is now a 65-line facade over a shared transport
+module and thirteen domain endpoint modules under `lib/api/`, with an unchanged export surface.) `accounting-screen.view-model.ts` (7,147) and
 `trading-screen.view-model.ts` (5,243) split by the same boundaries so view and view-model stay
 paired. This is where the volume is — 48% of the baseline.
 

@@ -9206,6 +9206,8 @@ Meridian-main
 │   │   │   │   │   │   ├── account-oversight.api.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
+│   │   │   │   │   │   ├── accounting-workspace.api.ts
+│   │   │   │   │   │   ├── admin-maintenance.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
 │   │   │   │   │   │   ├── asset-accounting-workflow.api.test.ts
 │   │   │   │   │   │   ├── asset-accounting-workflow.api.ts
@@ -9235,8 +9237,10 @@ Meridian-main
 │   │   │   │   │   │   ├── covered-call.api.ts
 │   │   │   │   │   │   ├── data-operations-assurance.api.ts
 │   │   │   │   │   │   ├── data-quality-watch.api.ts
+│   │   │   │   │   │   ├── data-workspace.api.ts
 │   │   │   │   │   │   ├── direct-lending.api.ts
 │   │   │   │   │   │   ├── entity-operations.api.ts
+│   │   │   │   │   │   ├── evidence-vault.api.ts
 │   │   │   │   │   │   ├── execution-audit.api.ts
 │   │   │   │   │   │   ├── execution-blotter.api.ts
 │   │   │   │   │   │   ├── execution-evidence.api.ts
@@ -9244,10 +9248,14 @@ Meridian-main
 │   │   │   │   │   │   ├── factor-paydown.api.test.ts
 │   │   │   │   │   │   ├── factor-paydown.api.ts
 │   │   │   │   │   │   ├── family-office.api.ts
+│   │   │   │   │   │   ├── fund-structure-setup.api.ts
 │   │   │   │   │   │   ├── fund-structure-setup.contracts.ts
+│   │   │   │   │   │   ├── http-client.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.test.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
+│   │   │   │   │   │   ├── market-data.api.ts
+│   │   │   │   │   │   ├── operations-continuity.api.ts
 │   │   │   │   │   │   ├── operator-workstation.api.ts
 │   │   │   │   │   │   ├── option-visualization.api.test.ts
 │   │   │   │   │   │   ├── option-visualization.api.ts
@@ -9259,6 +9267,7 @@ Meridian-main
 │   │   │   │   │   │   ├── promotion.contracts.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.test.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.ts
+│   │   │   │   │   │   ├── provider-management.api.ts
 │   │   │   │   │   │   ├── provider-modules.api.test.ts
 │   │   │   │   │   │   ├── provider-modules.api.ts
 │   │   │   │   │   │   ├── provider-ownership.api.ts
@@ -9266,13 +9275,20 @@ Meridian-main
 │   │   │   │   │   │   ├── reconciliation-readiness.api.ts
 │   │   │   │   │   │   ├── recurring-journals.api.test.ts
 │   │   │   │   │   │   ├── recurring-journals.api.ts
+│   │   │   │   │   │   ├── reporting-governance.api.ts
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
 │   │   │   │   │   │   ├── reporting-runs.api.ts
 │   │   │   │   │   │   ├── security-master-schema.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.ts
+│   │   │   │   │   │   ├── security-master.api.ts
 │   │   │   │   │   │   ├── security-rates.api.ts
-│   │   │   │   │   │   └── statement-run-detail.api.ts
+│   │   │   │   │   │   ├── statement-connectors.api.ts
+│   │   │   │   │   │   ├── statement-run-detail.api.ts
+│   │   │   │   │   │   ├── strategy-designer-quant.api.ts
+│   │   │   │   │   │   ├── system-overview.api.ts
+│   │   │   │   │   │   ├── trading-strategy.api.ts
+│   │   │   │   │   │   └── workstation-settings.api.ts
 │   │   │   │   │   ├── companion-pane
 │   │   │   │   │   │   ├── chrome-bridge.test.ts
 │   │   │   │   │   │   ├── chrome-bridge.ts

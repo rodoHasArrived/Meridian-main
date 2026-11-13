@@ -80,6 +80,10 @@ The Accounting screen composes its larger panels from sibling modules:
 `accounting-screen.case-workbench.tsx`, `accounting-screen.manual-journal-panel.tsx`, and
 `accounting-screen.configuration-panel.tsx`, with `accounting-screen.accounting-value.tsx` holding the
 shared label/value cell.
+`src/lib/api.ts` is the stable import facade for the workstation API client: it re-exports the
+transport in `src/lib/api/http-client.ts` and the domain endpoint modules in `src/lib/api/*.api.ts`
+without widening the public surface. Import from `@/lib/api`; endpoint modules import the transport
+from `@/lib/api/http-client`, never from the facade.
 The existing view-model entrypoint re-exports their public contracts for current callers.
 The design-system source contract checks the projection owner, those re-exports and the screen's
 schedules-view binding together.
@@ -96,11 +100,12 @@ file-size limits. Curve sampling, reported returns and promotion selection behav
 Trading promotion form normalization, keyed evidence parsing and request validation live in
 `trading-screen.promotion-evidence.ts`; the existing trading view-model entrypoint re-exports its
 public contracts. Gate criteria, retained evidence requirements and command transport are unchanged.
-Reference Data probe payload classification lives in `lib/reference-data-probe.ts`, while the API
-entrypoint keeps transport/probe orchestration and the established public type exports.
+Reference Data probe payload classification lives in `lib/reference-data-probe.ts`; probe
+orchestration lives in `lib/api/system-overview.api.ts`, and the `lib/api.ts` facade keeps the
+established public type exports.
 
-Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts`; `lib/api.ts`
-retains their public type exports and the setup request functions. Pure order-ticket form,
+Fund Structure setup contracts live in `lib/api/fund-structure-setup.contracts.ts` and the setup
+request functions in `lib/api/fund-structure-setup.api.ts`; `lib/api.ts` re-exports both. Pure order-ticket form,
 validation and control-state helpers live in `trading-screen.order-ticket-state.ts`.
 `trading-screen.view-model.ts` retains service and hook orchestration and re-exports the public
 helpers and types. The extracted declarations and function bodies preserve the existing request
