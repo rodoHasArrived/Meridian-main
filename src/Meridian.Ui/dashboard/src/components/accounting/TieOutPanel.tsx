@@ -186,7 +186,7 @@ function inject(): void {
 .mds-tie__table tbody tr:last-child td{border-bottom:0;}
 .mds-tie__table .mds-tie__num{text-align:right;}
 .mds-tie__item--unexplained td{background:var(--state-danger-bg,rgba(181,75,66,.10));}
-.mds-tie__proof{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 12px;border-top:1px solid var(--border-strong,#AAA49A);background:var(--card-surface-raised);}
+.mds-tie__proof{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 12px;border-top:1px solid var(--border-strong,#AAA49A);background:var(--card-surface-raised,var(--bg-light,#F8F7F3));}
 .mds-tie__proof-title{display:block;font-size:12px;font-weight:600;color:var(--text-primary,#20252B);}
 .mds-tie__proof-note{display:block;margin-top:2px;font-size:12px;line-height:1.45;color:var(--text-muted,#606870);}
 .mds-tie__residual{display:inline-grid;justify-items:end;text-align:right;font-family:var(--font-data,monospace);font-variant-numeric:tabular-nums;}

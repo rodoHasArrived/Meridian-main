@@ -85,9 +85,7 @@ security/version, reviewer and justification remain bound to a content hash. Ret
 return the original receipt. Calculations use explicit receipt IDs; retention never changes a prior
 unpinned calculation or selects a changing latest fixing.
 
-Bond import routing uses the Security Master catalog, including registered bond aliases, and retains
-the legacy FixedIncome import label. Fixed-income holding imports require explicit original face,
-current factor, per-100 quotation,
+Fixed-income holding imports require explicit original face, current factor, per-100 quotation,
 clean/dirty price and market-value bases, and total accrued interest with matching currencies.
 The mapped record retains exact-string `bondValueReconciliation` evidence (provider value,
 normalized consideration, signed variance and calculation inputs). Template v2 requires reviewed
