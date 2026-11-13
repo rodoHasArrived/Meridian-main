@@ -915,7 +915,8 @@ public sealed partial class StorageCatalogService : IStorageCatalogService
         index.Sources = index.Files.Where(f => !string.IsNullOrEmpty(f.Source))
             .Select(f => f.Source!).Distinct().OrderBy(s => s).ToArray();
 
-        // Date range
+        // Date range is derived from the current files, including an empty successor.
+        index.DateRange = null;
         var filesWithDates = index.Files.Where(f => f.FirstTimestamp.HasValue || f.Date.HasValue).ToList();
         if (filesWithDates.Any())
         {

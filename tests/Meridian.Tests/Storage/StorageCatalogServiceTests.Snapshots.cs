@@ -188,6 +188,7 @@ public sealed partial class StorageCatalogServiceTests
 
         restarted.GetCatalog().Symbols.Should().BeEmpty();
         restarted.GetCatalog().DateRange.Should().BeNull();
+        (await restarted.GetDirectoryIndexAsync("S"))!.DateRange.Should().BeNull();
         restarted.GetStatistics().UniqueSymbols.Should().Be(0);
         restarted.GetStatistics().TotalFiles.Should().Be(0);
         restarted.GetStatistics().TotalEvents.Should().Be(0);
