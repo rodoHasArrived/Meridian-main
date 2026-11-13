@@ -1528,7 +1528,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             ? parsed
             : null;
 
-    private static bool IsOptionOrderRequest(OrderRequest request)
+    internal static bool IsOptionOrderRequest(OrderRequest request)
     {
         if (request.Metadata is null)
             return false;

@@ -1606,7 +1606,7 @@ public sealed partial class IBBrokerageGateway :
             Uri.EscapeDataString(value?.Trim().ToUpperInvariant() ?? string.Empty)));
     }
 
-    private static OptionContractIdentity? TryParseOptionContract(IReadOnlyDictionary<string, string>? metadata)
+    internal static OptionContractIdentity? TryParseOptionContract(IReadOnlyDictionary<string, string>? metadata)
     {
         if (metadata is null)
             return null;

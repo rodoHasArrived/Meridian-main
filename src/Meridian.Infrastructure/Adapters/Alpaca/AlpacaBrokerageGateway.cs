@@ -1275,7 +1275,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         _ => throw new NotSupportedException($"Alpaca order_class '{orderClass}' is not supported.")
     };
 
-    private static string NormalizeAssetClass(string assetClass) => assetClass.Trim().ToLowerInvariant() switch
+    internal static string NormalizeAssetClass(string assetClass) => assetClass.Trim().ToLowerInvariant() switch
     {
         "equity" or "us_equity" => "us_equity",
         "option" or "options" or "us_option" => "us_option",
@@ -1333,7 +1333,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                trimmed.Any(char.IsDigit);
     }
 
-    private static bool IsFixedIncomeAssetClass(string? assetClass) =>
+    internal static bool IsFixedIncomeAssetClass(string? assetClass) =>
         assetClass is "treasury" or "corporate";
 
     private static bool IsOptionsOrder(AlpacaOrderPayload payload) =>

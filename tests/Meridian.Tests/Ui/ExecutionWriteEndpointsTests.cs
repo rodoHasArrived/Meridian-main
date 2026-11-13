@@ -801,6 +801,38 @@ public sealed partial class ExecutionWriteEndpointsTests
         request.Metadata["option_instrument_url"].Should().Be("https://api.robinhood.com/options/instruments/opt-upsize/");
     }
 
+    [Theory]
+    [InlineData("us_option", null)]
+    [InlineData("OPTION", "close")]
+    public async Task ClosePositionByKey_PositionEffect_IsDecidedByRobinhoodAndMeridianOptionCodesOnly(
+        string assetClass,
+        string? expectedPositionEffect)
+    {
+        // B4 classifies only the Robinhood/Meridian "option" code (ignoring case); an Alpaca
+        // "us_option" position gets no position_effect. Classifying it is a separate change.
+        var position = CreateRobinhoodOptionPosition("opt-b4") with { AssetClass = assetClass };
+        var gateway = new RecordingBrokerageGateway(position);
+
+        await using var app = await CreateAppAsync(services => RegisterBrokerageOms(services, gateway));
+
+        var client = app.GetTestClient();
+        var response = await client.PostAsync(
+            UiApiRoutes.ExecutionPositionActionClose,
+            JsonContent(new ExecutionPositionActionRequest("opt-b4", Quantity: 1m)));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var request = gateway.SubmittedRequests.Should().ContainSingle().Subject;
+        request.Metadata.Should().NotBeNull();
+        if (expectedPositionEffect is null)
+        {
+            request.Metadata!.Should().NotContainKey("position_effect");
+        }
+        else
+        {
+            request.Metadata!["position_effect"].Should().Be(expectedPositionEffect);
+        }
+    }
+
     [Fact]
     public async Task SubmitOrder_WhenPaperFlowFlagDisabled_Returns403AndDoesNotSubmit()
     {
