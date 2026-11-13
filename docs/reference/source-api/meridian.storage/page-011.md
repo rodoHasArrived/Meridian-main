@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostgresSecurityMasterQualityReportStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterQualityReportStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs#L10).
+
+Stores Security Master quality reports in PostgreSQL and retrieves the latest report.
+
+```csharp
+public sealed class PostgresSecurityMasterQualityReportStore : ISecurityMasterQualityReportStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresSecurityMasterQualityReportStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs#L20) |  |
+| <code>public async Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs#L25) |  |
+| <code>public async Task SaveAsync(SecurityMasterQualityReportDto report, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterQualityReportStore.cs#L43) |  |
+
+## PostgresSecurityMasterSnapshotStore
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs#L11).
+
+Persists versioned security reconstruction snapshots in PostgreSQL.
+
+```csharp
+public sealed class PostgresSecurityMasterSnapshotStore : ISecurityMasterSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostgresSecurityMasterSnapshotStore(SecurityMasterOptions options);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs#L15) |  |
+| <code>public async Task&lt;SecuritySnapshotRecord?&gt; LoadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs:20](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs#L20) |  |
+| <code>public async Task SaveAsync(SecuritySnapshotRecord snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs:45](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterSnapshotStore.cs#L45) |  |
+
 ## PostgresSecurityMasterStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore</code>. Kind: `class`.
@@ -898,30 +938,4 @@ Source: [src/Meridian.Storage/Services/DataQualityService.cs:1163](../../../../s
 
 ```csharp
 public sealed record DataQualityReportIssue(string Path, string Message, string? ExceptionType);
-```
-
-## DataQualityScore
-
-Qualified name: <code>Meridian.Storage.Services.DataQualityScore</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1131](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1131).
-
-```csharp
-public sealed record DataQualityScore(string Path, DateTimeOffset EvaluatedAt, double OverallScore, QualityDimension[] Dimensions)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/DataQualityService.cs:1138](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1138) |  |
-
-## DataQualityScoringReport
-
-Qualified name: <code>Meridian.Storage.Services.DataQualityScoringReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityScoringService.cs:488](../../../../src/Meridian.Storage/Services/DataQualityScoringService.cs#L488).
-
-```csharp
-public sealed record DataQualityScoringReport(DateTime GeneratedAtUtc, IReadOnlyList<QualityAssessment> Assessments, QualityReportSummary Summary);
 ```

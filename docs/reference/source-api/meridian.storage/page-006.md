@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAccountingPeriod
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountingPeriod</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:348](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L348).
+
+```csharp
+public sealed record LedgerAccountingPeriod(Guid PeriodId, Guid? LedgerBookId, int FiscalYear, int PeriodNo, string Label, DateOnly StartDate, DateOnly EndDate, string Status, DateTimeOffset OpenedAt, DateTimeOffset? ClosedAt, long Version)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:362](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L362) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
+
 ## LedgerAccountTaxLotPolicyRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountTaxLotPolicyRecord</code>. Kind: `record`.
@@ -21,6 +37,24 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public WashSalePolicy EffectiveWashSalePolicy =&gt; …;</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:406](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L406) | The configured wash-sale policy with its governing tax-lot revision, or the disabled default. |
+
+## LedgerBalanceSnapshotExtensions
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerBalanceSnapshotExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerBalanceSnapshotExtensions.cs:6](../../../../src/Meridian.Storage/Ledger/LedgerBalanceSnapshotExtensions.cs#L6).
+
+Uses native balance checkpoints when supported, retaining journal replay for compatibility stores.
+
+```csharp
+public static class LedgerBalanceSnapshotExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static async Task&lt;IReadOnlyDictionary&lt;LedgerAccount, decimal&gt;&gt; ReadTrialBalanceAsOfAsync(this ILedgerJournalStore store, Guid ledgerBookId, DateTimeOffset asOfUtc, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerBalanceSnapshotExtensions.cs:8](../../../../src/Meridian.Storage/Ledger/LedgerBalanceSnapshotExtensions.cs#L8) |  |
 
 ## LedgerBookControlPreflightLease
 
@@ -759,6 +793,30 @@ Atomic average-cost relief. The disposal books the pooled basis the canonical gu
 public sealed partial class PostgresLedgerJournalStore
 ```
 
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotAudit.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotAudit.cs#L8).
+
+```csharp
+public sealed partial class PostgresLedgerJournalStore
+```
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotRead.cs:8](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshotRead.cs#L8).
+
+```csharp
+public sealed partial class PostgresLedgerJournalStore
+```
+
+Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs:10](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs#L10).
+
+```csharp
+public sealed partial class PostgresLedgerJournalStore : ILedgerBalanceSnapshotSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;LedgerAccount, decimal&gt;&gt; ReadTrialBalanceAsOfAsync(Guid ledgerBookId, DateTimeOffset asOfUtc, string? financialAccountId = null, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BalanceSnapshots.cs#L12) |  |
+
 Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs:12](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.BondCouponRecognition.cs#L12).
 
 ```csharp
@@ -842,19 +900,19 @@ Declared public members:
 | <code>public PostgresLedgerJournalStore(LedgerJournalStoreOptions options, IFundScopeTenantAccessor? tenantAccessor = null, TenantScopeEnforcementOptions? tenantScope = null, Func&lt;Meridian.Storage.SecurityMaster.ISecurityMasterStore?&gt;? backfillSecurityMaster = null, Func&lt;Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?&gt;? backfillPositions = null, Func&lt;IConsolidationPostingAuthority?&gt;? consolidationAuthority = null, Func&lt;IEnumerable&lt;ILedgerPostingAuthority&gt;&gt;? postingAuthorities = null, Func&lt;IEnumerable&lt;ILedgerBookControlPreflight&gt;&gt;? controlPreflights = null, Func&lt;IIntercompanyAgreementPostingAuthority?&gt;? intercompanyAgreementAuthority = null, Func&lt;Meridian.Contracts.Accounting.Lots.IBondIncomeService?&gt;? bondIncomeAuthority = null, Func&lt;Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService?&gt;? couponRecognitionAuthority = null);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:44](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L44) |  |
 | <code>public async Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:74](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L74) |  |
 | <code>public Task AppendAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:116](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L116) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:250](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L250) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:371](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L371) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:385](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L385) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:398](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L398) |  |
-| <code>public async Task&lt;LedgerAccountingPeriod?&gt; GetPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:461](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L461) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt; ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null, string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:467](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L467) |  |
-| <code>public async Task&lt;LedgerAccountingPeriod&gt; SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:535](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L535) |  |
-| <code>public async Task&lt;LedgerAccountingPeriod&gt; SaveHardClosedPeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord closeEvent, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:548](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L548) |  |
-| <code>public async Task&lt;LedgerBookRecord?&gt; GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:679](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L679) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt; ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:711](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L711) |  |
-| <code>public async Task&lt;LedgerBookRecord&gt; SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:771](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L771) |  |
-| <code>public async Task&lt;LedgerAccountTaxLotPolicyRecord&gt; SaveTaxLotPolicyAsync(LedgerAccountTaxLotPolicyRecord policy, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:883](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L883) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerAccountTaxLotPolicyRecord&gt;&gt; ListTaxLotPoliciesAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:1006](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L1006) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:252](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L252) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:373](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L373) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:387](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L387) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryRecord&gt;&gt; FindPostingIdentityCollisionsAsync(LedgerPostingIdentity identity, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:400](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L400) |  |
+| <code>public async Task&lt;LedgerAccountingPeriod?&gt; GetPeriodAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:463](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L463) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerAccountingPeriod&gt;&gt; ListPeriodsAsync(Guid? ledgerBookId = null, string? status = null, string? fundProfileId = null, Guid? fundStructureNodeId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:469](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L469) |  |
+| <code>public async Task&lt;LedgerAccountingPeriod&gt; SavePeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord? closeEvent = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:537](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L537) |  |
+| <code>public async Task&lt;LedgerAccountingPeriod&gt; SaveHardClosedPeriodAsync(LedgerAccountingPeriod period, long expectedVersion, PeriodCloseEventRecord closeEvent, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:550](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L550) |  |
+| <code>public async Task&lt;LedgerBookRecord?&gt; GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:697](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L697) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt; ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:729](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L729) |  |
+| <code>public async Task&lt;LedgerBookRecord&gt; SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:789](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L789) |  |
+| <code>public async Task&lt;LedgerAccountTaxLotPolicyRecord&gt; SaveTaxLotPolicyAsync(LedgerAccountTaxLotPolicyRecord policy, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:901](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L901) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerAccountTaxLotPolicyRecord&gt;&gt; ListTaxLotPoliciesAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs:1024](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs#L1024) |  |
 
 Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs:5](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.DiscreteLotRelief.cs#L5).
 
@@ -1202,81 +1260,3 @@ Enum declarations:
 | <code>Dispatched</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:201](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L201) |  |
 | <code>Running</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:202](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L202) |  |
 | <code>Interrupted</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:203](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L203) |  |
-
-## ArchiveMaintenanceExecutionClaim
-
-Qualified name: <code>Meridian.Storage.Maintenance.ArchiveMaintenanceExecutionClaim</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:177](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L177).
-
-Durable outbox/lease state for a claimed schedule occurrence. The execution input snapshot is retained with the claim so later schedule edits cannot change work that was already accepted.
-
-```csharp
-public sealed class ArchiveMaintenanceExecutionClaim
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ExecutionId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:179](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L179) |  |
-| <code>public DateTimeOffset OccurrenceAt { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:180](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L180) |  |
-| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:181](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L181) |  |
-| <code>public bool ManualTrigger { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:182](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L182) |  |
-| <code>public string ScheduleName { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:183](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L183) |  |
-| <code>public MaintenanceTaskType TaskType { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:184](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L184) |  |
-| <code>public MaintenanceTaskOptions Options { get; init; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:185](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L185) |  |
-| <code>public List&lt;string&gt; TargetPaths { get; init; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:186](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L186) |  |
-| <code>public TimeSpan MaxDuration { get; init; } = TimeSpan.FromHours(2);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:187](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L187) |  |
-| <code>public ArchiveMaintenanceClaimState State { get; set; } = ArchiveMaintenanceClaimState.Pending;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:188](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L188) |  |
-| <code>public string? LeaseOwner { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:189](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L189) |  |
-| <code>public DateTimeOffset? LeaseExpiresAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:190](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L190) |  |
-| <code>public DateTimeOffset? RunningAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:191](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L191) |  |
-| <code>public string? LastError { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:192](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L192) |  |
-
-## ArchiveMaintenanceSchedule
-
-Qualified name: <code>Meridian.Storage.Maintenance.ArchiveMaintenanceSchedule</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:10](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L10).
-
-Represents a scheduled archive maintenance configuration with cron-like scheduling. Supports health checks, cleanup, compression, tier migration, and repair operations.
-
-```csharp
-public sealed class ArchiveMaintenanceSchedule
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long Revision { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:16](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L16) | Monotonic persisted revision used to reject stale full-schedule replacements. A zero value is retained as the legacy, revision-unaware compatibility sentinel. |
-| <code>public string ScheduleId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:21](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L21) | Unique identifier for this schedule. |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:26](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L26) | Human-readable name for the schedule. |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:31](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L31) | Description of what this schedule does. |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:36](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L36) | Whether this schedule is active. |
-| <code>public string CronExpression { get; set; } = &quot;0 3 * * *&quot;;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:44](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L44) | Cron expression for scheduling (five-field cron plus Meridian&#x27;s explicit d#n ordinal-day extension). Examples: &quot;0 3 * * *&quot; (daily at 3am), &quot;0 4 * * 0&quot; (weekly on Sunday at 4am), and &quot;0 1 * * 0#1&quot; (first Sunday of the month at 1am). |
-| <code>public string TimeZoneId { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:49](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L49) | Timezone for cron expression evaluation. |
-| <code>public MaintenanceTaskType TaskType { get; set; } = MaintenanceTaskType.HealthCheck;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:54](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L54) | Type of maintenance operation to perform. |
-| <code>public MaintenanceTaskOptions Options { get; set; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:59](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L59) | Configuration options for this maintenance task. |
-| <code>public List&lt;string&gt; TargetPaths { get; set; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:64](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L64) | Paths to include in maintenance. Empty = use configured storage root. |
-| <code>public MaintenancePriority Priority { get; set; } = MaintenancePriority.Normal;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:69](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L69) | Priority level for this maintenance task. |
-| <code>public TimeSpan MaxDuration { get; set; } = TimeSpan.FromHours(2);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:74](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L74) | Maximum duration for the maintenance operation before timeout. |
-| <code>public int MaxRetries { get; set; } = 2;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:79](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L79) | Number of retries if maintenance fails. |
-| <code>public bool NotifyOnCompletion { get; set; } = false;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:84](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L84) | Whether to send notifications on completion/failure. |
-| <code>public bool NotifyOnFailureOnly { get; set; } = true;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:89](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L89) | Whether to send notifications on failure only. |
-| <code>public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:94](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L94) | When the schedule was created. |
-| <code>public DateTimeOffset ModifiedAt { get; set; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:99](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L99) | When the schedule was last modified. |
-| <code>public DateTimeOffset? LastExecutedAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:104](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L104) | When the schedule last executed. |
-| <code>public DateTimeOffset? NextExecutionAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:109](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L109) | When the schedule is next scheduled to execute. |
-| <code>public string? LastExecutionId { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:114](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L114) | ID of the last execution for this schedule. |
-| <code>public MaintenanceExecutionStatus? LastExecutionStatus { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:119](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L119) | Status of the last execution. |
-| <code>public int ExecutionCount { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:124](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L124) | Total number of times this schedule has executed. |
-| <code>public int SuccessfulExecutions { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:129](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L129) | Number of successful executions. |
-| <code>public int FailedExecutions { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:134](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L134) | Number of failed executions. |
-| <code>public ArchiveMaintenanceExecutionClaim? PendingExecution { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:140](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L140) | Durable execution outbox entry for the one schedule occurrence that is currently awaiting publication, queued, running, or awaiting conservative recovery after an interrupted run. |
-| <code>public string? LastRepairReason { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:145](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L145) | Describes the last durable repair applied while loading this retained schedule. |
-| <code>public DateTimeOffset? LastRepairedAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:150](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L150) | When the last durable load-time repair was applied. |
-| <code>public List&lt;string&gt; Tags { get; set; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:155](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L155) | Tags for categorization and filtering. |
-| <code>[JsonIgnore] public TimeZoneInfo TimeZone =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:161](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L161) | Gets the timezone info for cron evaluation. |
-| <code>public DateTimeOffset? CalculateNextExecution(DateTimeOffset? from = null);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:166](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L166) | Calculate the next execution time based on the cron expression. |
