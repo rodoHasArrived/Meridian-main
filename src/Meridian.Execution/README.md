@@ -17,8 +17,8 @@ Failed execution probes use bounded, single-line diagnostic fields, including pr
 The original symbol remains authoritative for probing and order validation, and a failed probe
 still refuses the order.
 
-Broker submission, retained-rejection and paper-close logs use SHA-256 correlation for submitted
-symbols, rejection reasons and session identities. Corrupt JSONL reads log the operation and failure
+Broker submission, cancellation/amendment, retained-rejection and paper-close logs use SHA-256
+correlation for submitted symbols, broker order IDs, rejection reasons and session identities. Corrupt JSONL reads log the operation and failure
 type. The original requests, journal/audit reasons, session metadata and JSONL bytes remain retained
 unchanged; operational logs do not carry those payloads or storage paths.
 

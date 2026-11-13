@@ -12943,6 +12943,7 @@ Meridian-main
 │   │   │   ├── BondWorkflowPricingTests.cs
 │   │   │   ├── BondWorkflowProjectionTests.cs
 │   │   │   ├── BondWorkflowServiceTests.cs
+│   │   │   ├── BondWorkflowServiceTests.DirtyRounding.cs
 │   │   │   ├── BondWorkflowServiceTests.FinalExercise.cs
 │   │   │   ├── BondWorkspaceSnapshotStoreTests.cs
 │   │   │   └── DeclaredExerciseNonBondClassTests.cs

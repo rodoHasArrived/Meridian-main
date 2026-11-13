@@ -55,6 +55,8 @@ preparation or posting. Deployment does not adopt a book policy or execute custo
 
 Current analytical workflows pin `bond-workflow-v3`, retaining v2's active/deferred accrued-interest
 separation and replacing the natural maturity balloon once in final-payment exercise scenarios.
+Dirty quotes preserve authoritative current cash through native rounding, with clean cash as the
+remainder after signed accrued interest; original quote evidence and fees remain separate.
 Coupons and explicit principal installments remain payable separately. Retained v1/v2 requests keep
 their original arithmetic, including v1 requests without a model selector; risk scenarios and
 monitoring revalidation retain the selected model.

@@ -126,6 +126,9 @@ An existing price-selection receipt remains the pricing authority: pair it only 
 source, observation time, value and unit. A matching number alone is insufficient. New selections carrying quotation evidence also require the exact clean/dirty convention, per-100 basis, settlement date and `quote.settlementBasis`; import matching typed metadata before replay. Expired liquidity
 is flagged. Settlement normalization needs retained curve coverage and a uniquely calibrated spread;
 an old date is not given an invented carry factor. Confirmation cash is an evidenced comparison input.
+Workflow v3 rounds the current dirty-quote consideration first, including any modeled settlement
+adjustment, then derives clean cash after rounding signed accrued interest. Fees round separately;
+original quote evidence and unrounded yield calibration remain distinct.
 
 Typed market observations distinguish fixings, inflation levels, principal factors, ratings and
 quotes. Keep provider/series identity, economic date, revision, source hash/reference and any

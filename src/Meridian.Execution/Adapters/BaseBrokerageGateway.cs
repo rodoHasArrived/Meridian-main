@@ -112,7 +112,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewa
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
 
-        Logger.LogInformation("{Gateway} cancelling order {OrderId}", GatewayId, orderId);
+        Logger.LogInformation("{Gateway} cancelling order {OrderHash}", GatewayId,
+            Sha256Digest.ComputeUtf8(orderId ?? string.Empty));
 
         var report = await CancelOrderCoreAsync(orderId, ct).ConfigureAwait(false);
         await PublishReportAsync(report, ct).ConfigureAwait(false);
@@ -128,7 +129,8 @@ public abstract class BaseBrokerageGateway : IBrokerageGateway, IExecutionGatewa
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
 
-        Logger.LogInformation("{Gateway} modifying order {OrderId}", GatewayId, orderId);
+        Logger.LogInformation("{Gateway} modifying order {OrderHash}", GatewayId,
+            Sha256Digest.ComputeUtf8(orderId ?? string.Empty));
 
         var report = await ModifyOrderCoreAsync(orderId, modification, ct).ConfigureAwait(false);
         await PublishReportAsync(report, ct).ConfigureAwait(false);

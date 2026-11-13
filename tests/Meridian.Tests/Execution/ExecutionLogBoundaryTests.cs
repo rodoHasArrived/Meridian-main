@@ -79,6 +79,32 @@ public sealed class ExecutionLogBoundaryTests : IDisposable
         AssertSafe(logger.Entries, PrivateValue);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BrokerageCancelAndModifyLogOpaqueCorrelationWithoutChangingCoreInputsOrReports(bool modify)
+    {
+        var logger = new RecordingLogger<ProbeGateway>();
+        await using var gateway = new ProbeGateway(logger);
+        await gateway.ConnectAsync();
+        logger.Entries.Clear();
+        var modification = new OrderModification { NewQuantity = 2m, NewLimitPrice = 101m };
+
+        var report = modify
+            ? await gateway.ModifyOrderAsync(PrivateValue, modification)
+            : await gateway.CancelOrderAsync(PrivateValue);
+
+        gateway.LastOperationOrderId.Should().Be(PrivateValue);
+        if (modify)
+            gateway.LastModification.Should().BeSameAs(modification);
+        else
+            gateway.LastModification.Should().BeNull();
+        report.OrderId.Should().Be(PrivateValue);
+        report.ReportType.Should().Be(modify ? ExecutionReportType.Modified : ExecutionReportType.Cancelled);
+        logger.Entries.Should().ContainSingle().Which.Message.Should().Contain(Sha256Digest.ComputeUtf8(PrivateValue));
+        AssertSafe(logger.Entries, PrivateValue);
+    }
+
     [Fact]
     public async Task CorruptPaperJsonlSkipsOnlyTheBadRecordWithoutLoggingItsPathOrRewritingSourceBytes()
     {
@@ -186,6 +212,8 @@ public sealed class ExecutionLogBoundaryTests : IDisposable
     private sealed class ProbeGateway(ILogger logger) : BaseBrokerageGateway(logger)
     {
         public OrderRequest? LastRequest { get; private set; }
+        public string? LastOperationOrderId { get; private set; }
+        public OrderModification? LastModification { get; private set; }
         public override string GatewayId => "synthetic";
         public override string BrokerDisplayName => "Synthetic";
         public override BrokerageCapabilities BrokerageCapabilities => BrokerageCapabilities.UsEquity();
@@ -207,7 +235,27 @@ public sealed class ExecutionLogBoundaryTests : IDisposable
                 Timestamp = DateTimeOffset.Parse("2026-01-02T12:00:00Z")
             });
         }
-        protected override Task<ExecutionReport> CancelOrderCoreAsync(string orderId, CancellationToken ct) => throw new NotSupportedException();
+        protected override Task<ExecutionReport> CancelOrderCoreAsync(string orderId, CancellationToken ct)
+        {
+            LastOperationOrderId = orderId;
+            return Task.FromResult(OperationReport(orderId, ExecutionReportType.Cancelled, OrderStatus.Cancelled));
+        }
+        protected override Task<ExecutionReport> ModifyOrderCoreAsync(string orderId, OrderModification modification, CancellationToken ct)
+        {
+            LastOperationOrderId = orderId;
+            LastModification = modification;
+            return Task.FromResult(OperationReport(orderId, ExecutionReportType.Modified, OrderStatus.PendingNew));
+        }
+        private static ExecutionReport OperationReport(string orderId, ExecutionReportType type, OrderStatus status)
+            => new()
+            {
+                OrderId = orderId,
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                ReportType = type,
+                OrderStatus = status,
+                Timestamp = DateTimeOffset.Parse("2026-01-02T12:00:00Z")
+            };
         public override Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public override Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public override Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default) => throw new NotSupportedException();

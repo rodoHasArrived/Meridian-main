@@ -513,7 +513,9 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             decimal? Round(decimal? amount) => amount is { } cash ? decimal.Round(cash, money, MidpointRounding.AwayFromZero) : null;
             var roundedAccrued = Round(accrued);
             var roundedClean = Round(clean);
-            var roundedDirty = roundedClean + roundedAccrued;
+            var roundedDirty = modelVersion == ModelVersion && quoteIsDirty ? Round(dirty) : roundedClean + roundedAccrued;
+            if (modelVersion == ModelVersion && quoteIsDirty)
+                roundedClean = roundedDirty - roundedAccrued;
             var roundedFees = Round(request.Fees)!.Value;
             var settlementDifference = request.ObservedDirtyCash - (roundedDirty + roundedFees);
             if (settlementDifference is not null and not 0m)
