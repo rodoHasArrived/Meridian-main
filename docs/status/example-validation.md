@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 11911 |
-| Valid | 11411 |
+| Total code blocks | 11912 |
+| Valid | 11412 |
 | Invalid | 0 |
 | Skipped | 500 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 119 | 0 | 0 | 119 |
-| `bash` | 270 | 270 | 0 | 0 |
+| `bash` | 271 | 271 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 11039 | 11039 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -419,6 +419,7 @@ No invalid code examples found.
 | `docs/testing/evidence/next-work-20261028/release-readiness.md` | 1 |
 | `docs/testing/evidence/w10-615abde9/browser/browser-evidence.md` | 2 |
 | `docs/testing/evidence/w10-615abde9/desktop/desktop-evidence.md` | 1 |
+| `docs/testing/evidence/wal-checksum-2026-10-07/README.md` | 1 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/ci/canonical-evidence-packaging-failure/dotnet-test-summary.md` | 19 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/ci/provider-documentation-drift/dotnet-test-summary.md` | 19 |
 | `docs/testing/evidence/wal-checksum-2026-10-07/component-profiles/dedup/README.md` | 2 |
