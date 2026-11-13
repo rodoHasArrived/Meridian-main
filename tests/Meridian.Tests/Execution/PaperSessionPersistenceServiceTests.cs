@@ -203,9 +203,14 @@ public sealed class PaperSessionPersistenceServiceTests
             const string sessionId = "PAPER-logging";
             var order = new OrderState
             {
-                OrderId = "client-order\r\nretained", Symbol = "AAPL", Side = OrderSide.Buy,
-                Type = OrderType.Limit, Quantity = 1m, Status = OrderStatus.Accepted,
-                CreatedAt = DateTimeOffset.UtcNow, LastUpdatedAt = DateTimeOffset.UtcNow
+                OrderId = "client-order\r\nretained",
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                Type = OrderType.Limit,
+                Quantity = 1m,
+                Status = OrderStatus.Accepted,
+                CreatedAt = DateTimeOffset.UtcNow,
+                LastUpdatedAt = DateTimeOffset.UtcNow
             };
             await store.AppendOrderUpdateAsync(sessionId, order);
             var path = Path.Combine(root, sessionId, "orders.jsonl");
