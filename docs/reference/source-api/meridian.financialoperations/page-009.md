@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunRecoveryConflictException
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:105](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L105).
+
+Indicates conflicting retained state during statement-run recovery.
+
+```csharp
+public sealed class StatementRunRecoveryConflictException(string message) : InvalidOperationException(message)
+```
+
+## StatementRunRecoveryStage
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryStage</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:58](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L58).
+
+```csharp
+public enum StatementRunRecoveryStage
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Imported = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L60) |  |
+| <code>Matched = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:61](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L61) |  |
+| <code>BreaksMaterialized = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L62) |  |
+| <code>CasesMaterialized = 4</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:63](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L63) |  |
+| <code>Completed = 5</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:64](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L64) |  |
+
+## StatementRunRecoveryStatus
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunRecoveryStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:67](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L67).
+
+```csharp
+public enum StatementRunRecoveryStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Running</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:69](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L69) |  |
+| <code>Failed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:70](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L70) |  |
+| <code>Completed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:71](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L71) |  |
+
+## StatementRunStageArtifact
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunStageArtifact</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:74](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L74).
+
+```csharp
+public sealed record StatementRunStageArtifact(string Sha256, int Count);
+```
+
 ## StatementRunValidationSummary
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunValidationSummary</code>. Kind: `record`.

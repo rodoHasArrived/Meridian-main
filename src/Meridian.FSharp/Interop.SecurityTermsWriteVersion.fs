@@ -67,7 +67,8 @@ module internal SecurityTermsWriteVersion =
             match kind with
             | SecurityKind.Bond terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
-                  holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
+                  holdsSchedules terms.CallPutSchedules, schedulesSince kind
+                  terms.Workflow.IsSome, fieldSince "Bond" "bondWorkflow" ]
             | SecurityKind.CertificateOfDeposit terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
                   holdsSchedules terms.CallPutSchedules, schedulesSince kind ]

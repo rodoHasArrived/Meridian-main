@@ -93,10 +93,9 @@ def run(repo: Path, output: Path, image: str, head: str, base: str) -> int:
         clone = work / "repo"
         # No shared object store or worktree metadata points back at the host's
         # trusted checkout. Docker sees only this disposable copy and raw output.
-        # Keep tracked LFS pointers: the disposable clone has no LFS object store,
-        # and its local source remote cannot supply omitted binary objects.
+        # Retain LFS pointer identities; the host's LFS cache is not sandbox input.
         subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "clone", "--no-hardlinks", str(repo), str(clone)],
-                       check=True, env={**os.environ, "GIT_LFS_SKIP_SMUDGE": "1"})
+                       check=True, env=dict(os.environ, GIT_LFS_SKIP_SMUDGE="1"))
         for sha in (head, base):
             subprocess.run(["git", "-C", str(clone), "cat-file", "-e", f"{sha}^{{commit}}"], check=True)
         command = container_command(work, raw, image, head, base)

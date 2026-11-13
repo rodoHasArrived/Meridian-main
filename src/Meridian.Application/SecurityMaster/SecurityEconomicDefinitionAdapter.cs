@@ -724,6 +724,7 @@ internal static partial class SecurityEconomicDefinitionAdapter
         document = AppendExactRateModules(document, definition);
         document = AppendExactReferenceModules(document, definition);
         document = AppendExactCapitalModules(document, definition);
+        document = AppendExactBondWorkflowModule(document, definition);
         return AppendExactScheduleModules(document, definition);
     }
 

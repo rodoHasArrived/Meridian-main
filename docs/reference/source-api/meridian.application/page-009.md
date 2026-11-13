@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterAmortizationLedgerBridge
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:103](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L103).
+
+```csharp
+public sealed partial class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterAmortizationLedgerBridge(ISecurityMasterCashFlowService cashFlowService, ILogger&lt;SecurityMasterAmortizationLedgerBridge&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:108](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L108) |  |
+| <code>public async Task&lt;int&gt; PostProjectedCashFlowsAsync(Guid securityId, string ticker, DomainLedger ledger, AmortizationLedgerPostingContext? context = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:117](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L117) |  |
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs#L7).
+
+```csharp
+public sealed partial class SecurityMasterAmortizationLedgerBridge
+```
+
 ## SecurityMasterCanonicalSymbolSeedService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterCanonicalSymbolSeedService</code>. Kind: `class`.
@@ -1080,24 +1103,3 @@ Enum declarations:
 | <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:24](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L24) | The security is gone from the durable store and was evicted (or was never cached). |
 | <code>Resynchronized</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L27) | The whole cache was re-synchronised from the durable store. |
 | <code>Failed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionChangeHandler.cs#L30) | The durable re-read failed; the listener schedules a full resynchronization retry. |
-
-## SecurityProjectionRefreshResult
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityProjectionRefreshResult</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L100).
-
-Outcome of SecurityMasterProjectionService.RefreshSecurityAsync.
-
-```csharp
-public enum SecurityProjectionRefreshResult
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Refreshed</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:103](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L103) | The durable record was installed in the cache. |
-| <code>KeptNewer</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:106](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L106) | The cache already held a newer version; the durable read did not downgrade it. |
-| <code>Evicted</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:109](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L109) | The durable store no longer holds the security; the cached entry was evicted. |
-| <code>NotFound</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs:112](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProjectionService.cs#L112) | Neither the durable store nor the cache holds the security. |

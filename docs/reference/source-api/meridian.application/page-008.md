@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IPeriodAwareRestatementResolver
+
+Qualified name: <code>Meridian.Application.SecurityMaster.IPeriodAwareRestatementResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:21](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L21).
+
+Phase 3 period-aware propagation: decides, for a published Security Master revision, whether any affected ledger book is in a closed period and therefore requires a governed restatement proposal rather than silent mutation. The authoritative lock state is the ledger accounting-period status (ILedgerPeriodLockReader) — the same authority LedgerPeriodPostingGuard enforces. Routing per book (D3 matrix): Open → immediate propagation (lower-order publish handlers already applied it), no restatement; SoftClosed → the downstream effect posts as a governed adjustment (a later slice), and only already-published report packs become restatement candidates; HardClosed or any indeterminate/default-deny state → no posting and a mandatory restatement proposal. When a hard-closed book has exposure but no candidate can be located, the decision still reports SecurityMasterRestatementDecision.RestatementRequired (a manual &quot;locate affected packs&quot; task) — a closed period is never silently completed.
+
+```csharp
+public interface IPeriodAwareRestatementResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityMasterRestatementDecision&gt; ResolveAsync(SecurityMasterRevisionPublishedEvent publishedEvent, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:23](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L23) |  |
+
 ## IRestatementCandidateResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.IRestatementCandidateResolver</code>. Kind: `interface`.
@@ -1006,27 +1024,4 @@ Active Security Master ingest progress.
 
 ```csharp
 public sealed record SecurityMasterActiveImportStatus(string FileExtension, int Total, int Processed, int Imported, int Skipped, int Failed, DateTimeOffset StartedAtUtc, DateTimeOffset UpdatedAtUtc);
-```
-
-## SecurityMasterAmortizationLedgerBridge
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:103](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L103).
-
-```csharp
-public sealed partial class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterAmortizationLedgerBridge(ISecurityMasterCashFlowService cashFlowService, ILogger&lt;SecurityMasterAmortizationLedgerBridge&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:108](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L108) |  |
-| <code>public async Task&lt;int&gt; PostProjectedCashFlowsAsync(Guid securityId, string ticker, DomainLedger ledger, AmortizationLedgerPostingContext? context = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs:117](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs#L117) |  |
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs#L7).
-
-```csharp
-public sealed partial class SecurityMasterAmortizationLedgerBridge
 ```

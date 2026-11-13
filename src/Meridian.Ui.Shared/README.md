@@ -11,6 +11,32 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+`BondWorkflowConnectionReadinessService` joins exact tenant-owned connections, credential status
+and applicable input-specific entitlements. It reports identifier, terms, holdings, quote, fixing,
+inflation, factor, rating, curve and execution coverage separately. Connection verification never
+promotes a workflow to `LiveVerified`; deterministic imports and live provider evidence remain
+distinct. Brokerage position projections preserve accrued interest and cost-derived mark labels.
+New balance snapshots use `brokerage-sync:<provider>:disjoint-components-v2` and separate known
+signed accruals in the balance currency from securities, preserving the provider equity total.
+Unknown accrual allocation stays in the full remainder. The explicit source version preserves
+legacy snapshot performance arithmetic without rewriting retained snapshots or raw positions.
+
+The shared bond account endpoints bind account-owned book/tenant/company scope, retain plans and
+comparisons, project collection exceptions into governed casework, and keep preview/preparation apart
+from posting. Performance imports read exact accepted vault documents; current cash/FX authority is
+reverified before consumption. See [routes, typed source JSON and book policy](../../docs/operators/bond-workflows.md).
+Lifecycle close-lock replay derives its action from the matched retained transition and rechecks
+the authoritative hard-closed period. Evidence-index warnings retain operation and failure type,
+without raw scoped paths or parser exceptions. Explorer dimension filters include the retained
+intercompany agreement GUID.
+
+`BondProviderIntakeService` connects operator-triggered bond ISIN/CUSIP discovery to OpenFIGI without
+resolving ambiguous candidates, and typed FRED intake to the retained market-input service. Exact
+independently reviewed provider-trust binding bytes supply the series/index/unit mapping; source
+review is rechecked after fetching. The service archives and reopens exact provider-response JSON
+through a tenant/company-scoped content-addressed store. API responses keep the separate
+`LiveUntested` evidence status.
+
 Run ledger summary, journal and trial-balance endpoints accept an inclusive `asOf` economic
 timestamp after the existing tenant/company run-access guard. The accounting-package download
 endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow; lot reports

@@ -11,6 +11,25 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.FinancialOperations
 
+`BondIncomeService` resolves actual account/book/lot and adopted US GAAP policy before previewing or
+preparing `bond-income-us-gaap-v1` instructions. Eligible direct costs, purchased accrued interest,
+coupon income, premium/discount and observed indexation remain separate. Coupon recognition prepares
+signed receivable/payable and source-verified cash clearing through the canonical event spine and
+atomic posting boundary. Raw model economics remain separate from versioned ten-decimal booked
+targets and their retained rounding residuals. Native cash retains its currency minor units. See [policy adoption and review](../../docs/operators/bond-workflows.md).
+
+Held coupon accrual uses contractual earned interest rather than a new purchaser's ex-coupon
+invoice adjustment. Terminal principal pins earned rights independently of bank cash timing;
+later cash and typed reversals verify the original entitlement, source allocation and complete
+native journal history. Unreconciled manual coupon accounting blocks further clearing. Exact
+canonical noncash amortization remains distinct from coupon recognition and cash consumption.
+
+Explicit acquisition-captured accrual v2 separates the active period from earlier unpaid earned
+coupons, retains purchased-interest rounding adjustments at their native boundary and keeps clean
+EIR recurrence independent of receivable/payable balances. Legacy preparation refuses unsafe lag
+windows without reinterpreting prior instructions or reversal authority. Generated posting always
+uses the canonical human-origin gate before storage and the existing independent approval checks.
+
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
 profiles own operational templates, party-book/account mappings and bounded validity only. Native
@@ -72,6 +91,8 @@ at projection and requires the same instruction at drafting. Selections are comp
 retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
 existing atomic disposal authority to relieve full quantities and bases together with their
 journal. Historical events omit the optional member and preserve their retained fingerprints.
+Adopted bond scheduled principal uses its separate governed paydown instruction to preserve
+scheduled basis relief without also applying disposal treatment.
 
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 

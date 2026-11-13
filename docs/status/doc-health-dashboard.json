@@ -1,11 +1,11 @@
 {
-  "total_files": 1206,
+  "total_files": 1212,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 84,
-  "signal_digest": "sha256:2aaee5319c038d1361fe57bd51a8b58199bd0b1d74632d64b66e4d842879c26a",
+  "signal_digest": "sha256:50419ccceb3ff924e6976e6b69e5d744d85a97c4e27d9aee0ba0d6b7543915df",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -3129,6 +3129,13 @@
       "stale": false
     },
     {
+      "path": "docs/operators/bond-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/browser-workstation-installer.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4487,6 +4494,34 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-071.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-072.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-073.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-074.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4775,6 +4810,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.infrastructure/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-008.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

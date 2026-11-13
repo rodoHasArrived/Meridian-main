@@ -2,11 +2,55 @@
 
 # `fund-governance-contracts` data objects - page 3 of 3
 
-Objects 161-193 of 193. References crossing pages remain available in the dependency manifest.
+Objects 161-201 of 201. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_LedgerMappingResolutionDto["LedgerMappingResolutionDto"] {
+        +IReadOnlyList~string~ IssueCodes
+        +LedgerGroupId LedgerGroupId
+        +bool RequiresUserMapping
+        +LedgerMappingSourceDto Source
+        +Guid? SourceNodeId
+        +FundStructureNodeKindDto? SourceNodeKind
+        +string? SourceReference
+    }
+    class Meridian_Contracts_FundStructure_LedgerMappingSourceDto["LedgerMappingSourceDto"] {
+    }
+    class Meridian_Contracts_FundStructure_LedgerMappingWorkbenchDto["LedgerMappingWorkbenchDto"] {
+        +int AccountCount
+        +IReadOnlyList~LedgerMappingAccountDto~ Accounts
+        +DateTimeOffset AsOf
+        +BusinessSummaryDto? Business
+        +IReadOnlyList~LedgerGroupSummaryDto~ LedgerGroups
+        +int MappedAccountCount
+        +OrganizationSummaryDto? Organization
+        +FundStructureSharedDataAccessDto? SharedDataAccess
+        +int UnmappedAccountCount
+    }
+    class Meridian_Contracts_FundStructure_LegalEntityFormDto["LegalEntityFormDto"] {
+    }
+    class Meridian_Contracts_FundStructure_LegalEntityLifecycleEventDto["LegalEntityLifecycleEventDto"] {
+        +DateTimeOffset? EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +Guid EventId
+        +LegalEntityLifecycleEventKindDto EventKind
+        +string? EvidenceReference
+        +DateTimeOffset OccurredAt
+        +string RecordedBy
+        +string Summary
+    }
+    class Meridian_Contracts_FundStructure_LegalEntityLifecycleEventKindDto["LegalEntityLifecycleEventKindDto"] {
+    }
+    class Meridian_Contracts_FundStructure_LegalEntityLifecycleStatusDto["LegalEntityLifecycleStatusDto"] {
+    }
+    class Meridian_Contracts_FundStructure_LegalEntityReadAuthorityProof["LegalEntityReadAuthorityProof"] {
+        +string Database
+        +string Host
+        +int Port
+        +string Schema
+    }
     class Meridian_Contracts_FundStructure_LegalEntitySummaryDto["LegalEntitySummaryDto"] {
         +string BaseCurrency
         +IReadOnlyList~BeneficialOwnerSummaryDto~? BeneficialOwners
@@ -295,6 +339,12 @@ classDiagram
         +string Name
         +Guid VehicleId
     }
+    Meridian_Contracts_FundStructure_LedgerMappingResolutionDto --> Meridian_Contracts_FundStructure_LedgerMappingSourceDto
+    Meridian_Contracts_FundStructure_LedgerMappingWorkbenchDto --> Meridian_Contracts_FundStructure_OrganizationSummaryDto
+    Meridian_Contracts_FundStructure_LegalEntityLifecycleEventDto --> Meridian_Contracts_FundStructure_LegalEntityLifecycleEventKindDto
+    Meridian_Contracts_FundStructure_LegalEntitySummaryDto --> Meridian_Contracts_FundStructure_LegalEntityFormDto
+    Meridian_Contracts_FundStructure_LegalEntitySummaryDto --> Meridian_Contracts_FundStructure_LegalEntityLifecycleEventDto
+    Meridian_Contracts_FundStructure_LegalEntitySummaryDto --> Meridian_Contracts_FundStructure_LegalEntityLifecycleStatusDto
     Meridian_Contracts_FundStructure_LegalEntitySummaryDto --> Meridian_Contracts_FundStructure_LegalEntityTypeDto
     Meridian_Contracts_FundStructure_LinkFundStructureNodesRequest --> Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto
     Meridian_Contracts_FundStructure_MarginSnapshotDto --> Meridian_Contracts_FundStructure_MarginCallStatusDto
@@ -312,6 +362,9 @@ classDiagram
     Meridian_Contracts_FundStructure_RecordMarginSnapshotRequest --> Meridian_Contracts_FundStructure_MarginRequirementDto
     Meridian_Contracts_FundStructure_ReplaceOwnershipLinkRequest --> Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto
     Meridian_Contracts_FundStructure_TransferMatchDto --> Meridian_Contracts_FundStructure_TransferMatchStatusDto
+    Meridian_Contracts_FundStructure_UpdateLegalEntityProfileRequest --> Meridian_Contracts_FundStructure_LegalEntityFormDto
+    Meridian_Contracts_FundStructure_UpdateLegalEntityProfileRequest --> Meridian_Contracts_FundStructure_LegalEntityLifecycleEventDto
+    Meridian_Contracts_FundStructure_UpdateLegalEntityProfileRequest --> Meridian_Contracts_FundStructure_LegalEntityLifecycleStatusDto
     Meridian_Contracts_FundStructure_UpdateLegalEntityProfileRequest --> Meridian_Contracts_FundStructure_LegalEntityTypeDto
     Meridian_Contracts_FundStructure_UpdateOwnershipLinkRequest --> Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto
     Meridian_Contracts_FundStructure_VehicleOperatingViewDto --> Meridian_Contracts_FundStructure_LegalEntitySummaryDto

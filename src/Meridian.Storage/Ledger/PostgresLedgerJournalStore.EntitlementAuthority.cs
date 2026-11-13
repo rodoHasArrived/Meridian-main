@@ -10,6 +10,11 @@ public sealed partial class PostgresLedgerJournalStore
         NpgsqlConnection connection, NpgsqlTransaction transaction, IReadOnlyList<LedgerJournalEntryWrite> entries,
         CancellationToken ct)
     {
+        // Every writer, authority scope and replay takes the history gate before any
+        // entitlement or period read. LOCK is snapshot-neutral and prevents a coupon
+        // history reader from inverting the dividend producer's lock order.
+        await LockCouponHistoryBoundaryAsync(connection, transaction,
+            entries.Any(NeedsCouponHistoryBoundary), ct).ConfigureAwait(false);
         var mappings = new Dictionary<Guid, Guid?>();
         foreach (var write in entries.OrderBy(item => item.PeriodId))
         {

@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IDataIntegrationIngestionService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IDataIntegrationIngestionService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L35).
+
+Ingests source data into normalized reconciliation input.
+
+```csharp
+public interface IDataIntegrationIngestionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;DataIntegrationIngestionResult&gt; IngestAsync(DataIntegrationIngestionRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L37) |  |
+
+## IdentityReconciliationFxRateProvider
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IdentityReconciliationFxRateProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:73](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L73).
+
+The safe default: only a currency against itself resolves (rate 1). Every genuine cross-currency conversion returns false, so a deployment that has not configured FX rates reconciles same-currency lines exactly and fails closed on everything else.
+
+```csharp
+public sealed class IdentityReconciliationFxRateProvider : IReconciliationFxRateProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IdentityReconciliationFxRateProvider Instance { get; } = new ();</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:75](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L75) |  |
+| <code>public bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs:77](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationFxRateProvider.cs#L77) |  |
+
+## IInstrumentMappingService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IInstrumentMappingService</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:35](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L35).
+
+Resolves source instrument identifiers for reconciliation matching.
+
+```csharp
+public interface IInstrumentMappingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string ResolveCanonicalId(string? cusip, string? isin, string? ticker, string? internalId);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:37](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L37) |  |
+
+## IInternalReconciliationBookSource
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IInternalReconciliationBookSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:30](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L30).
+
+Supplies the internal book (positions, cash, ledger transactions) that a given statement run is reconciled against. Registering a real implementation is how a deployment wires reconciliation against its authoritative internal records; the default EmptyInternalReconciliationBookSource yields an empty book so unprovisioned accounts surface honest unmatched breaks rather than fabricated self-matches.
+
+```csharp
+public interface IInternalReconciliationBookSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;InternalReconciliationBook&gt; GetBookAsync(StatementRunRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs:32](../../../../src/Meridian.FinancialOperations/Reconciliation/InternalReconciliationBook.cs#L32) |  |
+
 ## IInternalReconciliationPopulationProvider
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IInternalReconciliationPopulationProvider</code>. Kind: `interface`.
@@ -805,75 +878,3 @@ Declared public members:
 | <code>public ReconciliationMatchingEngine(IAccountingCalendar? calendar = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:53](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L53) |  |
 | <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, MatchingTolerances tolerances) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L56) |  |
 | <code>public (IReadOnlyList&lt;MatchGroup&gt; matches, IReadOnlyList&lt;BreakRecord&gt; breaks, IReadOnlyList&lt;MatchEvidence&gt; evidence) Run(ReconciliationRun run, StatementToleranceProfile toleranceProfile);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs:60](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchingEngine.cs#L60) |  |
-
-## ReconciliationMatchKernel
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchKernel</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L12).
-
-Deterministic matching primitives shared by the canonical reconciliation floor and, by design, the W9-INGEST-009 statement/ledger sided matcher: stable best-first assignment over scored candidate pairs, bounded same-sign split (one-to-many / many-to-one) discovery, and content-derived identifiers so identical inputs reproduce identical match artifacts across re-runs. Nothing here allocates randomness or reads clocks — determinism is the contract.
-
-```csharp
-public static class ReconciliationMatchKernel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxSplitSearchCandidates = 24;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L18) | Upper bound on the candidate set a split search will consider. Callers pre-rank candidates; anything beyond this bound is deterministically ignored rather than exploding the search. |
-| <code>public static IReadOnlyList&lt;TPair&gt; SelectDeterministicAssignment&lt;TPair&gt;(IEnumerable&lt;TPair&gt; orderedAdmissiblePairs, Func&lt;TPair, IReadOnlyList&lt;string&gt;&gt; memberKeys);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L26) | Selects a non-overlapping assignment from candidate pairs that MUST already be ordered best-first with a total, deterministic order (score, then domain tie-breakers, then member ids). Walks the ranking once and takes each pair whose member keys are all unconsumed. Member keys must be unique across both populations — prefix keys per side when raw ids can collide. |
-| <code>public static bool TryFindSplit(decimal targetAmount, IReadOnlyList&lt;SplitCandidate&gt; candidates, decimal tolerance, int maxLegs, out IReadOnlyList&lt;SplitCandidate&gt; legs, out decimal residual) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:76](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L76) | Searches for the best bounded subset of same-sign candidate legs whose sum lands within tolerance of targetAmount. &quot;Best&quot; is total and deterministic: smallest absolute residual, then fewest legs, then the lexicographically smallest sorted leg-id sequence. A split needs at least two legs — single-leg matches belong to the pair stages. Candidates whose sign differs from the target are ignored (netting mixed-sign groups is casework, not floor matching), and only the MaxSplitSearchCandidates largest candidates by magnitude participate. |
-| <code>public static bool TryFindSplit(decimal targetAmount, IReadOnlyList&lt;SplitCandidate&gt; candidates, decimal tolerance, int maxLegs, Func&lt;IReadOnlyList&lt;SplitCandidate&gt;, bool&gt;? accept, out IReadOnlyList&lt;SplitCandidate&gt; legs, out decimal residual);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L91) | TryFindSplit(decimal, IReadOnlyList{SplitCandidate}, decimal, int, out IReadOnlyList{SplitCandidate}, out decimal) with a caller-supplied acceptance validator: only subsets the validator approves compete for &quot;best&quot;, so a subset that wins on the summed amount but fails a secondary constraint (for example aggregate market value on a position split) does not shadow a fully valid subset. |
-| <code>public static string CreateDeterministicId(string prefix, IReadOnlyList&lt;string&gt; parts);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:216](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L216) | Derives a stable identifier from match content (idempotency seed, rule, member ids…): the same inputs always produce the same id, so re-evaluating a cached run re-produces identical match-group, break, and evidence identifiers instead of minting fresh GUIDs per call. |
-
-## SplitCandidate
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchKernel.SplitCandidate</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationMatchKernel.cs#L65).
-
-One candidate leg offered to TryFindSplit.
-
-```csharp
-public sealed record SplitCandidate(string Id, decimal Amount);
-```
-
-## ReconciliationMatchTier
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationMatchTier</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:3](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L3).
-
-```csharp
-public enum ReconciliationMatchTier
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Exact</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:5](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L5) |  |
-| <code>Tolerance</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:6](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L6) |  |
-| <code>Heuristic</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:7](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L7) |  |
-| <code>Unmatched</code> | [src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/BrokerReconciliationFeedModels.cs#L8) |  |
-
-## ReconciliationNormalizationService
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.ReconciliationNormalizationService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:14](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L14).
-
-Normalizes captured positions and cash entries onto the run&#x27;s canonical axes: instrument identifiers resolve through the mapping service, currency amounts convert through the same fail-closed IReconciliationFxRateProvider seam the statement lane uses, and accounting periods resolve through the business calendar from the entry&#x27;s own posting timestamp. When no FX rate is available the line keeps its source currency and amount — the matcher&#x27;s currency-identity guard then surfaces it as a break instead of silently comparing incompatible currencies at a fabricated rate.
-
-```csharp
-public sealed class ReconciliationNormalizationService(IInstrumentMappingService instrumentMapping, IReconciliationFxRateProvider fxRateProvider, IAccountingCalendar accountingCalendar)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NormalizedPosition NormalizePosition(NormalizedPosition input, string baseCurrency, DateTimeOffset runTimestampUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:19](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L19) |  |
-| <code>public NormalizedCashEntry NormalizeCashEntry(NormalizedCashEntry input, string baseCurrency, DateTimeOffset runTimestampUtc);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationNormalizationService.cs#L40) |  |

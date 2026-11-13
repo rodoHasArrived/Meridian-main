@@ -6,6 +6,161 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportAmountBindingBuilder
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportAmountBindingBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L9).
+
+Projects account amounts and exact line identities from the retained canonical ledger population.
+
+```csharp
+public static class ReportAmountBindingBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ImmutableArray&lt;ReportLedgerAmountBindingDto&gt; Build(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L11) |  |
+| <code>public static bool MatchesRetained(ReportingLedgerPopulationSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportAmountBindingBuilder.cs#L39) |  |
+
+## ReportingAccessGrantService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAccessGrantService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L68).
+
+Issues, validates, and revokes reporting access grants and builds recipient access links.
+
+```csharp
+public sealed class ReportingAccessGrantService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingAccessGrantService(IReportingAccessGrantStore store, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L76) |  |
+| <code>public async Task&lt;ReportingAccessGrantSecret&gt; IssueAsync(ReportingAccessGrantIssueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:84](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L84) |  |
+| <code>public async Task&lt;ReportingAccessGrantSecret&gt; IssueIdempotentAsync(ReportingAccessGrantIssueRequest request, ReportingDerivedAccessGrantCredential credential, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:148](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L148) | Creates or reopens the exact same active credential for one durable delivery attempt. A restart can therefore reconstruct a provider-accepted bearer from stable key material while the store continues to retain only its SHA-256 hash. |
+| <code>public async Task&lt;ReportingAccessGrantValidationResult&gt; ValidateAsync(ReportingAccessGrantValidationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:219](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L219) |  |
+| <code>public async Task&lt;bool&gt; RevokeAsync(string grantId, string tenantId, string revokedBy, string reason, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:336](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L336) |  |
+| <code>public static string BuildRecipientAccessUri(string accessBaseUri, ReportingAccessGrantSecret secret, string? artifactId = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs:378](../../../../src/Meridian.Ui.Shared/Services/ReportingAccessGrantService.cs#L378) |  |
+
+## ReportingArtifactAccessContext
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactAccessContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:38](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L38).
+
+Server-resolved access context. API callers must never be allowed to populate this record directly; identity and scope adapters resolve it from the authenticated session.
+
+```csharp
+public sealed record ReportingArtifactAccessContext(string ActorId, string TenantId, string OrganizationId, string? CompanyId, string? FundId, string BookId, string PeriodId, ImmutableArray<string> PrincipalIds, string CorrelationId, ReportingAccessPrincipalScope? DelegatedPrincipal = null);
+```
+
+## ReportingArtifactDownload
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactDownload</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L55).
+
+```csharp
+public sealed record ReportingArtifactDownload(ReportingRetainedArtifactRecord Artifact, byte[] Content, DateTimeOffset AccessedAtUtc, string AuditEventId);
+```
+
+## ReportingArtifactPackageRetentionRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactPackageRetentionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:22](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L22).
+
+Immutable package metadata bound to the exact operational, access-policy, and certified-input snapshots used to render it.
+
+```csharp
+public sealed record ReportingArtifactPackageRetentionRequest(string PackageId, string RunId, string SeriesId, int Revision, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string ManifestId, string ManifestHash, ImmutableArray<ReportingRenderedArtifact> Artifacts);
+```
+
+## ReportingArtifactRetentionAuthorityProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionAuthorityProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:191](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L191).
+
+Production service-principal identity used only for immutable artifact retention.
+
+```csharp
+public sealed class ReportingArtifactRetentionAuthorityProvider : IReportingArtifactRetentionAuthorityProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValueTask&lt;ReportingAuthorityScope&gt; ResolveAsync(GovernedReportingRun governedRun, ReportingGovernanceCallerContext releaseCaller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:193](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L193) |  |
+
+## ReportingArtifactRetentionReceipt
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactRetentionReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:50](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L50).
+
+```csharp
+public sealed record ReportingArtifactRetentionReceipt(ReportingRetainedArtifactPackage Package, bool CatalogAlreadyExisted, ImmutableArray<string> AuditEventIds);
+```
+
+## ReportingArtifactVaultAccessDeniedException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultAccessDeniedException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L64).
+
+Indicates that access to a reporting artifact in the vault was denied.
+
+```csharp
+public sealed class ReportingArtifactVaultAccessDeniedException : UnauthorizedAccessException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingArtifactVaultAccessDeniedException(string message) : base(message);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L66) |  |
+
+## ReportingArtifactVaultService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingArtifactVaultService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L76).
+
+Connects generated package bytes to tenant-scoped immutable blob storage and authoritative scope metadata. Every successful read is integrity checked and durably audited before bytes are returned; audit or integrity failures therefore fail closed.
+
+```csharp
+public sealed class ReportingArtifactVaultService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingArtifactVaultService(IReportingArtifactStore artifactStore, IReportingArtifactCatalog catalog, IReportingArtifactAuditStore auditStore, TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:83](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L83) |  |
+| <code>public async Task&lt;ReportingArtifactRetentionReceipt&gt; RetainPackageAsync(ReportingArtifactPackageRetentionRequest request, ReportingAuthorityScope authority, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:95](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L95) |  |
+| <code>public async Task&lt;ReportingRetainedArtifactPackage&gt; GetPackageForReleaseAsync(string packageId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:215](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L215) |  |
+| <code>public async Task&lt;ReportingArtifactDownload&gt; ReadForDownloadAsync(string packageId, string artifactId, ReportingArtifactAccessContext context, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs:256](../../../../src/Meridian.Ui.Shared/Services/ReportingArtifactVaultService.cs#L256) |  |
+
+## ReportingAuthoritativeAsOfCertification
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeAsOfCertification</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L48).
+
+Exact output returned by the server-side renderer/artifact producer. Artifact ids must be the same ids declared by the completed orchestration manifest; the coordinator rejects partial or augmented output sets before retaining any bytes.
+
+```csharp
+public sealed record ReportingAuthoritativeAsOfCertification(DateOnly AsOfDate, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, string SourceCheckpointId, string SourceCheckpointHash, bool IsAuthoritative, ImmutableArray<string> EvidenceIds);
+```
+
 ## ReportingAuthoritativeSourceCapture
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingAuthoritativeSourceCapture</code>. Kind: `record`.
@@ -656,180 +811,4 @@ Canonical manifest bytes retained alongside every governed reporting package. Th
 
 ```csharp
 public sealed record ReportingRetainedManifestDocument(string SchemaVersion, string RunId, string SeriesId, string TemplateId, VersionedReportTemplateIdDto ResolvedTemplate, DateOnly AsOfDate, string ParametersCanonicalJson, string ParametersHash, ReportingOperationalScope Scope, ReportingAccessScope Access, ReportingCertifiedSnapshotScope Snapshot, ReportingAuthoritativeSourceCheckpoint AuthoritativeSource, ReportingRunReadinessDto Readiness, ImmutableArray<ReportingSectionManifest> Sections, int CertifiedDatasetRowCount, string CertifiedDatasetHashSha256, ImmutableArray<ReportingRetainedManifestArtifactDescriptor> Artifacts);
-```
-
-## ReportingRunCertificationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunCertificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:24](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L24).
-
-Freezes the exact durable source rows, normalized parameters, readiness evidence, and authority scope before orchestration. Caller/workflow rows are never accepted as certification input.
-
-```csharp
-public sealed class ReportingRunCertificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunCertificationService(IReportingAuthoritativeSource? authoritativeSource = null, IReportingReconciliationEvidenceSource? reconciliationEvidenceSource = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:29](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L29) |  |
-| <code>public async ValueTask&lt;CertifiedReportingRunContext&gt; CertifyAsync(ReportingTemplateMetadata template, ReportingRunReadinessDto readiness, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L37) |  |
-| <code>public async ValueTask RevalidateForReleaseAsync(ReportingRunParametersDto parameters, string templateId, ReportingAuthoritativeSourceCheckpoint certifiedSource, ReportingCertifiedSnapshotScope certifiedSnapshot, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:278](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L278) | Rechecks the exact authoritative source and canonical reconciliation queue immediately before final release. Approval of a frozen snapshot must not allow a later queue mutation or ledger change to pass on stale certification. |
-| <code>[Obsolete(&quot;Caller/workflow rows are not certifiable. Use CertifyAsync with a durable authoritative source.&quot;)] public CertifiedReportingRunContext Certify(ReportingTemplateMetadata template, ReportingRunReadinessDto readiness, IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt;? datasetRows, string? datasetSourceId, ReportAccessQueryContext accessContext) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:425](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L425) | Compatibility signature retained so old callers fail closed instead of silently certifying caller-owned or mutable workflow rows. Governed code must use CertifyAsync. |
-| <code>public ReportingReadinessReceipt BuildGovernanceReadiness(string runId, CertifiedReportingRunContext certified, ReportingRunReadinessDto readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:434](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L434) |  |
-
-## ReportingRunCommandService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunCommandService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L11).
-
-Runs reporting requests after readiness checks and retains their output and audit evidence.
-
-```csharp
-public sealed partial class ReportingRunCommandService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunCommandService(IReportingOrchestrationService orchestrationService, IReportingTemplateCatalog templateCatalog, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, ReportWriterDatasetSourceService? datasetSourceService = null, ReportingRunReadinessService? readinessService = null, ReportingRunCertificationService? certificationService = null, IReportingGovernanceEndpointCoordinator? governanceCoordinator = null, IReportingDeploymentReadinessService? deploymentReadinessService = null, IReportingRunStore? runStore = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L23) |  |
-| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:47](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L47) |  |
-| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, ReportAccessQueryContext? accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:53](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L53) |  |
-| <code>public Task&lt;ReportingRunResultDto&gt; RunAsync(ReportingRunRequestDto request, string fallbackActor, ReportAccessQueryContext? accessContext, ReportingGovernanceCallerContext? governanceCaller, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L70) | Executes and immediately reconciles a tenant-bound run into the canonical governed Draft. The method does not return a successful strict-mode result until exact artifacts have been retained and the governance aggregate is Succeeded/Draft. |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs:18](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs#L18).
-
-```csharp
-public sealed partial class ReportingRunCommandService
-```
-
-## ReportingRunDeploymentNotReadyException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunDeploymentNotReadyException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:629](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L629).
-
-Indicates that reporting deployment capability is unavailable for the requested run.
-
-```csharp
-public sealed class ReportingRunDeploymentNotReadyException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunDeploymentNotReadyException(string message, ReportingDeploymentCapabilityDto? capability, Exception? innerException = null) : base(message, innerException);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:631](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L631) |  |
-| <code>public ReportingDeploymentCapabilityDto? Capability { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:640](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L640) |  |
-
-## ReportingRunReadinessBlockedException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessBlockedException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:615](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L615).
-
-Carries the readiness assessment that blocked a reporting run.
-
-```csharp
-public sealed class ReportingRunReadinessBlockedException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunReadinessBlockedException(ReportingRunReadinessDto readiness) : base($&quot;Reporting run readiness is {readiness?.Status}; the requested run cannot be generated.&quot;);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:617](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L617) |  |
-| <code>public ReportingRunReadinessDto Readiness { get; }</code> | [src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs:623](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs#L623) |  |
-
-## ReportingRunReadinessDependencyEvaluator
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessDependencyEvaluator</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L34).
-
-Collects reporting dependency checks from the services available in the deployment.
-
-```csharp
-public sealed class ReportingRunReadinessDependencyEvaluator : IReportingRunReadinessDependencyEvaluator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunReadinessDependencyEvaluator(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:38](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L38) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReportingRunReadinessCheckDto&gt;&gt; EvaluateAsync(ReportingRunRequestDto request, ReportingTemplateMetadata template, ReportingRunParametersDto parameters, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L43) |  |
-
-## ReportingRunReadinessOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L27).
-
-```csharp
-public sealed record ReportingRunReadinessOptions(bool AllowLegacyUnscopedDrafts = false, bool AllowDraftWhenDependencyEvaluatorIsUnavailable = false);
-```
-
-## ReportingRunReadinessService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReadinessService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:455](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L455).
-
-Combines request and dependency checks into a reporting run readiness assessment.
-
-```csharp
-public sealed class ReportingRunReadinessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingRunReadinessService(IReportingTemplateCatalog templateCatalog, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, IReportingRunReadinessDependencyEvaluator? dependencyEvaluator = null, Func&lt;DateTimeOffset&gt;? utcNow = null, ReportingRunReadinessOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:463](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L463) |  |
-| <code>public async Task&lt;ReportingRunReadinessDto&gt; AssessAsync(ReportingRunRequestDto request, ReportAccessQueryContext? accessContext = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:477](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L477) |  |
-
-## ReportingRunStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunStore.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingRunStore.cs#L15).
-
-```csharp
-public sealed record ReportingRunStoreOptions(string RootDirectory);
-```
-
-## ReportingScheduleHostedService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleHostedService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:28](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L28).
-
-Server-owned schedule clock. Public due-run mutation routes are retired; this worker discovers due records internally and lets ReportingScheduleService reconstruct a separate, exact tenant/company authority for every scheduled run.
-
-```csharp
-public sealed class ReportingScheduleHostedService : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportingScheduleHostedService(ReportingScheduleService scheduleService, TimeProvider timeProvider, ILogger&lt;ReportingScheduleHostedService&gt; logger, ReportingScheduleWorkerOptions? options = null) : this(scheduleService, timeProvider, logger, options, readiness : null);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:39](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L39) |  |
-| <code>public ReportingScheduleHostedService(ReportingScheduleService scheduleService, TimeProvider timeProvider, ILogger&lt;ReportingScheduleHostedService&gt; logger, ReportingScheduleWorkerOptions? options, ReportingScheduleWorkerReadinessState? readiness);</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:48](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L48) |  |
-
-## ReportingSchedulePeriodMatch
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingSchedulePeriodMatch</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingSchedulePeriodResolver.cs#L7).
-
-A durable accounting period: its canonical selector (the period id) and its boundaries.
-
-```csharp
-public sealed record ReportingSchedulePeriodMatch(string Selector, DateOnly StartDate, DateOnly EndDate);
 ```

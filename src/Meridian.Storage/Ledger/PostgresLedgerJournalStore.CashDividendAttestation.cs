@@ -27,10 +27,17 @@ public sealed partial class PostgresLedgerJournalStore
         Guid ledgerBookId, CancellationToken ct = default)
     {
         EnsureCashDividendTransactionBackend(connection, transaction);
+        // Gate the complete-book producer before dividend/book/position authority. The stronger
+        // table mode waits for every active append before queuing exclusive dividend authority;
+        // their separate-connection canonical readers can still take shared book authority.
+        // AppendCore requests only the weaker ordinary mode, so no later upgrade is needed.
+        await LockCouponHistoryBoundaryAsync(connection, transaction, historySensitive: true, ct).ConfigureAwait(false);
         await CashDividendEntitlementLock.AcquireAsync(connection, transaction, ledgerBookId, true, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"select base_currency from {Qualified("ledger_books")} where ledger_book_id=@book for update";
+        // The producer reads the book. SHARE prevents direct UPDATE/DELETE while coexisting
+        // with caller-owned append transactions that already retained book read authority.
+        command.CommandText = $"select base_currency from {Qualified("ledger_books")} where ledger_book_id=@book for share";
         command.Parameters.AddWithValue("book", ledgerBookId);
         if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is not string currency || currency != "USD")
             throw new LedgerValidationException("The selected native dividend book is unavailable or is not USD.");

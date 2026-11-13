@@ -18,7 +18,7 @@ namespace Meridian.Tests.Application;
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
 /// The frozen legacy row codec preserves the original nested-member pins. Current calculated rows
 /// explicitly declare row version 2 and retain measured interest intervals and principal-basis
-/// segments when the calculation supplies them. Current and frozen contracts pin every nested member
+/// segments when the v5 fixed-rate walk supplies them. Current and frozen contracts pin every nested member
 /// independently. Top-level and resolved terms members remain unchanged; only a declared projection
 /// adds <c>scheduleEvidence</c>. A stray or malformed convention block still projects exactly as its clean twin.
 /// </summary>
@@ -302,6 +302,8 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                 end.Should().Be(DateOnly.FromDateTime(row["periodDate"]!.GetValue<DateTimeOffset>().UtcDateTime));
                 var segments = row["interestSegments"]!.AsArray();
                 segments.Should().NotBeEmpty("version-2 bond rows retain their measured interest basis");
+                segments[0]!["start"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
+                segments[^1]!["end"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
                 var cursor = start;
                 var interest = 0m;
                 foreach (var segment in segments)

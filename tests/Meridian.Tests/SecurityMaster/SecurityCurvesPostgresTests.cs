@@ -27,6 +27,22 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task SignedPolicy_IsDurableWriteOnce_AndAllowsNegativeRateDiscountFactors()
+    {
+        var store = new PostgresSecurityCurveStore(_fixture.Options);
+        var request = new DefineSecurityCurveRequest(UniqueKey("SIGNED-USD"), SecurityCurveKind.Discount,
+            "USD", null, null, "Actual365Fixed", SecurityCurveInterpolation.Linear, "synthetic-signed-fixture", null, "operator")
+        { RatePolicy = SecurityCurveRatePolicy.SignedRates };
+        var definition = await store.DefineAsync(request);
+        (await store.GetDefinitionAsync(definition.CurveId))!.RatePolicy.Should().Be(SecurityCurveRatePolicy.SignedRates);
+        var version = await store.PublishVersionAsync(new(definition.CurveId, June30,
+            [new(June30, 1m), new(June30.AddYears(1), 1.005m), new(June30.AddYears(2), 1.01m)], "synthetic-signed-fixture", PublishedBy: "operator"));
+        version.Points[^1].Value.Should().Be(1.01m);
+        Func<Task> redefine = () => store.DefineAsync(request with { RatePolicy = SecurityCurveRatePolicy.LegacyNonNegative });
+        await redefine.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task TypedRateEvidence_RoundTripsImmutably_AndVintageChangesAppendAVersion()
     {
         var store = new PostgresSecurityCurveStore(_fixture.Options);

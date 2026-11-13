@@ -6,6 +6,100 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IEntityLifecycleStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.IEntityLifecycleStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs#L6).
+
+Immutable tenant-scoped entity status history and authority leases.
+
+```csharp
+public interface IEntityLifecycleStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;EntityLifecycleRevisionDto?&gt; GetLatestAsync(string tenantId, Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs:8](../../../../src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs#L8) |  |
+| <code>Task&lt;EntityLifecycleRevisionDto?&gt; GetRevisionAsync(string tenantId, Guid entityId, long revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs:9](../../../../src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs#L9) |  |
+| <code>Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(string tenantId, Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs#L10) |  |
+| <code>Task&lt;EntityLifecycleRevisionDto&gt; AppendAsync(EntityLifecycleRevisionDto revision, long expectedRevision, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs:11](../../../../src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs#L11) |  |
+| <code>Task&lt;IAsyncDisposable&gt; AcquireReadLeaseAsync(string tenantId, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs:13](../../../../src/Meridian.Storage/FundStructure/IEntityLifecycleStore.cs#L13) | Retain the lease until the accounting transaction commits or rolls back. |
+
+## IFundStructureStateStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.IFundStructureStateStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureStateStore.cs:6](../../../../src/Meridian.Storage/FundStructure/IFundStructureStateStore.cs#L6).
+
+Loads and saves the serialized fund structure state.
+
+```csharp
+public interface IFundStructureStateStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string? Load();</code> | [src/Meridian.Storage/FundStructure/IFundStructureStateStore.cs:8](../../../../src/Meridian.Storage/FundStructure/IFundStructureStateStore.cs#L8) |  |
+| <code>Task SaveAsync(string json, CancellationToken ct);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStateStore.cs:9](../../../../src/Meridian.Storage/FundStructure/IFundStructureStateStore.cs#L9) |  |
+
+## IFundStructureStore
+
+Qualified name: <code>Meridian.Storage.FundStructure.IFundStructureStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L10).
+
+Persistence interface for the Fund Structure domain. All entity types are stored individually; back-reference lists (e.g. BusinessIds on Organization) are maintained by the service layer and stored alongside the owning entity.
+
+```csharp
+public interface IFundStructureStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task UpsertOrganizationAsync(OrganizationSummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:13](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L13) |  |
+| <code>Task&lt;OrganizationSummaryDto?&gt; GetOrganizationAsync(Guid organizationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:14](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L14) |  |
+| <code>Task&lt;IReadOnlyList&lt;OrganizationSummaryDto&gt;&gt; GetAllOrganizationsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:15](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L15) |  |
+| <code>Task UpsertBusinessAsync(BusinessSummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:18](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L18) |  |
+| <code>Task&lt;BusinessSummaryDto?&gt; GetBusinessAsync(Guid businessId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:19](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L19) |  |
+| <code>Task&lt;IReadOnlyList&lt;BusinessSummaryDto&gt;&gt; GetAllBusinessesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:20](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L20) |  |
+| <code>Task UpsertClientAsync(ClientSummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:23](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L23) |  |
+| <code>Task&lt;ClientSummaryDto?&gt; GetClientAsync(Guid clientId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:24](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L24) |  |
+| <code>Task&lt;IReadOnlyList&lt;ClientSummaryDto&gt;&gt; GetAllClientsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:25](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L25) |  |
+| <code>Task UpsertFundAsync(FundSummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:28](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L28) |  |
+| <code>Task&lt;FundSummaryDto?&gt; GetFundAsync(Guid fundId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:29](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L29) |  |
+| <code>Task&lt;IReadOnlyList&lt;FundSummaryDto&gt;&gt; GetAllFundsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:30](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L30) |  |
+| <code>Task UpsertSleeveAsync(SleeveSummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:33](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L33) |  |
+| <code>Task&lt;SleeveSummaryDto?&gt; GetSleeveAsync(Guid sleeveId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:34](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L34) |  |
+| <code>Task&lt;IReadOnlyList&lt;SleeveSummaryDto&gt;&gt; GetAllSleevesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:35](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L35) |  |
+| <code>Task UpsertVehicleAsync(VehicleSummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:38](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L38) |  |
+| <code>Task&lt;VehicleSummaryDto?&gt; GetVehicleAsync(Guid vehicleId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:39](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L39) |  |
+| <code>Task&lt;IReadOnlyList&lt;VehicleSummaryDto&gt;&gt; GetAllVehiclesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:40](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L40) |  |
+| <code>Task UpsertLegalEntityAsync(LegalEntitySummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:43](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L43) |  |
+| <code>Task&lt;LegalEntitySummaryDto?&gt; GetLegalEntityAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:44](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L44) |  |
+| <code>Task&lt;IReadOnlyList&lt;LegalEntitySummaryDto&gt;&gt; GetAllLegalEntitiesAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:45](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L45) |  |
+| <code>Task UpsertInvestmentPortfolioAsync(InvestmentPortfolioSummaryDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:48](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L48) |  |
+| <code>Task&lt;InvestmentPortfolioSummaryDto?&gt; GetInvestmentPortfolioAsync(Guid portfolioId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:49](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L49) |  |
+| <code>Task&lt;IReadOnlyList&lt;InvestmentPortfolioSummaryDto&gt;&gt; GetAllInvestmentPortfoliosAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:50](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L50) |  |
+| <code>Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:53](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L53) |  |
+| <code>Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:56](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L56) | Persists a scoped link and its tenant in one write; existing foreign ownership cannot change. |
+| <code>Task&lt;IReadOnlyList&lt;OwnershipLinkDto&gt;&gt; GetAllOwnershipLinksAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:60](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L60) |  |
+| <code>Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:63](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L63) |  |
+| <code>Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, string? tenantId, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:66](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L66) | Persists a scoped assignment and its tenant in one write; existing foreign ownership cannot change. |
+| <code>Task&lt;IReadOnlyList&lt;FundStructureAssignmentDto&gt;&gt; GetAllAssignmentsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:70](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L70) |  |
+| <code>Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:73](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L73) |  |
+| <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetAllLinkedAccountIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:74](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L74) |  |
+| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:77](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L77) |  |
+| <code>Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:96](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L96) | The tenant stamped on each node this store partitions, for the nodes that carry one. |
+| <code>Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:101](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L101) | Stamps nodeId as owned by tenantId. |
+| <code>Task&lt;FundStructureLegacyImportResult&gt; ImportLegacySnapshotIfEmptyAsync(FundStructureLegacyImportRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:109](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L109) | Imports one legacy JSON snapshot as a single database transaction when the store is empty. The source hash is committed in the same transaction so startup can safely recover a process failure between database commit and source-file archival. |
+
 ## IFundStructureTenantBackfillSession
 
 Qualified name: <code>Meridian.Storage.FundStructure.IFundStructureTenantBackfillSession</code>. Kind: `interface`.
@@ -880,7 +974,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static LedgerJournalEntryWrite NormalizeAndValidate(LedgerJournalEntryWrite write, bool requirePostingCommand = false, bool requireExpectedVersion = false, bool allowPreparerAttestation = false);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:22](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L22) |  |
-| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:716](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L716) | Unversioned legacy metadata never supplies command actor attribution. |
+| <code>public static string? ReadRetainedPostingActor(JournalEntryMetadata metadata);</code> | [src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs:717](../../../../src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs#L717) | Unversioned legacy metadata never supplies command actor attribution. |
 
 ## AtomicLotReferenceVersions
 
@@ -1060,56 +1154,3 @@ Declared public members:
 | <code>public Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:98](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L98) |  |
 | <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:109](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L109) |  |
 | <code>public Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationRevisionAsync(Guid ledgerBookId, int revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:115](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L115) |  |
-
-## ConsolidationFxPostgresStore
-
-Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxPostgresStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:9](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L9).
-
-Immutable approved FX revisions, serialized against posting&#x27;s shared authority lease.
-
-```csharp
-public sealed class ConsolidationFxPostgresStore : IConsolidationFxStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ConsolidationFxPostgresStore(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:15](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L15) |  |
-| <code>public async Task RetainRateSetAsync(ConsolidationFxRateSetDto value, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:21](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L21) |  |
-| <code>public async Task&lt;ConsolidationFxRateSetDto?&gt; GetRateSetAsync(string tenantId, string companyId, Guid rateSetId, int revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:58](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L58) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ConsolidationFxRateSetDto&gt;&gt; ListRateSetsAsync(string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:75](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L75) |  |
-| <code>public async Task RetainConfigurationAsync(ConsolidationFxBookConfigurationDto value, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:93](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L93) |  |
-| <code>public async Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationAsync(Guid ledgerBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:141](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L141) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:161](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L161) |  |
-| <code>public async Task&lt;ConsolidationFxBookConfigurationDto?&gt; GetConfigurationRevisionAsync(Guid ledgerBookId, int revision, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs:180](../../../../src/Meridian.Storage/Ledger/ConsolidationFxPostgresStore.cs#L180) |  |
-
-## ConsolidationFxState
-
-Qualified name: <code>Meridian.Storage.Ledger.ConsolidationFxState</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs:182](../../../../src/Meridian.Storage/Ledger/ConsolidationFxInMemoryStore.cs#L182).
-
-```csharp
-public sealed record ConsolidationFxState(IReadOnlyList<ConsolidationFxRateSetDto> RateSets, IReadOnlyList<ConsolidationFxBookConfigurationDto> Configurations);
-```
-
-## ConsolidationPostingEvidenceGuard
-
-Qualified name: <code>Meridian.Storage.Ledger.ConsolidationPostingEvidenceGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs:136](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs#L136).
-
-Reserved evidence is checked even when a caller bypasses the workbench.
-
-```csharp
-public static class ConsolidationPostingEvidenceGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ConsolidationEvidenceDto? Validate(LedgerJournalEntryWrite write);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs:140](../../../../src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs#L140) |  |

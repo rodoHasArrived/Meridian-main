@@ -960,6 +960,8 @@ public sealed record PostingRuleJournalCandidateRequestDto(
     string? TenantId = null,
     string? CompanyId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
 

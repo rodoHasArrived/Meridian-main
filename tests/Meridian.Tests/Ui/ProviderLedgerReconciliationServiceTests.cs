@@ -30,7 +30,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class ProviderLedgerReconciliationServiceTests
+public sealed partial class ProviderLedgerReconciliationServiceTests
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
