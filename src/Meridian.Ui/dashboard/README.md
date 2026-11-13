@@ -18,7 +18,10 @@ convention-migration workflows. Symbol-only holdings resolve an exact Security M
 ambiguous matches require selection. `securityId`, `tab=evidence` and `bondAction=analytics|migration`
 retain the requested action on reload. Explicitly linked instruments control the explorer selection;
 an absent row never substitutes the default instrument. Initial action focus is applied once, and
-manual record selection updates the link. Instrument reads disable development fallback.
+manual record selection updates the link. The explorer's initial automatic selection replaces the
+current history entry, so Back leaves Security Master in one step. Subsequent explicit selections
+create history entries; Back and Forward restore their exact instruments. Instrument reads disable
+development fallback.
 
 Issuer and maturity ladders are browsable before selecting a security. Keyboard-accessible row
 actions open authoritative instrument detail. Command search includes analytics, convention

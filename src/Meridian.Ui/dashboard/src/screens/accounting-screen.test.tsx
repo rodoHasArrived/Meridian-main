@@ -2,7 +2,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import * as bondReferenceApi from "@/lib/api/bond-reference.api";
@@ -1577,6 +1577,15 @@ function AccountingLocationProbe({ onChange }: { onChange: (search: string) => v
 function AccountingRouteProbe() {
   const location = useLocation();
   return <output aria-label="Accounting route">{location.pathname}{location.search}{location.hash}</output>;
+}
+
+function AccountingHistoryProbe() {
+  const navigate = useNavigate();
+  return <>
+    <AccountingRouteProbe />
+    <button type="button" onClick={() => navigate(-1)}>History back</button>
+    <button type="button" onClick={() => navigate(1)}>History forward</button>
+  </>;
 }
 
 async function renderAccountingScreenWithLocation(
@@ -5085,6 +5094,55 @@ describe("AccountingScreen", () => {
     await waitForAsyncEffects();
     expect(api.getSecurityIdentity).toHaveBeenLastCalledWith(bondId.toUpperCase());
     expect(screen.getByRole("heading", { name: "Bond analytics" })).toBeInTheDocument();
+  });
+
+  it("replaces the automatic explorer selection so Back leaves Security Master in one step", async () => {
+    const user = userEvent.setup();
+    const securityId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const row = { ...explorer.rows[0], recordId: `security-instrument:${securityId}`, detail: { ...explorer.rows[0].detail, recordId: `security-instrument:${securityId}` } };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [row], selectedRecord: row.detail });
+    renderWithRouter(<><AccountingScreen data={data} /><AccountingHistoryProbe /></>, {
+      initialEntries: ["/portfolio", "/accounting/security-master?fundAccountId=fund-alpha&tab=reference#bond-ladders"]
+    });
+    const route = () => new URL(screen.getByLabelText("Accounting route").textContent!, "https://meridian.test");
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(securityId));
+    expect(route().searchParams.get("fundAccountId")).toBe("fund-alpha");
+    expect(route().searchParams.get("tab")).toBe("reference");
+    expect(route().hash).toBe("#bond-ladders");
+
+    await user.click(screen.getByRole("button", { name: "History back" }));
+    await waitFor(() => expect(route().pathname).toBe("/portfolio"));
+    await user.click(screen.getByRole("button", { name: "History forward" }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(securityId));
+    await user.click(screen.getByRole("button", { name: "History back" }));
+    await waitFor(() => expect(route().pathname).toBe("/portfolio"));
+  });
+
+  it("pushes explicit explorer choices and restores exact instruments with Back and Forward", async () => {
+    const user = userEvent.setup();
+    const firstId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+    const secondId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+    const explorer = await api.getFinancialRecordExplorer("security-instrument");
+    const first = { ...explorer.rows[0], recordId: `security-instrument:${firstId}`, detail: { ...explorer.rows[0].detail, recordId: `security-instrument:${firstId}` } };
+    const second = { ...first, recordId: `security-instrument:${secondId}`, label: "Second instrument", cells: first.cells.map(cell => cell.columnId === "name" ? { ...cell, displayValue: "Second instrument" } : cell), detail: { ...first.detail, recordId: `security-instrument:${secondId}`, title: "Second instrument" } };
+    vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [first, second], selectedRecord: first.detail });
+    renderWithRouter(<><AccountingScreen data={data} /><AccountingHistoryProbe /></>, {
+      initialEntries: [`/accounting/security-master?securityId=${firstId}&fundAccountId=fund-alpha&tab=reference#bond-ladders`]
+    });
+    const route = () => new URL(screen.getByLabelText("Accounting route").textContent!, "https://meridian.test");
+    const grid = await screen.findByRole("grid", { name: "Security & Instrument Explorer records" });
+    await user.click(within(grid).getByRole("row", { name: /Second instrument/ }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(secondId));
+    await user.click(screen.getByRole("button", { name: "History back" }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(firstId));
+    await waitFor(() => expect(api.getSecurityDetail).toHaveBeenLastCalledWith(firstId, { allowDevelopmentFallback: false }));
+    await user.click(screen.getByRole("button", { name: "History forward" }));
+    await waitFor(() => expect(route().searchParams.get("securityId")).toBe(secondId));
+    await waitFor(() => expect(api.getSecurityDetail).toHaveBeenLastCalledWith(secondId, { allowDevelopmentFallback: false }));
+    expect(route().searchParams.get("fundAccountId")).toBe("fund-alpha");
+    expect(route().searchParams.get("tab")).toBe("reference");
+    expect(route().hash).toBe("#bond-ladders");
   });
 
   it("offers issuer and maturity ladders before a security is selected", async () => {

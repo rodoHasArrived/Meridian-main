@@ -52,6 +52,24 @@ const resolver = createScreenshotApiResolver(loaded.module, fixtures);
 const explorerPath = "/api/workstation/financial-record-explorers/security-instrument";
 const emptyExplorer = structuredClone(resolver.resolve(explorerPath).body);
 Object.assign(emptyExplorer, { rows: [], selectedRecord: null, proofActions: [], recordGraph: { nodes: [], edges: [] } });
+const populatedExplorer = structuredClone(resolver.resolve(explorerPath).body);
+for (const filter of [...populatedExplorer.filters, ...populatedExplorer.savedViews.flatMap(view => view.filters)]) {
+  if (filter.filterId === "asset-class") filter.value = "Bond";
+}
+const selectedExplorerRow = populatedExplorer.rows[0];
+selectedExplorerRow.recordId = `security-instrument:${securityId}`;
+selectedExplorerRow.label = name;
+for (const cell of selectedExplorerRow.cells) {
+  if (cell.columnId === "security") cell.displayValue = cell.rawValue = name;
+  if (cell.columnId === "assetClass") cell.displayValue = cell.rawValue = "Bond";
+}
+selectedExplorerRow.detail = {
+  recordId: selectedExplorerRow.recordId, recordType: "Security instrument", title: name,
+  subtitle: "ISIN XS0000000001", description: "Synthetic retained instrument for browser history acceptance.", tone: "Success",
+  fields: [{ label: "Currency", value: "USD", detail: "Retained economic currency.", tone: "Default" }],
+  proofActions: [], usedIn: [], impacts: [], fullRecordHref: `/accounting/security-master?securityId=${securityId}`
+};
+Object.assign(populatedExplorer, { rows: [selectedExplorerRow], selectedRecord: selectedExplorerRow.detail, proofActions: [], recordGraph: { nodes: [], edges: [] } });
 const reads = new Map([
   [explorerPath, emptyExplorer],
   ["/api/workstation/security-master/securities", [entry]],
@@ -92,6 +110,9 @@ try {
     const url = new URL(request.url());
     if (!url.pathname.startsWith("/api/")) return route.continue();
     const send = (status, body) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body), headers: { "x-meridian-dev-fixture": "true" } });
+    if (request.method() === "GET" && url.pathname === "/api/symbols/search" && url.searchParams.get("query") === "Security Master") {
+      return send(200, []); // This command query has no synthetic asset matches.
+    }
     if (request.method() === "GET" && reads.has(url.pathname)) {
       if (url.pathname === `/api/reference-data/bonds/${securityId}/analytics`) report.analyticsRequests.push(Object.fromEntries(url.searchParams));
       return send(200, reads.get(url.pathname));
@@ -270,6 +291,26 @@ try {
   await page.getByLabel("Prepayment 2 method", { exact: true }).scrollIntoViewIfNeeded();
   await capture("scenario-prepayments-and-notice", 1366, 768);
   report.checks.push("Scenario preview submits two exact prepayment intervals and an explicit hypothetical notice date, separate from exercise date.");
+
+  reads.set(explorerPath, populatedExplorer);
+  for (const { width, height } of [{ width: 1440, height: 900 }, { width: 1366, height: 768 }]) {
+    await page.setViewportSize({ width, height });
+    await navigate("/portfolio/cash-ladder");
+    await page.getByRole("button", { name: /Jul 5 - Jul 11: net/ }).waitFor();
+    await page.keyboard.press("Control+k");
+    await page.getByLabel("Search command palette", { exact: true }).fill("Security Master");
+    await page.getByRole("link", { name: "Open Security Master route", exact: true }).click();
+    await page.waitForURL(url => url.pathname.endsWith("/accounting/security-master") && url.searchParams.get("securityId") === securityId);
+    await page.getByRole("row").filter({ hasText: name }).waitFor();
+    await page.goBack();
+    await page.waitForURL(url => url.pathname.endsWith("/portfolio/cash-ladder"));
+    await capture("security-master-browser-back", width, height);
+    await page.goForward();
+    await page.waitForURL(url => url.pathname.endsWith("/accounting/security-master") && url.searchParams.get("securityId") === securityId);
+    await page.getByRole("heading", { name: "Security Master", exact: true }).waitFor();
+    await capture("security-master-browser-forward", width, height);
+  }
+  report.checks.push("With a populated explorer, default Security Master selection preserves one navigation entry: Back returns to Cash ladder and Forward restores the exact instrument at both viewport widths.");
   assert.equal(await page.locator("vite-error-overlay").count(), 0);
   assert.equal(report.pageErrors.length, 0, JSON.stringify(report.pageErrors));
   assert.equal(report.failedRequests.length, 0, JSON.stringify(report.failedRequests));

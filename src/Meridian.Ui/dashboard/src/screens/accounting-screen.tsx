@@ -178,12 +178,12 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const selectSecurityById = securityMaster.selectSecurity;
   const requestedSecurityId = new URLSearchParams(search).get("securityId")?.trim() || null;
-  const selectSecurityWithRoute = useCallback((securityId: string) => {
+  const selectSecurityWithRoute = useCallback((securityId: string, replace = false) => {
     const next = new URLSearchParams(search);
     if (requestedSecurityId && requestedSecurityId !== securityId) next.delete("bondAction");
     next.set("securityId", securityId);
     if (requestedSecurityId === securityId) void selectSecurityById(securityId);
-    else navigate({ pathname, search: `?${next}`, hash });
+    else navigate({ pathname, search: `?${next}`, hash }, { replace });
   }, [hash, navigate, pathname, requestedSecurityId, search, selectSecurityById]);
   const [observedFixingSelection, setObservedFixingSelection] = useState<{ securityId: string; receipts: BondObservedFixingReceipt[] } | null>(null);
   const observedFixingReceiptIds = useMemo(() => observedFixingSelection?.securityId === securityMaster.selectedSecurityId
@@ -206,8 +206,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const selectSecurityFromExplorer = useCallback((recordId: string) => {
     const securityId = resolveExplorerSecurityId(recordId);
     if (!securityId) return;
-    selectSecurityWithRoute(securityId);
-  }, [selectSecurityWithRoute]);
+    // The explorer selects its default row on mount. Synchronize that initial selection
+    // without adding a Back destination that would immediately select and push it again.
+    selectSecurityWithRoute(securityId, requestedSecurityId === null);
+  }, [requestedSecurityId, selectSecurityWithRoute]);
   useEffect(() => {
     if (workstream === "security-master" && requestedSecurityId) {
       void selectSecurityById(requestedSecurityId);
