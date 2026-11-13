@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Core.Logging;
@@ -21,6 +22,7 @@ public sealed class DetailedHealthCheck : IDisposable
     private readonly ConcurrentDictionary<string, DependencyHealthCheck> _dependencies = new();
     private readonly DetailedHealthCheckConfig _config;
     private readonly Timer _checkTimer;
+    private readonly TimeProvider _timeProvider;
     private volatile bool _isDisposed;
 
     // External service providers
@@ -39,9 +41,10 @@ public sealed class DetailedHealthCheck : IDisposable
     /// </summary>
     public event Action<DependencyRecoveredEvent>? OnDependencyRecovered;
 
-    public DetailedHealthCheck(DetailedHealthCheckConfig? config = null)
+    public DetailedHealthCheck(DetailedHealthCheckConfig? config = null, TimeProvider? timeProvider = null)
     {
         _config = config ?? DetailedHealthCheckConfig.Default;
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _checkTimer = new Timer(
             CheckDependencies,
             null,
@@ -81,7 +84,8 @@ public sealed class DetailedHealthCheck : IDisposable
             type,
             healthCheck,
             isCritical,
-            timeout ?? TimeSpan.FromSeconds(_config.DependencyTimeoutSeconds));
+            timeout ?? TimeSpan.FromSeconds(_config.DependencyTimeoutSeconds),
+            _timeProvider);
 
         _dependencies.TryAdd(name, dependency);
         _log.Debug("Registered dependency health check: {Name} ({Type})", name, type);
@@ -210,8 +214,8 @@ public sealed class DetailedHealthCheck : IDisposable
         var latencyStats = _latencyStatsProvider?.Invoke();
         if (latencyStats != null)
         {
-            var latencyStatus = latencyStats.GlobalP99Ms > 1000 ? DetailedHealthStatus.Degraded :
-                               latencyStats.GlobalP99Ms > 500 ? DetailedHealthStatus.Unknown :
+            var latencyStatus = latencyStats.GlobalP99Ms > 1000 ? DetailedHealthStatus.Unhealthy :
+                               latencyStats.GlobalP99Ms > 500 ? DetailedHealthStatus.Degraded :
                                DetailedHealthStatus.Healthy;
 
             checks.Add(new HealthCheckItem(
@@ -256,6 +260,7 @@ public sealed class DetailedHealthCheck : IDisposable
             sw.Stop();
 
             var wasHealthy = dep.IsHealthy;
+            var downtime = dep.DowntimeDuration;
             dep.UpdateStatus(isHealthy);
 
             // Raise events on status change
@@ -273,7 +278,7 @@ public sealed class DetailedHealthCheck : IDisposable
                 try
                 {
                     OnDependencyRecovered?.Invoke(new DependencyRecoveredEvent(
-                        dep.Name, dep.Type, DateTimeOffset.UtcNow, dep.DowntimeDuration));
+                        dep.Name, dep.Type, DateTimeOffset.UtcNow, downtime));
                 }
                 catch (Exception ex) { _log.Debug(ex, "Error invoking OnDependencyRecovered event for {Name}", dep.Name); }
             }
@@ -312,7 +317,8 @@ public sealed class DetailedHealthCheck : IDisposable
         return new DetailedHealthReport(
             Status: overallStatus,
             Timestamp: timestamp,
-            Version: "1.6.0",
+            Version: typeof(DetailedHealthCheck).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? typeof(DetailedHealthCheck).Assembly.GetName().Version?.ToString() ?? "unknown",
             Checks: checks,
             Summary: new HealthSummary(
                 TotalChecks: checks.Count,
@@ -348,6 +354,7 @@ public sealed class DetailedHealthCheck : IDisposable
             {
                 var dep = kvp.Value;
                 var wasHealthy = dep.IsHealthy;
+                var downtime = dep.DowntimeDuration;
 
                 try
                 {
@@ -367,11 +374,11 @@ public sealed class DetailedHealthCheck : IDisposable
                     }
                     else if (!wasHealthy && isHealthy)
                     {
-                        _log.Information("Dependency {Name} ({Type}) recovered after {Duration}", dep.Name, dep.Type, dep.DowntimeDuration);
+                        _log.Information("Dependency {Name} ({Type}) recovered after {Duration}", dep.Name, dep.Type, downtime);
                         try
                         {
                             OnDependencyRecovered?.Invoke(new DependencyRecoveredEvent(
-                                dep.Name, dep.Type, DateTimeOffset.UtcNow, dep.DowntimeDuration));
+                                dep.Name, dep.Type, DateTimeOffset.UtcNow, downtime));
                         }
                         catch (Exception ex) { _log.Debug(ex, "Error invoking OnDependencyRecovered event for {Name}", dep.Name); }
                     }
@@ -406,22 +413,26 @@ public sealed class DetailedHealthCheck : IDisposable
         public bool IsCritical { get; }
         public TimeSpan Timeout { get; }
 
+        private readonly TimeProvider _timeProvider;
         private volatile bool _isHealthy = true;
-        private DateTimeOffset _lastHealthyTime = DateTimeOffset.UtcNow;
-        private DateTimeOffset _firstUnhealthyTime = DateTimeOffset.UtcNow;
+        private DateTimeOffset _lastHealthyTime;
+        private DateTimeOffset _firstUnhealthyTime;
         private int _consecutiveFailures;
 
         public bool IsHealthy => _isHealthy;
         public int ConsecutiveFailures => _consecutiveFailures;
-        public TimeSpan DowntimeDuration => !_isHealthy ? DateTimeOffset.UtcNow - _firstUnhealthyTime : TimeSpan.Zero;
+        public TimeSpan DowntimeDuration => !_isHealthy ? _timeProvider.GetUtcNow() - _firstUnhealthyTime : TimeSpan.Zero;
 
         public DependencyHealthCheck(
             string name,
             string type,
             Func<CancellationToken, Task<bool>> healthCheck,
             bool isCritical,
-            TimeSpan timeout)
+            TimeSpan timeout,
+            TimeProvider timeProvider)
         {
+            _timeProvider = timeProvider;
+            _lastHealthyTime = _firstUnhealthyTime = timeProvider.GetUtcNow();
             Name = name;
             Type = type;
             HealthCheck = healthCheck;
@@ -434,14 +445,14 @@ public sealed class DetailedHealthCheck : IDisposable
             if (isHealthy)
             {
                 _isHealthy = true;
-                _lastHealthyTime = DateTimeOffset.UtcNow;
+                _lastHealthyTime = _timeProvider.GetUtcNow();
                 _consecutiveFailures = 0;
             }
             else
             {
                 if (_isHealthy)
                 {
-                    _firstUnhealthyTime = DateTimeOffset.UtcNow;
+                    _firstUnhealthyTime = _timeProvider.GetUtcNow();
                 }
                 _isHealthy = false;
                 _consecutiveFailures++;

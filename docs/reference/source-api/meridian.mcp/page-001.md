@@ -146,14 +146,14 @@ Declared public members:
 | <code>public string AuditScriptPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:22](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L22) |  |
 | <code>public string AiEditToolPath =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:23](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L23) |  |
 | <code>public RepoPathService();</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:25](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L25) |  |
-| <code>public string KnownErrorsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:57](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L57) |  |
-| <code>public string CSharpInstructionsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:58](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L58) |  |
-| <code>public string CodeReviewAgentFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:59](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L59) |  |
-| <code>public string ProvidersGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:60](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L60) |  |
-| <code>public string TestingGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:61](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L61) |  |
-| <code>public string StorageGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:62](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L62) |  |
-| <code>public string FSharpGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:63](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L63) |  |
-| <code>public string ResolveInsideRoot(string path);</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:65](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L65) |  |
+| <code>public string KnownErrorsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:66](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L66) |  |
+| <code>public string CSharpInstructionsFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:67](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L67) |  |
+| <code>public string CodeReviewAgentFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:68](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L68) |  |
+| <code>public string ProvidersGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:69](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L69) |  |
+| <code>public string TestingGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:70](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L70) |  |
+| <code>public string StorageGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:71](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L71) |  |
+| <code>public string FSharpGuideFile =&gt; …;</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:72](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L72) |  |
+| <code>public string ResolveInsideRoot(string path);</code> | [src/Meridian.Mcp/Services/RepoPathService.cs:74](../../../../src/Meridian.Mcp/Services/RepoPathService.cs#L74) |  |
 
 ## AdrTools
 

@@ -1,5 +1,5 @@
 import importlib.util
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
 from pathlib import Path
@@ -115,6 +115,34 @@ class WindowsCiRunnerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, patch.object(sys, "argv", ["runner", "--results-dir", tmp]):
             with patch.object(module.platform, "system", return_value="Windows"), patch.object(module.subprocess, "run", side_effect=command), patch.object(module.runner, "run_tests", side_effect=test_slices):
                 self.assertEqual(module.main(), 1)
+
+    def test_unicode_build_failure_tail_on_legacy_console_preserves_failure_and_utf8_log(self):
+        failure = "Build failed: expected \u2193; caf\u00e9\n"
+        calls = []
+
+        def command(cmd, **kwargs):
+            calls.append(cmd)
+            if cmd[1] == "build":
+                kwargs["stdout"].write(failure)
+            return type("Completed", (), {"returncode": 7 if cmd[1] == "build" else 0})()
+
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
+                patch.object(sys, "argv", ["runner", "--results-dir", tmp]), \
+                patch.object(module.platform, "system", return_value="Windows"), \
+                patch.object(module.subprocess, "run", side_effect=command), \
+                patch.object(module.runner, "run_tests") as run_tests, \
+                patch.dict(module.os.environ):
+            raw_console = io.BytesIO()
+            with io.TextIOWrapper(raw_console, encoding="cp1252", errors="strict") as console:
+                with redirect_stderr(console), redirect_stdout(io.StringIO()):
+                    self.assertEqual(module.main(), 1)
+                console.flush()
+                self.assertIn("Build failed: expected \\u2193; caf\u00e9", raw_console.getvalue().decode("cp1252"))
+            run_tests.assert_not_called()
+            self.assertEqual([cmd[1] for cmd in calls], ["restore", "build"])
+            self.assertIn(failure.encode("utf-8"), (Path(tmp) / "build.log").read_bytes())
+            payload = json.loads((Path(tmp) / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual([result["exit_code"] for result in payload["build_results"]], [0, 7])
 
     def test_automatic_paths_include_every_manual_slice_dependency(self):
         workflow = (ROOT / ".github/workflows/windows-desktop-build.yml").read_text()

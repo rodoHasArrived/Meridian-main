@@ -125,14 +125,13 @@ public static class IntercompanyAgreementRules
             Fail("Agreement dates exceed a party's retained existence interval.");
     }
 
-    public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) => Digest(
+    public static string ReviewedHash(IntercompanyAgreementReviewPayloadDto payload) => Sha256Digest.ComputeUtf8(
         JsonSerializer.Serialize(payload, FundStructureContractsJsonContext.Default.IntercompanyAgreementReviewPayloadDto));
-    public static string CommandHash(IntercompanyAgreementCommandDto command) => Digest(
+    public static string CommandHash(IntercompanyAgreementCommandDto command) => Sha256Digest.ComputeUtf8(
         JsonSerializer.Serialize(command, FundStructureContractsJsonContext.Default.IntercompanyAgreementCommandDto));
     public static bool SameEvidence(IReadOnlyList<IntercompanyAgreementEvidenceDto> first, IReadOnlyList<IntercompanyAgreementEvidenceDto> second) =>
         first.Count == second.Count && first.OrderBy(e => e.Reference, StringComparer.Ordinal).SequenceEqual(second.OrderBy(e => e.Reference, StringComparer.Ordinal));
     public static bool SameActor(string? first, string? second) => string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
     private static bool RoleEquals(string a, string b) => string.Equals(a.Replace(" ", string.Empty), b.Replace(" ", string.Empty), StringComparison.OrdinalIgnoreCase);
-    private static string Digest(string text) => Sha256Digest.ComputeUtf8(text);
     private static void Fail(string message) => throw new IntercompanyAgreementValidationException(message);
 }

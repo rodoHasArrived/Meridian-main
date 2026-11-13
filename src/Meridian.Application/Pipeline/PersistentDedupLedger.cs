@@ -38,6 +38,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     private readonly ILogger _log = LoggingSetup.ForContext<PersistentDedupLedger>();
     private readonly string _ledgerPath;
     private readonly TimeSpan _entryTtl;
+    private readonly TimeProvider _timeProvider;
     private readonly int _maxInMemoryEntries;
 
     // In-memory cache: composite key → (last-seen timestamp, persisted entry version)
@@ -77,7 +78,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     private static int _hashPathWarmed;
 
     // Background eviction timer — avoids scanning the full cache on the hot path.
-    private readonly Timer _evictionTimer;
+    private readonly ITimer _evictionTimer;
 
     /// <summary>Default number of ledger lines below which the file is never compacted.</summary>
     internal const int DefaultCompactionMinLines = 100_000;
@@ -100,11 +101,13 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         string ledgerDirectory,
         TimeSpan? entryTtl = null,
         int maxInMemoryEntries = 500_000,
-        int compactionMinLines = DefaultCompactionMinLines)
+        int compactionMinLines = DefaultCompactionMinLines,
+        TimeProvider? timeProvider = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(compactionMinLines);
         _ledgerPath = Path.Combine(ledgerDirectory, "dedup_ledger.jsonl");
         _entryTtl = entryTtl ?? TimeSpan.FromHours(24);
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _maxInMemoryEntries = maxInMemoryEntries;
         _compactionMinLines = compactionMinLines;
         Directory.CreateDirectory(ledgerDirectory);
@@ -112,7 +115,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         WarmPrefixCache();
 
         // Run eviction every 30 seconds in the background to avoid blocking the hot path.
-        _evictionTimer = new Timer(_ => EvictExpiredBackground(), null,
+        _evictionTimer = _timeProvider.CreateTimer(_ => EvictExpiredBackground(), null,
             TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
     }
 
@@ -155,7 +158,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// </summary>
     public async Task InitializeAsync(CancellationToken ct = default)
     {
-        var cutoff = DateTimeOffset.UtcNow.Ticks - _entryTtl.Ticks;
+        var cutoff = _timeProvider.GetUtcNow().Ticks - _entryTtl.Ticks;
         var loadedCleanly = true;
         _diskLineCount = 0;
 
@@ -195,7 +198,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// </summary>
     public void Initialize()
     {
-        var cutoff = DateTimeOffset.UtcNow.Ticks - _entryTtl.Ticks;
+        var cutoff = _timeProvider.GetUtcNow().Ticks - _entryTtl.Ticks;
         var loadedCleanly = true;
         _diskLineCount = 0;
 
@@ -308,7 +311,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
 
         // Check cache first
         if (_cache.TryGetValue(key, out var existing) &&
-            DateTimeOffset.UtcNow.Ticks - existing.Ticks < _entryTtl.Ticks)
+            _timeProvider.GetUtcNow().Ticks - existing.Ticks < _entryTtl.Ticks)
         {
             Interlocked.Increment(ref _totalDuplicates);
             return true;
@@ -326,7 +329,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             await Task.Delay(10, ct).ConfigureAwait(false);
 
             if (_cache.TryGetValue(key, out existing) &&
-                DateTimeOffset.UtcNow.Ticks - existing.Ticks < _entryTtl.Ticks)
+                _timeProvider.GetUtcNow().Ticks - existing.Ticks < _entryTtl.Ticks)
             {
                 Interlocked.Increment(ref _totalDuplicates);
                 return true;
@@ -338,7 +341,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             // Double-check after acquiring the slot: a concurrent commit may have published the
             // identity between the cache read above and the TryAdd (commits publish the cache
             // entry before releasing their pending token, so it is guaranteed visible here).
-            var nowTicks = DateTimeOffset.UtcNow.Ticks;
+            var nowTicks = _timeProvider.GetUtcNow().Ticks;
             if (_cache.TryGetValue(key, out existing) && nowTicks - existing.Ticks < _entryTtl.Ticks)
             {
                 Interlocked.Increment(ref _totalDuplicates);
@@ -428,7 +431,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         Interlocked.Increment(ref _totalChecked);
 
         var key = GetCachedOrComputeEventKey(evt);
-        var nowTicks = DateTimeOffset.UtcNow.Ticks;
+        var nowTicks = _timeProvider.GetUtcNow().Ticks;
 
         if (_cache.TryGetValue(key, out var existing) && nowTicks - existing.Ticks < _entryTtl.Ticks)
         {
@@ -489,7 +492,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         try
         {
             await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
-            var nowTicks = DateTimeOffset.UtcNow.Ticks;
+            var nowTicks = _timeProvider.GetUtcNow().Ticks;
 
             // Stage 1: append a durability-confirmed line for every reservation that is still
             // held by its token, remembering which ones qualified. Nothing in memory changes
@@ -851,7 +854,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
         }
 
-        var nowTicks = DateTimeOffset.UtcNow.Ticks;
+        var nowTicks = _timeProvider.GetUtcNow().Ticks;
         return _cache.TryGetValue(key!, out var existing) && (nowTicks - existing.Ticks < _entryTtl.Ticks);
     }
 
@@ -868,7 +871,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         {
             _benchmarkEventKeyCache[evt] = key;
         }
-        _cache[key] = new DedupCacheEntry(DateTimeOffset.UtcNow.Ticks, EntryVersionLegacy);
+        _cache[key] = new DedupCacheEntry(_timeProvider.GetUtcNow().Ticks, EntryVersionLegacy);
     }
 
     /// <summary>
@@ -917,7 +920,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     {
         if (_cache.Count <= _maxInMemoryEntries)
             return;
-        EvictExpired(DateTimeOffset.UtcNow.Ticks);
+        EvictExpired(_timeProvider.GetUtcNow().Ticks);
     }
 
     private void EvictExpired(long nowTicks)
@@ -1020,7 +1023,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         }
 
         var tempPath = _ledgerPath + ".tmp";
-        var nowTicks = DateTimeOffset.UtcNow.Ticks;
+        var nowTicks = _timeProvider.GetUtcNow().Ticks;
         var cutoff = nowTicks - _entryTtl.Ticks;
         var kept = 0;
 

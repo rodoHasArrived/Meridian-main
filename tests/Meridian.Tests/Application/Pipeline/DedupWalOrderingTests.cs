@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using System.Collections.Concurrent;
 using FluentAssertions;
 using Meridian.Application.Pipeline;
@@ -695,7 +696,8 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         Directory.CreateDirectory(ledgerDir);
         var evt = CreateTradeEvent("TTLRESET", 800);
 
-        await using var ledger = new PersistentDedupLedger(ledgerDir, entryTtl: TimeSpan.FromMilliseconds(500));
+        var time = new FakeTimeProvider();
+        await using var ledger = new PersistentDedupLedger(ledgerDir, entryTtl: TimeSpan.FromMilliseconds(500), timeProvider: time);
         await ledger.InitializeAsync();
 
         var reserved = await ledger.TryReserveAsync(evt, DedupLookupScope.LiveIngress, CancellationToken.None);
@@ -712,7 +714,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         // Past the TTL the same key may describe a different logical occurrence. A legacy
         // re-admission must reset trust to version 1: the old sink write proves nothing about
         // the new occurrence, so a refreshed timestamp must not revive the confirmation.
-        await Task.Delay(700);
+        time.Advance(TimeSpan.FromMilliseconds(700));
         (await ledger.IsDuplicateAsync(evt, CancellationToken.None)).Should().BeFalse(
             "the expired entry no longer suppresses live ingress");
 
