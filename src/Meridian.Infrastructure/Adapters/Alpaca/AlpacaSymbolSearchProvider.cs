@@ -134,9 +134,9 @@ public sealed class AlpacaSymbolSearchProvider : BaseSymbolSearchProvider
         // unidentifiable array members are unavailable evidence, not proof of zero matches.
         var assets = JsonSerializer.Deserialize<List<AlpacaAsset>>(json)
             ?? throw new JsonException("Alpaca asset search must return an asset array.");
-        if (assets.Any(static asset => asset is null || string.IsNullOrWhiteSpace(asset.Symbol)
+        if (assets.Any(static asset => asset is null || string.IsNullOrWhiteSpace(asset.Symbol) || string.IsNullOrWhiteSpace(asset.Name)
             || string.IsNullOrWhiteSpace(asset.AssetClass) || !asset.HasTradable))
-            throw new JsonException("Alpaca asset search requires each asset's symbol, class and explicit tradability.");
+            throw new JsonException("Alpaca asset search requires each asset's symbol, name, class and explicit tradability.");
         return MapSearchResults(assets, query);
     }
 

@@ -6,6 +6,53 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolTable
+
+Qualified name: <code>Meridian.Core.Performance.SymbolTable</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/SymbolTable.cs:20](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L20).
+
+Thread-safe symbol intern table that maps market symbol strings to compact integer IDs.
+
+```csharp
+public sealed class SymbolTable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetOrAdd(string symbol);</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:33](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L33) | Returns the integer ID for symbol, registering it if not already present. This call is allocation-free for symbols that have already been registered. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public string? TryGetSymbol(int id);</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:53](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L53) | Resolves an integer ID back to its symbol string. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:60](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L60) | Gets the total number of symbols registered in this table. |
+
+## ThreadingUtilities
+
+Qualified name: <code>Meridian.Core.Performance.ThreadingUtilities</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:12](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L12).
+
+Low-level threading utilities for high-performance scenarios. Provides thread affinity, priority, and CPU pinning capabilities.
+
+```csharp
+public static class ThreadingUtilities
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SetHighPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:18](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L18) | Sets the current thread&#x27;s priority to highest for latency-critical operations. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SetAboveNormalPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:34](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L34) | Sets the current thread&#x27;s priority to above normal (less aggressive than highest). |
+| <code>public static bool TrySetThreadAffinity(int cpuIndex);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:51](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L51) | Attempts to set thread affinity to a specific CPU core (Windows/Linux). |
+| <code>public static bool TrySetProcessAffinity(nint affinityMask);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:80](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L80) | Attempts to set process affinity to specific CPU cores. Only supported on Windows and Linux. |
+| <code>public static bool TrySetProcessHighPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:105](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L105) | Attempts to set the process to high priority class. Only supported on Windows and Linux. Use sparingly - this affects all threads and can starve other processes. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void YieldProcessor();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:130](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L130) | Yields the current thread to allow other threads to execute. More efficient than Thread.Sleep(0) for busy-wait scenarios. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SpinWait(int iterations);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:140](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L140) | Performs a spin-wait for the specified number of iterations. Useful for very short waits where context switching is too expensive. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static int GetCurrentThreadId() =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:149](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L149) | Gets the current thread&#x27;s managed thread ID. |
+| <code>public static bool TryStartNoGCRegion(long totalBytes);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:155](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L155) | Prevents the GC from relocating the current thread&#x27;s stack during critical sections. Call EndNoGCRegion when done. |
+| <code>public static void EndNoGCRegion();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:170](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L170) | Ends the no-GC region started by TryStartNoGCRegion. |
+
 ## ThreadLocalSequenceGenerator
 
 Qualified name: <code>Meridian.Core.Performance.ThreadLocalSequenceGenerator</code>. Kind: `class`.
@@ -803,38 +850,3 @@ Request to auto-subscribe to index components.
 ```csharp
 public sealed record IndexSubscribeRequest(string IndexId, int? MaxComponents = null, TemplateSubscriptionDefaults? Defaults = null, bool ReplaceExisting = false, string[]? FilterSectors = null);
 ```
-
-## IndexSubscribeResult
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.IndexSubscribeResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:75](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L75).
-
-Result of an index subscription operation.
-
-```csharp
-public sealed record IndexSubscribeResult(string IndexId, int ComponentsSubscribed, int ComponentsSkipped, string[] SubscribedSymbols, string[] SkippedSymbols, string? Message = null);
-```
-
-## KnownIndices
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.KnownIndices</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:34](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L34).
-
-Available indices for auto-subscription.
-
-```csharp
-public static class KnownIndices
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly IndexDefinition SP500 = new (&quot;SPX&quot;, &quot;S&amp;P 500&quot;, &quot;Large-cap US equities&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:36](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L36) |  |
-| <code>public static readonly IndexDefinition Nasdaq100 = new (&quot;NDX&quot;, &quot;NASDAQ 100&quot;, &quot;Top 100 NASDAQ non-financial stocks&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:37](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L37) |  |
-| <code>public static readonly IndexDefinition DowJones = new (&quot;DJI&quot;, &quot;Dow Jones Industrial Average&quot;, &quot;30 blue-chip US stocks&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:38](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L38) |  |
-| <code>public static readonly IndexDefinition Russell2000 = new (&quot;RUT&quot;, &quot;Russell 2000&quot;, &quot;Small-cap US equities&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:39](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L39) |  |
-| <code>public static readonly IndexDefinition SP400 = new (&quot;MID&quot;, &quot;S&amp;P 400 MidCap&quot;, &quot;Mid-cap US equities&quot;);</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:40](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L40) |  |
-| <code>public static IReadOnlyList&lt;IndexDefinition&gt; All =&gt; …;</code> | [src/Meridian.Core/Subscriptions/Models/IndexComponents.cs:42](../../../../src/Meridian.Core/Subscriptions/Models/IndexComponents.cs#L42) |  |

@@ -234,7 +234,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (!HasValidCredentials())
         {
             if (failOnProviderError)
-                throw new InvalidOperationException("Provider credentials are unavailable.");
+                throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable, "Provider credentials are unavailable.");
             return Array.Empty<SymbolSearchResult>();
         }
 
@@ -260,6 +260,11 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
                     response.EnsureSuccessStatusCode();
                 return Array.Empty<SymbolSearchResult>();
             }
+
+            if (failOnProviderError && (response.StatusCode == HttpStatusCode.PartialContent
+                || response.Content.Headers.ContentRange is not null))
+                throw new ProviderSearchException(ProviderSearchFailure.IncompleteResponse,
+                    "Provider search returned a partial response.");
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             if (CreateQuotaLimitException(json, query) is { } quotaLimit)
@@ -381,7 +386,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// invalid responses override this hook so decoding failures remain unavailable evidence.
     /// </summary>
     protected virtual IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
-        => DeserializeSearchResults(json, query);
+        => throw new ProviderSearchException(ProviderSearchFailure.Unavailable,
+            "This provider does not support authoritative response decoding.");
 
     /// <summary>
     /// Deserialize the details response JSON into a SymbolDetails object.

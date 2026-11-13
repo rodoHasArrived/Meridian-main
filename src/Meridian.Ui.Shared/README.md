@@ -37,6 +37,12 @@ Alpaca's fixed-income filter and authoritative error propagation, and exposes mo
 separately for candidate staging. The browser stages the reviewed identity through the existing
 retained asset-information upload; discovery never supplies approved economic terms. Tests use
 synthetic fixtures; live provider behavior remains untested.
+Completed empty bond lookups return `available: true`; failed lookups return HTTP 503 with
+`available: false`, no candidates and a stable `failureReason` describing unavailable credentials,
+transport, malformed payload, incomplete response or throttling.
+Discovery holds the retained configuration lease through dispatch and requires an applied Alpaca
+runtime binding owned by the authenticated tenant. Missing, deleted, inconsistent or pending
+bindings refuse before HTTP; a different tenant cannot use the host's selected provider credentials.
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source

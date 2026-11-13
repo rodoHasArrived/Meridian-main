@@ -155,6 +155,47 @@ Declared public members:
 | <code>public OperationTimeoutException(string message, string? operationName = null, TimeSpan? timeout = null, string? provider = null) : base(message);</code> | [src/Meridian.Core/Exceptions/OperationTimeoutException.cs:16](../../../../src/Meridian.Core/Exceptions/OperationTimeoutException.cs#L16) |  |
 | <code>public OperationTimeoutException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Core/Exceptions/OperationTimeoutException.cs:28](../../../../src/Meridian.Core/Exceptions/OperationTimeoutException.cs#L28) |  |
 
+## ProviderSearchException
+
+Qualified name: <code>Meridian.Core.Exceptions.ProviderSearchException</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Exceptions/ProviderSearchException.cs:15](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L15).
+
+Unavailable search evidence, kept separate from a successful search with no matches.
+
+```csharp
+public sealed class ProviderSearchException(ProviderSearchFailure failure, string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderSearchFailure Failure { get; } = failure;</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:19](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L19) |  |
+
+## ProviderSearchFailure
+
+Qualified name: <code>Meridian.Core.Exceptions.ProviderSearchFailure</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Exceptions/ProviderSearchException.cs:4](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L4).
+
+The reason an explicit provider lookup could not establish a complete result.
+
+```csharp
+public enum ProviderSearchFailure
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unavailable</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:6](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L6) |  |
+| <code>CredentialsUnavailable</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:7](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L7) |  |
+| <code>TransportError</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:8](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L8) |  |
+| <code>MalformedPayload</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:9](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L9) |  |
+| <code>IncompleteResponse</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:10](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L10) |  |
+| <code>Throttled</code> | [src/Meridian.Core/Exceptions/ProviderSearchException.cs:11](../../../../src/Meridian.Core/Exceptions/ProviderSearchException.cs#L11) |  |
+
 ## RateLimitException
 
 Qualified name: <code>Meridian.Core.Exceptions.RateLimitException</code>. Kind: `class`.
@@ -1004,50 +1045,3 @@ Declared public members:
 | <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryWrite(in T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:111](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L111) | Tries to write item into the buffer. |
 | <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryRead(out T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:139](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L139) | Tries to read the next item from the buffer. |
 | <code>public int DrainTo(Span&lt;T&gt; destination, int maxItems = int.MaxValue);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:162](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L162) | Drains up to maxItems items into destination. |
-
-## SymbolTable
-
-Qualified name: <code>Meridian.Core.Performance.SymbolTable</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/SymbolTable.cs:20](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L20).
-
-Thread-safe symbol intern table that maps market symbol strings to compact integer IDs.
-
-```csharp
-public sealed class SymbolTable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public int GetOrAdd(string symbol);</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:33](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L33) | Returns the integer ID for symbol, registering it if not already present. This call is allocation-free for symbols that have already been registered. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public string? TryGetSymbol(int id);</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:53](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L53) | Resolves an integer ID back to its symbol string. |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/SymbolTable.cs:60](../../../../src/Meridian.Core/Performance/Performance/SymbolTable.cs#L60) | Gets the total number of symbols registered in this table. |
-
-## ThreadingUtilities
-
-Qualified name: <code>Meridian.Core.Performance.ThreadingUtilities</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:12](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L12).
-
-Low-level threading utilities for high-performance scenarios. Provides thread affinity, priority, and CPU pinning capabilities.
-
-```csharp
-public static class ThreadingUtilities
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SetHighPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:18](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L18) | Sets the current thread&#x27;s priority to highest for latency-critical operations. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SetAboveNormalPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:34](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L34) | Sets the current thread&#x27;s priority to above normal (less aggressive than highest). |
-| <code>public static bool TrySetThreadAffinity(int cpuIndex);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:51](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L51) | Attempts to set thread affinity to a specific CPU core (Windows/Linux). |
-| <code>public static bool TrySetProcessAffinity(nint affinityMask);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:80](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L80) | Attempts to set process affinity to specific CPU cores. Only supported on Windows and Linux. |
-| <code>public static bool TrySetProcessHighPriority();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:105](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L105) | Attempts to set the process to high priority class. Only supported on Windows and Linux. Use sparingly - this affects all threads and can starve other processes. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void YieldProcessor();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:130](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L130) | Yields the current thread to allow other threads to execute. More efficient than Thread.Sleep(0) for busy-wait scenarios. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void SpinWait(int iterations);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:140](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L140) | Performs a spin-wait for the specified number of iterations. Useful for very short waits where context switching is too expensive. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static int GetCurrentThreadId() =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:149](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L149) | Gets the current thread&#x27;s managed thread ID. |
-| <code>public static bool TryStartNoGCRegion(long totalBytes);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:155](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L155) | Prevents the GC from relocating the current thread&#x27;s stack during critical sections. Call EndNoGCRegion when done. |
-| <code>public static void EndNoGCRegion();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:170](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L170) | Ends the no-GC region started by TryStartNoGCRegion. |

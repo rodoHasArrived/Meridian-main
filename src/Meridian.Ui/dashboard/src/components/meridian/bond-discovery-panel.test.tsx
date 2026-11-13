@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { BondDiscoveryPanel } from "./bond-discovery-panel";
 import type { BondDiscoveryResult } from "@/lib/api/bond-discovery.api";
 import type { DataUploadPreviewResult } from "@/types";
+import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 const result: BondDiscoveryResult = {
   provider: "alpaca", providerLabel: "Alpaca", available: true, unavailableReason: null,
@@ -59,6 +60,26 @@ describe("provider bond discovery", () => {
     await screen.findByText("Provider bond lookup unavailable");
     expect(screen.getByText("Credentials unavailable")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Review 912TEST" })).not.toBeInTheDocument();
+  });
+  it("shows failed provider evidence as unavailable without displaying a no-match result", async () => {
+    const failure = createApiErrorFromResponseBody("/api/reference-data/bonds/discovery", 503,
+      JSON.stringify({ ...result, available: false, candidates: [], failureReason: "malformedPayload",
+        unavailableReason: "Alpaca bond lookup could not be completed." }));
+    const { stage } = renderPanel(vi.fn().mockRejectedValue(failure));
+    fireEvent.change(screen.getByLabelText("Bond symbol or issuer"), { target: { value: "912" } });
+    fireEvent.click(screen.getByRole("button", { name: "Look up provider bonds" }));
+    await screen.findByRole("alert");
+    expect(screen.queryByText(/No bond candidates returned/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Review 912TEST" })).not.toBeInTheDocument();
+    expect(stage).not.toHaveBeenCalled();
+  });
+  it("shows completed empty provider evidence as no matches", async () => {
+    renderPanel(vi.fn().mockResolvedValue({ ...result, candidates: [] }));
+    fireEvent.change(screen.getByLabelText("Bond symbol or issuer"), { target: { value: "912" } });
+    fireEvent.click(screen.getByRole("button", { name: "Look up provider bonds" }));
+    await screen.findByText(/No bond candidates returned/);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByText("Provider bond lookup unavailable")).not.toBeInTheDocument();
   });
   it("discards delayed lookup results after query changes", async () => {
     let resolve!: (value: BondDiscoveryResult) => void;

@@ -1,8 +1,11 @@
 using System.Text.Json;
 using Meridian.Application.Subscriptions.Services;
+using Meridian.Application.ProviderRouting;
+using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Subscriptions.Models;
+using Meridian.Core.Exceptions;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -28,21 +31,31 @@ public static class BondDiscoveryEndpoints
 
             // Alpaca is the retained implementation with a fixed_income filter. Other symbol
             // providers must not silently broaden this bond-only surface to equities.
-            var provider = (await search.GetProvidersAsync(context.RequestAborted).ConfigureAwait(false))
-                .FirstOrDefault(candidate => string.Equals(candidate.Name, "alpaca", StringComparison.OrdinalIgnoreCase));
-            var available = provider?.Available == true;
+            var available = false;
+            string? failureReason = null;
             SymbolSearchResponse? results = null;
-            if (available && normalized.Length > 0)
+            try
             {
-                try
+                using var ownership = await AcquireOwnershipAsync(context).ConfigureAwait(false);
+                if (!ownership.TenantAllowed)
+                    return Results.Problem("Bond discovery is unavailable in this tenant.", statusCode: StatusCodes.Status403Forbidden);
+
+                if (normalized.Length > 0)
                 {
                     results = await search.SearchAuthoritativeAsync(new SymbolSearchRequest(normalized, Limit: 25,
                         AssetType: "fixed_income", Provider: "alpaca", IncludeFigi: false), context.RequestAborted).ConfigureAwait(false);
+                    available = true;
                 }
-                catch (InvalidOperationException)
+                else
                 {
-                    return Results.Problem("Alpaca bond lookup could not be completed. The provider may be unavailable or throttled; retry lookup before reviewing candidates.", statusCode: 503);
+                    var provider = (await search.GetProvidersAsync(context.RequestAborted).ConfigureAwait(false))
+                        .FirstOrDefault(candidate => string.Equals(candidate.Name, "alpaca", StringComparison.OrdinalIgnoreCase));
+                    available = provider?.Available == true;
                 }
+            }
+            catch (ProviderSearchException ex)
+            {
+                failureReason = JsonNamingPolicy.CamelCase.ConvertName(ex.Failure.ToString());
             }
             var candidates = (results?.Results ?? []).Where(candidate =>
                 string.Equals(candidate.AssetType, "FixedIncome", StringComparison.OrdinalIgnoreCase)
@@ -56,12 +69,13 @@ public static class BondDiscoveryEndpoints
                 provider = "alpaca",
                 providerLabel = "Alpaca",
                 available,
-                unavailableReason = available ? null : "Alpaca bond lookup is unavailable or its credentials are not configured.",
+                unavailableReason = available ? null : "Alpaca bond lookup could not be completed. Retry lookup before reviewing candidates.",
+                failureReason,
                 canStage = (permissions & UserPermission.ModifySecurityMaster) == UserPermission.ModifySecurityMaster,
                 query = normalized,
                 candidates,
                 observedAtUtc = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            }, jsonOptions, statusCode: failureReason is null ? StatusCodes.Status200OK : StatusCodes.Status503ServiceUnavailable);
         })
         .WithName("DiscoverProviderBonds")
         .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
@@ -69,5 +83,44 @@ public static class BondDiscoveryEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status503ServiceUnavailable);
+    }
+
+    private sealed record OwnershipLease(IDisposable ConfigurationLease, bool TenantAllowed) : IDisposable
+    {
+        public void Dispose() => ConfigurationLease.Dispose();
+    }
+
+    private static async Task<OwnershipLease> AcquireOwnershipAsync(HttpContext context)
+    {
+        var config = context.RequestServices.GetService<ConfigStore>()
+            ?? throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
+                "Owned provider configuration is unavailable.");
+        IDisposable? lease = null;
+        try
+        {
+            // A binding cannot be removed or reassigned between this check and provider dispatch.
+            lease = await config.AcquireWriteLeaseAsync(context.RequestAborted).ConfigureAwait(false);
+            var scope = ProviderRuntimeCredentialService.ResolveScope(config.LoadRequired(), "alpaca")
+                ?? throw new InvalidOperationException("An owned Alpaca runtime binding is required.");
+            if (!string.Equals(scope.TenantId, context.Items[LoginSessionMiddleware.CurrentTenantIdKey] as string, StringComparison.Ordinal))
+                return new(lease, false);
+            var runtime = context.RequestServices.GetService<ProviderRuntimeCredentialService>()
+                ?? throw new InvalidOperationException("Runtime credential application status is unavailable.");
+            var status = runtime.GetApplicationStatus("alpaca", scope.ConnectionId, scope.TenantId);
+            if (!status.IsBound || status.PendingRestart)
+                throw new InvalidOperationException("The owned credential binding has not reached running provider instances.");
+            return new(lease, true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or TimeoutException)
+        {
+            lease?.Dispose();
+            throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable,
+                "Owned provider credentials are unavailable.", ex);
+        }
+        catch
+        {
+            lease?.Dispose();
+            throw;
+        }
     }
 }

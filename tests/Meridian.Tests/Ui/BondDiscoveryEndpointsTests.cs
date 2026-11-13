@@ -3,7 +3,11 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Subscriptions.Services;
+using Meridian.Application.ProviderRouting;
+using Meridian.Application.UI;
+using Meridian.Core.Config;
 using Meridian.Core.Subscriptions.Models;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
@@ -17,34 +21,66 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class BondDiscoveryEndpointsTests
+public sealed class BondDiscoveryEndpointsTests : IDisposable
 {
+    private readonly List<string> _configRoots = [];
+    private const string OwnerTenant = "bond-discovery-test-tenant";
+
     [Theory]
-    [InlineData(UserPermission.ViewSecurityMaster, false, "FixedIncome")]
-    [InlineData(UserPermission.ModifySecurityMaster, true, "FixedIncome")]
-    [InlineData(UserPermission.ViewSecurityMaster, false, "fixed_income")]
-    [InlineData(UserPermission.ViewSecurityMaster, false, "Bond")]
-    public async Task Lookup_UsesFixedIncomeProviderAndReturnsStagingPermission(UserPermission permission, bool canStage, string assetType)
+    [InlineData("selected", OwnerTenant, HttpStatusCode.OK, 1)]
+    [InlineData("selected", "foreign-tenant", HttpStatusCode.Forbidden, 0)]
+    [InlineData("deleted", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    [InlineData("mismatched", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    [InlineData("missing", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    [InlineData("pending", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    [InlineData("missing-config", OwnerTenant, HttpStatusCode.ServiceUnavailable, 0)]
+    public async Task Lookup_RequiresCurrentAppliedTenantOwnedBindingBeforeProviderAccess(
+        string ownership, string tenant, HttpStatusCode expectedStatus, int expectedRequests)
     {
-        var provider = Substitute.For<IFilterableSymbolSearchProvider>();
-        provider.Name.Returns("alpaca");
-        provider.DisplayName.Returns("Alpaca");
-        provider.IsAvailableAsync(Arg.Any<CancellationToken>()).Returns(true);
-        provider.SearchAsync("Treasury", 50, "fixed_income", null, Arg.Any<CancellationToken>())
-            .Returns(new SymbolSearchResult[]
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("[]") });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider("synthetic-key", "synthetic-secret", http);
+        using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search, tenantId: tenant, ownership: ownership);
+
+        using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
+
+        response.StatusCode.Should().Be(expectedStatus);
+        handler.CallCount.Should().Be(expectedRequests);
+        if (expectedStatus == HttpStatusCode.ServiceUnavailable)
+        {
+            var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+            body.GetProperty("available").GetBoolean().Should().BeFalse();
+            body.GetProperty("failureReason").GetString().Should().Be("credentialsUnavailable");
+            body.GetProperty("candidates").GetArrayLength().Should().Be(0);
+        }
+    }
+
+    [Theory]
+    [InlineData(UserPermission.ViewSecurityMaster, false)]
+    [InlineData(UserPermission.ModifySecurityMaster, true)]
+    public async Task Lookup_UsesFixedIncomeProviderAndReturnsStagingPermission(UserPermission permission, bool canStage)
+    {
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            request.RequestUri!.Query.Should().Contain("asset_class=fixed_income");
+            return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                new("912TEST", "Synthetic Treasury", AssetType: assetType, Currency: "USD", Source: "alpaca"),
-                new("WRONG", "Wrong asset", AssetType: "Stock", Source: "alpaca")
-            });
+                Content = new StringContent("""[{"symbol":"912TEST","name":"Synthetic Treasury","class":"fixed_income","tradable":true},{"symbol":"WRONG","name":"Treasury stock","class":"us_equity","tradable":true}]""")
+            };
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider("synthetic-key", "synthetic-secret", http);
         using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
         await using var app = await CreateAppAsync(permission, search);
         using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         body.GetProperty("canStage").GetBoolean().Should().Be(canStage);
+        body.GetProperty("available").GetBoolean().Should().BeTrue();
         body.GetProperty("candidates").GetArrayLength().Should().Be(1);
         body.GetProperty("candidates")[0].GetProperty("symbol").GetString().Should().Be("912TEST");
-        await provider.Received(1).SearchAsync("Treasury", 50, "fixed_income", null, Arg.Any<CancellationToken>());
+        handler.CallCount.Should().Be(1, "the lookup itself establishes availability without an unrelated health probe");
     }
 
     [Fact]
@@ -88,20 +124,93 @@ public sealed class BondDiscoveryEndpointsTests
         await provider.DidNotReceiveWithAnyArgs().SearchAsync(default!, default, default);
     }
 
-    [Fact]
-    public async Task Lookup_WithProviderFailureReturnsUnavailableInsteadOfEmptyMatches()
+    [Theory]
+    [InlineData("credentialsUnavailable", false, false, HttpStatusCode.OK)]
+    [InlineData("credentialsUnavailable", true, false, HttpStatusCode.Unauthorized)]
+    [InlineData("credentialsUnavailable", true, false, HttpStatusCode.Forbidden)]
+    [InlineData("transportError", true, true, HttpStatusCode.OK)]
+    [InlineData("transportError", true, false, HttpStatusCode.ServiceUnavailable)]
+    [InlineData("incompleteResponse", true, false, HttpStatusCode.PartialContent)]
+    [InlineData("throttled", true, false, HttpStatusCode.TooManyRequests)]
+    public async Task Lookup_SeparatesCredentialTransportAndIncompleteFailures(
+        string failureReason, bool credentials, bool transportFailure, HttpStatusCode providerStatus)
     {
-        var provider = Substitute.For<IFilterableSymbolSearchProvider>();
-        provider.Name.Returns("alpaca");
-        provider.DisplayName.Returns("Alpaca");
-        provider.IsAvailableAsync(Arg.Any<CancellationToken>()).Returns(true);
-        provider.SearchAsync("Treasury", 50, "fixed_income", null, Arg.Any<CancellationToken>())
-            .Returns<Task<IReadOnlyList<SymbolSearchResult>>>(_ => throw new HttpRequestException("Synthetic provider outage"));
+        using var handler = new StubHttpMessageHandler(_ => transportFailure
+            ? throw new HttpRequestException("Synthetic transport failure")
+            : new HttpResponseMessage(providerStatus) { Content = new StringContent("[]") });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(credentials ? "synthetic-key" : "", credentials ? "synthetic-secret" : "", http);
         using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
         await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
+
         using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
+
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
-        (await response.Content.ReadAsStringAsync()).Should().Contain("could not be completed");
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("available").GetBoolean().Should().BeFalse();
+        body.GetProperty("failureReason").GetString().Should().Be(failureReason);
+        body.GetProperty("candidates").GetArrayLength().Should().Be(0);
+        handler.CallCount.Should().Be(credentials ? 1 : 0);
+    }
+
+    [Fact]
+    public async Task Lookup_WithValidEmptyPopulationReportsAvailableNoMatches()
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("[]") });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider("synthetic-key", "synthetic-secret", http);
+        using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
+
+        using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("available").GetBoolean().Should().BeTrue();
+        body.GetProperty("failureReason").ValueKind.Should().Be(JsonValueKind.Null);
+        body.GetProperty("candidates").GetArrayLength().Should().Be(0);
+        handler.CallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Lookup_WithInterruptedBodyReportsIncompleteInsteadOfNoMatches()
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new InterruptedSearchContent()
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider("synthetic-key", "synthetic-secret", http);
+        using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
+
+        using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("available").GetBoolean().Should().BeFalse();
+        body.GetProperty("failureReason").GetString().Should().Be("incompleteResponse");
+        body.GetProperty("candidates").GetArrayLength().Should().Be(0);
+    }
+
+    [Theory]
+    [InlineData("FixedIncome")]
+    [InlineData("fixed_income")]
+    [InlineData("Bond")]
+    public async Task Lookup_PreservesAuthoritativeBondAssetTypeAliases(string assetType)
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("[]") });
+        using var http = new HttpClient(handler);
+        using var provider = new AuthoritativeBondProvider(http, assetType);
+        using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
+
+        using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("candidates").GetArrayLength().Should().Be(1);
+        body.GetProperty("candidates")[0].GetProperty("symbol").GetString().Should().Be("912TEST");
     }
 
     [Theory]
@@ -111,6 +220,8 @@ public sealed class BondDiscoveryEndpointsTests
     [InlineData("[{\"symbol\":\"912TEST\"}]")]
     [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"fixed_income\"}]")]
     [InlineData("[{\"symbol\":\"912TEST\",\"tradable\":true}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"fixed_income\",\"tradable\":true}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"name\":\"\",\"class\":\"fixed_income\",\"tradable\":true}]")]
     public async Task Lookup_WithRealAlpacaDecoderFailureReturnsUnavailable(string bondPayload)
     {
         var bondRequests = 0;
@@ -121,8 +232,7 @@ public sealed class BondDiscoveryEndpointsTests
                 bondRequests++;
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                // Availability probes succeed, so the broken bond response reaches authoritative decoding.
-                Content = new StringContent(isBondLookup ? bondPayload : "[{\"symbol\":\"AAPL\",\"name\":\"Apple\",\"tradable\":true}]")
+                Content = new StringContent(bondPayload)
             };
         });
         using var http = new HttpClient(handler);
@@ -133,26 +243,92 @@ public sealed class BondDiscoveryEndpointsTests
         using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
-        (await response.Content.ReadAsStringAsync()).Should().Contain("could not be completed");
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        body.GetProperty("available").GetBoolean().Should().BeFalse();
+        body.GetProperty("failureReason").GetString().Should().Be("malformedPayload");
+        body.GetProperty("candidates").GetArrayLength().Should().Be(0);
         bondRequests.Should().Be(1);
+        handler.CallCount.Should().Be(1);
     }
 
-    private static async Task<WebApplication> CreateAppAsync(UserPermission permissions, SymbolSearchService? search = null, bool tenantScoped = true)
+    private async Task<WebApplication> CreateAppAsync(UserPermission permissions, SymbolSearchService? search = null,
+        bool tenantScoped = true, string tenantId = OwnerTenant, string ownership = "selected")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
         if (search is not null)
             builder.Services.AddSingleton(search);
+        if (ownership != "missing-config")
+        {
+            var root = Path.Combine(Path.GetTempPath(), "meridian-bond-discovery-ownership", Guid.NewGuid().ToString("N"));
+            _configRoots.Add(root);
+            Directory.CreateDirectory(root);
+            var config = new ConfigStore(Path.Combine(root, "appsettings.json"));
+            await config.SaveAsync(new AppConfig(DataRoot: root, ProviderConnections: new ProviderConnectionsConfig(
+                Connections: [new ProviderConnectionConfig("bond-account-a", "alpaca", "Synthetic bond account",
+                    TenantId: OwnerTenant, ExternalAccountId: "account-a", CredentialEnvironment: "paper")])));
+            var tracker = new ProviderRuntimeCredentialApplicationTracker();
+            var runtime = new ProviderRuntimeCredentialService(config, Substitute.For<IProviderCredentialStore>(), applicationTracker: tracker);
+            if (ownership != "missing")
+            {
+                await runtime.BindAsync("alpaca", "bond-account-a", OwnerTenant);
+                if (ownership != "pending")
+                    tracker.MarkApplied("alpaca");
+                if (ownership is "deleted" or "mismatched")
+                {
+                    await config.UpdateAsync(current => current with
+                    {
+                        ProviderConnections = current.ProviderConnections! with
+                        {
+                            Connections = ownership == "deleted" ? [] : current.ProviderConnections.Connections!
+                                .Select(connection => connection with { TenantId = "different-owner" }).ToArray()
+                        }
+                    });
+                }
+            }
+            builder.Services.AddSingleton(config);
+            builder.Services.AddSingleton(runtime);
+        }
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
             if (tenantScoped)
-                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "bond-discovery-test-tenant";
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantId;
             await next();
         });
         app.MapBondDiscoveryEndpoints(new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         await app.StartAsync();
         return app;
+    }
+
+    public void Dispose()
+    {
+        foreach (var root in _configRoots)
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+    }
+
+    private sealed class InterruptedSearchContent : HttpContent
+    {
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+            => Task.FromException(new HttpIOException(HttpRequestError.ResponseEnded, "Synthetic interrupted provider body."));
+        protected override bool TryComputeLength(out long length) { length = 0; return false; }
+    }
+
+    private sealed class AuthoritativeBondProvider(HttpClient http, string assetType) : BaseSymbolSearchProvider("synthetic-key", http)
+    {
+        public override string Name => "alpaca";
+        public override string DisplayName => "Synthetic authoritative bond provider";
+        protected override string HttpClientName => "synthetic-search";
+        protected override string BaseUrl => "https://example.test";
+        protected override string ApiKeyEnvVar => "SYNTHETIC_BOND_KEY";
+        protected override string BuildSearchUrl(string query, string? assetType, string? exchange) => BaseUrl;
+        protected override string BuildDetailsUrl(string symbol) => BaseUrl;
+        protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query) => [];
+        protected override IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
+            => [new("912TEST", "Synthetic Treasury", AssetType: assetType, Source: "alpaca"), new("WRONG", "Wrong asset", AssetType: "Stock", Source: "alpaca")];
+        protected override Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct)
+            => Task.FromResult<SymbolDetails?>(null);
     }
 }
