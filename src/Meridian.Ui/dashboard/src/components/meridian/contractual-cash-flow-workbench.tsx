@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { PreparerDraftCheckPanel } from "@/components/meridian/preparer-draft-check-panel";
-import { describeApiError } from "@/lib/api-errors";
+import { describeApiError, isApiError } from "@/lib/api-errors";
 import {
   compareContractualCashFlowRuns,
   getContractualCashFlowRun,
@@ -14,9 +14,11 @@ import {
   previewContractualCashFlows,
   retainContractualCashFlowRun
 } from "@/lib/api/contractual-cash-flow.api";
+import { ExactCurveInputs } from "@/components/meridian/exact-curve-inputs";
+import type { ExactCurvePin } from "@/types/security-curves.types";
+import { buildScenarioPrepayments, ScenarioPrepaymentInputs, type ScenarioPrepaymentDraft } from "./scenario-prepayment-inputs";
 import { bondDecimalText, DECIMAL_LITERAL, utcInstantFromLocalInput } from "@/lib/bond-decimal-format";
 import {
-  PREPAYMENT_METHODS,
   RATE_SCENARIOS,
   type CashFlowExerciseEligibility,
   type ContractualCashFlowEvent,
@@ -25,9 +27,7 @@ import {
   type ContractualCashFlowRun,
   type ContractualCashFlowRunComparison,
   type ContractualCashFlowSubjectKind,
-  type PrepaymentMethod,
   type RateScenario,
-  type RecastPolicy,
   type SelectedCashFlowExercise
 } from "@/types/contractual-cash-flow.types";
 
@@ -72,7 +72,7 @@ const eventColumns: DenseDataTableColumn<ContractualCashFlowEvent>[] = [
 
 /**
  * Cash-flow scenario workbench over the shared contractual cash-flow routes: hypothetical valuation date,
- * knowledge cutoff, horizon, rate shock, exercise selections and one prepayment assumption; the result
+ * knowledge cutoff, horizon, rate shock, exercise selections, immutable curve pins and dated prepayment assumptions; the result
  * ladder with blockers; retained runs under a client-generated identity; and a retained-run browser that
  * verifies replay by comparing the retained output hash with a fresh preview of the retained request.
  * Nothing here changes terms or posts anything, and displayed amounts are never resubmitted.
@@ -82,7 +82,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   const [knowledgeCutoff, setKnowledgeCutoff] = useState(nowLocalMinutes);
   const [horizon, setHorizon] = useState("");
   const [rateScenario, setRateScenario] = useState<RateScenario>("Base");
-  const [prepay, setPrepay] = useState({ enabled: false, streamId: "", startDate: "", endDate: "", method: "Cpr" as PrepaymentMethod, value: "", policy: "PreservePayments" as RecastPolicy });
+  const [prepayments, setPrepayments] = useState<ScenarioPrepaymentDraft[]>([]);
+  const [curvePins, setCurvePins] = useState<ExactCurvePin[]>([]);
+  const [permissionDenied, setPermissionDenied] = useState(false);
   const [exerciseChoices, setExerciseChoices] = useState<Record<string, ExerciseChoice>>({});
   const [eligibility, setEligibility] = useState<CashFlowExerciseEligibility[]>([]);
   const [result, setResult] = useState<ContractualCashFlowResult | null>(null);
@@ -98,11 +100,18 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   const inFlight = useRef<AbortController | null>(null);
 
   useEffect(() => {
+    inFlight.current?.abort();
+    setBusy(null);
+    setPrepayments([]);
+    setCurvePins([]);
+    setPermissionDenied(false);
+    setRunIdInput("");
     setResult(null);
     setRun(null);
     setLoadedRun(null);
     setReplayStatus(null);
     setComparison(null);
+    setCompareRunId("");
     setEligibility([]);
     setExerciseChoices({});
     setError(null);
@@ -141,17 +150,21 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
         noticeEvidenceId: choice.noticeEvidenceId.trim() || null
       });
     }
-    if (prepay.enabled && (!prepay.streamId.trim() || !prepay.startDate || !prepay.endDate || !DECIMAL_LITERAL.test(prepay.value.trim())))
-      return "A prepayment assumption needs a stream, a [start, end) interval and a decimal value.";
+    if (horizon && horizon < valuationDate) return "The scenario horizon cannot precede the valuation date.";
+    const assumptions = buildScenarioPrepayments(prepayments, valuationDate);
+    if (typeof assumptions === "string") return assumptions;
+    if (curvePins.some((pin) => !pin.role.trim() || !pin.curveId || !pin.curveVersionId))
+      return "Each curve pin needs a benchmark key, a curve and an exact retained version.";
+    if (new Set(curvePins.map((pin) => pin.role.trim())).size !== curvePins.length)
+      return "Curve benchmark keys must be unique.";
     return {
       valuationDate,
       knowledgeCutoff: utcInstantFromLocalInput(knowledgeCutoff),
       horizon: horizon || null,
       rateScenario,
       exercises: exercises.length > 0 ? exercises : null,
-      prepayments: prepay.enabled
-        ? [{ streamId: prepay.streamId.trim(), startDate: prepay.startDate, endDate: prepay.endDate, method: prepay.method, value: prepay.value.trim(), policy: prepay.policy }]
-        : null
+      prepayments: assumptions.length > 0 ? assumptions : null,
+      curvePins: curvePins.length > 0 ? curvePins.map((pin) => ({ benchmarkKey: pin.role.trim(), curveId: pin.curveId, curveVersionId: pin.curveVersionId })) : null
     };
   }
 
@@ -164,7 +177,14 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     try {
       return await work(controller.signal);
     } catch (failure) {
-      if (!controller.signal.aborted) setError(describeApiError(failure, fallback).summary);
+      if (!controller.signal.aborted) {
+        if (isApiError(failure) && (failure.status === 401 || failure.status === 403)) {
+          if (action === "retain") setPermissionDenied(true);
+          setError(`${describeApiError(failure, fallback).summary} ${action === "retain" ? retentionPermission : viewPermission} is required. Refresh after your access changes.`);
+        } else if (isApiError(failure) && (failure.status === 404 || failure.status === 503)) {
+          setError("The selected record or cash-flow calculation service is unavailable. Check the record and service configuration, then retry.");
+        } else setError(describeApiError(failure, fallback).summary);
+      }
       return undefined;
     } finally {
       if (!controller.signal.aborted) setBusy(null);
@@ -186,13 +206,14 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   }
 
   async function retain() {
+    if (permissionDenied || !result?.isCalculated || busy !== null) return;
     const request = buildRequest();
     if (typeof request === "string") { setError(request); return; }
     await guard("retain", async (signal) => {
       const next = await retainContractualCashFlowRun(subjectKind, subjectId, { runId, projection: request }, { signal });
       if (signal.aborted) return;
       if (isContractualCashFlowRun(next)) {
-        if (next.subjectId.toLowerCase() !== subjectId.toLowerCase()) throw new Error("The retained run names another subject. Refresh the selected record.");
+        if (next.subjectKind !== subjectKind || next.subjectId.toLowerCase() !== subjectId.toLowerCase()) throw new Error("The retained run names another subject. Refresh the selected record.");
         setRun(next);
         setResult(next.result);
       } else {
@@ -211,6 +232,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
     await guard("load", async (signal) => {
       const next = await getContractualCashFlowRun(subjectKind, subjectId, id, { signal });
       if (signal.aborted) return;
+      if (next.subjectKind !== subjectKind || next.subjectId.toLowerCase() !== subjectId.toLowerCase() || next.runId.toLowerCase() !== id.toLowerCase()) throw new Error("The returned replay packet does not match the selected subject and run identity.");
       setLoadedRun(next);
     }, "Retained cash-flow run could not be loaded.");
   }
@@ -241,7 +263,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
   }
 
   const shown = result;
-  const canRetain = shown !== null && shown.isCalculated && run === null && busy === null;
+  const retentionPermission = subjectKind === "Security" ? "Modify Security Master permission" : "Manage Direct Lending permission and an authenticated tenant";
+  const viewPermission = subjectKind === "Security" ? "View or Modify Security Master permission" : "View or Manage Direct Lending permission";
+  const canRetain = shown !== null && shown.isCalculated && run === null && busy === null && !permissionDenied;
 
   return (
     <section className="grid gap-3 rounded-lg border border-border/70 bg-background/40 p-4 text-xs" aria-label={`${subjectLabel} cash-flow scenarios`}>
@@ -252,6 +276,9 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           retained runs are complete replay packets under a client-generated identity.
         </p>
       </div>
+
+      <p className="text-muted-foreground">Preview and replay require {viewPermission}. Retaining a run requires {retentionPermission}; the server checks access for each request.</p>
+      {permissionDenied ? <StatusBanner tone="warning" title="Run retention unavailable" detail={`Your session cannot retain runs. ${retentionPermission} is required.`} /> : null}
 
       <form onSubmit={(event) => void preview(event)} aria-label={`${subjectLabel} scenario inputs`} className="grid gap-2 md:grid-cols-4">
         <label className="grid gap-1 font-medium text-muted-foreground">Valuation date (UTC)
@@ -269,30 +296,11 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
           </Select>
         </label>
 
-        <fieldset className="grid gap-2 md:col-span-4 md:grid-cols-6">
-          <legend className="font-medium text-muted-foreground">Prepayment assumption</legend>
-          <Checkbox checked={prepay.enabled} label="Apply" aria-label="Apply a prepayment assumption"
-            onCheckedChange={(checked) => edit(() => setPrepay((prev) => ({ ...prev, enabled: checked })))} />
-          <Input placeholder="Stream id" value={prepay.streamId} disabled={!prepay.enabled} aria-label="Prepayment stream id"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, streamId: e.target.value })))} />
-          <Input type="date" value={prepay.startDate} disabled={!prepay.enabled} aria-label="Prepayment start date"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, startDate: e.target.value })))} />
-          <Input type="date" value={prepay.endDate} disabled={!prepay.enabled} aria-label="Prepayment end date"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, endDate: e.target.value })))} />
-          <Select value={prepay.method} disabled={!prepay.enabled} aria-label="Prepayment method"
-            onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, method: e.target.value as PrepaymentMethod })))}>
-            {PREPAYMENT_METHODS.map((method) => <option key={method} value={method}>{method.toUpperCase()}</option>)}
-          </Select>
-          <div className="flex gap-2">
-            <Input placeholder="Value" value={prepay.value} disabled={!prepay.enabled} aria-label="Prepayment value"
-              onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, value: e.target.value })))} />
-            <Select value={prepay.policy} disabled={!prepay.enabled} aria-label="Prepayment recast policy"
-              onChange={(e) => edit(() => setPrepay((prev) => ({ ...prev, policy: e.target.value as RecastPolicy })))}>
-              <option value="PreservePayments">Preserve payments</option>
-              <option value="Recast">Recast</option>
-            </Select>
-          </div>
-        </fieldset>
+        <ScenarioPrepaymentInputs rows={prepayments} onChange={(rows) => edit(() => setPrepayments(rows))} />
+        <div className="md:col-span-4">
+          <p className="mb-2 text-muted-foreground">Some scenarios require benchmark pins. Use the benchmark key declared by the contract (for example SOFR); missing economic inputs appear as calculation blockers.</p>
+          <ExactCurveInputs roleLabel="Benchmark key" pins={curvePins} onChange={(pins) => edit(() => setCurvePins(pins))} />
+        </div>
 
         {eligibility.length > 0 ? (
           <fieldset className="grid gap-2 md:col-span-4">
@@ -373,7 +381,7 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
       <div className="grid gap-2 border-t border-border/60 pt-3">
         <div className="flex flex-wrap items-end gap-2">
           <label className="grid gap-1 font-medium text-muted-foreground">Retained run identity
-            <Input value={runIdInput} aria-label="Retained run identity" onChange={(e) => setRunIdInput(e.target.value)} className="min-w-[20rem]" />
+            <Input value={runIdInput} aria-label="Retained run identity" onChange={(e) => { inFlight.current?.abort(); setBusy(null); setLoadedRun(null); setReplayStatus(null); setComparison(null); setCompareRunId(""); setRunIdInput(e.target.value); }} className="min-w-[20rem]" />
           </label>
           <Button type="button" size="sm" variant="outline" disabled={busy !== null} aria-busy={busy === "load"} onClick={() => void loadRun()}>
             {busy === "load" ? "Loading…" : "Load retained run"}
@@ -387,11 +395,12 @@ export function ContractualCashFlowWorkbench({ subjectKind, subjectId, subjectLa
             Run {loadedRun.runId} · {loadedRun.subjectKind} · recorded {loadedRun.recordedAt} by {loadedRun.actor} · valuation {loadedRun.request.valuationDate} · {loadedRun.request.rateScenario ?? "Base"} · {loadedRun.result.events.length} events · output {loadedRun.result.evidence.outputHash}
           </p>
         ) : null}
+        {loadedRun ? <details className="rounded border border-border/60 p-2"><summary>Retained calculation inputs</summary><pre className="overflow-auto whitespace-pre-wrap break-all">{JSON.stringify(loadedRun.request, null, 2)}</pre></details> : null}
         {replayStatus ? <p role="status" aria-label="Replay verification">{replayStatus}</p> : null}
         {loadedRun ? (
           <div className="flex flex-wrap items-end gap-2">
             <label className="grid gap-1 font-medium text-muted-foreground">Compare with retained run
-              <Input value={compareRunId} aria-label="Comparison run identity" onChange={(e) => setCompareRunId(e.target.value)} className="min-w-[20rem]" />
+              <Input value={compareRunId} aria-label="Comparison run identity" onChange={(e) => { inFlight.current?.abort(); setBusy(null); setComparison(null); setCompareRunId(e.target.value); }} className="min-w-[20rem]" />
             </label>
             <Button type="button" size="sm" variant="outline" disabled={busy !== null} aria-busy={busy === "compare"} onClick={() => void compare()}>
               {busy === "compare" ? "Comparing…" : "Compare runs"}

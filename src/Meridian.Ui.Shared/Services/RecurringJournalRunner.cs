@@ -31,15 +31,20 @@ public sealed class RecurringJournalRunner(
 
     public async Task<IReadOnlyList<AutomatedJournalScheduledRunResult>> RunDueAsync(
         DateTimeOffset now, string? tenant = null, string? company = null,
-        bool scopeSpecified = false, CancellationToken ct = default)
+        bool scopeSpecified = false, CancellationToken ct = default,
+        string? scheduleId = null, RecurringJournalScope? exactScope = null, int? expectedScheduleVersion = null)
     {
         // A process-independent lease spans the retained claim, intake and completion. A crash
         // releases the lease, but preserves the claim and deterministic downstream draft identity.
         await using var session = await store.OpenSessionAsync(ct).ConfigureAwait(false);
         var results = new List<AutomatedJournalScheduledRunResult>();
-        foreach (var definition in session.CurrentSchedules.Where(s => !scopeSpecified ||
-                     (Same(s.Scope.TenantId, tenant) && Same(s.Scope.CompanyId, company))))
+        foreach (var definition in session.CurrentSchedules.Where(s => (!scopeSpecified ||
+                     (Same(s.Scope.TenantId, tenant) && Same(s.Scope.CompanyId, company)))
+                     && (scheduleId is null || Same(s.ScheduleId, scheduleId))
+                     && (exactScope is null || s.Scope == exactScope)))
         {
+            if (expectedScheduleVersion is { } expected && definition.Version != expected)
+                throw new RecurringJournalDefinitionChangedException("The schedule changed. Refresh before running.");
             var template = session.GetCurrentTemplate(definition.Schedule.TemplateId);
             var schedule = definition.Schedule.ToSchedule();
             for (var index = 0; ; index++)
