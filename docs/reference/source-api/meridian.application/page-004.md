@@ -28,36 +28,54 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.DirectLending.DirectLendingJournalLine</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:7](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L7).
+Source: [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:9](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L9).
 
 One journal line before it is bound to a ledger or outbox entry type.
 
 ```csharp
-public readonly record struct DirectLendingJournalLine(string Account, LedgerAccountType AccountType, decimal Debit, decimal Credit);
-```
-
-## DirectLendingJournalLines
-
-Qualified name: <code>Meridian.Application.DirectLending.DirectLendingJournalLines</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:15](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L15).
-
-PRD-115 increment 5: the journal lines for a mixed payment and for a daily accrual&#x27;s interest, shared by both journal paths (LoanAccountingProjector in the command transaction and DirectLendingOutboxDispatcher from the outbox) so they cannot post differently. Zero-amount lines are omitted.
-
-```csharp
-public static class DirectLendingJournalLines
+public readonly record struct DirectLendingJournalLine(string Account, LedgerAccountType AccountType, decimal Debit, decimal Credit)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string PrepaidInterestLiability = &quot;PrepaidInterestLiability&quot;;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:17](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L17) |  |
-| <code>public const string UnappliedCashLiability = &quot;UnappliedCashLiability&quot;;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:18](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L18) |  |
-| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForMixedPayment(JsonElement root);</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:28](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L28) | A mixed payment split by allocation: Dr Cash for the receipt; Cr each receivable it settled, Cr LoanPrincipal for scheduled and prepaid principal, Cr PrepaidInterestLiability and UnappliedCashLiability for routed excess; plus Dr PenaltyReceivable / Cr PenaltyIncome for a prepayment penalty charged on excess. Payments recorded before PRD-115 (no excess members on the resolution) keep their original Dr Cash / Cr LoanAndAccrualsClearing posting: historical clearing is reported, not rewritten. |
-| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForUnappliedCashApplied(JsonElement root);</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:82](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L82) | PRD-115 increment 7: held cash applied to amounts owed. Dr UnappliedCashLiability for the amount applied; Cr each receivable settled and LoanPrincipal. No cash moves. |
-| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForUnappliedCashRefunded(JsonElement root);</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:116](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L116) | PRD-115 increment 7: held cash returned to the borrower. Dr UnappliedCashLiability / Cr Cash. |
-| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForAccruedInterest(JsonElement root);</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:130](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L130) | The interest lines of a daily accrual: Cr InterestIncome for the day&#x27;s cash interest, settled first from prepaid interest (Dr PrepaidInterestLiability) and the rest as a receivable (Dr AccruedInterestReceivable). PIK, commitment-fee and penalty lines are unchanged and posted by the callers. |
+| <code>[JsonIgnore] public LedgerAccountRole? AccountRole { get; init; }</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:13](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L13) | The explicit registered role for a line produced by Meridian&#x27;s shared projection. |
+
+## DirectLendingJournalLines
+
+Qualified name: <code>Meridian.Application.DirectLending.DirectLendingJournalLines</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:22](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L22).
+
+Loan-event journal economics and registered account roles, shared by both journal paths (LoanAccountingProjector in the command transaction and DirectLendingOutboxDispatcher from the outbox) so they cannot post differently. Zero-amount lines are omitted.
+
+```csharp
+public static partial class DirectLendingJournalLines
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string PrepaidInterestLiability = &quot;PrepaidInterestLiability&quot;;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:26](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L26) |  |
+| <code>public const string UnappliedCashLiability = &quot;UnappliedCashLiability&quot;;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:27](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L27) |  |
+| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForMixedPayment(JsonElement root) =&gt; …;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:37](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L37) | A mixed payment split by allocation: Dr Cash for the receipt; Cr each receivable it settled, Cr LoanPrincipal for scheduled and prepaid principal, Cr PrepaidInterestLiability and UnappliedCashLiability for routed excess; plus Dr PenaltyReceivable / Cr PenaltyIncome for a prepayment penalty charged on excess. Payments recorded before PRD-115 (no excess members on the resolution) keep their original Dr Cash / Cr LoanAndAccrualsClearing posting: historical clearing is reported, not rewritten. |
+| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForUnappliedCashApplied(JsonElement root) =&gt; …;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:94](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L94) | PRD-115 increment 7: held cash applied to amounts owed. Dr UnappliedCashLiability for the amount applied; Cr each receivable settled and LoanPrincipal. No cash moves. |
+| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForUnappliedCashRefunded(JsonElement root) =&gt; …;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:131](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L131) | PRD-115 increment 7: held cash returned to the borrower. Dr UnappliedCashLiability / Cr Cash. |
+| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForAccruedInterest(JsonElement root) =&gt; …;</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs:148](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.cs#L148) | The interest lines of a daily accrual: Cr InterestIncome for the day&#x27;s cash interest, settled first from prepaid interest (Dr PrepaidInterestLiability) and the rest as a receivable (Dr AccruedInterestReceivable). PIK, commitment-fee and penalty lines are unchanged and posted by the callers. |
+
+Source: [src/Meridian.Application/DirectLending/DirectLendingJournalLines.Events.cs:7](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.Events.cs#L7).
+
+```csharp
+public static partial class DirectLendingJournalLines
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;DirectLendingJournalLine&gt; ForEvent(string eventType, JsonElement root, string financialAccountId);</code> | [src/Meridian.Application/DirectLending/DirectLendingJournalLines.Events.cs:14](../../../../src/Meridian.Application/DirectLending/DirectLendingJournalLines.Events.cs#L14) | Projects one loan event for both authoritative journal posting and outbox draft creation. Account names and classifications are resolved only through the shared chart; zero-amount and non-accounting events produce no lines. Historical account identities are preserved. |
 
 ## DirectLendingOutboxDispatcher
 
@@ -468,7 +486,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.DirectLending.LoanAccountingProjector</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:18](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L18).
+Source: [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:16](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L16).
 
 Builds ledger journal writes for loan events using the applicable accounting policy.
 
@@ -480,8 +498,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public LoanAccountingProjector(ILedgerJournalStore? journalStore, IAccountingPolicyService accountingPolicyService, SecurityMasterQueryService? securityMasterQueryService = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:24](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L24) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryWrite&gt;&gt; ProjectAsync(Guid loanId, LoanContractDetailDto contract, string eventType, DateOnly? effectiveDate, JsonDocument payload, Guid sourceEventId, DirectLendingEventWriteMetadata metadata, CancellationToken ct, LedgerPostingKindDto postingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:34](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L34) |  |
+| <code>public LoanAccountingProjector(ILedgerJournalStore? journalStore, IAccountingPolicyService accountingPolicyService, SecurityMasterQueryService? securityMasterQueryService = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:23](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L23) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerJournalEntryWrite&gt;&gt; ProjectAsync(Guid loanId, LoanContractDetailDto contract, string eventType, DateOnly? effectiveDate, JsonDocument payload, Guid sourceEventId, DirectLendingEventWriteMetadata metadata, CancellationToken ct, LedgerPostingKindDto postingKind = LedgerPostingKindDto.Originating, LedgerAdjustmentApprovalMetadataDto? adjustmentApproval = null);</code> | [src/Meridian.Application/DirectLending/LoanAccountingProjector.cs:33](../../../../src/Meridian.Application/DirectLending/LoanAccountingProjector.cs#L33) |  |
 
 ## PostgresDirectLendingCommandService
 

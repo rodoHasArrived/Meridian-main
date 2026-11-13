@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTaxLotReliefSelection
+
+Qualified name: <code>Meridian.Ledger.LedgerTaxLotReliefSelection</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerTaxLotReliefSelection.cs:35](../../../../src/Meridian.Ledger/LedgerTaxLotReliefSelection.cs#L35).
+
+Quantity, proceeds, and cost relieved from one tax lot. UnitCost is the effective per-share cost used to relieve the shares: each lot&#x27;s own recorded unit cost for lot-discrete methods (FIFO/LIFO/HIFO/SpecificId), or the unit cost implied by the rounded pooled basis (CostBasis / QuantityRelieved) for LedgerTaxLotReliefMethod.AverageCost. Reporting the implied unit cost keeps a realized-gain row consistent with its cost basis instead of showing a raw lot cost against a pooled basis. For a repeating pooled average the implied unit cost is the nearest per-share value to the rounded basis; CostBasis is always the authoritative amount.
+
+```csharp
+public sealed record LedgerTaxLotReliefSelection(LedgerTaxLot Lot, decimal QuantityRelieved, decimal CostBasis, decimal UnitCost, decimal Proceeds, decimal RealizedGainOrLoss, TaxCharacter TaxCharacter, int HoldingPeriodDays, bool HoldingPeriodExtendedByWashSale);
+```
+
+## LedgerValidationException
+
+Qualified name: <code>Meridian.Ledger.LedgerValidationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerValidationException.cs:8](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L8).
+
+Thrown when a ledger entry or journal entry fails double-entry bookkeeping validation rules.
+
+```csharp
+public sealed class LedgerValidationException : MeridianException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerValidationException(string message) : base(message);</code> | [src/Meridian.Ledger/LedgerValidationException.cs:11](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L11) |  |
+| <code>public LedgerValidationException(string message, Exception innerException) : base(message, innerException);</code> | [src/Meridian.Ledger/LedgerValidationException.cs:14](../../../../src/Meridian.Ledger/LedgerValidationException.cs#L14) |  |
+
 ## LedgerViewKind
 
 Qualified name: <code>Meridian.Ledger.LedgerViewKind</code>. Kind: `enum`.
@@ -926,43 +957,3 @@ One accrual segment between two cash-flow boundaries.
 ```csharp
 public sealed record PreferredReturnSegment(DateOnly From, DateOnly To, decimal Base, decimal AccruedInterest);
 ```
-
-## PrivateCapitalAuthorityRules
-
-Qualified name: <code>Meridian.Ledger.PrivateCapitalAuthorityRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:6](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L6).
-
-Shared admission rules; storage repeats them so direct callers cannot bypass workflow validation.
-
-```csharp
-public static class PrivateCapitalAuthorityRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Id(string? value, string name);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:8](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L8) |  |
-| <code>public static PrivateCapitalScopeDto NormalizeScope(PrivateCapitalScopeDto scope);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:15](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L15) |  |
-| <code>public static void ValidateCommitment(PrivateCapitalCommitmentDto value);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:36](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L36) |  |
-| <code>public static string LockKey(PrivateCapitalScopeDto scope, string commitmentId);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:54](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L54) |  |
-| <code>public static string? FindIssuanceTimelineViolation(string commitmentId, IEnumerable&lt;PrivateCapitalCommitmentDto&gt; revisions, IEnumerable&lt;(DateOnly EffectiveDate, decimal Amount)&gt; postedIssuances, DateOnly? candidateDate = null, decimal candidateAmount = 0m);</code> | [src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs:61](../../../../src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs#L61) | Checks every effective revision and issuance date, including approved future reductions. |
-
-## PrivateCapitalCallPlanHash
-
-Qualified name: <code>Meridian.Ledger.PrivateCapitalCallPlanHash</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs:8](../../../../src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs#L8).
-
-Versioned digest of the reviewed allocation, excluding audit clock and subsequent posting observations.
-
-```csharp
-public static class PrivateCapitalCallPlanHash
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string Compute(PrivateCapitalCallDto call);</code> | [src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs:10](../../../../src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs#L10) |  |
