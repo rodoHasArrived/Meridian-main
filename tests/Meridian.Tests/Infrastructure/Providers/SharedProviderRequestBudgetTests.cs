@@ -74,7 +74,7 @@ public sealed class SharedProviderRequestBudgetTests
         using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
         var actions = CreateActions(handler, registry, new MutableCredentials("synthetic-key"));
         var work = Task.WhenAll(
-            history.GetDailyBarsAsync("AAPL", null, null),
+            history.GetDailyBarsAsync("AAPL", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2)),
             search.SearchAsync("AAPL", 10, CancellationToken.None),
             actions.FetchAsync("AAPL", Guid.NewGuid()));
 
@@ -111,7 +111,7 @@ public sealed class SharedProviderRequestBudgetTests
         using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
         using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
         await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL", 10, CancellationToken.None));
-        var pending = history.GetDailyBarsAsync("AAPL", null, null);
+        var pending = history.GetDailyBarsAsync("AAPL", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2));
         clock.Advance(TimeSpan.FromSeconds(19));
         Assert.Equal(1, handler.Requests.Count);
         Assert.False(pending.IsCompleted);
@@ -148,7 +148,7 @@ public sealed class SharedProviderRequestBudgetTests
             using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
             var limited = await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL", 10, CancellationToken.None));
             Assert.Equal(TimeSpan.Zero, limited.RetryAfter);
-            pending = history.GetDailyBarsAsync("AAPL", null, null);
+            pending = history.GetDailyBarsAsync("AAPL", new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 2));
         }
         await RequestBudgetTimeProvider.WaitUntilAsync(() => clock.HasTimerDueWithin(TimeSpan.FromSeconds(7.5)));
         clock.Advance(TimeSpan.FromSeconds(7.5));

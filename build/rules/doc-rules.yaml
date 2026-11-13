@@ -99,7 +99,7 @@ rules:
   # Operations runbooks
   # ---------------------------------------------------------------------------
   - name: "Operator runbook has troubleshooting section"
-    applies_to: "docs/operations/operator-runbook.md"
+    applies_to: "docs/operators/operator-runbook.md"
     required_sections:
       - "Troubleshooting"
     severity: error

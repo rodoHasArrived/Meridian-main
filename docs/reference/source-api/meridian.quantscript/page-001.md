@@ -240,7 +240,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.QuantScript.Api.QuantDataContext</code>. Kind: `class`.
 
-Source: [src/Meridian.QuantScript/Api/QuantDataContext.cs:15](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L15).
+Source: [src/Meridian.QuantScript/Api/QuantDataContext.cs:14](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L14).
 
 Implements IQuantDataContext by delegating to JsonlMarketDataStore. Returns empty series (no exception) when no data is found for a symbol/date range.
 
@@ -252,12 +252,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;PriceSeries&gt; PricesAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:20](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L20) |  |
-| <code>public async Task&lt;PriceSeries&gt; PricesAsync(string symbol, DateOnly from, DateOnly to, string? provider, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:24](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L24) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ScriptTrade&gt;&gt; TradesAsync(string symbol, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:58](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L58) |  |
-| <code>public async Task&lt;ScriptOrderBook?&gt; OrderBookAsync(string symbol, DateTimeOffset timestamp, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:86](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L86) |  |
-| <code>public async Task&lt;SecurityDetailDto?&gt; SecMasterAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:145](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L145) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; CorporateActionsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:165](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L165) |  |
+| <code>public async Task&lt;PriceSeries&gt; PricesAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:19](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L19) |  |
+| <code>public async Task&lt;PriceSeries&gt; PricesAsync(string symbol, DateOnly from, DateOnly to, string? provider, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:23](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L23) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ScriptTrade&gt;&gt; TradesAsync(string symbol, DateOnly date, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:57](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L57) |  |
+| <code>public async Task&lt;ScriptOrderBook?&gt; OrderBookAsync(string symbol, DateTimeOffset timestamp, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:85](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L85) |  |
+| <code>public async Task&lt;SecurityDetailDto?&gt; SecMasterAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:144](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L144) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; CorporateActionsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.QuantScript/Api/QuantDataContext.cs:164](../../../../src/Meridian.QuantScript/Api/QuantDataContext.cs#L164) |  |
 
 ## ReturnKind
 

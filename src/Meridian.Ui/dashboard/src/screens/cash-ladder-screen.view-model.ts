@@ -97,6 +97,11 @@ export interface CashLadderScenarioOption {
 
 export interface CashLadderDrillRow {
   id: string;
+  securityId: string;
+  projectionRunIdentity: string | null;
+  termsVersionId: string | null;
+  termsHash: string | null;
+  sourceEntityId: string | null;
   instrument: string;
   assetClass: string;
   flowType: string;
@@ -288,7 +293,12 @@ export function selectBucketContributions(
 
 function toDrillRow(row: PortfolioCashLadderContribution): CashLadderDrillRow {
   return {
-    id: `${row.securityId}-${row.dueDate}-${row.flowType}-${row.amount}`,
+    id: `${row.securityId}-${row.projectionRunId ?? ""}-${row.sourceEntityId ?? ""}-${row.dueDate}-${row.flowType}-${row.amount}`,
+    securityId: row.securityId,
+    projectionRunIdentity: row.projectionRunId ?? null,
+    termsVersionId: row.termsVersionId ?? null,
+    termsHash: row.termsHash ?? null,
+    sourceEntityId: row.sourceEntityId ?? null,
     instrument: row.displayName,
     assetClass: row.assetClass,
     flowType: row.flowType,

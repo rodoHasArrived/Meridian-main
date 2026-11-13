@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.DataIntegration
 
+QuickBooks import and bound verification serialize refreshes, retain complete generation-checked
+rotations after caller cancellation, and refuse stale import success or failure updates after
+operator credential replacement. Verification remains separate from journal posting authority.
+
 CSV and IB Flex statement imports share SHA-256 byte computation while retaining uppercase row
 checksums and duplicate identities. UTF-8 encoding, CSV row and unformatted XML element bytes,
 source-file hash casing and null rejection retain their existing contracts; retained imports remain
