@@ -454,6 +454,18 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:23
 public sealed record AccountOversightContextDto(string AccountId, string BookId, string BaseCurrency, string BookName, string Actor, bool CanWrite, bool CanReadPrices, bool CanManagePrices, bool CanProvision);
 ```
 
+## AccrualScheduleInput
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.AccrualScheduleInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L16).
+
+Explicit operator-reviewed fixed accruals. Decimal text is parsed only by the server.
+
+```csharp
+public sealed record AccrualScheduleInput(string ScheduleId, string FundProfileId, Guid LedgerBookId, string EntityId, string Currency, RecurringJournalCadence Cadence, DateOnly AnchorDate, DateOnly EndsOn, string Amount, string DebitAccount, LedgerAccountType DebitAccountType, string CreditAccount, LedgerAccountType CreditAccountType, string Description, IReadOnlyList<JournalEvidenceReference> Evidence, int ExpectedScheduleVersion = 0, int ExpectedTemplateVersion = 0);
+```
+
 ## AdminEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.AdminEndpoints</code>. Kind: `class`.
@@ -729,7 +741,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondAnalyticsEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs#L13).
+Source: [src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs#L14).
 
 Read-only, explicitly dated bond analysis. No valuation result grants posting authority.
 
@@ -741,7 +753,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapBondAnalyticsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs#L15) |  |
+| <code>public static void MapBondAnalyticsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs#L16) |  |
+
+## BondDiscoveryEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondDiscoveryEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs#L14).
+
+Provider lookup supplies candidate identity evidence, never approved Security Master terms.
+
+```csharp
+public static class BondDiscoveryEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapBondDiscoveryEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs#L16) |  |
 
 ## BondMigrationEndpoints
 
@@ -760,39 +790,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapBondMigrationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs#L16) |  |
-
-## BondReferenceEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondReferenceEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs#L15).
-
-Maps bond reference lookup and issuer and maturity queries to HTTP endpoints.
-
-```csharp
-public static class BondReferenceEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapBondReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs#L20) |  |
-
-## BondReferencePagingEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondReferencePagingEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs#L13).
-
-Bounded keyset pages alongside the retained array contracts.
-
-```csharp
-public static class BondReferencePagingEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapBondReferencePagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs#L15) |  |

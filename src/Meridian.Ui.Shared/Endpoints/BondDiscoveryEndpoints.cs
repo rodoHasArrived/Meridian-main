@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
@@ -46,7 +47,8 @@ public static class BondDiscoveryEndpoints
             var candidates = (results?.Results ?? []).Where(candidate =>
                 string.Equals(candidate.AssetType, "FixedIncome", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(candidate.AssetType, "fixed_income", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(candidate.AssetType, "Bond", StringComparison.OrdinalIgnoreCase)).ToArray();
+                || (SecurityAssetClassCatalog.TryGet(candidate.AssetType, out var descriptor)
+                    && descriptor.CarriesBondCouponStructure)).ToArray();
 
             EndpointAuthorization.TryGetPermissions(context, out var permissions);
             return Results.Json(new

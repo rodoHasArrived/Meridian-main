@@ -107,7 +107,7 @@ public static partial class LedgerEndpoints
             catch (Exception ex) when (ex is InvalidOperationException or IOException)
             { return ApiProblemDetails.Conflict(context, ex.Message); }
         }).WithName("PreviewAccrualSchedule")
-            .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+            .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageLedgerReports)
             .RequireWorkstationTenantCompanyScope().RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         app.MapPost(UiApiRoutes.LedgerAccrualScheduleConfigure, async (HttpContext context) =>

@@ -73,7 +73,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
-    public async Task AccrualSchedules_ReadersCannotConfigure_AndUnavailableRegistryIsExplicit()
+    public async Task AccrualSchedules_ReadersCannotConfigureOrPreview_AndUnavailableRegistryIsExplicit()
     {
         await using var app = await CreateAppAsync(mapLedgerApi: true, currentUserPermissions: UserPermission.ViewLedgerReports);
         var client = app.GetTestClient();
@@ -81,6 +81,8 @@ public sealed partial class WorkstationEndpointsTests
         var response = await client.PostAsJsonAsync(UiApiRoutes.LedgerAccrualScheduleConfigure,
             new ConfigureAccrualScheduleInput(input, new string('a', 64)), ServerJsonOptions);
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var preview = await client.PostAsJsonAsync(UiApiRoutes.LedgerAccrualSchedulePreview, input, ServerJsonOptions);
+        preview.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         var registry = await client.GetAsync($"{UiApiRoutes.LedgerAccrualSchedules}?fundProfileId=fund&ledgerBookId={input.LedgerBookId:D}&entityId=entity");
         registry.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
     }

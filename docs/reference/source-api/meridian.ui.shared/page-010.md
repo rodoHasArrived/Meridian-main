@@ -6,6 +6,77 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailyValuationBatchLifecycleService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationBatchLifecycleService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs:13](../../../../src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs#L13).
+
+Applies one governed operator decision to every retained draft in the current daily-valuation batch. Batch membership is read from the server-owned schedule, validation runs for every member before posting begins, and a retry resumes already submitted/approved/posted members.
+
+```csharp
+public sealed class DailyValuationBatchLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DailyValuationBatchLifecycleService(IDailyValuationPortfolioSource scheduleSource, IManualJournalEntryDraftStore draftStore, IManualJournalEntryLifecycleService lifecycle);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs:20](../../../../src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs#L20) |  |
+| <code>public async Task&lt;DailyValuationBatchLifecycleResultDto&gt; ApproveAndPostAsync(DailyValuationBatchLifecycleRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs:30](../../../../src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs#L30) |  |
+
+## DailyValuationPositionResolution
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationPositionResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:19](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L19).
+
+Fail-closed result of resolving the positions for one valuation run.
+
+```csharp
+public sealed record DailyValuationPositionResolution(IReadOnlyList<MarkToMarketPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:24](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L24) |  |
+
+## DailyValuationPositionService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationPositionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:32](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L32).
+
+Resolves positions as of the valuation cutoff from explicitly named durable snapshots, or from an explicitly time-stamped static override. Every position must resolve to an active Security Master record in the valuation base currency before a provider mark can enter an accounting draft.
+
+```csharp
+public sealed class DailyValuationPositionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DailyValuationPositionService(IPositionSnapshotStore? snapshotStore, ICanonicalSymbolRegistry? symbolRegistry, ISecurityMasterQueryService? securityMaster);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:38](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L38) |  |
+| <code>public async Task&lt;DailyValuationPositionResolution&gt; ResolveConfiguredAsync(DailyValuationScheduleWorkItem workItem, DateTimeOffset valuationAsOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:48](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L48) |  |
+| <code>public Task&lt;DailyValuationPositionResolution&gt; ResolveAdHocAsync(IReadOnlyList&lt;MarkToMarketPosition&gt; positions, string baseCurrency, DateTimeOffset valuationAsOfUtc, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:212](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L212) |  |
+| <code>public bool CanResolveConfigured(DailyValuationScheduleWorkItem workItem);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:224](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L224) | Returns whether this process has the dependencies required by one retained schedule. Scheduler hosts use this before claiming due work so an optional desktop composition cannot turn a healthy retained schedule into a durable Blocked state. |
+| <code>public static string ComputeStaticPositionHash(IReadOnlyList&lt;MarkToMarketPosition&gt; positions);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:233](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L233) |  |
+
+## DailyValuationPositionSnapshotScope
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationPositionSnapshotScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs:16](../../../../src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs#L16).
+
+One explicit durable run/account position-snapshot scope. Accounting ownership is inherited from the immutable schedule identity and must match the retained snapshot exactly.
+
+```csharp
+public sealed record DailyValuationPositionSnapshotScope(string RunId, string AccountId);
+```
+
 ## DailyValuationScheduledBatchResult
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationScheduledBatchResult</code>. Kind: `record`.
@@ -839,68 +910,4 @@ Source: [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileSt
 
 ```csharp
 public sealed record AccountingTenantAdministrationProfileSnapshot(IReadOnlyList<AccountingTenantAdministrationProfileDto> Profiles);
-```
-
-## FileAutomatedJournalScheduleStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAutomatedJournalScheduleStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:246](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L246).
-
-Atomic JSON-backed source with schedule state and run history in one snapshot.
-
-```csharp
-public sealed class FileAutomatedJournalScheduleStore : JsonFileSnapshotStore<FileAutomatedJournalScheduleStore.AutomatedJournalScheduleSnapshot>, IAutomatedJournalScheduleStore, IAutomatedJournalScheduleStatusSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileAutomatedJournalScheduleStore(string snapshotPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Automated journal schedule snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:256](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L256) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AutomatedJournalScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:267](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L267) |  |
-| <code>public async Task&lt;AutomatedJournalScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:275](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L275) |  |
-| <code>public async Task&lt;AutomatedJournalScheduleWorkItem&gt; SaveAsync(AutomatedJournalScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:289](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L289) |  |
-| <code>public async Task&lt;AutomatedJournalScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? tenantId = null, string? companyId = null, string? entityId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:338](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L338) |  |
-
-## AutomatedJournalScheduleSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAutomatedJournalScheduleStore.AutomatedJournalScheduleSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:355](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L355).
-
-```csharp
-public sealed record AutomatedJournalScheduleSnapshot(IReadOnlyList<AutomatedJournalScheduleWorkItem> WorkItems);
-```
-
-## FileDailyValuationPortfolioSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileDailyValuationPortfolioSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:155](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L155).
-
-Atomic JSON-backed daily valuation schedule source.
-
-```csharp
-public sealed class FileDailyValuationPortfolioSource : JsonFileSnapshotStore<FileDailyValuationPortfolioSource.DailyValuationScheduleSnapshot>, IDailyValuationPortfolioSource, IDailyValuationScheduleStatusSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileDailyValuationPortfolioSource(string snapshotPath) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Daily valuation schedule snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:165](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L165) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;DailyValuationScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:176](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L176) |  |
-| <code>public async Task&lt;DailyValuationScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:185](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L185) |  |
-| <code>public async Task&lt;DailyValuationScheduleWorkItem&gt; SaveAsync(DailyValuationScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:199](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L199) |  |
-| <code>public async Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:230](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L230) |  |
-
-## DailyValuationScheduleSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileDailyValuationPortfolioSource.DailyValuationScheduleSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:247](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L247).
-
-```csharp
-public sealed record DailyValuationScheduleSnapshot(IReadOnlyList<DailyValuationScheduleWorkItem> WorkItems);
 ```

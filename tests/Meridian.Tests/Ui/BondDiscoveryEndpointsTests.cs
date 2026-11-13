@@ -18,9 +18,11 @@ namespace Meridian.Tests.Ui;
 public sealed class BondDiscoveryEndpointsTests
 {
     [Theory]
-    [InlineData(UserPermission.ViewSecurityMaster, false)]
-    [InlineData(UserPermission.ModifySecurityMaster, true)]
-    public async Task Lookup_UsesFixedIncomeProviderAndReturnsStagingPermission(UserPermission permission, bool canStage)
+    [InlineData(UserPermission.ViewSecurityMaster, false, "FixedIncome")]
+    [InlineData(UserPermission.ModifySecurityMaster, true, "FixedIncome")]
+    [InlineData(UserPermission.ViewSecurityMaster, false, "fixed_income")]
+    [InlineData(UserPermission.ViewSecurityMaster, false, "Bond")]
+    public async Task Lookup_UsesFixedIncomeProviderAndReturnsStagingPermission(UserPermission permission, bool canStage, string assetType)
     {
         var provider = Substitute.For<IFilterableSymbolSearchProvider>();
         provider.Name.Returns("alpaca");
@@ -29,7 +31,7 @@ public sealed class BondDiscoveryEndpointsTests
         provider.SearchAsync("Treasury", 50, "fixed_income", null, Arg.Any<CancellationToken>())
             .Returns(new SymbolSearchResult[]
             {
-                new("912TEST", "Synthetic Treasury", AssetType: "FixedIncome", Currency: "USD", Source: "alpaca"),
+                new("912TEST", "Synthetic Treasury", AssetType: assetType, Currency: "USD", Source: "alpaca"),
                 new("WRONG", "Wrong asset", AssetType: "Stock", Source: "alpaca")
             });
         using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());

@@ -6,8 +6,8 @@
   "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
-    "endpoint_count": 805,
-    "documented_endpoint_count": 805,
+    "endpoint_count": 812,
+    "documented_endpoint_count": 812,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 1026,
     "documented_workstation_contract_count": 1026,
@@ -707,19 +707,25 @@
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/settlement-consideration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:21",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:22",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/analytics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:31",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:37",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/exercise-notices",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:96",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:106",
+      "documented": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/reference-data/bonds/discovery",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:19",
       "documented": true
     },
     {
@@ -755,31 +761,31 @@
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:28",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:29",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/lifecycle",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:44",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:45",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/accrual-convention",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:60",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:61",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/issuer-ladder",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:73",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:74",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/maturity-ladder",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:97",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:98",
       "documented": true
     },
     {
@@ -2296,6 +2302,42 @@
     },
     {
       "method": "GET",
+      "path": "/api/ledger/journal-automation/accrual-schedules",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:29",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/accrual-schedules/preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:68",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/accrual-schedules/configure",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:113",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/accrual-schedules/{scheduleId}/run",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:168",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/amortization/prepare",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:23",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/books/{ledgerBookId:guid}/amortization/drafts",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:37",
+      "documented": true
+    },
+    {
+      "method": "GET",
       "path": "/api/ledger/audit-integrity",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:34",
       "documented": true
@@ -2873,25 +2915,25 @@
     {
       "method": "GET",
       "path": "/api/ledger/journal-automation/recurring/occurrences",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:83",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:84",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/recurring/initialize",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:108",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:109",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/recurring/schedules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:126",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:127",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/recurring/restore-definitions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:179",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:180",
       "documented": true
     },
     {
