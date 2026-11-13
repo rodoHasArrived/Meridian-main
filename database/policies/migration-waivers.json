@@ -257,6 +257,12 @@
       "rule_id": "migration-drop-object",
       "reason": "Functional, row-preserving index replacement: drops only ux_ledger_books_fund_node_basis and recreates it in the same migration transaction as a partial unique index. Ordinary source/entity and Fund/Primary books retain the existing per-fund/node/basis uniqueness; the sole exclusion is Fund/Primary books with one of the four exact consolidation-v1/w10-v1 through consolidation-v4/w10-v4 policy pairs. A second unique index preserves distinct normalized reporting-book names within that excluded population. Every row satisfying the old unique index also satisfies both new indexes on first apply. No table, column, book, journal, overlay or receipt is removed or rewritten. The shared PostgreSQL migration runner holds its advisory migration lock and transaction through replacement and migration-ledger recording; failed creation rolls back the drop. DDL can wait for ledger_books users and requires a reviewed operational window. After multiple approved reporting books exist, do not restore the old all-books index by deleting books or history: retain them and use a reviewed forward correction. Exact policy-pair creation validation and reviewed cutover routing remain independent application controls; this exception does not widen them.",
       "review_after": "2027-05-13"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_067__period_balance_checkpoints.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers on the immutable balance checkpoint tables; this migration executes no data truncation. Separate AI schema review confirmed this bounded exception. PostgreSQL regression coverage attempts update, delete and truncate on both tables, requires the guard SQLSTATE 55000, and verifies that retained rows and balances remain unchanged.",
+      "review_after": "2027-05-13"
     }
   ],
   "removed_migrations": [

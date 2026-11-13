@@ -39,6 +39,12 @@ create index if not exists ix_ledger_balance_checkpoints_book_as_of
     on __SCHEMA__.ledger_balance_checkpoints
         (ledger_book_id, as_of_utc desc, source_sequence desc);
 
+create index if not exists ix_ledger_balance_checkpoints_period_version
+    on __SCHEMA__.ledger_balance_checkpoints (period_id, period_version);
+
+comment on table __SCHEMA__.ledger_balance_checkpoints is
+    'Immutable cumulative balances captured atomically with an authoritative hard close and bound to its retained audit evidence.';
+
 create table if not exists __SCHEMA__.ledger_balance_checkpoint_rows (
     checkpoint_id uuid not null
         references __SCHEMA__.ledger_balance_checkpoints(checkpoint_id),
@@ -67,6 +73,9 @@ create table if not exists __SCHEMA__.ledger_balance_checkpoint_rows (
         check (entry_count > 0)
 );
 
+comment on table __SCHEMA__.ledger_balance_checkpoint_rows is
+    'Exact account and line-dimension debit/credit totals in one immutable hard-close balance checkpoint, including known zero balances.';
+
 -- The header's required foreign key binds its native close event. These optional references have
 -- no reverse foreign key: a native writer inserts the close event before its checkpoint header in
 -- the same transaction, without temporarily breaking a circular immediate constraint.
@@ -74,14 +83,28 @@ alter table __SCHEMA__.period_close_events
     add column if not exists balance_checkpoint_id uuid null,
     add column if not exists balance_checkpoint_hash text null;
 
-alter table __SCHEMA__.period_close_events
-    drop constraint if exists ck_period_close_events_balance_checkpoint_pair,
-    drop constraint if exists ck_period_close_events_balance_checkpoint_hash;
-alter table __SCHEMA__.period_close_events
-    add constraint ck_period_close_events_balance_checkpoint_pair
-        check ((balance_checkpoint_id is null) = (balance_checkpoint_hash is null)),
-    add constraint ck_period_close_events_balance_checkpoint_hash
-        check (balance_checkpoint_hash is null or balance_checkpoint_hash ~ '^[0-9a-f]{64}$');
+do $constraints$
+begin
+    if not exists (
+        select 1 from pg_constraint
+        where conrelid = '__SCHEMA__.period_close_events'::regclass
+          and conname = 'ck_period_close_events_balance_checkpoint_pair'
+    ) then
+        alter table __SCHEMA__.period_close_events
+            add constraint ck_period_close_events_balance_checkpoint_pair
+                check ((balance_checkpoint_id is null) = (balance_checkpoint_hash is null));
+    end if;
+    if not exists (
+        select 1 from pg_constraint
+        where conrelid = '__SCHEMA__.period_close_events'::regclass
+          and conname = 'ck_period_close_events_balance_checkpoint_hash'
+    ) then
+        alter table __SCHEMA__.period_close_events
+            add constraint ck_period_close_events_balance_checkpoint_hash
+                check (balance_checkpoint_hash is null or balance_checkpoint_hash ~ '^[0-9a-f]{64}$');
+    end if;
+end
+$constraints$;
 
 -- Checkpoint admission starts from retained audited close authority. The native header is not
 -- an authority index: deleting it must not turn an audited checkpoint into a legacy fallback.
@@ -102,26 +125,18 @@ begin
 end
 $function$;
 
-drop trigger if exists trg_ledger_balance_checkpoints_immutable
-    on __SCHEMA__.ledger_balance_checkpoints;
-create trigger trg_ledger_balance_checkpoints_immutable
+create or replace trigger trg_ledger_balance_checkpoints_immutable
     before update or delete on __SCHEMA__.ledger_balance_checkpoints
     for each row execute function __SCHEMA__.reject_ledger_balance_checkpoint_mutation();
 
-drop trigger if exists trg_ledger_balance_checkpoints_truncate_guard
-    on __SCHEMA__.ledger_balance_checkpoints;
-create trigger trg_ledger_balance_checkpoints_truncate_guard
+create or replace trigger trg_ledger_balance_checkpoints_truncate_guard
     before truncate on __SCHEMA__.ledger_balance_checkpoints
     for each statement execute function __SCHEMA__.reject_ledger_balance_checkpoint_mutation();
 
-drop trigger if exists trg_ledger_balance_checkpoint_rows_immutable
-    on __SCHEMA__.ledger_balance_checkpoint_rows;
-create trigger trg_ledger_balance_checkpoint_rows_immutable
+create or replace trigger trg_ledger_balance_checkpoint_rows_immutable
     before update or delete on __SCHEMA__.ledger_balance_checkpoint_rows
     for each row execute function __SCHEMA__.reject_ledger_balance_checkpoint_mutation();
 
-drop trigger if exists trg_ledger_balance_checkpoint_rows_truncate_guard
-    on __SCHEMA__.ledger_balance_checkpoint_rows;
-create trigger trg_ledger_balance_checkpoint_rows_truncate_guard
+create or replace trigger trg_ledger_balance_checkpoint_rows_truncate_guard
     before truncate on __SCHEMA__.ledger_balance_checkpoint_rows
     for each statement execute function __SCHEMA__.reject_ledger_balance_checkpoint_mutation();
