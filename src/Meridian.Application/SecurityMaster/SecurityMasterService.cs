@@ -1778,10 +1778,16 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         }
 
         var projection = SecurityMasterMapping.ToProjection(result.Snapshot, aliases);
+        // The single choke point every create, amend and deactivate passes before its upsert: the
+        // terms the record will carry declare their family (ADR-024 decision 1, amendment
+        // 2026-11-13). That covers the profile-backed override, which persists the submitted or
+        // stored envelope, and the domain codec's verbatim custom-asset document alike; a flat
+        // document the codec already stamped is returned unchanged.
         return projection with
         {
             AssetClass = assetClassOverride ?? projection.AssetClass,
-            AssetSpecificTerms = assetSpecificTermsOverride?.Clone() ?? projection.AssetSpecificTerms
+            AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(
+                assetSpecificTermsOverride?.Clone() ?? projection.AssetSpecificTerms)
         };
     }
 

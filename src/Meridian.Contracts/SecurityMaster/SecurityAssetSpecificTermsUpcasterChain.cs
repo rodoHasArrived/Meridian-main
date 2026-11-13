@@ -1673,6 +1673,26 @@ public static class SecurityAssetSpecificTermsUpcasterChain
             ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload, assetClass)
             : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
 
+    /// <summary>
+    /// Family-explicit variant for a caller that knows which family it holds: a writer of the
+    /// economic document passes <see cref="SecurityTermsFormats.Economic"/> and the object is
+    /// flattened onto <paramref name="assetClass"/>'s keys without consulting the document's tag
+    /// or shape. Any other family, and a non-object payload, normalizes exactly as
+    /// <see cref="Normalize(JsonElement, string?)"/>.
+    /// </summary>
+    public static SecurityAssetSpecificTerms Normalize(JsonElement payload, string? assetClass, string family)
+    {
+        ArgumentNullException.ThrowIfNull(family);
+        if (!SecurityTermsFormats.IsKnown(family))
+        {
+            throw new ArgumentException($"Unknown terms family '{family}'.", nameof(family));
+        }
+
+        return family == SecurityTermsFormats.Economic && payload.ValueKind == JsonValueKind.Object
+            ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload, assetClass)
+            : Normalize(payload, assetClass);
+    }
+
     /// <summary>Text-input variant; returns <see langword="null"/> when the text is not JSON.</summary>
     public static SecurityAssetSpecificTerms? Normalize(string json)
     {

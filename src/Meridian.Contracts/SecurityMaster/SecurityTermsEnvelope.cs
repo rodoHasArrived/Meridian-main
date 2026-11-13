@@ -125,6 +125,106 @@ public static class SecurityTermsEnvelope
     }
 
     /// <summary>
+    /// The family a writer declares on an untagged asset-specific-terms payload: the family
+    /// <see cref="ResolveFormat"/> already infers for it, when that is
+    /// <see cref="SecurityTermsFormats.Flat"/> or <see cref="SecurityTermsFormats.CustomProfile"/>.
+    /// <see langword="null"/> for a payload that already declares a family, a non-object, or an
+    /// untagged economic-shaped document (the asset-specific-terms slot never declares
+    /// <see cref="SecurityTermsFormats.Economic"/>; such a payload is routed through
+    /// <see cref="SecurityAssetSpecificTermsUpcasterChain"/> instead).
+    /// </summary>
+    public static string? GetStampableFormat(JsonElement payload)
+    {
+        if (payload.ValueKind != JsonValueKind.Object || GetDeclaredFormat(payload) is not null)
+        {
+            return null;
+        }
+
+        var inferred = ResolveFormat(payload);
+        return inferred is SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile ? inferred : null;
+    }
+
+    /// <summary>
+    /// Declares <see cref="FormatKey"/> on an untagged asset-specific-terms payload as the family
+    /// <see cref="ResolveFormat"/> infers (<see cref="GetStampableFormat"/>), so the stored document
+    /// states what readers and the <c>terms_format</c> column already took it to be (ADR-024
+    /// decision 1, amendment 2026-11-13). Only <see cref="FormatKey"/> is added: an absent
+    /// <see cref="AssetClassTermsVersionKey"/> keeps meaning version 1, and every other member is
+    /// copied byte for byte. The key goes immediately after <c>schemaVersion</c>, or last when the
+    /// document carries none. A payload that already declares a family, a non-object and an
+    /// untagged economic-shaped document are returned unchanged, so stamping is idempotent.
+    /// </summary>
+    public static JsonElement StampDeclaredFormat(JsonElement payload)
+    {
+        if (GetStampableFormat(payload) is not { } format)
+        {
+            return payload;
+        }
+
+        using var document = JsonDocument.Parse(BuildStamped(payload, format));
+        return document.RootElement.Clone();
+    }
+
+    /// <summary>Text form of <see cref="StampDeclaredFormat(JsonElement)"/>; non-JSON text is returned unchanged.</summary>
+    public static string StampDeclaredFormat(string json)
+    {
+        ArgumentNullException.ThrowIfNull(json);
+        JsonDocument document;
+        try
+        {
+            document = JsonDocument.Parse(json);
+        }
+        catch (JsonException)
+        {
+            return json;
+        }
+
+        using (document)
+        {
+            return GetStampableFormat(document.RootElement) is { } format
+                ? BuildStamped(document.RootElement, format)
+                : json;
+        }
+    }
+
+    private static string BuildStamped(JsonElement payload, string format)
+    {
+        var builder = new System.Text.StringBuilder();
+        var first = true;
+        var wroteFormat = false;
+        void Append(string rawName, string rawValue)
+        {
+            if (!first)
+            {
+                builder.Append(',');
+            }
+
+            first = false;
+            builder.Append('"').Append(rawName).Append("\":").Append(rawValue);
+        }
+
+        builder.Append('{');
+        foreach (var property in payload.EnumerateObject())
+        {
+            var rawName = System.Text.Encoding.UTF8.GetString(
+                System.Runtime.InteropServices.JsonMarshal.GetRawUtf8PropertyName(property));
+            Append(rawName, property.Value.GetRawText());
+            if (!wroteFormat && property.NameEquals(SchemaVersionKey))
+            {
+                Append(FormatKey, "\"" + format + "\"");
+                wroteFormat = true;
+            }
+        }
+
+        if (!wroteFormat)
+        {
+            Append(FormatKey, "\"" + format + "\"");
+        }
+
+        return builder.Append('}').ToString();
+    }
+
+    /// <summary>
     /// The asset-class terms version a flat payload declares, or
     /// <see cref="DefaultAssetClassTermsVersion"/> when it predates the key.
     /// </summary>

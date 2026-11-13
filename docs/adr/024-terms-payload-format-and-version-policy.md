@@ -1,6 +1,6 @@
 # ADR-024: Terms Payload Format and Version Policy
 
-**Status:** Accepted
+**Status:** Accepted (amendment 2026-11-13 proposed, pending human review)
 **Date:** 2026-10-17
 **Owner:** core-team
 **Reviewed:** 2026-10-17
@@ -33,7 +33,8 @@ stored family was not queryable, and nothing recorded the policy that lets the s
    `SecurityAssetClassDescriptor.TermsVersion`, raised to the highest `Since` among the versioned
    terms the record holds (decision 3). The economic
    definition adapter stamps `termsFormat = "economic"`; the custom-asset profile document is the
-   profile family and is emitted verbatim. No code path persists an untagged payload.
+   profile family and is emitted verbatim apart from its declared `termsFormat = "customProfile"`
+   (*amendment 2026-11-13, pending human review*). No code path persists an untagged payload.
    *Amended 2026-10-28 (stamp model S2, in effect from the contract step, increment 5b-2):* the
    stamp describes the document. It is the highest `Since` among the versioned terms the record
    holds, floored at the class's stamp floor (its write version before the contract step, raised by
@@ -118,6 +119,8 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Migration | `src/Meridian.Storage/SecurityMaster/Migrations/042_security_master_terms_format_column.sql` | `terms_format` column, backfill, check constraint |
 | Store | `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | Writes `terms_format`; refuses unknown formats |
 | Writers | `src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs`, `src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`, `src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs` | Flat writers that stamp the envelope |
+| Declared-family stamp | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs`, `src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs` | `StampDeclaredFormat` choke point before every service upsert; the WPF profile-backed create (amendment 2026-11-13) |
+| Terms digest | `src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs` | `SecurityTermsDigest` hashes asset-specific terms without envelope keys (amendment 2026-11-13) |
 | Validation | `src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs` | Format rules; the informational terms-version notice |
 | Upgrade hook | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs` | Runs a class's declared steps on read; identity steps return the stored payload itself |
 | Upgrade steps | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrade.cs` | Identity and transform steps declared on `SecurityAssetClassDescriptor.TermsUpgrades` |
@@ -295,7 +298,7 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-28*
+*Last Updated: 2026-11-13*
 
 ## Applications
 
@@ -601,3 +604,77 @@ Its outputs remain nonpostable; legacy calculated consumers refuse a declaring c
 See [Contractual Cash-Flow Projection](../domain/contractual-cash-flow-projection.md) for API,
 formula, source-evidence, replay and rollout boundaries. This records source capability, not fleet
 write activation, actual exercise authority, or release acceptance.
+
+## Amendment — 2026-11-13: declared family everywhere, current-state backfill
+
+> **Status: Proposed — requires human review.** This amendment partly reverses Alternative 1
+> (rewrite stored payloads), which this ADR rejected. Nothing below may be treated as accepted
+> until a human reviewer approves it on the pull request that carries it. Steps 1 and 2 are
+> implemented on the branch; steps 3 to 6 are planned and not yet implemented.
+
+**Context.** Decision 1 said no code path persists an untagged payload, but three writers still
+did: the F# codec's custom-asset branch (emitted verbatim), the profile-backed override in
+`SecurityMasterService` create and amend (and the deactivation path that restores the stored
+envelope), and the WPF settings screen that creates a profile-backed custom asset. Replay also
+rebuilt rows from untagged pre-tag events. The decision-5 count could therefore never reach zero by
+draining through writes.
+
+**Decision.**
+
+1. **Rewrite current state only.** A later migration
+   (`068_security_master_terms_format_backfill.sql`, step 3) adds `termsFormat` to
+   `securities.asset_specific_terms` from the `terms_format` column, for flat and customProfile rows
+   only. It never adds `assetClassTermsVersion` (an absent version keeps reading as 1), never
+   changes `version`, refuses to run while any untagged row classifies as economic, verifies that no
+   untagged row remains and that every tag equals the column, and then adds a
+   `ck_securities_terms_format_declared` check constraint. `security_events` is append-only
+   (migration 059) and is never rewritten.
+2. **Snapshots are regenerated, not patched.** A job re-serializes each snapshot through
+   `SecurityMasterMapping.ToSnapshot` from the replayed record (step 4).
+3. **Event replay keeps a frozen legacy classifier.** Once live code stops inferring the family
+   (step 5), untagged history is classified only by a frozen legacy classifier keyed by the event's
+   `payload_type` and `payload_version` (migration 039). Reserved flat version 2 survives only
+   inside that classifier (step 6).
+4. **Every writer stamps, at one choke point (implemented).** `SecurityTermsEnvelope.StampDeclaredFormat`
+   adds `termsFormat` to an untagged payload as the family `ResolveFormat` already infers (flat or
+   customProfile). It copies every other member byte for byte, puts the key after `schemaVersion`
+   (or last when there is none), and leaves a payload that already declares a family, a
+   non-object, or an untagged economic-shaped document unchanged. The column value is therefore the
+   same before and after.
+   - `SecurityMasterService.CreateProjectionFromResult`, which every create, amend and deactivate
+     passes through before its upsert, applies it to the persisted terms. This covers the
+     profile-backed override and the codec's custom-asset document.
+   - The F# codec's custom-asset branch (`Interop.SecurityMaster.fs`) applies it, so the economic
+     event derived from the typed record carries the same tagged document.
+   - The WPF profile-backed create (`SettingsViewModel.AssetProfiles.cs`) writes
+     `termsFormat = "customProfile"`.
+5. **Replay decoders stamp in memory (implemented).** `SecurityMasterMapping.FromEconomicPayload`
+   declares the family on the decoded record's retained `LegacyAssetSpecificTerms`.
+   `SecurityMasterAggregateRebuilder.RebuildAsync`, which feeds both rebuild paths in
+   `SecurityMasterRebuildOrchestrator`, declares it on the rebuilt row. That also covers a profile
+   envelope recovered from the economic document and a projection-only security. A rebuild therefore
+   persists tagged rows from untagged events, and the events themselves are untouched. The bare
+   `SecurityEconomicDefinitionAdapter.ToProjection` decode is unchanged, so it still returns stored
+   bytes for documents that are already tagged or are economic-only.
+6. **The economic adapter names the family it holds (implemented).** Its two flattening calls pass
+   `SecurityTermsFormats.Economic` to `SecurityAssetSpecificTermsUpcasterChain.Normalize`, so they do
+   not depend on the shape rule.
+7. **The cash-flow terms digest ignores envelope keys (implemented).** `SecurityTermsDigest` hashes
+   the asset-specific terms without their top-level `SecurityTermsEnvelope.ReservedKeys`, so
+   declaring a family on a stored row (by a write or by the backfill) does not change the source
+   terms hash of the same economics. This changes the hash of terms that carry envelope keys.
+   A contractual cash-flow run retained before this change, whose recorded `SourceTermsHash`
+   included those keys, no longer matches a recomputed hash, so its draft-attestation subject does
+   not resolve. Re-running the preview produces a matching run. Reviewers should confirm that
+   this one-time break is acceptable.
+
+**Consequences.** The `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` warning and the TX003 count now
+drain as records are written or rebuilt. The goldens change only for custom-asset profile
+envelopes, which gain `termsFormat`. In the write golden that is the custom-asset write, its
+economic image and its validation report, which loses the format-missing warning. In the
+replay-corpus golden it is the profile envelope's amend cycle, the codec's re-serialization. Shape inference stays in live code until step 5.
+
+**Verification.** `SecurityTermsFormatDeclarationTests` cover stamping, the digest, the
+family-explicit flatten, a create of every profile-backed family, a deactivation of a stored
+untagged envelope, a scoped rebuild of untagged v1 and v2 events, and in-memory decoding.
+`SecurityTermsWriteGoldenTests.EveryWriterOutput_DeclaresItsFormat` is the writer-output guard.

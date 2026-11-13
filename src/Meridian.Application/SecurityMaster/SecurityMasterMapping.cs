@@ -162,17 +162,31 @@ internal static partial class SecurityMasterMapping
         return FromEconomicPayload(@event.Payload);
     }
 
+    /// <summary>
+    /// Decodes a stored event or snapshot payload. Retained asset-specific terms written before the
+    /// format tag declare the family the shape rule infers for them, in memory only (ADR-024
+    /// amendment 2026-11-13): the stored event is never rewritten, and a replay or rebuild hands
+    /// every downstream write a tagged document.
+    /// </summary>
     public static SecurityEconomicDefinitionRecord FromEconomicPayload(JsonElement payload)
     {
+        SecurityEconomicDefinitionRecord decoded;
         if (SecurityMasterEventPayloads.IsEconomicDefinitionShape(payload))
         {
-            return JsonSerializer.Deserialize(payload, SecurityMasterJsonContext.Default.SecurityEconomicDefinitionRecord)
+            decoded = JsonSerializer.Deserialize(payload, SecurityMasterJsonContext.Default.SecurityEconomicDefinitionRecord)
                 ?? throw new InvalidOperationException("Security economic definition payload could not be deserialized.");
         }
+        else
+        {
+            var projection = JsonSerializer.Deserialize(payload, SecurityMasterJsonContext.Default.SecurityProjectionRecord)
+                ?? throw new InvalidOperationException("Security projection payload could not be deserialized.");
+            decoded = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+        }
 
-        var projection = JsonSerializer.Deserialize(payload, SecurityMasterJsonContext.Default.SecurityProjectionRecord)
-            ?? throw new InvalidOperationException("Security projection payload could not be deserialized.");
-        return SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+        return decoded.LegacyAssetSpecificTerms is { } legacyTerms
+               && SecurityTermsEnvelope.GetStampableFormat(legacyTerms) is not null
+            ? decoded with { LegacyAssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(legacyTerms) }
+            : decoded;
     }
 
     public static SecurityProjectionRecord FromProjectionPayload(JsonElement payload)

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.CashFlows;
 
@@ -19,8 +20,45 @@ public sealed record ContractualCashFlowOutputDigest(
     IReadOnlyList<CashFlowExerciseCalculation> Calculations,
     IReadOnlyList<CashFlowCalculationBlocker> Blockers);
 
-/// <summary>The retained Security Master terms a preview was calculated from.</summary>
-public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement AssetSpecificTerms);
+/// <summary>
+/// The retained Security Master terms a preview was calculated from. The asset-specific terms are
+/// hashed without their top-level envelope keys (<see cref="SecurityTermsEnvelope.ReservedKeys"/>):
+/// those describe the payload, not the security, so declaring a format on a stored row (ADR-024
+/// amendment 2026-11-13) leaves the hash of the same economic terms unchanged. Every other member
+/// keeps its stored order and bytes.
+/// </summary>
+public sealed record SecurityTermsDigest(JsonElement CommonTerms, JsonElement AssetSpecificTerms)
+{
+    /// <summary>The asset-specific terms as hashed: the supplied terms without top-level envelope keys.</summary>
+    public JsonElement AssetSpecificTerms { get; init; } = WithoutEnvelopeKeys(AssetSpecificTerms);
+
+    private static JsonElement WithoutEnvelopeKeys(JsonElement terms)
+    {
+        if (terms.ValueKind != JsonValueKind.Object
+            || !terms.EnumerateObject().Any(property => SecurityTermsEnvelope.IsReservedKey(property.Name)))
+        {
+            return terms;
+        }
+
+        using var buffer = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            writer.WriteStartObject();
+            foreach (var property in terms.EnumerateObject())
+            {
+                if (!SecurityTermsEnvelope.IsReservedKey(property.Name))
+                {
+                    property.WriteTo(writer);
+                }
+            }
+
+            writer.WriteEndObject();
+        }
+
+        using var document = JsonDocument.Parse(buffer.ToArray());
+        return document.RootElement.Clone();
+    }
+}
 
 /// <summary>A blocked preview's identity: its code and reason.</summary>
 public sealed record CalculationBlockerDigest(string Code, string Reason);
