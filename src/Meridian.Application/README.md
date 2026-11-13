@@ -46,6 +46,10 @@ mixed public/private DNS answers, declared and unknown-length oversize bodies an
 REST dry runs retain partial HTTP response evidence but refuse mapping or staging for HTTP 206 or
 Content-Range responses. Replay checks retained HTTP completeness across the entire source history,
 so a later format marker or newer mapping cannot promote a known partial capture.
+Reaching the page cap with a continuation cursor also leaves incomplete evidence. Activation,
+staging review, identity preview and reconciliation handoff verify the completed run, exact retained
+manifest, counts and full cursor-page chain, including empty terminal pages. Missing or unfinished
+source evidence remains reviewable and blocks promotion; replay refuses before publishing a new run.
 
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads

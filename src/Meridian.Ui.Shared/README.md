@@ -727,8 +727,11 @@ using the authenticated workstation tenant. Binding failover IDs are limited to 
 connection set. Each service applies ownership against its captured configuration before returning
 bindings or evaluating trust; foreign connections do not trigger health queries. Request headers and
 query parameters cannot select another tenant. Route preview uses the same authenticated tenant
-before candidate selection and failover expansion. Default setup ownership and remaining whole-configuration
-snapshot callers still require integration.
+before candidate selection and failover expansion. Production setup and default-runtime resolution
+require the retained connection, tenant, account and environment; missing or changed ownership cannot
+fall back to provider-wide credentials. Whole-configuration writes use the Application-owned final
+credential guard, including retained sections and backups, while legacy reads remain available for
+explicit migration and purge.
 
 The workstation Data payload (`/api/workstation/data` and `/api/workstation/data-operations`) reads
 routing connections, bindings and trust snapshots through the same tenant-scoped service methods, so
