@@ -6,15 +6,16 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Infrastructure
 
 
 `BaseSymbolSearchProvider.SearchAuthoritativeAsync` preserves HTTP, transport, credential and
-throttling failures for explicit candidate review. Existing autocomplete keeps its best-effort
-behavior. Alpaca bond discovery uses the retained `fixed_income` filter; evidence is
+throttling failures for explicit candidate review. Alpaca also rejects malformed responses and
+missing asset identity or filter facts; those failures cannot become successful empty lookups.
+Existing autocomplete keeps its best-effort behavior. Alpaca bond discovery uses the retained `fixed_income` filter; evidence is
 synthetic-verified in tests and live-untested without a configured provider run.
 Bond identifier discovery uses `OpenFigiClient.LookupBondIdentifierAsync`: ISIN/CUSIP lookups no
 longer assume Equity, competing bond FIGIs remain unresolved candidates, and equity ticker

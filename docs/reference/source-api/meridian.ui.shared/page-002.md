@@ -463,7 +463,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:16
 Explicit operator-reviewed fixed accruals. Decimal text is parsed only by the server.
 
 ```csharp
-public sealed record AccrualScheduleInput(string ScheduleId, string FundProfileId, Guid LedgerBookId, string EntityId, string Currency, RecurringJournalCadence Cadence, DateOnly AnchorDate, DateOnly EndsOn, string Amount, string DebitAccount, LedgerAccountType DebitAccountType, string CreditAccount, LedgerAccountType CreditAccountType, string Description, IReadOnlyList<JournalEvidenceReference> Evidence, int ExpectedScheduleVersion = 0, int ExpectedTemplateVersion = 0);
+public sealed record AccrualScheduleInput(string ScheduleId, string FundProfileId, Guid LedgerBookId, string EntityId, string Currency, RecurringJournalCadence Cadence, DateOnly AnchorDate, DateOnly EndsOn, string Amount, string DebitAccount, LedgerAccountType DebitAccountType, string CreditAccount, LedgerAccountType CreditAccountType, string Description, IReadOnlyList<JournalEvidenceReference> Evidence, int ExpectedScheduleVersion = 0, int ExpectedTemplateVersion = 0, string? FundAccountId = null);
 ```
 
 ## AdminEndpoints

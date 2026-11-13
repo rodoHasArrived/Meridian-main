@@ -265,7 +265,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
             if (CreateQuotaLimitException(json, query) is { } quotaLimit)
                 throw quotaLimit;
 
-            var results = DeserializeSearchResults(json, query);
+            var results = failOnProviderError
+                ? DeserializeAuthoritativeSearchResults(json, query)
+                : DeserializeSearchResults(json, query);
 
             // Apply additional filtering if provider doesn't support it natively
             results = ApplyFilters(results, assetType, exchange);
@@ -373,6 +375,13 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <param name="query">Original search query (for match scoring).</param>
     /// <returns>List of search results.</returns>
     protected abstract IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query);
+
+    /// <summary>
+    /// Decode explicit candidate-review evidence. Providers whose ordinary decoder tolerates
+    /// invalid responses override this hook so decoding failures remain unavailable evidence.
+    /// </summary>
+    protected virtual IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
+        => DeserializeSearchResults(json, query);
 
     /// <summary>
     /// Deserialize the details response JSON into a SymbolDetails object.

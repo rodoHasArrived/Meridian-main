@@ -532,7 +532,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:25
 public static partial class LedgerEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs#L17).
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs#L18).
 
 ```csharp
 public static partial class LedgerEndpoints

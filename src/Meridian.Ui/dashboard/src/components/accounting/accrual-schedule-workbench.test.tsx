@@ -19,10 +19,11 @@ function expectDisabledPrimaryReasons() {
     expect(button.title.trim()).not.toBe("");
   }
 }
-async function fill() {
+async function fill(fundAccountId?: string) {
   await waitFor(() => expect(screen.getByRole("button", { name: "Preview accrual schedule", hidden: true })).toBeEnabled());
   fireEvent.click(screen.getByText("Configure a new accrual schedule"));
   for (const [label, value] of [["Schedule identity", "fees"], ["Accrual description", "Reviewed fee"], ["Book currency", "USD"], ["Amount per occurrence", "123.123456789123456789"], ["First accrual date", "2026-10-01"], ["Last accrual date", "2026-11-01"], ["Debit account path", "Expense:Fees"], ["Credit account path", "Liability:Accruals"], ["Evidence identity", "ev"], ["Retained evidence location", "retained://ev"], ["Evidence source system", "Source"], ["Evidence retained at (UTC)", "2026-10-01T00:00:00Z"], ["Evidence custodian", "custodian"], ["Evidence version (or supply SHA-256)", "1"]]) fireEvent.change(screen.getByLabelText(label!), { target: { value } });
+  if (fundAccountId) fireEvent.change(screen.getByLabelText("Fund-account identity"), { target: { value: fundAccountId } });
   fireEvent.click(screen.getByRole("button", { name: "Preview accrual schedule" }));
   await screen.findByRole("region", { name: "Accrual occurrence preview" });
 }
@@ -51,6 +52,17 @@ describe("accrual schedule journey", () => {
     expect(api.runAccrualSchedule).toHaveBeenCalledWith("accrual:fees", scope, 1, expect.anything());
     expect(props.onDraftsGenerated).toHaveBeenCalledOnce();
     fireEvent.click(screen.getByRole("button", { name: "Review retained draft" })); expect(props.onSelectDraft).toHaveBeenCalledWith("draft");
+  });
+  it("reviews the retained fund account with the schedule and invalidates the preview when it changes", async () => {
+    const account = "a7357f99-d955-4621-a7c2-8c9ee31f5dcb";
+    render(<AccrualScheduleWorkbench {...props} />); await fill(account);
+    expect(api.previewAccrualSchedule).toHaveBeenCalledWith(expect.objectContaining({ fundAccountId: account }), expect.anything());
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: "Retain accrual schedule" }));
+    await screen.findByRole("button", { name: "Generate due accrual drafts" });
+    expect(api.configureAccrualSchedule).toHaveBeenCalledWith(expect.objectContaining({ fundAccountId: account }), expect.any(String), expect.anything());
+    fireEvent.change(screen.getByLabelText("Fund-account identity"), { target: { value: "e67d8302-6391-4bc1-b48b-e6250217c8e4" } });
+    expect(screen.queryByRole("region", { name: "Accrual occurrence preview" })).not.toBeInTheDocument();
   });
   it("invalidates previews on edits and scope changes", async () => {
     const { rerender } = render(<AccrualScheduleWorkbench {...props} />); await fill();

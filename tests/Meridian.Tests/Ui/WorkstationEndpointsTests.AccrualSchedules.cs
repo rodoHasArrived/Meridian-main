@@ -3,6 +3,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
+using Meridian.Storage.FundStructure;
+using Meridian.Storage.Ledger;
 using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
@@ -59,6 +62,85 @@ public sealed partial class WorkstationEndpointsTests
             saved.Schedule.Parameters["amount"].Should().Be(123.123456789123456789m);
         }
         finally { Directory.Delete(directory, recursive: true); }
+    }
+
+    [Theory]
+    [InlineData(FundStructureNodeKindDto.Account)]
+    [InlineData(FundStructureNodeKindDto.Sleeve)]
+    public async Task AccrualSchedules_AccountAndSleeveBindings_UseProductionSubjectValidationAndRetainReviewedAccount(
+        FundStructureNodeKindDto ownerKind)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "meridian-accrual-account-" + Guid.NewGuid().ToString("N"));
+        var store = new FileRecurringJournalStore(directory);
+        await store.InitializeAsync();
+        try
+        {
+            var input = AccrualInput() with { EntityId = Guid.NewGuid().ToString("D") };
+            var authority = new AccountBoundAccrualAuthority(input, ownerKind);
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton<IRecurringJournalStore>(store);
+                services.AddSingleton<IRecurringJournalPeriodAuthority>(authority);
+            }, mapLedgerApi: true, currentUserPermissions: UserPermission.ManageLedgerReports);
+            var client = app.GetTestClient();
+            (await client.PostAsJsonAsync(UiApiRoutes.LedgerAccrualSchedulePreview, input, ServerJsonOptions))
+                .StatusCode.Should().Be(HttpStatusCode.Conflict, "account and sleeve books require a retained account");
+            (await client.PostAsJsonAsync(UiApiRoutes.LedgerAccrualSchedulePreview,
+                input with { FundAccountId = Guid.NewGuid().ToString("D") }, ServerJsonOptions))
+                .StatusCode.Should().Be(HttpStatusCode.Conflict, "a sibling or foreign account cannot replace the book binding");
+            input = input with { FundAccountId = authority.AccountId.ToString("D") };
+            using var response = await client.PostAsJsonAsync(UiApiRoutes.LedgerAccrualSchedulePreview, input, ServerJsonOptions);
+            response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+            using var preview = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            preview.RootElement.GetProperty("fundAccountId").GetString().Should().Be(input.FundAccountId);
+            var command = new ConfigureAccrualScheduleInput(input, preview.RootElement.GetProperty("fingerprint").GetString()!);
+            var saved = await client.PostAsJsonAsync(UiApiRoutes.LedgerAccrualScheduleConfigure, command, ServerJsonOptions);
+            saved.StatusCode.Should().Be(HttpStatusCode.OK, await saved.Content.ReadAsStringAsync());
+            await using var session = await store.OpenSessionAsync();
+            var retained = session.CurrentSchedules.Should().ContainSingle().Subject;
+            retained.Scope.FundAccountId.Should().Be(input.FundAccountId);
+            retained.Schedule.Dimensions!.AccountId.Should().Be(input.FundAccountId);
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
+    /// <summary>Uses the production membership guard with retained fixture rows; no permissive subject stub.</summary>
+    private sealed class AccountBoundAccrualAuthority : IRecurringJournalPeriodAuthority
+    {
+        private readonly LedgerBookRecord _book;
+        private readonly LegalEntitySummaryDto _entity;
+        private readonly AccountSummaryDto _account;
+        private readonly SleeveSummaryDto _sleeve;
+        private readonly FundStructureTenantMap _tenants;
+        private static readonly DateTimeOffset Now = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
+        public Guid AccountId { get; } = Guid.NewGuid();
+        public AccountBoundAccrualAuthority(AccrualScheduleInput input, FundStructureNodeKindDto ownerKind)
+        {
+            var entityId = Guid.Parse(input.EntityId);
+            var fundId = Guid.NewGuid();
+            var sleeveId = Guid.NewGuid();
+            _book = new(input.LedgerBookId, input.FundProfileId,
+                ownerKind == FundStructureNodeKindDto.Account ? AccountId : sleeveId, ownerKind, "Scoped book", "USD", Now, Now);
+            _entity = new(entityId, LegalEntityTypeDto.Fund, "FUND", "Fund entity", "US", "USD", true, Now.AddYears(-1), null);
+            _account = new(AccountId, AccountTypeDto.Bank, entityId, fundId, sleeveId, null, "BANK", "Fund account", "USD", "Bank", true,
+                Now.AddYears(-1), null, null, null, null, null);
+            _sleeve = new(sleeveId, fundId, "SLEEVE", "Fund sleeve", null, true, Now.AddYears(-1), null, [], [], [AccountId]);
+            _tenants = new(true, new Dictionary<Guid, string> { [entityId] = "tenant-test", [AccountId] = "tenant-test", [sleeveId] = "tenant-test" });
+        }
+        public Task<RecurringJournalPeriodState> ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct)
+        {
+            RecurringJournalSubjectAuthority.ValidateSubject(scope, _book, _entity, null, _sleeve, null, _account, _tenants, Now);
+            return Task.FromResult(new RecurringJournalPeriodState("period", 1, true, null, null, null));
+        }
+    }
+
+    [Theory]
+    [InlineData("not-an-account")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public void AccrualSchedules_RejectMalformedAccountIdentity(string account)
+    {
+        Action build = () => { _ = LedgerEndpoints.BuildAccrualSchedule(AccrualInput() with { FundAccountId = account }, "tenant", "company"); };
+        build.Should().Throw<ArgumentException>().WithMessage("*fund-account identity*");
     }
 
     [Theory]

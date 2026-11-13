@@ -7,6 +7,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
@@ -27,7 +28,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task CanonicalAmortizationPreparation_UsesRetainedMethodAndExactDecimalScheduleWithoutWriting()
     {
-        var fixture = CanonicalAmortizationFixture();
+        var fixture = await CanonicalAmortizationFixture();
         var spine = Substitute.For<IAssetAccountingEventSpineService>();
         await using var app = await CreateAppAsync(services => { fixture.Register(services); services.AddSingleton(spine); },
             currentUserPermissions: UserPermission.ManageLedgerReports, currentUserCompanyId: "company-alpha", mapLedgerApi: true);
@@ -45,7 +46,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task CanonicalAmortizationPreparation_AdoptedIncomeLotRequiresItsPolicyOwnedWorkflow()
     {
-        var fixture = CanonicalAmortizationFixture(adoptedIncome: true);
+        var fixture = await CanonicalAmortizationFixture(adoptedIncome: true);
         var spine = Substitute.For<IAssetAccountingEventSpineService>();
         await using var app = await CreateAppAsync(services => { fixture.Register(services); services.AddSingleton(spine); },
             currentUserPermissions: UserPermission.ManageLedgerReports, currentUserCompanyId: "company-alpha", mapLedgerApi: true);
@@ -58,7 +59,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task CanonicalAmortizationPreparation_ReadOnlyPermissionIsRefusedBeforeAuthorityRead()
     {
-        var fixture = CanonicalAmortizationFixture();
+        var fixture = await CanonicalAmortizationFixture();
         await using var app = await CreateAppAsync(fixture.Register, currentUserPermissions: UserPermission.ViewLedgerReports,
             currentUserCompanyId: "company-alpha", mapLedgerApi: true);
         using var response = await app.GetTestClient().PostAsJsonAsync(AmortizationRoute(fixture.Request), fixture.Request, ServerJsonOptions);
@@ -72,7 +73,7 @@ public sealed partial class WorkstationEndpointsTests
     [InlineData("evidence-date", HttpStatusCode.BadRequest)]
     public async Task CanonicalAmortizationPreparation_RefusesForeignStaleOrUnreviewedScope(string fault, HttpStatusCode expected)
     {
-        var fixture = CanonicalAmortizationFixture();
+        var fixture = await CanonicalAmortizationFixture();
         var request = fault switch
         {
             "foreign-fund" => fixture.Request with { FundProfileId = "foreign" },
@@ -89,7 +90,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task CanonicalAmortizationDraft_RecomputesAndRejectsChangedReviewedAccountsBeforeWriting()
     {
-        var fixture = CanonicalAmortizationFixture();
+        var fixture = await CanonicalAmortizationFixture();
         var spine = Substitute.For<IAssetAccountingEventSpineService>();
         await using var app = await CreateAppAsync(services => { fixture.Register(services); services.AddSingleton(spine); },
             currentUserPermissions: UserPermission.ManageLedgerReports, currentUserCompanyId: "company-alpha", mapLedgerApi: true);
@@ -107,7 +108,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task CanonicalAmortizationDraft_RetainsServerInstructionInGovernedJournalReviewQueue()
     {
-        var fixture = CanonicalAmortizationFixture();
+        var fixture = await CanonicalAmortizationFixture();
         var spine = Substitute.For<IAssetAccountingEventSpineService>();
         AssetAccountingEventSpineDto? projected = null;
         spine.ProjectAsync(Arg.Any<ProjectAssetAccountingEventRequestDto>(), Arg.Any<CancellationToken>()).Returns(call =>
@@ -148,10 +149,18 @@ public sealed partial class WorkstationEndpointsTests
     private static string AmortizationRoute(PrepareCanonicalAmortizationRequestDto request, bool draft = false)
         => $"/api/ledger/books/{request.LedgerBookId:D}/amortization/{(draft ? "drafts" : "prepare")}";
 
-    private static CanonicalAmortizationTestFixture CanonicalAmortizationFixture(bool adoptedIncome = false)
+    private static async Task<CanonicalAmortizationTestFixture> CanonicalAmortizationFixture(bool adoptedIncome = false)
     {
         var inputs = AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m, BondAmortizationMethod.StraightLine, null);
-        var lot = inputs.ExpectedLot;
+        var security = inputs.Security with { Currency = "USD" };
+        var lot = inputs.ExpectedLot with
+        {
+            OpenFunctionalCostBasis = inputs.ExpectedLot.OpenTransactionCostBasis,
+            Acquisition = inputs.ExpectedLot.Acquisition with { AcquisitionCurrency = "USD", AcquisitionFxRateToFunctional = 1m,
+                FunctionalCostBasis = inputs.ExpectedLot.Acquisition.TransactionCostBasis }
+        };
+        inputs = inputs with { Security = security, ExpectedLot = lot,
+            SecurityEvidence = inputs.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) } };
         if (adoptedIncome)
             lot = lot with
             {
@@ -178,29 +187,56 @@ public sealed partial class WorkstationEndpointsTests
         var books = Substitute.For<ILedgerBookService>();
         var periods = Substitute.For<ILedgerJournalStore>();
         var securities = Substitute.For<ISecurityMasterStore>();
-        var positions = Substitute.For<IInstrumentPositionProjectionStore>();
+        var positions = new InMemoryAssetOperationsProjectionStore();
         var ownerId = Guid.NewGuid();
         books.GetBookAsync(lot.LedgerBookId, Arg.Any<CancellationToken>()).Returns(new LedgerBookDto(lot.LedgerBookId,
-            "fund-alpha", ownerId, FundStructureNodeKindDto.Fund, "GAAP", "USD", now, now, AccountingBasis: AccountingBasisKindDto.Gaap));
+            "fund-alpha", ownerId, FundStructureNodeKindDto.Fund, "GAAP", "USD", now, now, AccountingBasis: AccountingBasisKindDto.Gaap, AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1"));
         periods.GetPeriodAsync(periodId, Arg.Any<CancellationToken>()).Returns(new LedgerAccountingPeriod(periodId, lot.LedgerBookId,
             inputs.AsOfDate.Year, inputs.AsOfDate.Month, "Amortization", inputs.AsOfDate.AddDays(-1), inputs.AsOfDate.AddMonths(1), "Open", now, null, 1));
         periods.GetTaxLotsByIdsAsync(lot.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>()).Returns([
             FactorPaydownTestData.LotRecord(lot, new LedgerAccount("Assets:Investment", LedgerAccountType.Asset), now)]);
         securities.GetProjectionAsync(lot.SecurityId, Arg.Any<CancellationToken>()).Returns(inputs.Security);
-        positions.GetBookPositionAsync(lot.BookPositionId, Arg.Any<CancellationToken>()).Returns(new BookPositionDto(lot.BookPositionId,
-            lot.SecurityId, Guid.NewGuid(), new AccountingBookContextDto(lot.LedgerBookId, "fund-alpha", ownerId, FundStructureNodeKindDto.Fund,
-                "GAAP", "USD", AccountingBasisKindDto.Gaap, "policy", "1", periodId, new LedgerDimensionSetDto(FundId: "fund-alpha")),
-            BookPositionSides.Long, "Active", lot.AcquiredDate));
-        return new(request, books, periods, securities, new CanonicalLotAmortizationService(periods, securities, positions));
+        var dimensions = new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-1", AccountId: "account-1",
+            CostCenterId: "fixed-income", PortfolioId: "portfolio-1", CounterpartyId: "issuer-1", BookId: lot.LedgerBookId.ToString("D"), InstrumentId: lot.SecurityId)
+            { PositionId = lot.BookPositionId };
+        var origin = new EconomicEventReferenceDto(Guid.NewGuid(), "Trade", 1, lot.AcquiredDate, inputs.SecurityEvidence.RetainedAtUtc,
+            "custodian", "original-acquisition")
+        { SecurityId = lot.SecurityId, BookPositionId = lot.BookPositionId,
+            RetainedEvidence = lot.Acquisition.Evidence, EvidenceLinks = lot.Acquisition.Evidence.Select(item => item.EvidenceUri).ToArray() };
+        var originalLineage = new ProjectionLineageDto(Guid.NewGuid(), null, "acquisition", "1", "1", "base", lot.AcquiredDate,
+            origin.OccurredAtUtc, origin.SourceDomain, origin.SourceEntityId, origin)
+        { BookPositionId = lot.BookPositionId, RetainedEvidence = lot.Acquisition.Evidence, EvidenceLinks = origin.EvidenceLinks };
+        var role = new InstrumentRoleDto(Guid.NewGuid(), lot.SecurityId, "fund-alpha", "Fund", InstrumentRoleKinds.Holder,
+            InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, lot.AcquiredDate,
+            OriginEvent: origin, EvidenceLinks: origin.EvidenceLinks) { RetainedEvidence = lot.Acquisition.Evidence };
+        var originalState = new PositionEconomicStateDto(Guid.NewGuid(), lot.BookPositionId, lot.AcquiredDate, "USD", 1,
+            Quantity: lot.OpenQuantity, CarryingAmount: lot.OpenFunctionalCostBasis, SourceEvent: origin, EvidenceLinks: origin.EvidenceLinks)
+        { ProjectionLineage = originalLineage, RetainedEvidence = lot.Acquisition.Evidence };
+        var position = new BookPositionDto(lot.BookPositionId,
+            lot.SecurityId, role.RoleId, new AccountingBookContextDto(lot.LedgerBookId, "fund-alpha", ownerId, FundStructureNodeKindDto.Fund,
+                "GAAP", "USD", AccountingBasisKindDto.Gaap, "amort-policy", "1", periodId, dimensions),
+            BookPositionSides.Long, "Active", lot.AcquiredDate, CurrentEconomicState: originalState, OriginEvent: origin,
+            ProjectionLineage: originalLineage, EvidenceLinks: origin.EvidenceLinks) { RetainedEvidence = lot.Acquisition.Evidence };
+        await positions.UpsertAsync(role, position, originalState, 0,
+            new AssetOperationsWriteApprovalDto("source-reviewer", "evidence://approved-acquisition", "Reviewed acquisition source", now));
+        books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>()).Returns([
+            new LedgerPeriodDto(periodId, lot.LedgerBookId, inputs.AsOfDate.Year, inputs.AsOfDate.Month, "Amortization",
+                inputs.AsOfDate.AddDays(-1), inputs.AsOfDate.AddMonths(1), LedgerPeriodStatusDto.Open, now, null, 1,
+                AccountingBasisKindDto.Gaap, "amort-policy", "1")]);
+        return new(request, books, periods, securities, positions, security,
+            new CanonicalLotAmortizationService(periods, securities, positions));
     }
+
     private sealed record CanonicalAmortizationTestFixture(PrepareCanonicalAmortizationRequestDto Request, ILedgerBookService Books,
-        ILedgerJournalStore Periods, ISecurityMasterStore Securities, CanonicalLotAmortizationService Service)
+        ILedgerJournalStore Periods, ISecurityMasterStore Securities, InMemoryAssetOperationsProjectionStore Positions,
+        SecurityProjectionRecord Security, CanonicalLotAmortizationService Service)
     {
         public void Register(IServiceCollection services)
         {
             services.AddSingleton(Books);
             services.AddSingleton(Periods);
             services.AddSingleton(Service);
+            services.AddSingleton<IInstrumentPositionProjectionStore>(Positions);
             var configuration = Substitute.For<IAccountingConfigurationService>();
             var chart = new[] { "Assets:Investment", "Income:Amortization" }.Select(path => new ChartOfAccountsNodeDto(path, path, path, "Asset")).ToArray();
             configuration.GetWorkspaceAsync(Arg.Any<string>(), Arg.Any<Guid?>(), Arg.Any<CancellationToken>(), Arg.Any<string?>(), Arg.Any<string?>())

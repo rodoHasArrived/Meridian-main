@@ -13,6 +13,16 @@ describe("accrual API exact contract", () => {
     vi.mocked(api.apiPostJson).mockResolvedValue({ ...result, occurrences: [{ ...result.occurrences[0], amount: 1.12 }] });
     await expect(previewAccrualSchedule(input)).rejects.toThrow(/exact decimal contract/);
   });
+  it("requires the preview to retain the exact reviewed fund-account identity", async () => {
+    const selected = { ...input, fundAccountId: "a7357f99-d955-4621-a7c2-8c9ee31f5dcb" };
+    const result = { fingerprint: "a".repeat(64), currency: "USD", fundAccountId: selected.fundAccountId, occurrences: [{ amount: input.amount, debitAccount: input.debitAccount, creditAccount: input.creditAccount }] };
+    vi.mocked(api.apiPostJson).mockResolvedValue(result);
+    await previewAccrualSchedule(selected);
+    vi.mocked(api.apiPostJson).mockResolvedValue({ ...result, fundAccountId: null });
+    await expect(previewAccrualSchedule(selected)).rejects.toThrow(/reviewed inputs/);
+    vi.mocked(api.apiPostJson).mockResolvedValue({ ...result, fundAccountId: "e67d8302-6391-4bc1-b48b-e6250217c8e4" });
+    await expect(previewAccrualSchedule(selected)).rejects.toThrow(/reviewed inputs/);
+  });
   it("binds retention to preview and run to one version and scope", async () => {
     vi.mocked(api.apiPostJson).mockResolvedValue({});
     await configureAccrualSchedule(input, "fingerprint");

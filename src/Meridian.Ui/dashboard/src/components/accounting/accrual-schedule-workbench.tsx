@@ -16,7 +16,7 @@ import { RetainedEvidenceFields, emptyRetainedEvidence, retainedEvidenceReferenc
 import { RecurringJournalQueue } from "@/components/accounting/RecurringJournalQueue";
 
 interface Props { scope: RecurringJournalScope | null; availableDraftIds: string[]; onSelectDraft: (id: string) => void; onDraftsGenerated?: () => Promise<void> | void }
-const initial = { scheduleId: "", description: "", currency: "", cadence: "Monthly" as AccrualCadence,
+const initial = { fundAccountId: "", scheduleId: "", description: "", currency: "", cadence: "Monthly" as AccrualCadence,
   anchorDate: "", endsOn: "", amount: "", debitAccount: "", debitAccountType: "Expense" as AccrualAccountType,
   creditAccount: "", creditAccountType: "Liability" as AccrualAccountType, expectedScheduleVersion: 0, expectedTemplateVersion: 0 };
 const accountTypes: AccrualAccountType[] = ["Asset", "Liability", "Equity", "Revenue", "Expense"];
@@ -83,7 +83,7 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
     try {
       const references = [retainedEvidenceReference(evidence)];
       if (!/^\d+(?:\.\d+)?$/.test(form.amount)) throw new Error("Enter an exact decimal amount without exponents or separators.");
-      const input = { ...form, ...scope, evidence: references } as AccrualScheduleInput;
+      const input = { ...form, ...scope, fundAccountId: form.fundAccountId.trim() || null, evidence: references } as AccrualScheduleInput;
       const result = await previewAccrualSchedule(input, { signal: request.signal });
       if (!request.signal.aborted) { setPreview({ input, result }); setMessage("Review every occurrence and its authoritative period before configuring."); }
     } catch (cause) { if (!request.signal.aborted) setError(describeApiError(cause, "Accrual preview unavailable.").summary); }
@@ -124,7 +124,7 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
       {!scope ? <p role="status">Select a fund, ledger book and entity to configure accrual schedules.</p> : <>
         {!registry ? <p role="status">{busy === "load" ? "Loading schedule permissions and definitions…" : "Schedule authority unavailable. Retry to load permissions and retained definitions."}</p> : !canConfigure ? <p role="status">Read only: ManageLedgerReports permission is required to configure schedules or generate due drafts.</p> : null}
         <Button type="button" variant="outline" disabled={busy !== null} disabledReason={busyReason} onClick={() => { if (!uncertain) { setPreview(null); setConfirmed(false); setSaved(null); } void load(); }}>Refresh retained schedules</Button>
-        {registry?.schedules.map(row => <article key={row.scheduleId} className="rounded border border-border p-3 text-sm"><p className="break-all font-semibold">{row.scheduleId} · v{row.version}</p><p>{row.description} · {row.cadence} · <LocalDateText value={row.anchorDate} /> to <LocalDateText value={row.endsOn} fallback="No end date" /> · {row.currency}</p><Button type="button" variant="outline" disabled={!!generateDisabledReason} disabledReason={generateDisabledReason} onClick={() => void run(row.scheduleId, row.version)}>Generate due drafts for {row.scheduleId}</Button></article>)}
+        {registry?.schedules.map(row => <article key={row.scheduleId} className="rounded border border-border p-3 text-sm"><p className="break-all font-semibold">{row.scheduleId} · v{row.version}</p><p>{row.description} · {row.cadence} · <LocalDateText value={row.anchorDate} /> to <LocalDateText value={row.endsOn} fallback="No end date" /> · {row.currency}</p>{row.fundAccountId ? <details className="my-2"><summary>Retained account scope</summary><Input aria-label={`Retained fund-account identity for ${row.scheduleId}`} readOnly value={row.fundAccountId} /></details> : null}<Button type="button" variant="outline" disabled={!!generateDisabledReason} disabledReason={generateDisabledReason} onClick={() => void run(row.scheduleId, row.version)}>Generate due drafts for {row.scheduleId}</Button></article>)}
         {registry?.schedules.length === 0 ? <p role="status">No retained accrual schedules for this scope.</p> : null}
         <details><summary className="cursor-pointer font-semibold">Configure a new accrual schedule</summary>
           <form className="mt-3 space-y-3" onSubmit={event => { event.preventDefault(); void prepare(); }}>
@@ -133,6 +133,10 @@ function AccrualScopeWorkbench({ scope, availableDraftIds, onSelectDraft, onDraf
                 <FormRow label="Cadence" labelFor={`${id}-cadence`}><Select id={`${id}-cadence`} value={form.cadence} onChange={event => edit("cadence", event.target.value as AccrualCadence)}>{cadences.map(value => <option key={value}>{value}</option>)}</Select></FormRow>
                 {([ ["debitAccountType", "Debit account type"], ["creditAccountType", "Credit account type"] ] as const).map(([field, label]) => <FormRow key={field} label={label} labelFor={`${id}-${field}`}><Select id={`${id}-${field}`} value={form[field]} onChange={event => edit(field, event.target.value as AccrualAccountType)}>{accountTypes.map(value => <option key={value}>{value}</option>)}</Select></FormRow>)}
               </FormGrid>
+              <FormRow label="Fund-account identity" labelFor={`${id}-fundAccountId`}
+                hint="Required for account-owned and sleeve-owned books. Enter the retained account identity belonging to this entity and book; membership is checked before preview and retention.">
+                <Input id={`${id}-fundAccountId`} value={form.fundAccountId} onChange={event => edit("fundAccountId", event.target.value)} />
+              </FormRow>
               <RetainedEvidenceFields value={evidence} onChange={value => { edit("scheduleId", form.scheduleId); setEvidence(value); }} />
               <Button type="submit" disabled={!!previewDisabledReason} disabledReason={previewDisabledReason}>Preview accrual schedule</Button>
             </fieldset>

@@ -2309,31 +2309,31 @@
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/accrual-schedules/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:68",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:69",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/accrual-schedules/configure",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:113",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:115",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/accrual-schedules/{scheduleId}/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:168",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:170",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/amortization/prepare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:23",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:24",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/books/{ledgerBookId:guid}/amortization/drafts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:37",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:38",
       "documented": true
     },
     {

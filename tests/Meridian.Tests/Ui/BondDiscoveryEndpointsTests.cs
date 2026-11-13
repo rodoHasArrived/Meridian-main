@@ -5,7 +5,9 @@ using FluentAssertions;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
@@ -100,6 +102,39 @@ public sealed class BondDiscoveryEndpointsTests
         using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
         (await response.Content.ReadAsStringAsync()).Should().Contain("could not be completed");
+    }
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("{\"message\":\"provider error\"}")]
+    [InlineData("null")]
+    [InlineData("[{\"symbol\":\"912TEST\"}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"fixed_income\"}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"tradable\":true}]")]
+    public async Task Lookup_WithRealAlpacaDecoderFailureReturnsUnavailable(string bondPayload)
+    {
+        var bondRequests = 0;
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            var isBondLookup = request.RequestUri!.Query.Contains("asset_class=fixed_income", StringComparison.Ordinal);
+            if (isBondLookup)
+                bondRequests++;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                // Availability probes succeed, so the broken bond response reaches authoritative decoding.
+                Content = new StringContent(isBondLookup ? bondPayload : "[{\"symbol\":\"AAPL\",\"name\":\"Apple\",\"tradable\":true}]")
+            };
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider("synthetic-key", "synthetic-secret", http);
+        using var search = new SymbolSearchService(new[] { provider }, null, new MetadataEnrichmentService());
+        await using var app = await CreateAppAsync(UserPermission.ViewSecurityMaster, search);
+
+        using var response = await app.GetTestClient().GetAsync("/api/reference-data/bonds/discovery?query=Treasury");
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("could not be completed");
+        bondRequests.Should().Be(1);
     }
 
     private static async Task<WebApplication> CreateAppAsync(UserPermission permissions, SymbolSearchService? search = null, bool tenantScoped = true)

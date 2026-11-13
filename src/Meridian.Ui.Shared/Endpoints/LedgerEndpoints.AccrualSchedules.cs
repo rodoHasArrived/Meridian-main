@@ -18,7 +18,7 @@ public sealed record AccrualScheduleInput(string ScheduleId, string FundProfileI
     DateOnly EndsOn, string Amount, string DebitAccount, LedgerAccountType DebitAccountType,
     string CreditAccount, LedgerAccountType CreditAccountType, string Description,
     IReadOnlyList<JournalEvidenceReference> Evidence, int ExpectedScheduleVersion = 0,
-    int ExpectedTemplateVersion = 0);
+    int ExpectedTemplateVersion = 0, string? FundAccountId = null);
 public sealed record ConfigureAccrualScheduleInput(AccrualScheduleInput Input, string PreviewFingerprint);
 public sealed record RunAccrualScheduleInput(string FundProfileId, Guid LedgerBookId, string EntityId, int ExpectedVersion);
 
@@ -51,7 +51,8 @@ public static partial class LedgerEndpoints
                         endsOn = s.Schedule.EndsOn,
                         cadence = s.Schedule.Cadence.ToString(),
                         description = s.Schedule.Description,
-                        currency = s.Scope.Currency
+                        currency = s.Scope.Currency,
+                        fundAccountId = s.Scope.FundAccountId
                     }).ToArray();
                 return Results.Json(new
                 {
@@ -99,7 +100,8 @@ public static partial class LedgerEndpoints
                 {
                     fingerprint = AccrualFingerprint(input, tenant.TenantId!, tenant.CompanyId!),
                     occurrences = rows,
-                    currency = input.Currency
+                    currency = input.Currency,
+                    fundAccountId = prepared.Scope.FundAccountId
                 }, jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or JsonException or LedgerValidationException)
@@ -232,14 +234,22 @@ public static partial class LedgerEndpoints
         var template = new JournalTemplate(templateId, input.Description, "Reviewed fixed accrual per occurrence", [
             new(new(input.DebitAccount, input.DebitAccountType), JournalTemplateSide.Debit, AmountParameter: "amount"),
             new(new(input.CreditAccount, input.CreditAccountType), JournalTemplateSide.Credit, AmountParameter: "amount")]);
-        var dimensions = new LedgerLineDimensionSet(FundId: input.FundProfileId, EntityId: input.EntityId);
+        string? fundAccountId = null;
+        if (!string.IsNullOrWhiteSpace(input.FundAccountId))
+        {
+            if (!Guid.TryParse(input.FundAccountId, out var accountId) || accountId == Guid.Empty)
+                throw new ArgumentException("Select a valid retained fund-account identity for this book.");
+            fundAccountId = accountId.ToString("D");
+        }
+        var dimensions = new LedgerLineDimensionSet(FundId: input.FundProfileId, EntityId: input.EntityId,
+            AccountId: fundAccountId);
         var schedule = new RecurringJournalSchedule(scheduleId, templateId, new(input.FundProfileId, input.LedgerBookId.ToString("D")),
             input.Cadence, input.AnchorDate, "server-preview", DateTimeOffset.UnixEpoch,
             new Dictionary<string, decimal> { ["amount"] = amount }, endsOn: input.EndsOn,
             dimensions: dimensions, description: input.Description);
         if (RecurringJournalPlanner.Plan(schedule, template, 1201).Count > 1200)
             throw new ArgumentException("Limit an accrual schedule to 1200 occurrences.");
-        return (schedule, template, new(input.FundProfileId, input.LedgerBookId, input.EntityId, input.Currency!, tenant, company));
+        return (schedule, template, new(input.FundProfileId, input.LedgerBookId, input.EntityId, input.Currency!, tenant, company, fundAccountId));
     }
 
     private static string AccrualCommandContent(RecurringJournalScheduleSnapshot schedule, JournalTemplate template,

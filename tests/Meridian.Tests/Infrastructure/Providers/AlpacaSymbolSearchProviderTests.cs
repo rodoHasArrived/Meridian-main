@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Tests.TestHelpers;
@@ -13,6 +14,110 @@ public sealed class AlpacaSymbolSearchProviderTests
 {
     private const string KeyId = "test-alpaca-key";
     private const string SecretKey = "test-alpaca-secret";
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("{\"message\":\"upstream error\"}")]
+    [InlineData("null")]
+    [InlineData("[null]")]
+    [InlineData("[{}]")]
+    [InlineData("[{\"symbol\":\"912TEST\"}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"fixed_income\"}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"tradable\":true}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"\",\"tradable\":true}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"tradable\":\"yes\"}]")]
+    public async Task AuthoritativeSearch_WithInvalidSuccessPayload_ThrowsInsteadOfEmptyMatches(string payload)
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(payload)
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+
+        var action = () => provider.SearchAuthoritativeAsync("Treasury", assetType: "fixed_income");
+
+        await action.Should().ThrowAsync<JsonException>();
+        handler.CallCount.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("{\"message\":\"upstream error\"}")]
+    [InlineData("null")]
+    [InlineData("[null]")]
+    [InlineData("[{}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"tradable\":\"yes\"}]")]
+    public async Task OrdinarySearch_WithInvalidSuccessPayload_PreservesTolerantEmptyBehavior(string payload)
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(payload)
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+
+        var results = await provider.SearchAsync("Treasury", assetType: "fixed_income");
+
+        results.Should().BeEmpty();
+        handler.CallCount.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("[{\"symbol\":\"OTHER\",\"name\":\"Other Bond\",\"class\":\"fixed_income\",\"tradable\":true}]")]
+    [InlineData("[{\"symbol\":\"912TEST\",\"name\":\"Synthetic Treasury\",\"class\":\"fixed_income\",\"tradable\":false}]")]
+    public async Task AuthoritativeSearch_WithValidNoMatches_ReturnsEmpty(string payload)
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(payload)
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+
+        var results = await provider.SearchAuthoritativeAsync("Treasury", assetType: "fixed_income");
+
+        results.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("[{\"symbol\":\"912TEST\",\"class\":\"fixed_income\"}]", 0)]
+    [InlineData("[{\"symbol\":\"912TEST\",\"tradable\":true}]", 1)]
+    public async Task OrdinarySearch_WithSparseAsset_PreservesExistingDefaults(string payload, int expectedMatches)
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(payload)
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+
+        var results = await provider.SearchAsync("912TEST", assetType: "fixed_income");
+
+        results.Should().HaveCount(expectedMatches);
+    }
+
+    [Fact]
+    public async Task AuthoritativeSearch_WithValidBondArray_ReturnsProviderCandidate()
+    {
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            request.RequestUri!.Query.Should().Contain("asset_class=fixed_income");
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[{\"symbol\":\"912TEST\",\"name\":\"Synthetic Treasury\",\"class\":\"fixed_income\",\"tradable\":true}]")
+            };
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, http);
+
+        var result = (await provider.SearchAuthoritativeAsync("Treasury", assetType: "fixed_income")).Should().ContainSingle().Subject;
+
+        result.Symbol.Should().Be("912TEST");
+        result.AssetType.Should().Be("FixedIncome");
+        result.Source.Should().Be("alpaca");
+    }
 
     [Fact]
     public async Task AuthoritativeSearch_WithProviderHttpFailure_ThrowsInsteadOfEmptyMatches()

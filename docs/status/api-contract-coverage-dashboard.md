@@ -311,8 +311,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:155` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:39` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:52` |
-| `POST` | `/api/ledger/books/{ledgerBookId:guid}/amortization/drafts` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:37` |
-| `POST` | `/api/ledger/books/{ledgerBookId:guid}/amortization/prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:23` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/amortization/drafts` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:38` |
+| `POST` | `/api/ledger/books/{ledgerBookId:guid}/amortization/prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:24` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/draft` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:77` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/drafts/{journalEntryId:guid}/capabilities` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:25` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/factor-paydowns/prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.FactorPaydown.cs:58` |
@@ -356,9 +356,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:82` |
 | `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/retry` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:135` |
 | `GET` | `/api/ledger/journal-automation/accrual-schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:29` |
-| `POST` | `/api/ledger/journal-automation/accrual-schedules/configure` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:113` |
-| `POST` | `/api/ledger/journal-automation/accrual-schedules/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:68` |
-| `POST` | `/api/ledger/journal-automation/accrual-schedules/{scheduleId}/run` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:168` |
+| `POST` | `/api/ledger/journal-automation/accrual-schedules/configure` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:115` |
+| `POST` | `/api/ledger/journal-automation/accrual-schedules/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:69` |
+| `POST` | `/api/ledger/journal-automation/accrual-schedules/{scheduleId}/run` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:170` |
 | `POST` | `/api/ledger/journal-automation/capital-call-default-interest-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:736` |
 | `POST` | `/api/ledger/journal-automation/capital-call-funding-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:693` |
 | `POST` | `/api/ledger/journal-automation/capital-call-issuance-intake` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:650` |

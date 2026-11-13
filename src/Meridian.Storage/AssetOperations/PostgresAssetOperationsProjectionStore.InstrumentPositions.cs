@@ -265,7 +265,10 @@ public sealed partial class PostgresAssetOperationsProjectionStore
                 states.Where(state => state.PositionId == position.PositionId),
                 asOfDate))
             .ToArray();
-        var lineages = BuildLineageHistory(hydratedPositions, states);
+        // Keep explicitly retained accounting-preparation lineage even when hydration selects an
+        // older economic state's lineage. Those source facts do not replace economic amounts.
+        var lineages = BuildLineageHistory(positions, states)
+            .Where(lineage => asOfDate is null || lineage.ProjectionAsOfDate <= asOfDate.Value).ToArray();
 
         return new InstrumentPositionProjectionSnapshot(
             securityId,

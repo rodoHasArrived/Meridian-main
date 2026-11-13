@@ -7,6 +7,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Identity.Auth;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.AssetOperations;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -47,8 +48,39 @@ public static partial class LedgerEndpoints
                 var spine = ResolveAssetAccountingEventSpineService(context);
                 if (spine is null || ResolveManualJournalEntryWorkbenchService(context) is not ManualJournalEntryWorkbenchService workbench)
                     return ServiceUnavailable("The governed asset journal review workflow is unavailable.");
-                var project = prepared.Project;
+                var project = prepared.Project with { Notes = request.Description.Trim() };
+                if (!prepared.SourceAlreadyRetained)
+                {
+                    // Retain the occurrence as a reviewed source projection, never as posted economics.
+                    // Clearing the embedded hydrated state preserves its immutable history; no new amounts
+                    // are invented and the acquisition OriginEvent remains unchanged.
+                    var positionStore = context.RequestServices.GetRequiredService<IInstrumentPositionProjectionStore>();
+                    var position = prepared.SourcePosition with
+                    {
+                        Version = project.Scope.ExpectedBookPositionVersion,
+                        CurrentEconomicState = null,
+                        ProjectionLineage = project.ProjectionLineage,
+                        EvidenceLinks = prepared.SourcePosition.EvidenceLinks.Concat(project.EconomicEvent.EvidenceLinks).Distinct().ToArray(),
+                        RetainedEvidence = prepared.SourcePosition.RetainedEvidence.Concat(project.RetainedEvidence).Distinct().ToArray()
+                    };
+                    await positionStore.UpsertAsync(prepared.SourceRole, position, null, prepared.SourcePosition.Version,
+                        new AssetOperationsWriteApprovalDto(actor, request.Request.EventEvidence.EvidenceUri,
+                            request.Description.Trim(), DateTimeOffset.UtcNow), context.RequestAborted).ConfigureAwait(false);
+                }
                 var retained = await spine.GetLatestAsync(project.EconomicEvent.EventId, 1, context.RequestAborted).ConfigureAwait(false);
+                if (retained is { SpineVersion: 1, ProjectedEffect: null })
+                {
+                    var expected = retained.Stages.SingleOrDefault(item => item.Stage == AssetAccountingLifecycleStageDto.Expected);
+                    if (expected is null || expected.AttestedBy != actor || expected.Notes != request.Description.Trim() ||
+                        !AssetAccountingSourcePayloadEquals(retained.Scope, project.Scope) ||
+                        !AssetAccountingSourcePayloadEquals(retained.EconomicEvent, project.EconomicEvent) ||
+                        !AssetAccountingSourcePayloadEquals(retained.ProjectionLineage, project.ProjectionLineage) ||
+                        !AssetAccountingSourcePayloadEquals(retained.RetainedEvidence, project.RetainedEvidence) ||
+                        retained.EventKind != project.EventKind || retained.EventAmount != project.EventAmount || retained.Currency != project.Currency)
+                        return Results.Conflict(new { error = "The retained amortization expectation differs from the reviewed occurrence." });
+                    project = project with { ProjectedAtUtc = expected.AttestedAtUtc };
+                    retained = (await spine.ProjectAsync(project, context.RequestAborted).ConfigureAwait(false)).Spine;
+                }
                 if (retained is not null)
                 {
                     if (retained.PostedJournalImpact is not null || retained.EventKind != project.EventKind ||
@@ -71,7 +103,7 @@ public static partial class LedgerEndpoints
                 var result = await spine.BuildPostingCandidateAsync(new AssetAccountingPostingCandidateRequestDto(
                     project.EventKind, project.Scope, project.EconomicEvent, project.ProjectionLineage,
                     project.EventAmount, project.Currency, actor, DateTimeOffset.UtcNow, request.Description.Trim(),
-                    retained.SpineVersion, project.ExpectedPeriodVersion, project.RetainedEvidence, prepared.Mutation), context.RequestAborted).ConfigureAwait(false);
+                    retained.SpineVersion, project.ExpectedPeriodVersion, project.RetainedEvidence, prepared.Mutation, CounterpartyId: project.Scope.Dimensions?.CounterpartyId), context.RequestAborted).ConfigureAwait(false);
                 await workbench.SaveAssetAccountingDraftAsync(result, actor, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, exactOptions);
             }).ConfigureAwait(false))
@@ -83,7 +115,8 @@ public static partial class LedgerEndpoints
     }
 
     private sealed record PreparedCanonicalAmortization(CanonicalLotAmortizationPreview Preview,
-        ProjectAssetAccountingEventRequestDto Project, AssetLotMutationInstructionDto Mutation, string Fingerprint, IReadOnlyList<CanonicalAmortizationOccurrenceDto> Occurrences);
+        ProjectAssetAccountingEventRequestDto Project, AssetLotMutationInstructionDto Mutation, string Fingerprint, IReadOnlyList<CanonicalAmortizationOccurrenceDto> Occurrences,
+        BookPositionDto SourcePosition, InstrumentRoleDto SourceRole, bool SourceAlreadyRetained);
 
     private static async Task<IResult> ExecuteCanonicalAmortizationAsync(HttpContext context, Guid ledgerBookId,
         PrepareCanonicalAmortizationRequestDto? request, Func<PreparedCanonicalAmortization, string, Task<IResult>> execute)
@@ -107,7 +140,8 @@ public static partial class LedgerEndpoints
         var periods = ResolveJournalStore(context);
         var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
         var service = context.RequestServices.GetService<CanonicalLotAmortizationService>();
-        if (books is null || periods is null || registry is null || service is null)
+        var positionStore = context.RequestServices.GetService<IInstrumentPositionProjectionStore>();
+        if (books is null || periods is null || registry is null || service is null || positionStore is null)
             return ServiceUnavailable("Authoritative book, period, tenancy and canonical amortization services are required.");
         try
         {
@@ -149,13 +183,21 @@ public static partial class LedgerEndpoints
                 }
             }
             var lot = instruction.ExpectedLot;
+            var position = await positionStore.GetBookPositionAsync(lot.BookPositionId, context.RequestAborted).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("The authoritative amortization position is unavailable.");
+            var snapshot = await positionStore.GetSecurityAsync(lot.SecurityId, context.RequestAborted).ConfigureAwait(false);
+            var role = snapshot.InstrumentRoles.SingleOrDefault(item => item.RoleId == position.RoleId)
+                ?? throw new InvalidOperationException("The authoritative amortization instrument role is unavailable.");
+            if (position.Version != instruction.ExpectedBookPositionVersion || position.SecurityId != lot.SecurityId ||
+                position.BookContext.LedgerBookId != ledgerBookId || !snapshot.BookPositions.Any(item => item.PositionId == position.PositionId && item.Version == position.Version))
+                throw new InvalidOperationException("The amortization position changed during preparation. Refresh and prepare again.");
             var currency = lot.Acquisition.FunctionalCurrency;
             var evidence = lot.Acquisition.Evidence.Concat([request.SecurityEvidence, request.EventEvidence]).Distinct().ToArray();
-            var dimensions = new LedgerDimensionSetDto(FundId: book.FundProfileId, BookId: ledgerBookId.ToString("D"), InstrumentId: lot.SecurityId)
-            { PositionId = lot.BookPositionId };
-            var scope = new AssetAccountingEventScopeDto(lot.SecurityId, instruction.Security.Version, lot.BookPositionId,
-                instruction.ExpectedBookPositionVersion, ledgerBookId, request.PeriodId, book.AccountingBasis, book.FundProfileId,
-                tenant.TenantId, tenant.CompanyId, dimensions);
+            var dimensions = (position.BookContext.Dimensions ?? new LedgerDimensionSetDto()) with
+            {
+                FundId = book.FundProfileId, BookId = ledgerBookId.ToString("D"),
+                InstrumentId = lot.SecurityId, PositionId = lot.BookPositionId
+            };
             var now = DateTimeOffset.UtcNow;
             var economicEvent = new EconomicEventReferenceDto(eventId, AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.DepreciationAmortization),
                 1, request.AsOfDate, request.EventEvidence.RetainedAtUtc, request.EventEvidence.SourceSystem,
@@ -167,6 +209,19 @@ public static partial class LedgerEndpoints
                 economicEvent, TermsVersion: instruction.Security.Version.ToString(), TermsHash: OpenLotAmortization.SecurityHash(instruction.Security),
                 EvidenceLinks: economicEvent.EvidenceLinks)
             { BookPositionId = lot.BookPositionId, RetainedEvidence = evidence };
+            var retainedSources = snapshot.ProjectionLineages.Where(item =>
+                (item.BookPositionId ?? item.TriggerEvent.BookPositionId) == position.PositionId &&
+                item.TriggerEvent.EventId == eventId && item.TriggerEvent.EventVersion == 1).ToArray();
+            if (retainedSources.Any(item => !AssetAccountingSourcePayloadEquals(item.TriggerEvent, economicEvent) ||
+                item.ModelVersion != lineage.ModelVersion || !AssetAccountingSourcePayloadEquals(item.RetainedEvidence, evidence)))
+                throw new InvalidOperationException("The retained amortization occurrence has different source evidence or calculation authority.");
+            var sourceAlreadyRetained = retainedSources.Length != 0;
+            if (sourceAlreadyRetained) lineage = retainedSources[0];
+            instruction = instruction with { ExpectedBookPositionVersion = sourceAlreadyRetained ? position.Version : checked(position.Version + 1) };
+            preview = preview with { Instruction = instruction };
+            var scope = new AssetAccountingEventScopeDto(lot.SecurityId, instruction.Security.Version, lot.BookPositionId,
+                instruction.ExpectedBookPositionVersion, ledgerBookId, request.PeriodId, book.AccountingBasis, book.FundProfileId,
+                tenant.TenantId, tenant.CompanyId, dimensions);
             var movement = preview.Projection.FunctionalMovement;
             var amount = Math.Abs(movement);
             var effect = new ProjectedAccountingEffectDto(lineage.ProjectionRunId, lineage.ModelKey, lineage.ModelVersion, request.AsOfDate,
@@ -177,7 +232,7 @@ public static partial class LedgerEndpoints
                 economicEvent, lineage, effect, amount, currency, request.ExpectedPeriodVersion, actor, now, evidence);
             var mutation = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.Amortize, AssetAccountId: request.AssetAccountPath, Amortization: instruction);
             var fingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(new { Request = request, Instruction = instruction, Effect = effect, Scope = scope });
-            return await execute(new(preview, project, mutation, fingerprint, occurrences), actor).ConfigureAwait(false);
+            return await execute(new(preview, project, mutation, fingerprint, occurrences, position, role, sourceAlreadyRetained), actor).ConfigureAwait(false);
         }
         catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
         catch (NotSupportedException ex) { return ServiceUnavailable(ex.Message); }
@@ -185,6 +240,9 @@ public static partial class LedgerEndpoints
         catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
         catch (LedgerBookServiceException ex) { return MapServiceException(ex); }
     }
+
+    private static bool AssetAccountingSourcePayloadEquals<T>(T left, T right)
+        => AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(left) == AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(right);
 
     private static bool SameAmortizationProjection(AssetAccountingEventSpineDto retained, ProjectAssetAccountingEventRequestDto project)
         => AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(new { retained.Scope, retained.EconomicEvent, retained.ProjectedEffect, retained.EventAmount, retained.Currency }) ==

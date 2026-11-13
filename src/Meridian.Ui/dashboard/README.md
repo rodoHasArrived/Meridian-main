@@ -28,10 +28,13 @@ produce a reconciliation review or named blockers. Preparation creates no trade,
 
 Accounting's journal workbench exposes **Accrual schedules** with reviewed fixed amounts, cadence,
 dates, accounts, source evidence, authoritative period preview, occurrence generation and the
-retained journal queue. Ledger Explorer exposes **Canonical lot amortization** using acquisition
+retained journal queue. Account-owned and sleeve-owned books accept a reviewed fund-account
+identity, checked against retained book membership before configuration. Ledger Explorer exposes
+**Canonical lot amortization** using acquisition
 policy and retained lot economics, schedule previews and an explicitly reviewed occurrence. Draft
 handoff recomputes the preparation fingerprint and enters the existing immutable journal workflow;
-independent approval and posting authority remain there. Missing scope, permissions, required
+the reviewed occurrence is retained on its authoritative position, preserving all journal dimensions.
+Independent approval and posting authority remain there. Missing scope, permissions, required
 services, closed periods, changed inputs and uncertain writes remain explicit blockers.
 
 The account oversight **Close prices → Maintain pricing sources** action maintains that exact

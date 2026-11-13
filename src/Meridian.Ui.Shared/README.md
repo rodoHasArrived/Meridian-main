@@ -19,10 +19,14 @@ their existing Security Master permission boundaries and also serialize financia
 Yield analysis accepts an exact retained terms version; curve inputs belong to DCF valuation.
 
 Accrual-schedule adapters expose the recurring store/planner/runner through scoped definition,
-preview, configuration and due-occurrence actions. Canonical amortization adapters resolve the lot,
+preview, configuration and due-occurrence actions. Reviewed fund-account scope is carried into
+period/subject authority and journal dimensions for account-owned and sleeve-owned books.
+Canonical amortization adapters resolve the lot,
 acquisition policy, retained reference evidence, current book/period and versions before calculating
 an occurrence and its schedule. Reviewed fingerprint checks precede immutable asset journal draft
-intake; journal validation, independent approval and atomic posting retain their authority. No
+intake. Draft creation retains the exact reviewed occurrence lineage on the authoritative position
+without changing acquisition history or posting economics, and preserves its full dimensions;
+journal validation, independent approval and atomic posting retain their authority. No
 preview alone grants journal or lot mutation authority.
 
 Provider-backed bond discovery requires tenant scope and Security Master read permission, uses
