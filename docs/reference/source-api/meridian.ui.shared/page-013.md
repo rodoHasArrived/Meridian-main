@@ -6,6 +6,89 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerMarkToMarketCarryingValueSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerMarkToMarketCarryingValueSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L13).
+
+Hydrates the requested ledger book once and returns the durable securities-account carrying value for every requested security/account key within the requested entity. Missing accounts are explicit null results; present zero-balance accounts remain zero.
+
+```csharp
+public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore store) : IMarkToMarketCarryingValueSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;MarkToMarketCarryingValueKey, MarkToMarketCarryingValue&gt;&gt; GetCarryingValuesAsync(MarkToMarketCarryingValueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L16) |  |
+
+## LedgerRecurringJournalCalculationInputs
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerRecurringJournalCalculationInputs</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:127](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L127).
+
+Reads calculation inputs from the durable ledger journal store.
+
+```csharp
+public sealed class LedgerRecurringJournalCalculationInputs(ILedgerJournalStore? journalStore = null, TimeProvider? timeProvider = null) : IRecurringJournalCalculationInputs
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:170](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L170) |  |
+
+## LedgerReportingAuthoritativeSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingAuthoritativeSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:83](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L83).
+
+Captures an immutable as-of view from the durable ledger journal. Tenant ownership, fund structure, organization, book, period, accounting basis, currency, selected dimensions, and line-level dimensional stamps are all verified before a checkpoint is issued.
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingAuthoritativeSource(ILedgerJournalStore journalStore, IFundProfileTenancyRegistry tenancyRegistry, IFundStructureService fundStructure, TimeProvider? timeProvider = null, ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null, ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null, CapitalCallNoticeSourceValidator? capitalCallNotices = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:93](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L93) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
+| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
+
+```csharp
+public sealed partial class LedgerReportingAuthoritativeSource
+```
+
+## LedgerReportingPartnersCapitalSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingPartnersCapitalSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L16).
+
+Produces the certified partners-capital roll-forward for a governed reporting run by hydrating the scoped ledger from the durable journal store and reusing the tested LedgerFinancialStatementBuilder.BuildForPeriod computation — the same hydrate-and-build pattern the live capital-account reconciliation resolver uses. Read-only: it posts nothing and mutates no state.
+
+```csharp
+public sealed class LedgerReportingPartnersCapitalSource : IReportingPartnersCapitalSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerReportingPartnersCapitalSource(ILedgerJournalStore? journalStore = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L20) |  |
+| <code>public async Task&lt;CertifiedPartnersCapitalProjection?&gt; CaptureAsync(ReportingRunParametersDto parameters, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L23) |  |
+
 ## LedgerReportingSchedulePeriodResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingSchedulePeriodResolver</code>. Kind: `class`.
@@ -941,73 +1024,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;ProviderVerificationHistoryDto&gt; GetVerificationHistoryForTenantAsync(string connectionId, string tenantId, int limit = 100, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs#L8) |  |
-
-## ProviderCredentialStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderCredentialStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L11).
-
-Compatibility adapter from provider-module setup to the Data Integration-owned encrypted vault. On first access it migrates the historical plaintext sidecar atomically into the vault and then removes the plaintext source. Unknown provider ids fail on writes and never create a sidecar.
-
-```csharp
-public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderCredentialStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderCredentialStore(string dataRoot) : this(new FileProviderCredentialStore(dataRoot), dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L19) |  |
-| <code>public ProviderCredentialStore(IProviderCredentialStore vault, string dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L24) |  |
-| <code>public async Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L31) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L53) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:59](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L59) |  |
-| <code>public async Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:74](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L74) |  |
-| <code>public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:85](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L85) |  |
-
-## ProviderDataProjectionSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataProjectionSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:30](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L30).
-
-Shared, typed snapshot consumed unchanged by browser endpoints and WPF view models.
-
-```csharp
-public sealed record ProviderDataProjectionSnapshot(IReadOnlyList<ProviderNewsReadModel> News, IReadOnlyList<ProviderScannerReadModel> ScannerResults, IReadOnlyList<ProviderPnlReadModel> PnlStreams, IReadOnlyList<ProviderCalendarReadModel> Calendars, IReadOnlyList<ProviderMarketRuleReadModel> MarketRules, IReadOnlyList<ProviderInstrumentDiscoveryReadModel> Instruments);
-```
-
-## ProviderDataReadModelService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataReadModelService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:43](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L43).
-
-Aggregates provider-neutral read interfaces. Rows are de-duplicated by the stable provenance key (ProviderDataProvenance.StableDeduplicationKey), so repeated live snapshots replace older evidence rather than making either workstation show duplicate vendor data.
-
-```csharp
-public sealed class ProviderDataReadModelService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderDataReadModelService(IEnumerable&lt;IProviderDataReadService&gt; providers, IEnumerable&lt;IProviderNewsReadService&gt;? newsProviders = null, IEnumerable&lt;IProviderCalendarReadService&gt;? calendarProviders = null, IEnumerable&lt;IProviderInstrumentDiscoveryReadService&gt;? instrumentProviders = null, IEnumerable&lt;IProviderDataAvailabilityReadService&gt;? availabilityProviders = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:51](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:69](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L69) | Returns only providers whose contract is explicitly unscoped. Tenant/company-aware providers are excluded rather than downgraded to their compatibility read surface. |
-| <code>public IReadOnlyList&lt;ProviderDataRequestReadModel&gt; GetRequests(string tenantId, string companyId);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L76) |  |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync([System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:92](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L92) | Emits the initial projection and a refreshed snapshot after any optional provider stream changes. |
-| <code>public async IAsyncEnumerable&lt;ProviderDataProjectionSnapshot&gt; WatchAsync(string tenantId, string companyId, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:113](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L113) | Emits only projection updates owned by the requested tenant and company. Tenant-scoped providers are never consumed through their unscoped watch surface. |
-| <code>public ProviderDataProjectionSnapshot GetProjection() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:147](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L147) |  |
-| <code>public ProviderDataProjectionSnapshot GetProjection(string tenantId, string companyId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:150](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L150) |  |
-
-## ProviderInstrumentDiscoveryReadModel
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderInstrumentDiscoveryReadModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:27](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L27).
-
-```csharp
-public sealed record ProviderInstrumentDiscoveryReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderInstrumentDiscoveryResult Item);
-```

@@ -14,7 +14,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 759 / 759 |
+| Endpoints documented | 765 / 765 |
 | Workstation contracts documented | 1025 / 1025 |
 
 ## Endpoint Coverage
@@ -201,6 +201,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/diagnostics/validate-credentials` | Documented | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:413` |
 | `GET` | `/api/errors` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:145` |
 | `GET` | `/api/events/stream` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:251` |
+| `GET` | `/api/execution/alert-settings` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:116` |
+| `POST` | `/api/execution/alert-settings` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:126` |
+| `GET` | `/api/execution/notifications` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:74` |
+| `GET` | `/api/execution/notifications/stream` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:84` |
+| `POST` | `/api/execution/orders/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:18` |
+| `GET` | `/api/execution/strategy-parity` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:36` |
 | `POST` | `/api/export/analysis` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:82` |
 | `GET` | `/api/export/formats` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:159` |
 | `POST` | `/api/export/integrity` | Documented | `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:302` |
@@ -772,10 +778,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/symbols/{symbol}/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:99` |
 | `GET` | `/api/symbols/{symbol}/trades` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:202` |
 | `POST` | `/api/symbols/{symbol}/update` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:506` |
-| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:668` |
-| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:702` |
-| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:777` |
-| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:756` |
+| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:672` |
+| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:706` |
+| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:781` |
+| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:760` |
 | `POST` | `/api/workstation/desktop/launch` | Documented | `src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:33` |
 | `GET` | `/health` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:60` |
 | `GET` | `/live` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:73` |

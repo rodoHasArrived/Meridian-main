@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerSavedViewRecord
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerSavedViewRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:209](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L209).
+
+```csharp
+public sealed record FinancialRecordExplorerSavedViewRecord(string TenantId, string ExplorerId, FinancialRecordExplorerSavedViewDto SavedView);
+```
+
+## FinancialRecordExplorerSavedViewSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FinancialRecordExplorerSavedViewSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs:214](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs#L214).
+
+```csharp
+public sealed record FinancialRecordExplorerSavedViewSnapshot(int Version, IReadOnlyList<FinancialRecordExplorerSavedViewRecord> Views, IReadOnlyList<WorkstationPersonalTableViewRecord>? PersonalViews = null);
+```
+
+## FirstRunExperienceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FirstRunExperienceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:11](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L11).
+
+Owns durable first-run, starter-workspace, sample-pack, and activation evidence. UI clients consume this governed state instead of defining onboarding policy locally.
+
+```csharp
+public sealed class FirstRunExperienceService(ConfigStore configStore, DemoTenantProvisioner? demoTenantProvisioner = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SamplePackVersion = &quot;2026.1&quot;;</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:15](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L15) |  |
+| <code>public async Task&lt;FirstRunStatusDto&gt; GetAsync(string username, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:37](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L37) |  |
+| <code>public async Task&lt;FirstRunStatusDto&gt; CompleteAsync(string username, CompleteFirstRunRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:43](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L43) |  |
+| <code>public async Task&lt;FirstRunStatusDto&gt; CompleteOutcomeAsync(string username, string key, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs:90](../../../../src/Meridian.Ui.Shared/Services/FirstRunExperienceService.cs#L90) |  |
+
+## FixedAssetDepreciationCalculation
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:316](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L316).
+
+Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled charges whose period end falls inside the accrual window, in one draft. Each scheduled period belongs to exactly one window, so an asset&#x27;s life is depreciated once. Units-of-production assets need period output that the register does not hold, so they block the occurrence.
+
+```csharp
+public sealed class FixedAssetDepreciationCalculation(IFixedAssetRegister? register = null) : IRecurringJournalCalculation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:318](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L318) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:323](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L323) |  |
+
 ## FixedIncomeAccrualCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedIncomeAccrualCalculation</code>. Kind: `class`.
@@ -899,87 +960,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task&lt;AccountingTenantAdministrationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L33) |  |
 | <code>public Task&lt;AccountingTenantAdministrationProfileDto&gt; UpsertAsync(AccountingTenantAdministrationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:43](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L43) |  |
-
-## InMemoryAutomatedJournalScheduleStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAutomatedJournalScheduleStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:152](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L152).
-
-In-memory source for deterministic tests and lightweight composition.
-
-```csharp
-public sealed class InMemoryAutomatedJournalScheduleStore : IAutomatedJournalScheduleStore, IAutomatedJournalScheduleStatusSource, Meridian.Application.Composition.INonProductionOnlyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;AutomatedJournalScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:161](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L161) |  |
-| <code>public Task&lt;AutomatedJournalScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:174](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L174) |  |
-| <code>public Task&lt;AutomatedJournalScheduleWorkItem&gt; SaveAsync(AutomatedJournalScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:187](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L187) |  |
-| <code>public async Task&lt;AutomatedJournalScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? tenantId = null, string? companyId = null, string? entityId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:227](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L227) |  |
-
-## InMemoryDailyValuationPortfolioSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryDailyValuationPortfolioSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:85](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L85).
-
-In-memory schedule source used for deterministic scheduling tests and composition.
-
-```csharp
-public sealed class InMemoryDailyValuationPortfolioSource : IDailyValuationPortfolioSource, IDailyValuationScheduleStatusSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;DailyValuationScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:93](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L93) |  |
-| <code>public Task&lt;DailyValuationScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:106](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L106) |  |
-| <code>public Task&lt;DailyValuationScheduleWorkItem&gt; SaveAsync(DailyValuationScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:117](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L117) |  |
-| <code>public async Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:136](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L136) |  |
-
-## InMemoryFundStructureTenancyGuard
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:37](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L37).
-
-Refuses multi-company access to unpartitioned local fund structure unless a strict migration wrapper already refuses that capability (PRD-001 / W9-GOV-008 criterion 2).
-
-```csharp
-public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public InMemoryFundStructureTenancyGuard(IFundStructureService fundStructureService, UserProfileRegistry userProfiles, ILogger&lt;InMemoryFundStructureTenancyGuard&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:43](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L43) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:53](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L53) |  |
-| <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:94](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L94) |  |
-
-## InMemoryManualJournalEntryDraftStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryManualJournalEntryDraftStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:19](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L19).
-
-Stores manual journal drafts and draft batches in process memory.
-
-```csharp
-public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDraftStore, Meridian.Application.Composition.INonProductionOnlyService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:26](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L26) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:42](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L42) |  |
-| <code>public Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:69](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L69) |  |
-| <code>public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:92](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L92) |  |
-| <code>public Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:95](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L95) |  |

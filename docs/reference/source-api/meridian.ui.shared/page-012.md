@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InMemoryAutomatedJournalScheduleStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryAutomatedJournalScheduleStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:152](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L152).
+
+In-memory source for deterministic tests and lightweight composition.
+
+```csharp
+public sealed class InMemoryAutomatedJournalScheduleStore : IAutomatedJournalScheduleStore, IAutomatedJournalScheduleStatusSource, Meridian.Application.Composition.INonProductionOnlyService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;AutomatedJournalScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:161](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L161) |  |
+| <code>public Task&lt;AutomatedJournalScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:174](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L174) |  |
+| <code>public Task&lt;AutomatedJournalScheduleWorkItem&gt; SaveAsync(AutomatedJournalScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:187](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L187) |  |
+| <code>public async Task&lt;AutomatedJournalScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? tenantId = null, string? companyId = null, string? entityId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs:227](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs#L227) |  |
+
+## InMemoryDailyValuationPortfolioSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryDailyValuationPortfolioSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:85](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L85).
+
+In-memory schedule source used for deterministic scheduling tests and composition.
+
+```csharp
+public sealed class InMemoryDailyValuationPortfolioSource : IDailyValuationPortfolioSource, IDailyValuationScheduleStatusSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;DailyValuationScheduleWorkItem&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:93](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L93) |  |
+| <code>public Task&lt;DailyValuationScheduleWorkItem?&gt; GetAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:106](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L106) |  |
+| <code>public Task&lt;DailyValuationScheduleWorkItem&gt; SaveAsync(DailyValuationScheduleWorkItem workItem, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:117](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L117) |  |
+| <code>public async Task&lt;DailyValuationScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? entityId = null, string? tenantId = null, string? companyId = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs:136](../../../../src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs#L136) |  |
+
+## InMemoryFundStructureTenancyGuard
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryFundStructureTenancyGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:37](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L37).
+
+Refuses multi-company access to unpartitioned local fund structure unless a strict migration wrapper already refuses that capability (PRD-001 / W9-GOV-008 criterion 2).
+
+```csharp
+public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public InMemoryFundStructureTenancyGuard(IFundStructureService fundStructureService, UserProfileRegistry userProfiles, ILogger&lt;InMemoryFundStructureTenancyGuard&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:43](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L43) |  |
+| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:53](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L53) |  |
+| <code>public Task StopAsync(CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs:94](../../../../src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs#L94) |  |
+
+## InMemoryManualJournalEntryDraftStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryManualJournalEntryDraftStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:19](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L19).
+
+Stores manual journal drafts and draft batches in process memory.
+
+```csharp
+public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDraftStore, Meridian.Application.Composition.INonProductionOnlyService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:26](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L26) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ManualJournalEntryDraftDto&gt;&gt; ListAsync(string fundProfileId, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:42](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L42) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:69](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L69) |  |
+| <code>public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:92](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L92) |  |
+| <code>public Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:95](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L95) |  |
+
 ## InMemoryManualJournalMutationRecoveryStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.InMemoryManualJournalMutationRecoveryStore</code>. Kind: `class`.
@@ -403,7 +487,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1468](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1468).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1503](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1503).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -415,7 +499,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1470](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1470) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1505](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1505) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -872,86 +956,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;LedgerJournalTaxResultsDto&gt; ReadAsync(Guid ledgerBookId, Guid periodId, JournalEntry entry, string functionalCurrency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:17](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L17) |  |
 | <code>public static LedgerDisposalTaxResultDto Project(LedgerTaxLotDisposalHistoryRecord disposal, JournalEntry entry, Guid ledgerBookId, string functionalCurrency, DateOnly asOfDate);</code> | [src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs:48](../../../../src/Meridian.Ui.Shared/Services/LedgerDisposalTaxReadService.cs#L48) |  |
-
-## LedgerMarkToMarketCarryingValueSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerMarkToMarketCarryingValueSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L13).
-
-Hydrates the requested ledger book once and returns the durable securities-account carrying value for every requested security/account key within the requested entity. Missing accounts are explicit null results; present zero-balance accounts remain zero.
-
-```csharp
-public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore store) : IMarkToMarketCarryingValueSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;MarkToMarketCarryingValueKey, MarkToMarketCarryingValue&gt;&gt; GetCarryingValuesAsync(MarkToMarketCarryingValueRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs#L16) |  |
-
-## LedgerRecurringJournalCalculationInputs
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerRecurringJournalCalculationInputs</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:127](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L127).
-
-Reads calculation inputs from the durable ledger journal store.
-
-```csharp
-public sealed class LedgerRecurringJournalCalculationInputs(ILedgerJournalStore? journalStore = null, TimeProvider? timeProvider = null) : IRecurringJournalCalculationInputs
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyLedger&gt; HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:130](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L130) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerTaxLot&gt;&gt; ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId, Guid? bookPositionId, DateOnly asOf, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:133](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L133) |  |
-| <code>public Task&lt;IReadOnlyList&lt;FaceValueAccrualHolding&gt;&gt; ListAccrualHoldingsAsync(RecurringJournalScope scope, Guid securityId, Guid bookPositionId, DateOnly from, DateOnly through, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:170](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L170) |  |
-
-## LedgerReportingAuthoritativeSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingAuthoritativeSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:83](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L83).
-
-Captures an immutable as-of view from the durable ledger journal. Tenant ownership, fund structure, organization, book, period, accounting basis, currency, selected dimensions, and line-level dimensional stamps are all verified before a checkpoint is issued.
-
-```csharp
-public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerReportingAuthoritativeSource(ILedgerJournalStore journalStore, IFundProfileTenancyRegistry tenancyRegistry, IFundStructureService fundStructure, TimeProvider? timeProvider = null, ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null, ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null, CapitalCallNoticeSourceValidator? capitalCallNotices = null);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:93](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L93) |  |
-| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:115](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L115) |  |
-| <code>public ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:121](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L121) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs:11](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.Successors.cs#L11).
-
-```csharp
-public sealed partial class LedgerReportingAuthoritativeSource
-```
-
-## LedgerReportingPartnersCapitalSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LedgerReportingPartnersCapitalSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L16).
-
-Produces the certified partners-capital roll-forward for a governed reporting run by hydrating the scoped ledger from the durable journal store and reusing the tested LedgerFinancialStatementBuilder.BuildForPeriod computation — the same hydrate-and-build pattern the live capital-account reconciliation resolver uses. Read-only: it posts nothing and mutates no state.
-
-```csharp
-public sealed class LedgerReportingPartnersCapitalSource : IReportingPartnersCapitalSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerReportingPartnersCapitalSource(ILedgerJournalStore? journalStore = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L20) |  |
-| <code>public async Task&lt;CertifiedPartnersCapitalProjection?&gt; CaptureAsync(ReportingRunParametersDto parameters, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs:23](../../../../src/Meridian.Ui.Shared/Services/ReportingPartnersCapitalSource.cs#L23) |  |

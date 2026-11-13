@@ -270,6 +270,10 @@ public sealed partial class OrderManagementSystem
         CancellationToken ct)
     {
         var amendmentProbe = BuildAmendmentProbe(state, modification);
+        if (await _admissionPolicy.EvaluateSessionAsync(amendmentProbe, ct).ConfigureAwait(false) is { Status: "blocked" } session)
+            return new AmendmentGateResult(null, session.Message, null, null);
+        if (await _admissionPolicy.EvaluateMarketReferenceAsync(amendmentProbe, ct).ConfigureAwait(false) is { } reference)
+            return new AmendmentGateResult(null, reference.Reason, null, null);
         IReadOnlyList<string>? warnings = null;
         string? consumedApprovalId = null;
 
@@ -489,7 +493,8 @@ public sealed partial class OrderManagementSystem
         string brokerName,
         string? runId,
         string? correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid? journalAttemptId)
     {
         var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
 
@@ -503,7 +508,8 @@ public sealed partial class OrderManagementSystem
             message,
             ct,
             rejectionSource: "duplicate client order id guard",
-            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID",
+            journalAttemptId: journalAttemptId).ConfigureAwait(false);
 
         return new OrderResult
         {

@@ -84,7 +84,7 @@ public sealed class NasdaqDataLinkHistoricalDataProvider : BaseHistoricalDataPro
             if (!string.IsNullOrEmpty(_apiKey))
                 url += $"?api_key={_apiKey}";
 
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch

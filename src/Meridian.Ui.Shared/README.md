@@ -1030,6 +1030,10 @@ without endpoint or workstation orchestration. The larger cross-domain workflows
 
 ## Important workflows
 
+### Account-scoped execution workflows
+
+The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 `GET /api/config` requires configuration-read permission and masks every configured backfill
 provider credential in a cloned response projection. Persisted credentials remain unchanged.
 Connection services use the injected `IHttpClientFactory` for credential verification and OAuth
@@ -1264,7 +1268,7 @@ case in one transaction and applying to part of the affected set is not atomic.
 The ledger explorer carries canonical `LedgerDimensionSetDto` scope into row cells, drill-in fields,
 and dimension filter chips so browser and WPF users can inspect fund, entity, sleeve, strategy,
 portfolio, book, account, investor, capital-account, instrument, position, tax-lot, cost-center,
-counterparty, and external-GL context without re-inferring accounting scope from display text. The
+counterparty, intercompany-agreement, and external-GL context without re-inferring accounting scope from display text. The
 shared ledger report endpoints also canonicalize dimension query filters, returned row dimensions,
 matching, and report signatures before browser or WPF clients render or certify scoped reports. The
 shared Financial Record Explorer route also accepts server-applied `viewId`, `searchText`, and

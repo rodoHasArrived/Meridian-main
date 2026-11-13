@@ -907,6 +907,8 @@ export interface ReplayStatus {
 }
 
 export interface OrderSubmitRequest {
+  clientOrderId?: string;
+  sessionIntent?: "RegularOnly" | "QueueNextSession" | "ExtendedHours";
   symbol: string;
   side: "Buy" | "Sell";
   type: "Market" | "Limit" | "Stop";
@@ -920,6 +922,7 @@ export interface OrderResult {
   orderId: string | null;
   reason: string | null;
   errorMessage?: string | null;
+  requiresOrderReconciliation?: boolean;
   /**
    * True when a risk escalation parked the order for governed approval. Nothing routed,
    * but the queue entry can still execute once an operator approves it, so this is not a

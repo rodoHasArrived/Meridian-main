@@ -1,11 +1,11 @@
 {
-  "total_files": 1200,
+  "total_files": 1202,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 332,
   "health_score": 84,
-  "signal_digest": "sha256:ae35e53be34ed97ea9b4378d3d693f3cdf76a8bded171f857e046e6ef610e5f7",
+  "signal_digest": "sha256:148f94f6621b03a72356d312d81bb536f166e20506270ce5e45b62c3474f6f17",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2485,6 +2485,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/execution-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/free-development-tools.md",
       "has_heading": true,
       "todo_count": 0,
@@ -3963,6 +3970,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.backtesting.sdk/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.backtesting.sdk/page-003.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
