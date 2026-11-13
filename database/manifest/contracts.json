@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "cdec357c8e93adee20f2b10c141d95df7d13ac67aaedabae6ab2604567609ed4",
+      "fingerprint": "de9b8ff805eec98cfff027be728f3cb4d4fa993605bf0f2ecd327db599f766c4",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1566,6 +1566,8 @@
         "Meridian.Contracts.Ledger.AuditChainIntegrityStatus",
         "Meridian.Contracts.Ledger.AutomatedJournalEvidenceAssessmentDto",
         "Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto",
+        "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+        "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationRuleDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAuditDrillThroughDto",
@@ -1641,6 +1643,7 @@
         "Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto",
         "Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto",
         "Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
+        "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
         "Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto",
         "Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto",
         "Meridian.Contracts.Ledger.CreateLedgerBookRequest",
@@ -1786,6 +1789,7 @@
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
         "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
+        "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
         "Meridian.Contracts.Ledger.PreparedClosePlanResultDto",
         "Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto",
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
@@ -4329,7 +4333,7 @@
         "src/Meridian.Contracts/AccountingSystem",
         "src/Meridian.Contracts/Ledger"
       ],
-      "fingerprint": "c13a48ff8eecebab68b4f9b84bce926323ccb022d5f5b54ee0c4c163835bfa37",
+      "fingerprint": "6f7114f56b476afb75fda1faca197f5cc861117032db5648e216af184453c1f4",
       "id": "ledger-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AccountingSystem",
@@ -4480,6 +4484,8 @@
         "Meridian.Contracts.Ledger.AuditChainIntegrityStatus",
         "Meridian.Contracts.Ledger.AutomatedJournalEvidenceAssessmentDto",
         "Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto",
+        "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+        "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationRuleDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAuditDrillThroughDto",
@@ -4555,6 +4561,7 @@
         "Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto",
         "Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto",
         "Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
+        "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
         "Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto",
         "Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto",
         "Meridian.Contracts.Ledger.CreateLedgerBookRequest",
@@ -4700,6 +4707,7 @@
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
         "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
+        "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
         "Meridian.Contracts.Ledger.PreparedClosePlanResultDto",
         "Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto",
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
@@ -5416,7 +5424,7 @@
       ]
     }
   ],
-  "fingerprint": "3a2db24c640da702896e2b9fb05cee19ccdc0cddbf650855fa67e5a82ae832c7",
+  "fingerprint": "14fa7c73e87f55dc35824b137eaa9a9b27f8ebcfadfdbb35c984484a8edd2133",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -7281,7 +7289,7 @@
         "all-contracts",
         "ledger-contracts"
       ],
-      "fingerprint": "3f10e7cb682cefd839b07f3966ce311dd8d46c92d1e0a1df3358bd3b99defb89",
+      "fingerprint": "ac5e3ff21d84801d44453ce7de7fd04fbed95ac6501c5b8612b62e47d7fe1a62",
       "mapped_schemas": [
         "ledger"
       ],
@@ -7365,6 +7373,8 @@
         "Meridian.Contracts.Ledger.AuditChainIntegrityStatus",
         "Meridian.Contracts.Ledger.AutomatedJournalEvidenceAssessmentDto",
         "Meridian.Contracts.Ledger.AutomatedJournalEvidenceQualityDto",
+        "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+        "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationRuleDto",
         "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAuditDrillThroughDto",
@@ -7440,6 +7450,7 @@
         "Meridian.Contracts.Ledger.ControlledCloseAuthorizationDto",
         "Meridian.Contracts.Ledger.ControlledCloseAuthorizationRequestDto",
         "Meridian.Contracts.Ledger.CreateAccountingPolicyRequest",
+        "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
         "Meridian.Contracts.Ledger.CreateFactorPaydownDraftRequestDto",
         "Meridian.Contracts.Ledger.CreateLateAdjustmentRequestDto",
         "Meridian.Contracts.Ledger.CreateLedgerBookRequest",
@@ -7585,6 +7596,7 @@
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateRequestDto",
         "Meridian.Contracts.Ledger.PostingRuleJournalCandidateResultDto",
         "Meridian.Contracts.Ledger.PostPostingRuleJournalCandidateRequestDto",
+        "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
         "Meridian.Contracts.Ledger.PreparedClosePlanResultDto",
         "Meridian.Contracts.Ledger.PrepareFactorPaydownRequestDto",
         "Meridian.Contracts.Ledger.PreviewClosePreparationRequestDto",
@@ -207975,6 +207987,216 @@
         "ledger-contracts"
       ],
       "enum_members": [],
+      "fingerprint": "6f9dffde858f632ec2fd825dcaada46e48e4c57b12b1f774844f2e4dcc13d4b2",
+      "full_name": "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+      "id": "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Date",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 20,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FunctionalCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 20,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TransactionCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 20,
+          "type": "decimal"
+        }
+      ],
+      "name": "CanonicalAmortizationOccurrenceDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto",
+      "references": [],
+      "source": {
+        "line": 20,
+        "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 20,
+          "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "f9b625c0003ed06126fae1e22190d4d87b2fabf6d4a75a534fcd716f8fc3a21b",
+      "full_name": "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "id": "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Instruction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OpenLotAmortizationInstructionDto",
+          "source_line": 16,
+          "type": "OpenLotAmortizationInstructionDto"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ProjectedAccountingEffectLineDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Lines",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ProjectedAccountingEffectLineDto>",
+          "source_line": 17,
+          "type": "IReadOnlyList<ProjectedAccountingEffectLineDto>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "CanonicalAmortizationOccurrenceDto",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Occurrences",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<CanonicalAmortizationOccurrenceDto>",
+          "source_line": 18,
+          "type": "IReadOnlyList<CanonicalAmortizationOccurrenceDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PreparationFingerprint",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 17,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Projection",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "OpenLotAmortizationProjectionDto",
+          "source_line": 16,
+          "type": "OpenLotAmortizationProjectionDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Scope",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AssetAccountingEventScopeDto",
+          "source_line": 17,
+          "type": "AssetAccountingEventScopeDto"
+        }
+      ],
+      "name": "CanonicalAmortizationPreparationDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationProjectionDto",
+        "Meridian.Contracts.AssetOperations.AssetAccountingEventScopeDto",
+        "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto",
+        "Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto"
+      ],
+      "source": {
+        "line": 15,
+        "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 15,
+          "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
       "fingerprint": "45f71d41d793b9f131437dbaae2289881739cf478e41d9fd6bf1b722f792151d",
       "full_name": "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto",
       "id": "Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto",
@@ -220292,6 +220514,89 @@
         {
           "line": 112,
           "path": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "2abe6d9019993a6fafc0c6a4c563961dadf99cac5f1e000c2ec6892ae28a2714",
+      "full_name": "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
+      "id": "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Description",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 23,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedPreparationFingerprint",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 23,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Request",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "PrepareCanonicalAmortizationRequestDto",
+          "source_line": 23,
+          "type": "PrepareCanonicalAmortizationRequestDto"
+        }
+      ],
+      "name": "CreateCanonicalAmortizationDraftRequestDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.CreateCanonicalAmortizationDraftRequestDto",
+      "references": [
+        "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto"
+      ],
+      "source": {
+        "line": 22,
+        "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 22,
+          "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
         }
       ],
       "type_parameters": []
@@ -242765,6 +243070,262 @@
         {
           "line": 1038,
           "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "ledger-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "ledger-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "f38425c4a37c2b306af646c11ac19be7a9c5271a33f4155f2a57a5dde09119a0",
+      "full_name": "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "id": "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "kind": "record",
+      "mapped_schemas": [
+        "ledger"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "AccountingBasisKindDto",
+          "source_line": 9,
+          "type": "AccountingBasisKindDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AmortizeRemainingFace",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 12,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AsOfDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 9,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AssetAccountPath",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 11,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AutomaticYieldToWorst",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 12,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EventEvidence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "RetainedEvidenceIdentityDto",
+          "source_line": 10,
+          "type": "RetainedEvidenceIdentityDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedPeriodVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "long",
+          "source_line": 8,
+          "type": "long"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundProfileId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 9,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IncomeAccountPath",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 11,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LedgerBookId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 8,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 8,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ScheduleEndDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 13,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "\"Monthly\"",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ScheduleFrequency",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 13,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityEvidence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "RetainedEvidenceIdentityDto",
+          "source_line": 10,
+          "type": "RetainedEvidenceIdentityDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotRecordId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 8,
+          "type": "Guid"
+        }
+      ],
+      "name": "PrepareCanonicalAmortizationRequestDto",
+      "namespace": "Meridian.Contracts.Ledger",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Ledger.PrepareCanonicalAmortizationRequestDto",
+      "references": [
+        "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
+        "Meridian.Contracts.Ledger.AccountingBasisKindDto"
+      ],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs"
         }
       ],
       "type_parameters": []

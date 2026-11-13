@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingReadinessPacketDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReadinessPacketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L109).
+
+A frozen support artifact, never an accounting-authority transition.
+
+```csharp
+public sealed record OnboardingReadinessPacketDto(string PacketId, DateTimeOffset FrozenAtUtc, string FrozenBy, OnboardingPacketContentDto Content, string ContentHash, string HashAlgorithm);
+```
+
+## OnboardingReviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L85).
+
+```csharp
+public sealed record OnboardingReviewDto(string ReviewId, int DataRevision, string ReviewerId, string Decision, string Notes, IReadOnlyList<string> EvidenceIds, DateTimeOffset RecordedAtUtc);
+```
+
+## OnboardingScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L4).
+
+Fixed scope of a bounded, read-only accounting onboarding exercise.
+
+```csharp
+public sealed record OnboardingScopeDto(string TenantId, string CompanyId, string EntityId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> AccountIds, DateOnly StartDate, DateOnly EndDate);
+```
+
+## OnboardingSourceCaptureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingSourceCaptureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L56).
+
+Trusted read-only adapter result; this model is never an HTTP write payload.
+
+```csharp
+public sealed record OnboardingSourceCaptureDto(IReadOnlyList<OnboardingSourceSnapshotDto> Snapshots, IReadOnlyList<OnboardingObservationDto> Observations, IReadOnlyList<OnboardingMissingSourceDto> MissingSources, CloseReadinessProjectionDto? CloseReadiness);
+```
+
 ## OnboardingSourceSelectionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingSourceSelectionDto</code>. Kind: `record`.
@@ -534,55 +580,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1118](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1118) |  |
-
-## OperationsDashboardSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsDashboardSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1092](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1092).
-
-```csharp
-public sealed record OperationsDashboardSummaryDto(string DashboardId, string Stage, EvidenceStatusDto Status, bool IsReady, int ReadyMetricCount, int TotalMetricCount, string Summary, IReadOnlyList<OperationsDashboardMetricDto> Metrics, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1104](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1104) |  |
-
-## OperationsEvidenceLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsEvidenceLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1384](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1384).
-
-```csharp
-public sealed record OperationsEvidenceLinkDto(string EvidenceId, string Label, string? Route, string? Source, DateTimeOffset? CapturedAtUtc);
-```
-
-## OperationsEvidencePackageSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsEvidencePackageSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1122](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1122).
-
-```csharp
-public sealed record OperationsEvidencePackageSummaryDto(string PackageId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? RouteHint, int CompleteCategoryCount, int RequiredCategoryCount, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null, bool RequiredForClose = true)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1136](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1136) |  |
-
-## OperationsGateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsGateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1211](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1211).
-
-```csharp
-public sealed record OperationsGateDto(OperationsGateKeyDto GateKey, string DisplayName, OperationsGateStatusDto Status, bool IsRequired, string Description, IReadOnlyList<OperationsWorkflowBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions, DateTimeOffset? CompletedAtUtc, string? CompletedBy);
-```

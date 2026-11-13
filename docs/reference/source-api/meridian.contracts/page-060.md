@@ -6,6 +6,73 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IRecurringJournalQueueSource
+
+Qualified name: <code>Meridian.Contracts.Workstation.IRecurringJournalQueueSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs#L35).
+
+Read-only shared projection; clients never claim occurrences or infer approval.
+
+```csharp
+public interface IRecurringJournalQueueSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;RecurringJournalQueueDto&gt; GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs#L37) |  |
+
+## IReportingRunNotifier
+
+Qualified name: <code>Meridian.Contracts.Workstation.IReportingRunNotifier</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:9](../../../../src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs#L9).
+
+Fired after a reporting run&#x27;s manifest is persisted — on generation, failure, or an approval transition. Implementations MUST be non-blocking and exception-safe: this runs on the run-execution path and must never stall or fail it. The only production implementation is the UI stream broadcaster; the null-object below keeps the reporting layer free of a UI dependency.
+
+```csharp
+public interface IReportingRunNotifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void NotifyRunChanged(string runId);</code> | [src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:11](../../../../src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs#L11) |  |
+| <code>void NotifyRunChanged(string tenantId, string? companyId, string runId) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:13](../../../../src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs#L13) |  |
+
+## LedgerAmountApprovalClassification
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountApprovalClassification</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L80).
+
+Conservative approval classification shared by amount consumers; it defines no coverage denominator.
+
+```csharp
+public static class LedgerAmountApprovalClassification
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string PreparerAttestation = &quot;PreparerAttestation&quot;;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L82) |  |
+| <code>public const string Unknown = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:83](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L83) |  |
+| <code>public static bool MayCountAsOrdinaryApproval(LedgerAmountProofDto amount, bool ordinaryApprovalRecorded) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L85) |  |
+
+## LedgerAmountApprovalStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountApprovalStateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:683](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L683).
+
+```csharp
+public sealed record LedgerAmountApprovalStateDto(GovernanceReportPackStatusDto ReportStatus, string? LatestApprovalActor, DateTimeOffset? LatestApprovalAt, int LifecycleEventCount);
+```
+
 ## LedgerAmountProofDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProofDto</code>. Kind: `record`.
@@ -557,50 +624,4 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:92](../../../../sr
 
 ```csharp
 public sealed record OnboardingReadinessDto(string Status, bool IsReady, int UnresolvedDifferenceCount, IReadOnlyList<DateOnly> MissingDates, IReadOnlyList<OnboardingMissingSourceDto> MissingSources, IReadOnlyList<string> Blockers, int ApprovedReviewers, int RequiredReviewers, IReadOnlyList<OnboardingPeriodDifferenceDto> UnresolvedDifferences);
-```
-
-## OnboardingReadinessPacketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReadinessPacketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L109).
-
-A frozen support artifact, never an accounting-authority transition.
-
-```csharp
-public sealed record OnboardingReadinessPacketDto(string PacketId, DateTimeOffset FrozenAtUtc, string FrozenBy, OnboardingPacketContentDto Content, string ContentHash, string HashAlgorithm);
-```
-
-## OnboardingReviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingReviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L85).
-
-```csharp
-public sealed record OnboardingReviewDto(string ReviewId, int DataRevision, string ReviewerId, string Decision, string Notes, IReadOnlyList<string> EvidenceIds, DateTimeOffset RecordedAtUtc);
-```
-
-## OnboardingScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L4).
-
-Fixed scope of a bounded, read-only accounting onboarding exercise.
-
-```csharp
-public sealed record OnboardingScopeDto(string TenantId, string CompanyId, string EntityId, string FundProfileId, Guid LedgerBookId, IReadOnlyList<string> AccountIds, DateOnly StartDate, DateOnly EndDate);
-```
-
-## OnboardingSourceCaptureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingSourceCaptureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L56).
-
-Trusted read-only adapter result; this model is never an HTTP write payload.
-
-```csharp
-public sealed record OnboardingSourceCaptureDto(IReadOnlyList<OnboardingSourceSnapshotDto> Snapshots, IReadOnlyList<OnboardingObservationDto> Observations, IReadOnlyList<OnboardingMissingSourceDto> MissingSources, CloseReadinessProjectionDto? CloseReadiness);
 ```

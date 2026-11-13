@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationTradingBrokerageState
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingBrokerageState</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:415](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L415).
+
+Brokerage connection summary embedded inside the trading payload.
+
+```csharp
+public sealed record WorkstationTradingBrokerageState(string Provider, string Account, string Environment, string Connection, string LastHeartbeat, string OrderIngress, string FillFeed, IReadOnlyList<string> Notes);
+```
+
+## WorkstationTradingFillRow
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingFillRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:368](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L368).
+
+A single fill row shown in the trading workstation fills table.
+
+```csharp
+public sealed record WorkstationTradingFillRow(string FillId, string OrderId, string Symbol, string Side, string Quantity, string Price, string Venue, string Timestamp);
+```
+
+## WorkstationTradingOrderRow
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingOrderRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:355](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L355).
+
+A single open-order row shown in the trading workstation orders table.
+
+```csharp
+public sealed record WorkstationTradingOrderRow(string OrderId, string Symbol, string Side, string Type, string Quantity, string LimitPrice, string Status, string SubmittedAt);
+```
+
+## WorkstationTradingPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:430](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L430).
+
+Typed payload returned by GET /api/workstation/trading. Readiness is TradingOperatorReadinessDto; typed at the endpoint layer to avoid a circular project reference.
+
+```csharp
+public sealed record WorkstationTradingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationTradingPositionRow> Positions, IReadOnlyList<WorkstationTradingOrderRow> OpenOrders, IReadOnlyList<WorkstationTradingFillRow> Fills, WorkstationTradingRiskState Risk, WorkstationTradingBrokerageState Brokerage, TradingOperatorReadinessDto Readiness, IReadOnlyList<WorkstationModeComparisonGroup> Comparisons, WorkstationRunDrillInLinks? DrillIn);
+```
+
 ## WorkstationTradingPositionRow
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTradingPositionRow</code>. Kind: `record`.

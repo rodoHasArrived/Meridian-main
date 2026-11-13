@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EquityCurvePoint
+
+Qualified name: <code>Meridian.Contracts.Workstation.EquityCurvePoint</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:876](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L876).
+
+A single point on the portfolio equity curve.
+
+```csharp
+public sealed record EquityCurvePoint(DateOnly Date, decimal TotalEquity, decimal Cash, decimal DailyReturn, decimal DrawdownFromPeak, decimal DrawdownFromPeakPercent);
+```
+
+## EquityCurveSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.EquityCurveSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:886](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L886).
+
+Full equity curve with summary drawdown statistics for one run. Downside-free Sortino retains positive infinity as the named JSON string.
+
+```csharp
+public sealed record EquityCurveSummary(string RunId, decimal InitialEquity, decimal FinalEquity, decimal MaxDrawdown, decimal MaxDrawdownPercent, int MaxDrawdownRecoveryDays, double SharpeRatio, [property : JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double SortinoRatio, IReadOnlyList<EquityCurvePoint> Points);
+```
+
+## EvidenceArtifactCaptureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceArtifactCaptureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L41).
+
+```csharp
+public sealed record EvidenceArtifactCaptureDto(string CaptureChannel, string? SourceSystem, DateTimeOffset? ReceivedAt, string? ReceivedBy, string? SourceReference, string? ReceiptHash, EvidenceDocumentIntakeChannelDto? ChannelKind = null);
+```
+
+## EvidenceArtifactExtractionFieldDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceArtifactExtractionFieldDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L50).
+
+```csharp
+public sealed record EvidenceArtifactExtractionFieldDto(string FieldName, string? ExtractedValue, string? ExpectedValue, decimal? ConfidenceScore, string ReviewState, EvidenceStatusDto ValidationStatus, string? ValidationMessage, string? LinkedRecordKind, string? LinkedRecordId);
+```
+
 ## EvidenceArtifactRefDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceArtifactRefDto</code>. Kind: `record`.
@@ -710,60 +754,4 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:316](../../.
 
 ```csharp
 public sealed record EvidenceValidationIssueDto(string Code, EvidenceValidationSeverityDto Severity, string Message, string? EvidenceId = null, string? EvidenceKind = null, string? SourceSystem = null, string? RelatedWorkItemId = null);
-```
-
-## EvidenceValidationSeverityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceValidationSeverityDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:309](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L309).
-
-```csharp
-public enum EvidenceValidationSeverityDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:311](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L311) |  |
-| <code>Warning = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:312](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L312) |  |
-| <code>Critical = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:313](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L313) |  |
-
-## EvidenceVaultArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:423](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L423).
-
-```csharp
-public sealed record EvidenceVaultArtifactDto(string ArtifactId, string Kind, string RelativePath, string ContentHashSha256, long SizeBytes, DateTimeOffset RetainedAt, string? SourcePath, string? SourceRoute, string? CanonicalSubjectKind, string? CanonicalSubjectId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceArtifactCaptureDto? Capture { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:435](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L435) |  |
-| <code>public IReadOnlyList&lt;EvidenceArtifactExtractionFieldDto&gt; ExtractedFields { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:436](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L436) |  |
-| <code>public EvidenceDocumentDto? Document { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:437](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L437) |  |
-
-## EvidenceVaultDocumentEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultDocumentEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:530](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L530).
-
-```csharp
-public sealed record EvidenceVaultDocumentEntryDto(EvidenceDocumentDto Document, string VaultId, string SubjectKind, string SubjectId, string ManifestRoute, DateTimeOffset RetainedAt, string StorageKind, int OpenRequestCount, IReadOnlyList<EvidenceSupportRequestDto> SupportRequests);
-```
-
-## EvidenceVaultDocumentQueryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceVaultDocumentQueryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:517](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L517).
-
-```csharp
-public sealed record EvidenceVaultDocumentQueryDto(EvidenceDocumentClassificationDto? Classification = null, EvidenceDocumentIntakeChannelDto? ChannelKind = null, EvidenceExtractionStatusDto? ExtractionStatus = null, EvidenceDocumentReviewStatusDto? ReviewStatus = null, EvidenceDocumentLinkKindDto? LinkKind = null, string? ObjectId = null, string? SubjectKind = null, string? SubjectId = null, string? TenantId = null, string? Scope = null, int? MaxResults = null);
 ```

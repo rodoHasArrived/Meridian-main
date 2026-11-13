@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportTemplateAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportTemplateAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1709](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1709).
+
+```csharp
+public sealed record ReportTemplateAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportTemplateLifecycleStatusDto FromStatus, ReportTemplateLifecycleStatusDto ToStatus, string? Note = null);
+```
+
+## ReportTemplateDecisionRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportTemplateDecisionRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1752](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1752).
+
+```csharp
+public sealed record ReportTemplateDecisionRequestDto(string Rationale, string? ApprovalReference = null);
+```
+
+## ReportTemplateDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportTemplateDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1680](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1680).
+
+```csharp
+public sealed record ReportTemplateDefinitionDto(VersionedReportTemplateIdDto TemplateId, string DisplayName, IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters, IReadOnlyList<string>? Sections = null, IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null, ReportAccessPolicyDto? AccessPolicy = null);
+```
+
+## ReportTemplateDraftRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportTemplateDraftRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1741](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1741).
+
+```csharp
+public sealed record ReportTemplateDraftRequestDto(string Name, string DisplayName, IReadOnlyList<string> Sections, IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters, string? Family = null, int? BasedOnVersion = null, string? Rationale = null, IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null, ReportAccessPolicyDto? AccessPolicy = null);
+```
+
 ## ReportTemplateGovernanceRecordDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportTemplateGovernanceRecordDto</code>. Kind: `record`.
@@ -570,50 +610,4 @@ Request to move a break into active review and assign an operator.
 
 ```csharp
 public sealed record ReviewReconciliationBreakRequest(string BreakId, string AssignedTo, string ReviewedBy, string? ReviewNote = null, string? Team = null);
-```
-
-## RevokePreparerAttestationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.RevokePreparerAttestationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L43).
-
-```csharp
-public sealed record RevokePreparerAttestationRequestDto(Guid CommandId, Guid ReceiptId, long ExpectedReceiptRevision, string Reason, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
-```
-
-## RunAttributionSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunAttributionSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:927](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L927).
-
-Complete attribution breakdown for one run.
-
-```csharp
-public sealed record RunAttributionSummary(string RunId, StrategyRunMode Mode, decimal TotalRealizedPnl, decimal TotalUnrealizedPnl, decimal TotalCommissions, IReadOnlyList<SymbolAttributionEntry> BySymbol);
-```
-
-## RunCashFlowSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunCashFlowSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:974](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L974).
-
-Cash-flow projection summary for a strategy run. Includes both the raw historical entries and a time-bucketed cash ladder computed by the F# CashLadder.build module.
-
-```csharp
-public sealed record RunCashFlowSummary(string RunId, DateTimeOffset AsOf, string Currency, int TotalEntries, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, IReadOnlyList<CashFlowEntryDto> Entries, RunCashLadder Ladder);
-```
-
-## RunCashLadder
-
-Qualified name: <code>Meridian.Contracts.Workstation.RunCashLadder</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:960](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L960).
-
-Time-bucketed forward view of projected cash flows for one run.
-
-```csharp
-public sealed record RunCashLadder(DateTimeOffset AsOf, string Currency, int BucketDays, decimal TotalProjectedInflows, decimal TotalProjectedOutflows, decimal NetPosition, IReadOnlyList<CashLadderBucketDto> Buckets);
 ```

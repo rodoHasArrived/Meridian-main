@@ -2,11 +2,23 @@
 
 # `ledger-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 426. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 430. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_CloseDeadlineRuleDto["CloseDeadlineRuleDto"] {
+        +CloseDeadlineAdjustmentDto Adjustment
+        +CloseDeadlineAnchorDto Anchor
+        +CloseDeadlineDayCountDto DayCount
+        +int OffsetDays
+        +string TaskId
+    }
+    class Meridian_Contracts_Ledger_CloseDependencyDto["CloseDependencyDto"] {
+        +string DependencyId
+        +string DependsOnTaskId
+        +string Reason
+    }
     class Meridian_Contracts_Ledger_CloseEvidenceReviewDto["CloseEvidenceReviewDto"] {
         +IReadOnlyList~string~ EvidenceLinks
         +string IssueCode
@@ -531,6 +543,11 @@ classDiagram
         +string RulesJson
         +Guid? SourceEventId
     }
+    class Meridian_Contracts_Ledger_CreateCanonicalAmortizationDraftRequestDto["CreateCanonicalAmortizationDraftRequestDto"] {
+        +string Description
+        +string ExpectedPreparationFingerprint
+        +PrepareCanonicalAmortizationRequestDto Request
+    }
     class Meridian_Contracts_Ledger_CreateFactorPaydownDraftRequestDto["CreateFactorPaydownDraftRequestDto"] {
         +string Description
         +string ExpectedPreparationFingerprint
@@ -690,20 +707,6 @@ classDiagram
         +string? CommitmentId
         +Guid OperationId
     }
-    class Meridian_Contracts_Ledger_GeneratedPostingLineDto["GeneratedPostingLineDto"] {
-        +string AccountPath
-        +decimal Amount
-        +string AmountFormulaId
-        +string Currency
-        +string? Description
-        +LedgerDimensionSetDto? Dimensions
-        +string LineId
-        +AccountingTemplateLineSideDto Side
-    }
-    class Meridian_Contracts_Ledger_IAccountingActionAuditStore["IAccountingActionAuditStore"] {
-    }
-    class Meridian_Contracts_Ledger_IAccountingAuditChainVerifier["IAccountingAuditChainVerifier"] {
-    }
     Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_ClosePlanPreparationLineageDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
@@ -718,16 +721,19 @@ classDiagram
     Meridian_Contracts_Ledger_ClosePlanTemplateDto --> Meridian_Contracts_Ledger_ClosePlanTemplateTaskDto
     Meridian_Contracts_Ledger_ClosePlanTemplateDto --> Meridian_Contracts_Ledger_ClosePreparationCalendarDto
     Meridian_Contracts_Ledger_ClosePlanTemplateDto --> Meridian_Contracts_Ledger_ClosePreparationHistoryDto
+    Meridian_Contracts_Ledger_ClosePlanTemplateTaskDto --> Meridian_Contracts_Ledger_CloseDeadlineRuleDto
     Meridian_Contracts_Ledger_ClosePlanTemplateTaskDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
     Meridian_Contracts_Ledger_ClosePostingGateDto --> Meridian_Contracts_Ledger_ClosePostingBalanceDto
     Meridian_Contracts_Ledger_ClosePostingGateDto --> Meridian_Contracts_Ledger_ClosePostingGateStateDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationCalendarDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationIssueDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationTaskDto
+    Meridian_Contracts_Ledger_ClosePreparationTaskDto --> Meridian_Contracts_Ledger_CloseDeadlineRuleDto
     Meridian_Contracts_Ledger_ClosePreparationTaskDto --> Meridian_Contracts_Ledger_CloseTaskDependencyConfigurationDto
     Meridian_Contracts_Ledger_ClosePreparationTaskDto --> Meridian_Contracts_Ledger_CloseTaskSignOffRequirementConfigurationDto
     Meridian_Contracts_Ledger_CloseTaskConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskDependencyConfigurationDto
     Meridian_Contracts_Ledger_CloseTaskConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskSignOffRequirementConfigurationDto
+    Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseDependencyDto
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseSignOffDto
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseSignOffRequirementDto
     Meridian_Contracts_Ledger_CloseTaskDto --> Meridian_Contracts_Ledger_CloseTaskStatusDto

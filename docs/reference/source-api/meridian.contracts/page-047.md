@@ -6,6 +6,67 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcValuationInputDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationInputDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L48).
+
+An observation a valuation used, with where it came from and when it was observed.
+
+```csharp
+public sealed record OtcValuationInputDto(string Kind, string Source, DateTimeOffset AsOf, string? Reference, DataProvenance Provenance);
+```
+
+## OtcValuationStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcValuationStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L28).
+
+Whether a contract could be valued.
+
+```csharp
+public enum OtcValuationStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Valued</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L30) |  |
+| <code>Unvalued</code> | [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L31) |  |
+
+## PayloadCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:216](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L216).
+
+Event types whose economics are carried only by the versioned JSON payload.
+
+```csharp
+public sealed record PayloadCorporateActionTerms(string EventType, JsonElement? Payload) : CorporateActionTerms(EventType);
+```
+
+## PositionCorporateActionAdjustment
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L4).
+
+Result of applying corporate actions to a live open position.
+
+```csharp
+public record PositionCorporateActionAdjustment(string Ticker, decimal OriginalQuantity, decimal AdjustedQuantity, decimal OriginalCostBasis, decimal AdjustedCostBasis, int ActionCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AdjustedTotalCostBasis { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L17) | Exact remaining carrying basis, when supported. Null identifies a legacy result supplying only an average unit quote. |
+
 ## PostAttestedCorporateActionCashDividendRequestDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto</code>. Kind: `record`.
@@ -808,71 +869,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/ScheduleTermsWriteRules.Gaps.cs:1
 ```csharp
 public static partial class ScheduleTermsWriteRules
 ```
-
-## SecurityAccountingDisposition
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1494](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1494).
-
-Whether, and how, an asset class takes part in the Security Master accounting slice.
-
-```csharp
-public enum SecurityAccountingDisposition
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1497](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1497) | No disposition is declared: a missing mapping, not a decision. |
-| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1500](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1500) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
-| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1503](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1503) | The class is intentionally outside the slice and must not reach any posting by fallback. |
-
-## SecurityAccountingInstrumentClasses
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1518](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1518).
-
-The closed vocabulary of accounting-slice instrument classes a Security Master record can post as. These are the values the Security Master accounting event slice gates on; keeping them here stops producers and that gate drifting on spelling.
-
-```csharp
-public static class SecurityAccountingInstrumentClasses
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1521](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1521) | Coupon-bearing and discount fixed income booked against par. |
-| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1524](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1524) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
-
-## SecurityAliasDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L100).
-
-```csharp
-public sealed record SecurityAliasDto(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string? Reason, string CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, bool IsEnabled);
-```
-
-## SecurityAliasHistoryConflictException
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:119](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L119).
-
-Raised when an alias write cannot be recorded as a revision of that alias&#x27;s history: the alias ID is already recorded against a different security (an alias ID stays bound to the security it was first recorded against), or the store could not confirm that the write was persisted.
-
-```csharp
-public sealed class SecurityAliasHistoryConflictException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityAliasHistoryConflictException(Guid aliasId) : base($&quot;Alias &#x27;{aliasId}&#x27; conflicts with its recorded history. &quot; + &quot;An alias ID stays bound to the security it was first recorded against; corrections append an alias revision, and re-pointing requires a new alias ID.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L121) |  |
-| <code>public Guid AliasId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:129](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L129) |  |

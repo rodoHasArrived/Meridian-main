@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalFundEventCommandCenterDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventCommandCenterDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:345](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L345).
+
+```csharp
+public sealed record PrivateCapitalFundEventCommandCenterDto(string FundEventId, string FundEventType, string FundProfileId, Guid? LedgerBookId, DateTimeOffset ProjectedAtUtc, string CommandCenterRoute, PrivateCapitalFundEventLedgerReadinessDto Readiness, string ReadinessLabel, string ReadinessReason, string NextAction, string? NextActionRoute, int ReadyLaneCount, int BlockedLaneCount, PrivateCapitalFundEventLedgerRecordDto FundEventRecord, IReadOnlyList<PrivateCapitalFundEventCommandCenterLaneDto> Lanes, IReadOnlyList<PrivateCapitalFundEventCommandCenterSupportPackageDto> SupportPackages, IReadOnlyList<string> LiveCapabilities, IReadOnlyList<string> PlannedCapabilities);
+```
+
+## PrivateCapitalFundEventCommandCenterLaneDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventCommandCenterLaneDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:317](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L317).
+
+```csharp
+public sealed record PrivateCapitalFundEventCommandCenterLaneDto(string LaneId, string Label, string Status, bool IsReady, string Summary, string? Route, int EvidenceLinkCount, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:328](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L328) |  |
+
+## PrivateCapitalFundEventCommandCenterSupportPackageDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventCommandCenterSupportPackageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:332](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L332).
+
+```csharp
+public sealed record PrivateCapitalFundEventCommandCenterSupportPackageDto(string PackageId, string Label, string Status, string? Route, int EvidenceLinkCount, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:341](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L341) |  |
+
+## PrivateCapitalFundEventDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationPrivateCapitalDtos.cs#L8).
+
+```csharp
+public sealed record PrivateCapitalFundEventDto(string FundEventId, string FundEventType, ManualJournalEntryTypeDto EntryType, ManualJournalEntryStatusDto JournalStatus, Guid JournalEntryId, DateOnly EffectiveDate, string CapitalAccountId, string? InvestorId, string Currency, decimal GrossAmount, decimal NetCapitalActivity, string Memo, string? PaymentIntentId, string? SettlementReference, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues, DateTimeOffset UpdatedAtUtc, bool IsPosted = false, string? ApprovalId = null);
+```
+
 ## PrivateCapitalFundEventLedgerReadinessDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.PrivateCapitalFundEventLedgerReadinessDto</code>. Kind: `enum`.
@@ -653,90 +705,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Dedicated</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:92](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L92) |  |
 | <code>External</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:93](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L93) |  |
-
-## LifecycleOwnedProcessDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleOwnedProcessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:19](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L19).
-
-```csharp
-public sealed record LifecycleOwnedProcessDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required int ProcessId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:21](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L21) |  |
-| <code>public required string ExecutablePath { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:22](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L22) |  |
-| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs:23](../../../../src/Meridian.Contracts/Lifecycle/LifecycleSupervisorDtos.cs#L23) |  |
-
-## LifecycleSessionReceiptDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleSessionReceiptDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:95](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L95).
-
-```csharp
-public sealed record LifecycleSessionReceiptDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string SessionId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:97](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L97) |  |
-| <code>public required DateTimeOffset StartedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:98](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L98) |  |
-| <code>public required DateTimeOffset CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:99](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L99) |  |
-| <code>public required LifecycleShutdownOutcome Outcome { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:100](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L100) |  |
-| <code>public LifecycleShutdownReceiptDto? HostReceipt { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:101](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L101) |  |
-| <code>public LifecycleShutdownOutcome? DatabaseOutcome { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:102](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L102) |  |
-| <code>public required bool HostForced { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:103](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L103) |  |
-| <code>public required bool DatabaseForced { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:104](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L104) |  |
-| <code>public string? Message { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:105](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L105) |  |
-
-## LifecycleShutdownAcceptedDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownAcceptedDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:41](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L41).
-
-```csharp
-public sealed record LifecycleShutdownAcceptedDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required bool Accepted { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:43](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L43) |  |
-| <code>public required string OperationId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:44](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L44) |  |
-| <code>public required string OperationUri { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:45](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L45) |  |
-| <code>public required RuntimeLifecycleState State { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:46](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L46) |  |
-| <code>public required DateTimeOffset RequestedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:47](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L47) |  |
-
-## LifecycleShutdownOperationDto
-
-Qualified name: <code>Meridian.Contracts.Lifecycle.LifecycleShutdownOperationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:59](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L59).
-
-```csharp
-public sealed record LifecycleShutdownOperationDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string OperationId { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:61](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L61) |  |
-| <code>public required LifecycleShutdownReason Reason { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:62](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L62) |  |
-| <code>public string? Detail { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:63](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L63) |  |
-| <code>public string? RequestedBy { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:64](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L64) |  |
-| <code>public required LifecycleShutdownStage CurrentStage { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:65](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L65) |  |
-| <code>public required LifecycleShutdownOutcome Outcome { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:66](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L66) |  |
-| <code>public required DateTimeOffset RequestedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:67](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L67) |  |
-| <code>public required DateTimeOffset DeadlineUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:68](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L68) |  |
-| <code>public DateTimeOffset? CompletedAtUtc { get; init; }</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:69](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L69) |  |
-| <code>public IReadOnlyList&lt;LifecycleShutdownStageDto&gt; Stages { get; init; } = [];</code> | [src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs:70](../../../../src/Meridian.Contracts/Lifecycle/LifecycleDtos.cs#L70) |  |
