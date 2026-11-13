@@ -57,8 +57,9 @@ internal static partial class SecurityMasterMapping
     /// The schema-bound view of a submitted or stored terms document for one asset class: each
     /// read verifies, against <see cref="SecurityAssetTermsSchema"/>, that the key is declared
     /// and that its declared type matches the type the codec reads it as. Requiredness stays the
-    /// codec's call — the tolerated absence defaults are ledgered in the S3-B sweep — so this
-    /// binds exactly the facts whose drift would corrupt a decode.
+    /// codec's call — the tolerated absence defaults are declared on the schema fields
+    /// (<see cref="SecurityAssetTermField.AbsentReadDefault"/>) — so this binds exactly the facts
+    /// whose drift would corrupt a decode.
     /// <para>A nested object (<see cref="RequiredObject"/>, <see cref="OptionalObject"/>) is read
     /// through the same view, bound to the inner shape the schema registers for its path
     /// (<see cref="SecurityAssetTermsSchema.ElementFields"/>). The view never hands out the

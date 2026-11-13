@@ -175,6 +175,93 @@ public sealed class SecurityMasterRequiredReadOrderTests
         record.Kind.IsOtherSecurity.Should().BeTrue("an envelope-less CustomAsset row degrades to OtherSecurity on read");
     }
 
+    // ── Ratchets: the schema declares the order ─────────────────────────────────────────────────
+
+    [Fact]
+    public void SchemaDeclaredReadOrder_MatchesTheHistoricalTable()
+    {
+        foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses)
+        {
+            var declared = SecurityAssetTermsSchema.ReadRequiredScalarFields(assetClass)
+                .Select(static field => field.Key)
+                .ToArray();
+
+            if (ExpectedOrder.TryGetValue(assetClass, out var expected))
+            {
+                declared.Should().Equal(expected.Keys,
+                    $"the schema's declaration order is {assetClass}'s read refusal order, which replay depends on");
+                SecurityAssetTermsSchema.ReadsProfileResolvedTerms(assetClass).Should().Be(
+                    expected.View == ReadView.ProfileResolved,
+                    $"{assetClass} must read its required keys from the same document it always has");
+            }
+            else
+            {
+                declared.Should().BeEmpty($"{assetClass} has never refused a read for a missing scalar key");
+            }
+        }
+    }
+
+    [Fact]
+    public void ReadRequiredScalarFields_UseOnlyTypesTheCodecHasRequiredReadersFor()
+    {
+        foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses)
+        {
+            foreach (var field in SecurityAssetTermsSchema.ReadRequiredScalarFields(assetClass))
+            {
+                field.Type.Should().BeOneOf(
+                    [
+                        SecurityAssetTermFieldType.String,
+                        SecurityAssetTermFieldType.Decimal,
+                        SecurityAssetTermFieldType.Integer,
+                        SecurityAssetTermFieldType.Date,
+                        SecurityAssetTermFieldType.Guid
+                    ],
+                    $"{assetClass}.{field.Key} refuses absence on read, so the codec must have a required reader for its type");
+            }
+        }
+    }
+
+    [Fact]
+    public void RequiredFieldIntroducedAboveVersionOne_DeclaresAnAbsenceDefault()
+    {
+        // Rows stamped before the introducing version never carry the key, so a required field
+        // added later that refused absence would make every older row unreadable.
+        var offenders = SecurityAssetTermsSchema.AssetClasses
+            .SelectMany(static assetClass => SecurityAssetTermsSchema.Fields(assetClass)
+                .Where(static field => field.Required && field.SinceTermsVersion > 1 && field.AbsentReadDefault is null)
+                .Select(field => $"{assetClass}.{field.Key} (since v{field.SinceTermsVersion})"))
+            .ToArray();
+
+        offenders.Should().BeEmpty("a Req(...).Since(n > 1) field must declare ReadsAbsentAs(...)");
+    }
+
+    [Fact]
+    public void AbsentReadDefaults_AreExactlyTheAbsorbedFields()
+    {
+        var declared = SecurityAssetTermsSchema.AssetClasses
+            .SelectMany(static assetClass => SecurityAssetTermsSchema.Fields(assetClass)
+                .Where(static field => field.AbsentReadDefault is not null)
+                .Select(field => (assetClass, field.Key)))
+            .ToArray();
+
+        declared.Should().BeEquivalentTo(
+            ReadsAbsentRequiredFields.Concat([("CustomAsset", "customProfileId"), ("CustomAsset", "profileVersion")]),
+            "every declared absence default must be one a read is shown to absorb, and vice versa");
+        declared.Should().OnlyContain(
+            entry => SecurityAssetTermsSchema.Field(entry.assetClass, entry.Key)!.Required,
+            "an absence default only means something on a required field");
+    }
+
+    [Fact]
+    public void ReadsProfileResolvedTerms_AgreesWithTheGeneratedCodecBindings()
+    {
+        foreach (var binding in SecurityAssetTermsCodecBindings.Classes)
+        {
+            SecurityAssetTermsSchema.ReadsProfileResolvedTerms(binding.AssetClass).Should().Be(binding.ReadsResolvedTerms,
+                $"the generated {binding.AssetClass} decode and the required-read check must read the same document");
+        }
+    }
+
     // ── Fixtures ────────────────────────────────────────────────────────────────────────────────
 
     private static IEnumerable<(string Name, JsonElement Terms)> Shapes(string assetClass, ReadView view, string[] stripped)

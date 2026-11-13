@@ -156,36 +156,22 @@ public sealed partial class SecurityAssetTermsSchemaDecodeSweepTests
         return data;
     }
 
-    /// <summary>
-    /// Required fields whose ABSENCE the codec absorbs with a documented default instead of
-    /// refusing: the schema's Required describes the written form (the key is always present in a
-    /// stored row), and for these the writer supplies the default when the submission omits it.
-    /// Every entry is a divergence the sweep makes measurable; tightening any of them to a
-    /// refusal is an S3-D decision, not a silent change.
-    /// </summary>
-    private static readonly IReadOnlyDictionary<string, string> ToleratedAbsenceDefaults =
-        new Dictionary<string, string>(StringComparer.Ordinal)
-        {
-            ["Bond.isCallable"] = "false",
-            ["Bond.subclass"] = "absent-defaults-to-open-subclass",
-            ["Deposit.isCallable"] = "false",
-            ["MoneyMarketFund.sweepEligible"] = "false",
-            ["MoneyMarketFund.liquidityFeeEligible"] = "false",
-            ["CommercialPaper.isAssetBacked"] = "false",
-            ["Future.isRollTarget"] = "false",
-            ["Option.isAdjusted"] = "false"
-        };
-
     [Theory]
     [MemberData(nameof(RequiredCases))]
-    public void MissingRequiredField_RefusesOnWrite_OrFillsItsLedgeredDefault(string assetClass, string key)
+    public void MissingRequiredField_RefusesOnWrite_OrFillsItsDeclaredDefault(string assetClass, string key)
     {
+        // Required fields whose ABSENCE the codec absorbs with a documented default instead of
+        // refusing are declared in the schema (SecurityAssetTermField.AbsentReadDefault): Required
+        // describes the written form (the key is always present in a stored row), and for these the
+        // writer supplies the default when the submission omits it. Tightening any of them to a
+        // refusal is a schema change, not a silent one.
+        var field = SecurityAssetTermsSchema.Fields(assetClass).Single(f => f.Key == key);
         var terms = MutableTwin(assetClass);
         terms.Remove(key);
 
-        if (ToleratedAbsenceDefaults.ContainsKey($"{assetClass}.{key}"))
+        if (field.AbsentReadDefault is not null)
         {
-            // The ledgered tolerance: the write succeeds and the written form still carries the
+            // The declared tolerance: the write succeeds and the written form still carries the
             // key (with its default), so Required stays true of every stored row.
             var written = WriteBytes(assetClass, terms);
             JsonDocument.Parse(written).RootElement.TryGetProperty(key, out _).Should().BeTrue(
@@ -194,7 +180,7 @@ public sealed partial class SecurityAssetTermsSchemaDecodeSweepTests
         }
 
         var decode = () => WriteDecode(assetClass, terms);
-        decode.Should().Throw<Exception>($"{assetClass}.{key} is declared required and has no ledgered absence default")
+        decode.Should().Throw<Exception>($"{assetClass}.{key} is declared required and declares no absence default")
             .Which.Message.Should().ContainEquivalentOf(key,
                 "the refusal must name the missing field so the writer can fix the payload");
     }

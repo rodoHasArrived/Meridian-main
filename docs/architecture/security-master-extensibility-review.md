@@ -852,6 +852,37 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### Terms storage consolidation slice A — required-field read order comes from the schema — 2026-11-13
+
+The read path's historical refusal order for required flat fields (which key a reconstruction
+names first when a stored row lacks several) was a hand-written 30-case switch in
+`SecurityMasterMapping.EnsureLegacyRequiredReadOrder`, a second statement of facts the schema
+already held. The schema now states it:
+
+- `SecurityAssetTermField.AbsentReadDefault` (declared with `ReadsAbsentAs(...)`) names what a
+  read takes in place of a required field a stored row omits, and the derived
+  `RefusesAbsenceOnRead` separates the tolerant required fields from the refusing ones. The
+  flagged fields are Option `isAdjusted`, Future `isRollTarget`, Bond `isCallable` and `subclass`
+  (reads as `Corporate`), Deposit `isCallable`, MoneyMarketFund `sweepEligible` and
+  `liquidityFeeEligible`, CommercialPaper `isAssetBacked`, and CustomAsset `customProfileId`
+  (absence salvages the row as OtherSecurity) and `profileVersion` (reads as 1). This replaces
+  the S3-B sweep's `ToleratedAbsenceDefaults` ledger; the sweep now reads the schema flag.
+- `SecurityAssetTermsSchema.ReadRequiredScalarFields(assetClass)` returns the refusing scalar
+  fields in declaration order, and `FieldsByAssetClass` documents that its declaration order is
+  the refusal order. `ReadsProfileResolvedTerms(assetClass)` names the five classes that read
+  from the profile-resolved document (StructuredCredit, PrivateFundInterest,
+  PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee); it is deliberately not
+  `SupportsProfileBackedTerms`, which would move OtherSecurity to the other document.
+- The mapping switch is replaced by one loop over those fields through the schema-bound
+  `Required*` readers; the call site in `ToSecurityKind` is unchanged.
+
+`SecurityMasterRequiredReadOrderTests` was committed first and run green against the old
+switch: its expected table is a literal copy of that switch, not derived from the schema, so a
+reordered declaration fails there. It also holds the ratchets — a `Req(...).Since(n > 1)` field
+must declare an absence default, every absence default is one a read is shown to absorb, and
+`ReadsProfileResolvedTerms` agrees with `SecurityClassCodecBinding.ReadsResolvedTerms`. Behavior
+is unchanged.
+
 ### ADR-027 stage-3 — the flat codec is generated from a binding table (cohort 1) — 2026-11-11
 
 Stage 3 allowed the codec arms to be generated or fully asserted, and until now they were
@@ -1311,7 +1342,8 @@ The sweeps also pinned the decode arm's real contract where it diverges from a n
 the schema, each divergence now a committed ledger instead of folklore: vocabulary enforcement
 is two-sided (a write may only assert declared values whatever the field's flags; the
 verbatim/escape flags govern reads of odd stored values); eight Required booleans and Bond's
-`subclass` absorb absence with written defaults (`ToleratedAbsenceDefaults` — Required remains
+`subclass` absorb absence with written defaults (`ToleratedAbsenceDefaults`, since 2026-11-13
+declared on the schema fields as `AbsentReadDefault` — Required remains
 true of every stored row); and StructuredCredit's legacy `factorSchedule` pointer reads a
 mistyped submission as unset, written null (`ToleratedMistypes`). Tightening any ledgered
 tolerance is an explicit S3-D decision.
