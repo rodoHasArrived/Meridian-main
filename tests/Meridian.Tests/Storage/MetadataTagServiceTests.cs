@@ -223,9 +223,8 @@ public sealed partial class MetadataTagServiceTests : IDisposable
     public void SetTag_WhenPersistenceWriteFails_Throws()
     {
         var brokenPath = Path.Combine(_tempDir, "broken-store.json");
-        File.WriteAllText(brokenPath, "{}");
-
         var service = new MetadataTagService(brokenPath);
+        service.SaveAsync().GetAwaiter().GetResult();
         File.Delete(brokenPath);
         Directory.CreateDirectory(brokenPath);
 
