@@ -105,7 +105,11 @@ public static class BrokerageServiceRegistration
                 escalationQueue: sp.GetService<RiskEscalationQueueService>(),
                 // Every brokerage-backed OMS must retain dispatch identities before routing,
                 // including a broker's sandbox. In-process paper execution needs no broker recovery file.
-                recoveryStore: gateway is IBrokerageGateway ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null);
+                recoveryStore: gateway is IBrokerageGateway ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null,
+                sessionPolicy: sp.GetService<IOrderSessionPolicy>(),
+                journal: sp.GetService<ExecutionJournal>(),
+                marketReferences: sp.GetService<IOrderMarketReferenceSource>(),
+                instrumentCoverage: sp.GetService<IOrderInstrumentCoverageSource>());
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();

@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 552. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 554. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcContractsJsonContext["OtcContractsJsonContext"] {
+    }
     class Meridian_Contracts_SecurityMaster_OtcCreditEventData["OtcCreditEventData"] {
         +OtcCreditEventKind CreditEvent
         +string DeterminationReference
@@ -456,11 +458,6 @@ classDiagram
         +Guid AliasId
     }
     class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetClassCatalog["SecurityAssetClassCatalog"] {
-        +IReadOnlyList~string~ AssetClasses
-        +IReadOnlyList~string~ AssetOperationsCapableAssetClasses
-        +IReadOnlyList~string~ IdentifierOnlyImportableAssetClasses
     }
     Meridian_Contracts_SecurityMaster_OtcCreditEventData --> Meridian_Contracts_SecurityMaster_OtcCreditEventKind
     Meridian_Contracts_SecurityMaster_OtcCreditSupportSideDto --> Meridian_Contracts_SecurityMaster_OtcMovementParty

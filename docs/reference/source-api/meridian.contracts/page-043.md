@@ -184,12 +184,12 @@ public sealed record SecurityCashFlowSourceDto(Guid SecurityId, StructuredCashFl
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L56).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L66).
 
 The bindings of one asset class.
 
 ```csharp
-public sealed record SecurityClassCodecBinding(string AssetClass, bool ReadsResolvedTerms, IReadOnlyList<SecurityTermBinding> Members);
+public sealed record SecurityClassCodecBinding(string AssetClass, bool ReadsResolvedTerms, IReadOnlyList<SecurityTermBinding> Members, bool VersionedSchedules = false);
 ```
 
 ## SecurityClosePriceApprovalDto

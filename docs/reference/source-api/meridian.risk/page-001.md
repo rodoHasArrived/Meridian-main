@@ -15,7 +15,7 @@ Source: [src/Meridian.Risk/CompositeRiskValidator.cs:28](../../../../src/Meridia
 Composite risk validator that runs multiple risk rules in sequence, mapping each rule&#x27;s severity to a real outcome: RiskRuleSeverity.Info / RiskRuleSeverity.Warning — the breach becomes a warning flag on the result and evaluation continues. RiskRuleSeverity.Error — the order is rejected. RiskRuleSeverity.Escalate (or a rule returning RiskValidationResult.Escalated) — the order is parked in the governed approval queue instead of routed; a valid one-shot approval token on the order releases it past the escalation. RiskRuleSeverity.Critical — the order is rejected and the execution circuit breaker trips, halting all further routing until an operator closes it; when an ICircuitBreakerTripHandler is composed, the trip is followed by the kill-switch cancel-all sweep of the open book, mirroring the operator endpoint&#x27;s activation. Rules evaluate by priority; warning flags accumulate across rules and are carried on the final result whether approved or not.
 
 ```csharp
-public sealed class CompositeRiskValidator : IRiskValidator
+public sealed class CompositeRiskValidator : IRiskValidator, IRiskPreviewValidator
 ```
 
 Declared public members:
@@ -24,8 +24,9 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static readonly TimeSpan DefaultPerRuleTimeout = TimeSpan.FromSeconds(5);</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:46](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L46) | Wall-clock ceiling on a single rule. A rule that never completes would otherwise hold the pre-trade path open indefinitely, which is a trading outage rather than a risk decision. |
 | <code>public CompositeRiskValidator(IEnumerable&lt;IRiskRule&gt; rules, ILogger&lt;CompositeRiskValidator&gt; logger, IRiskCircuitBreakerControl? operatorControls = null, IRiskEscalationQueue? escalationQueue = null, TimeSpan? perRuleTimeout = null, ICircuitBreakerTripHandler? tripHandler = null);</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:50](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L50) |  |
-| <code>public async Task&lt;RiskValidationResult&gt; ValidateOrderAsync(OrderRequest request, CancellationToken ct = default);</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:96](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L96) |  |
-| <code>public const string EvaluationFailedCode = &quot;RISK_RULE_EVALUATION_FAILED&quot;;</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:450](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L450) | Stable code recorded when a rule itself fails, rather than reporting a breach. |
+| <code>public Task&lt;RiskValidationResult&gt; ValidateOrderAsync(OrderRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:96](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L96) |  |
+| <code>public Task&lt;RiskValidationResult&gt; PreviewResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:99](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L99) |  |
+| <code>public const string EvaluationFailedCode = &quot;RISK_RULE_EVALUATION_FAILED&quot;;</code> | [src/Meridian.Risk/CompositeRiskValidator.cs:460](../../../../src/Meridian.Risk/CompositeRiskValidator.cs#L460) | Stable code recorded when a rule itself fails, rather than reporting a breach. |
 
 ## IAccountScopedPortfolioExposureProvider
 

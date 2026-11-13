@@ -38,6 +38,10 @@ This layer should expose stable backtesting integration seams without owning run
 
 ## Important workflows
 
+### Shared SMA decision contract
+
+`Strategies/MovingAverageCrossoverStrategy` is the versioned long-only equity reference shared with the live adapter. `IBacktestOrderTerminationObserver` releases pending intent after a terminal outcome without complete execution. Explicit bar input is required for controlled parity evidence; historical and broker fills can still differ. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 Use this module when a backtesting contract must be shared across runtime and strategy code.
 
 ## API / contract notes
