@@ -465,6 +465,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;AutomatedJournalApproval&gt; PostAsync(AutomatedJournalApproval approval, AutomatedJournalPostingContext context, CancellationToken ct = default);</code> | [src/Meridian.Ledger/AutomatedJournalPostingTarget.cs:8](../../../../src/Meridian.Ledger/AutomatedJournalPostingTarget.cs#L8) |  |
 
+## IChartOfAccounts
+
+Qualified name: <code>Meridian.Ledger.IChartOfAccounts</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ledger/IChartOfAccounts.cs:4](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L4).
+
+Resolves registered posting roles without inferring an account&#x27;s type from its name or number.
+
+```csharp
+public interface IChartOfAccounts
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:7](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L7) | Returns registered name and type metadata without authorizing a scoped posting. |
+| <code>LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:9](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L9) |  |
+
 ## IDepreciationScheduleCalculator
 
 Qualified name: <code>Meridian.Ledger.IDepreciationScheduleCalculator</code>. Kind: `interface`.
@@ -921,6 +940,62 @@ Declared public members:
 | <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:31](../../../../src/Meridian.Ledger/LedgerAccount.cs#L31) |  |
 | <code>public override string ToString();</code> | [src/Meridian.Ledger/LedgerAccount.cs:39](../../../../src/Meridian.Ledger/LedgerAccount.cs#L39) |  |
 
+## LedgerAccountRole
+
+Qualified name: <code>Meridian.Ledger.LedgerAccountRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ledger/LedgerAccountRole.cs:7](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L7).
+
+Registered economic roles shared by simulation, execution, and direct-lending postings. These values are lookup keys, not persisted account identities or inferred account types.
+
+```csharp
+public enum LedgerAccountRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Cash</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:9](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L9) |  |
+| <code>Capital</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:10](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L10) |  |
+| <code>Securities</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:11](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L11) |  |
+| <code>ShortSecuritiesPayable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:12](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L12) |  |
+| <code>RealizedGain</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:13](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L13) |  |
+| <code>RealizedLoss</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:14](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L14) |  |
+| <code>CommissionExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:15](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L15) |  |
+| <code>MarginInterestExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:16](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L16) |  |
+| <code>CashInterestIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:17](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L17) |  |
+| <code>ShortRebateIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:18](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L18) |  |
+| <code>DividendIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:19](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L19) |  |
+| <code>DividendExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:20](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L20) |  |
+| <code>CouponIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:21](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L21) |  |
+| <code>CouponExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:22](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L22) |  |
+| <code>CorporateActionIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:23](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L23) |  |
+| <code>CorporateActionExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:24](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L24) |  |
+| <code>FuturesMtmSettlement</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:25](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L25) |  |
+| <code>LoanPrincipal</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:26](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L26) |  |
+| <code>LoanAccruedInterestReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:27](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L27) |  |
+| <code>LoanInterestIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:28](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L28) |  |
+| <code>LoanPikInterestReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:29](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L29) |  |
+| <code>LoanPikInterestIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:30](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L30) |  |
+| <code>LoanCommitmentFeeReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:31](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L31) |  |
+| <code>LoanCommitmentFeeIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:32](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L32) |  |
+| <code>LoanFeeReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:33](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L33) |  |
+| <code>LoanFeeIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:34](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L34) |  |
+| <code>LoanPenaltyReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:35](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L35) |  |
+| <code>LoanPenaltyIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:36](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L36) |  |
+| <code>LoanAndAccrualsClearing</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:37](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L37) |  |
+| <code>LoanPrepaidInterestLiability</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:38](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L38) |  |
+| <code>LoanUnappliedCashLiability</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:39](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L39) |  |
+| <code>LoanWriteOffExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:40](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L40) |  |
+| <code>LoanDiscountAmortizationExpense</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:41](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L41) |  |
+| <code>LoanDiscount</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:42](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L42) |  |
+| <code>LoanPremium</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:43](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L43) |  |
+| <code>LoanPremiumAmortizationIncome</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:44](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L44) |  |
+| <code>LoanRestructuringLoss</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:45](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L45) |  |
+| <code>MarginLoanPayable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:46](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L46) |  |
+| <code>ShortSaleCollateralReceivable</code> | [src/Meridian.Ledger/LedgerAccountRole.cs:47](../../../../src/Meridian.Ledger/LedgerAccountRole.cs#L47) |  |
+
 ## LedgerAccounts
 
 Qualified name: <code>Meridian.Ledger.LedgerAccounts</code>. Kind: `class`.
@@ -1076,37 +1151,3 @@ Declared public members:
 | <code>public LedgerAccountTaxLotPolicy Register(LedgerAccount account, LedgerTaxLotReliefMethod reliefMethod, string policyId, DateOnly effectiveDate, string? rationale = null);</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:27](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L27) | Registers or replaces the relief policy for a specific ledger account. |
 | <code>public LedgerAccountTaxLotPolicy Resolve(LedgerAccount account, DateOnly asOf);</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:49](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L49) | Returns the effective policy for account, or a default policy when none is registered. |
 | <code>public bool HasPolicy(LedgerAccount account);</code> | [src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs:71](../../../../src/Meridian.Ledger/LedgerAccountTaxLotPolicyBook.cs#L71) | Returns true when an account-specific policy exists. |
-
-## LedgerAccountType
-
-Qualified name: <code>Meridian.Ledger.LedgerAccountType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ledger/LedgerAccountType.cs:4](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L4).
-
-Classifies a ledger account under standard double-entry accounting categories.
-
-```csharp
-public enum LedgerAccountType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Asset</code> | [src/Meridian.Ledger/LedgerAccountType.cs:7](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L7) | Resources owned (cash, long securities positions). |
-| <code>Liability</code> | [src/Meridian.Ledger/LedgerAccountType.cs:10](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L10) | Obligations owed (margin debt to broker). |
-| <code>Equity</code> | [src/Meridian.Ledger/LedgerAccountType.cs:13](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L13) | Net worth / owner&#x27;s initial capital. |
-| <code>Revenue</code> | [src/Meridian.Ledger/LedgerAccountType.cs:16](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L16) | Inflows that increase equity (realized gains, dividends, short rebates). |
-| <code>Expense</code> | [src/Meridian.Ledger/LedgerAccountType.cs:19](../../../../src/Meridian.Ledger/LedgerAccountType.cs#L19) | Outflows that decrease equity (commissions, margin interest, realized losses). |
-
-## LedgerBalancePoint
-
-Qualified name: <code>Meridian.Ledger.LedgerBalancePoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/LedgerBalancePoint.cs:7](../../../../src/Meridian.Ledger/LedgerBalancePoint.cs#L7).
-
-Running-balance checkpoint for an account after a journal entry is applied. Useful for reconstructing account history during backtests and portfolio analytics.
-
-```csharp
-public sealed record LedgerBalancePoint(DateTimeOffset Timestamp, Guid JournalEntryId, string Description, decimal Debit, decimal Credit, decimal Balance, JournalEntryMetadata Metadata);
-```
