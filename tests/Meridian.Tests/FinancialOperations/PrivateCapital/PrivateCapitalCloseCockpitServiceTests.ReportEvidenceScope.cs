@@ -30,7 +30,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
             ReportOutputs = ready.ReportOutputs.Select(output => output.ReportOutputId == original.ReportOutputId
                 ? foreign : output).ToArray()
         });
-        var service = new PrivateCapitalCloseCockpitService(source,
+        var service = CreateSourceBackedCockpitService(source,
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]));
 
         var blocked = await service.GetCockpitAsync(FundProfileId, ready.LedgerBookId, FundAccountId, PeriodId, EntityId);
@@ -61,7 +61,7 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
                 FundEvent = record.FundEvent with { CapitalAccountId = "capital-account:unassigned", InvestorId = null }
             }).ToArray()
         });
-        var service = new PrivateCapitalCloseCockpitService(source,
+        var service = CreateSourceBackedCockpitService(source,
             new StubOperationsContinuityWorkflowService([BuildClosedWorkflow()]));
 
         var cockpit = await service.GetCockpitAsync(FundProfileId, ready.LedgerBookId, FundAccountId, PeriodId, EntityId);

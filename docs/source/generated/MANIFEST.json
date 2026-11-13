@@ -6,7 +6,7 @@
   "inputs": [
     {
       "path": "docs/source/data/adapter-readiness.yml",
-      "sha256": "73afe0a4181f4bb2a08d50158f5ceece4e0c189deaf47a519be2d1737e2b5a29"
+      "sha256": "ee699d6c75bd471a1378215cf006e7bae71fcf09e6165909e2a3f74ee7f39b2e"
     },
     {
       "path": "docs/source/data/diagram-index.yml",
@@ -14,11 +14,11 @@
     },
     {
       "path": "docs/source/data/source-modules.yml",
-      "sha256": "656af342fba90476614485be9dbec5815605268309cc243fb63542f6c68d947b"
+      "sha256": "08726614918febb5c30d5fb53fa74f5366d29eca9ddea62ea65e832db2a7ff71"
     },
     {
       "path": "docs/source/data/source-readme-coverage.yml",
-      "sha256": "be5b8be2ba53fc569ba9febc1b5d6af6d7695dd4901f81356cd8a64a2c46441a"
+      "sha256": "ba6063c09ab5ae125168a67d5819abb949aa25d71069d73b1f4db2b4f1b1a4f6"
     },
     {
       "path": "docs/source/data/source-readme-ignore.yml",
@@ -32,11 +32,11 @@
   "outputs": [
     {
       "path": "docs/source/generated/source-module-index.md",
-      "sha256": "54ae40db9977e6c722bf257b2c1237a252c6b6e4c0f44e88600fb3b0227a1ff7"
+      "sha256": "c1949b34dc3c12401c9547794c78e426eb02d5b8aa7f3e3fc152c81eaea3909a"
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "sha256": "b6d7cdac47019a8dd3213752e4a695da9ad2c2c7d03aa4971b72a0f18e7a8543"
+      "sha256": "45f745f29f297a8d8fbd0811ae8530ab44092f98b6f9162eea0e7392d0298691"
     },
     {
       "path": "docs/source/generated/source-todo-checklist.md",

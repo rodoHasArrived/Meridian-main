@@ -5,6 +5,8 @@ namespace Meridian.Contracts.Api;
 /// </summary>
 public static class UiApiRoutes
 {
+    public const string IntercompanyAgreements = "/api/fund-structure/intercompany-agreements";
+
     // Bounded accounting onboarding; retained comparisons and readiness never transfer authority.
     public const string OnboardingWorkspaces = "/api/accounting/onboarding/workspaces";
     public const string OnboardingWorkspace = "/api/accounting/onboarding/workspaces/{workspaceId:guid}";
@@ -415,6 +417,10 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActionCases = "/api/security-master/corporate-actions/cases";
     public const string SecurityMasterCorporateActionCase = "/api/security-master/corporate-actions/cases/{caseId:guid}";
     public const string SecurityMasterCorporateActionCaseEvidence = "/api/security-master/corporate-actions/cases/{caseId:guid}/evidence";
+    public const string SecurityMasterCorporateActionsCalendar = "/api/security-master/corporate-actions/calendar";
+    public const string SecurityMasterCorporateActionCaseDeadlines = "/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines";
+    public const string SecurityMasterCorporateActionDeadlineImportPreview = "/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines/import-preview";
+    public const string SecurityMasterCorporateActionDeadlineImport = "/api/security-master/corporate-actions/cases/{caseId:guid}/deadlines/import";
     public const string SecurityMasterCorporateActionCaseConflicts = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts";
     public const string SecurityMasterCorporateActionCaseConflict = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}";
     public const string SecurityMasterCorporateActionCaseConflictResolution = "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution";
@@ -444,6 +450,10 @@ public static class UiApiRoutes
     // Pricing hierarchy & golden copy
     public const string SecurityMasterPricingHierarchy = "/api/security-master/{securityId:guid}/pricing-hierarchy";
     public const string SecurityMasterPriceGoldenCopy = "/api/security-master/{securityId:guid}/price-golden-copy";
+    public const string SecurityMasterRetainedPriceObservations = "/api/security-master/{securityId:guid}/price-golden-copy/observations";
+    public const string SecurityMasterRateObservations = "/api/security-master/rates/observations";
+    public const string SecurityMasterRateIngest = "/api/security-master/rates/ingest";
+    public const string SecurityMasterObservedBondFixings = "/api/security-master/{securityId:guid}/observed-bond-fixings";
     public const string SecurityMasterPriceComparison = "/api/security-master/{securityId:guid}/price-comparison";
     public const string SecurityMasterRecordRawPrice = "/api/security-master/{securityId:guid}/raw-price";
 
@@ -487,6 +497,14 @@ public static class UiApiRoutes
     public const string ReferenceDataBondIssuerLadder = "/api/reference-data/bonds/issuer-ladder";
     public const string ReferenceDataBondMaturityLadder = "/api/reference-data/bonds/maturity-ladder";
     public const string ReferenceDataBondAnalytics = "/api/reference-data/bonds/{securityId:guid}/analytics";
+    public const string ReferenceDataBondWorkflow = "/api/reference-data/bonds/{securityId:guid}/workflow";
+    public const string ReferenceDataBondScreen = "/api/reference-data/bonds/screen";
+    public const string ReferenceDataBondMarketObservations = "/api/reference-data/bonds/market-observations";
+    public const string ReferenceDataBondConnectionReadiness = "/api/reference-data/bonds/connection-readiness";
+    public const string ReferenceDataBondComparisonPreview = "/api/reference-data/bonds/comparisons/preview";
+    public const string ReferenceDataBondIdentifierDiscovery = "/api/reference-data/bonds/identifier-discovery";
+    public const string ReferenceDataBondFredImport = "/api/reference-data/bonds/fred-observations/import";
+    public const string ReferenceDataBondProviderResponse = "/api/reference-data/bonds/provider-responses/{contentSha256}";
     public const string ReferenceDataBondExerciseNotices = "/api/reference-data/bonds/{securityId:guid}/exercise-notices";
     public const string ReferenceDataBondSettlementConsideration = "/api/reference-data/bonds/settlement-consideration";
     public const string ReferenceDataBondIssuerLadderPage = "/api/reference-data/bonds/issuer-ladder/page";
@@ -622,6 +640,17 @@ public static class UiApiRoutes
     // Options / Derivatives endpoints
     public const string OptionsChains = "/api/options/chains/{underlyingSymbol}";
     public const string OptionsExpirations = "/api/options/expirations/{underlyingSymbol}";
+    public const string OptionsScreen = "/api/options/screen";
+    public const string OptionAssessments = "/api/options/assessments/accounts/{accountId:guid}";
+    public const string OptionAssessmentPreview = "/api/options/assessments/accounts/{accountId:guid}/preview";
+    public const string OptionAssessmentAccept = "/api/options/assessments/accounts/{accountId:guid}/accept";
+    public const string OptionAssessmentSource = "/api/options/assessments/accounts/{accountId:guid}/{assessmentId}/source";
+    public const string PrivateCapitalRecords = "/api/private-capital/records";
+    public const string PrivateCapitalRecordChoices = "/api/private-capital/choices";
+    public const string PrivateCapitalRecordCommitments = "/api/private-capital/commitments";
+    public const string PrivateCapitalRecordImportPreview = "/api/private-capital/preview";
+    public const string PrivateCapitalRecordImportAccept = "/api/private-capital/accept";
+    public const string PrivateCapitalRecordImportInspection = "/api/private-capital/imports/{batchId:guid}";
     public const string OptionsStrikes = "/api/options/strikes/{underlyingSymbol}/{expiration}";
     public const string OptionsQuote = "/api/options/quote";
     public const string OptionsQuotesByUnderlying = "/api/options/quotes/{underlyingSymbol}";
@@ -709,6 +738,8 @@ public static class UiApiRoutes
 
     // Workstation root and compatibility workspace endpoints
     public const string WorkstationSession = "/api/workstation/session";
+    public const string WorkstationProviderVerificationHistory = "/api/workstation/provider-verification-history/{connectionId}";
+    public const string WorkstationAccountBalanceHistory = "/api/workstation/accounts/{accountId}/balance-history";
     public const string WorkstationStream = "/api/workstation/stream";
     public const string WorkstationResearch = "/api/workstation/research";
     public const string WorkstationStrategy = "/api/workstation/strategy";
@@ -773,6 +804,8 @@ public static class UiApiRoutes
     public const string WorkstationFinancialRecordExplorer = "/api/workstation/financial-record-explorers/{explorerId}";
     public const string WorkstationFinancialRecordExplorerRecord = "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}";
     public const string WorkstationFinancialRecordExplorerSavedViews = "/api/workstation/financial-record-explorers/{explorerId}/saved-views";
+    public const string WorkstationTableViews = "/api/workstation/tables/{tableId}/views";
+    public const string WorkstationTableExport = "/api/workstation/tables/{tableId}/export";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
 
     public const string WorkstationTradingBrokerageRecovery = "/api/workstation/trading/brokerage-recovery";
@@ -824,6 +857,9 @@ public static class UiApiRoutes
     public const string OperationsContinuityApprovalPolicyRules = "/api/workstation/operations/continuity/approval-policy-rules";
     public const string OperationsContinuityCloseCalendarItems = "/api/workstation/operations/continuity/close-calendar-items";
     public const string OperationsContinuityApprovalSubmit = "/api/workstation/operations/continuity/{workflowId:guid}/approval/submit";
+    public const string OperationsContinuityApprovalCollaboration = "/api/workstation/operations/continuity/{workflowId:guid}/approval/collaboration";
+    public const string OperationsContinuityApprovalComments = "/api/workstation/operations/continuity/{workflowId:guid}/approval/comments";
+    public const string OperationsContinuityApprovalReviewer = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reviewer";
     public const string OperationsContinuityApprovalApprove = "/api/workstation/operations/continuity/{workflowId:guid}/approval/approve";
     public const string OperationsContinuityApprovalReject = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reject";
     public const string OperationsContinuityClose = "/api/workstation/operations/continuity/{workflowId:guid}/close";
@@ -888,6 +924,7 @@ public static class UiApiRoutes
     public const string RunsContinuity = "/api/workstation/runs/{runId}/continuity";
     public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
+    public const string RunsLedgerExport = "/api/workstation/runs/{runId}/ledger/export";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
     public const string LedgerBooks = "/api/ledger/books";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
@@ -901,12 +938,27 @@ public static class UiApiRoutes
     public const string LedgerAccountClosePriceSetApproval = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval";
     public const string LedgerAccountCashForecasts = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts";
     public const string LedgerAccountCashForecast = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts/{snapshotId}";
+    public const string LedgerAccountBondWorkflow = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-workflows/{securityId:guid}";
+    public const string LedgerAccountBondIncomePreview = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-income/preview";
+    public const string LedgerAccountBondMonitoring = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-monitoring";
+    public const string LedgerAccountBondRisk = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk";
+    public const string LedgerAccountBondRiskSnapshot = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-risk/{runId}";
+    public const string LedgerAccountBondComparisons = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons";
+    public const string LedgerAccountBondComparison = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-comparisons/{runId}";
+    public const string LedgerAccountBondPerformance = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance";
+    public const string LedgerAccountBondPerformanceTransactions = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-performance/transactions/import";
+    public const string LedgerAccountBondHoldingsImport = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-holdings/import";
+    public const string LedgerAccountBondAccountingPreview = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/preview";
+    public const string LedgerAccountBondAccountingPrepare = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/prepare";
+    public const string LedgerAccountBondCouponPreview = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-preview";
+    public const string LedgerAccountBondCouponPrepare = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-prepare";
     public const string LedgerAccountOversightProvision = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision";
     public const string LedgerAccountOversightContext = "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context";
     public const string LedgerAggregateJournalEntries = "/api/ledger/aggregates/{aggregateId:guid}/journal-entries";
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";
     public const string LedgerPeriodJournalEntries = "/api/ledger/periods/{periodId:guid}/journal-entries";
+    public const string LedgerPeriodAccountRunningBalance = "/api/ledger/periods/{periodId:guid}/accounts/running-balance";
     public const string LedgerJournalEntryTaxResults = "/api/ledger/periods/{periodId:guid}/journal-entries/{journalEntryId:guid}/tax-results";
     public const string LedgerPeriodTrialBalance = "/api/ledger/periods/{periodId:guid}/trial-balance";
     public const string LedgerPeriodTrialBalanceReport = "/api/ledger/periods/{periodId:guid}/trial-balance-report";
@@ -966,6 +1018,9 @@ public static class UiApiRoutes
     public const string LedgerJournalAutomationFeeAccrualIntake = "/api/ledger/journal-automation/fee-accrual-intake";
     public const string LedgerJournalAutomationCapitalCallIssuanceIntake = "/api/ledger/journal-automation/capital-call-issuance-intake";
     public const string LedgerJournalAutomationCapitalCallFundingIntake = "/api/ledger/journal-automation/capital-call-funding-intake";
+    public const string LedgerJournalAutomationCapitalCallDefaultInterestIntake = "/api/ledger/journal-automation/capital-call-default-interest-intake";
+    public const string LedgerJournalAutomationDistributionIntake = "/api/ledger/journal-automation/distribution-intake";
+    public const string LedgerFixedAssetRegister = "/api/ledger/fixed-assets";
     public const string LedgerJournalAutomationPeriodCloseIntake = "/api/ledger/journal-automation/period-close-intake";
     public const string LedgerJournalAutomationDailyMarkToMarketPreview = "/api/ledger/journal-automation/daily-mark-to-market-preview";
     public const string LedgerJournalAutomationDailyMarkToMarketIntake = "/api/ledger/journal-automation/daily-mark-to-market-intake";
@@ -1081,9 +1136,10 @@ public static class UiApiRoutes
     public const string ReportingStarterKits = "/api/fund-structure/reporting/starter-kits";
     public const string ReportingStarterKitProvision = "/api/fund-structure/reporting/starter-kits/{kitId}/provision";
     public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";
-    public const string ReportingScheduleRunDue = "/api/fund-structure/reporting/schedules/run-due";
     public const string ReportingSchedulePause = "/api/fund-structure/reporting/schedules/{scheduleId}/pause";
     public const string ReportingScheduleResume = "/api/fund-structure/reporting/schedules/{scheduleId}/resume";
+    public const string ReportingScheduleDisable = "/api/fund-structure/reporting/schedules/{scheduleId}/disable";
+    public const string ReportingScheduleDelete = "/api/fund-structure/reporting/schedules/{scheduleId}";
     public const string ReportingScheduleRunNow = "/api/fund-structure/reporting/schedules/{scheduleId}/run";
     public const string FundStructureSetupDraftValidate = "/api/fund-structure/setup-drafts/validate";
     public const string FundStructureSetupDraftCreate = "/api/fund-structure/setup-drafts/create";

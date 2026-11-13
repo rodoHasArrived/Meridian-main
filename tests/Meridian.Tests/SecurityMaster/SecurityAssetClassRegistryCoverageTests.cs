@@ -207,22 +207,25 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     [InlineData("Bond", 2, 3, 4)]
     [InlineData("CertificateOfDeposit", 2, 3, 4)]
     [InlineData("StructuredCredit", 3, 4, 5)]
-    public void ReadAheadClasses_OfferNoTermIntroducedAboveTheWriteVersion(string assetClass, int blockSince, int scheduleSince, int companionSince)
+    public void VersionedClasses_OfferOnlyAuthoringEnabledTermsThroughTheWriteVersion(string assetClass, int blockSince, int scheduleSince, int companionSince)
     {
-        // The schema declares exactly these terms above what the class writes, each within what it reads ...
+        // Historical containers remain pinned to their introduction version; v5 adds the Bond workflow.
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
         var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
         var readOnly = SecurityAssetTermsSchema.Fields(assetClass)
-            .Where(field => field.SinceTermsVersion > writes)
+            .Where(field => !field.AuthoringEnabled || field.SinceTermsVersion > writes)
             .Select(static field => (field.Key, field.SinceTermsVersion))
             .ToArray();
         SecurityAssetTermsSchema.Fields(assetClass)
-            .Where(field => field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass))
+            .Where(field => field.Key != SecurityRecordRateUnit.FieldKey && field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass) && field.SinceTermsVersion <= companionSince)
             .Select(static field => (field.Key, field.SinceTermsVersion))
             .Should().Equal(("scheduleConventions", blockSince), ("callSchedule", scheduleSince), ("putSchedule", scheduleSince), ("cashFlowContract", companionSince));
         readOnly.Should().Equal(new[] { ("cashFlowContract", companionSince) },
-            "the calculation companion remains readable ahead of the unchanged schedule writer");
-        readOnly.Should().OnlyContain(term => term.SinceTermsVersion > writes && term.SinceTermsVersion <= reads, assetClass);
+            "the calculation companion remains calculation-only even when its version is writable");
+        if (assetClass == "Bond")
+            SecurityAssetTermsSchema.WritableFields(assetClass).Should().ContainSingle(
+                field => field.Key == "bondWorkflow" && field.SinceTermsVersion == 5);
+        readOnly.Should().OnlyContain(term => term.SinceTermsVersion <= reads, assetClass);
 
         // ... and they are exactly the declared terms no write surface offers.
         IReadOnlyList<string> readOnlyKeys = readOnly.Select(static term => term.Key).ToArray();
@@ -243,14 +246,14 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         // companion remain outside every write surface.
         var definition = SecurityAssetClassRegistry.Get("Swap");
         definition.Fields.Select(static field => field.Key)
-            .Should().Equal("effectiveDate", "maturityDate", "legs");
-        SecurityAssetTermsSchema.Fields("Swap").Where(static field => field.SinceTermsVersion > 1)
+            .Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
+        SecurityAssetTermsSchema.Fields("Swap").Where(static field => field.Key != SecurityRecordRateUnit.FieldKey && field.SinceTermsVersion > 1)
             .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("cashFlowContract", 3));
-        definition.UiHints.Select(static hint => hint.Key).Should().Equal("effectiveDate", "maturityDate", "legs");
+        definition.UiHints.Select(static hint => hint.Key).Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
         SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");
         SecurityAssetTermsSchema.ElementFields("Swap", "legs")
             .Should().ContainSingle(static field => field.Key == "scheduleConventions")
-            .Which.SinceTermsVersion.Should().Be(2)
-            .And.BeGreaterThan(SecurityAssetClassCatalog.GetTermsVersion("Swap"));
+            .Which.SinceTermsVersion.Should().Be(2);
+        SecurityAssetTermsSchema.ElementFields("Swap", "legs").Single(field => field.Key == "scheduleConventions").AuthoringEnabled.Should().BeFalse();
     }
 }

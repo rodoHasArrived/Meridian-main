@@ -6,6 +6,8 @@ using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Contracts;
+using Meridian.Infrastructure.DataSources;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.OpenFigi;
@@ -15,6 +17,8 @@ namespace Meridian.Infrastructure.Adapters.OpenFigi;
 /// Provides mapping between tickers, ISINs, CUSIPs, SEDOLs and FIGI identifiers.
 /// Free tier: 25 requests/minute, 250 identifiers per request.
 /// </summary>
+[DataSource("openfigi", "OpenFIGI", DataSourceType.Reference, DataSourceCategory.Free)]
+[RequiresCredential("OPENFIGI_API_KEY", EnvironmentVariables = new[] { "OPENFIGI_API_KEY" }, DisplayName = "API Key")]
 public sealed class OpenFigiClient : IDisposable
 {
     private const string BaseUrl = "https://api.openfigi.com/v3";
@@ -24,7 +28,7 @@ public sealed class OpenFigiClient : IDisposable
     private readonly HttpClient _http;
     private readonly RateLimiter _rateLimiter;
     private readonly ILogger _log;
-    private readonly string? _apiKey;
+    private readonly OpenFigiRequestCredentials _credentials;
     private bool _disposed;
 
     public string Name => "openfigi";
@@ -36,22 +40,18 @@ public sealed class OpenFigiClient : IDisposable
     /// <param name="apiKey">Optional API key for higher rate limits. Set OPENFIGI_API_KEY env var or pass directly.</param>
     /// <param name="httpClient">Optional HTTP client for testing.</param>
     /// <param name="log">Optional logger.</param>
-    public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    public OpenFigiClient(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
+        IProviderCredentialResolver? credentialResolver = null)
     {
         _log = log ?? LoggingSetup.ForContext<OpenFigiClient>();
-        _apiKey = apiKey ?? Environment.GetEnvironmentVariable("OPENFIGI_API_KEY");
+        _credentials = new OpenFigiRequestCredentials(apiKey, credentialResolver, useEnvironmentFallback: true);
 
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _http = httpClient ?? HttpClientFactoryProvider.CreateClient(HttpClientNames.OpenFigi);
         _http.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
 
-        if (!string.IsNullOrEmpty(_apiKey))
-        {
-            _http.DefaultRequestHeaders.Add("X-OPENFIGI-APIKEY", _apiKey);
-        }
-
         // Rate limit: 25/min unauthenticated, higher with API key
-        var maxRequests = string.IsNullOrEmpty(_apiKey) ? MaxRequestsPerMinute : 250;
+        var maxRequests = credentialResolver is not null || string.IsNullOrEmpty(apiKey) ? MaxRequestsPerMinute : 250;
         _rateLimiter = new RateLimiter(maxRequests, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(100), _log);
     }
 
@@ -102,7 +102,7 @@ public sealed class OpenFigiClient : IDisposable
     /// </summary>
     public async Task<IReadOnlyList<FigiMapping>> LookupByIsinAsync(
         string isin,
-        string? marketSector = "Equity",
+        string? marketSector = null,
         CancellationToken ct = default)
     {
         var request = new OpenFigiMappingRequest
@@ -121,7 +121,7 @@ public sealed class OpenFigiClient : IDisposable
     /// </summary>
     public async Task<IReadOnlyList<FigiMapping>> LookupByCusipAsync(
         string cusip,
-        string? marketSector = "Equity",
+        string? marketSector = null,
         CancellationToken ct = default)
     {
         var request = new OpenFigiMappingRequest
@@ -134,6 +134,32 @@ public sealed class OpenFigiClient : IDisposable
         var results = await MappingRequestAsync(new[] { request }, ct).ConfigureAwait(false);
         return results.FirstOrDefault() ?? Array.Empty<FigiMapping>();
     }
+
+    /// <summary>
+    /// Discovers a bond by durable identifier without an implicit equity/corporate filter.
+    /// Competing FIGIs remain candidates; response order never resolves an ambiguity.
+    /// </summary>
+    public async Task<BondFigiLookupResult> LookupBondIdentifierAsync(
+        string identifier, string identifierType, string? marketSector = null, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(identifier);
+        ArgumentException.ThrowIfNullOrWhiteSpace(identifierType);
+        var type = identifierType.Trim().ToUpperInvariant();
+        if (type is not ("ISIN" or "CUSIP"))
+            throw new ArgumentException("Bond discovery requires an ISIN or CUSIP.", nameof(identifierType));
+        if (marketSector is not null && !IsBondSector(marketSector))
+            throw new ArgumentException("The requested market sector is not a supported bond sector.", nameof(marketSector));
+        var results = type == "ISIN"
+            ? await LookupByIsinAsync(identifier.Trim(), marketSector, ct).ConfigureAwait(false)
+            : await LookupByCusipAsync(identifier.Trim(), marketSector, ct).ConfigureAwait(false);
+        var candidates = results.Where(mapping => IsBondSector(mapping.MarketSector)
+                && (marketSector is null || string.Equals(mapping.MarketSector, marketSector, StringComparison.OrdinalIgnoreCase)))
+            .Distinct().OrderBy(mapping => mapping.Figi, StringComparer.Ordinal).ToArray();
+        return new BondFigiLookupResult(identifier.Trim().ToUpperInvariant(), type, candidates);
+    }
+
+    private static bool IsBondSector(string? sector)
+        => sector?.Trim().ToUpperInvariant() is "GOVT" or "CORP" or "MTGE" or "MUNI";
 
     /// <summary>
     /// Lookup FIGI mappings by SEDOL.
@@ -222,11 +248,8 @@ public sealed class OpenFigiClient : IDisposable
 
         try
         {
-            using var response = await _http.PostAsJsonAsync(
-                $"{BaseUrl}/filter",
-                filterRequest,
-                new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull },
-                ct).ConfigureAwait(false);
+            using var request = await _credentials.CreateRequestAsync($"{BaseUrl}/filter", filterRequest, ct).ConfigureAwait(false);
+            using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -247,7 +270,7 @@ public sealed class OpenFigiClient : IDisposable
                 .Take(limit)
                 .ToList();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _log.Error(ex, "OpenFIGI search failed for query {Query}", query);
             return Array.Empty<FigiMapping>();
@@ -312,11 +335,8 @@ public sealed class OpenFigiClient : IDisposable
 
         try
         {
-            using var response = await _http.PostAsJsonAsync(
-                $"{BaseUrl}/mapping",
-                requests,
-                new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull },
-                ct).ConfigureAwait(false);
+            using var request = await _credentials.CreateRequestAsync($"{BaseUrl}/mapping", requests, ct).ConfigureAwait(false);
+            using var response = await _http.SendAsync(request, ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {

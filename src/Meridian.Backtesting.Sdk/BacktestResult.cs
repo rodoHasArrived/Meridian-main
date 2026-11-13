@@ -22,10 +22,12 @@ public sealed record SymbolAttribution(
 /// <param name="TotalTrades">Completed account/symbol closing orders plus cash-in-lieu disposals,
 /// including breakeven outcomes. Partial fills of one closing order count once.</param>
 /// <param name="WinRate">Winning completed outcomes divided by all completed outcomes, after
-/// allocating acquisition and closing commissions.</param>
+/// allocating acquisition and closing commissions. NaN denotes unavailable closed-trade evidence
+/// in summary-only live results and is retained as JSON null.</param>
 /// <param name="ProfitFactor">Positive completed-outcome P&amp;L divided by absolute negative
 /// completed-outcome P&amp;L, after allocating acquisition and closing commissions. Positive
-/// infinity denotes gains with no losses and round-trips as the named JSON string.</param>
+/// infinity denotes gains with no losses and round-trips as the named JSON string. NaN denotes
+/// unavailable closed-trade evidence in summary-only live results and is retained as JSON null.</param>
 /// <param name="SortinoRatio">Positive infinity when the native return series has no downside;
 /// preserved as the named JSON string rather than replacing the measured outcome.</param>
 /// <param name="TotalReturn">Fraction of initial capital (0.15 = +15%), not percent units.</param>
@@ -54,8 +56,8 @@ public sealed record BacktestMetrics(
     decimal MaxDrawdown,
     decimal MaxDrawdownPercent,
     int MaxDrawdownRecoveryDays,
-    [property: JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double ProfitFactor,
-    double WinRate,
+    [property: JsonConverter(typeof(UnavailableMetricJsonConverter))] double ProfitFactor,
+    [property: JsonConverter(typeof(UnavailableWinRateJsonConverter))] double WinRate,
     int TotalTrades,
     int WinningTrades,
     int LosingTrades,
@@ -93,4 +95,8 @@ public sealed record BacktestResult(
     IReadOnlyList<TradeTicket>? TradeTickets = null,
     TcaReport? TcaReport = null,
     BacktestEngineMetadata? EngineMetadata = null,
-    BiasDisclosureReport? BiasDisclosure = null);
+    BiasDisclosureReport? BiasDisclosure = null)
+{
+    /// <summary>Day-end accounting differences retained for inspection; empty for a reconciled run.</summary>
+    public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks { get; init; } = [];
+}

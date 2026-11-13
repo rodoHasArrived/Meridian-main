@@ -310,6 +310,108 @@ public sealed class AccrualLedgerServiceTests
         return writes.Should().ContainSingle().Subject.Entry;
     }
 
+    [Theory]
+    [InlineData("loan.drawdown-booked", "amount")]
+    [InlineData("loan.fee-assessed", "amount")]
+    [InlineData("loan.prepayment-penalty-charged", "penaltyAmount")]
+    [InlineData("loan.pik-capitalized", "amount")]
+    [InlineData("loan.principal-payment-applied", "AppliedAmount")]
+    [InlineData("loan.write-off-applied", "AppliedAmount")]
+    public async Task ProjectAsync_FailsClosed_WhenRequiredAmountIsMissing(string eventType, string requiredMember)
+    {
+        var act = () => ProjectAsync(eventType, """{"loanId":"not-an-amount"}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage($"*'{eventType}'*missing required amount '{requiredMember}'*");
+    }
+
+    [Fact]
+    public async Task ProjectAsync_FailsClosed_WhenAmountIsNotANumber()
+    {
+        var act = () => ProjectAsync("loan.drawdown-booked", """{"amount":"1000.00"}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*'amount' must be a JSON number*");
+    }
+
+    [Theory]
+    [InlineData("loan.drawdown-booked", """{"amount":-1000.00}""")]
+    [InlineData("loan.daily-accrual-posted", """{"interestAmount":10.00,"commitmentFeeAmount":-2.50}""")]
+    [InlineData("loan.restructured", """{"principalHaircut":-5.00}""")]
+    public async Task ProjectAsync_FailsClosed_WhenAmountIsNegative(string eventType, string payloadJson)
+    {
+        var act = () => ProjectAsync(eventType, payloadJson);
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage($"*'{eventType}' produced a negative amount*");
+    }
+
+    [Fact]
+    public async Task ProjectAsync_PostsBalancedJournal_ForValidDrawdown()
+    {
+        var writes = await ProjectAsync("loan.drawdown-booked", """{"amount":1000.00}""");
+
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        entry.Lines.Sum(line => line.Debit).Should().Be(1000.00m);
+        entry.Lines.Sum(line => line.Credit).Should().Be(1000.00m);
+    }
+
+    [Fact]
+    public async Task ProjectAsync_UsesSharedCashAndLoanAccountsWithRetainedScope()
+    {
+        var writes = await ProjectAsync("loan.drawdown-booked", """{"amount":1000.00}""");
+        var entry = writes.Should().ContainSingle().Subject.Entry;
+        var chart = StandardChartOfAccounts.Instance;
+        var accountId = entry.Metadata.FinancialAccountId;
+
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.Cash, accountId) && line.Credit == 1000m);
+        entry.Lines.Should().ContainSingle(line =>
+            line.Account == chart.Resolve(LedgerAccountRole.LoanPrincipal, accountId, "NWTERM26") && line.Debit == 1000m);
+        entry.Lines.Should().OnlyContain(line => line.Account.FinancialAccountId == accountId);
+    }
+
+    [Fact]
+    public async Task ProjectAsync_RejectsNegativeInterestInsteadOfPostingOnlyThePositiveFee()
+    {
+        var act = () => ProjectAsync(
+            "loan.daily-accrual-posted",
+            """{"interestAmount":-10,"commitmentFeeAmount":2.50}""");
+
+        await act.Should().ThrowAsync<DirectLendingCommandException>()
+            .Where(ex => ex.Error.Code == DirectLendingErrorCode.Validation)
+            .WithMessage("*'interestAmount' cannot be negative*");
+    }
+
+    [Theory]
+    [InlineData("loan.drawdown-booked", """{"amount":0}""")]
+    [InlineData("loan.restructured", """{"reason":"covenant reset"}""")]
+    [InlineData("loan.status-transitioned", """{"status":"Active"}""")]
+    public async Task ProjectAsync_ProducesNoJournal_ForZeroAmountOrNonLedgerEvents(string eventType, string payloadJson)
+    {
+        var writes = await ProjectAsync(eventType, payloadJson);
+
+        writes.Should().BeEmpty();
+    }
+
+    private static async Task<IReadOnlyList<LedgerJournalEntryWrite>> ProjectAsync(string eventType, string payloadJson)
+    {
+        var loanId = Guid.NewGuid();
+        using var payload = JsonDocument.Parse(payloadJson);
+        return await CreateProjector(BuildOpenPeriod()).ProjectAsync(
+            loanId,
+            BuildContract(loanId),
+            eventType,
+            new DateOnly(2026, 3, 24),
+            payload,
+            Guid.NewGuid(),
+            BuildMetadata(),
+            CancellationToken.None);
+    }
+
     private static LoanAccountingProjector CreateProjector(LedgerAccountingPeriod period)
         => new(
             new PeriodOnlyLedgerJournalStore(period),

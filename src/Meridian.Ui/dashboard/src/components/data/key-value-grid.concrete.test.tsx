@@ -18,6 +18,12 @@ describe("KeyValueGrid (Concrete)", () => {
     expect(screen.getByText("037833100")).toBeInTheDocument();
     expect(screen.getByText("NASDAQ")).toBeInTheDocument();
   });
+
+  it("tolerates a missing items list", () => {
+    const { container } = render(<KeyValueGrid />);
+    expect(container.firstElementChild).not.toBeNull();
+    expect(container.firstElementChild?.children).toHaveLength(0);
+  });
 });
 
 describe("EntitySummary (Concrete)", () => {
@@ -36,5 +42,11 @@ describe("EntitySummary (Concrete)", () => {
       (el) => el.textContent === "Active" && el.style.color !== "",
     );
     expect(colored?.style.color).toContain("severity-ready-fg");
+  });
+
+  it("tolerates a missing items list", () => {
+    const { container } = render(<EntitySummary />);
+    expect(container.firstElementChild).not.toBeNull();
+    expect(container.firstElementChild?.children).toHaveLength(0);
   });
 });

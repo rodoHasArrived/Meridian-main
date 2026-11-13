@@ -1,13 +1,14 @@
 // Meridian DepthChart — order-book market depth (volume profile). Cumulative bid size rises as a
 // green step area toward the mid from the left; cumulative ask size rises red to the right. The
 // mid price marks the spread. Reads a live order book at a glance. Explicit-height svg.
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 
 export interface DepthLevel {
   price: number;
   size: number;
 }
 
-export interface DepthChartProps {
+export interface DepthChartProps extends ChartA11yProps {
   /** Bid levels — any order; cumulated outward from the mid. */
   bids: DepthLevel[];
   /** Ask levels — any order; cumulated outward from the mid. */
@@ -22,15 +23,17 @@ export interface DepthChartProps {
   sizeTicks?: number;
   /** @default 7 */
   priceTicks?: number;
+  /** Read-only displayed-depth coverage illustration; never an execution estimate. */
+  illustration?: { side: "Buy" | "Sell"; quantity: number; terminalPrice: number | null } | null;
 }
 
-const PLOT = "var(--chart-plot, #FBFAF8)";
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
-const UP = "var(--chart-equity, #3A7A56)";
-const DOWN = "var(--chart-drawdown, #A8443C)";
+const PLOT = "var(--chart-plot, #F8F7F3)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const CROSSHAIR = "var(--chart-crosshair, #C56343)";
+const UP = "var(--chart-equity, #2E7655)";
+const DOWN = "var(--chart-drawdown, #B54B42)";
 
 export function DepthChart({
   bids = [],
@@ -39,7 +42,11 @@ export function DepthChart({
   priceFmt = (p) => p.toFixed(2),
   sizeFmt = (s) => (s >= 1000 ? `${(s / 1000).toFixed(1)}k` : String(s)),
   sizeTicks = 4,
-  priceTicks = 7
+  priceTicks = 7,
+  illustration = null,
+  ariaLabel = "Order-book depth chart",
+  ariaDescription,
+  accessibleData
 }: DepthChartProps) {
   const W = 960;
   const H = 360;
@@ -103,12 +110,12 @@ export function DepthChart({
   const priceLabels = Array.from({ length: pStep + 1 }, (_, i) => pLo + (i / pStep) * pSpan);
 
   return (
-    <svg
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Order-book depth chart"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {[...new Set(sTicks)].map((s, k) => (
@@ -125,6 +132,12 @@ export function DepthChart({
       {askPath && <path d={askPath} fill={DOWN} opacity="0.18" />}
       {askPath && <path d={askPath} fill="none" stroke={DOWN} strokeWidth="1.6" />}
 
+      {illustration && illustration.terminalPrice !== null ? <g role="group" aria-label={`${illustration.side} snapshot illustration boundary`}>
+        <rect x={Math.min(x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice), x(illustration.terminalPrice))} y={plotT} width={Math.max(2, Math.abs(x(illustration.terminalPrice) - x(illustration.side === "Buy" ? bestAsk ?? midPrice : bestBid ?? midPrice)))} height={plotB - plotT} fill="var(--interaction-selected, #496C8F)" opacity="0.12" />
+        <line x1={x(illustration.terminalPrice)} x2={x(illustration.terminalPrice)} y1={plotT} y2={plotB} stroke="var(--interaction-selected, #496C8F)" strokeWidth="2" strokeDasharray="3 3" />
+        <line x1={plotL} x2={plotR} y1={y(Math.min(illustration.quantity, maxDepth))} y2={y(Math.min(illustration.quantity, maxDepth))} stroke="var(--interaction-selected, #496C8F)" strokeDasharray="6 4" />
+      </g> : null}
+
       {/* mid / spread */}
       <line x1={x(midPrice)} x2={x(midPrice)} y1={plotT} y2={plotB} stroke={CROSSHAIR} strokeWidth="1.2" strokeDasharray="4 3" />
       <rect x={x(midPrice) - 38} y={plotT - 2} width="76" height="17" fill={CROSSHAIR} opacity="0.95" />
@@ -138,7 +151,7 @@ export function DepthChart({
         </text>
       ))}
       <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
-    </svg>
+    </ChartSvg>
   );
 }
 

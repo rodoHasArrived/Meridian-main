@@ -12,13 +12,16 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 {
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
+    private readonly ISecurityActualCashActivitySource? _actualCashActivitySource;
 
     public SecurityMasterAccountingEventSourceAdapter(
         ISecurityMasterQueryService? securityMasterQueryService = null,
-        IAssetOperationsQueryService? assetOperationsQueryService = null)
+        IAssetOperationsQueryService? assetOperationsQueryService = null,
+        ISecurityActualCashActivitySource? actualCashActivitySource = null)
     {
         _securityMasterQueryService = securityMasterQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
+        _actualCashActivitySource = actualCashActivitySource;
     }
 
     public async Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
@@ -103,6 +106,14 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return null;
         }
 
+        // Without a source the request carries no actual activity, exactly as before. With one,
+        // an empty result is still passed: it states that no income or principal cash was reported.
+        var actualActivity = _actualCashActivitySource is null
+            ? null
+            : await _actualCashActivitySource
+                .GetActualActivityAsync(resolvedPositions, periodStart, periodEnd, ct)
+                .ConfigureAwait(false);
+
         return new SecurityMasterAccountingEventRequest(
             request.RunId,
             periodStart,
@@ -110,6 +121,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             securities,
             resolvedPositions,
             FactorSchedule: factorSchedule.Count > 0 ? factorSchedule : null,
+            ActualActivity: actualActivity,
             AmountTolerance: request.AmountTolerance);
     }
 
@@ -357,15 +369,15 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     // (readable under ADR-024 increment 4a), or null when it declares none or cannot be read here.
     private static RateUnit? ReadDeclaredCouponRateUnit(SecurityEconomicDefinitionRecord definition)
     {
-        if (definition.LegacyAssetSpecificTerms is not { } retained || ResolveTermsAssetClass(definition) is not { } assetClass)
-        {
+        if (ResolveTermsAssetClass(definition) is not { } assetClass)
             return null;
-        }
+        if (definition.LegacyAssetSpecificTerms is not { } retained)
+            return SecurityRecordRateUnit.ReadEconomic(definition.EconomicTerms);
 
         var declared = SecurityVersionedTerms.ReadDeclaredScheduleConventions(assetClass, retained);
         return declared.Status == SecurityDeclaredConventionsStatus.Declared
             ? RateUnitNormalizer.ParseCouponRateUnit(declared.Block.CouponRateUnit)
-            : null;
+            : SecurityRecordRateUnit.Read(assetClass, retained);
     }
 
     private static SecurityAccountingRule? ToAccountingRule(SecurityEconomicDefinitionRecord definition)

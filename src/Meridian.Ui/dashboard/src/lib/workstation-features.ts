@@ -1,5 +1,5 @@
 import { ACCOUNTING_NAVIGATION_ITEMS } from "@/lib/accounting-navigation";
-import { WORKSTATION_ROUTE_CATALOG, workspacePath, type WorkstationRouteKey } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, marketDataDeskPath, workspacePath, type WorkstationRouteKey } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
 
 export interface WorkstationFeatureDefinition {
@@ -32,7 +32,9 @@ const ACCOUNTING_FEATURE_PURPOSES: Record<string, FeaturePurpose> = {
   today: { description: "Review today's accounting work, close blockers, and next actions.", keywords: ["daily close", "accounting overview"] },
   "operations-continuity": { description: "Follow the close checklist, handoffs, decisions, and retained evidence.", keywords: ["close workflow", "handoff", "month end"] },
   "close-calendar": { description: "Review accounting periods, close dates, and upcoming deadlines.", keywords: ["period close", "month end", "deadlines"] },
-  ledger: { description: "Explore ledger balances and trial balance, preview group consolidation, and prepare intercompany elimination drafts for review. Open retained disposal tax results from posted journal details.", keywords: ["general ledger", "trial balance", "account balances", "intercompany balances", "intercompany eliminations", "elimination journals", "consolidate entities", "disposal tax", "tax character", "recognized gain or loss", "deferred loss"] },
+  ledger: { description: "Explore posted ledger balances, trial balance and retained disposal tax results.", keywords: ["general ledger", "trial balance", "account balances", "disposal tax", "tax character", "recognized gain or loss", "deferred loss"] },
+  "factor-paydown": { description: "Preview factor paydown and prepare an evidence-bound review draft.", keywords: ["principal paydown", "factor", "basis relief"] },
+  consolidation: { description: "Preview group consolidation and prepare intercompany elimination drafts for review.", keywords: ["intercompany balances", "intercompany eliminations", "elimination journals", "consolidate entities"] },
   adjustments: { description: "Review and prepare journal entries and accounting adjustments.", keywords: ["journal entries", "debits credits", "adjustment"] },
   "capital-accounts": { description: "Review investor capital balances and retained capital-account activity.", keywords: ["investor balances", "capital statements"] },
   "capital-calls": { description: "Review capital calls, contributions, and funding obligations.", keywords: ["investor funding", "contributions", "commitments"] },
@@ -92,6 +94,7 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("dataImport", "Import data", "Load a file, preview its records, and validate the import before committing it to a governed data workflow.", ["upload data", "import file", "csv import"]),
     feature("dataProviders", "Providers", "Review provider catalog, onboarding posture, connection health, and routing evidence.", ["data provider health", "data connections", "connection status"]),
     feature("dataQuotes", "Market data", "Inspect quotes, trades, depth, charts, and staged tickets.", ["live quotes", "prices", "market charts", "ticker"], { paletteLabel: "Live quotes" }),
+    { ...feature("dataQuotes", "Options screening", "Explore calls and puts, construct a strategy basket, and inspect dated broker assessments.", ["options", "delta", "option chain", "broker assessment", "strategy basket"], { id: "data-options", paletteLabel: "Options screening" }), route: marketDataDeskPath("options") },
     feature("dataOperations", "Ingestion operations", "Preview, trigger, and review historical data backfill jobs.", ["historical prices", "price history", "historical data", "backfill", "ingestion operations"], { id: "data-backfills", paletteLabel: "Backfill queues" }),
     // The Backfill queue view used to be reachable only from the Data in-page tab strip; with the
     // sidebar as the single sub-route navigation it needs its own entry. Its own id: the

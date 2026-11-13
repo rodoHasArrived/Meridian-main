@@ -136,19 +136,19 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     public void TryGetPendingUpgrade_ReportsTheDeclaredAndCurrentVersions()
     {
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(V1Text), out var declared, out var current).Should().BeTrue();
-        (declared, current).Should().Be((1, 4));
+        (declared, current).Should().Be((1, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(UnstampedText), out declared, out current).Should().BeTrue();
-        (declared, current).Should().Be((1, 4));
+        (declared, current).Should().Be((1, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("MBS", Json(V1Text), out declared, out current).Should().BeTrue("an alias reads as its class");
-        (declared, current).Should().Be((1, 4));
+        (declared, current).Should().Be((1, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", Json(V2Text), out declared, out current).Should().BeTrue();
-        (declared, current).Should().Be((2, 4));
+        (declared, current).Should().Be((2, 6));
 
         SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", Json(V1Text), out _, out current).Should().BeTrue();
-        current.Should().Be(3);
+        current.Should().Be(5);
     }
 
     // ── The missing test: version 1 reads exactly as version 2 ──────────────────────────────────
@@ -410,7 +410,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     }
 
     [Fact]
-    public void Since_PreservesEarlierTermsAndAppendsOnlyTheCalculationCompanions()
+    public void Since_PreservesEarlierTermsAndAppendsOnlyTheDeclaredOptionalFields()
     {
         SecurityAssetTermsSchema.Fields("StructuredCredit")
             .Where(static field => field.SinceTermsVersion == 2)
@@ -436,35 +436,48 @@ public sealed class SecurityAssetClassTermsUpgraderTests
             .Select(static field => field.Key).Should().Equal("cashFlowContract");
         foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit" })
         {
-            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.SinceTermsVersion > 1)
+            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.SinceTermsVersion > 1 && field.SinceTermsVersion <= 4 && field.Key != "rateUnit")
                 .Select(static field => (field.Key, field.SinceTermsVersion))
                 .Should().Equal(("scheduleConventions", 2), ("callSchedule", 3), ("putSchedule", 3), ("cashFlowContract", 4));
         }
 
+        SecurityAssetTermsSchema.Fields("Bond").Should().NotContain(static field => field.Key == "rateUnit");
+        var rateUnitVersions = new[]
+        {
+            ("Deposit", 2), ("CertificateOfDeposit", 5), ("CommercialPaper", 2), ("TreasuryBill", 2),
+            ("Repo", 2), ("CashSweep", 2), ("Swap", 4), ("DirectLoan", 3), ("StructuredCredit", 6),
+            ("Swaption", 2), ("CapFloor", 2), ("StructuredNote", 2)
+        };
+        foreach (var (assetClass, since) in rateUnitVersions)
+            SecurityAssetTermsSchema.Fields(assetClass).Should().ContainSingle(
+                field => field.Key == "rateUnit" && field.SinceTermsVersion == since && !field.Required);
+        SecurityAssetTermsSchema.AssetClasses.Where(assetClass => SecurityAssetTermsSchema.Field(assetClass, "rateUnit") is not null)
+            .Should().BeEquivalentTo(rateUnitVersions.Select(static item => item.Item1));
+
         SecurityAssetTermsSchema.ElementFields("Swap", "legs").Where(static field => field.SinceTermsVersion > 1)
             .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("scheduleConventions", 2));
-        SecurityAssetTermsSchema.Fields("Swap").Where(static field => field.SinceTermsVersion > 1)
+        SecurityAssetTermsSchema.Fields("Swap").Where(static field => field.SinceTermsVersion > 1 && field.Key != "rateUnit")
             .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("cashFlowContract", 3));
-        SecurityAssetTermsSchema.Fields("DirectLoan").Where(static field => field.SinceTermsVersion > 1)
+        SecurityAssetTermsSchema.Fields("DirectLoan").Where(static field => field.SinceTermsVersion > 1 && field.Key != "rateUnit")
             .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("cashFlowContract", 2));
 
         foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses
                      .Where(static name => name is not ("StructuredCredit" or "Bond" or "CertificateOfDeposit" or "Swap" or "DirectLoan")))
         {
-            SecurityAssetTermsSchema.Fields(assetClass).Should().OnlyContain(
+            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.Key != "rateUnit").Should().OnlyContain(
                 field => field.SinceTermsVersion == 1,
-                $"{assetClass} has never added a top-level term at a later terms version");
+                $"{assetClass} has added only its explicitly pinned optional rate-unit term at a later terms version");
         }
     }
 
     [Fact]
     public void GetReadsTermsThrough_ResolvesThroughTheCatalog()
     {
-        SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit").Should().Be(5);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(4);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(4);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("Swap").Should().Be(3);
-        SecurityAssetClassCatalog.GetReadsTermsThrough("DirectLoan").Should().Be(2);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit").Should().Be(6);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(5);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Swap").Should().Be(4);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("DirectLoan").Should().Be(3);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Equity").Should().Be(1);
         SecurityAssetClassCatalog.GetReadsTermsThrough(null).Should().Be(1);
         SecurityAssetClassCatalog.GetReadsTermsThrough("Nope").Should().Be(1);
@@ -594,19 +607,20 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     [Fact]
     public void ReadsTermsThrough_IsTheReadableVersionAboveTheWriteVersion_AndTheWriteVersionOtherwise()
     {
-        StructuredCredit.ReadsTermsThrough.Should().Be(5);
-        (StructuredCredit with { ReadableTermsVersion = null }).ReadsTermsThrough.Should().Be(4);
-        (StructuredCredit with { ReadableTermsVersion = 1 }).ReadsTermsThrough.Should().Be(4, "a node always reads what it writes");
-        (StructuredCredit with { ReadableTermsVersion = 6 }).ReadsTermsThrough.Should().Be(6);
-        (StructuredCredit with { TermsVersion = 5 }).ReadsTermsThrough
-            .Should().Be(5, "a future writer can meet the readable version without changing the current write ceiling");
+        StructuredCredit.ReadsTermsThrough.Should().Be(6);
+        (StructuredCredit with { ReadableTermsVersion = null }).ReadsTermsThrough.Should().Be(6);
+        (StructuredCredit with { ReadableTermsVersion = 1 }).ReadsTermsThrough.Should().Be(6, "a node always reads what it writes");
+        var expanding = StructuredCredit with { ReadableTermsVersion = 7 };
+        expanding.ReadsTermsThrough.Should().Be(7);
+        (expanding with { TermsVersion = 7 }).ReadsTermsThrough
+            .Should().Be(7, "a future writer can meet the readable version without changing the current write ceiling");
     }
 
     [Fact]
     public void GetTermsVersion_ResolvesThroughTheCatalog()
     {
-        SecurityAssetClassCatalog.GetTermsVersion("StructuredCredit").Should().Be(4);
-        SecurityAssetClassCatalog.GetTermsVersion(" mbs ").Should().Be(4);
+        SecurityAssetClassCatalog.GetTermsVersion("StructuredCredit").Should().Be(6);
+        SecurityAssetClassCatalog.GetTermsVersion(" mbs ").Should().Be(6);
         SecurityAssetClassCatalog.GetTermsVersion(null).Should().Be(1);
         SecurityAssetClassCatalog.GetTermsVersion("Nope").Should().Be(1);
 

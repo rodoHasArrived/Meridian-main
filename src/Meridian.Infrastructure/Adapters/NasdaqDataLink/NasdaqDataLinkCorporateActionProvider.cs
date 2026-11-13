@@ -86,7 +86,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
         try
         {
             using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Nasdaq Data Link corporate actions returned {StatusCode} for {Ticker}; skipping.",

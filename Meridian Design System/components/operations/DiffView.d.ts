@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * DiffView — before → after field changes for review/audit rails. Each change renders as a
  * row: small-caps field label, struck red-washed "before", arrow, green-washed "after".
@@ -21,4 +22,4 @@ export interface DiffViewProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Shown when `changes` is empty. @default "No changes" */
   emptyLabel?: React.ReactNode;
 }
-export declare function DiffView(props: DiffViewProps): JSX.Element;
+export declare function DiffView(props: DiffViewProps): React.JSX.Element;

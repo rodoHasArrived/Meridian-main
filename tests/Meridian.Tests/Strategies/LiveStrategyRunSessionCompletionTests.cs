@@ -34,6 +34,8 @@ public sealed class LiveStrategyRunSessionCompletionTests
 
         outcome!.State.Should().Be(OperationTerminalState.Succeeded);
         var result = (await fixture.ReloadAsync())!.Metrics!;
+        double.IsNaN(result.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(result.Metrics.ProfitFactor).Should().BeTrue();
         double.IsNaN(result.Metrics.Xirr).Should().BeTrue("this session has no closed-trade IRR calculation");
         result.EngineMetadata!.CoverageWarnings.Should().Contain(warning => warning.Contains("XIRR", StringComparison.Ordinal));
         var history = await fixture.ReadHistoryAsync();

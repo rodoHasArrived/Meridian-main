@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.Composition;
+using Meridian.Contracts.CashFlows;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Identity.Auth;
 using Meridian.Storage.SecurityMaster;
@@ -48,6 +49,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     private const string SignedInOperator = "casey.doyle";
 
     private const string FxPairInvalidReason = "[fx_currency_pair_invalid] BaseCurrency and QuoteCurrency must differ.";
+    private const string CalculationOnlyReason = "'cashFlowContract' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
 
     private const string CreateRoute = "create";
     private const string AmendRoute = "amend";
@@ -126,10 +128,8 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
            "cannot carry a patch, so repair it first.";
 
     [Theory]
-    [InlineData(4,
-        "assetClassTermsVersion '4' for asset class 'Bond' is readable but not writable on this node: it reads versions 1 through 4 and writes version 3. Submit the terms at version 3, or apply the change from a node that writes version 4.")]
-    [InlineData(5,
-        "Unsupported assetClassTermsVersion '5' for asset class 'Bond'; this node reads versions 1 through 4.")]
+    [InlineData(6,
+        "Unsupported assetClassTermsVersion '6' for asset class 'Bond'; this node reads versions 1 through 5.")]
     public async Task Create_StampedAboveTheWriteVersion_Returns400WithTheSpecificRefusalReason(int stamp, string reason)
     {
         var securityId = Guid.NewGuid();
@@ -143,6 +143,58 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
 
         await AssertRefusedAsync(response, reason);
         await harness.AssertNothingWrittenAsync();
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(5)]
+    public async Task Create_AtAnAdmittedBondStamp_PreservesHistoricalTermsAndWritesTheCanonicalRecord(int stamp)
+    {
+        var securityId = Guid.NewGuid();
+        using var harness = new CanonicalServiceHarness();
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master",
+            CreateRequest(securityId, "Bond", AheadOfWriteFixtures.BondTerms(stamp, withBlock: false)),
+            WebJson);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var detail = (await response.Content.ReadFromJsonAsync<SecurityDetailDto>(WebJson))!;
+        detail.SecurityId.Should().Be(securityId);
+        detail.AssetSpecificTerms.GetProperty("couponRate").GetDecimal().Should().Be(4.25m);
+        detail.AssetSpecificTerms.GetProperty("maturity").GetString().Should().Be("2030-01-01");
+        detail.AssetSpecificTerms.TryGetProperty("bondWorkflow", out _).Should().BeFalse(
+            "admitting a newer stamp never invents workflow terms on a historical bond");
+        await harness.EventStore.Received(1).AppendAsync(
+            securityId, 0, Arg.Any<IReadOnlyList<SecurityMasterEventEnvelope>>(), Arg.Any<CancellationToken>());
+        await harness.Store.Received(1).UpsertProjectionAsync(
+            Arg.Is<SecurityProjectionRecord>(projection => projection.SecurityId == securityId), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Create_WithACalculationOnlyCompanion_Returns400DespiteItsAdmittedVersion()
+    {
+        var securityId = Guid.NewGuid();
+        var terms = BondWithReadOnlyCompanion();
+        FluentActions.Invoking(() => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms("Bond", terms)).Should().NotThrow();
+        using var harness = new CanonicalServiceHarness();
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service);
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/security-master", CreateRequest(securityId, "Bond", terms), WebJson);
+
+        await AssertRefusedAsync(response, CalculationOnlyReason);
+        await harness.AssertNothingWrittenAsync();
+    }
+
+    private static JsonElement BondWithReadOnlyCompanion()
+    {
+        var terms = JsonNode.Parse(AheadOfWriteFixtures.BondTerms(stamp: 5, withBlock: false).GetRawText())!.AsObject();
+        var contract = new ContractualCashFlowContract(new(2024, 1, 1), new(2030, 1, 1), "USD",
+            [new("main", 1000, 6, DayCountConvention.Actual365, .0425m)]);
+        terms["cashFlowContract"] = JsonSerializer.SerializeToNode(contract, WebJson);
+        return JsonSerializer.SerializeToElement(terms);
     }
 
     [Fact]
@@ -254,29 +306,25 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
     }
 
     [Fact]
-    public async Task AmendTermBlock_OnARowStampedAboveTheWriteVersion_Returns400WithTheWriteVersionReason()
+    public async Task AmendTermBlock_OnAReadableCalculationOnlyRow_Returns400WithTheAuthoringRefusalReason()
     {
-        // The block passes the route's own pre-check; the service refuses the stamp the block
-        // amendment carries over from the stored row. This answered 500 before.
+        // The principal block and row stamp are admitted. The service still refuses to author
+        // the retained calculation-only companion carried over from the stored row.
         var securityId = Guid.NewGuid();
         var queryService = Substitute.For<ISecurityMasterQueryService>();
-        var terms = JsonNode.Parse(AheadOfWriteFixtures.SwapAtWriteVersion)!.AsObject();
-        terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2;
-        var swapTerms = JsonSerializer.SerializeToElement(terms);
+        var terms = BondWithReadOnlyCompanion();
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(Detail(securityId, "Swap", swapTerms, version: 2));
+            .Returns(Detail(securityId, "Bond", terms, version: 2));
         using var harness = new CanonicalServiceHarness();
-        harness.Seed(securityId, "Swap", swapTerms);
+        harness.Seed(securityId, "Bond", terms);
         await using var app = await CreateAppAsync(queryService, harness.Service);
 
         using var response = await app.GetTestClient().PutAsJsonAsync(
-            $"/api/security-master/{securityId}/terms/legs",
-            TermBlockRequest(expectedVersion: 2, swapTerms.GetProperty("legs")),
+            $"/api/security-master/{securityId}/terms/principalSchedule",
+            TermBlockRequest(expectedVersion: 2, JsonSerializer.SerializeToElement(Array.Empty<object>())),
             WebJson);
 
-        await AssertRefusedAsync(response,
-            "assetClassTermsVersion '2' for asset class 'Swap' is readable but not writable on this node: it reads " +
-            "versions 1 through 3 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.");
+        await AssertRefusedAsync(response, CalculationOnlyReason);
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -410,6 +458,15 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         await harness.AssertNothingWrittenAsync();
     }
 
+    // These fault fixtures represent events written before exact equity-capital retention.
+    // A current event with a complete equityCapital module can safely replay without its flat copy.
+    private static SecurityEconomicDefinitionRecord WithoutHistoricalEquityReplayEvidence(SecurityEconomicDefinitionRecord stored)
+    {
+        var economic = JsonNode.Parse(stored.EconomicTerms.GetRawText())!.AsObject();
+        economic.Remove("equityCapital");
+        return stored with { LegacyAssetSpecificTerms = null, EconomicTerms = JsonSerializer.SerializeToElement(economic) };
+    }
+
     [Fact]
     public async Task Amend_OfAStoredEquityEventWithoutItsRetainedTerms_Returns500WithoutTheReason()
     {
@@ -421,7 +478,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             securityId,
             "Equity",
             JsonSerializer.SerializeToElement(new { schemaVersion = 1, shareClass = "A", classification = "Common" }),
-            stored => stored with { LegacyAssetSpecificTerms = null });
+            WithoutHistoricalEquityReplayEvidence);
         var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
         await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service, handlerLog);
 
@@ -709,7 +766,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             securityId,
             "Equity",
             StoredPreferredEquity,
-            stored => stored with { LegacyAssetSpecificTerms = null });
+            WithoutHistoricalEquityReplayEvidence);
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(PreferredEquityDetail(securityId));
         var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();

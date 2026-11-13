@@ -138,7 +138,9 @@ public sealed class CorporateActionIngestOrchestrator
                 ? "coverage-unreported"
                 : string.Join(", ", outcome.Failures.Select(failure => failure.Scope is null
                     ? failure.Code : $"{failure.Scope}:{failure.Code}"));
-            errors.Add($"{providerId}/{ticker}: corporate-action fetch coverage {outcome.Status} ({codes}).");
+            errors.Add($"{providerId}/{ticker}: corporate-action fetch coverage {outcome.Status} " +
+                $"({outcome.Status.ToString().ToLowerInvariant()}; {codes}). {outcome.Reason} " +
+                $"{outcome.WithheldObservationCount.ToString(CultureInfo.InvariantCulture)} observation(s) withheld.");
         }
 
         foreach (var (record, ticker) in securities)
@@ -158,6 +160,8 @@ public sealed class CorporateActionIngestOrchestrator
                 {
                     var fetched = await provider.FetchWithOutcomeAsync(ticker!, record.SecurityId, ct).ConfigureAwait(false);
                     RecordFetchOutcome(provider.ProviderId, ticker!, fetched);
+                    if (!fetched.IsComplete)
+                        continue;
                     foreach (var command in fetched.Actions)
                     {
                         if (command.SecurityId != record.SecurityId)

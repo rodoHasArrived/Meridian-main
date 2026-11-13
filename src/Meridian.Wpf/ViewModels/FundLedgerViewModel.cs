@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
@@ -80,9 +81,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private FundLedgerDimensionView? _selectedLedgerDimension;
     private FundTrialBalanceLine? _selectedTrialBalanceLine;
     private FundJournalLine? _selectedJournalEntry;
-    private string _selectedLedgerDimensionDisplayText = "Consolidated Fund View";
+    private string _selectedLedgerDimensionDisplayText = "Gross Fund View";
     private string _selectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
-    private string _selectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+    private string _selectedLedgerDimensionStatusText = "Gross ledger totals are shown before intercompany eliminations.";
     private string _selectedLedgerLinkedAccountsText = "0";
     private string _selectedLedgerTrialBalanceLinesText = "0";
     private string _selectedLedgerJournalEntriesText = "0";
@@ -95,6 +96,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private PrivateCapitalCloseScope? _privateCapitalCloseScope;
 
     private readonly DesktopAuthenticationSession? _authenticationSession;
+    public IntercompanyAgreementWorkspace? Agreements { get; }
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -108,7 +110,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null,
         IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
         IFinancialOperationsCommandCenterReadService? financialOperationsCommandCenterReadService = null,
-        DesktopAuthenticationSession? authenticationSession = null)
+        DesktopAuthenticationSession? authenticationSession = null,
+        IWorkstationIntercompanyAgreementApiClient? intercompanyAgreementClient = null)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -122,6 +125,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
         _financialOperationsCommandCenterReadService = financialOperationsCommandCenterReadService;
         _authenticationSession = authenticationSession;
+        Agreements = intercompanyAgreementClient is null ? null : new IntercompanyAgreementWorkspace(intercompanyAgreementClient);
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut += OnAgreementSessionChanged;
+            _authenticationSession.SignedIn += OnAgreementSessionChanged;
+        }
         ReconciliationSection.OperatorText = ResolveReconciliationOperator();
 
         AccountQueueTable = new WorkstationTableModel<FundAccountSummary>(
@@ -1005,7 +1014,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 UpdateAccountingRecordWorkbenchPresentation();
                 UpdateReportPackWorkbenchPresentation();
                 ApplyPrivateCapitalCloseCockpit(privateCapitalCloseCockpit);
-            });
+            }).Task.Unwrap();
         }
         else
         {
@@ -1051,8 +1060,23 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut -= OnAgreementSessionChanged;
+            _authenticationSession.SignedIn -= OnAgreementSessionChanged;
+        }
+        Agreements?.Dispose();
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         DisposeReconciliationWorkbench();
+    }
+
+    private void OnAgreementSessionChanged(object? sender, EventArgs e)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is not null && !dispatcher.CheckAccess())
+            dispatcher.Invoke(() => Agreements?.ResetSession());
+        else
+            Agreements?.ResetSession();
     }
 
     private async Task<FundProfileDetail?> ResolveActiveFundAsync(
@@ -1119,9 +1143,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFlowBuckets.Clear();
         SelectedCashFlowEntry = null;
         SelectedLedgerDimension = null;
-        SelectedLedgerDimensionDisplayText = "Consolidated Fund View";
+        SelectedLedgerDimensionDisplayText = "Gross Fund View";
         SelectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
-        SelectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+        SelectedLedgerDimensionStatusText = "Gross ledger totals are shown before intercompany eliminations.";
         SelectedLedgerLinkedAccountsText = "0";
         SelectedLedgerTrialBalanceLinesText = "0";
         SelectedLedgerJournalEntriesText = "0";
@@ -1319,8 +1343,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             new(
                 Key: "consolidated",
-                DisplayName: "Consolidated Fund View",
-                CoverageText: $"1 ledger slice · {consolidatedLinkedAccountCount} linked account(s) · {consolidatedTrialBalanceLineCount} trial-balance line(s) · {consolidatedJournalEntryCount} journal entry(s) across the full fund view.",
+                DisplayName: "Gross Fund View",
+                CoverageText: $"1 ledger slice · {consolidatedLinkedAccountCount} linked account(s) · {consolidatedTrialBalanceLineCount} trial-balance line(s) · {consolidatedJournalEntryCount} journal entry(s) across the gross fund view, before intercompany eliminations.",
                 StatusText: "Shows the complete fund ledger, including generic postings that are not tied to a specific financial account.",
                 ExpectedScopeCount: 1,
                 MaterializedScopeCount: consolidatedSlice is null ? 0 : 1,
@@ -1414,9 +1438,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             VisibleJournal.Clear();
             SelectedTrialBalanceLine = null;
             SelectedJournalEntry = null;
-            SelectedLedgerDimensionDisplayText = "Consolidated Fund View";
+            SelectedLedgerDimensionDisplayText = "Gross Fund View";
             SelectedLedgerDimensionCoverageText = "Full fund ledger coverage is shown until account-linked ledger rows are available.";
-            SelectedLedgerDimensionStatusText = "Consolidated ledger posture is active.";
+            SelectedLedgerDimensionStatusText = "Gross ledger totals are shown before intercompany eliminations.";
             SelectedLedgerLinkedAccountsText = "0";
             SelectedLedgerTrialBalanceLinesText = "0";
             SelectedLedgerJournalEntriesText = "0";

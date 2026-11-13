@@ -1,3 +1,4 @@
+import { DesignSystemStatus } from "@/design-system/status";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -27,7 +28,7 @@ import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
-import { DepthChart } from "@/components/charts";
+import { DepthQuantityIllustration } from "@/screens/depth-quantity-illustration";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
@@ -196,7 +197,7 @@ export function LiveQuotesScreen() {
             ))}
             {workspaceVm.hasSymbols ? <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span> : null}
             {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
-            {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+            {marketVm.stale ? <DesignSystemStatus status="stale">Stale</DesignSystemStatus> : null}
             <FreshnessChip
               {...freshnessInputFromLifecycle(vm.requestStatus.market, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Market panels")}
             />
@@ -332,17 +333,7 @@ export function LiveQuotesScreen() {
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.orderbookState} />
                   {marketVm.orderbook.bids.length > 0 || marketVm.orderbook.asks.length > 0 ? (
-                    <div
-                      className="overflow-hidden rounded-[var(--radius-card,2px)] border border-border/70 bg-background/40"
-                      role="img"
-                      aria-label={`Order-book depth profile for ${activeSymbol}: cumulative bid and ask size around the mid price.`}
-                    >
-                      <DepthChart
-                        bids={marketVm.orderbook.bids.map((level) => ({ price: level.price, size: level.size }))}
-                        asks={marketVm.orderbook.asks.map((level) => ({ price: level.price, size: level.size }))}
-                        mid={marketVm.orderbook.midPrice ?? null}
-                      />
-                    </div>
+                    <DepthQuantityIllustration key={activeSymbol} book={marketVm.orderbook} />
                   ) : null}
                   <DepthLadder
                     ladder={marketVm.depthLadder}
@@ -1197,7 +1188,7 @@ function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel
         x={sparkline.labelX}
         y={sparkline.highLabelY}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
+        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
@@ -1208,7 +1199,7 @@ function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel
         x={sparkline.labelX}
         y={sparkline.lowLabelY}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
+        fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"

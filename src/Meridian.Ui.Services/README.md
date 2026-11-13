@@ -6,10 +6,39 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-01
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Services
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`Services/Accounting/WorkstationEntityConsolidationApiClient` consumes the shared entity timeline,
+period list and consolidation preview/draft routes without calculating finance locally. Responses
+must retain the requested organization/entity/as-of or consolidation scope. Its companion
+`WorkstationManualJournalApiClient` lets Accounting Configure review the same retained server
+drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
+tenant authority. Refused, stale and unavailable responses never produce local success.
+
+The shared entity/consolidation API client supplies authorized organization/entity/book/period
+choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
+scope and server-calculated capabilities; no workstation client derives financial truth locally.
+See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
+
+`WorkstationIntercompanyAgreementApiClient` and `IntercompanyAgreementWorkspace` consume the shared
+tenant-scoped registry and advisory journal-line routes. The workspace retains unsaved/conflicting
+input, server capabilities, exact approved versions, evidence and review history without duplicating
+agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
+and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
+typed fixed-income reads preserve nullable and nested financial values. API request serialization
+continues to emit numbers; compact storage, pretty-print and retained calculation serializers are
+unchanged. The endpoint precision regression exercises the real shared client against both wire forms.
 
 `DataSamplingService.EstimateSampleSizeAsync` calls `GET /api/sampling/estimate?symbol=...` once per requested symbol and combines the server's population and recommended size; it previously POSTed a body the route does not accept.
 
@@ -56,6 +85,15 @@ API acknowledgements fail the save with fixed error text; there is no local plai
 Batch exports reject duplicate queue entries, skip cancelled attempts, and serialize atomic job-store writes with observable failures. Initial creation and manual or scheduled requeues persist before publishing to workers. Cancellation and removal persist before signalling an execution token or releasing job ownership; failed writes restore the previous status and keep queued work retryable. Successful cancellations and removals remain effective after restart; completion and failure notifications follow durable history and execution cleanup so subscribers can queue a repeat or retry. Raw, JSONL, and CSV are supported; Parquet is rejected until a physical writer exists. JSONL accounting uses the actual decompressed artifact path. CSV discovers all columns, quotes every cell, and fails with rejected row numbers before replacing an artifact. Backfill checkpoint mutations serialize per job and reclaim locks after the last holder or waiter leaves, including cancellation and persistence failures. Activity-feed persistence coalesces pending snapshots while preserving waiter completion and shutdown draining.
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
+
+`Services/ColorPalette.cs` supplies the Design System 4.3.0 runtime colors used by WPF brush registries,
+ScottPlot, and QuantScript. Core ARGB values mirror `Meridian.Wpf/Styles/ThemeTokens.xaml`: actual
+traces use graphite, comparisons neutral ink, positive/negative retain green/red, and information
+uses interaction blue. Semantic washes match the corresponding 20% XAML brushes. The palette is
+static and keeps light card/data backgrounds paired with their ink in either window theme; this
+update does not introduce dynamic chart theming. `ColorPaletteTests` checks C#/XAML parity and
+existing notification, progress, latency, and stream-status mapping boundaries.
+
 
 Activity-feed startup and legacy migration retain the file generation they opened while allowing
 the ordered persistence worker to publish an atomic replacement. Snapshot reads share deletion
@@ -153,6 +191,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

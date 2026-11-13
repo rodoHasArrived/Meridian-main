@@ -907,6 +907,8 @@ export interface ReplayStatus {
 }
 
 export interface OrderSubmitRequest {
+  clientOrderId?: string;
+  sessionIntent?: "RegularOnly" | "QueueNextSession" | "ExtendedHours";
   symbol: string;
   side: "Buy" | "Sell";
   type: "Market" | "Limit" | "Stop";
@@ -920,6 +922,7 @@ export interface OrderResult {
   orderId: string | null;
   reason: string | null;
   errorMessage?: string | null;
+  requiresOrderReconciliation?: boolean;
   /**
    * True when a risk escalation parked the order for governed approval. Nothing routed,
    * but the queue entry can still execute once an operator approves it, so this is not a
@@ -1058,6 +1061,7 @@ export interface StrategyPlotToolTabPayload {
 }
 
 export interface StrategyPlotToolPayload {
+  analyticsEvidenceStatus?: "Retained" | "Illustrative" | "Unavailable" | "Unverified";
   workspace: unknown;
   statistics: unknown;
   studies: unknown[];
@@ -1224,6 +1228,10 @@ export interface DataQueryResult {
   rowCount: number;
   truncated: boolean;
   elapsedMs: number;
+  /** Opaque owner-bound receipt for this exact, completely retained execution. */
+  executionId?: string | null;
+  retainedRowCount?: number | null;
+  executionExpiresAt?: string | null;
 }
 
 export interface DataWorkspaceResponse {
@@ -1242,6 +1250,11 @@ export type DataOperationsExportRecord = DataExportRecord;
 export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;
 
 export interface TradingPosition {
+  /** Authoritative source values only; exposure is not a substitute for signed market value. */
+  marketValue?: string | null;
+  currency?: string | null;
+  weight?: string | null;
+  weightBasis?: string | null;
   markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   positionKey?: string;
   symbol: string;
@@ -1439,6 +1452,7 @@ export interface AssetCashFlowProjectionRun {
   generatedAt: string;
   sourceDomain: string;
   sourceEntityId: string;
+  blocker?: { code: string; reason: string } | null;
 }
 
 export interface AssetProjectedCashFlow {

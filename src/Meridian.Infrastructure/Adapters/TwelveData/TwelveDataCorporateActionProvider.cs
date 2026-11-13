@@ -6,6 +6,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -36,17 +37,20 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
     private readonly ICredentialContext? _credentials;
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
     private readonly ILogger<TwelveDataCorporateActionProvider> _logger;
 
     public TwelveDataCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<TwelveDataCorporateActionProvider> logger,
-        ICredentialContext? credentials = null)
+        ICredentialContext? credentials = null,
+        RateLimiterRegistry? rateLimiterRegistry = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -84,9 +88,9 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         using var client = _httpClientFactory.CreateClient(HttpClientNames.TwelveDataHistorical);
         client.BaseAddress ??= new Uri("https://api.twelvedata.com/");
 
-        var dividends = await FetchDividendsAsync(client, normalizedSymbol, securityId, apiKey, ct)
+        var dividends = await FetchDividendsAsync(client, normalizedSymbol, securityId, ct)
             .ConfigureAwait(false);
-        var splits = await FetchSplitsAsync(client, normalizedSymbol, securityId, apiKey, ct)
+        var splits = await FetchSplitsAsync(client, normalizedSymbol, securityId, ct)
             .ConfigureAwait(false);
 
         var result = CorporateActionFetchResult.Combine(dividends, splits);
@@ -107,15 +111,16 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         HttpClient client,
         string symbol,
         Guid securityId,
-        string apiKey,
         CancellationToken ct)
     {
-        var url = $"/dividends?symbol={Uri.EscapeDataString(symbol)}&range=full&apikey={Uri.EscapeDataString(apiKey)}";
+        var url = $"/dividends?symbol={Uri.EscapeDataString(symbol)}&range=full";
 
         try
         {
-            using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            using var response = await SendAsync(client, url, ct).ConfigureAwait(false);
+            if (response is null)
+                return CorporateActionFetchResult.Failed("credentials-missing");
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Twelve Data dividends returned {StatusCode} for {Symbol}; skipping dividend actions.",
@@ -155,15 +160,16 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         HttpClient client,
         string symbol,
         Guid securityId,
-        string apiKey,
         CancellationToken ct)
     {
-        var url = $"/splits?symbol={Uri.EscapeDataString(symbol)}&range=full&apikey={Uri.EscapeDataString(apiKey)}";
+        var url = $"/splits?symbol={Uri.EscapeDataString(symbol)}&range=full";
 
         try
         {
-            using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            using var response = await SendAsync(client, url, ct).ConfigureAwait(false);
+            if (response is null)
+                return CorporateActionFetchResult.Failed("credentials-missing");
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Twelve Data splits returned {StatusCode} for {Symbol}; skipping split actions.",
@@ -196,6 +202,34 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         {
             _logger.LogWarning("Failed to fetch Twelve Data splits for {Symbol}.", symbol);
             return CorporateActionFetchResult.FromException(ex, "splits");
+        }
+    }
+
+    private async Task<HttpResponseMessage?> SendAsync(HttpClient client, string url, CancellationToken ct)
+    {
+        while (true)
+        {
+            var apiKey = ResolveApiKey();
+            if (string.IsNullOrWhiteSpace(apiKey))
+                return null;
+
+            var budget = _rateLimiterRegistry.GetOrCreate(
+                ProviderId, apiKey, "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(7500));
+            await budget.WaitForSlotAsync(ct).ConfigureAwait(false);
+            // The selected owner can rotate or delete its credential while waiting.
+            // Never send a captured old key after pacing, or charge a different key's quota.
+            if (!string.Equals(apiKey, ResolveApiKey(), StringComparison.Ordinal))
+                continue;
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{url}&apikey={Uri.EscapeDataString(apiKey)}");
+            request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+            var response = await client.SendAsync(request, ct).ConfigureAwait(false);
+            var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _rateLimiterRegistry.TimeProvider);
+            if (retryAfter is { } delay)
+                budget.ApplyCooldown(delay);
+            else if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                budget.ApplyCooldown(TimeSpan.FromMinutes(1));
+            return response;
         }
     }
 

@@ -13,7 +13,8 @@ namespace Meridian.Tests.Integration;
 internal static class AlpacaPaperSandbox
 {
     public const string OptInVariable = "MERIDIAN_RUN_ALPACA_PAPER_SANDBOX";
-    public const string OrdersOptInVariable = "MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS";
+    /// <summary>The one opt-in for every test that places, replaces or cancels paper orders.</summary>
+    public const string OrdersOptInVariable = "MERIDIAN_RUN_ALPACA_PAPER_ORDERS";
     public const string MarketDataOptInVariable = "MERIDIAN_RUN_ALPACA_MARKET_DATA";
     public const string PaperHost = "paper-api.alpaca.markets";
     public const string MarketDataHost = "data.alpaca.markets";
@@ -88,6 +89,13 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
     /// </summary>
     public void DropNextOrderSubmissionResponse() => _handler.DropNextSubmissionResponse();
 
+    /// <summary>
+    /// Lets exactly one next order submission exceed the share ceiling, for a test whose point
+    /// is that the broker refuses an order the account cannot afford. Dollar-sized orders stay
+    /// refused, and the allowance is spent by that one submission whatever the broker answers.
+    /// </summary>
+    public void AllowNextSubmissionBeyondTheShareCeiling() => _handler.AllowNextSubmissionBeyondCeiling();
+
     public HttpClient CreateClient(string name) => new(_handler, disposeHandler: false)
     {
         Timeout = TimeSpan.FromSeconds(30)
@@ -115,12 +123,15 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
         private int _mutationCount;
         private int _submissionCount;
         private int _dropNextSubmissionResponse;
+        private int _allowNextSubmissionBeyondCeiling;
 
         public int RequestCount => Volatile.Read(ref _requestCount);
 
         public int MutationCount => Volatile.Read(ref _mutationCount);
 
         public int SubmissionCount => Volatile.Read(ref _submissionCount);
+
+        public void AllowNextSubmissionBeyondCeiling() => Interlocked.Exchange(ref _allowNextSubmissionBeyondCeiling, 1);
 
         public void DropNextSubmissionResponse() => Interlocked.Exchange(ref _dropNextSubmissionResponse, 1);
 
@@ -145,7 +156,11 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
                     $"Sandbox certification refuses {request.Method} {path}; it is outside this run's allowed surface.");
 
             if (isOrderMutation && request.Method != HttpMethod.Delete)
-                await RefuseOversizedOrderAsync(request, cancellationToken).ConfigureAwait(false);
+            {
+                var ceilingWaived = request.Method == HttpMethod.Post
+                    && Interlocked.Exchange(ref _allowNextSubmissionBeyondCeiling, 0) == 1;
+                await RefuseOversizedOrderAsync(request, ceilingWaived, cancellationToken).ConfigureAwait(false);
+            }
 
             Interlocked.Increment(ref _requestCount);
             if (isOrderMutation)
@@ -168,7 +183,8 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
         /// Bounds what an order submission or amendment may ask for, whatever built the request:
         /// a quantity no larger than the sandbox ceiling, and never a dollar-sized order.
         /// </summary>
-        private static async Task RefuseOversizedOrderAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        private static async Task RefuseOversizedOrderAsync(
+            HttpRequestMessage request, bool ceilingWaived, CancellationToken cancellationToken)
         {
             var body = request.Content is null
                 ? string.Empty
@@ -182,11 +198,24 @@ internal sealed partial class AlpacaPaperSandboxHttpClientFactory(AlpacaPaperSan
                 : null;
             var withinCeiling = !hasQuantity
                 || decimal.TryParse(quantityText, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed)
-                    && parsed > 0m && parsed <= AlpacaPaperSandbox.MaxOrderQuantity;
+                    && parsed > 0m && (ceilingWaived || parsed <= AlpacaPaperSandbox.MaxOrderQuantity);
             // A submission must state a quantity; an amendment may leave it unchanged.
             if (sizedInDollars || !withinCeiling || request.Method == HttpMethod.Post && !hasQuantity)
                 throw new InvalidOperationException(
                     "Sandbox certification refuses an order that is dollar-sized or larger than its share ceiling.");
         }
+    }
+}
+
+/// <summary>
+/// Gates every test that places, replaces or cancels paper orders, at the gateway and through
+/// the order manager alike, behind one opt-in that is separate from the read-only checks.
+/// </summary>
+public sealed class AlpacaPaperOrdersFactAttribute : FactAttribute
+{
+    public AlpacaPaperOrdersFactAttribute()
+    {
+        if (!AlpacaPaperSandbox.IsOptedIn(AlpacaPaperSandbox.OrdersOptInVariable))
+            Skip = "Real paper-broker order validation places and cancels paper orders and is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_ORDERS=1 and the documented paper credentials.";
     }
 }

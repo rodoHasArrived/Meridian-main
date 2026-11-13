@@ -140,7 +140,8 @@ public sealed class TwelveDataCorporateActionProviderTests
         var provider = new TwelveDataCorporateActionProvider(
             factory,
             configuration,
-            NullLogger<TwelveDataCorporateActionProvider>.Instance);
+            NullLogger<TwelveDataCorporateActionProvider>.Instance,
+            rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var results = await provider.FetchAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
 
@@ -183,7 +184,8 @@ public sealed class TwelveDataCorporateActionProviderTests
         var provider = new TwelveDataCorporateActionProvider(
             factory,
             configuration,
-            NullLogger<TwelveDataCorporateActionProvider>.Instance);
+            NullLogger<TwelveDataCorporateActionProvider>.Instance,
+            rateLimiterRegistry: TwelveDataTestBudget.Create());
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
@@ -209,7 +211,8 @@ public sealed class TwelveDataCorporateActionProviderTests
         return new TwelveDataCorporateActionProvider(
             factory,
             configuration,
-            NullLogger<TwelveDataCorporateActionProvider>.Instance);
+            NullLogger<TwelveDataCorporateActionProvider>.Instance,
+            rateLimiterRegistry: TwelveDataTestBudget.Create());
     }
 
     private static HttpResponseMessage JsonResponse(string json)

@@ -1129,6 +1129,7 @@ export interface ChartOfAccountsNode {
   symbol?: string | null;
   financialAccountId?: string | null;
   isArchived: boolean;
+  intercompanyRole?: "Receivable" | "Payable" | "Revenue" | "Expense" | "TranslationReserve" | null;
 }
 
 export interface JournalEntryTemplateLine {
@@ -1605,6 +1606,8 @@ export interface ManualJournalEntryLine {
   evidenceLink?: string | null;
   ledgerAccountSymbol?: string | null;
   ledgerAccountFinancialAccountId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+  transactionCurrency?: { currency: string; amount: string | number; fxRateToFunctional: string | number } | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {
@@ -1647,6 +1650,8 @@ export interface TreasuryLedgerContext {
 }
 
 export interface ManualJournalEntryDraft {
+  intercompanyFx?: { amount: string | number; currency: string; rate: string | number; rateId: string | null;
+    rateSetId: string; rateSetRevision: number; policyId: string; policyRevision: string; configurationHash: string } | null;
   /** Opaque server-retained asset candidate authority; the browser never authors it. */
   assetAccountingDraft?: unknown | null;
   assetAccountingPostIntent?: unknown | null;

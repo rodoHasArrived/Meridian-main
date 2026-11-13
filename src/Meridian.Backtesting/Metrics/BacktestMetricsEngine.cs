@@ -88,7 +88,7 @@ internal static class BacktestMetricsEngine
             .ToList();
         var mean = excess.Average();
         var std = StdDev(excess);
-        return std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(252.0);
+        return std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(365.0);
     }
 
     private static double ComputeSortino(
@@ -106,7 +106,7 @@ internal static class BacktestMetricsEngine
         if (downside.Count == 0)
             return double.PositiveInfinity;
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
-        return downsideDev < 1e-10 ? 0.0 : mean / downsideDev * Math.Sqrt(252.0);
+        return downsideDev < 1e-10 ? 0.0 : mean / downsideDev * Math.Sqrt(365.0);
     }
 
     private static double ResolveDailyRiskFreeRate(
@@ -117,7 +117,7 @@ internal static class BacktestMetricsEngine
         var annualRate = annualRfrSeries is not null && annualRfrSeries.TryGetValue(date, out var value)
             ? value
             : annualRfrFallback;
-        return annualRate / 252.0;
+        return annualRate / 365.0;
     }
 
     private static (decimal maxDrawdown, decimal maxDrawdownPct, int recoveryDays) ComputeMaxDrawdown(
@@ -245,7 +245,7 @@ internal static class BacktestMetricsEngine
                 // disposal gain is P&L. Per-share consideration/income/fees are posted
                 // separately by the portfolio and must also remain in symbol attribution.
                 + assetEventsBySymbol[symbol].Sum(flow =>
-                    flow.RealizedPnl + flow.UnitsImpacted * flow.CashPerShare);
+                    flow.RealizedPnl + flow.UnitsImpacted * flow.CashPerShare - flow.BasisReturned);
             // Use account positions so offsetting long/short books survive aggregate netting.
             var unrealised = finalSnapshot.Accounts.Count > 0
                 ? positionsBySymbol[symbol].Sum(position => position.UnrealizedPnl)

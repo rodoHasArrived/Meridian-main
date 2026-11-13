@@ -19,9 +19,8 @@ namespace Meridian.Application.SecurityMaster;
 /// <remarks>
 /// Economic terms are resolved once, up front, into a typed <see cref="StructuredCashFlowTerms"/> via
 /// <see cref="StructuredCashFlowTermsResolver"/> rather than probed inline; source freshness is
-/// surfaced as a typed <see cref="StructuredCashFlowStaleness"/> on every projection; and a fresh
-/// base-scenario projection can be routed to the ledger through
-/// <see cref="IStructuredCashFlowLedgerBridge"/> instead of being display-only. A record that declares
+/// surfaced as a typed <see cref="StructuredCashFlowStaleness"/> on every projection. Governed recurring
+/// accruals use the amortization bridge's explicit accrual window. A record that declares
 /// schedule conventions (ADR-025) projects through the schedule kernel instead of the legacy coupon
 /// walk (SecurityMasterCashFlowService.DeclaredConventions.cs).
 /// </remarks>
@@ -30,7 +29,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     private readonly ISecurityMasterCashFlowStore _store;
     private readonly IReadOnlyList<IStructuredCashFlowProvider> _providers;
     private readonly ISecurityMasterQueryService _queryService;
-    private readonly IStructuredCashFlowLedgerBridge _ledgerBridge;
     private readonly ILogger<SecurityMasterCashFlowService> _logger;
     private readonly ISecurityForwardCurveProvider? _forwardCurves;
     private readonly IBusinessDayCalendarSource? _calendars;
@@ -40,41 +38,15 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
-    /// <summary>Preserves the original compiled host-composition constructor.</summary>
     public SecurityMasterCashFlowService(
         ISecurityMasterCashFlowStore store,
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge,
-        ISecurityForwardCurveProvider? forwardCurves)
-        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
-    {
-    }
-
-    /// <summary>Preserves the compiled calendar-aware host-composition constructor.</summary>
-    public SecurityMasterCashFlowService(
-        IBusinessDayCalendarSource? calendars,
-        ISecurityMasterCashFlowStore store,
-        IEnumerable<IStructuredCashFlowProvider> providers,
-        ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge,
-        ISecurityForwardCurveProvider? forwardCurves)
-        : this(calendars, store, providers, queryService, logger, ledgerBridge, forwardCurves, null, null)
-    {
-    }
-
-    public SecurityMasterCashFlowService(
-        ISecurityMasterCashFlowStore store,
-        IEnumerable<IStructuredCashFlowProvider> providers,
-        ISecurityMasterQueryService queryService,
-        ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
         ISecurityForwardCurveProvider? forwardCurves = null,
         IBondCalculationPolicy? bondPolicy = null,
         ISecurityCashFlowReceiptStore? receiptStore = null)
-        : this(null, store, providers, queryService, logger, ledgerBridge, forwardCurves, bondPolicy, receiptStore)
+        : this(null, store, providers, queryService, logger, forwardCurves, bondPolicy, receiptStore)
     {
     }
 
@@ -85,7 +57,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
         ISecurityForwardCurveProvider? forwardCurves = null,
         IBondCalculationPolicy? bondPolicy = null,
         ISecurityCashFlowReceiptStore? receiptStore = null,
@@ -96,7 +67,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         _providers = providers?.ToList() ?? [];
         _queryService = queryService;
         _logger = logger;
-        _ledgerBridge = ledgerBridge ?? new StructuredCashFlowLedgerBridge();
         _forwardCurves = forwardCurves;
         _calendars = calendars;
         _bondPolicy = bondPolicy;
@@ -187,8 +157,8 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             // Curves are read as of the projection date, not the wall clock, so a valuation as of
             // another date projects floating legs from the curve in force on that date.
             var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
-            var projection = BuildCalculatedProjectionCore(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves);
+            var projection = SecurityCashFlowScheduleRowCodec.Current(BuildCalculatedProjectionCore(
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, _calendars, forwardCurves));
             if (projection.ScheduleEvidence is { CoverageGaps.Count: > 0 } evidence)
             {
                 // Coverage gaps are informational (ADR-025 decision 2): the schedule still projects.
@@ -238,26 +208,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             };
     }
 
-    public async Task<StructuredCashFlowLedgerPostingResult> BuildLedgerPostingsAsync(
-        Guid securityId,
-        string? financialAccountId = null,
-        DateOnly? through = null,
-        CancellationToken ct = default)
-    {
-        // Accruals post from actual (base-scenario) cash flows only; rate-shocked scenarios are
-        // analysis-only and are additionally rejected by the bridge.
-        var projection = await GetProjectionAsync(securityId, StructuredCashFlowScenario.Base, ct).ConfigureAwait(false);
-        if (projection is null)
-        {
-            return StructuredCashFlowLedgerPostingResult.Blocked(
-                securityId, "No cash flow projection is available for this security.");
-        }
-
-        var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
-        var symbol = ResolveSymbol(security, securityId);
-        return _ledgerBridge.BuildCouponAccrualPostings(projection, symbol, financialAccountId, through);
-    }
-
     private static StructuredCashFlowStaleness EvaluateStaleness(DateTimeOffset? lastUpdatedUtc)
     {
         if (lastUpdatedUtc is not DateTimeOffset lastUpdated)
@@ -268,32 +218,6 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         return DateTimeOffset.UtcNow - lastUpdated > StalenessThreshold
             ? StructuredCashFlowStaleness.Stale
             : StructuredCashFlowStaleness.Fresh;
-    }
-
-    private static string ResolveSymbol(SecurityDetailDto? security, Guid securityId)
-    {
-        if (security is not null)
-        {
-            var ticker = security.Identifiers
-                .FirstOrDefault(i => i.Kind == SecurityIdentifierKind.Ticker)?.Value;
-            if (!string.IsNullOrWhiteSpace(ticker))
-            {
-                return ticker.Trim().ToUpperInvariant();
-            }
-
-            var anyIdentifier = security.Identifiers.FirstOrDefault()?.Value;
-            if (!string.IsNullOrWhiteSpace(anyIdentifier))
-            {
-                return anyIdentifier.Trim().ToUpperInvariant();
-            }
-
-            if (!string.IsNullOrWhiteSpace(security.DisplayName))
-            {
-                return security.DisplayName.Trim().ToUpperInvariant();
-            }
-        }
-
-        return securityId.ToString("N");
     }
 
     /// <summary>
@@ -336,7 +260,8 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
         StructuredCashFlowTerms? resolvedTerms = null)
         => BuildCalculatedProjectionCore(security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-            asOf, calendars, forwardCurves, resolvedTerms, unifiedEconomics: false);
+            asOf, calendars, forwardCurves, resolvedTerms, unifiedEconomics: false, rejectNegativeInterest: false,
+            factorAwareEconomics: false);
 
     private static StructuredCashFlowProjectionDto BuildCalculatedProjectionCore(
         SecurityDetailDto security,
@@ -347,7 +272,8 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         DateTimeOffset asOf,
         IBusinessDayCalendarSource? calendars,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null,
-        StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true)
+        StructuredCashFlowTerms? resolvedTerms = null, bool unifiedEconomics = true, bool rejectNegativeInterest = true,
+        bool factorAwareEconomics = true)
     {
         var terms = resolvedTerms ?? StructuredCashFlowTermsResolver.Resolve(security);
         if (!unifiedEconomics && terms.Legs is not null)
@@ -394,10 +320,10 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         {
             if (declared.IsDeclared)
                 return BuildDeclaredBondLegProjection(security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-                    terms, declared, asOf, asOfDate, forwardCurves, unifiedEconomics);
+                    terms, declared, asOf, asOfDate, forwardCurves, unifiedEconomics, rejectNegativeInterest);
             return BuildLegBasedProjection(
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-                terms, factorSchedule, issueDate, maturity, asOf, asOfDate, forwardCurves);
+                terms, factorSchedule, issueDate, maturity, asOf, asOfDate, forwardCurves, rejectNegativeInterest);
         }
 
         if (terms.HasStepCouponSchedule || terms.InflationIndex is not null)
@@ -436,13 +362,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             return BuildDeclaredProjection(
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc, asOf, asOfDate, terms,
                 declared, principalBasis, outstanding, contractualPrincipal.Length > 0,
-                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0, unifiedEconomics);
+                hasAssertedPrincipalSchedule && inWindowContractual.Length == 0, unifiedEconomics, rejectNegativeInterest);
         }
 
         // The coupon's unit is the field's declared default (the record declares none on this legacy
         // path); without one the projection is blocked rather than guessing from the magnitude.
         var couponField = SecurityRateFieldUnits.CouponFieldKey(security.AssetClass);
-        var coupon = RateUnitNormalizer.Normalize(security.AssetClass, couponField, terms.CouponRate.Value);
+        var coupon = RateUnitNormalizer.Normalize(security.AssetClass, couponField, terms.CouponRate.Value, terms.RecordRateUnit);
         if (!coupon.TryGetFraction(out var couponFraction))
         {
             return Empty(RateUnitNormalizer.DescribeRefusal(coupon, security.AssetClass, couponField));
@@ -451,6 +377,9 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         var annualRate = couponFraction + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
+            if (rejectNegativeInterest)
+                return Empty(SecurityInterestSupport.NegativeInterestReason) with { Blocker = SecurityInterestSupport.NegativeInterestBlocker };
+            // Frozen v1/v2 receipt replay retains its original arithmetic.
             annualRate = 0m;
         }
 
@@ -461,6 +390,13 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         if (periods.Length == 0)
         {
             return Empty();
+        }
+
+        if (factorAwareEconomics && SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass is "Bond" or "StructuredCredit")
+        {
+            return BuildFactorAwareFixedProjection(security, sourceKind, scenario, staleness,
+                sourceLastUpdatedUtc, asOf, asOfDate, terms, periods, principalBasis,
+                annualRate, hasAssertedPrincipalSchedule, contractualPrincipal);
         }
 
         if (contractualPrincipal.Length > 0)
@@ -512,7 +448,12 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 ToUtcDateTimeOffset(date),
                 RoundCash(principal),
                 interest,
-                principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis)));
+                principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis))
+            {
+                // Retained by the current row contract so daily accruals survive receipt replay.
+                InterestMeasuredFrom = accrualStart,
+                InterestMeasuredTo = date
+            });
         }
 
         return new StructuredCashFlowProjectionDto(
@@ -622,7 +563,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         DateOnly maturity,
         DateTimeOffset asOf,
         DateOnly asOfDate,
-        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves)
+        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves, bool rejectNegativeInterest)
     {
         var legs = terms.Legs!;
         var missingLegRate = legs.Any(leg => IsLegRateMissing(leg, ResolveCurve(leg, forwardCurves)));
@@ -634,9 +575,16 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 var curve = ResolveCurve(leg, forwardCurves);
                 legSchedules.Add(new StructuredCashFlowLegSchedule(
                     leg.LegId, leg.RateKind, leg.Direction,
-                    BuildLegSchedule(security.AssetClass, leg, terms, scenario, issueDate, maturity, asOfDate, curve),
+                    BuildLegSchedule(security.AssetClass, leg, terms, scenario, issueDate, maturity, asOfDate, curve, rejectNegativeInterest),
                     DescribeRateSource(leg, curve)));
             }
+        }
+        catch (NegativeInterestUnsupportedException)
+        {
+            return new StructuredCashFlowProjectionDto(
+                security.SecurityId, sourceKind, scenario, asOf, [], staleness,
+                sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: SecurityInterestSupport.NegativeInterestReason)
+            { Blocker = SecurityInterestSupport.NegativeInterestBlocker };
         }
         catch (RateUnitUnavailableException ex)
         {
@@ -691,7 +639,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         DateOnly issueDate,
         DateOnly maturity,
         DateOnly asOfDate,
-        SecurityForwardCurve? curve = null)
+        SecurityForwardCurve? curve = null, bool rejectNegativeInterest = true)
     {
         if (IsLegRateMissing(leg, curve))
             return [];
@@ -719,7 +667,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             // An amortizing or accreting leg accrues on the notional in effect at the period start;
             // without a schedule this is the leg notional for every period, as before.
             var periodNotional = leg.NotionalOn(accrualStart, notional);
-            var annualRate = ResolveLegAnnualRate(assetClass, leg, scenario, curve, accrualStart, asOfDate);
+            var annualRate = ResolveLegAnnualRate(assetClass, leg, scenario, curve, accrualStart, asOfDate, rejectNegativeInterest, terms.RecordRateUnit);
             var interest = annualRate > 0m
                 ? RoundCash(periodNotional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
                 : 0m;
@@ -747,7 +695,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         StructuredCashFlowScenario scenario,
         SecurityForwardCurve? curve,
         DateOnly accrualStart,
-        DateOnly asOfDate)
+        DateOnly asOfDate, bool rejectNegativeInterest, RateUnit? recordUnit)
     {
         // Fixed legs pay their contractual rate regardless of scenario; floating legs reset with
         // rates, so the scenario shift applies to them only. A period that has already reset (its
@@ -756,7 +704,9 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         // the last fixing (flat forward).
         if (leg.RateKind == CashFlowLegRateKind.Fixed)
         {
-            var fixedRate = LegRateFraction(assetClass, leg, "fixedRate", leg.FixedRate ?? 0m);
+            var fixedRate = LegRateFraction(assetClass, leg, "fixedRate", leg.FixedRate ?? 0m, recordUnit);
+            if (fixedRate < 0m && rejectNegativeInterest)
+                throw new NegativeInterestUnsupportedException();
             return fixedRate < 0m ? 0m : fixedRate;
         }
 
@@ -772,12 +722,14 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         // A forward-curve rate is a fraction by the curve contract. A retained fixing or current index
         // rate reads through the leg's declared unit, then the field default; otherwise it blocks.
         var indexFraction = forecastRate ? index
-            : LegRateFraction(assetClass, leg, recordedFixing is not null ? "resetSchedule.fixingRate" : "currentIndexRate", index);
+            : LegRateFraction(assetClass, leg, recordedFixing is not null ? "resetSchedule.fixingRate" : "currentIndexRate", index, recordUnit);
         var rate = indexFraction + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
         if (leg.CapRate is { } cap)
-            rate = Math.Min(rate, LegRateFraction(assetClass, leg, "capRate", cap));
+            rate = Math.Min(rate, LegRateFraction(assetClass, leg, "capRate", cap, recordUnit));
         if (leg.FloorRate is { } floor)
-            rate = Math.Max(rate, LegRateFraction(assetClass, leg, "floorRate", floor));
+            rate = Math.Max(rate, LegRateFraction(assetClass, leg, "floorRate", floor, recordUnit));
+        if (rate < 0m && rejectNegativeInterest)
+            throw new NegativeInterestUnsupportedException();
         return rate < 0m ? 0m : rate;
     }
 
@@ -854,16 +806,18 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     /// coupon leg keys them flat. A rate without a declared unit throws
     /// <see cref="RateUnitUnavailableException"/>, which blocks the projection with its reason.
     /// </summary>
-    private static decimal LegRateFraction(string assetClass, StructuredCashFlowLeg leg, string member, decimal value)
+    private static decimal LegRateFraction(string assetClass, StructuredCashFlowLeg leg, string member, decimal value, RateUnit? recordUnit = null)
     {
         var key = SecurityAssetClassCatalog.GetOrDefault(assetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
             ? "legs." + member
             : member;
-        var resolution = RateUnitNormalizer.Normalize(assetClass, key, value, RateUnitNormalizer.FromCouponRateUnit(leg.RateUnit));
+        var resolution = RateUnitNormalizer.Normalize(assetClass, key, value, RateUnitNormalizer.FromCouponRateUnit(leg.RateUnit) ?? recordUnit);
         return resolution.TryGetFraction(out var fraction)
             ? fraction
             : throw new RateUnitUnavailableException(RateUnitNormalizer.DescribeRefusal(resolution, assetClass, key));
     }
+
+    private sealed class NegativeInterestUnsupportedException : Exception { }
 
     private sealed class RateUnitUnavailableException(string message) : Exception(message);
 

@@ -33,10 +33,11 @@ import {
   readStoredOperatingScope,
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
-import { OperatingScopeChip, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
-import { AttentionPill } from "@/components/meridian/attention-pill";
+import { WorkflowContinuityDock, WorkflowContextDisclosure } from "@/components/meridian/workflow-continuity-dock";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
+import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
+import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -78,7 +79,6 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
-import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
 import { DesignSystemMasthead } from "@/design-system/primitives";
@@ -139,6 +139,8 @@ const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-
 const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
 const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
+const FactorPaydownScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.FactorPaydownScreen })));
+const ConsolidationWorkflowScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ConsolidationWorkflowScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
 const CapitalCallIssuanceScreen = lazy(() => import("@/screens/capital-call-issuance-screen").then((module) => ({ default: module.CapitalCallIssuanceScreen })));
@@ -740,6 +742,7 @@ function AppShell({
   );
   const settingsRouteElement = (
     <SettingsScreen
+      fundAccountId={operatingScopeInput.fundAccountId}
       session={session}
       overview={overview}
       strategy={strategy}
@@ -814,6 +817,8 @@ function AppShell({
   ]);
 
   return (
+    <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
+    <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <ScopePickerOpenerProvider open={openScopePicker}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
     <ShellStatusSignalsProvider value={shellStatusSignals}>
@@ -832,10 +837,14 @@ function AppShell({
         commandTrigger={shell.commandPaletteTrigger}
         onOpenCommandPalette={() => setCommandOpen(true)}
         trustStrip={shell.trustStrip}
+        provenance={dataProvenance}
+        onRetryLiveData={onRetryDemoModeProbe}
+        retryBusy={demoModeProbeBusy}
+        decisionBrief={shell.workflowContinuity.decisionBrief}
+        attention={shell.attention}
         session={session}
         actions={(
           <>
-            <AttentionPill attention={shell.attention} />
             <ActivationHeaderProgress status={firstRunStatus} />
             <ActivityCenter />
             <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
@@ -843,19 +852,6 @@ function AppShell({
         )}
       />
 
-      {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
-          workstation is showing simulated, seeded, or sample data the operator keeps
-          seeing it. The masthead environment badge carries the visible label, so this is
-          a thin stripe; it stays a full banner for a LIVE or unresolved session and for
-          unresolved provenance, which needs the retry control instead of a false
-          SIMULATED claim. Renders nothing for real data. */}
-      <DataProvenanceBanner
-        provenance={dataProvenance}
-        onRetryLiveData={onRetryDemoModeProbe}
-        retryBusy={demoModeProbeBusy}
-        environment={session?.environment ?? null}
-        labeledInMasthead
-      />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
       <div className="workstation-shell">
@@ -864,6 +860,7 @@ function AppShell({
           density="compact"
           operatingContextScope={operatingScopeInput}
           attention={workspaceAttention}
+          attentionItems={shell.workflowContinuity.operatorFocusCommandItems}
         />
 
         <main
@@ -893,8 +890,8 @@ function AppShell({
             )}
             overflowActions={<CopyLinkButton operatingScope={operatingScopeInput} />}
             routeKey={shell.routeFocus.routeKey}
-            scope={(
-              <OperatingScopeChip
+            context={(
+              <WorkflowContinuityDock
                 viewModel={shell.workflowContinuity}
                 onEditOperatingContext={() => setScopePickerOpen(true)}
                 scopeDimensionsInEffect={scopeDimensionsInEffect}
@@ -903,6 +900,7 @@ function AppShell({
             breadcrumbItems={breadcrumbItems}
             workspace={headerWorkspace}
             session={session}
+            dataProvenance={dataProvenance}
             onRefresh={refresh}
             refreshing={loading || refreshStatus.inFlight}
           />
@@ -955,12 +953,14 @@ function AppShell({
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
+                  <Route path="/accounting/factor-paydown" element={<FactorPaydownScreen />} />
+                  <Route path="/accounting/consolidation" element={<ConsolidationWorkflowScreen />} />
                   <Route path="/accounting/trial-balance" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
                   <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
-                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen />} />
+                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen session={session} />} />
                   <Route path="/accounting/margin-control" element={<MarginControlCenterScreen />} />
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
@@ -980,7 +980,7 @@ function AppShell({
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
-                  <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
+                  <Route path="/strategy/*" element={<StrategyScreen data={strategy} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/data/quotes" element={<MarketDataScreen />} />
                   <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/alerts" element={<LegacyWorkspaceRedirect />} />
@@ -1063,6 +1063,7 @@ function AppShell({
             <WorkspaceNav
               className="workstation-nav-sheet"
               operatingContextScope={operatingScopeInput}
+              attentionItems={shell.workflowContinuity.operatorFocusCommandItems}
               onNavigate={() => setNavOpen(false)}
               attention={workspaceAttention}
             />
@@ -1075,6 +1076,8 @@ function AppShell({
     </ShellStatusSignalsProvider>
     </CrossScreenCountsProvider>
     </ScopePickerOpenerProvider>
+    </EntityInspectorProvider>
+    </MetricPassportSessionProvider>
   );
 }
 

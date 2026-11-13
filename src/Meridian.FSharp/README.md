@@ -6,7 +6,7 @@ module_id: SRC-FSHARP
 path: src/Meridian.FSharp
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-08-04
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.FSharp
@@ -34,6 +34,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## API contract notes
 
+- Bond workflow conventions use the registered optional `BondWorkflowTerms` economic module.
+  Typed overnight, indexation and coupon-entitlement fields retain explicit zero and false values.
+  The v5 flat codec and economic-only replay share admission and serialization; historical records
+  without the module keep their prior flat bytes and omit the additive economic field.
+
 - Flat Security Master day-count fields, including bond coupon structures and swap legs, use the
   shared `Meridian.Contracts.SecurityMaster.DayCountConvention` enum. JSON accepts declared market
   spellings and enum names, writes canonical market labels, and refuses unsupported supplied values
@@ -48,6 +53,7 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   accreting leg; positive, strictly ascending, within the swap's effective and maturity dates) and
   a `ResetSchedule` (strictly ascending reset dates with the fixing once observed). Both are empty
   for legs that do not track them and serialize as `notionalSchedule` / `resetSchedule` arrays.
+- Bond terms version 5 retains the declared `bondWorkflow` conventions through F# domain mapping and serialization. Earlier versions remain readable without synthesizing missing fixing, inflation, principal, or signed-rate conventions.
 - The bond economic definition carries the record's issue date, payment frequency, call flag and
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.
@@ -206,3 +212,17 @@ Daily direct-lending PIK, cash-interest and commitment-fee accrual use one-day s
 periods and period-aware day count. Formula version one retains its existing amounts, including
 Thirty360's Actual360 denominator and the terminal-date edge. Manual rate resets retain their
 explicit request date; automatic reset and capitalization cadence require separate persisted policy.
+
+
+ADR-027 S3-E codec records now store shared module records for exercise, currency pairs,
+notionals, profile envelopes, listing detail, credit protection, structured payoffs, private
+valuations, coupon structures, principal, swap legs, covenants, maturity, scalar rates, issuers,
+pool detail, financing, sweep and funds. Forwarding getters preserve codec/read APIs without
+another scalar copy. `Interop.SecurityStructures.fs` serializes the structural module homes;
+the permanent legacy-event upcaster remains read-only. Replay tests cover each contracted group.
+
+The completed field-home census covers all 32 class payloads and 52 canonical module types.
+Equity capital retains preferred/convertible structures, exact raw-rate modules retain source
+basis points and cadence labels, and the declared-schedule home retains complete windows,
+notices and calendars. A reflection regression forbids adding per-class scalar storage again.
+Legacy compatibility getters read their shared module; they do not keep a second value.

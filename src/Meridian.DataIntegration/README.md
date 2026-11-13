@@ -6,12 +6,24 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.DataIntegration
 
-QuickBooks imports and verification share one local refresh gate, including connection-bound verifier instances. After a successful remote token exchange, complete generation-checked rotation persists independently of caller cancellation. Import success and failure records must match the resulting credential generation, so an older import cannot overwrite or verify replacement credentials. Ordinary network reads remain cancellable. These controls have synthetic regression coverage; they do not establish live Intuit compatibility.
+QuickBooks import and bound verification serialize refreshes, retain complete generation-checked
+rotations after caller cancellation, and refuse stale import success or failure updates after
+operator credential replacement. Verification remains separate from journal posting authority.
+
+CSV and IB Flex statement imports share SHA-256 byte computation while retaining uppercase row
+checksums and duplicate identities. UTF-8 encoding, CSV row and unformatted XML element bytes,
+source-file hash casing and null rejection retain their existing contracts; retained imports remain
+discoverable under the same duplicate keys.
+
+`IProviderVerificationHistoryReader` projects existing verification audit events for an exact
+tenant, connection, external account and environment. It exposes only recording time and pass/fail,
+keeps the newest bounded observations in time order, and reports truncation. An unappended pending
+audit or malformed log refuses the read; chart reads neither probe providers nor repair the vault.
 
 `IProviderCredentialOwnershipMigration` moves a reviewed retained provider-wide record into an empty
 owned scope within the encrypted vault publication boundary. Non-secret receipts support restart
@@ -219,6 +231,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
   adapters. File-date filtering and date-range discovery inspect paths relative to the configured
   data root, so dated workspace or backup directories cannot replace the data's own session date.
+  A symbol must be a single path component: path separators, a colon, `.`/`..` and wildcards are
+  refused before any file discovery, and a discovered file that resolves outside the data root or
+  is reached through a symbolic link below it is refused. The configured root itself may be a link.
   File read failures return `Success=false` with relative source paths in `FileFailures`;
   `IsPartial` identifies recovered records/bars that are incomplete. Caller cancellation propagates
   during the only or final source file as well as between files.
@@ -312,6 +327,9 @@ commands, execution simulation, diagnostics registration, UI endpoints, and fund
 data access consume `Meridian.DataIntegration.Historical.HistoricalDataQueryService` instead of
 owning file-backed historical-data query logic.
 
+`DataQualityReportGenerator` exports daily and weekly reports as JSON, CSV, HTML, or Markdown; CSV
+text cells use the Storage `SpreadsheetFormulaGuard` and HTML text values are HTML-encoded.
+
 Provider data-quality validators, analyzers, freshness SLA monitoring, report generation,
 clock-skew estimation, spread monitoring, pipeline data-loss accounting, stored market-event schema
 compatibility checks, and validation-stage counters live in this module. Connection-health
@@ -382,7 +400,7 @@ dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.cspr
 
 ### API and contract notes
 
-The QuickBooks adapter implements `IAccountingSystemProvider`, `IAccountingSystemConnectionMetadataProvider`, and `IAccountingSystemConnectionVerifier` from `Meridian.ProviderSdk.AccountingSystem`. Accounting-system DTOs remain in `Meridian.Contracts.AccountingSystem`. Custom `IQuickBooksOnlineConnectionStore` implementations must support the generation-checked rotation and verification overloads used by imports; unsupported conditional writes fail closed rather than falling back to an unconditional save.
+The QuickBooks adapter implements `IAccountingSystemProvider`, `IAccountingSystemConnectionMetadataProvider`, and `IAccountingSystemConnectionVerifier` from `Meridian.ProviderSdk.AccountingSystem`. Accounting-system DTOs remain in `Meridian.Contracts.AccountingSystem`.
 
 ### Migration and archive notes
 
@@ -465,3 +483,9 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/source/README.md`
 - `docs/source/generated/source-module-index.md`
 - `docs/architecture/module-map.md`
+
+## Reconciliation adapter ownership
+
+`Reconciliation/` owns canonical statement import, IB Flex parsing, case and durability adapters.
+FinancialOperations consumes these adapters without referencing the market-data Infrastructure
+assembly. Existing financial and tenant authority checks remain in their domain owners.

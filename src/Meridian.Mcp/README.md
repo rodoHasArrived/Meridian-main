@@ -27,6 +27,16 @@ This layer should expose AI/tooling access without mixing MCP mechanics into UI 
   operating-system process containment.
 - Tool, resource, and prompt entrypoints for MCP clients.
 
+## Accounting reads
+
+`get_run_trial_balance(runId, asOf)` reads the workstation trial-balance endpoint at an explicit
+inclusive timestamp. Configure `MeridianApi:BaseUrl` (environment key `MeridianApi__BaseUrl`, default
+`http://localhost:8080/`) and an authorized `MeridianApi:BearerToken` session where required. HTTPS is
+required for non-loopback hosts; redirects are disabled. Authentication, tenant scope and run
+visibility remain enforced by the workstation API. The tool does not open ledger archives directly,
+mutate books, or expose refused response bodies. Large responses direct callers to the export flow.
+Never commit session tokens.
+
 ## Important workflows
 
 Use this module for MCP host behavior and AI-assisted tool/resource access.

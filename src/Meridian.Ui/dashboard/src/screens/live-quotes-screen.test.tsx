@@ -242,6 +242,17 @@ describe("validateQuickTicket", () => {
     expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: "10", limitPrice: "0" })).toMatch(/limit/i);
   });
 
+  it("rejects exponent, hex, and signed numeric text instead of coercing it", () => {
+    for (const malformed of ["1e3", "0x10", "+5", "1,000", "Infinity"]) {
+      expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: malformed, limitPrice: "10" })).toBe(
+        "Enter a quantity greater than zero."
+      );
+      expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: "10", limitPrice: malformed })).toBe(
+        "Enter a limit price greater than zero."
+      );
+    }
+  });
+
   it("does not require limit price for market orders", () => {
     expect(validateQuickTicket({ side: "Buy", type: "Market", quantity: "10", limitPrice: "" })).toBeNull();
   });
@@ -1428,6 +1439,17 @@ describe("LiveQuotesScreen quick trade", () => {
     const askLevel = await screen.findByRole("button", {
       name: "Inspect AAPL ask level 1 at 188.07; Buy AAPL at 188.07"
     });
+
+    // The depth chart carries its own name and description: a single image (no wrapping
+    // role="img" around it), described by what it plots and where the levels are listed.
+    const depthCharts = screen.getAllByRole("img", { name: /depth profile/ });
+    expect(depthCharts).toHaveLength(1);
+    expect(depthCharts[0]).toHaveAccessibleName("Order-book depth profile for AAPL");
+    expect(depthCharts[0].tagName.toLowerCase()).toBe("svg");
+    expect(depthCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
+    expect(depthCharts[0]).toHaveAccessibleDescription(
+      "Cumulative bid and ask size. The quantity coverage table identifies fully and partly used displayed levels."
+    );
 
     expect(bidLevel).toHaveAttribute("aria-controls", "live-quotes-depth-level-detail");
     expect(bidLevel).toHaveAttribute("aria-expanded", "true");

@@ -11,4 +11,4 @@ export interface GridProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
-export declare function Grid(props: GridProps): JSX.Element;
+export declare function Grid(props: GridProps): React.JSX.Element;

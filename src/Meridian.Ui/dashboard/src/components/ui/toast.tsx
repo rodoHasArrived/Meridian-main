@@ -40,7 +40,7 @@ const toneClasses: Record<ToastTone, string> = {
   success: "border-l-success",
   warning: "border-l-warning",
   danger: "border-l-danger",
-  info: "border-l-primary"
+  info: "border-l-[var(--semantic-info)]"
 };
 
 export function ToastProvider({ children, maxToasts = 5 }: { children?: ReactNode; maxToasts?: number }) {
@@ -94,7 +94,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
   return (
     <div
       className={cn(
-        "flex min-w-72 max-w-md items-start gap-3 rounded-[2px] border border-l-[3px] border-border bg-popover px-3.5 py-3 text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
+        "flex min-w-72 max-w-md items-start gap-3 rounded-[var(--radius-overlay)] border border-l-[3px] border-border bg-popover px-3.5 py-3 text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
         toneClasses[toast.tone],
         className
       )}
@@ -107,7 +107,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
       {toast.action ? (
         <button
           type="button"
-          className="shrink-0 rounded-[2px] border border-border px-2 py-0.5 text-xs font-semibold text-primary hover:bg-secondary/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="shrink-0 rounded-[var(--radius-button)] border border-border px-2 py-0.5 text-xs font-semibold text-[var(--interaction-link)] hover:bg-secondary/60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
           onClick={() => {
             toast.action?.onAction();
             onDismiss?.();
@@ -120,7 +120,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
         <button
           type="button"
           aria-label="Dismiss notification"
-          className="text-muted-foreground hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="text-muted-foreground hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
           onClick={onDismiss}
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />

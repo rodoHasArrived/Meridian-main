@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { TextArea } from "@/components/ui/text-area";
+import { PrincipalIdInput } from "@/components/meridian/principal-id-input";
+import { ReportWriterExtraFilters } from "@/screens/reporting-screen.report-writer-filters";
 import { ReportWriterChartPreview } from "@/components/meridian/report-writer-chart-preview";
 import { ReportWriterGridDiffView } from "@/components/meridian/report-writer-grid-diff-view";
 import { buildReportWriterGridDiff } from "@/lib/report-writer-grid-diff";
@@ -67,6 +70,16 @@ export interface ReportWriterFormatRuleDraft {
   style: ReportWriterCellStyle;
 }
 
+/** One additional filter row; the first filter lives in the flat filterField/Operator/Value settings. */
+export interface ReportWriterFilterDraft {
+  id: string;
+  field: string;
+  operator: ReportWriterFilterOperator;
+  value: string;
+}
+
+export type ReportWriterFilterDraftField = "field" | "operator" | "value";
+
 export interface ReportWriterDraftSettings {
   name: string;
   displayName: string;
@@ -79,6 +92,8 @@ export interface ReportWriterDraftSettings {
   filterField: string;
   filterOperator: ReportWriterFilterOperator;
   filterValue: string;
+  /** Filters after the first. Every filter must match for a row to be kept (AND). */
+  extraFilters: ReportWriterFilterDraft[];
 }
 
 export interface ReportWriterCustomFormulaDraft {
@@ -260,6 +275,36 @@ export function useReportingReportWriter({
       };
     });
     setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function updateWriterExtraFilters(
+    grid: ReportingWriterGridRow,
+    update: (filters: ReportWriterFilterDraft[]) => ReportWriterFilterDraft[]
+  ) {
+    setWriterDraftSettings((current) => ({
+      ...current,
+      [grid.id]: {
+        ...current[grid.id],
+        extraFilters: update(current[grid.id]?.extraFilters ?? buildDefaultWriterDraftSettings(grid).extraFilters)
+      }
+    }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function addWriterFilter(grid: ReportingWriterGridRow) {
+    const id = `filter-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    updateWriterExtraFilters(grid, (filters) => [...filters, { id, field: "", operator: "Equals", value: "" }]);
+  }
+
+  function removeWriterFilter(grid: ReportingWriterGridRow, filterId: string) {
+    updateWriterExtraFilters(grid, (filters) => filters.filter((filter) => filter.id !== filterId));
+  }
+
+  function updateWriterFilter(grid: ReportingWriterGridRow, filterId: string, field: ReportWriterFilterDraftField, value: string) {
+    updateWriterExtraFilters(grid, (filters) => filters.map((filter) =>
+      filter.id === filterId
+        ? { ...filter, [field]: field === "operator" ? normalizeReportWriterFilterOperator(value) : value }
+        : filter));
   }
 
   function addWriterFormatRule(grid: ReportingWriterGridRow) {
@@ -545,6 +590,9 @@ export function useReportingReportWriter({
     updateWriterCustomFormula,
     updateWriterCustomDataset,
     updateWriterChartDraft,
+    addWriterFilter,
+    removeWriterFilter,
+    updateWriterFilter,
     addWriterFormatRule,
     removeWriterFormatRule,
     updateWriterFormatRule,
@@ -652,7 +700,14 @@ function buildDefaultWriterDraftSettings(grid: ReportingWriterGridRow): ReportWr
     principalId: "reporting-ops",
     filterField: firstFilter?.field ?? "",
     filterOperator: normalizeReportWriterFilterOperator(firstFilter?.operator),
-    filterValue: firstFilter?.value ?? ""
+    filterValue: firstFilter?.value ?? "",
+    // Every saved filter is carried into the draft so preview and save keep all of them.
+    extraFilters: grid.filters.slice(1).map((filter) => ({
+      id: `saved-${filter.id}`,
+      field: filter.field,
+      operator: normalizeReportWriterFilterOperator(filter.operator),
+      value: filter.value ?? ""
+    }))
   };
 }
 
@@ -871,6 +926,9 @@ interface ReportWriterDesignerGridProps {
   onCustomFormulaChange: (grid: ReportingWriterGridRow, field: ReportWriterCustomFormulaField, value: string) => void;
   onCustomDatasetChange: (grid: ReportingWriterGridRow, value: string) => void;
   onChartDraftChange: (grid: ReportingWriterGridRow, field: ReportWriterChartDraftField | "enabled", value: string) => void;
+  onFilterAdd: (grid: ReportingWriterGridRow) => void;
+  onFilterRemove: (grid: ReportingWriterGridRow, filterId: string) => void;
+  onFilterChange: (grid: ReportingWriterGridRow, filterId: string, field: ReportWriterFilterDraftField, value: string) => void;
   onFormatRuleAdd: (grid: ReportingWriterGridRow) => void;
   onFormatRuleRemove: (grid: ReportingWriterGridRow, ruleId: string) => void;
   onFormatRuleChange: (grid: ReportingWriterGridRow, ruleId: string, field: keyof Omit<ReportWriterFormatRuleDraft, "id">, value: string) => void;
@@ -900,6 +958,9 @@ export function ReportWriterDesignerGrid({
   onCustomFormulaChange,
   onCustomDatasetChange,
   onChartDraftChange,
+  onFilterAdd,
+  onFilterRemove,
+  onFilterChange,
   onFormatRuleAdd,
   onFormatRuleRemove,
   onFormatRuleChange,
@@ -936,7 +997,7 @@ export function ReportWriterDesignerGrid({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{grid.title}</h3>
-          <p className="mt-1 text-[11px] text-muted-foreground">{presentReportingIdentifier(grid.templateId)} · v{grid.templateVersion}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{grid.isNew ? "New report · not saved yet" : `${presentReportingIdentifier(grid.templateId)} · v${grid.templateVersion}`}</p>
         </div>
         <span className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline">{settings.gridKind}</Badge>
@@ -1053,7 +1114,8 @@ export function ReportWriterDesignerGrid({
           </label>
           <label className="space-y-1">
             <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(accessPrincipalIdLabel) && "uppercase tracking-[0.14em]")}>{accessPrincipalIdLabel}</span>
-            <Input
+            <PrincipalIdInput
+              principalKind={settings.principalKind}
               value={settings.principalId}
               onChange={(event) => onSettingsChange(grid, "principalId", event.target.value)}
               aria-label={`${grid.title} draft principal id`}
@@ -1066,11 +1128,11 @@ export function ReportWriterDesignerGrid({
       {settings.previewDataset === "customRows" ? (
         <label className="mt-3 block space-y-1">
           <span className="text-[10px] text-muted-foreground">Custom dataset rows</span>
-          <textarea
+          <TextArea
             value={customDatasetText}
             onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
             aria-label={`${grid.title} custom dataset rows`}
-            className="min-h-28 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground shadow-xs outline-hidden transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-28 font-mono text-xs"
             spellCheck={false}
             placeholder={'[{"sector":"Technology","strategy":"Core","marketValue":"150","pnl":"15"}]\n\nsector,strategy,marketValue,pnl\nTechnology,Core,150,15'}
           />
@@ -1160,6 +1222,13 @@ export function ReportWriterDesignerGrid({
             />
           </label>
         </div>
+        <ReportWriterExtraFilters
+          grid={grid}
+          filters={settings.extraFilters}
+          onFilterAdd={onFilterAdd}
+          onFilterRemove={onFilterRemove}
+          onFilterChange={onFilterChange}
+        />
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-[0.85fr_1.15fr]">
         <div>
@@ -1448,8 +1517,8 @@ function ReportWriterPreviewTable({ grid, preview, previousPreview }: { grid: Re
         </div>
         <Badge variant="outline">{preview.kind}</Badge>
       </div>
-      <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60">
-        <table className="min-w-full table-fixed text-left text-xs">
+      <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60" role="region" aria-label={`${grid.title} preview table scroll area`} tabIndex={0}>
+        <table className="min-w-full table-fixed text-left text-xs" aria-label={`${grid.title} preview rows`}>
           <thead className="bg-secondary/40 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
               {preview.columns.map((column) => (
@@ -1675,55 +1744,72 @@ function ReportWriterTokenChip({
       role="listitem"
       draggable={draggable}
       onDragStart={(event) => onDragStart(event, token, dragOrigin ?? null)}
-      className="inline-flex max-w-full items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
+      className="inline-flex min-w-0 max-w-full flex-wrap items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
       title={token.detail}
     >
-      <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <Badge variant={token.kind === "formula" ? "warning" : token.kind === "metric" ? "success" : "outline"}>{token.kind}</Badge>
-      <span className="truncate font-mono">{token.label}</span>
-      {onMove ? (
-        <span className="ml-0.5 inline-flex shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
-            aria-label={`Move ${token.label} left`}
-            disabled={!canMovePrevious}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onMove(-1);
-            }}
-          >
-            <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
-            aria-label={`Move ${token.label} right`}
-            disabled={!canMoveNext}
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onMove(1);
-            }}
-          >
-            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </button>
+      <span className={cn("inline-flex min-w-0 flex-wrap items-center gap-1.5", (onMove || onRemove) && "w-full")}>
+        <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <Badge variant={token.kind === "formula" ? "warning" : token.kind === "metric" ? "success" : "outline"}>{token.kind}</Badge>
+        <span className="max-w-full break-all font-mono">{token.label}</span>
+      </span>
+      {(onMove || onRemove) ? (
+        <span className="inline-flex shrink-0 items-center gap-0.5">
+          {onMove ? (
+            <>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                style={{ width: 24, height: 24 }}
+                aria-label={`Move ${token.label} left`}
+                disabled={!canMovePrevious}
+                disabledReason="This token is already first in the list."
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onMove(-1);
+                }}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                style={{ width: 24, height: 24 }}
+                aria-label={`Move ${token.label} right`}
+                disabled={!canMoveNext}
+                disabledReason="This token is already last in the list."
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onMove(1);
+                }}
+              >
+                <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+              </Button>
+            </>
+          ) : null}
+          {onRemove ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              style={{ width: 24, height: 24 }}
+              aria-label={`Remove ${token.label}`}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onRemove();
+              }}
+            >
+              <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
+            </Button>
+          ) : null}
         </span>
-      ) : null}
-      {onRemove ? (
-        <button
-          type="button"
-          className="ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`Remove ${token.label}`}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onRemove();
-          }}
-        >
-          <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
-        </button>
       ) : null}
     </span>
   );
@@ -1794,10 +1880,14 @@ function buildReportWriterDraftLayoutSummary(
   savedFilterCount: number
 ): string {
   const dimensionCount = rowTokens.length + columnTokens.length;
-  const totalFilterCount = settings.filterField ? savedFilterCount + 1 : savedFilterCount;
-  const filterSummary = settings.filterField
-    ? `${totalFilterCount} filter${totalFilterCount === 1 ? "" : "s"} including draft filter`
-    : `${savedFilterCount} saved filter${savedFilterCount === 1 ? "" : "s"}`;
+  // The draft carries every saved filter, so the draft rows are the whole filter set.
+  const draftFilterCount = (settings.filterField ? 1 : 0)
+    + settings.extraFilters.filter((filter) => filter.field).length;
+  const filterSummary = draftFilterCount > 0
+    ? `${draftFilterCount} filter${draftFilterCount === 1 ? "" : "s"} in draft`
+    : savedFilterCount > 0
+      ? `No filters in draft (${savedFilterCount} saved filter${savedFilterCount === 1 ? "" : "s"} removed)`
+      : "No filters";
   return [
     `${settings.gridKind} draft`,
     `${dimensionCount} dimension${dimensionCount === 1 ? "" : "s"}`,

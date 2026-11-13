@@ -19,7 +19,9 @@ import {
 } from "@/lib/accounting-navigation";
 import { WORKSPACE_NAVIGATION_FEATURES, type WorkstationFeatureDefinition } from "@/lib/workstation-features";
 import type { WorkspaceAttentionCounts } from "@/lib/daily-control-tower";
+import { pluralizeCount } from "@/lib/format";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
+import type { AppShellOperatorFocusItem } from "@/app-shell.workflow-continuity-types";
 
 export interface WorkspaceNavSubItemViewModel {
   label: string;
@@ -49,8 +51,11 @@ export interface WorkspaceNavItemViewModel {
   ariaLabel: string;
   /** Control Tower queue items owned by this workspace; 0 renders no badge. */
   attentionCount: number;
+  /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
+  attentionTitle: string | null;
   subItems: WorkspaceNavSubItemViewModel[];
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
+  attentionSeverity: "blocked" | "review" | "info" | null;
 }
 
 export interface WorkspaceNavCurrentWorkspaceViewModel {
@@ -74,6 +79,8 @@ export interface WorkspaceNavTodayViewModel {
   ariaCurrent: "page" | undefined;
   ariaLabel: string;
   attentionCount: number;
+  /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
+  attentionTitle: string | null;
 }
 
 export interface WorkspaceNavViewModel {
@@ -108,8 +115,11 @@ export function buildWorkspaceNavViewModel(
   workspaces: WorkspaceSummary[] = WORKSPACES,
   search = "",
   operatingContextScope: AppShellOperatingScopeInput | null = null,
-  attention: WorkspaceAttentionCounts | null = null
+  attention: WorkspaceAttentionCounts | readonly AppShellOperatorFocusItem[] | null = null,
+  suppliedAttentionItems: readonly AppShellOperatorFocusItem[] = []
 ): WorkspaceNavViewModel {
+  const attentionItems: readonly AppShellOperatorFocusItem[] = Array.isArray(attention) ? attention : suppliedAttentionItems;
+  const attentionCounts = attention && !Array.isArray(attention) ? attention as WorkspaceAttentionCounts : null;
   const isHome = pathname === "/";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
@@ -128,7 +138,13 @@ export function buildWorkspaceNavViewModel(
       search
     );
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
-    const attentionCount = attention?.byWorkspace[workspace.key] ?? 0;
+    const workspaceAttention = [...new Map(attentionItems.filter((item) => item.tone !== "ready"
+      && ((visibleWorkspaces.find((candidate) => isWorkspacePathActive(item.route.split(/[?#]/)[0], candidate.key))?.key
+        ?? item.workspaceLabel.toLowerCase()) === workspace.key)).map((item) => [item.id, item])).values()];
+    const attentionSeverity = workspaceAttention.some((item) => item.tone === "blocked") ? "blocked" as const
+      : workspaceAttention.some((item) => item.tone === "review") ? "review" as const
+      : workspaceAttention.length ? "info" as const : null;
+    const attentionCount = attentionCounts?.byWorkspace[workspace.key] ?? workspaceAttention.length;
     const buildSubItem = (
       sub: WorkspaceSubrouteDefinition | AccountingNavigationItemDefinition
     ): WorkspaceNavSubItemViewModel => {
@@ -173,8 +189,12 @@ export function buildWorkspaceNavViewModel(
           : `${workspace.label} workspace, active section, ${workspace.maturity} product maturity`
         : `Open ${workspace.label} workspace, ${workspace.maturity} product maturity`}${formatAttentionAriaSuffix(attentionCount)}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
       attentionCount,
+      attentionTitle: attentionCount > 0
+        ? `${pluralizeCount(attentionCount, "item")} from ${workspace.label} in Today's finance queue`
+        : null,
       subItems,
-      subItemGroups
+      subItemGroups,
+      attentionSeverity
     };
   });
   const currentRoute = items.find((item) => item.key === currentWorkspace.key)?.route
@@ -182,7 +202,7 @@ export function buildWorkspaceNavViewModel(
 
   const contextItems = buildContextItems(pathname, currentWorkspace.key, operatingScope, search);
 
-  const todayAttentionCount = attention?.total ?? 0;
+  const todayAttentionCount = attentionCounts?.total ?? new Set(attentionItems.filter((item) => item.tone !== "ready").map((item) => item.id)).size;
   const todayRoute = appendOperatingScopeToRoute("/", operatingScope);
   const today: WorkspaceNavTodayViewModel = {
     label: "Today",
@@ -190,7 +210,10 @@ export function buildWorkspaceNavViewModel(
     active: isHome,
     ariaCurrent: isHome ? "page" : undefined,
     ariaLabel: `${isHome ? "Today, Daily Control Tower, current route" : "Open Today, the Daily Control Tower"}${formatAttentionAriaSuffix(todayAttentionCount)}`,
-    attentionCount: todayAttentionCount
+    attentionCount: todayAttentionCount,
+    attentionTitle: todayAttentionCount > 0
+      ? `${pluralizeCount(todayAttentionCount, "item")} in Today's finance queue`
+      : null
   };
 
   return {

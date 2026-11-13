@@ -391,7 +391,7 @@ describe("PortfolioScreen", () => {
 
   it.each([
     ["/portfolio", "Execution-linked holdings"],
-    ["/portfolio/attribution", "Attribution"]
+    ["/portfolio/attribution", "Run attribution evidence"]
   ])("opens %s on its own view with the sidebar as the only sub-route navigation", async (route, heading) => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: [route]
@@ -953,9 +953,9 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
 
+    await user.click(screen.getByRole("row", { name: /inspect aapl roth ira live position/i }));
     const defaultDetail = screen.getByRole("region", { name: /aapl brokerage position detail/i });
-    // One heading line names the kind of thing and the selection.
-    expect(within(defaultDetail).getByRole("heading", { name: "Brokerage position AAPL" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /all brokerage accounts detail/i })).not.toBeInTheDocument();
     expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
     const positionIdentity = within(defaultDetail).getByText("Technical details").closest("details");
     expect(positionIdentity).not.toBeNull();
@@ -967,7 +967,7 @@ describe("PortfolioScreen", () => {
     expect(positionId).toBeVisible();
 
     const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
-    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-position-detail");
+    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-active-detail");
     expect(msftRow).toHaveAttribute("aria-expanded", "false");
     expect(msftRow).toHaveClass("bg-warning/5");
     await user.click(msftRow);
@@ -1149,7 +1149,7 @@ describe("PortfolioScreen", () => {
     await user.keyboard(" ");
 
     expect(taxableRow).toHaveAttribute("aria-selected", "true");
-    expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-account-detail");
+    expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-active-detail");
     expect(taxableRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: /show alpaca paper brokerage account/i })).toHaveAttribute("aria-pressed", "true");
     const accountDetail = screen.getByRole("region", { name: /brokerage brokerage account detail/i });
@@ -1262,7 +1262,17 @@ describe("PortfolioScreen", () => {
     expect(detail).toBeDefined();
     expect(screen.getByText(/drawdown review required/i)).toBeDefined();
     expect(within(detail).getAllByText("Needs Review").length).toBeGreaterThan(0);
-    expect(screen.getByText("run-2")).toBeDefined();
+    expect(within(detail).getByRole("heading", { name: "Strategy run Volatility Carry" })).toBeInTheDocument();
+    const runReference = within(detail).getByText("run-2");
+    expect(runReference).not.toBeVisible();
+    const technicalDetails = within(detail).getByText("Technical details").closest("details");
+    expect(technicalDetails).not.toHaveAttribute("open");
+    await user.click(within(detail).getByText("Technical details"));
+    expect(technicalDetails).toHaveAttribute("open");
+    expect(runReference).toBeVisible();
+    expect(within(detail).getByRole("button", { name: "Copy Run ID" })).toBeInTheDocument();
+    expect(within(detail).getByRole("link", { name: "Open Volatility Carry evidence packet" }))
+      .toHaveAttribute("href", "/reporting/evidence?subjectKind=strategy-run&subjectId=run-2");
   });
 
   it("loads shared selected-run portfolio drill-in evidence on demand", async () => {
@@ -1393,13 +1403,20 @@ describe("PortfolioScreen", () => {
     await user.click(screen.getByRole("button", { name: "Load portfolio drill-in evidence for Mean Reversion" }));
 
     // Equity/drawdown curve renders for a multi-point profile.
-    expect(await screen.findByRole("img", { name: "Equity performance curve" })).toBeDefined();
+    const equityChart = await screen.findByRole("img", { name: "Equity and drawdown curve for Mean Reversion" });
+    expect(equityChart).toHaveAccessibleDescription(/5 points from 2026-05-01 to 2026-05-05\. Final equity 101,900, maximum drawdown -0\.80%\./);
+    // The same points are available to assistive technology as a hidden table, and the
+    // crosshair slider is exposed beside (not inside) the image.
+    const equityTable = screen.getByRole("table", { name: "Equity and drawdown by date for Mean Reversion" });
+    expect(within(equityTable).getByRole("row", { name: "2026-05-03 100,390 -0.80%" })).toBeDefined();
+    expect(equityChart.contains(screen.getByRole("slider"))).toBe(false);
 
     // The daily-return distribution reuses the same fetched points — no extra request — and
     // surfaces the signed histogram with mean, best, worst, and positive-day readouts. Scope the
     // readout assertions to the distribution card so a matching value elsewhere (e.g. the equity
     // card's max-drawdown readout) cannot satisfy them.
-    const distribution = await screen.findByRole("img", { name: "Distribution histogram" });
+    const distribution = await screen.findByRole("img", { name: "Daily return distribution for Mean Reversion" });
+    expect(distribution).toHaveAccessibleDescription(/daily returns\. Mean \+0\.38%, best \+2\.00%, worst -0\.80%/);
     const distributionCard = distribution.closest("div")!.parentElement!;
     expect(within(distributionCard).getByText("Daily return distribution")).toBeDefined();
     expect(within(distributionCard).getByText("+0.38%")).toBeDefined();

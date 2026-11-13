@@ -6,12 +6,26 @@ import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type { PaperSessionSummary, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
+vi.mock("@/lib/api/execution-audit.api", () => ({
+  searchExecutionAuditTrail: vi.fn().mockResolvedValue({ asOf: "2026-01-01T00:00:00Z", totalMatched: 0, returned: 0, entries: [], sourceAvailability: { executionAudit: true, operationsContinuity: false } })
+}));
+
 const paperPromotionEvidenceReferences = [
   "DK1_TRUST_PACKET_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
   "RUN_LINEAGE_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
   "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567",
   "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
 ];
+
+vi.mock("@/lib/api/execution-workflows.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/execution-workflows.api")>("@/lib/api/execution-workflows.api");
+  return { ...actual,
+    previewExecutionOrder: vi.fn().mockImplementation(async () => ({ fingerprint: "test", canSubmit: true, requiresApproval: false,
+      evaluatedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30_000).toISOString(), checks: [] })),
+    getJournal: vi.fn().mockResolvedValue([]),
+    getJournalSummary: vi.fn().mockResolvedValue({ orders: 0, fills: 0, coverage: "incomplete", method: "FIFO operational attribution" })
+  };
+});
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
@@ -345,6 +359,22 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("retains source order and fill prices and identifies their unavailable currency", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen(data, "/trading/orders");
+    const order = screen.getByRole("row", { name: /inspect order po-1/i });
+    const fill = screen.getByRole("row", { name: /inspect fill fl-1/i });
+    expect(within(order).getByText("414.20")).toBeInTheDocument();
+    expect(within(fill).getByText("948.20")).toBeInTheDocument();
+    expect(order).not.toHaveTextContent("$414.20");
+    expect(fill).not.toHaveTextContent("$948.20");
+    const basis = "Prices in source quote units · currency not supplied.";
+    expect(screen.getAllByText(basis)).toHaveLength(3);
+    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveTextContent(basis);
+    await user.click(fill);
+    expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toHaveTextContent(basis);
+  });
+
   it("renders a VM-owned pending state while the cockpit data loads", async () => {
     await renderTradingScreen(null, "/trading/positions");
 
@@ -401,7 +431,9 @@ describe("TradingScreen", () => {
   });
 
   it("collapses brokerage recovery to one blocked row that reviews on the overview", async () => {
-    await renderTradingScreen(data, "/trading/orders?symbol=MSFT");
+    // A live brokerage with no account in scope stays blocked: only a known non-live
+    // environment turns the missing account into setup.
+    await renderTradingScreen({ ...data, brokerage: { ...data.brokerage, environment: "live" } }, "/trading/orders?symbol=MSFT");
 
     const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
     expect(within(recovery).getByRole("status")).toHaveTextContent("Live trading blocked — recovery required");
@@ -409,6 +441,19 @@ describe("TradingScreen", () => {
     expect(within(recovery).queryByRole("button", { name: /synchronize and reconcile/i })).not.toBeInTheDocument();
     expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
       .toHaveAttribute("href", "/trading?symbol=MSFT#brokerage-recovery");
+  });
+
+  it("shows a paper brokerage with no account in scope as setup, not a recovery block", async () => {
+    await renderTradingScreen(data, "/trading/positions");
+
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    const status = within(recovery).getByRole("status", { name: "Brokerage recovery readiness" });
+    expect(status).toHaveTextContent("No fund account in scope");
+    expect(recovery).not.toHaveTextContent(/recovery required/i);
+    expect(recovery).not.toHaveTextContent("Live trading blocked");
+    // No scope picker is mounted here, so the row keeps its Review link to the overview.
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
+      .toHaveAttribute("href", "/trading#brokerage-recovery");
   });
 
   it("keeps the full brokerage recovery panel on the trading overview", async () => {
@@ -886,7 +931,7 @@ describe("TradingScreen", () => {
 
   it("refreshes execution controls after control-affecting actions", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
@@ -894,6 +939,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     const submitButton = screen.getByRole("button", { name: /submit order/i });
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Review the order preview and acknowledge before submitting.");
@@ -914,6 +960,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     await user.click(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i }));
     await user.click(screen.getByRole("button", { name: /submit order/i }));
 
@@ -971,6 +1018,62 @@ describe("TradingScreen", () => {
 
     await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
     expect(screen.getByLabelText("Limit order price")).toBeInTheDocument();
+  });
+
+  it.each(["Limit", "Stop"] as const)("preserves decimal %s price typing and submits its reviewed numeric value", async (orderType) => {
+    const user = userEvent.setup();
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    await renderTradingScreen(data, "/trading/orders", fundAccountId);
+    await user.click(screen.getByRole("button", { name: "New order" }));
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    await user.type(screen.getByLabelText("Order quantity"), "25");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), orderType);
+    const price = screen.getByLabelText(`${orderType} order price`) as HTMLInputElement;
+    // Chromium also retains the intermediate "188.0"; jsdom normalizes that display.
+    await user.type(price, "188.05");
+    expect(price.value).toBe("188.05");
+    expect(price).toHaveValue(188.05);
+    const submit = screen.getByRole("button", { name: "Submit order request" });
+    expect(submit).toBeDisabled();
+    expect(api.submitOrder).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i }));
+    expect(submit).toBeEnabled();
+    await user.click(submit);
+    await waitFor(() => expect(api.submitOrder).toHaveBeenCalledWith({ symbol: "AAPL", side: "Buy", type: orderType, quantity: 25, limitPrice: 188.05, fundAccountId, sessionIntent: "RegularOnly", clientOrderId: expect.stringMatching(/^meridian-/) }));
+  });
+
+  it("invalidates reviewed decimal inputs before allowing another submission", async () => {
+    const user = userEvent.setup();
+    const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    await renderTradingScreen(data, "/trading/orders", fundAccountId);
+    await user.click(screen.getByRole("button", { name: "New order" }));
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    await user.type(screen.getByLabelText("Order quantity"), "25");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
+    const price = screen.getByLabelText("Limit order price") as HTMLInputElement;
+    await user.type(price, "188.05");
+    const acknowledgement = screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i });
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
+    await user.click(acknowledgement);
+    const submit = screen.getByRole("button", { name: "Submit order request" });
+    expect(submit).toBeEnabled();
+
+    await user.clear(price);
+    await user.type(price, "0");
+    expect(price).toHaveAttribute("aria-invalid", "true");
+    expect(acknowledgement).not.toBeChecked();
+    expect(acknowledgement).toBeDisabled();
+    expect(submit).toBeDisabled();
+    fireEvent.submit(submit.closest("form")!);
+    expect(api.submitOrder).not.toHaveBeenCalled();
+
+    await user.clear(price);
+    await user.type(price, "188.05");
+    expect(price.value).toBe("188.05");
+    expect(acknowledgement).toBeEnabled();
+    expect(acknowledgement).not.toBeChecked();
+    expect(submit).toBeDisabled();
   });
 
   it("renders the order impact preview with notional, position effect, and warnings", async () => {
@@ -1162,7 +1265,7 @@ describe("TradingScreen", () => {
     expect(confirmButton).toHaveAttribute("title", "Review and acknowledge the trading action before confirming.");
     await user.click(screen.getByRole("checkbox", { name: /I reviewed this trading action/i }));
     expect(confirmButton).toBeEnabled();
-    expect(confirmButton).toHaveClass("text-danger");
+    expect(confirmButton).toHaveClass("mds-btn--danger");
   });
 
   it("marks financially destructive blotter actions before confirmation", async () => {
@@ -1172,7 +1275,7 @@ describe("TradingScreen", () => {
     const cancelButtons = screen.getAllByRole("button", { name: /cancel order po-1/i });
     expect(cancelButtons).toHaveLength(2);
     for (const button of cancelButtons) {
-      expect(button).toHaveClass("text-danger");
+      expect(button).toHaveClass("mds-btn--danger");
     }
     await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
     const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });

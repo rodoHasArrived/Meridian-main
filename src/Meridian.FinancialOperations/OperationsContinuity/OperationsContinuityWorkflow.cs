@@ -1,5 +1,6 @@
 using System.Text;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.FinancialOperations.OperationsContinuity;
@@ -856,6 +857,17 @@ public sealed partial class OperationsContinuityWorkflow
         }
 
         var disposition = ParseDisposition(resolutionStatus);
+        if (PreparerAttestationApprovalBoundary.IsReservedReference(request.ApprovalReference) ||
+            PreparerAttestationApprovalBoundary.IsReservedReference(request.ApprovalActor))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "PREPARER_ATTESTATION_NOT_APPROVAL",
+                "A preparer attestation cannot supply ordinary reconciliation approval.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
         if (disposition == ReconciliationBreakDispositionDto.Superseded &&
             (string.IsNullOrWhiteSpace(request.SupersedingBreakId) ||
              string.Equals(request.SupersedingBreakId, existing.BreakId, StringComparison.OrdinalIgnoreCase)))
@@ -1582,37 +1594,6 @@ public sealed partial class OperationsContinuityWorkflow
             OperationsGateKeyDto.Approval,
             "Critical",
             []);
-
-    public OperationsWorkflowBlockerDto? GetReopenTransitionBlocker(OperationsReopenWorkflowRequestDto request)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-        if (!IsClosed)
-        {
-            return new OperationsWorkflowBlockerDto(
-                "WORKFLOW_NOT_CLOSED",
-                "Only a closed workflow can be reopened.",
-                null,
-                "Error",
-                []);
-        }
-
-        if (!request.IsGovernedAdmin ||
-            string.IsNullOrWhiteSpace(request.Rationale) ||
-            string.IsNullOrWhiteSpace(request.IncidentId) ||
-            string.IsNullOrWhiteSpace(request.Justification) ||
-            string.IsNullOrWhiteSpace(request.ApprovalReference) ||
-            string.IsNullOrWhiteSpace(request.ImpactSummary))
-        {
-            return new OperationsWorkflowBlockerDto(
-                "REOPEN_GOVERNANCE_METADATA_REQUIRED",
-                "Reopening requires governed administrator authority, rationale, incident metadata, justification, approval reference, and impact summary.",
-                OperationsGateKeyDto.Approval,
-                "Critical",
-                []);
-        }
-
-        return null;
-    }
 
     public void Reopen(
         OperationsReopenWorkflowRequestDto request,

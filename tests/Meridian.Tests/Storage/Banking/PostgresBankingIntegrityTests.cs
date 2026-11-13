@@ -458,7 +458,7 @@ public sealed class BankingDatabaseFactAttribute : FactAttribute
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(ConnectionStringVariable)))
+        if (!string.IsNullOrWhiteSpace(PostgresTestServer.ResolveExternalConnectionString(ConnectionStringVariable)))
         {
             return;
         }

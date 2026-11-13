@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Single-value range control — flat square thumb over a filled track (institutional, not a rounded
  * consumer dial). Wraps a native `<input type="range">` so keyboard (arrows/Home/End/PgUp/PgDn) and
@@ -35,4 +36,7 @@ export interface SliderProps
   variant?: "accent" | "success" | "warning" | "danger";
   disabled?: boolean;
 }
-export declare function Slider(props: SliderProps): JSX.Element;
+export declare function Slider(props: SliderProps): React.JSX.Element;
+
+/** 3.5 · The visible `label` is associated via aria-labelledby, and `valueFmt` output ships as
+ *  aria-valuetext, so "0.35Δ" is announced rather than the bare number. */

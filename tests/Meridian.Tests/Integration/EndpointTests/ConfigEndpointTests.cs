@@ -1,3 +1,6 @@
+using Meridian.Application.UI;
+using Meridian.Core.Config;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -41,6 +44,52 @@ public sealed class ConfigEndpointTests : IClassFixture<EndpointTestFixture>
         json.Should().ContainKey("dataSource");
         json.Should().ContainKey("symbols");
         json.Should().ContainKey("storage");
+    }
+
+    [Fact]
+    public async Task GetConfig_WithViewOnlyPermission_MasksEveryBackfillCredentialWithoutChangingStore()
+    {
+        var providers = new BackfillProvidersConfig(
+            Alpaca: new AlpacaBackfillConfig(KeyId: "test-alpaca-key-identity", SecretKey: "test-alpaca-secret"),
+            Nasdaq: new NasdaqDataLinkConfig(ApiKey: "test-nasdaq-secret"),
+            OpenFigi: new OpenFigiConfig(ApiKey: "test-figi-secret"),
+            Tiingo: new TiingoConfig(ApiToken: "test-tiingo-secret"),
+            Polygon: new PolygonConfig(ApiKey: "test-polygon-secret"),
+            AlphaVantage: new AlphaVantageConfig(ApiKey: "test-alpha-secret"),
+            Finnhub: new FinnhubConfig(ApiKey: "test-finnhub-secret"),
+            Fred: new FredConfig(ApiKey: "test-fred-secret"));
+        var store = _fixture.Services.GetRequiredService<ConfigStore>();
+        var original = store.Load().Backfill;
+        try
+        {
+            await store.UpdateAsync(config => config with { Backfill = new BackfillConfig(Providers: providers) });
+            using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+            using var response = await client.GetAsync("/api/config");
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var text = await response.Content.ReadAsStringAsync();
+            var secrets = new[]
+            {
+                providers.Alpaca!.KeyId, providers.Alpaca.SecretKey, providers.Nasdaq!.ApiKey,
+                providers.OpenFigi!.ApiKey, providers.Tiingo!.ApiToken, providers.Polygon!.ApiKey,
+                providers.AlphaVantage!.ApiKey, providers.Finnhub!.ApiKey, providers.Fred!.ApiKey
+            };
+            foreach (var secret in secrets)
+                text.Should().NotContain(secret!);
+            using var json = JsonDocument.Parse(text);
+            var masked = json.RootElement.GetProperty("backfill").GetProperty("providers");
+            masked.GetProperty("alpaca").GetProperty("keyId").GetString().Should()
+                .Be(SensitiveValueMasker.Mask(providers.Alpaca.KeyId));
+            masked.GetProperty("alpaca").GetProperty("secretKey").GetString().Should()
+                .Be(SensitiveValueMasker.MaskCompletely(providers.Alpaca.SecretKey));
+            foreach (var provider in new[] { "nasdaq", "openFigi", "polygon", "alphaVantage", "finnhub", "fred" })
+                masked.GetProperty(provider).GetProperty("apiKey").GetString().Should().StartWith("[");
+            masked.GetProperty("tiingo").GetProperty("apiToken").GetString().Should().StartWith("[");
+            store.Load().Backfill!.Providers.Should().BeEquivalentTo(providers);
+        }
+        finally
+        {
+            await store.UpdateAsync(config => config with { Backfill = original });
+        }
     }
 
     [Fact]

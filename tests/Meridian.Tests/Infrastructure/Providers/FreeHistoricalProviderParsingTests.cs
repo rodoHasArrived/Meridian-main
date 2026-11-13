@@ -48,7 +48,7 @@ public sealed class TwelveDataParsingTests
                 Content = new StringContent(TwelveDataOkResponse, Encoding.UTF8, "application/json")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 3), CancellationToken.None);
 
@@ -73,7 +73,7 @@ public sealed class TwelveDataParsingTests
                 Content = new StringContent(TwelveDataErrorResponse, Encoding.UTF8, "application/json")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var act = () => provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
@@ -89,7 +89,7 @@ public sealed class TwelveDataParsingTests
                 Content = new StringContent(TwelveDataEmptyResponse, Encoding.UTF8, "application/json")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 3), CancellationToken.None);
 
@@ -105,7 +105,7 @@ public sealed class TwelveDataParsingTests
                 Content = new StringContent("Rate limited", Encoding.UTF8, "text/plain")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         Func<Task> act = () => provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
@@ -121,7 +121,7 @@ public sealed class TwelveDataParsingTests
                 Content = new StringContent(TwelveDataOkResponse, Encoding.UTF8, "application/json")
             });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var from = new DateOnly(2024, 1, 2);
         var to = new DateOnly(2024, 1, 3);
@@ -139,7 +139,7 @@ public sealed class TwelveDataParsingTests
     public async Task GetDailyBarsAsync_WithNullSymbol_ThrowsArgumentException()
     {
         using var httpClient = new HttpClient();
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         Func<Task> act = () => provider.GetDailyBarsAsync(null!, null, null, CancellationToken.None);
 
@@ -150,7 +150,7 @@ public sealed class TwelveDataParsingTests
     public async Task GetDailyBarsAsync_WithEmptySymbol_ThrowsArgumentException()
     {
         using var httpClient = new HttpClient();
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         Func<Task> act = () => provider.GetDailyBarsAsync("", null, null, CancellationToken.None);
 

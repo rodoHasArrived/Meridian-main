@@ -21,6 +21,8 @@ export type NullableNumber = number | null | undefined;
 export interface NumberFormatOptions {
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
+  /** Scientific notation preserves tiny nonzero observations without rounding them to zero. */
+  notation?: Intl.NumberFormatOptions["notation"];
   /** Thousands separators; false for a value typed back into an input, e.g. "1234.5". @default true */
   useGrouping?: boolean;
   /** Rendered when the value is null, undefined, or not finite. */
@@ -45,12 +47,12 @@ function isRenderable(value: NullableNumber): value is number {
 
 /** Grouped plain number, e.g. "1,234.56". */
 export function formatNumber(value: NullableNumber, options: NumberFormatOptions = {}): string {
-  const { minimumFractionDigits, maximumFractionDigits = 2, useGrouping, fallback = DEFAULT_FALLBACK } = options;
+  const { minimumFractionDigits, maximumFractionDigits = 2, notation, useGrouping, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  return value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits, useGrouping });
+  return value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits, notation, useGrouping });
 }
 
 // PERCENT UNITS: the workstation carries percent-like values in two different units,
@@ -342,6 +344,13 @@ export function formatUtcMonthYear(date: Date): string {
 }
 
 const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+
+/** Currency metadata for authoring a governed policy; the server validates its own precision. */
+export function currencyMinorUnitPrecision(currency: string): number {
+  const normalized = currency.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(normalized)) return 2;
+  return new Intl.NumberFormat(FORMAT_LOCALE, { style: "currency", currency: normalized }).resolvedOptions().maximumFractionDigits ?? 2;
+}
 
 /**
  * A date or time in a layout the fixed helpers above do not cover, through one pinned-locale

@@ -4,6 +4,7 @@ using Meridian.Application.Composition;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Tenancy;
 using Meridian.Core.Logging;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
@@ -17,7 +18,7 @@ namespace Meridian.Application.FundStructure;
 /// Thread-safe governance structure service backed by an in-memory working set
 /// with optional durable JSON snapshot persistence for local-first workflows.
 /// </summary>
-public sealed partial class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService
+public sealed partial class InMemoryFundStructureService : INonProductionOnlyService, IFundStructureService, IEntityLifecycleProjectionSink
 {
     private static readonly ILogger Log = LoggingSetup.ForContext<InMemoryFundStructureService>();
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -33,6 +34,8 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
     private readonly IFundStructureStateStore _stateStore;
     private readonly IFundStructurePolicyService _policyService;
     private readonly bool _persistenceEnabled;
+    private readonly IEntityLifecycleStore? _entityLifecycleStore;
+    private readonly IFundScopeTenantAccessor? _lifecycleTenantAccessor;
     private readonly SemaphoreSlim _persistGate = new(1, 1);
     private readonly Dictionary<Guid, OrganizationSummaryDto> _organizations = new();
     private readonly Dictionary<Guid, BusinessSummaryDto> _businesses = new();
@@ -70,7 +73,9 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
         IFundAccountService fundAccountService,
         IGovernanceSharedDataAccessService? sharedDataAccessService,
         ISecurityMasterQueryService? securityMasterQueryService,
-        string? persistencePath)
+        string? persistencePath,
+        IEntityLifecycleStore? entityLifecycleStore = null,
+        IFundScopeTenantAccessor? lifecycleTenantAccessor = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _sharedDataAccessService = sharedDataAccessService;
@@ -80,6 +85,8 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
             ? new JsonFileFundStructureStateStore(persistencePath!)
             : new InMemoryFundStructureStateStore();
         _policyService = new FundStructurePolicyService();
+        _entityLifecycleStore = entityLifecycleStore;
+        _lifecycleTenantAccessor = lifecycleTenantAccessor;
         LoadState();
     }
 
@@ -356,6 +363,8 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
+        var initialLifecycle = _entityLifecycleStore is null ? null
+            : EntityLifecycleInitialization.Create(request, _lifecycleTenantAccessor?.ResolveCallerTenant());
         var summary = new LegalEntitySummaryDto(
             request.EntityId,
             request.EntityType,
@@ -382,6 +391,8 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
         }
 
         await PersistSnapshotAsync(snapshot, ct).ConfigureAwait(false);
+        if (initialLifecycle is not null)
+            await _entityLifecycleStore!.AppendAsync(initialLifecycle, 0, ct).ConfigureAwait(false);
         return summary;
     }
 
@@ -400,6 +411,9 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
             {
                 throw new InvalidOperationException($"LegalEntity {request.EntityId} was not found.");
             }
+
+            if (_entityLifecycleStore is not null && request.LifecycleStatus.HasValue && request.LifecycleStatus.Value != existing.LifecycleStatus)
+                throw new InvalidOperationException("Lifecycle status changes require the entity lifecycle revision endpoint and its expected revision, reason and retained evidence.");
 
             updated = NormalizeLegalEntity(existing with
             {
@@ -841,6 +855,8 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
 
         var snapshot = CreateSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
+        snapshot = await EntityLifecycleSnapshotProjection.ApplyAsync(snapshot, _entityLifecycleStore,
+            _lifecycleTenantAccessor?.ResolveCallerTenant(), asOf, ct).ConfigureAwait(false);
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var visibleAccounts = AttachSharedDataAccess(
             await GetVisibleAccountsAsync(query.ActiveOnly, asOf, ct).ConfigureAwait(false),

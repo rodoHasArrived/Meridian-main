@@ -1,19 +1,19 @@
 .row-detail-panel {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(74, 68, 60, 0.95);
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-md);
-  background: rgba(20, 18, 15, 0.72);
+  background: var(--ws-surface);
   box-shadow: var(--shadow-panel);
 }
 
 /* Detail headings are phrases: label tier, body face, sentence case. */
 .row-detail-panel .head {
   padding: 0.5rem 0.625rem;
-  border-bottom: 1px solid rgba(74, 68, 60, 0.95);
-  background: #14120F;
+  border-bottom: 1px solid var(--ws-border);
+  background: var(--ws-surface-subtle);
   color: var(--fg-muted);
-  font-family: var(--font-body);
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -21,7 +21,7 @@
 
 .row-detail-panel .body {
   padding: 0.625rem;
-  color: #E0DAD1;
+  color: var(--ws-text);
   font-size: 0.75rem;
   line-height: 1.5;
 }
@@ -29,10 +29,10 @@
 [data-dense-row-detail-panel="true"],
 .row-detail-panel {
   position: relative;
-  border-color: rgba(168, 84, 54, 0.26);
+  border-color: var(--interaction-selected);
   background: var(--ws-surface);
   color: var(--ws-text);
-  box-shadow: inset 3px 0 0 rgba(168, 84, 54, 0.72), var(--shadow-panel);
+  box-shadow: inset 3px 0 0 var(--interaction-selected), var(--shadow-panel);
 }
 
 /* A detail panel names its selection in its own heading line (see DetailPane and EntitySummary),
@@ -41,8 +41,8 @@
 
 .row-detail-panel .head,
 [data-dense-row-detail-panel="true"] .head {
-  border-color: rgba(168, 84, 54, 0.26);
-  background: rgba(168, 84, 54, 0.07);
+  border-color: var(--interaction-selected);
+  background: var(--interaction-selected-surface);
   color: var(--ws-text-muted);
 }
 

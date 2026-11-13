@@ -235,7 +235,8 @@ public sealed record ChartOfAccountsNodeDto(
     string? ParentPath = null,
     string? Symbol = null,
     string? FinancialAccountId = null,
-    bool IsArchived = false);
+    bool IsArchived = false,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IntercompanyAccountRoleDto? IntercompanyRole = null);
 
 public sealed record JournalEntryTemplateLineDto(
     string LineId,
@@ -277,6 +278,27 @@ public sealed record LedgerDimensionSetDto(
         ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     public Guid? PositionId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingArrangementId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingArrangementRevisionId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ChartAccountNodeId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountBindingRevisionId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntercompanyTransactionId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntercompanyAgreementId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public int? IntercompanyAgreementVersion { get; init; }
 }
 
 public sealed record OperationalFinanceScopeDto(
@@ -738,7 +760,15 @@ public sealed record ManualJournalEntryLineDto(
     // financial-account-scoped revenue/expense accounts) carry these so posting lands on the
     // scoped account and actually zeroes the scoped balance instead of an unscoped aggregate.
     string? LedgerAccountSymbol = null,
-    string? LedgerAccountFinancialAccountId = null);
+    string? LedgerAccountFinancialAccountId = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ManualJournalLineCurrencyDto? TransactionCurrency { get; init; }
+}
+
+public sealed record ManualJournalLineCurrencyDto(string Currency,
+    [property: JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal Amount,
+    [property: JsonNumberHandling(JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString)] decimal FxRateToFunctional);
 
 public sealed record ManualJournalEntryEvidenceAttachmentDto(
     string AttachmentId,
@@ -815,6 +845,29 @@ public sealed record ManualJournalEntryDraftDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ConsolidationEvidenceDigest = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool RequiresConsolidationEvidence = false)
 {
+    /// <summary>Server-retained approved commitment/call binding; clients cannot replace it.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PrivateCapitalAuthorityJson { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntercompanyProposalId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntercompanyProposalSourceDigest { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ConsolidationFxAmountDto? IntercompanyFx { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntercompanyRefreshRequestId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntercompanyRefreshRequestDigest { get; init; }
+
+    /// <summary>Server-retained distribution terms and tiers used to recover an interrupted declaration.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DistributionDeclarationJson { get; init; }
+
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
 
@@ -907,6 +960,8 @@ public sealed record PostingRuleJournalCandidateRequestDto(
     string? TenantId = null,
     string? CompanyId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
     public IReadOnlyList<string> EvidenceLinks { get; init; } =
         EvidenceLinks ?? [];
 

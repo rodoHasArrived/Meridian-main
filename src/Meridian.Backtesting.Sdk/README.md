@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Backtesting.Sdk
 
+Options-overwrite candidates preserve delta, open-interest and volume availability separately from numeric values. Required missing measurements and nonfinite delta are refused by preview filters; an absent provider delta cannot become an eligible zero-delta contract. Spread and contract-multiplier facts remain inspectable.
+
 `CanonicalOpenLotAdapter` now compares explicit simulation and retained canonical direction.
 Matching positive-quantity short lots may bind after the same identity/date/basis checks;
 opposite directions cannot net. Existing governed successor-component checks remain mandatory.
@@ -38,9 +40,27 @@ This layer should expose stable backtesting integration seams without owning run
 
 ## Important workflows
 
+### Shared SMA decision contract
+
+`Strategies/MovingAverageCrossoverStrategy` is the versioned long-only equity reference shared with the live adapter. `IBacktestOrderTerminationObserver` releases pending intent after a terminal outcome without complete execution. Explicit bar input is required for controlled parity evidence; historical and broker fills can still differ. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 Use this module when a backtesting contract must be shared across runtime and strategy code.
 
 ## API / contract notes
+
+- `BacktestRequest.ApplyStoredCorporateActions` defaults to true. Hosts with Security Master
+  queries capture confirmed actions as `AssetEvents` automatically and replay raw prices; set it
+  false for reviewed manual economics or legacy adjusted-price research. Its new execution-realism
+  descriptor field is nullable so descriptors retained before this option preserve their original
+  canonical hashes; newly created descriptors always include the selected setting.
+
+- `BacktestResult.LedgerIntegrityBreaks` retains native day-end accounting differences without
+  changing its positional constructor. Set `BacktestRequest.FailOnLedgerIntegrityBreak` to stop
+  on the first failing day; the exception carries its differences. External imported results have
+  no implied reconciliation coverage merely because their difference collection is empty.
+- `AssetEventCashFlow.BasisReturned` retains return-of-capital basis relief separately from income,
+  so cash receipt does not overstate realized income. Negative capital-return events are refused
+  before mutation because a reversal requires the original lot-level basis and excess-gain facts.
 
 - `BacktestRequest.OrderBookQueueAheadFraction` configures queue-aware order-book replay. The
   default `0` preserves immediate visible-depth fills; positive values infer that a fraction of
@@ -58,9 +78,11 @@ Use this module when a backtesting contract must be shared across runtime and st
   `"NaN"` on read, preserving unavailable IRR without substituting a measured zero return.
   `ProfitFactor` preserves positive infinity for gains with no losses, and `SortinoRatio` preserves
   positive infinity when the native return series has no downside. These valid outcomes round-trip
-  as `"Infinity"` through SDK JSON, durable history and HTTP projections. Named floating-point
-  handling is scoped to these three properties; Sharpe, Calmar and win rate retain strict numeric
-  serialization. Native formulas do not define infinite values for those other metrics.
+  as `"Infinity"` through SDK JSON, durable history and HTTP projections. Live summary results
+  without authoritative closed-trade evidence emit JSON `null` for unavailable profit factor and
+  win rate, preserving NaN internally rather than reporting measured zeros. Win rate still rejects
+  infinite outcomes; Sharpe and Calmar retain strict numeric serialization. Native formulas do not
+  define infinite values for those other metrics.
 - `OpenLot.IsShort` is an optional init-only direction flag that preserves the existing positional
   constructor and deconstruction shapes. Lot quantities stay positive; directed short lots calculate unrealized P&L as
   `(entryPrice - currentPrice) * quantity` and retain that direction when exposed through position
@@ -81,6 +103,11 @@ Use this module when a backtesting contract must be shared across runtime and st
   basis components carry unrelieved `EntryCommission`, while
   `AssetEventCashFlow.EntryCommissionDisposed` retains fees relieved by fractional disposals.
   These init-only additions preserve constructor and deconstruction compatibility.
+
+- `BacktestRequest.PopulateAssetEventsFromSecurityMaster` (default `false`) asks the engine to
+  build dividend and split `AssetEvents` from confirmed Security Master corporate actions when the
+  request supplies none. It is valid only with `AdjustForCorporateActions = false`, and when it
+  takes effect it is part of `ExecutionRealismDescriptor` and so of the run's input hash.
 
 ## Unitized lots
 

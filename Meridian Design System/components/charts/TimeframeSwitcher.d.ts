@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * TimeframeSwitcher — mono segmented resolution picker for chart toolbars (1m · 5m · 15m ·
  * 1h · 1D · 1W by default). One active value, radio semantics, sm by default.
@@ -12,7 +13,7 @@
  * <TimeframeSwitcher options={["1D", "1W", "1M", "1Y"]} defaultValue="1D" />
  * <AsOfControl onChange={({ mode, asOf }) => reprice(mode === "live" ? null : asOf)} />
  */
-export interface TimeframeSwitcherProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface TimeframeSwitcherProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   /** Strings or { value, label }. @default ["1m","5m","15m","1h","1D","1W"] */
   options?: (string | { value: string; label: string })[];
   /** Controlled active value. */
@@ -23,9 +24,9 @@ export interface TimeframeSwitcherProps extends React.HTMLAttributes<HTMLDivElem
   /** @default "sm" */
   size?: "sm" | "md";
 }
-export declare function TimeframeSwitcher(props: TimeframeSwitcherProps): JSX.Element;
+export declare function TimeframeSwitcher(props: TimeframeSwitcherProps): React.JSX.Element;
 
-export interface AsOfControlProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface AsOfControlProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
   /** Controlled mode. */
   mode?: "live" | "asof";
   /** Uncontrolled initial mode. @default "live" */
@@ -37,4 +38,4 @@ export interface AsOfControlProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Show the date in the live stamp (vs time-of-day only). @default true */
   withDate?: boolean;
 }
-export declare function AsOfControl(props: AsOfControlProps): JSX.Element;
+export declare function AsOfControl(props: AsOfControlProps): React.JSX.Element;

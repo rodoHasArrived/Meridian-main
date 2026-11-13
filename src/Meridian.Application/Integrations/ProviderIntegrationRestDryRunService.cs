@@ -1,3 +1,4 @@
+using Meridian.Contracts.Calendars;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -42,13 +43,22 @@ public sealed class ProviderIntegrationRestDryRunService
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly ILogger<ProviderIntegrationRestDryRunService> logger;
     private readonly IProviderIntegrationManifestStore store;
+    private readonly IBusinessDayCalendarSource? calendars;
     private readonly IProviderIntegrationHttpTransport transport;
 
     public ProviderIntegrationRestDryRunService(
         IProviderIntegrationManifestStore store,
         IProviderIntegrationHttpTransport transport,
         ILogger<ProviderIntegrationRestDryRunService>? logger = null)
+        : this(store, transport, logger, null) { }
+
+    public ProviderIntegrationRestDryRunService(
+        IProviderIntegrationManifestStore store,
+        IProviderIntegrationHttpTransport transport,
+        ILogger<ProviderIntegrationRestDryRunService>? logger,
+        IBusinessDayCalendarSource? calendars = null)
     {
+        this.calendars = calendars;
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
         this.logger = logger ?? NullLogger<ProviderIntegrationRestDryRunService>.Instance;
@@ -161,6 +171,7 @@ public sealed class ProviderIntegrationRestDryRunService
         string? cursor = null;
         var maxPages = Math.Clamp(request.MaxPages <= 0 ? 1 : request.MaxPages, 1, 100);
         var dedupeValidator = new ProviderIntegrationStagingDedupeValidator();
+        var mappedRecordPreviews = new List<JsonElement>();
 
         for (var page = 1; page <= maxPages; page++)
         {
@@ -237,9 +248,11 @@ public sealed class ProviderIntegrationRestDryRunService
                     }
                 }
 
-                ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues);
+                ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues, calendars);
                 allIssues.AddRange(rowIssues);
                 var mappedElement = ToJsonElement(mappedRecord);
+                if (mappedRecordPreviews.Count < 20)
+                    mappedRecordPreviews.Add(mappedElement);
                 var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
                 var recordOrdinal = (accepted + quarantined + 1).ToString(CultureInfo.InvariantCulture);
                 var dedupeKey = ProviderIntegrationMappedRecordIdentity.BuildDedupeKey(
@@ -328,7 +341,10 @@ public sealed class ProviderIntegrationRestDryRunService
             accepted,
             quarantined,
             status,
-            allIssues);
+            allIssues)
+        {
+            MappedRecordPreviews = mappedRecordPreviews
+        };
         await scopedStore.SaveSyncRunAsync(
             CreateSyncRun(request, manifest, manifestReference, connection, endpoint.EndpointKey, firstPayloadId, result), ct).ConfigureAwait(false);
         return result;
@@ -548,6 +564,8 @@ public sealed class ProviderIntegrationRestDryRunService
             "uppercase" => value.Trim().ToUpperInvariant(),
             "lowercase" => value.Trim().ToLowerInvariant(),
             "decimal" or "decimalparsing" => ParseDecimal(value, mapping.TargetField, issues),
+            "boolean" => ProviderIntegrationFieldTransforms.ParseBoolean(value, mapping.TargetField, issues),
+            "json" => ProviderIntegrationFieldTransforms.ParseJson(value, mapping.TargetField, issues),
             "signedamount" => ParseSignedAmount(
                 value,
                 mapping,
@@ -643,6 +661,7 @@ public sealed class ProviderIntegrationRestDryRunService
         {
             decimal decimalValue => JsonValue.Create(decimalValue),
             bool boolValue => JsonValue.Create(boolValue),
+            JsonNode nodeValue => nodeValue.DeepClone(),
             _ => JsonValue.Create(value.ToString())
         };
     }

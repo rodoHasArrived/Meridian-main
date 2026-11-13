@@ -88,6 +88,10 @@ const completedRunResult: CoveredCallRunResult = {
 
 const completedRunWithTrades: CoveredCallRunResult = {
   ...completedRunResult,
+  equityCurve: [
+    { date: "2024-01-02", strategyEquity: 100000, underlyingEquity: 100000 },
+    { date: "2024-03-28", strategyEquity: 104250, underlyingEquity: 103100 }
+  ],
   trades: [
     {
       strike: 505,
@@ -198,6 +202,22 @@ describe("CoveredCallScreen", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("aborts the pending history request when the screen unmounts", async () => {
+    let rejectHistory!: (reason: unknown) => void;
+    vi.mocked(coveredCallApi.listCoveredCallRuns).mockReturnValueOnce(
+      new Promise((_, reject) => { rejectHistory = reject; })
+    );
+    const { unmount } = renderCoveredCallScreen();
+    const signal = vi.mocked(coveredCallApi.listCoveredCallRuns).mock.calls[0][1];
+    expect(signal).toBeInstanceOf(AbortSignal);
+    expect(signal?.aborted).toBe(false);
+
+    unmount();
+
+    expect(signal?.aborted).toBe(true);
+    await act(async () => rejectHistory(new DOMException("Navigation cancelled", "AbortError")));
   });
 
   it("renders chain preview rows with keyboard selection and a linked detail panel", async () => {
@@ -555,6 +575,11 @@ describe("CoveredCallScreen", () => {
     })).toBeInTheDocument();
     expect(screen.getByText("Take profit")).toBeInTheDocument();
     expect(screen.getByText("Assigned; exit reason Assigned; -$140 total net P&L.")).toBeInTheDocument();
+
+    const equityChart = screen.getByRole("img", { name: "Covered-call strategy versus underlying equity curve" });
+    expect(equityChart).toHaveAccessibleDescription(/2 points from 2024-01-02 to 2024-03-28\. Final strategy equity \$104,250/);
+    const equityTable = screen.getByRole("table", { name: "Covered-call strategy versus underlying equity curve data" });
+    expect(within(equityTable).getByRole("row", { name: /^2024-03-28 \$104,250(\.00)? \$103,100(\.00)?$/ })).toBeInTheDocument();
   });
 
   it("renders payoff position controls and updates the selected short-call diagram", async () => {

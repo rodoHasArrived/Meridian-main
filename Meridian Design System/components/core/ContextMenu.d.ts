@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * ContextMenu — right-click menu for table rows and UI elements.
  *
@@ -60,7 +61,7 @@ export interface ContextMenuProps {
   onClose?: () => void;
 }
 
-export declare function ContextMenu(props: ContextMenuProps): JSX.Element | null;
+export declare function ContextMenu(props: ContextMenuProps): React.JSX.Element | null;
 
 /**
  * useContextMenu — convenience hook that wires the right-click handler + open/position state.

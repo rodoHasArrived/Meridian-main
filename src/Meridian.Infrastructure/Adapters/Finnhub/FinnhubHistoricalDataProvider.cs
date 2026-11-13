@@ -98,7 +98,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
             using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
-        catch when (!ct.IsCancellationRequested)
+        catch
         {
             return false;
         }
@@ -134,7 +134,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await ExecuteGetAsync(url, symbol, "historical data", ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -234,7 +234,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await ExecuteGetAsync(url, symbol, "historical data", ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -311,7 +311,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await ExecuteGetAsync(url, symbol, "historical data", ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -323,7 +323,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
             return data ?? [];
         }
-        catch when (!ct.IsCancellationRequested)
+        catch
         {
             return Array.Empty<FinnhubEarning>();
         }
@@ -344,7 +344,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await ExecuteGetAsync(url, symbol, "historical data", ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -354,7 +354,7 @@ public sealed class FinnhubHistoricalDataProvider : BaseHistoricalDataProvider
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             return DeserializeResponse<FinnhubCompanyProfile>(json, symbol);
         }
-        catch when (!ct.IsCancellationRequested)
+        catch
         {
             return null;
         }

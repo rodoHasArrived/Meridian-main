@@ -6,12 +6,159 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
 
-`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
+Visualization contracts retain server-calculated loan maturity buckets as exact decimal strings,
+bond contractual maturity and governing yield-scenario identities, and audit-source availability.
+`PrivateCapital` describes holder-side source observations and import receipts, separately from
+issuer-side `Ledger.PrivateCapitalLifecycleDtos`. `Options` screening and broker-assessment
+contracts distinguish neutral contract criteria from an exact basket/account assessment as of its
+source time. Typed corporate-action deadline evidence carries precision, original source text and
+correction identity outside economic payload fingerprints. Additive read fields preserve older
+payload compatibility; missing observations are not reported zeros or inferred approvals.
+
+`BondMarketDataContracts` distinguishes retained fixings, inflation levels, principal factors,
+agency ratings and categorized clean/dirty quotes with settlement basis and provider yields.
+Source revisions retain economic/publication/knowledge dates and content identities; importing a
+quote does not select a golden copy. `SecurityCurveRatePolicy.SignedRates` is an explicit immutable
+curve-definition opt-in; omitted policy retains legacy nonnegative admission and receipt JSON.
+
+`BondWorkflow*`, `BondPerformance*`, `BondIncome*` and coupon-recognition contracts keep signed
+analytical cash, observed transactions, accounting-income instructions and posting receipts distinct.
+Workflow v2 pins active accrual separately from deferred earned coupons; literal v1 replay keeps
+its original fields and arithmetic. The nullable `bond-income-accrual-v2` subpolicy is explicitly
+captured at acquisition, preserving old policy bytes when absent. Purchased opening interest,
+raw earning targets and native obligation-boundary rounding remain separate, including signed sides.
+See the [operator workflow and source schemas](../../docs/operators/bond-workflows.md).
+
+Terminal principal retains exact earned-coupon receipts or an actual acquisition-opening authority
+for separately purchased interest. Later signed cash clears those frozen rights without accruing
+on a closed lot. Accounting yield certificates distinguish the declared period recurrence from
+market cash-flow yields; the purchased-coupon tail admits only the evidenced nonaccreting par case.
+New optional proof fields omit null values so legacy contract bytes remain unchanged.
+
+Workflow v3 replaces the natural balloon once in final-payment exercise scenarios while retaining
+coupons and explicit installments. Retained workflow v1/v2 keep their original replay arithmetic;
+adopted accrual-v2 accounting remains explicitly pinned to workflow v2.
+
+Run ledger accounting-package downloads use the shared `RunsLedgerExport` route, mirrored by the
+maintained TypeScript route generator. The existing summary, trial-balance and journal routes
+accept an optional inclusive `asOf` economic timestamp.
+
+Analytical read contracts add explicit election-cutoff evidence, exact order/source-coverage status, retained sweep parameter coordinates and server-authored bond redemption/YTW scenario identities. Election timestamps retain their supplied offsets; only maturity and eligible issuer calls determine callable yield to worst, with holder puts separately identified. Additive browser visualization metadata does not change legacy numerical analytics or posting authority.
+
+The exact top-level `electionCalendar` companion is operational source evidence, excluded from
+economic payload fingerprints and compared separately for immutable source replay. A companion-only
+envelope uses the absent economic-payload representation; legacy payloads without that companion,
+including explicit empty objects and JSON null, retain their existing hashes. Original retained
+payloads and fingerprints are not rewritten to attach or correct deadlines.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+Intercompany contracts retain immutable agreement terms, lifecycle timelines, source proposal facts,
+stable account-role bindings, approved FX sets and exact legacy-attribution digests. New optional
+ledger dimensions omit null fields to preserve legacy evidence hashes. Consolidation evidence pins
+participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
+See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
+
+`SecurityMasterLedgerSymbol` resolves a dated, unambiguous active ticker that the existing native
+lineage grammar can represent. It supplies server-owned instrument context for new non-lot
+corporate-action candidates; it grants no approval and accepts no caller authority.
+
+`SecurityMaster/CorporateActionCashDividendAttestationContracts.cs` defines the bounded W14
+economic class separately from ordinary approval and from non-posting evidence tasks. The policy
+fixes regular mandatory USD dividend declaration, a USD 10,000 complete-event gross limit, and a
+USD 100,000 book limit per source-ex-date calendar month. A retained full-book entitlement digest,
+an exact book-scoped declaration revision and a durable native reservation bind each preparer
+receipt. The posting contract names `AttestationId` and contains no ordinary `ApprovalId`.
+`CorporateActionCaseStates.PreparerAttested` is a downstream, content-frozen state; the ordinary
+`Approved` state retains its independent-actor guard. Unknown classes and incomplete entitlement
+remain ineligible. Runtime activation, business grants and posting authority are separate controls.
+
+`PreparerAttestationEvidenceDtos` adds a separate, optional evidence-task disclosure to packet
+and graph reads. Counts are preparer receipts, never financial assertions or Verified Coverage;
+unavailable history keeps counts null. Each entry retains the original declaration, assertion and
+any later revocation alongside a dated exact/stale/unavailable source assessment. Frozen evidence
+exports retain the same disclosure independently of later declaration changes.
+
+`Workstation/SinglePrincipalAttestationDtos.cs` defines versioned preparer assertions separately
+from approval receipts. The scope binds tenant, company and optional book; declarations carry a
+revision and policy identity; receipts retain the exact subject and source hashes, preparer,
+attesting human, origin, confirmation and evidence checks. `SubjectSnapshotJson` preserves the
+server-evaluated document operands, with their digest, independently of later review metadata.
+Declaration history and revocation records preserve the original receipt rather than rewriting it.
+The first HTTP adapter resolves tenant/company scope only; the optional book contract does not
+register a book-scoped evidence provider.
+`SinglePrincipalAttestationPolicy.Disclosure` supplies the shared label,
+"Attested by preparer — not independently reviewed". Neither this decision classification nor
+the evidence acknowledgment supplies accounting approval, posting authority or verified coverage.
+`ATTEST-DRAFT-CHECK` supports only an exact newly server-bound, retained, non-postable Security
+contractual-cash-flow run owned by its original human preparer. Explicit v2 declaration
+reaffirmation and the separate default-off host gate are required; legacy/unbound runs and Loan
+calculations remain unsupported. The receipt records a preparer check without advancing a
+controlled workflow or granting approval/posting authority. This B assertion remains distinct
+from the separate native C cash-dividend lane. See the [development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
+for the bounded default-off scope and outstanding W14 acceptance.
+
+Intercompany agreement contracts retain bilateral party roles, descriptive terms, proposal state,
+immutable approved versions, evidence hashes and shared capabilities. Authenticated call context
+supplies tenant and actor separately from command bodies. Optional ledger agreement ID/version
+properties travel together; their conditional signature suffix preserves legacy hashes when absent.
+`FundStructureContractsJsonContext` registers the shared registry wire types. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond and
+StructuredCredit; coupon structure, lot units and valuation treatment do not imply recurring
+admission or bypass missing-rate-unit and schedule-posting gates. `FaceValueAccrualHolding` retains
+a lot's acquisition facts, daily open share and interest-before-paydown factor. Schedule row
+contract 2 retains measured interest segments, their actual reference principal, and unrounded
+interest under cash-flow calculation context v5. Older contexts keep their frozen row contracts,
+JSON shapes and arithmetic. Shared lot validation certifies the twelve-decimal quote derived from
+a governed unit successor's exact allocated basis. Disposal instructions compare selections by
+retained ordinal while keeping every field exact.
+
+`SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
+Security Master C# decode and F# writer arms; schema requiredness remains in
+`SecurityAssetTermsSchema`. Regenerate both arms together rather than editing generated codecs.
+
+Typed rate-observation contracts retain source text, declared units, observation/vintage dates,
+retrieval and construction evidence. `SecurityRateIngestionRules` requires an explicit reviewed
+construction; observed fixings, forward assumptions and Treasury par yields are distinct inputs.
+Optional quotation evidence declares clean/dirty basis, per-100 convention, quote status and
+settlement facts. Bond calculations and settlement consideration can pin a hash-bound immutable
+price-selection receipt instead of copying a quote; absent optional fields preserve legacy bytes.
+
+Provider integration identity decisions retain the operator's selected security, matching-evidence
+hash, reason and review metadata without rewriting staged source records. Fixed-income capability
+rows separate adapter support from tenant-scoped connection, entitlement, freshness and verification
+evidence; broad provider coverage does not establish that a particular input is available.
+
+`BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
+for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
+`BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
+fraction, original typed provider observation, recording actor/time, review justification and hash.
+Observed reset evidence is distinct from a forward curve or forecast assumption.
+
+`StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
+interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
+row schema for historical receipts. The catalog declares StructuredNote valuation as fair value
+through profit or loss, independently of eligibility for coupon-accrual accounting.
+
+`SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
+classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
+absence adds no default, and older stamped rows keep stray declarations inert. The `rateConvention`
+economic module preserves the declaration on replay. An invalid retained declaration refuses
+normalization instead of reviving a field default. New unit versions keep calculation-only
+companions and swap leg conventions read-only through the schema's authoring flag.
+
+`LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (including 0 for JPY, 3 for KWD/BHD, 4 for CLF/UYW, and 2 for ordinary currencies).
 
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
 status, named index, index and effective coupon annual fractions, spread in basis points, and source.
@@ -19,6 +166,33 @@ The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/z
 These are calculation display contracts; they do not introduce discount margin or posting authority.
 
 `BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses; `EvaluateToMaturity` is the same read without the horizon, used by the asset-operations obligation timeline. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+
+`PrivateCapitalLifecycleDtos` binds approved commitment revisions, frozen per-investor call plans,
+funding receipt identities, and notice summaries to explicit tenant/company/entity/fund/book/currency
+scope. Posted amounts are observations; caller-supplied totals and generic entity assignments do
+not establish commitment authority. Historical journals retain their original contracts and keys.
+
+`PrivateCapitalBankObservationSourceDto` describes a reviewed settled incoming bank observation.
+Import commands select an exact Evidence Vault document; they do not accept caller-supplied money
+or create a payment. The retained source hash and document identity explain the imported bank row.
+
+`SecurityInterestSupport` supplies the typed `NegativeInterestUnsupported` capability blocker for
+unsigned cash-flow, obligation and ledger readers. This is separate from a rate field's validity:
+negative fixings and spreads can still produce a supported positive coupon after contractual floors.
+
+`StructuredCashFlowScheduleEntry` equality compares persisted row state, including `RowVersion`
+and the measured accrual interval on current rows. A reflection regression enumerates writable
+members so adding persisted state without matching equality fails verification.
+
+Economic replay has explicit module homes for commodity quantity units, digital-asset networks,
+underlying exposure and exact leverage, settlement methods, raw classification labels, fund-share
+behavior and operational pricing/fixing sources. These homes recover class-owned flat fields without
+converting their labels or units; operational source names grant no calculation authority.
+
+`Workstation/OperatorTriageDtos.cs` defines personal acknowledgement/snooze, shared assignment,
+per-item bulk outcomes and the metadata persistence seam; these commands do not resolve underlying
+financial work. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
+accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -332,6 +506,9 @@ more separately identified child lots. Every target carries an approved positive
 original/current transaction and functional basis, acquisition FX and holding period. Independent
 currency residuals go to the final target. Dividend/purchase recipes, linked cash cases and new
 holding periods cannot use this carried-basis path; taxable spin-offs remain outside it.
+`OpenLotValidation` reconciles a retained functional basis to transaction basis times acquisition
+FX within one minor unit of the functional currency and never less than 0.01, so a basis rounded
+to whole yen or won is accepted while a two-decimal currency keeps the one-cent bound.
 Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
 validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
 Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,
@@ -1061,6 +1238,9 @@ dataset powered a no-code report-writer output.
 contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
 selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
 seeded for review but should not run until an operator activates them.
+`ReportingScheduleStateDto.Disabled` is set by the schedule `disable` route and cleared by `resume`.
+Both schedule DTOs carry an optional IANA `TimeZoneId` for cron evaluation (null means UTC; it is
+omitted from JSON when null so previously retained payloads keep their content hash).
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve
@@ -1939,6 +2119,11 @@ payload keeps investor-level account evidence, allocation rules, statement/resta
 audit drill-throughs on shared DTOs while naming broader cap-table, LP portal, live-payment, and
 forecasting behavior as planned rather than live.
 
+`LedgerAccountRunningBalanceDto` and `LedgerAccountRunningBalancePointDto` carry one account's
+posting history inside a ledger period with a running balance in the account's normal-balance
+sign, served from `UiApiRoutes.LedgerPeriodAccountRunningBalance`
+(`/api/ledger/periods/{periodId}/accounts/running-balance`).
+
 ## Security Master governance controls (2026-11)
 
 - **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
@@ -1959,6 +2144,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-CONTRACTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |
@@ -1981,6 +2167,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

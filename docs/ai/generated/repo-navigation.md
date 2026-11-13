@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-07T01:52:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-12T17:22:14Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `a970ac12` (2026-11-06T21:21:21+00:00) | 39 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 20 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | `a970ac12` (2026-11-06T21:21:21+00:00) | 10 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
-| `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
-| `src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 1 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `4e6151df` (2026-11-06T19:11:01+00:00) | 14 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `8b0e25ea` (2026-11-06T18:32:01+00:00) | 19 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `4cf61eca` (2026-11-06T18:25:31+00:00) | 17 |
-| `src/Meridian.Execution/Services/SessionTcaReporter.cs` | Execution, Risk, and Strategies | `4cf61eca` (2026-11-06T18:25:31+00:00) | 7 |
-| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 8 |
-| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 7 |
-| `src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 7 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `dcece77e` (2026-11-06T17:56:13+00:00) | 9 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 78 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 65 |
+| `src/Meridian.Application/README.md` | Host and Composition | `01649c7a44` (2026-11-12T16:06:18Z) | 54 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 31 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 27 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 22 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 20 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 17 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 16 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `01649c7a44` (2026-11-12T16:06:18Z) | 12 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `01649c7a44` (2026-11-12T16:06:18Z) | 9 |
+| `src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 9 |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.tsx` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 7 |
 

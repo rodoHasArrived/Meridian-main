@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Keyboard shortcut hint — crisp key caps for operator workstations. Renders a single key
  * or a combo (split on `+` or whitespace) as `min-width 18px` caps with a 2px bottom border
@@ -13,4 +14,4 @@ export interface KbdProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: "default" | "solid";
   children?: React.ReactNode;
 }
-export declare function Kbd(props: KbdProps): JSX.Element;
+export declare function Kbd(props: KbdProps): React.JSX.Element;

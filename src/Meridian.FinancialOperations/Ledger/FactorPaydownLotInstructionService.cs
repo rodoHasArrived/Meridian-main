@@ -1,5 +1,6 @@
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Instruments.AssetOperations;
@@ -60,13 +61,23 @@ public sealed class FactorPaydownLotInstructionService(
     ILedgerJournalStore? lots,
     ISecurityMasterStore? securities,
     IInstrumentPositionProjectionStore? positions,
-    IFactorPaydownProjectionService? projector)
+    IFactorPaydownProjectionService? projector,
+    IBondIncomeService? incomeService = null,
+    Func<IBondCouponRecognitionService?>? couponAuthority = null)
 {
-    public async Task<FactorPaydownPreparation> PrepareAsync(
+    public Task<FactorPaydownPreparation> PrepareAsync(
         FactorPaydownPreparationRequest request,
         string actor,
         DateTimeOffset projectedAtUtc,
         CancellationToken ct = default)
+        => PrepareCoreAsync(request, actor, projectedAtUtc, false, ct);
+
+    public Task<FactorPaydownPreparation> PrepareScheduledAsync(FactorPaydownPreparationRequest request,
+        string actor, DateTimeOffset projectedAtUtc, CancellationToken ct = default)
+        => PrepareCoreAsync(request, actor, projectedAtUtc, true, ct);
+
+    private async Task<FactorPaydownPreparation> PrepareCoreAsync(FactorPaydownPreparationRequest request,
+        string actor, DateTimeOffset projectedAtUtc, bool scheduled, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var lotStore = lots ?? throw new InvalidOperationException(
@@ -117,8 +128,25 @@ public sealed class FactorPaydownLotInstructionService(
                 + string.Join(" ", projection.Issues.Select(static issue => issue.Message)));
 
         var openLots = records.Select(static record => record.ToOpenLot()).ToArray();
-        var allocated = OpenLotFactorPaydown.Allocate(openLots, request.PriorFactor, request.NewFactor,
-            projection.PrincipalPaydown!.Value, currency);
+        var income = new List<OpenLotAmortizationInstructionDto>();
+        if (scheduled)
+        {
+            var authority = incomeService ?? throw new InvalidOperationException("Scheduled principal requires the adopted bond-income authority.");
+            foreach (var record in records)
+            {
+                if (!Guid.TryParseExact(record.Account.FinancialAccountId, "D", out var accountId))
+                    throw new InvalidOperationException("Scheduled principal requires an authoritative financial-account identity.");
+                income.Add((await authority.PreviewAsync(new(request.LedgerBookId, record.TaxLotRecordId,
+                    request.EffectiveDate, projectedAtUtc, accountId), ct).ConfigureAwait(false)).Instruction);
+            }
+        }
+        var principalAmount = scheduled ? BondSettlementConsideration.Round(income.Sum(input => input.BondIncome!.CurrentProjection.CashFlows
+                .Where(flow => flow.PaymentDate == request.EffectiveDate).Sum(flow => flow.Principal)
+                * input.ExpectedLot.OpenQuantity / input.ExpectedLot.OriginalQuantity), currency)
+            : projection.PrincipalPaydown!.Value;
+        IReadOnlyList<OpenLotFactorPaydownLotDto> allocated = scheduled
+            ? openLots.Select((lot, index) => new OpenLotFactorPaydownLotDto(lot, request.PriorFactor, 0m, 0m, 0m, index)).ToArray()
+            : OpenLotFactorPaydown.Allocate(openLots, request.PriorFactor, request.NewFactor, principalAmount, currency);
         var evidence = request.FactorEvidence
             .Concat(openLots.SelectMany(static lot => lot.Acquisition.Evidence))
             .DistinctBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
@@ -139,6 +167,8 @@ public sealed class FactorPaydownLotInstructionService(
             EvidenceLinks = evidenceLinks,
             RetainedEvidence = evidence
         };
+        if (scheduled)
+            lineage = lineage with { ModelVersion = BondIncomeScheduledPrincipal.ModelVersion };
         var dimensions = (request.Dimensions ?? position.BookContext.Dimensions ?? new LedgerDimensionSetDto()) with
         {
             FundId = request.FundProfileId,
@@ -151,7 +181,22 @@ public sealed class FactorPaydownLotInstructionService(
             request.TenantId, request.CompanyId, dimensions);
         var instruction = new OpenLotFactorPaydownInstructionDto(economicEvent, lineage, scope, request.ExpectedPeriodVersion,
             OpenLotAmortization.SecurityHash(security), request.PriorFactor, request.NewFactor,
-            projection.PrincipalPaydown.Value, currency, allocated);
+            principalAmount, currency, allocated)
+        { ScheduledPrincipal = scheduled ? new(BondIncomeScheduledPrincipal.ModelVersion, income) : null };
+        if (scheduled && request.NewFactor == 0m)
+        {
+            var terminal = await BondIncomeTerminalCouponGuard.ResolveAsync(lotStore, instruction, couponAuthority?.Invoke(), ct).ConfigureAwait(false);
+            instruction = instruction with
+            {
+                ScheduledPrincipal = instruction.ScheduledPrincipal! with
+                {
+                    TerminalCouponReceipts = terminal.Receipts.Count == 0 ? null : terminal.Receipts,
+                    TerminalCouponOpenings = terminal.Openings.Count == 0 ? null : terminal.Openings
+                }
+            };
+        }
+        if (instruction.ScheduledPrincipal is { } adopted)
+            instruction = instruction with { Lots = BondIncomeScheduledPrincipal.Allocate(instruction, adopted) };
         OpenLotFactorPaydown.Project(instruction);
 
         var components = OpenLotFactorPaydown.Components(instruction);

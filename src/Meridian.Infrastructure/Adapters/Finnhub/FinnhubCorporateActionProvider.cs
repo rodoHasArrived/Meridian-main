@@ -128,7 +128,7 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
         try
         {
             using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Finnhub dividends returned {StatusCode} for {Symbol}; skipping dividend actions.",
@@ -173,7 +173,7 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
         try
         {
             using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Finnhub splits returned {StatusCode} for {Symbol}; skipping split actions.",

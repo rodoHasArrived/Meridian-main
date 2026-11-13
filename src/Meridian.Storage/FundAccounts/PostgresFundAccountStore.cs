@@ -505,16 +505,37 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         IReadOnlyList<CustodianPositionLineDto> lines,
         CancellationToken ct)
     {
+        if (batch.Authority is { IsFullSnapshot: true } && lines.Count != batch.LineCount
+            || lines.Any(l => l.AccountId != batch.AccountId || l.BatchId != batch.BatchId || l.AsOfDate != batch.AsOfDate))
+            throw new ArgumentException("Custodian statement membership must match the full batch.");
+        var contentHash = BondHoldingNormalization.ContentHash(new(batch.BatchId, batch.AccountId, batch.AsOfDate,
+            batch.CustodianName, batch.SourceFormat, null, lines, batch.LoadedBy, Authority: batch.Authority));
+        if (batch.ContentSha256 is not null && batch.ContentSha256 != contentHash)
+            throw new ArgumentException("Custodian statement content hash does not match the retained fields.");
+        if (batch.Authority?.SupersedesBatchId is { } predecessor)
+        {
+            await using var prior = connection.CreateCommand();
+            prior.Transaction = transaction;
+            prior.CommandText = $"SELECT count(*) FROM {Qualified("custodian_statement_batch")} WHERE batch_id=@id AND account_id=@account AND as_of_date=@date AND (authority->>'revision')::int < @revision";
+            prior.Parameters.AddWithValue("id", predecessor);
+            prior.Parameters.AddWithValue("account", batch.AccountId);
+            prior.Parameters.AddWithValue("date", batch.AsOfDate);
+            prior.Parameters.AddWithValue("revision", batch.Authority.Revision);
+            if (Convert.ToInt64(await prior.ExecuteScalarAsync(ct).ConfigureAwait(false)) != 1)
+                throw new InvalidOperationException("Superseded statement must belong to this account/date and have an earlier revision.");
+        }
         await using (var cmd = connection.CreateCommand())
         {
             cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("custodian_statement_batch")}
-                    (batch_id, account_id, as_of_date, custodian_name, source_format, file_name, line_count, ingested_at, loaded_by)
+                    (batch_id, account_id, as_of_date, custodian_name, source_format, file_name, line_count, ingested_at, loaded_by, authority, content_sha256)
                 VALUES
-                    (@batch_id, @account_id, @as_of_date, @custodian_name, @source_format, null, @line_count, @ingested_at, @loaded_by)
+                    (@batch_id, @account_id, @as_of_date, @custodian_name, @source_format, null, @line_count, @ingested_at, @loaded_by, @authority::jsonb, @hash)
                 ON CONFLICT (batch_id) DO UPDATE SET batch_id = EXCLUDED.batch_id
                 WHERE custodian_statement_batch.account_id = EXCLUDED.account_id
+                  AND custodian_statement_batch.content_sha256 = EXCLUDED.content_sha256
+                RETURNING (xmax = 0)
                 """;
             cmd.Parameters.AddWithValue("batch_id", batch.BatchId);
             cmd.Parameters.AddWithValue("account_id", batch.AccountId);
@@ -524,30 +545,41 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("line_count", batch.LineCount);
             cmd.Parameters.AddWithValue("ingested_at", batch.IngestedAt);
             cmd.Parameters.AddWithValue("loaded_by", batch.LoadedBy);
-            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
-                throw new UnauthorizedAccessException("The retained statement batch belongs to another account.");
+            cmd.Parameters.AddWithValue("authority", batch.Authority is null ? (object)DBNull.Value : JsonSerializer.Serialize(batch.Authority, JsonOpts));
+            cmd.Parameters.AddWithValue("hash", contentHash);
+            if (await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false) is not bool inserted)
+            {
+                await using var retainedOwner = connection.CreateCommand();
+                retainedOwner.Transaction = transaction;
+                retainedOwner.CommandText = $"SELECT account_id FROM {Qualified("custodian_statement_batch")} WHERE batch_id=@id";
+                retainedOwner.Parameters.AddWithValue("id", batch.BatchId);
+                if (await retainedOwner.ExecuteScalarAsync(ct).ConfigureAwait(false) is Guid owner && owner != batch.AccountId)
+                    throw new UnauthorizedAccessException("Custodian batch identity belongs to another account.");
+                throw new InvalidOperationException("Custodian batch identity retains different content.");
+            }
+            if (!inserted)
+                return;
         }
-
         foreach (var line in lines)
         {
             var rawPayload = JsonSerializer.Serialize(new
             {
                 securityName = line.SecurityName,
                 assetClass = line.AssetClass,
-                isShort = line.IsShort
+                isShort = line.IsShort,
+                securityId = line.SecurityId,
+                bond = line.Bond,
+                retainedLine = line
             }, JsonOpts);
-
             await using var cmd = connection.CreateCommand();
             cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("custodian_position_line")}
-                    (position_line_id, batch_id, account_id, as_of_date,
-                     security_identifier, identifier_type, quantity, market_value,
-                     market_value_currency, cost_basis, accrued_income, settlement_pending, raw_payload)
+                    (position_line_id, batch_id, account_id, as_of_date, security_identifier, identifier_type, quantity,
+                     market_value, market_value_currency, cost_basis, accrued_income, settlement_pending, raw_payload)
                 VALUES
-                    (@position_line_id, @batch_id, @account_id, @as_of_date,
-                     @security_identifier, @identifier_type, @quantity, @market_value,
-                     @market_value_currency, null, null, false, @raw_payload::jsonb)
+                    (@position_line_id, @batch_id, @account_id, @as_of_date, @security_identifier, @identifier_type,
+                     @quantity, @market_value, @market_value_currency, @cost_basis, @accrued, false, @raw_payload::jsonb)
                 ON CONFLICT (position_line_id) DO NOTHING
                 """;
             cmd.Parameters.AddWithValue("position_line_id", line.LineId);
@@ -559,8 +591,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("quantity", line.Quantity);
             cmd.Parameters.AddWithValue("market_value", line.MarketValue);
             cmd.Parameters.AddWithValue("market_value_currency", line.Currency);
+            cmd.Parameters.AddWithValue("cost_basis", line.CostBasis is { } cost ? (object)cost : DBNull.Value);
+            cmd.Parameters.AddWithValue("accrued", line.Bond?.AccruedInterest is { } accrued ? (object)accrued : DBNull.Value);
             cmd.Parameters.AddWithValue("raw_payload", rawPayload);
-            await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+                throw new InvalidOperationException("Custodian line identity is already retained by another batch.");
         }
     }
 
@@ -728,7 +763,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         cmd.CommandText = $"""
             SELECT position_line_id, batch_id, account_id, as_of_date,
                    security_identifier, identifier_type, quantity, market_value,
-                   market_value_currency, raw_payload
+                   market_value_currency, cost_basis, raw_payload
             FROM {Qualified("custodian_position_line")}
             WHERE account_id = @account_id AND as_of_date = @as_of_date
             """;
@@ -743,6 +778,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             string? securityName = null;
             string? assetClass = null;
             bool isShort = false;
+            Guid? securityId = null;
+            BondHoldingEconomicsDto? bond = null;
+            CustodianPositionLineDto? retainedLine = null;
             if (rawJson is not null)
             {
                 using var doc = JsonDocument.Parse(rawJson);
@@ -752,6 +790,20 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                     assetClass = acProp.GetString();
                 if (doc.RootElement.TryGetProperty("isShort", out var isProp))
                     isShort = isProp.GetBoolean();
+                if (doc.RootElement.TryGetProperty("securityId", out var identity) && identity.ValueKind == JsonValueKind.String)
+                    securityId = identity.GetGuid();
+                if (doc.RootElement.TryGetProperty("bond", out var economics) && economics.ValueKind == JsonValueKind.Object)
+                    bond = economics.Deserialize<BondHoldingEconomicsDto>(JsonOpts);
+                if (doc.RootElement.TryGetProperty("retainedLine", out var retained) && retained.ValueKind == JsonValueKind.Object)
+                    retainedLine = retained.Deserialize<CustodianPositionLineDto>(JsonOpts);
+            }
+            if (retainedLine is not null)
+            {
+                if (retainedLine.LineId != reader.GetGuid(reader.GetOrdinal("position_line_id"))
+                    || retainedLine.BatchId != reader.GetGuid(reader.GetOrdinal("batch_id")) || retainedLine.AccountId != accountId)
+                    throw new InvalidOperationException("Retained custodian line identity does not match storage ownership.");
+                results.Add(retainedLine);
+                continue;
             }
             results.Add(new CustodianPositionLineDto(
                 LineId: reader.GetGuid(reader.GetOrdinal("position_line_id")),
@@ -765,7 +817,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 Currency: reader.GetString(reader.GetOrdinal("market_value_currency")),
                 SecurityName: securityName,
                 AssetClass: assetClass,
-                IsShort: isShort));
+                IsShort: isShort,
+                CostBasis: reader.IsDBNull(reader.GetOrdinal("cost_basis")) ? null : reader.GetDecimal(reader.GetOrdinal("cost_basis")),
+                SecurityId: securityId, Bond: bond));
         }
         return results;
     }
@@ -777,7 +831,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = $"""
-            SELECT batch_id, account_id, as_of_date, custodian_name, source_format, line_count, ingested_at, loaded_by
+            SELECT batch_id, account_id, as_of_date, custodian_name, source_format, line_count, ingested_at, loaded_by, authority, content_sha256
             FROM {Qualified("custodian_statement_batch")}
             WHERE account_id = @account_id AND as_of_date = @as_of_date
             ORDER BY ingested_at
@@ -797,9 +851,49 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 SourceFormat: reader.GetString(reader.GetOrdinal("source_format")),
                 LineCount: reader.GetInt32(reader.GetOrdinal("line_count")),
                 IngestedAt: reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ingested_at")),
-                LoadedBy: reader.GetString(reader.GetOrdinal("loaded_by"))));
+                LoadedBy: reader.GetString(reader.GetOrdinal("loaded_by")),
+                Authority: reader.IsDBNull(reader.GetOrdinal("authority")) ? null : JsonSerializer.Deserialize<CustodianStatementAuthorityDto>(reader.GetString(reader.GetOrdinal("authority")), JsonOpts),
+                ContentSha256: reader.IsDBNull(reader.GetOrdinal("content_sha256")) ? null : reader.GetString(reader.GetOrdinal("content_sha256"))));
         }
         return results;
+    }
+
+    public async Task<CustodianHoldingSnapshotDto?> GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf,
+        DateTimeOffset? knownAt = null, CancellationToken ct = default)
+    {
+        if (accountId == Guid.Empty || asOf == default || knownAt is { Offset: var offset } && offset != TimeSpan.Zero)
+            throw new ArgumentException("Accepted snapshots require account, date and an optional UTC cutoff.");
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await RequireAccountOwnerAsync(connection, transaction: null, accountId, ct).ConfigureAwait(false);
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"""
+            SELECT batch_id, account_id, as_of_date, custodian_name, source_format, line_count,
+                   ingested_at, loaded_by, authority, content_sha256
+            FROM {Qualified("custodian_statement_batch")}
+            WHERE account_id=@account AND as_of_date<=@asof AND authority IS NOT NULL
+              AND (@known IS NULL OR ingested_at<=@known)
+            ORDER BY as_of_date DESC
+            """;
+        cmd.Parameters.AddWithValue("account", accountId);
+        cmd.Parameters.AddWithValue("asof", asOf);
+        cmd.Parameters.AddWithValue("known", NpgsqlTypes.NpgsqlDbType.TimestampTz,
+            knownAt is { } cutoff ? (object)cutoff : DBNull.Value);
+        var batches = new List<CustodianStatementBatchDto>();
+        await using (var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false))
+        {
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                batches.Add(new(reader.GetGuid(0), reader.GetGuid(1), reader.GetFieldValue<DateOnly>(2),
+                    reader.GetString(3), reader.GetString(4), reader.GetInt32(5), reader.GetFieldValue<DateTimeOffset>(6),
+                    reader.GetString(7), JsonSerializer.Deserialize<CustodianStatementAuthorityDto>(reader.GetString(8), JsonOpts),
+                    reader.IsDBNull(9) ? null : reader.GetString(9)));
+        }
+        var eligible = batches.Where(b => b.Authority is { IsAccepted: true, IsFullSnapshot: true }).ToArray();
+        if (eligible.Length == 0)
+            return null;
+        var latest = eligible.Max(b => b.AsOfDate);
+        // Legacy exact-date reads remain compatible. Selection below only retains the winning full batch.
+        var lines = await GetCustodianPositionsAsync(accountId, latest, ct).ConfigureAwait(false);
+        return CustodianHoldingSnapshotSelector.Select(accountId, asOf, knownAt, batches, lines);
     }
 
     public async Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(

@@ -1399,6 +1399,23 @@ describe("trading confirmation view model", () => {
 });
 
 describe("trading order ticket view model", () => {
+  it("rejects exponent, hex, signed, and separated numeric text for quantity and price", () => {
+    const base = { ...emptyOrderTicketForm, symbol: "AAPL", type: "Limit" as const, quantity: 10, limitPrice: 189.44 };
+
+    for (const malformed of ["1e3", "0x10", "+5", "-5", "1,000", "Infinity", "NaN", "0", ""]) {
+      const quantityForm = updateOrderTicketForm(base, "quantity", malformed);
+      expect(quantityForm.quantity).toBe(0);
+      expect(validateOrderTicketForm(quantityForm)).toBe("Enter an order quantity greater than zero.");
+
+      const priceForm = updateOrderTicketForm(base, "limitPrice", malformed);
+      expect(priceForm.limitPrice).toBeNull();
+      expect(validateOrderTicketForm(priceForm)).toBe("Enter a limit price greater than zero.");
+    }
+
+    expect(updateOrderTicketForm(base, "quantity", " 250 ").quantity).toBe(250);
+    expect(updateOrderTicketForm(base, "limitPrice", "190.25").limitPrice).toBe(190.25);
+  });
+
   it("normalizes order input and clears price for market orders", () => {
     const form = updateOrderTicketForm(
       {
@@ -1588,6 +1605,120 @@ describe("trading order ticket view model", () => {
       fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
     });
     expect(result.current.successText).toBe("Order submitted - ord-42.");
+  });
+
+  it("retains numeric editor text while applying strict validation and programmatic draft changes", async () => {
+    const services: OrderTicketServices = { submitOrder: vi.fn() };
+    const { result } = renderHook(() => useOrderTicketViewModel({ services }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", " aapl ");
+      result.current.updateField("type", "Limit");
+      result.current.updateField("quantity", "25.0");
+      result.current.updateField("limitPrice", "188.0");
+      result.current.setAcknowledged(true);
+    });
+    expect(result.current.form).toMatchObject({ quantity: 25, limitPrice: 188 });
+    expect(result.current.controls.quantity.value).toBe("25.0");
+    expect(result.current.controls.limitPrice?.value).toBe("188.0");
+
+    act(() => result.current.normalizeSymbol());
+    expect(result.current.form.symbol).toBe("AAPL");
+    expect(result.current.controls.limitPrice?.value).toBe("188.0");
+
+    act(() => result.current.updateField("limitPrice", "1e3"));
+    expect(result.current.form.limitPrice).toBeNull();
+    expect(result.current.validationError).toBe("Enter a limit price greater than zero.");
+    expect(result.current.acknowledgement.checked).toBe(false);
+    expect(result.current.acknowledgement.disabled).toBe(true);
+    await act(async () => { await result.current.submitOrder(); });
+    expect(services.submitOrder).not.toHaveBeenCalled();
+
+    act(() => result.current.updateField("limitPrice", "190.50"));
+    expect(result.current.form.limitPrice).toBe(190.5);
+    expect(result.current.controls.limitPrice?.value).toBe("190.50");
+    act(() => result.current.updateField("symbol", "MSFT"));
+    expect(result.current.controls.quantity.value).toBe("25");
+    expect(result.current.controls.limitPrice?.value).toBe("190.5");
+
+    act(() => result.current.updateField("limitPrice", "200.0"));
+    act(() => result.current.updateField("type", "Stop"));
+    expect(result.current.controls.limitPrice?.value).toBe("200");
+    act(() => result.current.updateField("type", "Market"));
+    expect(result.current.form.limitPrice).toBeNull();
+    expect(result.current.controls.limitPrice).toBeNull();
+    act(() => result.current.updateField("type", "Limit"));
+    expect(result.current.controls.limitPrice?.value).toBe("");
+
+    act(() => result.current.updateField("limitPrice", "205.0"));
+    act(() => result.current.closeTicket());
+    act(() => result.current.openTicket());
+    expect(result.current.controls.limitPrice?.value).toBe("205");
+    expect(result.current.acknowledgement.checked).toBe(false);
+  });
+
+  it("withholds prior numeric editor text and review in the first render of another account scope", () => {
+    const accountA = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    const accountB = "7a4c2251-17f6-4fb7-8dbe-6fb4966e2749";
+    const services: OrderTicketServices = { submitOrder: vi.fn() };
+    const rendered: Array<{ scope: string; price: string | undefined; acknowledged: boolean }> = [];
+    const { result, rerender } = renderHook(({ fundAccountId }) => {
+      const ticket = useOrderTicketViewModel({ fundAccountId, services });
+      rendered.push({ scope: fundAccountId, price: ticket.controls.limitPrice?.value, acknowledged: ticket.acknowledgement.checked });
+      return ticket;
+    }, { initialProps: { fundAccountId: accountA } });
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "AAPL");
+      result.current.updateField("type", "Limit");
+      result.current.updateField("quantity", "25.0");
+      result.current.updateField("limitPrice", "188.0");
+      result.current.setAcknowledged(true);
+    });
+    expect(result.current.canSubmit).toBe(true);
+
+    const firstNewScopeRender = rendered.length;
+    rerender({ fundAccountId: accountB });
+    expect(rendered[firstNewScopeRender]).toEqual({ scope: accountB, price: "188", acknowledged: false });
+    expect(rendered.slice(firstNewScopeRender).every((state) => state.price === "188" && !state.acknowledged)).toBe(true);
+    expect(result.current.form).toMatchObject({ quantity: 25, limitPrice: 188 });
+    expect(result.current.controls.quantity.value).toBe("25");
+    expect(result.current.canSubmit).toBe(false);
+
+    act(() => result.current.setAcknowledged(true));
+    expect(result.current.canSubmit).toBe(true);
+    rerender({ fundAccountId: accountA });
+    expect(result.current.controls.limitPrice?.value).toBe("188");
+    expect(result.current.acknowledgement.checked).toBe(false);
+    expect(result.current.canSubmit).toBe(false);
+  });
+
+  it.each(["accepted", "parked"] as const)("clears numeric editor text after an %s order outcome", async (outcome) => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: outcome === "accepted",
+        requiresApproval: outcome === "parked",
+        orderId: "ord-editor-reset",
+        escalationId: outcome === "parked" ? "esc-editor-reset" : null
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({ services }));
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "AAPL");
+      result.current.updateField("type", "Limit");
+      result.current.updateField("quantity", "25.0");
+      result.current.updateField("limitPrice", "188.05");
+      result.current.setAcknowledged(true);
+    });
+    await act(async () => { await result.current.submitOrder(); });
+    expect(services.submitOrder).toHaveBeenCalledWith({ symbol: "AAPL", side: "Buy", type: "Limit", quantity: 25, limitPrice: 188.05 });
+    expect(result.current.controls.quantity.value).toBe("");
+    act(() => result.current.openTicket());
+    act(() => result.current.updateField("type", "Limit"));
+    expect(result.current.controls.limitPrice?.value).toBe("");
+    expect(result.current.acknowledgement.checked).toBe(false);
   });
 
   it("reports a governed-approval park as parked rather than as a submission failure", async () => {

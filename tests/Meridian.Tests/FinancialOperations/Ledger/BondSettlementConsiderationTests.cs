@@ -88,6 +88,45 @@ public sealed class BondSettlementConsiderationTests
     }
 
     [Fact]
+    public void AdoptedAcquisitionCapitalizesEligibleFeesOnce_AndCanonicalGuardRejectsDoubleExpense()
+    {
+        var acquisition = Acquisition();
+        var evidence = new RetainedEvidenceIdentityDto("cash-source", "urn:synthetic:confirmation", new string('a', 64),
+            "Synthetic", "confirmation", "Accepted", "reviewer", AsOf, Context.SettlementDate!.Value,
+            1, AsOf, "reviewer", "OpenLotAcquisition", acquisition.TaxLotRecordId.ToString("D"));
+        acquisition = acquisition with
+        {
+            UnitCost = 81.02m,
+            BondIncome = new(AsOf, 81_000m, 1_200m, 1m,
+                [new("direct-fee", 20m, BondIncomeFeeTreatment.EligibleDirectAcquisitionCost, evidence),
+                 new("expense-fee", 5m, BondIncomeFeeTreatment.Expense, evidence)], [evidence])
+        };
+        BondSettlementConsideration.ValidateAcquisition(acquisition).Should().BeEmpty();
+        BondSettlementConsideration.ValidateAcquisition(acquisition with { BondIncome = null }).Should().NotBeEmpty();
+        var id = Guid.NewGuid();
+        var values = new[] { ("Assets/Bonds", 81_020m, 0m, LedgerAccountType.Asset),
+            ("Assets/PurchasedInterest", 1_200m, 0m, LedgerAccountType.Asset),
+            ("Expenses/Fees", 5m, 0m, LedgerAccountType.Expense),
+            ("Assets/Cash", 0m, 82_225m, LedgerAccountType.Asset) };
+        var lines = values.Select(v => new LedgerEntry(Guid.NewGuid(), id, AsOf, new(v.Item1, v.Item4), v.Item2, v.Item3,
+            "Adopted settlement", currency: new("USD", "USD", v.Item2, v.Item3, 1m))).ToArray();
+        var generated = values.Select((v, i) => new GeneratedPostingLineDto(i.ToString(), v.Item1,
+            v.Item2 > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit,
+            "retained", v.Item2 + v.Item3, "USD")).ToArray();
+        var candidate = new PostingRuleJournalCandidateResultDto(null!, null, null, generated, null, null,
+            82_225m, 82_225m, 0m, true, false, true, false, [], []);
+        var journal = new JournalEntry(id, AsOf, "Adopted settlement", lines);
+        BondSettlementPostingGuard.RequireJournal(acquisition, candidate, journal);
+        var duplicateExpense = candidate with
+        {
+            GeneratedPostingLines = generated.Select(line =>
+            line.AccountPath == "Expenses/Fees" ? line with { Amount = 25m } : line).ToArray()
+        };
+        var action = () => BondSettlementPostingGuard.RequireJournal(acquisition, duplicateExpense, journal);
+        action.Should().Throw<InvalidOperationException>().WithMessage("*reviewed consideration component*");
+    }
+
+    [Fact]
     public void PostingGuard_RejectsWrongSecurityVersionAndCurrency()
     {
         var wrongVersion = () => BondSettlementPostingGuard.RequireScope(Acquisition(), SecurityId, 8, "USD");
@@ -197,7 +236,8 @@ public sealed class BondSettlementConsiderationTests
     {
         var json = System.Text.Json.JsonSerializer.Serialize(Receipt(), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         json.Should().NotContain("functionalCurrency").And.NotContain("settlementFxRateToFunctional")
-            .And.NotContain("isForeignCurrency").And.NotContain("effectiveFunctionalCurrency").And.NotContain("effectiveFxRateToFunctional");
+            .And.NotContain("isForeignCurrency").And.NotContain("effectiveFunctionalCurrency").And.NotContain("effectiveFxRateToFunctional")
+            .And.NotContain("selectionReceiptId").And.NotContain("priceAccountId");
         var foreign = System.Text.Json.JsonSerializer.Serialize(Receipt() with { Currency = "EUR", FunctionalCurrency = "USD", SettlementFxRateToFunctional = 1.0875m },
             new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         foreign.Should().Contain("\"functionalCurrency\":\"USD\"").And.NotContain("effective").And.NotContain("isForeignCurrency");

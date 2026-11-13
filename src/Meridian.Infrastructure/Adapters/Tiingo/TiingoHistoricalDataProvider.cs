@@ -92,7 +92,7 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
             using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
-        catch when (!ct.IsCancellationRequested)
+        catch
         {
             return false;
         }
@@ -132,7 +132,7 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await ExecuteGetAsync(url, symbol, "historical data", ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -143,7 +143,6 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
                 if ((int)response.StatusCode == 429)
                 {
                     var retryAfter = HttpResponseHandler.ExtractRetryAfter(response) ?? TimeSpan.FromMinutes(1);
-                    RecordRateLimitHit(retryAfter);
                     throw new RateLimitException(
                         $"Tiingo rate limit exceeded (429) for {symbol}",
                         provider: Name,

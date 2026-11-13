@@ -3,9 +3,16 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
+import { buildWorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 import { DailyControlTowerScreen } from "@/screens/daily-control-tower-screen";
 import { renderWithRouter } from "@/test/render";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
+
+// A loaded inbox: the stub ignores any fallback, so every finance-queue assertion below holds
+// after the shared inbox has replaced its loading state.
+vi.mock("@/components/meridian/operator-triage-queue", () => ({
+  OperatorTriageQueue: () => <table aria-label="Stub operator inbox"><tbody><tr><td>Stub inbox item</td></tr></tbody></table>
+}));
 
 // A payload that produces a multi-row finance queue so row selection is
 // observable: two trading work items plus one data-provider warning.
@@ -132,9 +139,46 @@ describe("DailyControlTowerScreen", () => {
     expect(
       screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 items in the finance queue");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Stale update");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("May 14, 2026");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
+  });
+
+  it("lists every item the Today badge counts after the inbox loads", async () => {
+    const shell = buildAppShellViewState({
+      pathname: "/",
+      search: "?symbol=MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload
+    });
+    const { total } = buildWorkspaceAttentionCounts(shell.workflowContinuity);
+    expect(total).toBeGreaterThan(0);
+    const { container } = renderScreen();
+
+    // The badge, the confidence line and the table read one list, so they cannot disagree.
+    const queue = screen.getByRole("treegrid", { name: "Daily control tower finance queue" });
+    expect(queue.querySelectorAll("tbody tr[data-dense-row-id]")).toHaveLength(total);
+    expect(screen.getByRole("region", { name: "Daily control tower confidence" }))
+      .toHaveTextContent(`${total} items in the finance queue`);
+
+    // Two lists, two units, each named and described; the counted queue comes first.
+    const financeQueue = screen.getByRole("region", { name: "Finance queue" });
+    const inbox = screen.getByRole("region", { name: "Operator inbox" });
+    expect(within(financeQueue).getByRole("heading", { name: "Finance queue" })).toBeInTheDocument();
+    expect(financeQueue).toContainElement(queue);
+    expect(financeQueue).toHaveTextContent("Signals from the loaded workspaces; the sidebar badges count these.");
+    expect(within(inbox).getByRole("heading", { name: "Operator inbox" })).toBeInTheDocument();
+    expect(within(inbox).getByRole("table", { name: "Stub operator inbox" })).toHaveTextContent("Stub inbox item");
+    expect(inbox).toHaveTextContent("Triage items from the shared host, with assignment and snooze.");
+    expect(financeQueue.compareDocumentPosition(inbox) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
   });
 
   it("states the workstation status in one line that names only the open issues", () => {
@@ -142,6 +186,9 @@ describe("DailyControlTowerScreen", () => {
 
     const status = screen.getByRole("region", { name: "Workstation status" });
     const line = within(status).getByTestId("status-row-issues");
+    const priority = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priority).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
+    expect(priority.querySelectorAll('[data-testid="status-row-issues"]')).toHaveLength(1);
     expect(line).toHaveTextContent("Blocked");
     expect(line).toHaveTextContent("Decisions:");
     expect(line).toHaveTextContent("Brokerage sync failed · 2 more");
@@ -169,8 +216,9 @@ describe("DailyControlTowerScreen", () => {
 
     expect(shell.attention.tone).toBe("blocked");
     expect(shell.attention.title).toBe("Brokerage sync failed");
-    const headline = screen.getByText("Brokerage sync failed", { selector: ".mds-rpanel__title" });
-    expect(headline.closest(".mds-rpanel")).toHaveTextContent("Blocked");
+    const headline = screen.getByRole("region", { name: "Priority decision" });
+    expect(headline).toHaveTextContent("Brokerage sync failed");
+    expect(headline).toHaveTextContent("Blocked");
     expect(screen.getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
   });
 
@@ -221,16 +269,13 @@ describe("DailyControlTowerScreen", () => {
     ).not.toHaveAttribute("aria-selected", "true");
   });
 
-  it("requires an explicit scope choice before showing the combined queue", async () => {
-    const user = userEvent.setup();
+  it("shows the combined ranked queue without a scope selection", () => {
     renderScreen({ search: "" });
-
-    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Daily control tower finance queue" })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
-
+    expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("All authorized scopes");
+    expect(screen.getByRole("columnheader", { name: "Workspace" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Owner" })).not.toBeInTheDocument();
   });
 
   it("supports keyboard selection and detail focus through the shared dense-row contract", async () => {
@@ -270,11 +315,8 @@ describe("DailyControlTowerScreen", () => {
   it("shows the leading action once outside the ranked queue", () => {
     renderScreen();
 
-    const priorityPanel = screen.getByText("Brokerage sync failed", {
-      selector: ".mds-rpanel__title"
-    }).closest(".mds-rpanel");
-    expect(priorityPanel).not.toBeNull();
-    expect(within(priorityPanel as HTMLElement).getAllByRole("link")).toHaveLength(1);
+    const priorityPanel = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priorityPanel as HTMLElement).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
   });
 
   it("has no accessibility violations", async () => {

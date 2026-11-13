@@ -515,7 +515,7 @@
     },
     {
       "assetClass": "Bond",
-      "termsVersion": 3,
+      "termsVersion": 5,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
@@ -922,6 +922,20 @@
           "choices": [],
           "aliases": [],
           "role": "Economic"
+        },
+        {
+          "key": "bondWorkflow",
+          "fieldPath": "assetSpecificTerms.bondWorkflow",
+          "label": "Bond workflow",
+          "type": "Object",
+          "editor": "Json",
+          "group": "Schedules and structure",
+          "order": 27,
+          "required": false,
+          "scalarEditable": false,
+          "choices": [],
+          "aliases": [],
+          "role": "Economic"
         }
       ],
       "pickableFieldKeys": [
@@ -1046,10 +1060,28 @@
     },
     {
       "assetClass": "Deposit",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "depositType",
           "fieldPath": "assetSpecificTerms.depositType",
@@ -1057,7 +1089,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1071,7 +1103,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1085,7 +1117,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 2,
+          "order": 3,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1099,7 +1131,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1113,7 +1145,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -1138,7 +1170,7 @@
           "type": "Boolean",
           "editor": "Toggle",
           "group": "Core terms",
-          "order": 5,
+          "order": 6,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1147,6 +1179,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "depositType",
         "institutionName",
         "maturity",
@@ -1155,6 +1188,11 @@
         "isCallable"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "depositType": [],
         "institutionName": [],
         "maturity": [],
@@ -1261,10 +1299,28 @@
     },
     {
       "assetClass": "CertificateOfDeposit",
-      "termsVersion": 3,
+      "termsVersion": 5,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "issuerName",
           "fieldPath": "assetSpecificTerms.issuerName",
@@ -1272,7 +1328,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1286,7 +1342,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1300,7 +1356,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 2,
+          "order": 3,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1314,7 +1370,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1328,7 +1384,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -1353,7 +1409,7 @@
           "type": "Object",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 5,
+          "order": 6,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -1367,7 +1423,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 6,
+          "order": 7,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -1381,7 +1437,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 7,
+          "order": 8,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -1390,6 +1446,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "issuerName",
         "maturity",
         "couponRate",
@@ -1397,6 +1454,11 @@
         "dayCount"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "issuerName": [],
         "maturity": [],
         "couponRate": [],
@@ -1417,10 +1479,28 @@
     },
     {
       "assetClass": "CommercialPaper",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "issuerName",
           "fieldPath": "assetSpecificTerms.issuerName",
@@ -1428,7 +1508,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1442,7 +1522,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1456,7 +1536,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 2,
+          "order": 3,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1470,7 +1550,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -1495,7 +1575,7 @@
           "type": "Boolean",
           "editor": "Toggle",
           "group": "Core terms",
-          "order": 4,
+          "order": 5,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1504,6 +1584,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "issuerName",
         "maturity",
         "discountRate",
@@ -1511,6 +1592,11 @@
         "isAssetBacked"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "issuerName": [],
         "maturity": [],
         "discountRate": [],
@@ -1534,10 +1620,28 @@
     },
     {
       "assetClass": "TreasuryBill",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "maturity",
           "fieldPath": "assetSpecificTerms.maturity",
@@ -1545,7 +1649,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1559,7 +1663,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 1,
+          "order": 2,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1573,7 +1677,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 2,
+          "order": 3,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1587,7 +1691,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1596,12 +1700,18 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "maturity",
         "auctionDate",
         "cusip",
         "discountRate"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "maturity": [],
         "auctionDate": [],
         "cusip": [],
@@ -1610,10 +1720,28 @@
     },
     {
       "assetClass": "Repo",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "FinancingInterest",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "counterparty",
           "fieldPath": "assetSpecificTerms.counterparty",
@@ -1621,7 +1749,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1635,7 +1763,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1649,7 +1777,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 2,
+          "order": 3,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1663,7 +1791,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1677,7 +1805,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1691,7 +1819,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 5,
+          "order": 6,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1700,6 +1828,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "counterparty",
         "startDate",
         "endDate",
@@ -1708,6 +1837,11 @@
         "haircut"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "counterparty": [],
         "startDate": [],
         "endDate": [],
@@ -1718,10 +1852,28 @@
     },
     {
       "assetClass": "CashSweep",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "CurrencyAmount",
       "cashFlowBehavior": "ProviderSupplied",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "programName",
           "fieldPath": "assetSpecificTerms.programName",
@@ -1729,7 +1881,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1743,7 +1895,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -1757,7 +1909,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 2,
+          "order": 3,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -1782,7 +1934,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1796,7 +1948,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -1805,6 +1957,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "programName",
         "sweepVehicleType",
         "sweepFrequency",
@@ -1812,6 +1965,11 @@
         "yieldRate"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "programName": [],
         "sweepVehicleType": [],
         "sweepFrequency": [
@@ -2042,10 +2200,28 @@
     },
     {
       "assetClass": "Swap",
-      "termsVersion": 1,
+      "termsVersion": 4,
       "lotUnit": "Notional",
       "cashFlowBehavior": "SwapLegs",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "effectiveDate",
           "fieldPath": "assetSpecificTerms.effectiveDate",
@@ -2053,7 +2229,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -2067,7 +2243,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -2081,7 +2257,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 2,
+          "order": 3,
           "required": true,
           "scalarEditable": false,
           "choices": [],
@@ -2093,20 +2269,44 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "effectiveDate",
         "maturityDate"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "effectiveDate": [],
         "maturityDate": []
       }
     },
     {
       "assetClass": "DirectLoan",
-      "termsVersion": 1,
+      "termsVersion": 3,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "ContractualSchedule",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "borrower",
           "fieldPath": "assetSpecificTerms.borrower",
@@ -2114,7 +2314,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -2128,7 +2328,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 1,
+          "order": 2,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2142,7 +2342,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 2,
+          "order": 3,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2156,7 +2356,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2170,7 +2370,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2184,7 +2384,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 5,
+          "order": 6,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -2209,7 +2409,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Operations",
-          "order": 6,
+          "order": 7,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2223,7 +2423,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 7,
+          "order": 8,
           "required": true,
           "scalarEditable": false,
           "choices": [],
@@ -2237,7 +2437,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 8,
+          "order": 9,
           "required": true,
           "scalarEditable": false,
           "choices": [],
@@ -2246,6 +2446,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "borrower",
         "maturity",
         "referenceIndex",
@@ -2255,6 +2456,11 @@
         "pricingSource"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "borrower": [],
         "maturity": [],
         "referenceIndex": [],
@@ -2277,10 +2483,28 @@
     },
     {
       "assetClass": "StructuredCredit",
-      "termsVersion": 4,
+      "termsVersion": 6,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "FactorAmortizing",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "tranche",
           "fieldPath": "assetSpecificTerms.tranche",
@@ -2288,7 +2512,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -2302,7 +2526,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 1,
+          "order": 2,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2316,7 +2540,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 2,
+          "order": 3,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -2330,7 +2554,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Core terms",
-          "order": 3,
+          "order": 4,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -2344,7 +2568,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2358,7 +2582,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Rates and accrual",
-          "order": 5,
+          "order": 6,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -2372,7 +2596,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Operations",
-          "order": 6,
+          "order": 7,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2386,7 +2610,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 7,
+          "order": 8,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -2400,7 +2624,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 8,
+          "order": 9,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2414,7 +2638,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 9,
+          "order": 10,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2428,7 +2652,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 10,
+          "order": 11,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2442,7 +2666,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 11,
+          "order": 12,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2456,7 +2680,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 12,
+          "order": 13,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2470,7 +2694,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 13,
+          "order": 14,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2484,7 +2708,7 @@
           "type": "Integer",
           "editor": "Integer",
           "group": "Additional terms",
-          "order": 14,
+          "order": 15,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2498,7 +2722,7 @@
           "type": "Integer",
           "editor": "Integer",
           "group": "Additional terms",
-          "order": 15,
+          "order": 16,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2512,7 +2736,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 16,
+          "order": 17,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2526,7 +2750,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 17,
+          "order": 18,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -2540,7 +2764,7 @@
           "type": "Object",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 18,
+          "order": 19,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -2554,7 +2778,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 19,
+          "order": 20,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -2568,7 +2792,7 @@
           "type": "Array",
           "editor": "Json",
           "group": "Schedules and structure",
-          "order": 20,
+          "order": 21,
           "required": false,
           "scalarEditable": false,
           "choices": [],
@@ -2577,6 +2801,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "tranche",
         "poolId",
         "collateralType",
@@ -2596,6 +2821,11 @@
         "nonCallPeriodEnd"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "tranche": [],
         "poolId": [],
         "collateralType": [],
@@ -4010,10 +4240,28 @@
     },
     {
       "assetClass": "Swaption",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "Notional",
       "cashFlowBehavior": "None",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "payerReceiver",
           "fieldPath": "assetSpecificTerms.payerReceiver",
@@ -4021,7 +4269,7 @@
           "type": "String",
           "editor": "Choice",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [
@@ -4038,7 +4286,7 @@
           "type": "String",
           "editor": "Choice",
           "group": "Additional terms",
-          "order": 1,
+          "order": 2,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -4056,7 +4304,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 2,
+          "order": 3,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4073,7 +4321,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 3,
+          "order": 4,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4090,7 +4338,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4104,7 +4352,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 5,
+          "order": 6,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4118,7 +4366,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Core terms",
-          "order": 6,
+          "order": 7,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4134,7 +4382,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Additional terms",
-          "order": 7,
+          "order": 8,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4151,7 +4399,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 8,
+          "order": 9,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -4172,7 +4420,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 9,
+          "order": 10,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -4197,7 +4445,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Additional terms",
-          "order": 10,
+          "order": 11,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -4210,6 +4458,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "payerReceiver",
         "exerciseStyle",
         "strikeRate",
@@ -4223,6 +4472,11 @@
         "settlementType"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "payerReceiver": [
           "Payer",
           "Receiver"
@@ -4267,10 +4521,28 @@
     },
     {
       "assetClass": "CapFloor",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "Notional",
       "cashFlowBehavior": "None",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "capFloorType",
           "fieldPath": "assetSpecificTerms.capFloorType",
@@ -4278,7 +4550,7 @@
           "type": "String",
           "editor": "Choice",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [
@@ -4296,7 +4568,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4313,7 +4585,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 2,
+          "order": 3,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4329,7 +4601,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4345,7 +4617,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Core terms",
-          "order": 4,
+          "order": 5,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4361,7 +4633,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 5,
+          "order": 6,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4375,7 +4647,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 6,
+          "order": 7,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4389,7 +4661,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 7,
+          "order": 8,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -4416,7 +4688,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 8,
+          "order": 9,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -4443,7 +4715,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 9,
+          "order": 10,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4454,6 +4726,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "capFloorType",
         "referenceIndex",
         "capStrike",
@@ -4466,6 +4739,11 @@
         "premiumAmount"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "capFloorType": [
           "Cap",
           "Floor",
@@ -4506,10 +4784,28 @@
     },
     {
       "assetClass": "StructuredNote",
-      "termsVersion": 1,
+      "termsVersion": 2,
       "lotUnit": "FaceValue",
       "cashFlowBehavior": "None",
       "fields": [
+        {
+          "key": "rateUnit",
+          "fieldPath": "assetSpecificTerms.rateUnit",
+          "label": "Rate unit",
+          "type": "String",
+          "editor": "Choice",
+          "group": "Rates and accrual",
+          "order": 0,
+          "required": false,
+          "scalarEditable": true,
+          "choices": [
+            "Fraction",
+            "Percent",
+            "BasisPoints"
+          ],
+          "aliases": [],
+          "role": "Economic"
+        },
         {
           "key": "issuerName",
           "fieldPath": "assetSpecificTerms.issuerName",
@@ -4517,7 +4813,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 0,
+          "order": 1,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4533,7 +4829,7 @@
           "type": "String",
           "editor": "Text",
           "group": "Core terms",
-          "order": 1,
+          "order": 2,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4550,7 +4846,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 2,
+          "order": 3,
           "required": true,
           "scalarEditable": true,
           "choices": [],
@@ -4566,7 +4862,7 @@
           "type": "Date",
           "editor": "Date",
           "group": "Dates",
-          "order": 3,
+          "order": 4,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4580,7 +4876,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 4,
+          "order": 5,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4597,7 +4893,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 5,
+          "order": 6,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4613,7 +4909,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 6,
+          "order": 7,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4629,7 +4925,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 7,
+          "order": 8,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4645,7 +4941,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Rates and accrual",
-          "order": 8,
+          "order": 9,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4661,7 +4957,7 @@
           "type": "String",
           "editor": "Convention",
           "group": "Rates and accrual",
-          "order": 9,
+          "order": 10,
           "required": false,
           "scalarEditable": true,
           "choices": [
@@ -4684,7 +4980,7 @@
           "type": "Decimal",
           "editor": "Decimal",
           "group": "Additional terms",
-          "order": 10,
+          "order": 11,
           "required": false,
           "scalarEditable": true,
           "choices": [],
@@ -4695,6 +4991,7 @@
         }
       ],
       "pickableFieldKeys": [
+        "rateUnit",
         "issuerName",
         "underlyingDescription",
         "maturity",
@@ -4708,6 +5005,11 @@
         "barrierLevel"
       ],
       "valueChoicesByKey": {
+        "rateUnit": [
+          "Fraction",
+          "Percent",
+          "BasisPoints"
+        ],
         "issuerName": [],
         "underlyingDescription": [],
         "maturity": [],

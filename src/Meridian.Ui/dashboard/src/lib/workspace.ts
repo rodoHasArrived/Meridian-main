@@ -33,6 +33,8 @@ export const WORKSTATION_ROUTE_CATALOG = {
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
   accountingLedger: "/accounting/ledger",
+  accountingFactorPaydown: "/accounting/factor-paydown",
+  accountingConsolidation: "/accounting/consolidation",
   accountingTrialBalanceLegacy: "/accounting/trial-balance",
   accountingAccountDetail: "/accounting/accounts/detail",
   accountingJournalEntries: "/accounting/journal-entries",
@@ -275,7 +277,7 @@ export function evidenceWorkbenchPath(subjectKind: string, subjectId: string) {
  * link should land on the desk directly instead of bouncing through a redirect.
  */
 export function marketDataDeskPath(
-  view: "quotes" | "watchlist" | "alerts",
+  view: "quotes" | "watchlist" | "alerts" | "options",
   query: Record<string, WorkstationRouteQueryValue> = {}
 ): string {
   return workstationRouteWithQuery("dataQuotes", {
@@ -406,6 +408,8 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   "family-office": "Family Office",
   "journal-entries": "Journal Entries",
   ledger: "Ledger Explorer",
+  "factor-paydown": "Factor Paydown",
+  consolidation: "Consolidation",
   "run-ledger": "Run Ledger Explorer",
   "operations-continuity": "Operations Continuity",
   "operations-record": "Operations Record",

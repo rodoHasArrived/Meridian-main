@@ -239,7 +239,10 @@ public sealed class SecurityAssetTermsSchemaTests
         // Appended after the block, so every earlier refusal text and the order of populated terms hold.
         SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= since)
             .TakeLast(3).Select(static field => field.Key).Should().Equal(ScheduleTermKeys);
-        SecurityAssetTermsSchema.Fields(assetClass).TakeLast(4).Select(static field => field.Key)
+        // Later versions may append fields; this historical order ends at the calculation companion.
+        var companionVersion = SecurityAssetTermsSchema.Field(assetClass, "cashFlowContract")!.SinceTermsVersion;
+        SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= companionVersion)
+            .TakeLast(4).Select(static field => field.Key)
             .Should().Equal(ScheduleTermKeys.Append("cashFlowContract"));
     }
 
@@ -436,14 +439,14 @@ public sealed class SecurityAssetTermsSchemaTests
             var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
             var writable = SecurityAssetTermsSchema.WritableFields(assetClass);
 
-            writable.Should().Equal(SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= writes), assetClass);
-            writable.Should().NotContain(field => field.SinceTermsVersion > writes, assetClass);
+            writable.Should().Equal(SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.AuthoringEnabled && field.SinceTermsVersion <= writes), assetClass);
+            writable.Should().NotContain(field => !field.AuthoringEnabled || field.SinceTermsVersion > writes, assetClass);
         }
 
         foreach (var assetClass in CalculationCompanionClasses)
         {
             SecurityAssetTermsSchema.Fields(assetClass)
-                .Where(field => field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+                .Where(field => !field.AuthoringEnabled || field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
                 .Select(static field => field.Key).Should().Equal(new[] { "cashFlowContract" }, assetClass);
             SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key).Should().Equal(
                 SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.Key != "cashFlowContract").Select(static field => field.Key),
@@ -454,7 +457,7 @@ public sealed class SecurityAssetTermsSchemaTests
             .Should().Contain(["seniority", "nonCallPeriodEnd"], "the version-2 tranche terms remain writable")
             .And.Contain(ScheduleTermKeys, "declared schedule containers are writable through the version-4 ceiling");
         SecurityAssetTermsSchema.WritableFields("Swap").Select(static field => field.Key)
-            .Should().Equal("effectiveDate", "maturityDate", "legs");
+            .Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
         SecurityAssetTermsSchema.WritableFields("Equity").Should().Equal(SecurityAssetTermsSchema.Fields("Equity"));
         SecurityAssetTermsSchema.WritableFields("Nope").Should().BeEmpty();
     }

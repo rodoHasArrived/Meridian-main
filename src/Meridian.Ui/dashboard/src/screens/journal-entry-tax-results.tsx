@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TaxParcelComposition } from "@/screens/tax-parcel-composition";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -95,6 +96,7 @@ function DisposalResult({ disposal, currency }: { disposal: LedgerDisposalTaxRes
       </dl>
       {disposal.parcels.length > 0 ? (
         <div className="space-y-2">
+          <TaxParcelComposition key={disposal.mutationBatchId} parcels={disposal.parcels} currency={currency} state={stateLabels[disposal.state]} disposal={disposal} />
           <h4 className="text-sm font-semibold">Relieved parcels</h4>
           {disposal.parcels.map((parcel, index) => (
             <ParcelResult key={`${parcel.lotId}-${index}`} parcel={parcel} currency={currency} />

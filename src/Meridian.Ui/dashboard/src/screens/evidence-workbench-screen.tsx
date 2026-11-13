@@ -1,3 +1,4 @@
+import { DesignSystemStatus } from "@/design-system/status";
 import { useState, type FormEvent } from "react";
 import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck, Upload } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -7,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SinglePrincipalAttestationPanel } from "@/components/meridian/single-principal-attestation-panel";
+import { PreparerAttestationEvidence } from "@/components/meridian/preparer-attestation-evidence";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings";
@@ -263,6 +266,8 @@ export function EvidenceWorkbenchScreen() {
 
       {vm.hasPacket && vm.packet ? (
         <>
+          <PreparerAttestationEvidence projection={vm.packet.preparerAttestations}
+            expectedScope={vm.packet.ledgerAmount?.scope} />
           <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
             <div className="space-y-4">
               <Card className="panel-surface">
@@ -698,8 +703,8 @@ function EvidenceNodeGroupPanel({ group }: { group: EvidenceNodeGroupViewModel }
             <CardDescription>{group.summaryLabel}</CardDescription>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            <Badge variant="success">{group.readyCount} ready</Badge>
-            <Badge variant={group.reviewCount ? "warning" : "outline"}>{group.reviewCount} review</Badge>
+            <DesignSystemStatus status="ready">{group.readyCount} ready</DesignSystemStatus>
+            <DesignSystemStatus status={group.reviewCount ? "review" : "info"}>{group.reviewCount} review</DesignSystemStatus>
           </div>
         </div>
       </CardHeader>
@@ -923,7 +928,8 @@ const linkKinds: EvidenceDocumentLinkKind[] = [
   "Journal",
   "ReconciliationCase",
   "ReportLine",
-  "CloseTask"
+  "CloseTask",
+  "IntercompanyAgreement"
 ];
 
 function EvidenceVaultQueueFilters({
@@ -1005,14 +1011,21 @@ function EvidenceVaultQueueFilters({
 }
 
 function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidenceWorkbenchViewModel> }) {
+  const intakeDefaults = new URLSearchParams(useLocation().search);
   const [file, setFile] = useState<File | null>(null);
   const [sourceKind, setSourceKind] = useState<EvidenceDocumentIntakeSourceKind>("UploadedContent");
-  const [classification, setClassification] = useState<EvidenceDocumentClassification>("BankStatement");
+  const [classification, setClassification] = useState<EvidenceDocumentClassification>(() => {
+    const requested = intakeDefaults.get("classification") as EvidenceDocumentClassification;
+    return documentClassifications.includes(requested) ? requested : "BankStatement";
+  });
   const [sourceChannel, setSourceChannel] = useState("upload");
   const [sourceSystem, setSourceSystem] = useState("");
   const [sourceReference, setSourceReference] = useState("");
-  const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>("CloseTask");
-  const [objectId, setObjectId] = useState("");
+  const [linkKind, setLinkKind] = useState<EvidenceDocumentLinkKind>(() => {
+    const requested = intakeDefaults.get("linkKind") as EvidenceDocumentLinkKind;
+    return linkKinds.includes(requested) ? requested : "CloseTask";
+  });
+  const [objectId, setObjectId] = useState(() => intakeDefaults.get("objectId") ?? "");
   const [formError, setFormError] = useState<string | null>(null);
 
   const selectedSubject = vm.selectedSubjectLabel;
@@ -1185,9 +1198,14 @@ function EvidenceDocumentIntakePanel({ vm }: { vm: ReturnType<typeof useEvidence
               </label>
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Linked object id
-                <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy} />
+                <Input aria-label="Linked object id" value={objectId} onChange={(event) => setObjectId(event.currentTarget.value)} disabled={vm.intakeCommand.busy}
+                  required={linkKind === "IntercompanyAgreement"}
+                  pattern={linkKind === "IntercompanyAgreement" ? "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}" : undefined} />
               </label>
             </div>
+            {linkKind === "IntercompanyAgreement" ? <p className="text-xs leading-5 text-muted-foreground">
+              Link the signed document to its saved agreement record ID. Use Agreement classification, then accept the document review before attaching it to that agreement.
+            </p> : null}
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="submit"
@@ -1392,6 +1410,7 @@ function EvidenceVaultDocumentDetailPanel({ detail }: { detail: EvidenceVaultDoc
           <EvidenceVaultDocumentObjectLinks detail={detail} />
         </div>
       </TechnicalDetails>
+      {detail.attestationTarget ? <SinglePrincipalAttestationPanel {...detail.attestationTarget} /> : null}
       <details open className="mt-4 rounded-md border border-border/70 bg-secondary/10 px-3 py-2">
         <summary className="cursor-pointer text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
           Review fields

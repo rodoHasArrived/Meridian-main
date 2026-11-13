@@ -14,26 +14,11 @@ open Meridian.FSharp.Domain
 
 let private structuredCredit entries : SecurityKind =
     SecurityKind.StructuredCredit {
-        Tranche = "A1"
-        PoolId = None
-        CollateralType = "CLO"
-        OriginalFace = 1000000m
-        CurrentFactor = Some 0.9m
-        CouponOrIndex = "SOFR+250"
-        FactorSchedule = None
-        FactorScheduleEntries = entries
-        Maturity = Some (DateOnly(2031, 6, 15))
-        Kind = None
-        Seniority = None
-        AttachmentPoint = None
-        DetachmentPoint = None
-        WeightedAverageCoupon = None
-        WeightedAverageMaturityMonths = None
-        WeightedAverageLoanAgeMonths = None
-        ReinvestmentPeriodEnd = None
-        NonCallPeriodEnd = None
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Pool = { Factor = Some 0.9m; FactorDate = None; WeightedAvgCoupon = None; WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None; CollateralType = Some ("CLO"); PoolIdentifier = None; TrancheClass = Some ("A1"); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (1000000m); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = None; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = entries }
+        CouponTerms = { CouponType = Some (CouponKind.OtherCoupon ("SOFR+250")); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None; ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None }
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2031, 6, 15)) }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        RateConvention = None
     }
 
 let private codesOnBothSurfaces entries =
@@ -48,9 +33,11 @@ let private entry (date: DateOnly) factor : FactorScheduleEntry = { AsOfDate = d
 
 let private cfd leverage : SecurityKind =
     SecurityKind.Cfd {
-        UnderlyingAssetClass = "Equity"
-        UnderlyingDescription = None
-        Leverage = leverage
+        UnderlyingExposure = {
+            UnderlyingAssetClass = "Equity"
+            UnderlyingDescription = None
+            Leverage = leverage
+        }
     }
 
 [<Fact>]
@@ -155,3 +142,256 @@ let ``positive CFD leverage passes both surfaces`` () =
     let kind = cfd (Some 5m)
     Assert.Empty(SecurityMaster.validateKindInvariants kind)
     Assert.Empty(SecurityMaster.validateDefinitionInvariants "Cfd" (SecurityMasterLegacyUpgrade.modulesFromKind kind))
+
+// ── The rules that were codec-only until the stage-3 contraction ─────────────────────────────
+// Every per-class field now sits on a shared module, so these rules are expressed on the
+// definition surface. Six of them cannot be reached through the flat codec — it refuses the shape
+// first, or reads a blank as absent — so they are pinned here on directly built records.
+
+let private bothSurfaces (typeName: string) (kind: SecurityKind) =
+    let kindCodes = SecurityMaster.validateKindInvariants kind |> List.map (fun e -> e.Code)
+    let definitionCodes =
+        SecurityMaster.validateDefinitionInvariants typeName (SecurityMasterLegacyUpgrade.modulesFromKind kind)
+        |> List.map (fun e -> e.Code)
+    kindCodes, definitionCodes
+
+let private bondWith coupon principal : SecurityKind =
+    let bond = BondTerms.fixedRate (DateOnly(2035, 6, 15)) 4.5m None (Some "Meridian Capital Corp")
+    SecurityKind.Bond {
+        bond with
+            CouponStructure = { bond.CouponStructure with Structure = coupon }
+            RedemptionFacts = { bond.RedemptionFacts with Par = Some 1000m }
+            Principal = { Payments = principal }
+    }
+
+let private fixedCoupon = BondCouponStructure.Fixed(4.5m, None)
+
+[<Fact>]
+let ``a bond with clean principal and step schedules passes both surfaces`` () =
+    let amortizing = bondWith fixedCoupon [ { PaymentDate = DateOnly(2030, 6, 15); Amount = 400m } ]
+    let stepped =
+        bondWith
+            (BondCouponStructure.Step(
+                [ { EffectiveDate = DateOnly(2027, 6, 15); Rate = 4m }
+                  { EffectiveDate = DateOnly(2029, 6, 15); Rate = 5m } ],
+                None))
+            []
+
+    for kind in [ amortizing; stepped ] do
+        let kindCodes, definitionCodes = bothSurfaces "Bond" kind
+        Assert.Empty kindCodes
+        Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("bond_principal_schedule_invalid")>]
+[<InlineData("bond_step_rate_invalid")>]
+[<InlineData("bond_step_dates_duplicate")>]
+let ``a bond schedule shape the flat codec refuses is refused on both surfaces`` (code: string) =
+    let kind =
+        match code with
+        | "bond_principal_schedule_invalid" ->
+            bondWith fixedCoupon [ { PaymentDate = DateOnly(2030, 6, 15); Amount = 0m } ]
+        | "bond_step_rate_invalid" ->
+            bondWith (BondCouponStructure.Step([ { EffectiveDate = DateOnly(2027, 6, 15); Rate = -1m } ], None)) []
+        | _ ->
+            bondWith
+                (BondCouponStructure.Step(
+                    [ { EffectiveDate = DateOnly(2027, 6, 15); Rate = 4m }
+                      { EffectiveDate = DateOnly(2027, 6, 15); Rate = 5m } ],
+                    None))
+                []
+
+    let kindCodes, definitionCodes = bothSurfaces "Bond" kind
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
+
+let private swapLeg : SwapLeg =
+    { LegId = Some "fixed"
+      LegType = "Fixed"
+      Currency = "USD"
+      Direction = Some "Pay"
+      Index = None
+      FixedRate = Some 3.75m
+      SpreadBps = None
+      CurrentIndexRate = None
+      Notional = Some 10000000m
+      PaymentFrequency = Some "SemiAnnual"
+      DayCount = None
+      ExchangesPrincipal = false
+      NotionalSchedule = []
+      ResetSchedule = []
+      ScheduleConventions = ScheduleConventions.empty }
+
+let private swapWith legs : SecurityKind =
+    SecurityKind.Swap {
+        Dates =
+            { EffectiveDate = Some (DateOnly(2026, 1, 15))
+              IssueDate = Some (DateOnly(2026, 1, 15))
+              MaturityDate = Some (DateOnly(2031, 1, 15)) }
+        SwapLegs = { Legs = legs }
+        RateConvention = None
+    }
+
+[<Fact>]
+let ``a swap with a clean leg passes both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [ swapLeg ])
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Fact>]
+let ``a swap with no legs is refused on both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [])
+    Assert.Contains("swap_legs_required", kindCodes)
+    Assert.Contains("swap_legs_required", definitionCodes)
+
+[<Theory>]
+[<InlineData("swap_leg_type_required")>]
+[<InlineData("swap_leg_currency_required")>]
+[<InlineData("swap_leg_payment_frequency_invalid")>]
+let ``a swap leg shape the flat codec never yields is refused on both surfaces`` (code: string) =
+    let leg =
+        match code with
+        | "swap_leg_type_required" -> { swapLeg with LegType = " " }
+        | "swap_leg_currency_required" -> { swapLeg with Currency = " " }
+        | _ -> { swapLeg with PaymentFrequency = Some " " }
+
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [ leg ])
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
+
+[<Fact>]
+let ``a definition that lacks a module fails its required rules and passes its optional ones`` () =
+    // On the definition surface a module can be absent altogether. A rule over a value the class
+    // requires then fails; a rule over an optional value has nothing to check.
+    let codes typeName =
+        SecurityMaster.validateDefinitionInvariants typeName SecurityTermModules.empty |> List.map (fun e -> e.Code)
+    Assert.Contains("swap_legs_required", codes "Swap")
+    Assert.Contains("other_security_category_required", codes "OtherSecurity")
+    Assert.Contains("commodity_type_required", codes "Commodity")
+    Assert.Contains("cds_reference_entity_required", codes "CreditDefaultSwap")
+    Assert.Contains("cds_protection_side_invalid", codes "CreditDefaultSwap")
+    Assert.Contains("real_estate_market_required", codes "RealEstateHolding")
+    Assert.DoesNotContain("bond_principal_schedule_invalid", codes "Bond")
+    Assert.DoesNotContain("structured_credit_attachment_point_invalid", codes "StructuredCredit")
+    Assert.DoesNotContain("covenant_type_required", codes "DirectLoan")
+
+// The exercise module holds an option's style as text. The flat writer writes it verbatim and the
+// option decode reads any spelling but American, European or Bermudan as no style, so a directly
+// built record with another spelling would be accepted and then lose its style on the next read.
+// The flat codec cannot produce the case (it already reads an unrecognised style as none), so the
+// rule is pinned here.
+let private optionWithStyle (style: string option) : SecurityKind =
+    SecurityKind.Option {
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2027, 6, 18)) }
+        ListingDetail =
+            { OptChainId = None
+              SettlementType = None
+              IsAdjusted = None
+              LastTradingDt = None
+              RootSymbol = None
+              ContractMonth = None
+              FirstNoticeDt = None
+              DeliveryMonthDt = None
+              DeliveryLocationCode = None
+              IsRollTarget = None
+              RollWindowDays = None }
+        Exercise =
+            { OptionRight = Some "Call"
+              StrikePrice = Some 100m
+              StrikeRate = None
+              ExerciseStyle = style
+              UnderlyingSecurityId = Some (SecurityId (Guid.Parse "9e9e9e9e-0000-0000-0000-000000000005"))
+              PremiumAmount = None }
+        TradingParameters =
+            { LotSize = None
+              TickSize = None
+              ContractMultiplier = Some 100m
+              MarginRequirementPct = None
+              TradingHoursUtc = None
+              CircuitBreakerThresholdPct = None }
+    }
+
+[<Theory>]
+[<InlineData("American")>]
+[<InlineData("European")>]
+[<InlineData("Bermudan")>]
+let ``an option with a recognised exercise style passes both surfaces`` (style: string) =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWithStyle (Some style))
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Fact>]
+let ``an option with no exercise style passes both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWithStyle None)
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("european")>]
+[<InlineData("Asian")>]
+[<InlineData(" ")>]
+let ``an option with an exercise style the flat codec would not read back is refused on both surfaces`` (style: string) =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWithStyle (Some style))
+    Assert.Contains("option_exercise_style_invalid", kindCodes)
+    Assert.Contains("option_exercise_style_invalid", definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
+
+// ── Members a class does not persist ─────────────────────────────────────────────────────────
+//
+// A record holds whole term modules, so it can hold a member its class's flat row does not carry.
+// The rule is over the record, not the definition: an economic document may hold members no flat
+// row has (its retained document keeps them), so only the kind surface refuses. The list itself is
+// pinned against the flat codec by SecurityKindPersistenceTests; these pin the wiring.
+
+let private optionOf (kind: SecurityKind) =
+    match kind with
+    | SecurityKind.Option terms -> terms
+    | _ -> failwith "expected an option"
+
+[<Fact>]
+let ``an option holding a strike rate and a premium is refused on the kind surface only`` () =
+    let terms = optionOf (optionWithStyle (Some "European"))
+    let kind =
+        SecurityKind.Option { terms with Exercise = { terms.Exercise with StrikeRate = Some 0.04m; PremiumAmount = Some 2.5m } }
+    let errors = SecurityMaster.validateKindInvariants kind
+    let error = Assert.Single errors
+    Assert.Equal("term_member_not_persisted", error.Code)
+    Assert.Equal(
+        "Option does not persist Exercise.StrikeRate, Exercise.PremiumAmount; a value there would be dropped by the next write of the record.",
+        error.Message)
+    Assert.Equal<string list>([ "Exercise.StrikeRate"; "Exercise.PremiumAmount" ], SecurityKindPersistence.unpersistedMembers kind)
+    let _, definitionCodes = bothSurfaces "Option" kind
+    Assert.Empty definitionCodes
+
+[<Fact>]
+let ``an unpersisted member is reported across every module that holds one`` () =
+    let terms = optionOf (optionWithStyle None)
+    let kind =
+        SecurityKind.Option {
+            terms with
+                Dates = { terms.Dates with IssueDate = Some (DateOnly(2026, 1, 2)) }
+                ListingDetail = { terms.ListingDetail with RootSymbol = Some "ES" }
+                TradingParameters = { terms.TradingParameters with TickSize = Some 0.25m }
+        }
+    Assert.Equal<string list>(
+        [ "Dates.IssueDate"; "ListingDetail.RootSymbol"; "TradingParameters.TickSize" ],
+        SecurityKindPersistence.unpersistedMembers kind)
+
+[<Fact>]
+let ``a swap issued on another date than its effective date is refused, and one with no issue date is not`` () =
+    let effective = DateOnly(2026, 1, 15)
+    let swap issueDate =
+        SecurityKind.Swap {
+            Dates = { EffectiveDate = Some effective; IssueDate = issueDate; MaturityDate = Some (DateOnly(2031, 1, 15)) }
+            SwapLegs = { Legs = [ swapLeg ] }
+            RateConvention = None
+        }
+    let codes kind = SecurityMaster.validateKindInvariants kind |> List.map (fun e -> e.Code)
+    Assert.Equal<string list>([ "term_member_value_not_persisted" ], codes (swap (Some (DateOnly(2025, 12, 1)))))
+    Assert.Empty (codes (swap (Some effective)))
+    Assert.Empty (codes (swap None))

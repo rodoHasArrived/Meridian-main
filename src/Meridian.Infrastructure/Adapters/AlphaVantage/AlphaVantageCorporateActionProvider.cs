@@ -114,7 +114,7 @@ public sealed partial class AlphaVantageCorporateActionProvider : ICorporateActi
                 };
             }
 
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Alpha Vantage corporate actions returned {StatusCode} for {Ticker}; skipping.",

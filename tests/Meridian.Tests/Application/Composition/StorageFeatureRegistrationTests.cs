@@ -18,7 +18,7 @@ using Meridian.Contracts.Store;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Instruments.FixedIncome;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;
@@ -42,6 +42,32 @@ namespace Meridian.Tests.Application.Composition;
 [Collection("Sequential")]
 public sealed class StorageFeatureRegistrationTests : IDisposable
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InstanceConfiguration_BindsIdentifierHistoryUpgradeAttestations(bool acknowledged)
+    {
+        var values = new Dictionary<string, string?>
+        {
+            ["DOTNET_ENVIRONMENT"] = "Test",
+            ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true",
+            [SecurityMasterStartup.ConnectionStringVariable] = "Host=unused;Database=unused;Username=test;Password=test"
+        };
+        if (acknowledged)
+        {
+            values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED"] = "true";
+            values["MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED"] = "true";
+        }
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMarketDataServices(CompositionOptions.Minimal with { Configuration = configuration });
+        using var provider = services.BuildServiceProvider();
+        var options = provider.GetRequiredService<SecurityMasterOptions>();
+        options.IdentifierHistoryMigrationWritersStopped.Should().Be(acknowledged);
+        options.IdentifierHistoryMigrationLegacyWritersRetired.Should().Be(acknowledged);
+    }
+
     private readonly string? _originalSecurityMasterConnectionString;
     private readonly string? _originalSecurityMasterSchema;
     private readonly string? _originalDirectLendingConnectionString;

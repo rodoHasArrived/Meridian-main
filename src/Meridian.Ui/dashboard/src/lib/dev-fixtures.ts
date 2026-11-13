@@ -133,6 +133,9 @@ import {
 } from "./dev-fixtures/fixture-resolver";
 import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 import { bootstrapFixtureRoutes } from "./dev-fixtures/bootstrap-fixtures";
+import { analyticalFixturePatterns, analyticalFixtureRoutes } from "./dev-fixtures/analytical-fixtures";
+import { workstationSurfaceFixturePatterns, workstationSurfaceFixtureRoutes } from "./dev-fixtures/workstation-surface-fixtures";
+import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -5852,15 +5855,27 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
   [WORKSTATION_API_ENDPOINTS.crossScreenCounts]: fixtureCrossScreenCounts,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
-  [WORKSTATION_API_ENDPOINTS.strategy]: fixtureStrategyWorkspace,
+  [WORKSTATION_API_ENDPOINTS.strategy]: { ...fixtureStrategyWorkspace, metrics: fixtureStrategyWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded strategy workspace snapshot", source: "Deterministic development fixture" })) },
   [WORKSTATION_API_ENDPOINTS.strategyBriefing]: fixtureStrategyBriefing,
   "/api/workstation/research": fixtureStrategyWorkspace,
-  [WORKSTATION_API_ENDPOINTS.trading]: fixtureTradingWorkspace,
-  [WORKSTATION_API_ENDPOINTS.portfolio]: fixturePortfolioWorkspace,
+  [WORKSTATION_API_ENDPOINTS.trading]: { ...fixtureTradingWorkspace, metrics: fixtureTradingWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded trading workspace snapshot", source: "Deterministic development fixture" })) },
+  [WORKSTATION_API_ENDPOINTS.portfolio]: { ...fixturePortfolioWorkspace, metrics: fixturePortfolioWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded portfolio workspace snapshot", source: "Deterministic development fixture" })) },
   [workstationFinancialRecordExplorerEndpoint("portfolio")]: fixturePortfolioFinancialRecordExplorer,
   [WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage]: fixturePortfolioMultiAssetCoverage,
   [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
+  "/api/workstation/operator/triage": {
+    asOf: fixtureOperatorInbox.asOf,
+    actorId: "seeded-demo-operator",
+    persistenceAvailable: false,
+    unavailableReason: "Seeded read-only inbox. Use a configured shared host for durable triage actions.",
+    items: fixtureOperatorInbox.items.map(item => ({
+      ...item, ownerId: null, dueAt: null, version: 0, sourceVersion: null,
+      acknowledgedAt: null, snoozedUntil: null, activity: [],
+      capabilities: { canAssign: false, canAcknowledge: false, canSnooze: false,
+        canUnsnooze: false, disabledReason: "Seeded read-only inbox; actions are unavailable in this preview." }
+    }))
+  },
   [WORKSTATION_API_ENDPOINTS.workflowSummary]: fixtureWorkflowSummary,
   [WORKSTATION_API_ENDPOINTS.featureCapabilities]: fixtureFeatureCapabilities,
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
@@ -5884,7 +5899,7 @@ const fixtures = {
   [brokerageConnectionStatusEndpoint("alpaca")]: fixtureAlpacaConnection,
   [brokerageConnectionStatusEndpoint("robinhood")]: fixtureRobinhoodConnection,
   [PORTFOLIO_API_ENDPOINTS.household]: fixtureAlpacaPortfolio,
-  [WORKSTATION_API_ENDPOINTS.data]: fixtureDataWorkspace,
+  [WORKSTATION_API_ENDPOINTS.data]: { ...fixtureDataWorkspace, metrics: fixtureDataWorkspace.metrics.map(metric => ({ ...metric, basis: "Seeded data workspace snapshot", source: "Deterministic development fixture" })) },
   "/api/workstation/data-operations": fixtureDataWorkspace,
   [PROVIDER_API_ENDPOINTS.connections]: fixtureProviderConnections,
   [PROVIDER_API_ENDPOINTS.readiness]: fixtureProviderReadiness,
@@ -6002,13 +6017,18 @@ const fixtures = {
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
+  // The books the Accounting configuration fixture already declares, served on their own route.
+  [UI_API_ROUTES.LedgerBooks]: fixtureAccountingConfiguration.ledgerBooks,
   ...marketDataFixtureRoutes,
-  ...bootstrapFixtureRoutes
+  ...bootstrapFixtureRoutes,
+  ...workstationSurfaceFixtureRoutes,
+  ...analyticalFixtureRoutes
 } satisfies Record<string, unknown>;
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
 
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  ...workstationSurfaceFixturePatterns,
   {
     pattern: apiRoutePattern(financialRecordExplorerFixtureBase, "/[^/]+"),
     resolve: (cleanPath) => buildFixtureFinancialRecordExplorer(readDecodedPathSegment(cleanPath))
@@ -6069,6 +6089,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
     }
   },
   ...marketDataFixturePatterns,
+  ...analyticalFixturePatterns,
   {
     pattern: apiRoutePattern(PROMOTION_API_ENDPOINTS.evaluate, "/[^/]+"),
     resolve: (cleanPath) => {
@@ -6123,6 +6144,12 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   {
     pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/export-manifest"),
     resolve: () => fixtureAccountingRecordExportResponse
+  },
+  {
+    // Saved table views: an empty personal list, so captures show the normal state rather than the
+    // failure notice. Writes never match: resolveScenarioResponse returns early for non-GET.
+    pattern: apiRoutePattern("/api/workstation/tables", "/[^/]+/views"),
+    resolve: () => []
   }
 ];
 

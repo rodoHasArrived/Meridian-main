@@ -3,7 +3,7 @@
 // AgeBand, BusinessAgeHours). Mono, severity-tinted, deterministic: pass `now` to pin
 // the countdown (it never self-ticks — re-render to advance it).
 import React from "react";
-import { normalizeSeverity } from "./status";
+import { normalizeSeverity } from "./status.js";
 
 let injected = false;
 function inject() {
@@ -11,21 +11,22 @@ function inject() {
   injected = true;
   const css = `
 .mds-sla{display:inline-flex;align-items:center;gap:6px;width:fit-content;max-width:100%;
-  min-height:20px;border:1px solid var(--severity-info-bd,#E4E3DE);border-radius:var(--radius-chip,2px);
-  background:var(--severity-info-bg,#EDEAE4);color:var(--severity-info-fg,#5E666F);
-  font-family:var(--font-data,"Cascadia Mono",monospace);font-size:9px;font-weight:700;line-height:1;
+  min-height:20px;border:1px solid var(--severity-info-bd,#D2CDC3);border-radius:var(--radius-chip,2px);
+  background:var(--severity-info-bg,#EBE8E1);color:var(--severity-info-fg,#606870);
+  font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:9px;font-weight:700;line-height:1;
   letter-spacing:.04em;padding:0 7px;text-transform:uppercase;white-space:nowrap;}
 .mds-sla__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .mds-sla__sep{opacity:.45;}
 .mds-sla__val{font-weight:600;}
-.mds-sla--ready{border-color:var(--severity-ready-bd,rgba(58,122,86,.36));background:var(--severity-ready-bg,rgba(58,122,86,.10));color:var(--severity-ready-fg,#2C5C40);}
-.mds-sla--action{border-color:var(--severity-action-bd,rgba(138,92,18,.42));background:var(--severity-action-bg,rgba(138,92,18,.11));color:var(--severity-action-fg,#68450E);}
-.mds-sla--blocked{border-color:var(--severity-blocked-bd,rgba(168,68,60,.40));background:var(--severity-blocked-bg,rgba(168,68,60,.10));color:var(--severity-blocked-fg,#7E332D);}
-.mds-sla--review{border-color:var(--severity-review-bd,rgba(168,84,54,.36));background:var(--severity-review-bg,rgba(168,84,54,.10));color:var(--severity-review-fg,#8C4429);}
+.mds-sla--ready{border-color:var(--severity-ready-bd,rgba(46,118,85,.36));background:var(--severity-ready-bg,rgba(46,118,85,.10));color:var(--severity-ready-fg,#225840);}
+.mds-sla--action{border-color:var(--severity-action-bd,rgba(152,103,23,.42));background:var(--severity-action-bg,rgba(152,103,23,.11));color:var(--severity-action-fg,#724D11);}
+.mds-sla--blocked{border-color:var(--severity-blocked-bd,rgba(181,75,66,.40));background:var(--severity-blocked-bg,rgba(181,75,66,.10));color:var(--severity-blocked-fg,#883832);}
+.mds-sla--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#944A32);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "sla-chip");
-  el.textContent = css;
+  el.textContent = css + `
+.mds-sla--blocked,.mds-sla--blocked span,.mds-sla--blocked .mds-sla__val{color:var(--text-primary,#20252B);}`;
   document.head.appendChild(el);
 }
 

@@ -2,7 +2,8 @@ namespace Meridian.Core.Scheduling;
 
 /// <summary>
 /// Lightweight cron expression parser supporting five-field POSIX cron plus the explicit
-/// <c>d#n</c> ordinal-day extension.
+/// <c>d#n</c> ordinal-day extension and a lone <c>L</c> (last day of month) in the
+/// day-of-month field.
 /// Format: minute hour day-of-month month day-of-week
 /// Examples:
 ///   "0 2 * * *"     - Daily at 2:00 AM
@@ -10,6 +11,7 @@ namespace Meridian.Core.Scheduling;
 ///   "0 1 * * 0#1"   - First Sunday of each month at 1:00 AM
 ///   "30 6 * * 1-5"  - Weekdays at 6:30 AM
 ///   "0 0 1 * *"     - First day of each month at midnight
+///   "0 8 L * *"     - Last day of each month at 8:00 AM
 ///   "*/15 * * * *"  - Every 15 minutes
 /// </summary>
 public static class CronExpressionParser
@@ -69,7 +71,17 @@ public static class CronExpressionParser
         {
             schedule.Minutes = ParseField(parts[0], 0, 59);
             schedule.Hours = ParseField(parts[1], 0, 23);
-            schedule.DaysOfMonth = ParseField(parts[2], 1, 31);
+            if (parts[2] is "L" or "l")
+            {
+                // Last calendar day of the month. The candidate set covers every possible
+                // month-end day; MatchesDay narrows it to the actual last day.
+                schedule.LastDayOfMonth = true;
+                schedule.DaysOfMonth = [28, 29, 30, 31];
+            }
+            else
+            {
+                schedule.DaysOfMonth = ParseField(parts[2], 1, 31);
+            }
             schedule.Months = ParseField(parts[3], 1, 12);
             (schedule.DaysOfWeek, schedule.DayOfWeekOrdinal) = ParseDayOfWeekField(parts[4]);
             // Vixie-cron semantics: a day field whose expression starts with '*'
@@ -234,6 +246,12 @@ public sealed class CronSchedule
     public bool DayOfWeekIsWildcard { get; set; } = true;
 
     /// <summary>
+    /// True when the day-of-month field was written as <c>L</c>: only the last calendar day of
+    /// each month matches. This is an explicit Meridian extension to five-field cron.
+    /// </summary>
+    public bool LastDayOfMonth { get; set; }
+
+    /// <summary>
     /// Optional one-based occurrence of the selected day of week within a month. For example,
     /// <c>0#1</c> means the first Sunday. This is an explicit Meridian extension to five-field cron.
     /// </summary>
@@ -332,7 +350,9 @@ public sealed class CronSchedule
 
     private bool MatchesDay(DateTime dt)
     {
-        var dayOfMonthMatches = DaysOfMonth.Contains(dt.Day);
+        var dayOfMonthMatches = LastDayOfMonth
+            ? dt.Day == DateTime.DaysInMonth(dt.Year, dt.Month)
+            : DaysOfMonth.Contains(dt.Day);
         var dayOfWeekMatches = DaysOfWeek.Contains((int)dt.DayOfWeek)
             && (!DayOfWeekOrdinal.HasValue
                 || ((dt.Day - 1) / 7) + 1 == DayOfWeekOrdinal.Value);
@@ -575,9 +595,11 @@ public sealed class CronSchedule
             dayOfWeekDescription = $"on {string.Join(", ", dayNames)}";
         }
 
-        var dayOfMonthDescription = DaysOfMonth.Count < 31
-            ? $"on days {string.Join(",", DaysOfMonth.OrderBy(x => x))} of the month"
-            : null;
+        var dayOfMonthDescription = LastDayOfMonth
+            ? "on the last day of the month"
+            : DaysOfMonth.Count < 31
+                ? $"on days {string.Join(",", DaysOfMonth.OrderBy(x => x))} of the month"
+                : null;
         if (!DayOfMonthIsWildcard
             && !DayOfWeekIsWildcard
             && dayOfWeekDescription is not null

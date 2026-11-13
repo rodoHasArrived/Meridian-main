@@ -106,6 +106,99 @@ Run {
 }
 ```
 
+## Strategy
+
+The seventeenth ObjectModel entry. Carried by `StrategyModel` (createDraft/validateStage/
+checkpoint/applyTransition); lifecycle vocabulary in `STRATEGY_LIFECYCLE`; the six guarded
+formation stages in `STRATEGY_FORMATION_STEPS` (Mandate · Thesis · Universe · Portfolio rules ·
+Risk & governance · Review).
+
+```ts
+Strategy {
+  id: string;              // "STR-0007" — one versioned identity across all seven screens
+  version: number;         // bumped by formation checkpoint, never by navigation
+  lifecycle: "draft"|"validating"|"blocked"|"ready-for-review"|"in-review"
+           | "approved"|"changes-requested"|"active"|"suspended"|"superseded"|"retired";
+  name: string;
+  mandate:        { objective, benchmark, capitalBand: {min,max}, horizon, owner? };
+  thesis:         { statement, edge, decay, capacity? };
+  universe:       { datasetId, assetClass, filters: {field,op,value}[], minAdv, exclusions? };
+  portfolioRules: { entry, exit, sizing, maxPositions, rebalance,
+                    worksheet: {ref, formula, status: "ok"|"error", message?}[] };
+  riskGovernance: { maxDrawdownPct, grossExposureMax, perNameMax, stopPolicy?,
+                    reviewCadence, approvers: string[] };
+  review:         { acknowledged, acknowledgedHash, notes? };  // hash-bound: edits stale it
+  history: { from, to, at, actor, note }[];
+  createdAt; updatedAt;
+}
+```
+
+Gates are **recomputed from current field values** — `StrategyModel.validateStage(draft, stage)`
+is pure, so an edit invalidates dependent stages, review acknowledgment (`acknowledgedHash ≠
+formationHash`), and run-proof freshness (`materialHash` moved) with no event wiring.
+
+## StrategyFormationSnapshot
+
+The frozen formation record a checkpoint or run captures. Produced by `StrategyModel.snapshot`.
+
+```ts
+StrategyFormationSnapshot {
+  schema: "meridian.strategy.formation/1";
+  strategyId: string; strategyVersion: number;
+  capturedAt: number|string;
+  fields: { name, mandate, thesis, universe, portfolioRules, riskGovernance };  // deep-cloned
+  review: { acknowledged, acknowledgedHash, notes };
+  formationHash: string;   // SHA-256, canonical mjcf/1, ALL formation fields — review freshness
+  materialHash: string;    // SHA-256 of MATERIAL inputs only — run-proof freshness
+}
+```
+
+Material = universe, portfolio rules (worksheet cells included), risk limits, benchmark.
+Narrative (thesis wording, description) hashes into `formationHash` only, so a copy edit stales
+a review but never falsely stales a run proof.
+
+## StrategyRunArtifact v1
+
+The immutable run record. Carried by `StrategyRunModel` (createRun/startRun/completeRun/
+verifyProof/freshness + legacy `Run` adapters). `completeRun` derives metrics **once** from the
+raw series and trades, then deep-freezes — historical artifacts never change.
+
+```ts
+StrategyRunArtifact {
+  schema: "meridian.strategy.run-artifact/1";
+  id: string;              // "RUN-8841"
+  strategyId: string; strategyVersion: number;
+  env: "live"|"paper"|"fixture";                                  // axis 1 — environment
+  lifecycle: "queued"|"running"|"complete"|"failed"|"cancelled";  // axis 2 — run lifecycle
+  requestedAt; startedAt; completedAt;
+  request: { window: {start,end}, dataset: {id,label?}, engine: {name,version}, costModel? };
+  inputs:  { snapshot: StrategyFormationSnapshot };               // frozen at createRun
+  proof:   { algo:"sha256", canonical:"mjcf/1", materialHash, inputHash, hashedAt };
+  series:  { equity: {t,v}[], benchmark?: {t,v}[] };              // raw evidence
+  trades:  { symbol, side, qty, entryAt, entryPx, exitAt?, exitPx?, fees? }[];
+  metrics: { totalReturn, benchmarkReturn, excessReturn, cagr, maxDrawdown, sharpe,
+             winRate, avgHoldingDays, turnover, fees };           // derived once; null + issue when evidence is missing
+  methods: Record<string,string>;                                 // declared derivation per metric
+  validation: { disposition: "pass"|"pass-with-issues"|"fail", issues: {code,severity,message}[] };  // axis 3
+  error: string|null;
+}
+```
+
+**Independent axes — never derive one from another:**
+
+| Axis | Values | Where it lives |
+| --- | --- | --- |
+| Environment | live · paper · fixture | `env` (uppercase input normalized) |
+| Run lifecycle | queued · running · complete · failed · cancelled | `lifecycle` |
+| Validation disposition | pass · pass-with-issues · fail | `validation.disposition` |
+| Proof integrity | verified · unverified · mismatch | **recomputed** by `verifyProof(artifact)` |
+| Current-draft freshness | current · stale · unknown | **derived** by `freshness(artifact, draft)` — never stored |
+
+Metric law: `cagr` is ACT/365.2425 on actual elapsed days; `maxDrawdown` is rolling-peak
+close-to-close (a negative fraction); `sharpe` ships its declared method (arithmetic daily ·
+rf 0 · sample sd · √252). Missing evidence → `null` **plus** a validation issue — never a
+fixture value; absent fees are null, not zero.
+
 ## Instrument
 
 Consumed by `AsyncCombobox` option sets, security-master registry, symbol pickers.

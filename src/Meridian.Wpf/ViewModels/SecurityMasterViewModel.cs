@@ -201,11 +201,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                     }
 
                     ClearSelectedSecurityAssuranceState();
+                    CashDividendAttestation?.SetSecurity(value?.SecurityId);
                 }
 
                 if (value is not null)
                 {
-                    _conflictSecurityContextCache[value.SecurityId] = ToSecurityContext(value);
+                    _conflictSecurityContextCache[value.SecurityId] = SecurityMasterPresentation.ToSecurityContext(value);
                 }
 
                 RaiseSelectionDerivedStateChanged();
@@ -614,6 +615,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private SecurityPassportEditorViewModel _passportEditor;
     /// <summary>Issuer and maturity ladders over the bounded keyset routes (web-UI parity).</summary>
     public SecurityMaster.BondReferenceLadderViewModel ReferenceLadders { get; }
+    public SecurityMaster.CashDividendAttestationViewModel CashDividendAttestation { get; }
 
     public SecurityPassportEditorViewModel PassportEditor
     {
@@ -947,7 +949,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 return "Provider mapping health appears after a search.";
             }
 
-            var mappedCount = Results.Count(HasProviderMapping);
+            var mappedCount = Results.Count(SecurityMasterPresentation.HasProviderMapping);
             var missingCount = LoadedResultCount - mappedCount;
             return missingCount == 0
                 ? $"{mappedCount} result{(mappedCount == 1 ? string.Empty : "s")} mapped across provider aliases."
@@ -1265,11 +1267,11 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             }
 
             var provenance = _selectedEconomicDefinition.Provenance;
-            var sourceSystem = TryGetJsonString(provenance, "sourceSystem") ?? "Unknown source";
-            var updatedBy = TryGetJsonString(provenance, "updatedBy") ?? "Unknown actor";
-            var sourceRecordId = TryGetJsonString(provenance, "sourceRecordId");
-            var reason = TryGetJsonString(provenance, "reason");
-            var asOf = TryGetJsonDateTimeOffset(provenance, "asOf");
+            var sourceSystem = SecurityMasterPresentation.TryGetJsonString(provenance, "sourceSystem") ?? "Unknown source";
+            var updatedBy = SecurityMasterPresentation.TryGetJsonString(provenance, "updatedBy") ?? "Unknown actor";
+            var sourceRecordId = SecurityMasterPresentation.TryGetJsonString(provenance, "sourceRecordId");
+            var reason = SecurityMasterPresentation.TryGetJsonString(provenance, "reason");
+            var asOf = SecurityMasterPresentation.TryGetJsonDateTimeOffset(provenance, "asOf");
 
             var sourceRecordText = string.IsNullOrWhiteSpace(sourceRecordId)
                 ? string.Empty
@@ -1571,6 +1573,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient, _cashFlowClient);
         ReferenceLadders = new SecurityMaster.BondReferenceLadderViewModel(_workstationSecurityMasterApiClient);
+        CashDividendAttestation = new SecurityMaster.CashDividendAttestationViewModel(_workstationSecurityMasterApiClient);
 
         CreateNewCommand = new RelayCommand(OnCreateNew, () => CanModifySecurityMaster);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity && CanModifySecurityMaster);
@@ -1979,7 +1982,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             var providerOptions = SecurityMasterSearchWorkspaceService.BuildProviderOptions(
                 Results,
                 AllProvidersFilterLabel,
-                GetMatchedProvider);
+                SecurityMasterPresentation.GetMatchedProvider);
             ReplaceCollection(ProviderFilterOptions, providerOptions);
 
             if (!assetClassOptions.Contains(SelectedAssetClassFilter, StringComparer.OrdinalIgnoreCase))
@@ -2007,8 +2010,8 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             ShowMappingGapsOnly,
             AllAssetClassesFilterLabel,
             AllProvidersFilterLabel,
-            GetMatchedProvider,
-            HasProviderMapping);
+            SecurityMasterPresentation.GetMatchedProvider,
+            SecurityMasterPresentation.HasProviderMapping);
         ReplaceCollection(FilteredResults, filteredResults);
 
         if (SelectedSecurity is not null &&
@@ -2038,94 +2041,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
 
         ApplySearchWorkspaceFilters();
-    }
-
-    private void ClearSelectedSecurityAssuranceState()
-    {
-        // The contextual editor targets the previously-selected security, so close it when the
-        // selection changes; reopening for the new security re-hydrates and resets its inputs.
-        IsPassportEditorOpen = false;
-        SelectedTrustSnapshot = null;
-        SelectedInstrumentPassport = null;
-        TrustSnapshotErrorText = string.Empty;
-        _selectedEconomicDefinition = null;
-        _selectedTradingParameters = null;
-        _latestHistoryEvent = null;
-        _conflictAssessmentById.Clear();
-        ProvenanceCandidates.Clear();
-        FilteredConflicts.Clear();
-        RecommendedActions.Clear();
-        DownstreamImpactLinks.Clear();
-        CompanyProfileFields.Clear();
-        CompanyCoverageFields.Clear();
-        InstrumentPassportFields.Clear();
-        ValidationIssues.Clear();
-        ChangeHistoryItems.Clear();
-        ScheduleBookFields.Clear();
-        ScheduleBookEvents.Clear();
-        ScheduleBookFactorHistory.Clear();
-        ScheduleBookProvenanceHistory.Clear();
-        OpenLotReadModelFields.Clear();
-        OpenLotRows.Clear();
-        OpenLotProvenanceHistory.Clear();
-        PrintSections.Clear();
-        PrintChecklistItems.Clear();
-        PrintEvidenceItems.Clear();
-        TrustScoreText = "Trust score unavailable.";
-        TrustSummaryText = "Select a security to review trust posture.";
-        GoldenCopySourceText = "No golden copy selected.";
-        GoldenCopyRuleText = "Preserve winner unless the current winner is blank or equivalent.";
-        TradingParametersStatusText = "Trading parameter posture appears after selection.";
-        ProvenanceSummaryText = "Winning-source provenance appears after selection.";
-        DownstreamImpactSummaryText = "Downstream impact appears after selection.";
-        ConflictFilterSummaryText = "Conflict filter summary unavailable.";
-        SelectedConflictRecommendedActionText = "Select a conflict to see the recommended action.";
-        SelectedConflictWinnerText = "Select a conflict to compare the current winner.";
-        _selectedConflictImpactText = "Select a conflict to review downstream impact.";
-        CorporateActionReadinessText = "Corporate-action readiness appears after selection.";
-        CorporateActionImpactSummaryText = "Corporate-action impact appears after selection.";
-        BulkPreviewSummaryText = "Preview low-risk bulk resolutions to inspect scope.";
-        CanApplyRecommendedConflictResolution = false;
-        CanApplyBulkRecommendedResolutions = false;
-
-        RaisePropertyChanged(nameof(SelectedTrustPostureText));
-        RaisePropertyChanged(nameof(SelectedProvenanceText));
-        RaisePropertyChanged(nameof(SelectedTradingParameterCoverageText));
-        RaisePropertyChanged(nameof(LatestHistoryEventText));
-        RaisePropertyChanged(nameof(TrustScoreText));
-        RaisePropertyChanged(nameof(TrustSummaryText));
-        RaisePropertyChanged(nameof(InstrumentPassportSummaryText));
-        RaisePropertyChanged(nameof(InstrumentPassportProviderConfidenceText));
-        RaisePropertyChanged(nameof(GoldenCopySourceText));
-        RaisePropertyChanged(nameof(GoldenCopyRuleText));
-        RaisePropertyChanged(nameof(TradingParametersStatusText));
-        RaisePropertyChanged(nameof(ProvenanceSummaryText));
-        RaisePropertyChanged(nameof(DownstreamImpactSummaryText));
-        RaisePropertyChanged(nameof(ConflictFilterSummaryText));
-        RaisePropertyChanged(nameof(SelectedConflictRecommendedActionText));
-        RaisePropertyChanged(nameof(SelectedConflictWinnerText));
-        RaisePropertyChanged(nameof(SelectedConflictImpactText));
-        RaisePropertyChanged(nameof(CorporateActionReadinessText));
-        RaisePropertyChanged(nameof(CorporateActionImpactSummaryText));
-        RaiseScheduleAndOpenLotStateChanged();
-        RaisePropertyChanged(nameof(CompanyCardTitle));
-        RaisePropertyChanged(nameof(CompanyCardSubtitle));
-        RaisePropertyChanged(nameof(CompanyCardDescription));
-        RaisePropertyChanged(nameof(PrintPacketIdText));
-        RaisePropertyChanged(nameof(PrintGeneratedAtText));
-        RaisePropertyChanged(nameof(PrintDistributionText));
-        RaisePropertyChanged(nameof(PrintSummaryText));
-        RaisePropertyChanged(nameof(SearchDeckLeadText));
-        RaisePropertyChanged(nameof(SearchDeckDetailText));
-        RaisePropertyChanged(nameof(BulkPreviewSummaryText));
-        RaisePropertyChanged(nameof(ActionInspectorLeadText));
-        RaisePropertyChanged(nameof(ActionInspectorDetailText));
-        RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
-        RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
-        RaisePropertyChanged(nameof(HasPortfolioImpactLink));
-        RaisePropertyChanged(nameof(HasLedgerImpactLink));
-        RaisePropertyChanged(nameof(HasReconciliationImpactLink));
-        RaisePropertyChanged(nameof(HasReportPackImpactLink));
     }
 
     private void AlignConflictLaneToSelectedSecurity()
@@ -2731,20 +2646,20 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
 
         DownstreamImpactLinks.Clear();
-        foreach (var link in snapshot.DownstreamImpact.Links.OrderBy(GetImpactLinkOrder))
+        foreach (var link in snapshot.DownstreamImpact.Links.OrderBy(SecurityMasterPresentation.GetImpactLinkOrder))
         {
             DownstreamImpactLinks.Add(link);
         }
 
         TrustScoreText = $"{snapshot.TrustPosture.TrustScore}/100 - {snapshot.TrustPosture.Tone}";
         TrustSummaryText = snapshot.TrustPosture.Summary;
-        GoldenCopySourceText = FormatGoldenCopySourceText(snapshot.EconomicDefinition);
+        GoldenCopySourceText = SecurityMasterPresentation.FormatGoldenCopySourceText(snapshot.EconomicDefinition);
         GoldenCopyRuleText = snapshot.TrustPosture.GoldenCopyRule;
         TradingParametersStatusText = snapshot.TrustPosture.TradingParametersStatus;
-        ProvenanceSummaryText = BuildProvenanceSummaryText(snapshot);
+        ProvenanceSummaryText = SecurityMasterPresentation.BuildProvenanceSummaryText(snapshot);
         DownstreamImpactSummaryText = snapshot.DownstreamImpact.Summary;
         CorporateActionReadinessText = snapshot.TrustPosture.CorporateActionReadiness;
-        CorporateActionImpactSummaryText = BuildCorporateActionImpactSummary(snapshot);
+        CorporateActionImpactSummaryText = SecurityMasterPresentation.BuildCorporateActionImpactSummary(snapshot);
         PopulateCompanyPresentation(snapshot);
         PopulateValidationPresentation(snapshot);
         PopulateChangeHistoryPresentation(snapshot);
@@ -2873,7 +2788,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                                GetSelectedConflictAssessment(conflict.ConflictId)?.ImpactSeverity == SecurityMasterImpactSeverity.High)
             .Where(conflict => !ShowBulkEligibleConflictsOnly ||
                                GetSelectedConflictAssessment(conflict.ConflictId)?.IsBulkEligible == true)
-            .OrderByDescending(conflict => GetImpactSeverityRank(GetSelectedConflictAssessment(conflict.ConflictId)?.ImpactSeverity ?? SecurityMasterImpactSeverity.Unknown))
+            .OrderByDescending(conflict => SecurityMasterPresentation.GetImpactSeverityRank(GetSelectedConflictAssessment(conflict.ConflictId)?.ImpactSeverity ?? SecurityMasterImpactSeverity.Unknown))
             .ThenByDescending(conflict => conflict.DetectedAt)
             .ToArray();
 
@@ -2908,12 +2823,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         var selectedConflictAssessment = GetSelectedConflictAssessment();
         if (selectedConflictAssessment is not null)
         {
-            RecommendedActions.Add(CreateSelectedConflictAction(selectedConflictAssessment));
+            RecommendedActions.Add(SecurityMasterPresentation.CreateSelectedConflictAction(selectedConflictAssessment));
         }
 
         foreach (var action in SelectedTrustSnapshot.RecommendedActions
                      .Where(action => action.Kind != SecurityMasterRecommendedActionKind.ResolveSelectedConflict)
-                     .OrderBy(action => GetRecommendedActionOrder(action.Kind)))
+                     .OrderBy(action => SecurityMasterPresentation.GetRecommendedActionOrder(action.Kind)))
         {
             RecommendedActions.Add(action);
         }
@@ -2954,7 +2869,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             .OrderByDescending(item => item.EventTimestamp)
             .FirstOrDefault();
 
-        HistoryText = BuildHistoryText(snapshot.History);
+        HistoryText = SecurityMasterPresentation.BuildHistoryText(snapshot.History);
 
         CorporateActions.Clear();
         foreach (var action in snapshot.CorporateActions.OrderByDescending(action => action.ExDate))
@@ -2962,7 +2877,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             CorporateActions.Add(action);
         }
 
-        _conflictSecurityContextCache[snapshot.Security.SecurityId] = ToSecurityContext(snapshot.Security);
+        _conflictSecurityContextCache[snapshot.Security.SecurityId] = SecurityMasterPresentation.ToSecurityContext(snapshot.Security);
     }
 
     private void UpdateSelectedConflictAssessmentState()
@@ -3189,58 +3104,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
     }
 
-    private static string BuildHistoryText(IReadOnlyList<SecurityMasterEventEnvelope> history)
-    {
-        var ordered = history
-            .OrderByDescending(item => item.EventTimestamp)
-            .ToArray();
-        return ordered.Length == 0
-            ? "(no history)"
-            : string.Join(Environment.NewLine, ordered.Select(item =>
-                $"[{item.EventTimestamp:yyyy-MM-dd HH:mm}] {item.EventType}  v{item.StreamVersion} • {item.Actor}"));
-    }
-
-    private static string FormatGoldenCopySourceText(SecurityMasterEconomicDefinitionDrillInDto economicDefinition)
-    {
-        var source = string.IsNullOrWhiteSpace(economicDefinition.WinningSourceSystem)
-            ? "Unknown source"
-            : economicDefinition.WinningSourceSystem;
-        var recordIdText = string.IsNullOrWhiteSpace(economicDefinition.WinningSourceRecordId)
-            ? string.Empty
-            : $" • record {economicDefinition.WinningSourceRecordId}";
-        var asOfText = economicDefinition.WinningSourceAsOf.HasValue
-            ? $" • {FormatHelpers.FormatUtcTimestamp(economicDefinition.WinningSourceAsOf.Value)}"
-            : string.Empty;
-
-        return $"{source}{recordIdText}{asOfText}";
-    }
-
-    private static string BuildProvenanceSummaryText(SecurityMasterTrustSnapshotDto snapshot)
-    {
-        var challengerCount = snapshot.ProvenanceCandidates.Count(candidate => !candidate.IsWinningSource);
-        var sourceText = FormatGoldenCopySourceText(snapshot.EconomicDefinition);
-        var reasonText = string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.WinningSourceReason)
-            ? string.Empty
-            : $" • {snapshot.EconomicDefinition.WinningSourceReason}";
-
-        return challengerCount == 0
-            ? $"Winning source {sourceText}{reasonText}"
-            : $"Winning source {sourceText}{reasonText} • {challengerCount} challenger row(s) remain open";
-    }
-
-    private static string BuildCorporateActionImpactSummary(SecurityMasterTrustSnapshotDto snapshot)
-    {
-        if (snapshot.CorporateActions.Count == 0)
-        {
-            return "No corporate actions recorded for the selected security.";
-        }
-
-        var upcomingCount = snapshot.CorporateActions.Count(action => action.ExDate >= DateOnly.FromDateTime(DateTime.UtcNow));
-        return upcomingCount == 0
-            ? $"{snapshot.CorporateActions.Count} corporate action(s) are recorded with no upcoming events in the current review window."
-            : $"{upcomingCount} upcoming corporate action(s) require review across {snapshot.CorporateActions.Count} recorded event(s).";
-    }
-
     private void PopulateCompanyPresentation(SecurityMasterTrustSnapshotDto snapshot)
     {
         var identity = snapshot.Identity;
@@ -3259,12 +3122,12 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ReplaceCollection(CompanyCoverageFields,
         [
             new SecurityMasterPresentationField("Trust posture", $"{snapshot.TrustPosture.Tone} • {snapshot.TrustPosture.TrustScore}/100"),
-            new SecurityMasterPresentationField("Validation", BuildValidationSummaryText(snapshot)),
-            new SecurityMasterPresentationField("Identifier coverage", BuildIdentifierCoverageSummaryText(snapshot)),
-            new SecurityMasterPresentationField("Schedule model", BuildScheduleSummaryText(snapshot)),
-            new SecurityMasterPresentationField("Lot model", BuildLotModelSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Validation", SecurityMasterPresentation.BuildValidationSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Identifier coverage", SecurityMasterPresentation.BuildIdentifierCoverageSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Schedule model", SecurityMasterPresentation.BuildScheduleSummaryText(snapshot)),
+            new SecurityMasterPresentationField("Lot model", SecurityMasterPresentation.BuildLotModelSummaryText(snapshot)),
             new SecurityMasterPresentationField("Trading readiness", snapshot.TrustPosture.TradingParametersStatus),
-            new SecurityMasterPresentationField("Schema compatibility", BuildSchemaCompatibilitySummaryText(snapshot)),
+            new SecurityMasterPresentationField("Schema compatibility", SecurityMasterPresentation.BuildSchemaCompatibilitySummaryText(snapshot)),
             new SecurityMasterPresentationField("Corporate actions", snapshot.TrustPosture.CorporateActionReadiness),
             new SecurityMasterPresentationField("Downstream scope", snapshot.DownstreamImpact.IsScoped
                 ? $"Scoped to {snapshot.DownstreamImpact.FundProfileId}"
@@ -3315,14 +3178,15 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         [
             new SecurityMasterPresentationField("Summary", scheduleBook.Summary),
             new SecurityMasterPresentationField("Currency", scheduleBook.Currency),
-            new SecurityMasterPresentationField("Current factor", FormatNullableDecimal(scheduleBook.CurrentFactor)),
-            new SecurityMasterPresentationField("Current factor date", FormatNullableDate(scheduleBook.CurrentFactorDate)),
-            new SecurityMasterPresentationField("Next lifecycle date", FormatNullableDate(scheduleBook.NextLifecycleDate)),
+            new SecurityMasterPresentationField("Current factor", SecurityMasterPresentation.FormatNullableDecimal(scheduleBook.CurrentFactor)),
+            new SecurityMasterPresentationField("Current factor date", SecurityMasterPresentation.FormatNullableDate(scheduleBook.CurrentFactorDate)),
+            new SecurityMasterPresentationField("Next lifecycle date", SecurityMasterPresentation.FormatNullableDate(scheduleBook.NextLifecycleDate)),
             new SecurityMasterPresentationField("Cash-flow schedule", scheduleBook.SupportsCashflowSchedule ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Factor history", scheduleBook.SupportsFactorHistory ? "Supported" : "Unavailable"),
             new SecurityMasterPresentationField("Economic terms", scheduleBook.HasEconomicScheduleTerms ? "Present" : "Not present"),
             new SecurityMasterPresentationField("Source", SecurityMasterTextHelpers.FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
         ]);
+        AppendSchedulePolicyEvidence(snapshot);
 
         ReplaceCollection(ScheduleBookEvents, scheduleBook.Events.OrderBy(item => item.EffectiveDate));
         ReplaceCollection(ScheduleBookFactorHistory, scheduleBook.FactorHistory.OrderByDescending(item => item.EffectiveDate));
@@ -3346,10 +3210,10 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         [
             new SecurityMasterPresentationField("Summary", readModel.Summary),
             new SecurityMasterPresentationField("Quantity model", readModel.QuantityModel),
-            new SecurityMasterPresentationField("Lot size", FormatNullableDecimal(readModel.LotSize)),
-            new SecurityMasterPresentationField("Contract multiplier", FormatNullableDecimal(readModel.ContractMultiplier)),
-            new SecurityMasterPresentationField("Current factor", FormatNullableDecimal(readModel.CurrentFactor)),
-            new SecurityMasterPresentationField("Current factor date", FormatNullableDate(readModel.CurrentFactorDate)),
+            new SecurityMasterPresentationField("Lot size", SecurityMasterPresentation.FormatNullableDecimal(readModel.LotSize)),
+            new SecurityMasterPresentationField("Contract multiplier", SecurityMasterPresentation.FormatNullableDecimal(readModel.ContractMultiplier)),
+            new SecurityMasterPresentationField("Current factor", SecurityMasterPresentation.FormatNullableDecimal(readModel.CurrentFactor)),
+            new SecurityMasterPresentationField("Current factor date", SecurityMasterPresentation.FormatNullableDate(readModel.CurrentFactorDate)),
             new SecurityMasterPresentationField("As of", FormatHelpers.FormatUtcTimestamp(readModel.AsOfUtc)),
             new SecurityMasterPresentationField("Face value", readModel.UsesFaceValue ? "Uses face value" : "Quantity only"),
             new SecurityMasterPresentationField("Factor-adjusted exposure", readModel.SupportsFactorAdjustedExposure ? "Supported" : "Unavailable"),
@@ -3373,13 +3237,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         ReplaceCollection(PrintEvidenceItems, projection.EvidenceItems);
     }
 
-    private static bool HasProviderMapping(SecurityMasterWorkstationDto result)
-        => !string.IsNullOrWhiteSpace(GetMatchedProvider(result)) &&
-           !string.IsNullOrWhiteSpace(result.Classification.MatchedIdentifierValue);
-
-    private static string GetMatchedProvider(SecurityMasterWorkstationDto result)
-        => result.Classification.MatchedProvider?.Trim() ?? string.Empty;
-
     private static void ReplaceCollection<T>(ObservableCollection<T> collection, IEnumerable<T> values)
     {
         collection.Clear();
@@ -3388,49 +3245,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             collection.Add(value);
         }
     }
-
-    private static string BuildValidationSummaryText(SecurityMasterTrustSnapshotDto snapshot)
-    {
-        var report = snapshot.ValidationReport;
-        if (report is null)
-        {
-            return "Validation report unavailable.";
-        }
-
-        if (!report.Issues.Any(static issue => issue.Severity != SecurityValidationSeverityDto.Info))
-        {
-            return "No validation issues detected.";
-        }
-
-        var blockingCount = report.CriticalIssueCount + report.ErrorIssueCount;
-        var advisoryCount = Math.Max(0, report.Issues.Count(static issue => issue.Severity != SecurityValidationSeverityDto.Info) - blockingCount);
-        if (blockingCount > 0 && advisoryCount > 0)
-        {
-            return $"{blockingCount} blocking issue(s) • {advisoryCount} advisory issue(s)";
-        }
-
-        return blockingCount > 0
-            ? $"{blockingCount} blocking issue(s)"
-            : $"{advisoryCount} advisory issue(s)";
-    }
-
-    private static string BuildIdentifierCoverageSummaryText(SecurityMasterTrustSnapshotDto snapshot)
-        => snapshot.IdentifierSummary?.Summary ?? "Identifier summary unavailable.";
-
-    private static string BuildScheduleSummaryText(SecurityMasterTrustSnapshotDto snapshot)
-        => snapshot.ScheduleBook?.Summary ?? snapshot.ScheduleSummary?.Summary ?? "Schedule summary unavailable.";
-
-    private static string BuildLotModelSummaryText(SecurityMasterTrustSnapshotDto snapshot)
-        => snapshot.OpenLotReadModel?.Summary ?? snapshot.LotModel?.Summary ?? "Lot model summary unavailable.";
-
-    private static string BuildSchemaCompatibilitySummaryText(SecurityMasterTrustSnapshotDto snapshot)
-        => snapshot.SchemaCompatibility?.Summary ?? "Schema compatibility unavailable.";
-
-    private static string FormatNullableDate(DateOnly? value)
-        => value?.ToString("yyyy-MM-dd") ?? "Unavailable";
-
-    private static string FormatNullableDecimal(decimal? value)
-        => value?.ToString("G29") ?? "Unavailable";
 
     private string BuildConflictFilterSummary(int baseCount, int filteredCount)
     {
@@ -3486,49 +3300,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         return $"{eligibleCount} of {visibleAssessments.Length} filtered conflict(s) qualify for low-risk bulk assist.";
     }
 
-    private static SecurityMasterRecommendedActionDto CreateSelectedConflictAction(SecurityMasterConflictAssessmentDto assessment)
-        => new(
-            Kind: SecurityMasterRecommendedActionKind.ResolveSelectedConflict,
-            Title: $"Resolve {FormatFieldLabel(assessment.Conflict.FieldPath)}",
-            Detail: $"{assessment.RecommendedWinner} {assessment.ImpactSummary}",
-            IsPrimary: true,
-            IsEnabled: !string.IsNullOrWhiteSpace(assessment.RecommendedResolution),
-            ConflictId: assessment.Conflict.ConflictId);
-
-    private static int GetImpactSeverityRank(SecurityMasterImpactSeverity severity)
-        => severity switch
-        {
-            SecurityMasterImpactSeverity.High => 3,
-            SecurityMasterImpactSeverity.Medium => 2,
-            SecurityMasterImpactSeverity.Low => 1,
-            SecurityMasterImpactSeverity.None => 0,
-            _ => -1
-        };
-
-    private static int GetImpactLinkOrder(SecurityMasterImpactLinkDto link)
-        => link.Target switch
-        {
-            "reconciliation" => 0,
-            "ledger" => 1,
-            "reportPack" => 2,
-            "portfolio" => 3,
-            _ => 4
-        };
-
-    private static int GetRecommendedActionOrder(SecurityMasterRecommendedActionKind kind)
-        => kind switch
-        {
-            SecurityMasterRecommendedActionKind.BulkResolveLowRiskConflicts => 1,
-            SecurityMasterRecommendedActionKind.BackfillTradingParameters => 2,
-            SecurityMasterRecommendedActionKind.ReviewCorporateActions => 3,
-            SecurityMasterRecommendedActionKind.OpenReconciliationImpact => 4,
-            SecurityMasterRecommendedActionKind.OpenLedgerImpact => 5,
-            SecurityMasterRecommendedActionKind.OpenReportPackImpact => 6,
-            SecurityMasterRecommendedActionKind.OpenPortfolioImpact => 7,
-            SecurityMasterRecommendedActionKind.EditSelectedSecurity => 8,
-            _ => 9
-        };
-
     public void Dispose()
     {
         lock (_selectedSecurityLoadGate)
@@ -3553,6 +3324,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 OnAuthenticationSessionAuthenticationChanged);
         }
 
+        CashDividendAttestation.Dispose();
         Stop();
     }
 
@@ -3873,7 +3645,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     {
         if (SelectedSecurity is not null)
         {
-            _conflictSecurityContextCache[SelectedSecurity.SecurityId] = ToSecurityContext(SelectedSecurity);
+            _conflictSecurityContextCache[SelectedSecurity.SecurityId] = SecurityMasterPresentation.ToSecurityContext(SelectedSecurity);
         }
 
         var missingSecurityIds = conflicts
@@ -3917,7 +3689,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             var detail = await detailTask.ConfigureAwait(false);
             return detail is null
                 ? null
-                : new KeyValuePair<Guid, SecurityConflictSecurityContext>(securityId, ToSecurityContext(detail));
+                : new KeyValuePair<Guid, SecurityConflictSecurityContext>(securityId, SecurityMasterPresentation.ToSecurityContext(detail));
         }
         catch (OperationCanceledException)
         {
@@ -3942,7 +3714,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                     .ThenBy(entry => entry.Conflict.DetectedAt)
                     .ToArray();
                 var highestSeverity = entries.FirstOrDefault();
-                var groupSummary = BuildConflictGroupSummary(entries);
+                var groupSummary = SecurityMasterPresentation.BuildConflictGroupSummary(entries);
 
                 return new SecurityConflictLaneGroup(
                     SecurityId: group.Key,
@@ -3970,13 +3742,13 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         SecurityMasterConflict conflict,
         SecurityConflictSecurityContext context)
     {
-        var assessment = AssessConflict(conflict);
+        var assessment = SecurityMasterPresentation.AssessConflict(conflict);
 
         return new SecurityConflictLaneEntry(
             Conflict: conflict,
             SecurityLabel: context.DisplayName,
             SecurityIdentifier: context.PrimaryIdentifier,
-            FieldLabel: FormatFieldLabel(conflict.FieldPath),
+            FieldLabel: SecurityMasterPresentation.FormatFieldLabel(conflict.FieldPath),
             SeverityLabel: assessment.SeverityLabel,
             SeverityTone: assessment.SeverityTone,
             SeverityRank: assessment.SeverityRank,
@@ -4002,7 +3774,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         if (SelectedSecurity?.SecurityId == securityId)
         {
-            return ToSecurityContext(SelectedSecurity);
+            return SecurityMasterPresentation.ToSecurityContext(SelectedSecurity);
         }
 
         var shortId = securityId.ToString("N")[..8].ToUpperInvariant();
@@ -4065,293 +3837,6 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
         }
 
         return missingFields;
-    }
-
-    private static SecurityConflictSecurityContext ToSecurityContext(SecurityMasterWorkstationDto detail)
-        => new(
-            DisplayName: detail.DisplayName,
-            PrimaryIdentifier: string.IsNullOrWhiteSpace(detail.Classification.PrimaryIdentifierValue)
-                ? detail.SecurityId.ToString("N")[..8].ToUpperInvariant()
-                : $"{detail.Classification.PrimaryIdentifierKind}: {detail.Classification.PrimaryIdentifierValue}",
-            AssetClass: detail.Classification.AssetClass);
-
-    private static SecurityConflictSecurityContext ToSecurityContext(SecurityDetailDto detail)
-    {
-        var primaryIdentifier = detail.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
-        return new SecurityConflictSecurityContext(
-            DisplayName: detail.DisplayName,
-            PrimaryIdentifier: primaryIdentifier is null
-                ? detail.SecurityId.ToString("N")[..8].ToUpperInvariant()
-                : $"{primaryIdentifier.Kind}: {primaryIdentifier.Value}",
-            AssetClass: detail.AssetClass);
-    }
-
-    private static SecurityConflictAssessment AssessConflict(SecurityMasterConflict conflict)
-    {
-        var category = SecurityMasterConflictFieldCategories.For(conflict);
-        var touchesIdentifier = category.HasFlag(SecurityMasterConflictFieldCategory.Identifier);
-        var touchesLifecycle = category.HasFlag(SecurityMasterConflictFieldCategory.Lifecycle);
-        var touchesTradingParameters = category.HasFlag(SecurityMasterConflictFieldCategory.TradingParameter);
-        var touchesCorporateAction = category.HasFlag(SecurityMasterConflictFieldCategory.CorporateAction);
-        var touchesClassification = category.HasFlag(SecurityMasterConflictFieldCategory.Classification);
-        var touchesCurrency = category.HasFlag(SecurityMasterConflictFieldCategory.Currency);
-        var touchesDisplay = category.HasFlag(SecurityMasterConflictFieldCategory.Display);
-
-        var normalizedValueA = NormalizeConflictValue(conflict.ValueA);
-        var normalizedValueB = NormalizeConflictValue(conflict.ValueB);
-        var sameAfterNormalization =
-            normalizedValueA.Length > 0 &&
-            normalizedValueA == normalizedValueB;
-        var oneSideMissing = string.IsNullOrWhiteSpace(conflict.ValueA) ^ string.IsNullOrWhiteSpace(conflict.ValueB);
-        var looksLikeMinorTypo = LooksLikeMinorTypo(normalizedValueA, normalizedValueB);
-
-        var routesToFundReview = true;
-        var routesToReconciliation = false;
-        var routesToCashFlow = false;
-        var routesToReportPack = false;
-        var requiresTradingBackfill = false;
-        var severityRank = 1;
-        var severityLabel = "Review";
-        var severityTone = "Info";
-        var impactDetail = "Review this mismatch before publishing the selected security into downstream Accounting and Reporting workflows.";
-
-        if (touchesIdentifier || touchesLifecycle || touchesTradingParameters || touchesCurrency)
-        {
-            severityRank = 3;
-            severityLabel = "Critical";
-            severityTone = "Error";
-            routesToReconciliation = true;
-            routesToReportPack = true;
-            routesToCashFlow = touchesCorporateAction;
-            requiresTradingBackfill = touchesTradingParameters;
-            impactDetail = touchesTradingParameters
-                ? "Order validation, fill-price rounding, and execution readiness can drift until the authoritative trading parameters are restored."
-                : "Portfolio and ledger joins can resolve to the wrong instrument, leaving reconciliation and report-pack coverage open.";
-        }
-        else if (touchesCorporateAction || touchesClassification)
-        {
-            severityRank = 2;
-            severityLabel = "Elevated";
-            severityTone = "Warning";
-            routesToReconciliation = touchesCorporateAction || touchesCurrency;
-            routesToCashFlow = touchesCorporateAction;
-            routesToReportPack = true;
-            impactDetail = touchesCorporateAction
-                ? "Cash-flow timing, holdings continuity, and report-pack timelines can drift until the corporate action definition is confirmed."
-                : "Classification, valuation context, and reporting labels can drift across fund review and report-pack workflows.";
-        }
-        else if (touchesDisplay)
-        {
-            routesToReportPack = true;
-            impactDetail = "Display-name and alias differences usually do not break joins, but they can leak inconsistent labels into review and reporting workflows.";
-        }
-
-        var confidenceLabel = "Manual review required";
-        var autoResolveHint = "No safe auto-resolve signal detected. Compare provenance and downstream impact before choosing a provider value.";
-        var isAutoResolveSafe = false;
-        if (sameAfterNormalization)
-        {
-            confidenceLabel = "High-confidence normalization match";
-            autoResolveHint = "Safe to auto-resolve after confirming provider precedence. The values differ only by casing, whitespace, or punctuation.";
-            isAutoResolveSafe = true;
-        }
-        else if (oneSideMissing)
-        {
-            confidenceLabel = "Medium-confidence populated value";
-            autoResolveHint = "One provider is blank. Keeping the populated side is often safe if provenance confirms that source is authoritative.";
-        }
-        else if (looksLikeMinorTypo)
-        {
-            confidenceLabel = "Low-confidence near match";
-            autoResolveHint = "Values are close but not equivalent. Treat this as a likely typo and verify against provenance before resolving.";
-        }
-
-        var impactSummary = BuildImpactLaneSummary(routesToFundReview, routesToReconciliation, routesToCashFlow, routesToReportPack);
-        var nextStepSummary = severityRank >= 3
-            ? $"Resolve this before {impactSummary}."
-            : $"Review this before {impactSummary}.";
-
-        return new SecurityConflictAssessment(
-            SeverityLabel: severityLabel,
-            SeverityTone: severityTone,
-            SeverityRank: severityRank,
-            ConfidenceLabel: confidenceLabel,
-            AutoResolveHint: autoResolveHint,
-            ImpactSummary: impactSummary,
-            ImpactDetail: impactDetail,
-            NextStepSummary: nextStepSummary,
-            RoutesToFundReview: routesToFundReview,
-            RoutesToReconciliation: routesToReconciliation,
-            RoutesToCashFlow: routesToCashFlow,
-            RoutesToReportPack: routesToReportPack,
-            RequiresTradingBackfill: requiresTradingBackfill,
-            IsAutoResolveSafe: isAutoResolveSafe);
-    }
-
-    private static string BuildConflictGroupSummary(IReadOnlyList<SecurityConflictLaneEntry> entries)
-    {
-        if (entries.Count == 0)
-        {
-            return "No open mismatches remain.";
-        }
-
-        var routesToFundReview = entries.Any(entry => entry.RoutesToFundReview);
-        var routesToReconciliation = entries.Any(entry => entry.RoutesToReconciliation);
-        var routesToCashFlow = entries.Any(entry => entry.RoutesToCashFlow);
-        var routesToReportPack = entries.Any(entry => entry.RoutesToReportPack);
-        var safeHints = entries.Count(entry => entry.IsAutoResolveSafe);
-        var routeSummary = BuildImpactLaneSummary(routesToFundReview, routesToReconciliation, routesToCashFlow, routesToReportPack);
-        var safeHintText = safeHints > 0
-            ? $" • {safeHints} safe normalization hint{(safeHints == 1 ? string.Empty : "s")}"
-            : string.Empty;
-
-        return $"{entries.Count} open mismatch{(entries.Count == 1 ? string.Empty : "es")} • {routeSummary}{safeHintText}";
-    }
-
-    private static string BuildImpactLaneSummary(
-        bool routesToFundReview,
-        bool routesToReconciliation,
-        bool routesToCashFlow,
-        bool routesToReportPack)
-    {
-        var lanes = new List<string>();
-        if (routesToFundReview)
-        {
-            lanes.Add("fund review");
-        }
-
-        if (routesToReconciliation)
-        {
-            lanes.Add("reconciliation");
-        }
-
-        if (routesToCashFlow)
-        {
-            lanes.Add("cash-flow review");
-        }
-
-        if (routesToReportPack)
-        {
-            lanes.Add("report pack");
-        }
-
-        return lanes.Count switch
-        {
-            0 => "manual review",
-            1 => lanes[0],
-            2 => $"{lanes[0]} and {lanes[1]}",
-            _ => $"{string.Join(", ", lanes.Take(lanes.Count - 1))}, and {lanes[^1]}"
-        };
-    }
-
-    private static string FormatFieldLabel(string fieldPath)
-    {
-        if (string.IsNullOrWhiteSpace(fieldPath))
-        {
-            return "Unknown field";
-        }
-
-        var normalized = fieldPath.Trim();
-        if (normalized.Contains("Identifiers.Primary", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Primary identifier";
-        }
-
-        if (normalized.Contains("DisplayName", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Display name";
-        }
-
-        if (normalized.Contains("Currency", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Currency";
-        }
-
-        return normalized.Replace(".", " > ", StringComparison.Ordinal);
-    }
-
-    private static string NormalizeConflictValue(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
-
-        return new string(value
-            .Where(char.IsLetterOrDigit)
-            .Select(char.ToUpperInvariant)
-            .ToArray());
-    }
-
-    private static bool LooksLikeMinorTypo(string valueA, string valueB)
-    {
-        if (string.IsNullOrWhiteSpace(valueA) || string.IsNullOrWhiteSpace(valueB))
-        {
-            return false;
-        }
-
-        if (Math.Abs(valueA.Length - valueB.Length) > 1)
-        {
-            return false;
-        }
-
-        if (valueA.Length == valueB.Length)
-        {
-            var differences = 0;
-            for (var index = 0; index < valueA.Length; index++)
-            {
-                if (valueA[index] != valueB[index] && ++differences > 2)
-                {
-                    return false;
-                }
-            }
-
-            return differences > 0;
-        }
-
-        var shorter = valueA.Length < valueB.Length ? valueA : valueB;
-        var longer = valueA.Length < valueB.Length ? valueB : valueA;
-        var shortIndex = 0;
-        var longIndex = 0;
-        var edits = 0;
-
-        while (shortIndex < shorter.Length && longIndex < longer.Length)
-        {
-            if (shorter[shortIndex] == longer[longIndex])
-            {
-                shortIndex++;
-                longIndex++;
-                continue;
-            }
-
-            if (++edits > 1)
-            {
-                return false;
-            }
-
-            longIndex++;
-        }
-
-        return true;
-    }
-
-    private static string? TryGetJsonString(JsonElement json, string propertyName)
-        => json.ValueKind == JsonValueKind.Object &&
-           json.TryGetProperty(propertyName, out var property) &&
-           property.ValueKind == JsonValueKind.String
-            ? property.GetString()
-            : null;
-
-    private static DateTimeOffset? TryGetJsonDateTimeOffset(JsonElement json, string propertyName)
-    {
-        if (json.ValueKind != JsonValueKind.Object ||
-            !json.TryGetProperty(propertyName, out var property) ||
-            property.ValueKind != JsonValueKind.String)
-        {
-            return null;
-        }
-
-        return DateTimeOffset.TryParse(property.GetString(), out var value) ? value : null;
     }
 
     private async Task ResolveSelectedConflictAsync(string resolution, CancellationToken ct = default)

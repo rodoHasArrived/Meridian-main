@@ -95,7 +95,7 @@ public sealed partial class TiingoCorporateActionProvider : ICorporateActionProv
         try
         {
             using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode || CorporateActionFetchResult.IsPartialResponse(response))
             {
                 _logger.LogDebug(
                     "Tiingo corporate actions returned {StatusCode} for {Ticker}; skipping.",

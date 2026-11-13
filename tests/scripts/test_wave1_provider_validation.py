@@ -40,7 +40,7 @@ def trx(names: list[str], outcome: str = "Passed") -> str:
 @unittest.skipUnless(PWSH, "pwsh is not available")
 class ProviderTestEvidenceTests(unittest.TestCase):
     def read(self, xml: str | None, anchors: list[str]) -> dict:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             temp = Path(directory)
             if xml is not None:
                 (temp / "results.trx").write_text(xml)
@@ -95,7 +95,7 @@ class ProviderTestEvidenceTests(unittest.TestCase):
 @unittest.skipUnless(PWSH and os.name != "nt", "requires pwsh and POSIX fixture executables")
 class ProviderValidationRunnerTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         dev = self.root / "scripts" / "dev"

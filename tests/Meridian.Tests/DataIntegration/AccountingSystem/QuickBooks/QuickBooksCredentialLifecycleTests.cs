@@ -194,6 +194,28 @@ public sealed class QuickBooksCredentialLifecycleTests
         finally { DeleteRoot(root); }
     }
 
+    [Fact]
+    public async Task Import_UpstreamFailure_DoesNotExposeRawExceptionInStatusOrErrors()
+    {
+        var root = TemporaryRoot();
+        try
+        {
+            var store = await ConfiguredStoreAsync(root);
+            var provider = Provider(store, new StubClient
+            {
+                Read = (_, _) => throw new HttpRequestException("https://provider.invalid?token=do-not-expose")
+            });
+
+            var thrown = await provider.Invoking(p => p.ImportAsync(Request())).Should().ThrowAsync<InvalidOperationException>();
+
+            thrown.Which.ToString().Should().NotContain("do-not-expose");
+            (await store.GetStatusAsync("quickbooks")).LastError.Should().NotContain("do-not-expose");
+            (await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl")))
+                .Should().NotContain("do-not-expose");
+        }
+        finally { DeleteRoot(root); }
+    }
+
     private static string TemporaryRoot()
         => Path.Combine(Path.GetTempPath(), "meridian-qbo-lifecycle", Guid.NewGuid().ToString("N"));
 

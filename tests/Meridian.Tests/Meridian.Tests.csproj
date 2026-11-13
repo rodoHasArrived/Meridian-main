@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -41,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../src/Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
     <ProjectReference Include="..\..\src\Meridian\Meridian.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Audit\Meridian.Audit.csproj" />
@@ -83,9 +85,18 @@
     <None Include="..\fixtures\corporate-actions\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\corporate-actions\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\fund-economics\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\fund-economics\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\fixed-income\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\fixed-income\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\fixtures\recurring-journal\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\recurring-journal\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\schedules\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\schedules\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\cross-screen-counts\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\cross-screen-counts\%(Filename)%(Extension)" />
     <None Include="..\fixtures\security-master\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\security-master\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Import Project="../Meridian.Storage.Tests/StorageCoreTestSources.props" />
+  <Import Project="../Meridian.Execution.Tests/ExecutionTestSources.props" />
+  <ItemGroup>
+    <Compile Remove="@(StorageCoreTestSource)" />
+    <Compile Remove="@(ExecutionTestSource)" />
+    <Compile Include="../Shared/Ledger/CanonicalCashFlowTestData.cs" Link="Shared/Ledger/CanonicalCashFlowTestData.cs" />
   </ItemGroup>
 
   <Import Project="..\..\src\Meridian.QuantScript.Worker\QuantScriptWorker.Sidecar.targets" />

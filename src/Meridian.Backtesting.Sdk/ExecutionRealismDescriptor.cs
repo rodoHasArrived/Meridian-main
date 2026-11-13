@@ -42,8 +42,12 @@ public sealed record ExecutionRealismDescriptor(
     double AnnualShortRebateRate = 0.0,
     string? AccountFinancingCanonical = null,
     string? RiskFreeRateSeriesCanonical = null,
-    string? DefaultBrokerageAccountId = null)
+    string? DefaultBrokerageAccountId = null,
+    bool PopulateAssetEventsFromSecurityMaster = false)
 {
+    /// <summary>Null preserves the canonical fingerprint of descriptors retained before this option existed.</summary>
+    public bool? ApplyStoredCorporateActions { get; init; }
+
     /// <summary>
     /// Field-order-stable canonical form used for hashing and for human-readable disclosure.
     /// Each field is emitted with its name so that adding a field in a future revision cannot
@@ -67,6 +71,8 @@ public sealed record ExecutionRealismDescriptor(
         Append(builder, nameof(MarketImpactCoefficient), Canonical(MarketImpactCoefficient));
         Append(builder, nameof(OrderBookQueueAheadFraction), Canonical(OrderBookQueueAheadFraction));
         Append(builder, nameof(AdjustForCorporateActions), AdjustForCorporateActions ? "true" : "false");
+        if (ApplyStoredCorporateActions is { } applyStored)
+            Append(builder, nameof(ApplyStoredCorporateActions), applyStored ? "true" : "false");
         Append(builder, nameof(RiskFreeRate), RiskFreeRate.ToString("R", CultureInfo.InvariantCulture));
         // Financing and the rate series feed interest accrual, short rebates, Sharpe, and Sortino.
         // Omitting them let two runs with materially different P&L and risk metrics hash alike -
@@ -83,6 +89,14 @@ public sealed record ExecutionRealismDescriptor(
         if (DefaultBrokerageAccountId is not null)
         {
             Append(builder, nameof(DefaultBrokerageAccountId), DefaultBrokerageAccountId);
+        }
+
+        // Security Master asset events add dividend cash and split position changes to a raw-price
+        // run. Emitted only when enabled, for the same reason as the field above: descriptors
+        // persisted before it existed must keep their original canonical form.
+        if (PopulateAssetEventsFromSecurityMaster)
+        {
+            Append(builder, nameof(PopulateAssetEventsFromSecurityMaster), "true");
         }
 
         return builder.ToString();

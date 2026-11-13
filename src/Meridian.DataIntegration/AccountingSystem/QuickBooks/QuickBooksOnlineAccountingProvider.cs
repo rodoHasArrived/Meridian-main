@@ -175,7 +175,7 @@ public sealed class QuickBooksOnlineAccountingProvider :
         catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             var occurredAt = DateTimeOffset.UtcNow;
-            var message = $"QuickBooks Online read-only import failed: {ex.Message}";
+            const string message = "QuickBooks Online read-only import failed. Check credentials, selected company realm, permissions and availability.";
             try
             {
                 await _connectionStore.RecordConnectionAsync(
@@ -190,7 +190,7 @@ public sealed class QuickBooksOnlineAccountingProvider :
             {
                 // A stale import cannot invalidate the operator's replacement connection.
             }
-            throw new InvalidOperationException(message, ex);
+            throw new InvalidOperationException(message);
         }
     }
 

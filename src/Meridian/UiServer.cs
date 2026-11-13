@@ -280,11 +280,15 @@ public sealed class UiServer : IAsyncDisposable
                     sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
             builder.Services.AddSingleton(new ExecutionAuditTrailOptions(Path.Combine(resolvedDataRoot, "execution", "audit")));
             builder.Services.AddSingleton<ExecutionAuditTrailService>();
+            builder.Services.AddSingleton<Meridian.Execution.Sdk.IRiskControlAuditWriter>(sp =>
+                sp.GetRequiredService<ExecutionAuditTrailService>());
             builder.Services.AddSingleton(new ExecutionOperatorControlOptions(
                 Path.Combine(resolvedDataRoot, "execution", "controls"),
                 FailClosedOnMissingOrCorruptSnapshot:
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)));
             builder.Services.AddSingleton<ExecutionOperatorControlService>();
+            builder.Services.AddSingleton<Meridian.Execution.Sdk.IRiskCircuitBreakerControl>(sp =>
+                sp.GetRequiredService<ExecutionOperatorControlService>());
             // Governed-approval queue snapshots belong under the writable data root; the
             // queue's AppContext.BaseDirectory default is read-only in installed deployments.
             builder.Services.AddSingleton(new RiskEscalationQueueOptions(
@@ -406,7 +410,11 @@ public sealed class UiServer : IAsyncDisposable
                     tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
                     escalationQueue: sp.GetService<RiskEscalationQueueService>(),
                     recoveryStore: gateway is IBrokerageGateway
-                        ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null);
+                        ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null,
+                    sessionPolicy: sp.GetService<IOrderSessionPolicy>(),
+                    journal: sp.GetService<ExecutionJournal>(),
+                    marketReferences: sp.GetService<IOrderMarketReferenceSource>(),
+                    instrumentCoverage: sp.GetService<IOrderInstrumentCoverageSource>());
             });
             if (usesPaperGateway)
             {
@@ -1316,21 +1324,8 @@ public sealed class UiServer : IAsyncDisposable
                 return;
 
             var readinessStopwatch = Stopwatch.StartNew();
-            await LedgerStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await SecurityMasterStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await DirectLendingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await AssetOperationsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await FundAccountsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await FundStructureStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await BankingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await MoneyMarketStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+            await _app.Services.GetRequiredService<DatabaseStartupPlan>()
+                .EnsureReadyAsync(_app.Services, cancellationToken, _logger)
                 .ConfigureAwait(false);
             var reportingStartup = _app.Services.GetService<IReportingMigrationStartup>();
             if (reportingStartup is not null)

@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using Meridian.Execution.Sdk;
+using Meridian.Ledger;
 
 namespace Meridian.Execution.Events;
 
@@ -57,8 +59,26 @@ public sealed record TradeExecutedEvent(
     string? FinancialAccountId = null,
     bool UsesFaceValuePercentageOfPar = false,
     decimal ContractMultiplier = 1m,
-    bool SettlesVariationMargin = false)
+    bool SettlesVariationMargin = false,
+    string? StrategyId = null,
+    string? RunId = null)
 {
+    /// <summary>
+    /// Accounting-evidence contract used by the producer. Zero identifies historical events;
+    /// current OMS fills use version one even when their accounting context is unavailable.
+    /// An absent version-one payload must block posting rather than imply a position direction.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int AccountingEvidenceVersion { get; init; }
+
+    /// <summary>
+    /// Exact opening and closing economics captured while the portfolio applies this fill.
+    /// A null value does not authorize reconstructing basis or short direction from realized P&amp;L.
+    /// Historical event JSON and the positional constructor remain unchanged when absent.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public TradeFillAccountingEvidence? AccountingEvidence { get; init; }
+
     /// <summary>
     /// Gross trade value, always positive. For a face-value fill the clean price is a
     /// percentage of par, so the price is scaled to a fraction of par before multiplying —

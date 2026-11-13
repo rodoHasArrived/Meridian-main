@@ -1238,7 +1238,11 @@ public sealed record OperationsTimelineEntryDto(
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash,
-    VerifiedOperationOutcome? Outcome = null);
+    VerifiedOperationOutcome? Outcome = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }
+}
 
 public sealed record OperationsWorkflowAuditDto(
     Guid AuditId,
@@ -1259,7 +1263,11 @@ public sealed record OperationsWorkflowAuditDto(
     IReadOnlyList<OperationsEvidenceLinkDto> References,
     string? PreviousHash,
     string CurrentHash,
-    VerifiedOperationOutcome? Outcome = null);
+    VerifiedOperationOutcome? Outcome = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OperationsCloseChecklistSnapshotDto? CloseChecklistSnapshot { get; init; }
+}
 
 public sealed record OperationsBreakCaseDto(
     string BreakId,

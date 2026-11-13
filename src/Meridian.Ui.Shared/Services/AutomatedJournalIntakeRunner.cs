@@ -137,7 +137,7 @@ internal sealed record PeriodCloseDraftPreview(
 /// close cockpit's approval queue. The dividend lane requires the Security Master query
 /// service; when it is not configured the run fails loudly instead of producing nothing.
 /// </summary>
-public sealed class AutomatedJournalIntakeRunner
+public sealed partial class AutomatedJournalIntakeRunner
 {
     private static readonly AutomatedJournalDraftIntakeResult EmptyIntake = new([], []);
 
@@ -151,6 +151,9 @@ public sealed class AutomatedJournalIntakeRunner
     private readonly IAutomatedJournalCapitalAccountReconciliationResolver? _capitalAccountReconciliationResolver;
     private readonly TimeProvider _timeProvider;
     private readonly IManualJournalEntryWorkbenchService? _manualJournalWorkbench;
+    private readonly IPrivateCapitalStore? _privateCapitalStore;
+    private readonly Meridian.Contracts.Banking.IBankTransactionSource? _privateCapitalBankSource;
+    private readonly Meridian.FinancialOperations.FundAdministration.IDistributionRegister? _distributionRegister;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
@@ -162,8 +165,12 @@ public sealed class AutomatedJournalIntakeRunner
         AutomatedJournalEvidencePolicy? evidencePolicy = null,
         IAutomatedJournalCapitalAccountReconciliationResolver? capitalAccountReconciliationResolver = null,
         TimeProvider? timeProvider = null,
-        IManualJournalEntryWorkbenchService? manualJournalWorkbench = null)
+        IManualJournalEntryWorkbenchService? manualJournalWorkbench = null,
+        IPrivateCapitalStore? privateCapitalStore = null,
+        Meridian.Contracts.Banking.IBankTransactionSource? bankTransactionSource = null,
+        Meridian.FinancialOperations.FundAdministration.IDistributionRegister? distributionRegister = null)
     {
+        _distributionRegister = distributionRegister;
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
         _dividendProducer = dividendProducer;
@@ -174,6 +181,8 @@ public sealed class AutomatedJournalIntakeRunner
         _capitalAccountReconciliationResolver = capitalAccountReconciliationResolver;
         _timeProvider = timeProvider ?? TimeProvider.System;
         _manualJournalWorkbench = manualJournalWorkbench;
+        _privateCapitalStore = privateCapitalStore;
+        _privateCapitalBankSource = bankTransactionSource;
     }
 
     /// <summary>Whether this process can execute the provider-backed daily valuation lane.</summary>
@@ -460,9 +469,10 @@ public sealed class AutomatedJournalIntakeRunner
             dimensions.AccountId, dimensions.CustomerId, dimensions.VendorId, dimensions.ProjectId,
             externalGl);
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{key}|positionId={dimensions.PositionId.Value:D}"
             : key;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "|");
     }
 
     public Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(
@@ -571,9 +581,9 @@ public sealed class AutomatedJournalIntakeRunner
     }
 
     /// <summary>
-    /// Plans a fund-level capital call over the operator-attested commitment register and admits
+    /// Plans a fund-level capital call over approved commitment authority and admits
     /// the per-LP issuance drafts into the human approval queue. The called-to-date basis is
-    /// recomputed server-side from posted private-capital fund events before planning; runs whose
+    /// recomputed server-side from exact commitment posting receipts before planning; runs whose
     /// evidence or capacity cannot be corroborated return Blocked with reasons instead of drafts.
     /// Posting remains exclusively available via the governed workbench lifecycle.
     /// </summary>
@@ -587,6 +597,9 @@ public sealed class AutomatedJournalIntakeRunner
         if (string.IsNullOrWhiteSpace(request.CallId))
             throw new ArgumentException("Capital-call identifier is required.", nameof(request));
 
+        var nativeCall = await ResolveCapitalCallAsync(request.TenantId, request.CompanyId, request.EntityId,
+            request.FundProfileId, request.LedgerBookId, request.Currency, request.CallId, ct).ConfigureAwait(false);
+        request = await ResolveIssuanceTermsAsync(request, nativeCall, ct).ConfigureAwait(false);
         var evaluatedAtUtc = (request.AsOf ?? _timeProvider.GetUtcNow()).ToUniversalTime();
         var runKey = CapitalCallIssuanceDraftProducer.BuildRunAssessmentKey(request.FundProfileId, request.CallId);
         if (_manualJournalWorkbench is null)
@@ -598,10 +611,12 @@ public sealed class AutomatedJournalIntakeRunner
                 "The posted private-capital activity source is unavailable; capital-call issuance cannot corroborate the commitment register.");
         }
 
-        IReadOnlyList<PrivateCapitalFundEventDto> postedFundEvents;
+        IReadOnlyList<PrivateCapitalPostingReceiptDto> postedCommitmentReceipts;
         try
         {
-            var activity = await _manualJournalWorkbench
+            // Retain the operator projection's availability check, but it cannot establish
+            // commitment attribution when multiple commitments share one investor/account.
+            _ = await _manualJournalWorkbench
                 .GetPrivateCapitalActivityAsync(
                     request.FundProfileId,
                     request.LedgerBookId,
@@ -609,7 +624,8 @@ public sealed class AutomatedJournalIntakeRunner
                     request.TenantId,
                     request.CompanyId)
                 .ConfigureAwait(false);
-            postedFundEvents = activity.FundEvents;
+            postedCommitmentReceipts = await _privateCapitalStore!
+                .ListPostingReceiptsAsync(nativeCall.Scope, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -621,10 +637,12 @@ public sealed class AutomatedJournalIntakeRunner
                 runKey,
                 CapitalCallIssuanceDraftProducer.AssessmentCode,
                 "Capital-call issuance",
-                "The posted private-capital activity projection could not be read; capital-call issuance is blocked.");
+                "The posted private-capital activity or commitment receipt source could not be read; capital-call issuance is blocked.");
         }
 
-        var production = CapitalCallIssuanceDraftProducer.Produce(request, postedFundEvents, evaluatedAtUtc);
+        var production = CapitalCallIssuanceDraftProducer.ProduceFromCommitmentReceipts(
+            request, nativeCall.Scope, postedCommitmentReceipts, evaluatedAtUtc);
+        production = production with { Drafts = BindCapitalDrafts(production.Drafts, nativeCall, "Issuance", null) };
         if (!production.IsReady)
         {
             return new AutomatedJournalIntakeRunResult(
@@ -678,6 +696,19 @@ public sealed class AutomatedJournalIntakeRunner
         if (string.IsNullOrWhiteSpace(request.CallId))
             throw new ArgumentException("Capital-call identifier is required.", nameof(request));
 
+        var nativeCall = await ResolveCapitalCallAsync(request.TenantId, request.CompanyId, request.EntityId,
+            request.FundProfileId, request.LedgerBookId, request.Currency, request.CallId, ct).ConfigureAwait(false);
+        ValidateFundingTerms(request, nativeCall);
+        request = request with
+        {
+            CallId = nativeCall.CallId,
+            FundProfileId = nativeCall.Scope.FundProfileId,
+            TenantId = nativeCall.Scope.TenantId,
+            CompanyId = nativeCall.Scope.CompanyId,
+            EntityId = nativeCall.Scope.EntityId,
+            Currency = nativeCall.Scope.Currency
+        };
+        var bankTransactions = await ResolveFundingBankTransactionsAsync(request, nativeCall, ct).ConfigureAwait(false);
         var evaluatedAtUtc = (request.AsOf ?? _timeProvider.GetUtcNow()).ToUniversalTime();
         var runKey = CapitalCallFundingDraftProducer.BuildRunAssessmentKey(request.FundProfileId, request.CallId);
         if (_manualJournalWorkbench is null)
@@ -719,6 +750,7 @@ public sealed class AutomatedJournalIntakeRunner
             activity.FundEvents,
             activity.LedgerImpacts,
             evaluatedAtUtc);
+        production = production with { Drafts = BindCapitalDrafts(production.Drafts, nativeCall, "Funding", request.Fundings, bankTransactions) };
         if (!production.IsReady)
         {
             return new AutomatedJournalIntakeRunResult(

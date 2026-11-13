@@ -61,6 +61,23 @@ public sealed class CorporateActionFetchOutcomeTests
 
     [Theory]
     [MemberData(nameof(Providers))]
+    public async Task PartialHttpResponse_CannotCertifyAnEmptyHistory(string providerId)
+    {
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            var response = Json(EmptyPayload(providerId, request));
+            response.StatusCode = HttpStatusCode.PartialContent;
+            return response;
+        });
+
+        var result = await CreateProvider(providerId, handler).FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        result.IsComplete.Should().BeFalse();
+        result.Failures.Should().NotBeEmpty().And.OnlyContain(failure => failure.Code == "incomplete-response");
+    }
+
+    [Theory]
+    [MemberData(nameof(Providers))]
     public async Task Unauthorized_IsDistinctFromSuccessfulEmpty(string providerId)
     {
         using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized));

@@ -1,6 +1,8 @@
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
+import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
+import { ExecutionJournalPanel } from "./trading-screen.journal";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { useLocation } from "react-router-dom";
 import { StatusBadge } from "@/design-system/status";
@@ -18,6 +20,7 @@ import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
 import { OverflowMenu } from "@/components/ui/overflow-menu";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
+import { TradingOrderTicketForm } from "@/screens/trading-screen.order-ticket-form";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
@@ -38,7 +41,9 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { DetailPane } from "@/components/meridian/detail-pane";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
@@ -79,6 +84,7 @@ import {
 } from "@/screens/trading-screen.view-model";
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
+import { ExecutionJourneyPanel } from "@/screens/execution-journey";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -87,6 +93,7 @@ import { pluralizeCount } from "@/lib/format";
 import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { withTradingHeadlineEvidence } from "@/screens/trading-screen.headline-evidence";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { TextArea } from "@/components/ui/text-area";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -107,15 +114,8 @@ const dataToneClass: Record<TradingDataTone, string> = {
   muted: "text-muted-foreground"
 };
 
-const dataTonePanelClass: Record<TradingDataTone, string> = {
-  default: "border-border/70",
-  success: "border-success/35 bg-success/10",
-  warning: "border-warning/35 bg-warning/10",
-  danger: "border-danger/35 bg-danger/10",
-  muted: "border-border/70 bg-secondary/20"
-};
-
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
+const TRADING_QUOTE_PRICE_BASIS = "Prices in source quote units · currency not supplied.";
 
 
 /**
@@ -157,6 +157,10 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
     description: "Guardrail posture, execution controls, and adapter health."
   }
 };
+
+function tradingExportColumns<T>(columns: DenseDataTableColumn<T>[], values: Record<string, (row: T) => CsvCell>): TableWorkbenchColumn<T>[] {
+  return columns.map((column) => ({ ...column, exportValue: values[column.id] }));
+}
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
@@ -451,8 +455,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
-  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
-    ?? normalizeFundAccountGuid(data?.brokerage?.account);
+  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
@@ -481,8 +484,23 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const selectedPositionRow = blotterVm.positionRows.find((row) => row.id === blotterVm.selectedPositionRowId) ?? null;
   const selectedOrderRow = blotterVm.orderRows.find((row) => row.id === blotterVm.selectedOrderRowId) ?? null;
-  const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
-  const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
+  const journeyOrderId = blotterVm.selectedExecutionKind === "fill"
+    ? blotterVm.fillRows.find((row) => row.id === blotterVm.selectedFillRowId)?.orderId
+    : selectedOrderRow?.orderId;
+  const positionColumns = React.useMemo(() => tradingExportColumns(buildPositionColumns(confirmVm), {
+    "mark-readiness": (row) => row.markFreshness.label,
+    symbol: (row) => row.symbol, side: (row) => row.side, quantity: (row) => row.quantity,
+    average: (row) => row.averagePrice, mark: (row) => row.markPrice,
+    "day-pnl": (row) => row.dayPnl, unrealized: (row) => row.unrealizedPnl, exposure: (row) => row.exposure
+  }), [confirmVm]);
+  const orderColumns = React.useMemo(() => tradingExportColumns(buildOrderColumns(confirmVm), {
+    order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side, type: (row) => row.type,
+    quantity: (row) => row.quantity, limit: (row) => row.limitPrice, status: (row) => row.status, submitted: (row) => row.submittedAt
+  }), [confirmVm]);
+  const exportedFillColumns = React.useMemo(() => tradingExportColumns(fillColumns, {
+    fill: (row) => row.fillId, order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side,
+    quantity: (row) => row.quantity, price: (row) => row.price, venue: (row) => row.venue, timestamp: (row) => row.timestamp
+  }), []);
 
   const paperSessions = usePaperSessionsViewModel({
     onSessionEvidenceChanged: refreshSessionEvidence
@@ -591,26 +609,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     brokerFreshness
   });
 
-  return (
-    <div className="space-y-5">
-      {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
-          navigation is the sidebar's job alone (no in-page tab strip). */}
-      <section
-        id="trading-overview"
-        role="region"
-        aria-label="Execution cockpit context"
-        className="min-w-0"
-      >
-        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-          {routeCopy.title}
-        </h2>
-        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-          {routeCopy.description}
-        </p>
-      </section>
-
-      <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />
-
+  const tradingConfidence = (
       <OperationalTrustSummary
         label="Trading data confidence"
         source={{
@@ -644,12 +643,36 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: readinessTone
         } : undefined}
       />
+  );
+
+  return (
+    <div className={showOverview ? "space-y-5" : "space-y-2"}>
+      {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
+          navigation is the sidebar's job alone (no in-page tab strip). */}
+      <section
+        id="trading-overview"
+        role="region"
+        aria-label="Execution cockpit context"
+        className="min-w-0"
+      >
+        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+          {routeCopy.title}
+        </h2>
+        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          {routeCopy.description}
+        </p>
+      </section>
+
+      {showOverview ? <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" /> : null}
+
+      {showOverview ? tradingConfidence : null}
 
       {/* The full recovery workspace belongs to the overview; every other route keeps one
           blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
       <BrokerageRecoveryPanel
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
+        brokerageEnvironment={data?.brokerage.environment ?? null}
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}
@@ -704,8 +727,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <h3 id="trading-exceptions-heading" className="workspace-section-title">Risk and adapter exceptions</h3>
           </div>
         </div>
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="panel-surface">
+      <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <Card className="panel-surface min-w-0">
           <CardHeader>
             <div className="eyebrow-label">Risk State</div>
             <CardTitle className="flex items-center gap-2">
@@ -766,7 +789,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           </CardContent>
         </Card>
 
-        <Card className="panel-surface-strong bg-panel-strong">
+        <Card className="panel-surface-strong min-w-0 bg-panel-strong">
           <CardHeader>
             <div className="eyebrow-label">Brokerage Wiring</div>
             <CardTitle className="flex items-center gap-2">
@@ -828,8 +851,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <DenseDataTable
-              tableId="trading-positions"
+            <TableWorkbench
+              workbenchId="trading-positions" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All positions in the current authorized workspace snapshot; source decimal text and recorded money strings retained without recalculation."
+              completePopulation getSearchText={(row) => `${row.symbol} ${row.side} ${row.quantity} ${row.exposure}`}
               ariaLabel={blotterVm.positionsTableLabel}
               caption="Select a position to update the position detail status window."
               columns={positionColumns}
@@ -851,6 +876,9 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ) : null}
 
       {showOrders ? (
+        <ExecutionJournalPanel accountId={fundAccountId} />
+      ) : null}
+      {showOrders ? (
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0">
@@ -859,6 +887,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             id={blotterVm.executionDetailId}
             objectType={blotterVm.selectedExecutionKind === "fill" ? "Fill" : "Order"}
             detail={blotterVm.selectedExecution}
+            priceBasis={TRADING_QUOTE_PRICE_BASIS}
             emptyText={blotterVm.executionEmptyText}
             action={blotterVm.selectedExecutionKind === "order" && selectedOrderRow ? (
               <Button
@@ -871,6 +900,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </Button>
             ) : null}
           />
+          {journeyOrderId ? <ExecutionJourneyPanel key={`${fundAccountId}:${data.brokerage.account}:${journeyOrderId}`} orderId={journeyOrderId} fills={data.fills} /> : null}
         </div>
       )}>
 
@@ -911,163 +941,18 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           {orderTicket.open && (
-            <CardContent id={orderTicket.formId} className="border-b border-border/60 pb-6">
-              <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.symbol.label}</label>
-                    <Input
-                      id={orderTicket.controls.symbol.id}
-                      type="text"
-                      placeholder="AAPL"
-                      value={orderTicket.controls.symbol.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.symbol.field, e.target.value)}
-                      onBlur={orderTicket.normalizeSymbol}
-                      aria-label={orderTicket.controls.symbol.ariaLabel}
-                      aria-describedby={orderTicket.controls.symbol.describedBy}
-                      error={orderTicket.controls.symbol.invalid}
-                      className="font-mono"
-                      required={orderTicket.controls.symbol.required}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.side.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.side.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.side.label}</label>
-                    <Select
-                      id={orderTicket.controls.side.id}
-                      value={orderTicket.controls.side.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.side.field, e.target.value)}
-                      aria-label={orderTicket.controls.side.ariaLabel}
-                      aria-describedby={orderTicket.controls.side.describedBy}
-                      required={orderTicket.controls.side.required}
-                    >
-                      {orderTicket.controls.side.options.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.type.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.type.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.type.label}</label>
-                    <Select
-                      id={orderTicket.controls.type.id}
-                      value={orderTicket.controls.type.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.type.field, e.target.value)}
-                      aria-label={orderTicket.controls.type.ariaLabel}
-                      aria-describedby={orderTicket.controls.type.describedBy}
-                      required={orderTicket.controls.type.required}
-                    >
-                      {orderTicket.controls.type.options.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <label htmlFor={orderTicket.controls.quantity.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.quantity.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.quantity.label}</label>
-                    <Input
-                      id={orderTicket.controls.quantity.id}
-                      type="number"
-                      min={1}
-                      step={1}
-                      value={orderTicket.controls.quantity.value}
-                      onChange={(e) => orderTicket.updateField(orderTicket.controls.quantity.field, e.target.value)}
-                      aria-label={orderTicket.controls.quantity.ariaLabel}
-                      aria-describedby={orderTicket.controls.quantity.describedBy}
-                      error={orderTicket.controls.quantity.invalid}
-                      className="font-mono"
-                      required={orderTicket.controls.quantity.required}
-                    />
-                  </div>
-                  {orderTicket.controls.limitPrice && (
-                    <div className="space-y-1">
-                      <label htmlFor={orderTicket.controls.limitPrice.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.limitPrice.label) && "uppercase tracking-[0.14em]")}>
-                        {orderTicket.controls.limitPrice.label}
-                      </label>
-                      <Input
-                        id={orderTicket.controls.limitPrice.id}
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={orderTicket.controls.limitPrice.value}
-                        onChange={(e) => orderTicket.controls.limitPrice && orderTicket.updateField(orderTicket.controls.limitPrice.field, e.target.value)}
-                        aria-label={orderTicket.controls.limitPrice.ariaLabel}
-                        aria-describedby={orderTicket.controls.limitPrice.describedBy}
-                        error={orderTicket.controls.limitPrice.invalid}
-                        className="font-mono"
-                        required={orderTicket.controls.limitPrice.required}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <p id={orderTicket.requirementId} className="text-xs text-muted-foreground">
-                  {orderTicket.requirementText}
-                </p>
-                <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
-
+            <TradingOrderTicketForm
+              orderTicket={orderTicket}
+              preview={<>
                 <OrderPreviewPanel preview={orderTicket.preview} />
-
-                <label
-                  htmlFor={orderTicket.acknowledgement.id}
-                  className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-                >
-                  <input
-                    id={orderTicket.acknowledgement.id}
-                    type="checkbox"
-                    checked={orderTicket.acknowledgement.checked}
-                    disabled={orderTicket.acknowledgement.disabled}
-                    onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
-                    aria-describedby={joinDescribedByIds(
-                      `${orderTicket.acknowledgement.id}-description`,
-                      `${orderTicket.acknowledgement.id}-disabled-reason`
-                    )}
-                    className="mt-1 h-4 w-4 accent-primary"
-                  />
-                  <span>
-                    <span className="block font-medium text-foreground">{orderTicket.acknowledgement.label}</span>
-                    <span id={`${orderTicket.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
-                      {orderTicket.acknowledgement.description}
-                    </span>
-                    <FieldSupportText
-                      disabledReason={orderTicket.acknowledgement.disabledReason}
-                      disabledReasonId={`${orderTicket.acknowledgement.id}-disabled-reason`}
-                      disabledReasonClassName="mt-1 block"
-                    />
-                  </span>
-                </label>
-
-                {orderTicket.errorText && (
-                  <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
-                    <XCircle className="h-4 w-4 shrink-0" />
-                    {orderTicket.errorText}
-                  </div>
-                )}
-
-                <div className="panel-action-zone justify-start">
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={!orderTicket.canSubmit}
-                    disabledReason={orderTicket.submitDisabledReason}
-                    busy={orderTicket.submitBusy}
-                    busyLabel={orderTicket.submitBusyLabel}
-                    aria-label={orderTicket.submitAriaLabel}
-                    aria-describedby="order-ticket-requirements"
-                  >
-                    {orderTicket.submitButtonLabel}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={orderTicket.closeTicket}
-                    disabled={!orderTicket.canClose}
-                    disabledReason={orderTicket.closeDisabledReason}
-                    aria-label={orderTicket.closeAriaLabel}
-                  >
-                    {orderTicket.closeButtonLabel}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
+                <ServerOrderPreviewPanel
+                  preview={orderTicket.serverPreview} error={orderTicket.serverPreviewError}
+                  loading={orderTicket.serverPreviewLoading} expired={orderTicket.serverPreviewExpired}
+                  sessionIntent={orderTicket.sessionIntent} onSessionIntent={orderTicket.setSessionIntent}
+                  onRefresh={orderTicket.refreshServerPreview}
+                />
+              </>}
+            />
           )}
           {!orderTicket.open && (
             <OrderStatusBanner
@@ -1077,8 +962,11 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             />
           )}
           <CardContent className="space-y-3">
-            <DenseDataTable
-              tableId="trading-orders"
+            <TableWorkbench
+              workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
+              completePopulation getSearchText={(row) => `${row.orderId} ${row.symbol} ${row.side} ${row.type} ${row.status}`}
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."
               columns={orderColumns}
@@ -1086,12 +974,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               getRowId={(order) => order.id}
               getRowAriaLabel={(order) => order.ariaLabel}
               getRowSelectAriaLabel={(order) => order.selectAriaLabel}
-              getRowAriaControls={(order) => order.detailPanelId}
+              getRowAriaControls={() => blotterVm.executionDetailId}
               getRowAriaExpanded={(order) => order.ariaExpanded}
               selectedRowId={blotterVm.selectedOrderRowId}
               onRowSelect={(order) => blotterVm.selectOrder(order.id)}
               emptyText={blotterVm.orderEmptyText}
             />
+            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
 
@@ -1111,20 +1000,25 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <DenseDataTable
+            <TableWorkbench
+              workbenchId="trading-fills" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All recent fills in the authorized workspace snapshot, not a complete historical execution ledger."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
+              completePopulation getSearchText={(row) => `${row.fillId} ${row.orderId} ${row.symbol} ${row.side} ${row.venue}`}
               ariaLabel={blotterVm.fillsTableLabel}
               caption="Select a fill to update the fill detail status window."
-              columns={fillColumns}
+              columns={exportedFillColumns}
               rows={blotterVm.fillRows}
               getRowId={(fill) => fill.id}
               getRowAriaLabel={(fill) => fill.ariaLabel}
               getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
-              getRowAriaControls={(fill) => fill.detailPanelId}
+              getRowAriaControls={() => blotterVm.executionDetailId}
               getRowAriaExpanded={(fill) => fill.ariaExpanded}
               selectedRowId={blotterVm.selectedFillRowId}
               onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
               emptyText={blotterVm.fillEmptyText}
             />
+            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
         </div>
@@ -1406,14 +1300,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               <label htmlFor={strategyLifecycle.strategyIdInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(strategyLifecycle.strategyIdLabel) && "uppercase tracking-[0.14em]")}>
                 {strategyLifecycle.strategyIdLabel}
               </label>
-              <input
+              <Input
                 id={strategyLifecycle.strategyIdInputId}
                 type="text"
                 placeholder={strategyLifecycle.strategyIdPlaceholder}
                 value={strategyLifecycle.strategyId}
                 aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
                 onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full font-mono text-sm"
               />
               <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
                 {strategyLifecycle.helpText}
@@ -1635,7 +1529,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.runId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.runId.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.runId.id}
                   aria-label={promotionGate.fields.runId.ariaLabel}
                   placeholder={promotionGate.fields.runId.placeholder}
@@ -1643,7 +1537,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.runId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.runId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full font-mono text-sm"
                 />
                 {promotionGate.fields.runId.helpText ? (
                   <span id={promotionGate.fields.runId.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.runId.helpText}</span>
@@ -1651,7 +1545,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </label>
               <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvedBy.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvedBy.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.approvedBy.id}
                   aria-label={promotionGate.fields.approvedBy.ariaLabel}
                   placeholder={promotionGate.fields.approvedBy.placeholder}
@@ -1659,14 +1553,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.approvedBy.field, e.target.value)}
                   aria-describedby={promotionGate.fields.approvedBy.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full text-sm"
                   required={promotionGate.fields.approvedBy.required}
                 />
               </label>
             </div>
             <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
               <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvalReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvalReason.label}</span>
-              <input
+              <Input
                 id={promotionGate.fields.approvalReason.id}
                 aria-label={promotionGate.fields.approvalReason.ariaLabel}
                 placeholder={promotionGate.fields.approvalReason.placeholder}
@@ -1674,13 +1568,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.approvalReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.approvalReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full text-sm"
                 required={promotionGate.fields.approvalReason.required}
               />
             </label>
             <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
               <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.rejectionReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.rejectionReason.label}</span>
-              <input
+              <Input
                 id={promotionGate.fields.rejectionReason.id}
                 aria-label={promotionGate.fields.rejectionReason.ariaLabel}
                 placeholder={promotionGate.fields.rejectionReason.placeholder}
@@ -1688,13 +1582,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.rejectionReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.rejectionReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full text-sm"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.reviewNotes.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.reviewNotes.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.reviewNotes.id}
                   aria-label={promotionGate.fields.reviewNotes.ariaLabel}
                   placeholder={promotionGate.fields.reviewNotes.placeholder}
@@ -1702,12 +1596,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.reviewNotes.field, e.target.value)}
                   aria-describedby={promotionGate.fields.reviewNotes.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full text-sm"
                 />
               </label>
               <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.manualOverrideId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.manualOverrideId.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.manualOverrideId.id}
                   aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
                   placeholder={promotionGate.fields.manualOverrideId.placeholder}
@@ -1715,13 +1609,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.manualOverrideId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.manualOverrideId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full font-mono text-sm"
                 />
               </label>
             </div>
             <label htmlFor={promotionGate.fields.evidenceReferences.id} className="grid gap-1 text-sm">
               <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.evidenceReferences.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.evidenceReferences.label}</span>
-              <textarea
+              <TextArea rows={2}
                 id={promotionGate.fields.evidenceReferences.id}
                 aria-label={promotionGate.fields.evidenceReferences.ariaLabel}
                 placeholder={promotionGate.fields.evidenceReferences.placeholder}
@@ -1729,7 +1623,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.evidenceReferences.field, e.target.value)}
                 aria-describedby={promotionGate.fields.evidenceReferences.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-24 w-full font-mono text-sm"
               />
               {promotionGate.fields.evidenceReferences.helpText ? (
                 <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>
@@ -1856,6 +1750,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </SheetContent>
       </Sheet>
 
+      {!showOverview ? <TechnicalDetails label="Trading metrics and data confidence"><StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />{tradingConfidence}</TechnicalDetails> : null}
       <ConfirmActionDialog vm={confirmVm} />
       <SessionCloseConfirmationDialog
         sessionId={sessionCloseTarget}
@@ -2167,6 +2062,15 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         </DialogHeader>
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
 
+        {vm.state.action?.kind === "cancel-all" && vm.state.cancelAllPreview ? (
+          <details className="border-y border-border py-2 text-sm">
+            <summary className="cursor-pointer">Review {vm.state.cancelAllPreview.orderIds.length} open order identities</summary>
+            <ul className="mt-2 max-h-48 overflow-auto" aria-label="OMS open orders at review">
+              {vm.state.cancelAllPreview.orderIds.map((orderId) => <li key={orderId} className="font-mono text-xs">{orderId}</li>)}
+            </ul>
+          </details>
+        ) : null}
+
         {vm.errorPanel && (
           <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
             <XCircle className="h-4 w-4 shrink-0" />
@@ -2194,6 +2098,12 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
               <span className="font-semibold">{vm.resultPanel.status}</span>
             </div>
             <p>{vm.resultPanel.message}</p>
+            {vm.state.result?.brokerViewUnavailable ? <p>The broker open book could not be verified. Review broker state before relying on the cancellation outcome.</p> : null}
+            {vm.state.result?.stillWorking?.length ? (
+              <ul aria-label="Orders still working after cancellation" className="max-h-48 overflow-auto text-xs">
+                {vm.state.result.stillWorking.map((order) => <li key={order.orderId} className="font-mono">{order.orderId}: {order.reason}</li>)}
+              </ul>
+            ) : null}
             <p className="mt-1 font-mono text-xs opacity-70">Action ID: {vm.resultPanel.actionId}</p>
           </div>
         )}
@@ -2332,7 +2242,8 @@ function TradingBlotterDetailPanel({
   objectType,
   detail,
   emptyText,
-  action
+  action,
+  priceBasis
 }: {
   id: string;
   objectType: string;
@@ -2340,6 +2251,7 @@ function TradingBlotterDetailPanel({
   emptyText: string;
   /** The next action for the selected row, e.g. cancel the order. */
   action?: ReactNode;
+  priceBasis?: string;
 }) {
   return (
     <DetailPane
@@ -2350,11 +2262,11 @@ function TradingBlotterDetailPanel({
       status={detail ? { label: detail.statusLabel, tone: detail.statusTone } : null}
       subtitle={detail?.subtitle}
       summary={detail?.detail}
+      notice={detail && priceBasis ? <p className="text-xs text-muted-foreground">{priceBasis}</p> : null}
       actions={detail ? action : null}
       fields={detail?.fields}
       shownInRow={detail?.shownInRow}
       empty={{ text: emptyText }}
-      className={detail ? dataTonePanelClass[detail.statusTone] : undefined}
     />
   );
 }

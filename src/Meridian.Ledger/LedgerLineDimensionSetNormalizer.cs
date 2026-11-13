@@ -30,7 +30,14 @@ internal static class LedgerLineDimensionSetNormalizer
             VendorId: TextPrimitives.NormalizeOptional(dimensions.VendorId),
             ProjectId: TextPrimitives.NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+            AccountingArrangementId = TextPrimitives.NormalizeOptional(dimensions.AccountingArrangementId),
+            AccountingArrangementRevisionId = TextPrimitives.NormalizeOptional(dimensions.AccountingArrangementRevisionId),
+            ChartAccountNodeId = TextPrimitives.NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = TextPrimitives.NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = TextPrimitives.NormalizeOptional(dimensions.IntercompanyTransactionId)
         };
 
         return HasAnyCanonical(canonical) ? canonical : null;
@@ -42,6 +49,8 @@ internal static class LedgerLineDimensionSetNormalizer
     private static bool HasAnyCanonical(LedgerLineDimensionSet dimensions)
         => dimensions.InstrumentId is not null
             || dimensions.PositionId is not null
+            || dimensions.IntercompanyAgreementId is not null
+            || dimensions.IntercompanyAgreementVersion is not null
             || dimensions.ExternalGlDimensions.Count > 0
             || LedgerLineDimensionSetFields.StringFields.Any(field => field.GetValue(dimensions) is not null);
 
@@ -55,6 +64,8 @@ internal static class LedgerLineDimensionSetNormalizer
 
         return Matches(canonicalActual.InstrumentId, canonicalExpected.InstrumentId)
             && Matches(canonicalActual.PositionId, canonicalExpected.PositionId)
+            && Matches(canonicalActual.IntercompanyAgreementId, canonicalExpected.IntercompanyAgreementId)
+            && (canonicalExpected.IntercompanyAgreementVersion is null || canonicalActual.IntercompanyAgreementVersion == canonicalExpected.IntercompanyAgreementVersion)
             && LedgerLineDimensionSetFields.StringFields.All(field =>
                 Matches(field.GetValue(canonicalActual), field.GetValue(canonicalExpected)))
             && MatchesExternalGlDimensions(canonicalActual.ExternalGlDimensions, canonicalExpected.ExternalGlDimensions);

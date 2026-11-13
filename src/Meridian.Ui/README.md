@@ -6,18 +6,48 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Ui
+
+The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
+
+The served bundle also includes linked analytical investigation views across the existing workspaces: orders, displayed depth, options, margin, maturities, ownership, retained private capital, fixed-income exercises, corporate dates, tax parcels and retained strategy sweeps. The dashboard and shared-source READMEs document their source, unit and authority boundaries; generated assets must be rebuilt after integration.
+
+The served Accounting configuration bundle includes the intercompany agreement registry, immutable
+revision/evidence inspection and governed proposal review over shared tenant-scoped APIs. Optional
+journal-line reference editing follows the server's rollout capability; the browser retains exact
+rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
+
+The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
+rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
+preserve exact decimal text from fixed-income responses; calculation and review authority remains
+in the shared services. See the dashboard README for these workflows and rebuild validation.
 
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
 after source changes; the shared analytics endpoint remains the calculation authority.
 
+The browser `/accounting/capital-calls` workflow consumes the shared commitment-to-cash API and
+retained reporting notice summaries. It presents commitment approval, call planning, posted activity,
+funding review and notice governance as distinct states. No browser-local balances, WPF state fork,
+new root navigation or live payment capability is introduced. See the dashboard and UI Shared
+READMEs for the exact support boundary and validation.
+
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
 runtime requirements remain declared in its package manifest and checked before dependency work.
+
+The rebuilt browser assets include the current design-system date and keyboard adapters and
+current-view print styling. Printed views retain mounted selection, financial context, session and
+provenance; printing does not fetch unmounted records or change report authority.
+
+Run Ledger Explorer includes an inclusive UTC as-of date and accounting-package downloads in
+CSV, Excel, Parquet, or Arrow. The shared API enforces run visibility and supplies journal,
+trial-balance, cash-flow, and available retained lot schedules; missing lot evidence is explicit
+in the package. Rebuild `dashboard/` to refresh the checked-in workstation bundle.
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 
@@ -106,11 +136,30 @@ slug-shaped identifier, an unexplained disabled primary button, or a status bar 
 the page. No shared contract changed; routes whose read models name records only by key are listed
 with reasons in `scripts/dev/web-screenshot-routes.json`.
 
+It also carries the Phase 3 trust fixes from the same plan:
+- Data overview shows a provider's "Latency" only as a reported duration or "Latency not
+  reported"; the "Trust / last good" column keeps the last response time.
+- Today lists the finance queue that the sidebar badges count, above the operator inbox, and each
+  count names its unit (for example "+5 more issues" in the status bar).
+- Trading shows a neutral "Choose a fund account" state instead of a red recovery block when no
+  account is in scope in a non-live brokerage environment; live, unknown and failed states still
+  block.
+- A metric basis the source does not declare reads "Not declared by source" once per strip.
+- The screenshot harness fails a route that shows a time under "Latency" or a "Basis unavailable"
+  or "Saved views unavailable" placeholder.
+
+No shared contract changed.
+
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency
 precision with journal-ID links, no invented Strategy metrics, and a masthead activation chip that
 leaves once setup is complete. No shared contract changed; entity display names still need a
 shared seam before the ledger can show them.
+
+Dashboard source includes signed report-value summaries, a retained investment-income movement
+waterfall with exact-decimal bridge checks, and position-table display graphics. Financial strings,
+missing observations, shared mark assessments and retained supporting-record paths remain visible.
+The host-served bundle is rebuilt from these dashboard changes.
 
 ## Purpose
 
@@ -178,6 +227,9 @@ endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`
 The generated route table includes the income cash-flow, factor-history and term-block
 Security Master routes.
 
+The host-served bundle includes Trading's governed approvals panel showing each parked order's
+economic terms from the shared escalation contract. Rebuild it from `dashboard/` after source changes.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
@@ -187,6 +239,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W3-CONT-001` | Research to paper continuity |
 <!-- source-roadmap-traceability:end -->

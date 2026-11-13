@@ -28,7 +28,7 @@ public interface IAccountingPostingCandidatePostService
 /// <summary>
 /// Posts reviewed accounting candidates while checking approval, reference, and ledger authority.
 /// </summary>
-public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
+public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService, IAccountingCashDividendAttestedPostService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -40,7 +40,6 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
     private readonly IBondCalculationPolicy? _bondCalculationPolicy;
     private readonly IBondSettlementConsiderationService? _bondSettlementConsiderationService;
     private readonly Func<CancellationToken, Task>? _termsCapabilityCheck;
-
     public AccountingPostingCandidatePostService(
         IAccountingPostingCandidateWriteBuilder candidateBuilder,
         ILedgerJournalStore? journalStore = null,
@@ -49,7 +48,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         IAccountingPostingCandidateAuthorityBuilder? authorityBuilder = null,
         IBondCalculationPolicy? bondCalculationPolicy = null,
         IBondSettlementConsiderationService? bondSettlementConsiderationService = null,
-        Func<CancellationToken, Task>? termsCapabilityCheck = null)
+        Func<CancellationToken, Task>? termsCapabilityCheck = null, IInstrumentPositionProjectionStore? instrumentPositions = null)
     {
         _candidateBuilder = candidateBuilder ?? throw new ArgumentNullException(nameof(candidateBuilder));
         _authorityBuilder = authorityBuilder ?? candidateBuilder as IAccountingPostingCandidateAuthorityBuilder;
@@ -61,11 +60,10 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         // The Security Master terms capability floor check (the Application verifier, which this layer
         // cannot reference), asked before a new amortization batch opens its posting transaction.
         _termsCapabilityCheck = termsCapabilityCheck;
+        _instrumentPositions = instrumentPositions;
     }
-
     /// <summary>The composed terms capability floor check, or null when none was composed (pinned by composition tests).</summary>
     internal Func<CancellationToken, Task>? TermsCapabilityCheck => _termsCapabilityCheck;
-
     public async Task<PostedPostingRuleJournalCandidateResultDto> PostCandidateAsync(
         PostPostingRuleJournalCandidateRequestDto request,
         CancellationToken ct = default)
@@ -74,23 +72,12 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Candidate);
 
-        if (!OperationsOriginGuard.IsHumanOperator(request.ActionOrigin))
-        {
-            throw new HumanOperatorRequiredException(
-                "post generated accounting posting candidates",
-                "Generated accounting posting candidates require a human-operator action origin before append.");
-        }
+        OperationsOriginGuard.RequireHumanOperator(request.ActionOrigin, "post generated accounting posting candidates");
 
         var journalStore = _journalStore
             ?? throw new InvalidOperationException("Generated accounting posting candidates cannot be posted because no Postgres-backed ledger journal store is configured.");
         var actor = RequireText(request.Actor, nameof(request.Actor));
-        var preparer = RequireText(request.Candidate.Actor, nameof(request.Candidate.Actor));
-        if (string.Equals(actor, preparer, StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("Generated accounting posting candidates require approval by an operator independent from the candidate preparer.");
-        }
-
-        var approvalId = RequireText(request.ApprovalId, nameof(request.ApprovalId));
+        var approvalId = RequireIndependentPostingApproval(request, actor);
         var ledgerBookId = request.Candidate.LedgerBookId
             ?? throw new ArgumentException("Generated accounting posting candidates require a ledger book id.", nameof(request));
         if (ledgerBookId == Guid.Empty)
@@ -463,7 +450,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
 
             var hasDrafted = HasStage(retained.Projection, AssetAccountingLifecycleStageDto.Drafted);
             var hasApproved = HasStage(retained.Projection, AssetAccountingLifecycleStageDto.Approved);
-            if (drafted is null && hasDrafted && !hasApproved)
+            if (drafted is null && hasDrafted && !hasApproved
+                && !HasStage(retained.Projection, AssetAccountingLifecycleStageDto.PreparerAttested))
             {
                 drafted = retained;
             }
@@ -504,7 +492,9 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             candidate.ExpectedPeriodVersion!.Value,
             rulePack.RulePackId,
             rulePack.RulePackVersion,
-            drafted.Projection.Scope.ExpectedSecurityVersion);
+            drafted.Projection.Scope.ExpectedSecurityVersion,
+            CanonicalInstrumentSymbol: eventKind == AssetAccountingEventKindDto.CorporateAction
+                && drafted.Projection.DraftedLotMutation is null ? drafted.Projection.DraftedCandidate!.InstrumentSymbol : null);
         return new AssetPostingAuthoritySnapshot(projected, drafted, latest, context);
     }
 
@@ -964,35 +954,6 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         }
     }
 
-    private static bool LedgerDimensionsEqual(
-        LedgerLineDimensionSet? durable,
-        LedgerDimensionSetDto? expected)
-    {
-        if (durable is null && expected is null)
-            return true;
-        if (durable is null || expected is null)
-            return false;
-        return string.Equals(durable.FundId, expected.FundId, StringComparison.Ordinal) &&
-               string.Equals(durable.EntityId, expected.EntityId, StringComparison.Ordinal) &&
-               string.Equals(durable.SleeveId, expected.SleeveId, StringComparison.Ordinal) &&
-               string.Equals(durable.StrategyId, expected.StrategyId, StringComparison.Ordinal) &&
-               string.Equals(durable.InvestorId, expected.InvestorId, StringComparison.Ordinal) &&
-               string.Equals(durable.CapitalAccountId, expected.CapitalAccountId, StringComparison.Ordinal) &&
-               durable.InstrumentId == expected.InstrumentId && durable.PositionId == expected.PositionId &&
-               string.Equals(durable.TaxLotId, expected.TaxLotId, StringComparison.Ordinal) &&
-               string.Equals(durable.CostCenterId, expected.CostCenterId, StringComparison.Ordinal) &&
-               string.Equals(durable.CounterpartyId, expected.CounterpartyId, StringComparison.Ordinal) &&
-               string.Equals(durable.OrganizationId, expected.OrganizationId, StringComparison.Ordinal) &&
-               string.Equals(durable.PortfolioId, expected.PortfolioId, StringComparison.Ordinal) &&
-               string.Equals(durable.BookId, expected.BookId, StringComparison.Ordinal) &&
-               string.Equals(durable.AccountId, expected.AccountId, StringComparison.Ordinal) &&
-               string.Equals(durable.CustomerId, expected.CustomerId, StringComparison.Ordinal) &&
-               string.Equals(durable.VendorId, expected.VendorId, StringComparison.Ordinal) &&
-               string.Equals(durable.ProjectId, expected.ProjectId, StringComparison.Ordinal) &&
-               durable.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-                   .SequenceEqual(expected.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.Ordinal));
-    }
-
     private static void ValidateDurableApprovalEvidence(
         IReadOnlyList<RetainedEvidenceIdentityDto> expected,
         IReadOnlyList<JournalEvidenceReference> durable)
@@ -1123,6 +1084,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                 "Acquisition lot date must equal the retained event effective date.");
             RequireAssetAssertion(acquisition.Quantity * acquisition.UnitCost == request.Candidate.EventAmount,
                 "Acquisition quantity times unit cost must equal the retained event amount.");
+            if (acquisition.BondIncome is not null)
+                await RequireAdoptedAcquisitionOwnerAsync(acquisition, authority.Context, ledgerBook, approvedWrite, ct).ConfigureAwait(false);
             var account = ResolveAcquisitionLotAccount(
                 approvedWrite.Entry,
                 authority.Drafted.Projection.DraftedCandidateResult!,
@@ -1195,7 +1158,7 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                         request.AcquisitionTermsCompletion is { } completion
                             ? [.. request.Candidate.RetainedEvidence, completion.Evidence]
                             : request.Candidate.RetainedEvidence,
-                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request)) with
+                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request), acquisition.BondIncome) with
                     { Direction = instruction.Direction }
                 };
             }
@@ -1440,32 +1403,6 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
 
         return impact;
     }
-
-    private static LedgerDimensionSetDto? ToDimensionDto(LedgerLineDimensionSet? dimensions)
-        => dimensions is null
-            ? null
-            : new LedgerDimensionSetDto(
-                dimensions.FundId,
-                dimensions.EntityId,
-                dimensions.SleeveId,
-                dimensions.StrategyId,
-                dimensions.InvestorId,
-                dimensions.CapitalAccountId,
-                dimensions.InstrumentId,
-                dimensions.TaxLotId,
-                dimensions.CostCenterId,
-                dimensions.CounterpartyId,
-                dimensions.ExternalGlDimensions,
-                dimensions.OrganizationId,
-                dimensions.PortfolioId,
-                dimensions.BookId,
-                dimensions.AccountId,
-                dimensions.CustomerId,
-                dimensions.VendorId,
-                dimensions.ProjectId)
-            {
-                PositionId = dimensions.PositionId
-            };
 
     private static IReadOnlyList<AssetAccountingStageEvidenceDto> BuildPostedLifecycleStages(
         PostPostingRuleJournalCandidateRequestDto request,

@@ -327,16 +327,24 @@ public static class SecurityTermsEnvelope
         reason = null;
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
         var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
-        if (reads == writes)
-        {
-            return false;
-        }
-
         var declaredVersion = ResolveAssetClassTermsVersion(payload);
         if (declaredVersion > reads)
         {
             return false;
         }
+
+        if (!IsProfileGovernedPayload(assetClass, payload))
+        {
+            var unavailable = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, 1)
+                .FirstOrDefault(term => !term.Field.AuthoringEnabled);
+            if (unavailable.Field is not null)
+            {
+                reason = DescribeAuthoringDisabled(unavailable.Path);
+                return true;
+            }
+        }
+        if (reads == writes)
+            return false;
 
         if (declaredVersion > writes)
         {
@@ -377,6 +385,9 @@ public static class SecurityTermsEnvelope
     /// The shared reason a term this node reads cannot be set by it: the refusal every write path,
     /// term-block amend and field edit gives for a term introduced above the class's write version.
     /// </summary>
+    public static string DescribeAuthoringDisabled(string path)
+        => $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
+
     public static string DescribeNotYetWritable(string assetClass, string path, int sinceTermsVersion)
         => $"'{path}' is an asset-class terms version {sinceTermsVersion} term of '{assetClass}'. This node reads it but writes " +
            $"{AssetClassTermsVersionKey} {SecurityAssetClassCatalog.GetTermsVersion(assetClass)}, so a create, amend, import or field edit " +
@@ -459,8 +470,20 @@ public static class SecurityTermsEnvelope
     /// null or absent, or a schedule it has as an empty array. Envelope keys of the retained document
     /// are never folded. The result is the economic record the original economic event described,
     /// updated by whatever the flat revision changed.
+    /// <para>
+    /// <paramref name="flatAuthoritativeFields"/> names the module fields the flat row carries
+    /// exactly (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields"/>).
+    /// The retained document never fills one of those: the row could carry it, so an empty value in
+    /// the rebuild means the flat revision cleared it — covenants removed, a principal schedule
+    /// dropped — and putting the old value back would make the economic record contradict its
+    /// flat terms and resurrect the cleared value on the next replay. A retained module that
+    /// holds nothing else is not folded at all.
+    /// </para>
     /// </summary>
-    public static JsonElement FoldRetainedEconomicTerms(JsonElement rebuiltEconomicTerms, JsonElement retainedEconomicTerms)
+    public static JsonElement FoldRetainedEconomicTerms(
+        JsonElement rebuiltEconomicTerms,
+        JsonElement retainedEconomicTerms,
+        IReadOnlyCollection<(string Module, string Field)>? flatAuthoritativeFields = null)
     {
         if (rebuiltEconomicTerms.ValueKind != JsonValueKind.Object
             || retainedEconomicTerms.ValueKind != JsonValueKind.Object
@@ -476,39 +499,83 @@ public static class SecurityTermsEnvelope
                 continue;
             }
 
+            var retainedModule = JsonNode.Parse(module.Value.GetRawText());
+            if (retainedModule is JsonObject retainedFields && flatAuthoritativeFields is { Count: > 0 })
+            {
+                var cleared = false;
+                foreach (var (authoritativeModule, authoritativeField) in flatAuthoritativeFields)
+                {
+                    if (string.Equals(authoritativeModule, module.Name, StringComparison.Ordinal)
+                        && retainedFields.TryGetPropertyValue(authoritativeField, out var held)
+                        && held is not null)
+                    {
+                        retainedFields[authoritativeField] = held is JsonArray ? new JsonArray() : null;
+                        cleared = true;
+                    }
+                }
+
+                if (cleared && HoldsNothing(retainedFields))
+                {
+                    continue;
+                }
+            }
+
             var existing = rebuilt[module.Name];
             if (existing is null)
             {
-                rebuilt[module.Name] = JsonNode.Parse(module.Value.GetRawText());
+                rebuilt[module.Name] = retainedModule;
                 continue;
             }
 
-            if (existing is not JsonObject rebuiltModule || module.Value.ValueKind != JsonValueKind.Object)
+            if (existing is not JsonObject rebuiltModule || retainedModule is not JsonObject retainedObject)
             {
                 continue;
             }
 
-            foreach (var field in module.Value.EnumerateObject())
+            foreach (var field in retainedObject.ToArray())
             {
-                if (field.Value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+                if (field.Value is null)
                 {
                     continue;
                 }
 
-                var current = rebuiltModule[field.Name];
+                var current = rebuiltModule[field.Key];
                 var fill = current is null
                            || (current is JsonArray currentArray
                                && currentArray.Count == 0
-                               && field.Value.ValueKind == JsonValueKind.Array
-                               && field.Value.GetArrayLength() > 0);
+                               && field.Value is JsonArray { Count: > 0 });
                 if (fill)
                 {
-                    rebuiltModule[field.Name] = JsonNode.Parse(field.Value.GetRawText());
+                    rebuiltModule[field.Key] = field.Value.DeepClone();
                 }
             }
         }
 
         using var document = JsonDocument.Parse(rebuilt.ToJsonString());
         return document.RootElement.Clone();
+    }
+
+    /// <summary>
+    /// Whether a retained module is left with no content once its flat-authoritative fields are
+    /// set aside: every member null, false, an empty array or an empty object.
+    /// </summary>
+    private static bool HoldsNothing(JsonObject module)
+    {
+        foreach (var (_, value) in module)
+        {
+            switch (value)
+            {
+                case null:
+                case JsonArray { Count: 0 }:
+                case JsonObject { Count: 0 }:
+                    continue;
+                case JsonValue scalar when scalar.GetValueKind() == JsonValueKind.False:
+                    continue;
+                default:
+                    return false;
+            }
+        }
+
+        return true;
     }
 }

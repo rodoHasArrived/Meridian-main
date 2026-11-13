@@ -28,6 +28,16 @@ public sealed class OptionsChainService
     private static readonly Counter<long> FailoverCounter = OptionsMeter.CreateCounter<long>("options_provider_failover_total");
     private static readonly Histogram<double> ProviderLatencyMs = OptionsMeter.CreateHistogram<double>("options_provider_latency_ms");
 
+    private enum ReadOperation
+    {
+        Expirations,
+        Strikes,
+        ChainSnapshot,
+        Quote,
+        ConfiguredExpirations,
+        ConfiguredChainSnapshot
+    }
+
     public OptionsChainService(
         OptionDataCollector collector,
         ILogger<OptionsChainService> logger,
@@ -107,22 +117,32 @@ public sealed class OptionsChainService
     public async Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(
         string underlyingSymbol,
         CancellationToken ct = default)
+        => (await DiscoverExpirationsAsync(underlyingSymbol, ct).ConfigureAwait(false)).Expirations;
+
+    /// <summary>
+    /// Preserves whether provider failover supplied expiration coverage before a caller applies
+    /// its date filters. Empty provider payloads do not establish coverage: existing adapters also
+    /// return empty payloads for unavailable credentials and remote failures.
+    /// </summary>
+    public async Task<OptionsExpirationDiscoveryResult> DiscoverExpirationsAsync(
+        string underlyingSymbol,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
 
         var expirations = await QueryProvidersAsync(
             provider => provider.GetExpirationsAsync(underlyingSymbol, ct),
             static result => result.Count > 0,
-            $"expirations for {underlyingSymbol}",
+            ReadOperation.Expirations,
             ct).ConfigureAwait(false);
 
         if (expirations is null)
         {
-            _logger.LogWarning("No options chain provider configured; returning empty expirations for {Symbol}", underlyingSymbol);
-            return Array.Empty<DateOnly>();
+            _logger.LogWarning("No options chain provider supplied expiration coverage.");
+            return new OptionsExpirationDiscoveryResult(false, Array.Empty<DateOnly>());
         }
 
-        return expirations;
+        return new OptionsExpirationDiscoveryResult(true, expirations);
     }
 
     /// <summary>
@@ -138,12 +158,12 @@ public sealed class OptionsChainService
         var strikes = await QueryProvidersAsync(
             provider => provider.GetStrikesAsync(underlyingSymbol, expiration, ct),
             static result => result.Count > 0,
-            $"strikes for {underlyingSymbol} {expiration}",
+            ReadOperation.Strikes,
             ct).ConfigureAwait(false);
 
         if (strikes is null)
         {
-            _logger.LogWarning("No options chain provider configured; returning empty strikes for {Symbol}", underlyingSymbol);
+            _logger.LogWarning("No options chain provider supplied strikes.");
             return Array.Empty<decimal>();
         }
 
@@ -165,19 +185,19 @@ public sealed class OptionsChainService
         var chain = await QueryProvidersAsync(
             provider => provider.GetChainSnapshotAsync(underlyingSymbol, expiration, strikeRange, ct),
             static result => result is not null,
-            $"chain snapshot for {underlyingSymbol} {expiration}",
+            ReadOperation.ChainSnapshot,
             ct).ConfigureAwait(false);
 
         if (chain is null)
         {
-            _logger.LogWarning("No options chain provider returned a chain for {Symbol}", underlyingSymbol);
+            _logger.LogWarning("No options chain provider returned a chain.");
             return null;
         }
 
         _collector.OnChainSnapshot(chain);
         _logger.LogInformation(
-            "Fetched chain snapshot for {Symbol} expiration {Expiration} with {Contracts} contracts",
-            underlyingSymbol, expiration, chain.TotalContracts);
+            "Fetched chain snapshot with {Contracts} contracts",
+            chain.TotalContracts);
 
         return chain;
     }
@@ -194,12 +214,12 @@ public sealed class OptionsChainService
         var quote = await QueryProvidersAsync(
             provider => provider.GetOptionQuoteAsync(contract, ct),
             static result => result is not null,
-            $"quote for {contract}",
+            ReadOperation.Quote,
             ct).ConfigureAwait(false);
 
         if (quote is null)
         {
-            _logger.LogWarning("No options chain provider returned a quote for {Contract}", contract);
+            _logger.LogWarning("No options chain provider returned a quote.");
             return null;
         }
 
@@ -236,7 +256,7 @@ public sealed class OptionsChainService
                 var expirations = await QueryProvidersAsync(
                     provider => provider.GetExpirationsAsync(underlying, ct),
                     static result => result.Count > 0,
-                    $"configured expirations for {underlying}",
+                    ReadOperation.ConfiguredExpirations,
                     ct).ConfigureAwait(false) ?? Array.Empty<DateOnly>();
 
                 var filtered = FilterExpirations(expirations, config);
@@ -248,7 +268,7 @@ public sealed class OptionsChainService
                     var chain = await QueryProvidersAsync(
                         provider => provider.GetChainSnapshotAsync(underlying, expiry, config.StrikeRange, ct),
                         static result => result is not null,
-                        $"configured chain snapshot for {underlying} {expiry}",
+                        ReadOperation.ConfiguredChainSnapshot,
                         ct).ConfigureAwait(false);
 
                     if (chain is not null)
@@ -260,9 +280,9 @@ public sealed class OptionsChainService
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning(ex,
-                    "Failed to fetch option chains for {Symbol}: {ErrorType}",
-                    underlying, ex.GetType().Name);
+                _logger.LogWarning(
+                    "Failed to fetch configured option chains: {ErrorType}",
+                    ex.GetType().Name);
             }
         }
 
@@ -318,21 +338,24 @@ public sealed class OptionsChainService
     private async Task<T?> QueryProvidersAsync<T>(
         Func<IOptionsChainProvider, Task<T>> query,
         Func<T, bool> hasResult,
-        string operation,
+        ReadOperation operation,
         CancellationToken ct)
     {
-        var failures = new List<string>();
+        var failureCount = 0;
 
         foreach (var provider in _providers)
         {
             ct.ThrowIfCancellationRequested();
             var providerId = NormalizeProviderId(provider.ProviderId);
+            // Preserve canonical provider labels while bounding and neutralizing their
+            // control characters. Caller symbols and exception payloads stay out of telemetry.
+            var telemetryProviderId = providerId[..Math.Min(providerId.Length, 256)]
+                .Replace('\r', '_').Replace('\n', '_');
             var health = await _healthSource.GetHealthAsync(providerId, providerId, ct).ConfigureAwait(false);
             if (!health.IsHealthy)
             {
-                var reason = $"provider {providerId} unhealthy ({health.Status})";
-                failures.Add(reason);
-                _logger.LogWarning("Skipping options provider {ProviderId} for {Operation}: {Reason}", providerId, operation, reason);
+                failureCount++;
+                _logger.LogWarning("Skipping unhealthy options provider {ProviderId} for {Operation}.", telemetryProviderId, operation);
                 continue;
             }
 
@@ -342,30 +365,29 @@ public sealed class OptionsChainService
                 var result = await query(provider).ConfigureAwait(false);
                 sw.Stop();
                 ProviderLatencyMs.Record(sw.Elapsed.TotalMilliseconds,
-                    new KeyValuePair<string, object?>("provider", providerId),
-                    new KeyValuePair<string, object?>("operation", operation));
+                    new KeyValuePair<string, object?>("provider", telemetryProviderId),
+                    new KeyValuePair<string, object?>("operation", operation.ToString()));
                 if (hasResult(result))
                 {
-                    if (failures.Count > 0)
+                    if (failureCount > 0)
                     {
                         _logger.LogInformation(
-                            "Options provider failover success for {Operation}. Winner={ProviderId}; prior_failures={Failures}",
+                            "Options provider failover success for {Operation}. Winner={ProviderId}; prior_failures={FailureCount}",
                             operation,
-                            providerId,
-                            string.Join(" | ", failures));
-                        FailoverCounter.Add(1, new KeyValuePair<string, object?>("provider", providerId));
+                            telemetryProviderId,
+                            failureCount);
+                        FailoverCounter.Add(1, new KeyValuePair<string, object?>("provider", telemetryProviderId));
                     }
                     return result;
                 }
 
-                var emptyReason = $"provider {providerId} returned incomplete/empty result";
-                failures.Add(emptyReason);
+                failureCount++;
                 _logger.LogDebug(
                     "Options provider {ProviderId} returned no data for {Operation}; trying fallback provider.",
-                    providerId,
+                    telemetryProviderId,
                     operation);
                 FallbackCounter.Add(1,
-                    new KeyValuePair<string, object?>("provider", providerId),
+                    new KeyValuePair<string, object?>("provider", telemetryProviderId),
                     new KeyValuePair<string, object?>("reason", "empty"));
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
@@ -375,23 +397,22 @@ public sealed class OptionsChainService
             catch (Exception ex)
             {
                 var retriable = ex is TimeoutException || ex is HttpRequestException || ex is TaskCanceledException;
-                var reason = $"{providerId} failed ({ex.GetType().Name}): {ex.Message}";
-                failures.Add(reason);
+                failureCount++;
                 _logger.LogWarning(
-                    ex,
-                    "Options provider {ProviderId} failed while fetching {Operation}; retriable={Retriable}; trying fallback provider.",
-                    providerId,
+                    "Options provider {ProviderId} failed while fetching {Operation}; error_type={ErrorType}; retriable={Retriable}; trying fallback provider.",
+                    telemetryProviderId,
                     operation,
+                    ex.GetType().Name,
                     retriable);
                 FallbackCounter.Add(1,
-                    new KeyValuePair<string, object?>("provider", providerId),
+                    new KeyValuePair<string, object?>("provider", telemetryProviderId),
                     new KeyValuePair<string, object?>("reason", retriable ? "retriable-error" : "error"));
             }
         }
 
-        if (failures.Count > 0)
+        if (failureCount > 0)
         {
-            _logger.LogError("All options providers failed for {Operation}. Provenance: {Failures}", operation, string.Join(" | ", failures));
+            _logger.LogError("All options providers failed for {Operation}. Failed attempts: {FailureCount}.", operation, failureCount);
         }
         return default;
     }
@@ -475,6 +496,14 @@ public sealed class OptionsChainService
         return date.Day >= 15 && date.Day <= 21;
     }
 }
+
+/// <summary>
+/// Provider discovery outcome, distinct from an empty list after a consumer's DTE filtering.
+/// The compatibility list-only read continues to return an empty list when coverage is unavailable.
+/// </summary>
+public sealed record OptionsExpirationDiscoveryResult(
+    bool IsAvailable,
+    IReadOnlyList<DateOnly> Expirations);
 
 internal sealed class AlwaysHealthyProviderConnectionHealthSource : IProviderConnectionHealthSource
 {

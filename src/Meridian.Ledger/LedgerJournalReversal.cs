@@ -46,7 +46,15 @@ public static class LedgerJournalReversal
                 debit: line.Credit, // swap: a debit becomes a credit and vice versa
                 credit: line.Debit,
                 description,
-                line.Dimensions))
+                line.Dimensions,
+                line.Currency is { } currency
+                    ? new LedgerEntryCurrency(
+                        currency.TransactionCurrency,
+                        currency.FunctionalCurrency,
+                        currency.TransactionCredit,
+                        currency.TransactionDebit,
+                        currency.FxRateToFunctional)
+                    : null))
             .ToList();
 
         var reversal = new JournalEntry(reversalJournalId, reversedAt, description, lines, BuildReversalMetadata(original, normalizedReason));

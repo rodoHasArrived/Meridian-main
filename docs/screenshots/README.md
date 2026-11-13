@@ -2,7 +2,7 @@
 
 **Status:** supporting-generated
 **Owner:** core-team
-**Reviewed:** 2026-10-28
+**Reviewed:** 2026-11-12
 
 This folder stores maintained screenshot references used by documentation and
 workflow evidence.
@@ -50,6 +50,24 @@ Captures go into ignored `artifacts/web-screenshots/captures`; setup failures ca
 committed catalog as newly rendered evidence. Only a fully validated run copies images into the
 requested catalog directory under `docs/screenshots/web` for the refresh PR.
 
+Both jobs capture with two workers sharing one Chromium process and dev server. Each attempt still
+uses a fresh browser context and fixture resolver. Manifest checkpoints are serialized and retain
+completed routes in catalog order, with failed and unattempted counts. Local runs default to one worker; pass
+`--workers 2` to match CI, or benchmark up to eight workers against the available CPU and memory.
+Readiness requires the configured content and selectors, absent transitional text, completed API
+requests, loaded fonts and images, and a stable rendered layout rather than waiting for all network
+activity to become idle. Populated captures must name loaded fixture content: the ledger and trial
+balance contracts wait for posted journal rows and account detail, since headings can render before
+chained data requests begin. Data captures also wait for secondary remediation, quality-watch and
+maintenance reads to settle. Unsupported reads in the current fixtures retain their explicit
+unavailable state rather than being captured as an in-progress load.
+
+Dependency installation remains lockfile-pinned with optional native packages and vulnerability
+auditing. npm prefers cached downloads and emits install timing data. The browser cache uses the
+runner OS, architecture and installed Playwright version; the headless shell is saved immediately
+after a successful browser install so a later capture failure does not discard the cache. System
+libraries are installed separately, and the browser install is checked even when the cache hits.
+
 The capture script also reads each route's rendered main content and fails the route when it shows
 any of these (`findCaptureContentIssues`):
 
@@ -60,10 +78,12 @@ any of these (`findCaptureContentIssues`):
 | `api-path` | a request path such as `/api/ledger/...` |
 | `internal-term` | "lane", "payload", "mutation" or "caller-visible" |
 | `slug-identifier` | a slug-shaped record identifier (`run-dev-1`, `default-fund`, `entity-fund-alpha`); ordinary compounds such as "as-of" and "read-only" pass |
+| `latency-not-duration` | a `Latency` label followed by a clock time or "Never" |
+| `unavailable-placeholder` | "Basis unavailable" or "Saved views unavailable" |
 | `disabled-primary-without-reason` | a visible disabled primary button with no `title` or description saying why |
 | `status-contradiction` | a status bar that says "up to date" while the page's posture strip says its freshness needs review or is blocked |
 
-The first five read the rendered text; the last two read the DOM. Collapsed technical details,
+The first seven read the rendered text; the last two read the DOM. Collapsed technical details,
 `title` attributes and form-field values are not rendered text, so identifiers and request paths
 kept there pass. A route that cannot comply yet lists the rule with a `reason` under
 `allowedContentIssues` in `scripts/dev/web-screenshot-routes.json`; an entry without a reason
@@ -79,9 +99,9 @@ and, for browser captures, report `status: passed`.
 For a local full-catalog run using the same artifact layout:
 
 ```bash
-npm ci --prefix src/Meridian.Ui/dashboard --include=optional
-npx --prefix src/Meridian.Ui/dashboard playwright install chromium
-node scripts/dev/capture-web-screenshots.mjs --output-dir artifacts/web-screenshots/captures
+npm ci --prefix src/Meridian.Ui/dashboard --include=optional --prefer-offline --no-fund --timing
+npx --prefix src/Meridian.Ui/dashboard playwright install chromium --only-shell
+node scripts/dev/capture-web-screenshots.mjs --output-dir artifacts/web-screenshots/captures --workers 2
 python scripts/dev/validate-screenshot-captures.py --surface web --output-dir artifacts/web-screenshots/captures --manifest artifacts/web-screenshots/manifest.json --require-fresh
 python scripts/dev/summarize-web-screenshots.py
 ```

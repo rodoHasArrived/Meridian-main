@@ -9,19 +9,19 @@ function inject() {
   const css = `
 .mds-upload-wrap{display:block;width:100%;}
 .mds-upload-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
-.mds-upload-zone{border:2px dashed var(--border,#E4E3DE);padding:20px;text-align:center;
-  background:var(--bg-light,#FBFAF8);cursor:pointer;}
-.mds-upload-zone--drag{border-color:var(--accent,#A85436);background:var(--bg-active,#F2E3DB);}
-.mds-upload-icon{color:var(--text-disabled,#94999F);margin-bottom:8px;display:flex;align-items:center;justify-content:center;}
-.mds-upload-text{font-family:var(--font-body);font-size:12px;color:var(--text-secondary,#4E5258);}
-.mds-upload-hint{font-family:var(--font-body);font-size:10px;color:var(--text-muted,#5E666F);margin-top:4px;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
+.mds-upload-zone{border:2px dashed var(--border,#D2CDC3);padding:20px;text-align:center;
+  background:var(--bg-light,#F8F7F3);cursor:pointer;}
+.mds-upload-zone--drag{border-color:var(--brand-signal,#C56343);background:var(--bg-active,#E7EDF2);}
+.mds-upload-icon{color:var(--text-disabled,#A4ABB2);margin-bottom:8px;display:flex;align-items:center;justify-content:center;}
+.mds-upload-text{font-family:var(--font-body);font-size:12px;color:var(--text-secondary,#535C65);}
+.mds-upload-hint{font-family:var(--font-body);font-size:10px;color:var(--text-muted,#606870);margin-top:4px;}
 .mds-upload-input{display:none;}
 .mds-file-list{list-style:none;padding:0;margin:8px 0 0;}
 .mds-file-item{display:flex;align-items:center;gap:8px;padding:6px 8px;
-  border:1px solid var(--border,#E4E3DE);margin-top:4px;font-size:12px;}
+  border:1px solid var(--border,#D2CDC3);margin-top:4px;font-size:12px;}
 .mds-file-name{flex:1;overflow:hidden;text-overflow:ellipsis;}
-.mds-file-remove{cursor:pointer;color:var(--red,#A8443C);font-weight:600;border:none;
+.mds-file-remove{cursor:pointer;color:var(--red,#B54B42);font-weight:600;border:none;
   background:transparent;padding:0;font-size:12px;}
 `;
   const el = document.createElement("style");
@@ -32,13 +32,14 @@ function inject() {
 
 export function FileUpload({ label, onFilesSelected, multiple = true, accept = "*" }) {
   inject();
+  const inputId = React.useId();
   const [files, setFiles] = useState([]);
   const [isDrag, setIsDrag] = useState(false);
   const inputRef = useRef(null);
 
   const handleFiles = (fileList) => {
-    const newFiles = Array.from(fileList);
-    const updated = multiple ? [...files, ...newFiles] : newFiles;
+    const newFiles = Array.from(fileList || []);
+    const updated = multiple ? [...files, ...newFiles] : newFiles.slice(0, 1);
     setFiles(updated);
     onFilesSelected?.(updated);
   };
@@ -57,13 +58,15 @@ export function FileUpload({ label, onFilesSelected, multiple = true, accept = "
 
   return (
     <div className="mds-upload-wrap">
-      {label && <label className="mds-upload-label">{label}</label>}
+      {label && <label className="mds-upload-label" htmlFor={inputId}>{label}</label>}
       <div
         className={`mds-upload-zone${isDrag ? " mds-upload-zone--drag" : ""}`}
+        role="button" tabIndex={0} aria-label={label || "Upload files"}
         onDrop={handleDrop}
         onDragOver={(e) => { e.preventDefault(); setIsDrag(true); }}
         onDragLeave={() => setIsDrag(false)}
         onClick={() => inputRef.current?.click()}
+        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); inputRef.current?.click(); } }}
       >
         <div className="mds-upload-icon" aria-hidden="true">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -75,18 +78,20 @@ export function FileUpload({ label, onFilesSelected, multiple = true, accept = "
       </div>
       <input
         ref={inputRef}
+        id={inputId}
+        aria-label={label || "Upload files"}
         type="file"
         className="mds-upload-input"
         multiple={multiple}
         accept={accept}
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }}
       />
       {files.length > 0 && (
         <ul className="mds-file-list">
           {files.map((f, i) => (
             <li key={i} className="mds-file-item">
               <span className="mds-file-name">{f.name}</span>
-              <button className="mds-file-remove" onClick={() => removeFile(i)}>✕</button>
+              <button type="button" className="mds-file-remove" aria-label={`Remove ${f.name}`} onClick={() => removeFile(i)}>✕</button>
             </li>
           ))}
         </ul>

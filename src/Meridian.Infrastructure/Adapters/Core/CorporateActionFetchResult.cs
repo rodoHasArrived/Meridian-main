@@ -7,10 +7,12 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// <summary>Coverage of an adapter's supported request scope, not live-provider certification.</summary>
 public enum CorporateActionFetchStatus
 {
-    Unknown,
-    Complete,
-    Partial,
-    Failed,
+    Complete = 0,
+    Incomplete = 1,
+    Unavailable = 2,
+    Unknown = 3,
+    Partial = 4,
+    Failed = 5,
 }
 
 /// <summary>Safe machine-readable failure metadata. Upstream payloads and exception text are excluded.</summary>
@@ -26,8 +28,39 @@ public sealed record CorporateActionFetchResult(
     CorporateActionFetchStatus Status,
     IReadOnlyList<CorporateActionFetchFailure> Failures)
 {
+    /// <summary>Only complete histories are eligible for authoritative ingestion.</summary>
+    public bool IsComplete => Status == CorporateActionFetchStatus.Complete;
+
+    public IReadOnlyList<CorporateActionCommand> Observations => IsComplete ? Actions : [];
+
+    public string? Reason { get; init; }
+
+    private int? _withheldObservationCount;
+    public int WithheldObservationCount
+    {
+        get => _withheldObservationCount ?? (IsComplete ? 0 : Actions.Count);
+        init => _withheldObservationCount = value;
+    }
+
+    public static CorporateActionFetchResult Incomplete(string reason, int withheldObservationCount = 0)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        ArgumentOutOfRangeException.ThrowIfNegative(withheldObservationCount);
+        return new([], CorporateActionFetchStatus.Incomplete, [new("pagination-incomplete")])
+        { Reason = reason, WithheldObservationCount = withheldObservationCount };
+    }
+
+    public static CorporateActionFetchResult Unavailable(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        return new([], CorporateActionFetchStatus.Unavailable, [new("fetch-unavailable")]) { Reason = reason };
+    }
+
     public static CorporateActionFetchResult Complete(IReadOnlyList<CorporateActionCommand> actions)
-        => new(actions, CorporateActionFetchStatus.Complete, []);
+    {
+        ArgumentNullException.ThrowIfNull(actions);
+        return new(actions, CorporateActionFetchStatus.Complete, []);
+    }
 
     public static CorporateActionFetchResult Failed(
         string code, int? statusCode = null, TimeSpan? retryAfter = null, string? scope = null)
@@ -47,6 +80,9 @@ public sealed record CorporateActionFetchResult(
             results.SelectMany(result => result.Failures).ToArray());
     }
 
+    public static bool IsPartialResponse(HttpResponseMessage response)
+        => response.StatusCode == HttpStatusCode.PartialContent || response.Content.Headers.ContentRange is not null;
+
     public static CorporateActionFetchResult FromHttpFailure(HttpResponseMessage response, string? scope = null)
     {
         var retryAfter = response.Headers.RetryAfter?.Delta;
@@ -55,7 +91,7 @@ public sealed record CorporateActionFetchResult(
         if (retryAfter < TimeSpan.Zero)
             retryAfter = TimeSpan.Zero;
 
-        var code = response.StatusCode switch
+        var code = IsPartialResponse(response) ? "incomplete-response" : response.StatusCode switch
         {
             HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => "unauthorized",
             HttpStatusCode.TooManyRequests => "rate-limited",

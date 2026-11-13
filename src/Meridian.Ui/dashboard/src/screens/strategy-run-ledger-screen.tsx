@@ -15,6 +15,7 @@ import { getFinancialRecordExplorer, getRunLedgerJournal, getRunTrialBalance } f
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import { cn } from "@/lib/utils";
+import { workstationRunLedgerExportEndpoint } from "@/lib/workstation-endpoints";
 import {
   buildAccountingLedgerJournalEvidenceViewState,
   buildAccountingTrialBalanceViewState
@@ -41,6 +42,10 @@ import type {
 export function StrategyRunLedgerScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const runId = searchParams.get("runId")?.trim() || null;
+  const requestedDate = searchParams.get("asOf") ?? "";
+  const asOfDate = /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : "";
+  // The selected date is inclusive in UTC, independent of the operator's browser timezone.
+  const asOf = asOfDate ? `${asOfDate}T23:59:59.9999999Z` : undefined;
 
   const [explorer, setExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const [explorerError, setExplorerError] = useState<ApiErrorDisplay | null>(null);
@@ -51,6 +56,7 @@ export function StrategyRunLedgerScreen() {
   // A run's ledger runs to hundreds of accounts, and the view state has always computed the
   // filtered count -- the control that drives it was simply never rendered on this screen.
   const [accountFilter, setAccountFilter] = useState("");
+  const [exportFormat, setExportFormat] = useState("Csv");
   const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
@@ -106,7 +112,7 @@ export function StrategyRunLedgerScreen() {
     setJournalErrorText(null);
     setJournalLoading(true);
 
-    getRunTrialBalance(runId)
+    (asOf ? getRunTrialBalance(runId, { asOf }) : getRunTrialBalance(runId))
       .then((rows) => {
         if (!cancelled) {
           setTrialBalanceRows(rows);
@@ -128,7 +134,7 @@ export function StrategyRunLedgerScreen() {
         }
       });
 
-    getRunLedgerJournal(runId)
+    (asOf ? getRunLedgerJournal(runId, { asOf }) : getRunLedgerJournal(runId))
       .then((lines) => {
         if (!cancelled) {
           setJournalLines(lines);
@@ -149,7 +155,7 @@ export function StrategyRunLedgerScreen() {
     return () => {
       cancelled = true;
     };
-  }, [runId]);
+  }, [asOf, runId]);
 
   const trialBalanceView = useMemo(
     () => buildAccountingTrialBalanceViewState({
@@ -217,7 +223,8 @@ export function StrategyRunLedgerScreen() {
       scopeItems={[
         { id: "workspace", label: "Workspace", value: "Strategy" },
         { id: "source", label: "Ledger source", value: "Strategy run (simulation) — not the posted journal" },
-        { id: "run-id", label: "Run ID", value: runId ?? "Latest run" }
+        { id: "run-id", label: "Run ID", value: runId ?? "Latest run" },
+        { id: "as-of", label: "As of (UTC)", value: asOfDate || "Run end" }
       ]}
       savedViews={[]}
       summaryItems={[
@@ -225,7 +232,7 @@ export function StrategyRunLedgerScreen() {
         { id: "journal", label: "Journal entries", value: journalLoading ? "…" : String(journalEvidence.rows.length) }
       ]}
       appliedFilters={[]}
-      explorer={explorer}
+      explorer={asOf ? null : explorer}
     >
       {runOptions.length > 0 ? (
         <FormRow
@@ -244,6 +251,58 @@ export function StrategyRunLedgerScreen() {
             ))}
           </Select>
         </FormRow>
+      ) : null}
+      <FormRow label="As of date (UTC)" labelFor="run-ledger-as-of" className="mb-4 w-full max-w-sm">
+        <div className="flex items-center gap-2">
+          <Input
+            id="run-ledger-as-of"
+            type="date"
+            value={asOfDate}
+            disabled={!runId}
+            onChange={(event) => {
+              const next = new URLSearchParams(searchParams);
+              if (event.target.value) next.set("asOf", event.target.value);
+              else next.delete("asOf");
+              setSearchParams(next, { replace: true });
+              setSelectedRowId(null);
+            }}
+            aria-describedby="run-ledger-as-of-help"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!asOfDate}
+            onClick={() => {
+              const next = new URLSearchParams(searchParams);
+              next.delete("asOf");
+              setSearchParams(next, { replace: true });
+              setSelectedRowId(null);
+            }}
+          >Run end</Button>
+        </div>
+        <p id="run-ledger-as-of-help" className="mt-1 text-xs text-muted-foreground">
+          Balances and journal include postings through the selected UTC date.
+        </p>
+      </FormRow>
+      {runId ? (
+        <div className="mb-4 flex flex-wrap items-end gap-2">
+          <FormRow label="Accounting export format" labelFor="run-ledger-export-format">
+            <Select id="run-ledger-export-format" value={exportFormat} onChange={(event) => setExportFormat(event.target.value)}>
+              <option value="Csv">CSV</option>
+              <option value="Xlsx">Excel</option>
+              <option value="Parquet">Parquet</option>
+              <option value="Arrow">Arrow</option>
+            </Select>
+          </FormRow>
+          <Button asChild variant="outline">
+            <a href={workstationRunLedgerExportEndpoint(runId, exportFormat, asOf)}>
+              Download accounting package
+            </a>
+          </Button>
+          <p className="w-full text-xs text-muted-foreground">
+            Includes journal, trial balance and cash flows. Lot reports require a complete retained valuation snapshot; package availability identifies missing evidence.
+          </p>
+        </div>
       ) : null}
       <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <Card aria-labelledby="run-trial-balance-title" className="panel-surface">

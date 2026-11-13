@@ -6,6 +6,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.TwelveData;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Infrastructure.Providers;
@@ -50,14 +51,6 @@ public sealed class TwelveDataHistoricalDataProviderTests
               "low": "367.80000",
               "close": "369.60000",
               "volume": "1930000"
-            },
-            {
-              "datetime": "2024-01-02",
-              "open": "0.00000",
-              "high": "372.00000",
-              "low": "367.80000",
-              "close": "369.60000",
-              "volume": "900000"
             }
           ]
         }
@@ -82,7 +75,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             return JsonResponse(TimeSeriesResponse);
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
         var from = new DateOnly(2024, 1, 2);
         var to = new DateOnly(2024, 1, 3);
 
@@ -124,6 +117,37 @@ public sealed class TwelveDataHistoricalDataProviderTests
         handler.CallCount.Should().Be(1);
     }
 
+    [Theory]
+    [InlineData("bad-date", "1", "1")]
+    [InlineData("2024-01-03", "bad-price", "1")]
+    [InlineData("2024-01-03", "0", "1")]
+    [InlineData("2024-01-03", "1", "bad-volume")]
+    public async Task GetDailyBarsAsync_MixedValidAndMalformedRows_RefusesPartialCoverage(string date, string open, string volume)
+    {
+        var body = "{\"status\":\"ok\",\"values\":[" +
+            "{\"datetime\":\"2024-01-02\",\"open\":\"1\",\"high\":\"2\",\"low\":\"1\",\"close\":\"1\"}," +
+            $"{{\"datetime\":\"{date}\",\"open\":\"{open}\",\"high\":\"2\",\"low\":\"1\",\"close\":\"1\",\"volume\":\"{volume}\"}}]}}";
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse(body));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
+
+        await provider.Invoking(p => p.GetDailyBarsAsync("MSFT", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3)))
+            .Should().ThrowAsync<DataProviderException>();
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_DuplicateSessionWithinPage_RefusesUnprovableCoverage()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var body = DailyBody(from, from);
+        using var document = JsonDocument.Parse(body);
+        var row = document.RootElement.GetProperty("values")[0].GetRawText();
+        using var handler = new StubHttpMessageHandler(_ => JsonResponse($"{{\"status\":\"ok\",\"values\":[{row},{row}]}}"));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
+
+        await provider.Invoking(p => p.GetDailyBarsAsync("MSFT", from, from.AddDays(1)))
+            .Should().ThrowAsync<DataProviderException>();
+    }
+
     [Fact]
     public async Task GetDailyBarsAsync_WhenApiKeyMissing_ReturnsEmptyWithoutHttpCall()
     {
@@ -131,7 +155,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
         using var handler = new StubHttpMessageHandler(_ =>
             throw new InvalidOperationException("Missing Twelve Data credentials should not call HTTP."));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(string.Empty, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(string.Empty, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var available = await provider.IsAvailableAsync(cts.Token);
         var bars = await provider.GetDailyBarsAsync("MSFT", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3), cts.Token);
@@ -147,7 +171,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(StatusErrorResponse));
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("UNKNOWN", null, null, cts.Token);
 
@@ -161,7 +185,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
     public async Task GetDailyBarsAsync_WhenBodyRejectsCredentials_ThrowsConnectionException(int code)
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(ErrorBody(code, $"Invalid key: {ApiKey}")));
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var act = () => provider.GetDailyBarsAsync("MSFT", null, null);
 
@@ -175,7 +199,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
     public async Task GetDailyBarsAsync_WhenBodyReportsQuota_ThrowsAndPublishesRateLimit()
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(ErrorBody(429, "Quota exceeded")));
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
         var notifications = 0;
         provider.OnRateLimitHit += info =>
         {
@@ -207,7 +231,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
     public async Task GetDailyBarsAsync_WhenResponseCannotEstablishCoverage_ThrowsProviderException(string body)
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(body));
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var act = () => provider.GetDailyBarsAsync("MSFT", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3));
 
@@ -222,7 +246,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
     public async Task GetDailyBarsAsync_WhenDateWindowHasNoData_ReturnsEmpty(string body)
     {
         using var handler = new StubHttpMessageHandler(_ => JsonResponse(body));
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("MSFT", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3));
 
@@ -245,7 +269,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             clock.Advance();
             return JsonResponse(DailyBody(window.Start, window.End));
         });
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), timeProvider: clock);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: new RateLimiterRegistry(timeProvider: clock));
 
         var bars = await provider.GetDailyBarsAsync("BTC/USD", from, to);
 
@@ -272,7 +296,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
                 ? ErrorBody(400, "No data is available on the specified dates.")
                 : DailyBody(window.Start, window.End));
         });
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), timeProvider: clock);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: new RateLimiterRegistry(timeProvider: clock));
 
         var bars = await provider.GetDailyBarsAsync("MSFT", from, to);
 
@@ -295,7 +319,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             clock.Advance();
             return JsonResponse(++calls == 1 ? DailyBody(from, from) : failureBody);
         });
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), timeProvider: clock);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: new RateLimiterRegistry(timeProvider: clock));
 
         var act = () => provider.GetDailyBarsAsync("MSFT", from, from.AddDays(5001));
 
@@ -313,7 +337,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             clock.Advance();
             return JsonResponse(DailyBody(from, from));
         });
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), timeProvider: clock);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: new RateLimiterRegistry(timeProvider: clock));
 
         var act = () => provider.GetDailyBarsAsync("MSFT", from, from.AddDays(5001));
 
@@ -336,7 +360,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             return ++calls == 1 ? JsonResponse(DailyBody(from, from))
                 : new HttpResponseMessage((HttpStatusCode)status) { Content = new StringContent("Refused") };
         });
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), timeProvider: clock);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: new RateLimiterRegistry(timeProvider: clock));
 
         var act = () => provider.GetDailyBarsAsync("MSFT", from, from.AddDays(5001));
 
@@ -349,12 +373,44 @@ public sealed class TwelveDataHistoricalDataProviderTests
         calls.Should().Be(2);
     }
 
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task GetDailyBarsAsync_PartialHttpWindow_RefusesAggregate(bool laterWindow, bool contentRangeOnly)
+    {
+        var from = new DateOnly(2000, 1, 1);
+        var calls = 0;
+        var clock = new TestClock();
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            clock.Advance();
+            var window = ReadWindow(request);
+            var response = JsonResponse(DailyBody(window.Start, window.End));
+            if (++calls > (laterWindow ? 1 : 0))
+            {
+                if (contentRangeOnly)
+                    response.Content.Headers.ContentRange = new ContentRangeHeaderValue(0, 9, 20);
+                else
+                    response.StatusCode = HttpStatusCode.PartialContent;
+            }
+            return response;
+        });
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler),
+            rateLimiterRegistry: new RateLimiterRegistry(timeProvider: clock));
+
+        await provider.Invoking(p => p.GetDailyBarsAsync("MSFT", from, from.AddDays(5001)))
+            .Should().ThrowAsync<DataProviderException>();
+        calls.Should().Be(laterWindow ? 2 : 1);
+    }
+
     [Fact]
     public async Task GetDailyBarsAsync_FirstWindowHttp404_ReturnsEmptyWithoutRequestingMoreWindows()
     {
         var from = new DateOnly(2000, 1, 1);
         using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.NotFound));
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("UNKNOWN", from, from.AddDays(5001));
 
@@ -372,7 +428,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             cancellation.Cancel();
             return JsonResponse(DailyBody(from, from));
         });
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var act = () => provider.GetDailyBarsAsync("MSFT", from, from.AddDays(5001), cancellation.Token);
 
@@ -384,7 +440,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
     public async Task GetDailyBarsAsync_InvertedDates_RejectsBeforeHttp()
     {
         using var handler = new StubHttpMessageHandler(_ => throw new InvalidOperationException("No HTTP expected."));
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler));
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, new HttpClient(handler), rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var act = () => provider.GetDailyBarsAsync("MSFT", new DateOnly(2024, 1, 3), new DateOnly(2024, 1, 2));
 
@@ -406,7 +462,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
             return response;
         });
         using var httpClient = new HttpClient(handler);
-        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(ApiKey, httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         Func<Task> act = () => provider.GetDailyBarsAsync("MSFT", null, null, cts.Token);
 
@@ -439,7 +495,11 @@ public sealed class TwelveDataHistoricalDataProviderTests
                 .Select(day => new
                 {
                     datetime = DateOnly.FromDayNumber(day).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                    open = "100", high = "105", low = "95", close = "102", volume = "1000"
+                    open = "100",
+                    high = "105",
+                    low = "95",
+                    close = "102",
+                    volume = "1000"
                 })
         });
 

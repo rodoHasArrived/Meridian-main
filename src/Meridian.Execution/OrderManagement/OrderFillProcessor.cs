@@ -3,6 +3,7 @@ using Meridian.Execution.Events;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Ledger;
 using OrderStatus = Meridian.Execution.Sdk.OrderStatus;
 using ExecutionReportDeliveryException = Meridian.Execution.OrderManagementSystem.ExecutionReportDeliveryException;
 
@@ -244,8 +245,6 @@ internal sealed class OrderFillProcessor(
 
             if (!progress.PortfolioApplied)
             {
-                var realisedPnlBefore = _portfolioState?.RealisedPnl ?? 0m;
-
                 // Only fills for orders this OMS placed may mutate the paper portfolio;
                 // stream reports for external/untracked orders are still published below.
                 if (_portfolioState is PaperTradingPortfolio paperPortfolio
@@ -256,15 +255,21 @@ internal sealed class OrderFillProcessor(
                     // position no fund can be shown to own and an option position measured
                     // as if each contract were a single share.
                     var fillOrderId = fillIncrement.ClientOrderId ?? fillIncrement.OrderId;
-                    paperPortfolio.ApplyFill(
+                    var result = paperPortfolio.ApplyFillWithAccountingEvidence(
                         fillIncrement,
                         ownerAccountId: _context.GetFinancialAccountId(fillOrderId),
                         contractMultiplier: _context.GetContractMultiplier(fillOrderId),
                         usesFaceValuePercentageOfPar: usesFaceValuePercentageOfPar);
-                    progress.RealizedPnl = paperPortfolio.RealisedPnl - realisedPnlBefore;
+                    progress.AccountingEvidence = result.Evidence;
+                    progress.RealizedPnl = result.RealizedPnl;
+                    progress.NewCash = result.NewCash;
                 }
-
-                progress.NewCash = _portfolioState?.Cash ?? 0m;
+                else
+                {
+                    // A read-only/live portfolio supplies no exact lot mutation evidence.
+                    // Retain the fill for reconciliation without asserting a zero-basis close.
+                    progress.NewCash = _portfolioState?.Cash ?? 0m;
+                }
                 progress.PortfolioApplied = true;
             }
 
@@ -276,7 +281,9 @@ internal sealed class OrderFillProcessor(
                 if (progress.IsTrackedOrder
                     && (_accounting.HasPublisher || !string.IsNullOrWhiteSpace(sessionId)))
                 {
-                    progress.TradeEvent ??= CreateTradeExecutedEvent(
+                    // Created once and reused by every handoff retry. Strategy lineage lets the
+                    // ledger attribute the fill's P&L to the strategy and run that placed the order.
+                    progress.TradeEvent ??= WithStrategyLineage(orderId, CreateTradeExecutedEvent(
                         fillIncrement,
                         progress.CumulativeFilledQuantity,
                         progress.RealizedPnl,
@@ -293,7 +300,11 @@ internal sealed class OrderFillProcessor(
                               ?? (_portfolioState is PaperTradingPortfolio
                                   ? 1m
                                   : fillIncrement.LotMultiplier
-                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId)));
+                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId)))) with
+                    {
+                        AccountingEvidenceVersion = 1,
+                        AccountingEvidence = progress.AccountingEvidence
+                    };
                 }
 
                 if (_accounting.HasPublisher && progress.IsTrackedOrder)
@@ -317,7 +328,7 @@ internal sealed class OrderFillProcessor(
                     {
                         await RecordSessionFillAsync(
                                 sessionId,
-                                progress.TradeEvent!.FillId,
+                                progress.TradeEvent!,
                                 fillIncrement,
                                 CancellationToken.None)
                             .ConfigureAwait(false);
@@ -381,6 +392,22 @@ internal sealed class OrderFillProcessor(
         }
     }
 
+    private TradeExecutedEvent WithStrategyLineage(string? orderId, TradeExecutedEvent tradeEvent)
+    {
+        if (string.IsNullOrWhiteSpace(orderId)
+            || !_context.TryGetOrder(orderId, out var order)
+            || order is null)
+        {
+            return tradeEvent;
+        }
+
+        return tradeEvent with
+        {
+            StrategyId = string.IsNullOrWhiteSpace(order.StrategyId) ? null : order.StrategyId.Trim(),
+            RunId = string.IsNullOrWhiteSpace(order.RunId) ? null : order.RunId.Trim()
+        };
+    }
+
     private string? ResolveFinancialAccountId(string? orderId)
         => !string.IsNullOrWhiteSpace(orderId)
             ? _context.GetFinancialAccountId(orderId)
@@ -388,7 +415,7 @@ internal sealed class OrderFillProcessor(
 
     private async Task RecordSessionFillAsync(
         string? sessionId,
-        Guid fillId,
+        TradeExecutedEvent tradeEvent,
         ExecutionReport report,
         CancellationToken ct)
     {
@@ -397,7 +424,11 @@ internal sealed class OrderFillProcessor(
             return;
         }
 
-        await _sessionPersistence.RecordFillAsync(sessionId, fillId, report, ct).ConfigureAwait(false);
+        await _sessionPersistence.RecordFillAsync(sessionId, tradeEvent.FillId, report,
+            accountingEvidenceVersion: _accounting.HasPublisher && tradeEvent.AccountingEvidenceVersion == 1
+                && tradeEvent.AccountingEvidence is not null ? 1 : 0,
+            financialAccountId: tradeEvent.FinancialAccountId,
+            ct).ConfigureAwait(false);
     }
 
     private sealed class FillProcessingProgress(
@@ -410,6 +441,7 @@ internal sealed class OrderFillProcessor(
         public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
         public bool IsTrackedOrder { get; } = isTrackedOrder;
         public TradeExecutedEvent? TradeEvent { get; set; }
+        public TradeFillAccountingEvidence? AccountingEvidence { get; set; }
         public decimal RealizedPnl { get; set; }
         public decimal NewCash { get; set; }
         public bool PortfolioApplied { get; set; }

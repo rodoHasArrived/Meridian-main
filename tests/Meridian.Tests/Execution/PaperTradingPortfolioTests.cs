@@ -461,8 +461,10 @@ public sealed class PaperTradingPortfolioRegTMarginTests
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
 
         var buyEntry = ledger.Journal.Last(e => e.Description.Contains("Buy"));
-        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 10_000m);
-        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.MarginLoanPayable && l.Credit == 10_000m);
+        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.CashAccount("margin-1") && l.Credit == 20_000m);
+        var financingEntry = ledger.Journal.Single(e => e.Description.Contains("Margin borrowing"));
+        financingEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.CashAccount("margin-1") && l.Debit == 10_000m);
+        financingEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.MarginLoanPayableFor("margin-1") && l.Credit == 10_000m);
     }
 
     [Fact]
@@ -570,6 +572,9 @@ public sealed class PaperTradingPortfolioRegTMarginTests
 
     // ---- Helpers ----
 
+    private static LedgerAccount ScopedLedgerAccount(LedgerAccountRole role, string? symbol = null)
+        => StandardChartOfAccounts.Instance.Resolve(role, "margin-1", symbol);
+
     private static PaperTradingPortfolio BuildRegTPortfolio(decimal cash) =>
         new(
         [
@@ -651,21 +656,22 @@ public sealed class PaperTradingPortfolioMarginRulesTests
             new AccountDefinition("margin-1", "Reg T Margin", AccountKind.Brokerage, 100_000m,
                 MarginType: MarginAccountType.RegT),
         ], ledger);
-        var openingLedgerCash = ledger.GetBalance(LedgerAccounts.Cash);
+        var openingLedgerCash = ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash));
 
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Sell, qty: 100, price: 200m));
-        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m,
+        (ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m,
             "ledger cash must fall by the posted margin exactly as account cash does");
-        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(30_000m);
+        ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.ShortSaleCollateralReceivable)).Should().Be(30_000m);
 
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 200m));
-        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
-        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(15_000m);
+        (ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.ShortSaleCollateralReceivable)).Should().Be(15_000m);
 
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 50, price: 180m));
-        (ledger.GetBalance(LedgerAccounts.Cash) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
-        ledger.GetBalance(LedgerAccounts.ShortSaleCollateralReceivable).Should().Be(0m,
+        (ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)) - openingLedgerCash).Should().Be(portfolio.Cash - 100_000m);
+        ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.ShortSaleCollateralReceivable)).Should().Be(0m,
             "all collateral returns to cash once the short is fully covered");
+        portfolio.CheckLedgerIntegrity().Should().BeEmpty();
     }
 
     [Fact]
@@ -982,7 +988,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
 
         var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
-        portfolio.MarginBalance.Should().Be(10_000m);
+        portfolio.MarginBalance.Should().Be(10_000m, because: "paid interest must not also be charged as loan principal");
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.001m);
     }
 
@@ -1033,8 +1039,8 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         var entry = ledger.Journal.Single(e => e.Description.Contains("Margin interest"));
         entry.Timestamp.Should().Be(asOf);
         entry.Lines.Should().HaveCount(2);
-        entry.Lines.Single(l => l.Account == LedgerAccounts.MarginInterestExpense).Debit.Should().Be(expectedInterest);
-        entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should().Be(expectedInterest);
+        entry.Lines.Single(l => l.Account == ScopedLedgerAccount(LedgerAccountRole.MarginInterestExpense)).Debit.Should().Be(expectedInterest);
+        entry.Lines.Single(l => l.Account == ScopedLedgerAccount(LedgerAccountRole.Cash)).Credit.Should().Be(expectedInterest);
     }
 
     [Theory]
@@ -1072,22 +1078,22 @@ public sealed class PaperTradingPortfolioMarginRulesTests
 
             AssertStage(cash: 100_000m, principal: 0m, securities: 0m, expense: 0m, entries: 1);
             portfolio.ApplyFill("margin-1", buy);
-            AssertStage(cash: 90_000m, principal: 10_000m, securities: 20_000m, expense: 0m, entries: 2);
+            AssertStage(cash: 90_000m, principal: 10_000m, securities: 20_000m, expense: 0m, entries: 3);
 
             portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt);
-            AssertStage(90_000m - expectedInterest, 10_000m, 20_000m, expectedInterest, entries: 3);
+            AssertStage(90_000m - expectedInterest, 10_000m, 20_000m, expectedInterest, entries: 4);
 
             portfolio.ApplyFill("margin-1", partialSale);
-            AssertStage(94_000m - expectedInterest, 6_000m, 12_000m, expectedInterest, entries: 4);
+            AssertStage(94_000m - expectedInterest, 6_000m, 12_000m, expectedInterest, entries: 6);
             portfolio.ApplyFill("margin-1", finalSale);
-            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 8);
 
             // Once flat, another period accrues nothing and cannot charge repaid principal.
             portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt.AddDays(days));
-            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 8);
             ledger.Journal.Should().ContainSingle(entry => entry.Description.Contains("Margin interest"));
             ledger.Journal.SelectMany(entry => entry.Lines)
-                .Where(line => line.Account == LedgerAccounts.MarginLoanPayable)
+                .Where(line => line.Account == ScopedLedgerAccount(LedgerAccountRole.MarginLoanPayable))
                 .Sum(line => line.Debit).Should().Be(10_000m, "repayment must retire only the original principal");
 
             // Generated posting IDs and the constructor's wall-clock timestamp are not
@@ -1101,11 +1107,12 @@ public sealed class PaperTradingPortfolioMarginRulesTests
                 portfolio.Cash.Should().Be(cash);
                 portfolio.MarginBalance.Should().Be(principal);
                 portfolio.PortfolioValue.Should().Be(100_000m - expense);
-                ledger.GetBalance(LedgerAccounts.Cash).Should().Be(cash);
-                ledger.GetBalance(LedgerAccounts.MarginLoanPayable).Should().Be(principal);
-                ledger.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(securities);
-                ledger.GetBalance(LedgerAccounts.MarginInterestExpense).Should().Be(expense);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Cash)).Should().Be(cash);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.MarginLoanPayable)).Should().Be(principal);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.Securities, "AAPL")).Should().Be(securities);
+                ledger.GetBalance(ScopedLedgerAccount(LedgerAccountRole.MarginInterestExpense)).Should().Be(expense);
                 ledger.Journal.Should().HaveCount(entries).And.OnlyContain(entry => entry.IsBalanced);
+                portfolio.CheckLedgerIntegrity().Should().BeEmpty();
             }
         }
     }
@@ -1162,6 +1169,9 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     // ---- Helpers ----
+
+    private static LedgerAccount ScopedLedgerAccount(LedgerAccountRole role, string? symbol = null)
+        => StandardChartOfAccounts.Instance.Resolve(role, "margin-1", symbol);
 
     private static PaperTradingPortfolio BuildRegTPortfolio(decimal cash) =>
         new(

@@ -1,11 +1,11 @@
 {
-  "total_files": 802,
-  "orphaned_count": 259,
-  "no_heading_count": 157,
+  "total_files": 1216,
+  "orphaned_count": 398,
+  "no_heading_count": 233,
   "stale_count": 0,
-  "todo_count": 329,
-  "health_score": 83,
-  "signal_digest": "sha256:5d3c8cf2955cb0db47b5a171f32f45382a52a5cf2ea696868baf85e164905836",
+  "todo_count": 332,
+  "health_score": 84,
+  "signal_digest": "sha256:29dd3e995558ca148d0de1de98546dbe240a56cbc906ccc05ad1c15cc62140e8",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -32,57 +32,100 @@
     ".agents/skills/meridian-simulated-user-panel/references/rubric.md",
     ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
     ".agents/skills/meridian-test-writer/SKILL.md",
+    "Meridian Design System/BRAND_GUIDELINES.md",
     "Meridian Design System/CONTENT_FUNDAMENTALS.md",
+    "Meridian Design System/CONTRIBUTING.md",
     "Meridian Design System/ICONOGRAPHY.md",
     "Meridian Design System/INSPIRATION_BRIEF.md",
+    "Meridian Design System/PATTERNS.md",
     "Meridian Design System/SKILL.md",
     "Meridian Design System/VISUAL_FOUNDATIONS.md",
     "Meridian Design System/components/accounting/AccountTree.prompt.md",
+    "Meridian Design System/components/accounting/AccountingPeriodSelector.prompt.md",
     "Meridian Design System/components/accounting/AgingTable.prompt.md",
     "Meridian Design System/components/accounting/AllocationEditor.prompt.md",
     "Meridian Design System/components/accounting/AmountCell.prompt.md",
+    "Meridian Design System/components/accounting/Assurance.prompt.md",
+    "Meridian Design System/components/accounting/BasisBridge.prompt.md",
+    "Meridian Design System/components/accounting/BasisComparisonMatrix.prompt.md",
+    "Meridian Design System/components/accounting/CalculationTrace.prompt.md",
+    "Meridian Design System/components/accounting/CloseCalendar.prompt.md",
     "Meridian Design System/components/accounting/CommitmentBar.prompt.md",
     "Meridian Design System/components/accounting/FxRevaluationTable.prompt.md",
+    "Meridian Design System/components/accounting/IncomeSchedule.prompt.md",
     "Meridian Design System/components/accounting/JournalEntryForm.prompt.md",
     "Meridian Design System/components/accounting/LedgerTable.prompt.md",
+    "Meridian Design System/components/accounting/LifecycleRibbon.prompt.md",
     "Meridian Design System/components/accounting/Money.prompt.md",
+    "Meridian Design System/components/accounting/PostingImpactPreview.prompt.md",
     "Meridian Design System/components/accounting/ReconciliationPanel.prompt.md",
+    "Meridian Design System/components/accounting/RollforwardMatrix.prompt.md",
+    "Meridian Design System/components/accounting/RollforwardTrace.prompt.md",
+    "Meridian Design System/components/accounting/ScheduleLadder.prompt.md",
     "Meridian Design System/components/accounting/StatementTable.prompt.md",
     "Meridian Design System/components/accounting/TaxLotTable.prompt.md",
+    "Meridian Design System/components/accounting/TieOutPanel.prompt.md",
     "Meridian Design System/components/accounting/TrialBalance.prompt.md",
+    "Meridian Design System/components/accounting/VarianceCell.prompt.md",
+    "Meridian Design System/components/charts/AnalyticalField.prompt.md",
+    "Meridian Design System/components/charts/AnalyticalFigure.prompt.md",
     "Meridian Design System/components/charts/BarChart.prompt.md",
     "Meridian Design System/components/charts/CandleChart.prompt.md",
+    "Meridian Design System/components/charts/CashFlowLadder.prompt.md",
+    "Meridian Design System/components/charts/ChartAnnotations.prompt.md",
     "Meridian Design System/components/charts/ChartCard.prompt.md",
+    "Meridian Design System/components/charts/ChartFrame.prompt.md",
     "Meridian Design System/components/charts/ChartTooltip.prompt.md",
+    "Meridian Design System/components/charts/ComparisonPlate.prompt.md",
+    "Meridian Design System/components/charts/ControlDependencyGraph.prompt.md",
     "Meridian Design System/components/charts/CorrelationHeatmap.prompt.md",
     "Meridian Design System/components/charts/CoverageMatrix.prompt.md",
     "Meridian Design System/components/charts/DepthChart.prompt.md",
+    "Meridian Design System/components/charts/DistributionRange.prompt.md",
+    "Meridian Design System/components/charts/DonutChart.prompt.md",
+    "Meridian Design System/components/charts/DotMatrix.prompt.md",
     "Meridian Design System/components/charts/DrawdownChart.prompt.md",
+    "Meridian Design System/components/charts/DurationContribution.prompt.md",
     "Meridian Design System/components/charts/EquityCurve.prompt.md",
+    "Meridian Design System/components/charts/Figure.prompt.md",
     "Meridian Design System/components/charts/Histogram.prompt.md",
+    "Meridian Design System/components/charts/IntervalBar.prompt.md",
+    "Meridian Design System/components/charts/LineageGraph.prompt.md",
+    "Meridian Design System/components/charts/MaturityLadder.prompt.md",
     "Meridian Design System/components/charts/OwnershipGraph.prompt.md",
+    "Meridian Design System/components/charts/PeerComparisonStrip.prompt.md",
     "Meridian Design System/components/charts/PnLCalendar.prompt.md",
     "Meridian Design System/components/charts/ScatterChart.prompt.md",
+    "Meridian Design System/components/charts/ScenarioSelector.prompt.md",
+    "Meridian Design System/components/charts/SmallMultiples.prompt.md",
     "Meridian Design System/components/charts/Sparkline.prompt.md",
     "Meridian Design System/components/charts/TimeframeSwitcher.prompt.md",
+    "Meridian Design System/components/charts/TraceChart.prompt.md",
     "Meridian Design System/components/charts/Treemap.prompt.md",
+    "Meridian Design System/components/charts/WatchlistStrip.prompt.md",
     "Meridian Design System/components/charts/WaterfallChart.prompt.md",
     "Meridian Design System/components/charts/YieldCurve.prompt.md",
+    "Meridian Design System/components/charts/useChartCrosshair.prompt.md",
+    "Meridian Design System/components/charts/viz.prompt.md",
     "Meridian Design System/components/core/Accordion.prompt.md",
     "Meridian Design System/components/core/AsyncCombobox.prompt.md",
     "Meridian Design System/components/core/Badge.prompt.md",
     "Meridian Design System/components/core/Breadcrumb.prompt.md",
     "Meridian Design System/components/core/Button.prompt.md",
     "Meridian Design System/components/core/Callout.prompt.md",
+    "Meridian Design System/components/core/Capsule.prompt.md",
     "Meridian Design System/components/core/Checkbox.prompt.md",
     "Meridian Design System/components/core/Combobox.prompt.md",
     "Meridian Design System/components/core/CommandPalette.prompt.md",
     "Meridian Design System/components/core/ContextMenu.prompt.md",
+    "Meridian Design System/components/core/ContinuityFrame.prompt.md",
     "Meridian Design System/components/core/DatePicker.prompt.md",
     "Meridian Design System/components/core/DateRangePicker.prompt.md",
+    "Meridian Design System/components/core/Datum.prompt.md",
     "Meridian Design System/components/core/Delta.prompt.md",
     "Meridian Design System/components/core/DensityToggle.prompt.md",
     "Meridian Design System/components/core/Dialog.prompt.md",
+    "Meridian Design System/components/core/Disclosure.prompt.md",
     "Meridian Design System/components/core/Drawer.prompt.md",
     "Meridian Design System/components/core/ErrorBoundary.prompt.md",
     "Meridian Design System/components/core/Eyebrow.prompt.md",
@@ -91,6 +134,7 @@
     "Meridian Design System/components/core/Form.prompt.md",
     "Meridian Design System/components/core/FormField.prompt.md",
     "Meridian Design System/components/core/FormValidation.prompt.md",
+    "Meridian Design System/components/core/FormatProvider.prompt.md",
     "Meridian Design System/components/core/FreshnessIndicator.prompt.md",
     "Meridian Design System/components/core/Gauge.prompt.md",
     "Meridian Design System/components/core/Grid.prompt.md",
@@ -99,14 +143,20 @@
     "Meridian Design System/components/core/InstrumentChip.prompt.md",
     "Meridian Design System/components/core/Kbd.prompt.md",
     "Meridian Design System/components/core/LinearGauge.prompt.md",
+    "Meridian Design System/components/core/LocalDate.prompt.md",
+    "Meridian Design System/components/core/MaterialityAssessment.prompt.md",
     "Meridian Design System/components/core/Modal.prompt.md",
     "Meridian Design System/components/core/MultiSelect.prompt.md",
     "Meridian Design System/components/core/NotificationCenter.prompt.md",
     "Meridian Design System/components/core/NumberInput.prompt.md",
+    "Meridian Design System/components/core/ObjectModel.prompt.md",
+    "Meridian Design System/components/core/ObjectScope.prompt.md",
+    "Meridian Design System/components/core/ObjectTrail.prompt.md",
     "Meridian Design System/components/core/PanelSurface.prompt.md",
     "Meridian Design System/components/core/Popover.prompt.md",
     "Meridian Design System/components/core/ProgressBar.prompt.md",
     "Meridian Design System/components/core/RadioGroup.prompt.md",
+    "Meridian Design System/components/core/Registry.prompt.md",
     "Meridian Design System/components/core/SegmentedControl.prompt.md",
     "Meridian Design System/components/core/Select.prompt.md",
     "Meridian Design System/components/core/Slider.prompt.md",
@@ -115,16 +165,25 @@
     "Meridian Design System/components/core/Stack.prompt.md",
     "Meridian Design System/components/core/StatusBanner.prompt.md",
     "Meridian Design System/components/core/Stepper.prompt.md",
+    "Meridian Design System/components/core/StrategyModel.prompt.md",
     "Meridian Design System/components/core/Tabs.prompt.md",
     "Meridian Design System/components/core/TagInput.prompt.md",
     "Meridian Design System/components/core/TextArea.prompt.md",
+    "Meridian Design System/components/core/TimeContext.prompt.md",
     "Meridian Design System/components/core/Timestamp.prompt.md",
     "Meridian Design System/components/core/Toast.prompt.md",
     "Meridian Design System/components/core/Tooltip.prompt.md",
     "Meridian Design System/components/core/TreeView.prompt.md",
+    "Meridian Design System/components/core/Validators.prompt.md",
+    "Meridian Design System/components/core/ValueAuthority.prompt.md",
+    "Meridian Design System/components/core/format.prompt.md",
+    "Meridian Design System/components/core/localDate.js.prompt.md",
+    "Meridian Design System/components/core/useFormState.prompt.md",
     "Meridian Design System/components/data/BulkActionBar.prompt.md",
     "Meridian Design System/components/data/ColumnChooser.prompt.md",
     "Meridian Design System/components/data/ColumnManager.prompt.md",
+    "Meridian Design System/components/data/DataGrid.prompt.md",
+    "Meridian Design System/components/data/DataStateSwitch.prompt.md",
     "Meridian Design System/components/data/DenseDataTable.prompt.md",
     "Meridian Design System/components/data/EditableCell.prompt.md",
     "Meridian Design System/components/data/EmptyState.prompt.md",
@@ -133,50 +192,130 @@
     "Meridian Design System/components/data/FilterBuilder.prompt.md",
     "Meridian Design System/components/data/FilteredDataTable.prompt.md",
     "Meridian Design System/components/data/KeyValueGrid.prompt.md",
+    "Meridian Design System/components/data/LinkedSelectionProvider.prompt.md",
     "Meridian Design System/components/data/MetricCard.prompt.md",
+    "Meridian Design System/components/data/OptimisticCell.prompt.md",
     "Meridian Design System/components/data/Pagination.prompt.md",
     "Meridian Design System/components/data/SavedViews.prompt.md",
+    "Meridian Design System/components/data/SelectionCompare.prompt.md",
     "Meridian Design System/components/data/SelectionToolbar.prompt.md",
     "Meridian Design System/components/data/Skeleton.prompt.md",
+    "Meridian Design System/components/data/TableHooks.prompt.md",
     "Meridian Design System/components/data/Toolbar.prompt.md",
     "Meridian Design System/components/data/VirtualizedList.prompt.md",
     "Meridian Design System/components/data/WorksheetGrid.prompt.md",
+    "Meridian Design System/components/decision/ConsequenceRail.prompt.md",
+    "Meridian Design System/components/decision/DecisionSnapshot.prompt.md",
+    "Meridian Design System/components/decision/EvidenceRail.prompt.md",
+    "Meridian Design System/components/operations/ActionEnvelope.prompt.md",
+    "Meridian Design System/components/operations/ActionGuard.prompt.md",
+    "Meridian Design System/components/operations/ActionQueue.prompt.md",
+    "Meridian Design System/components/operations/AdapterDiagnostics.prompt.md",
+    "Meridian Design System/components/operations/AnnotationLayer.prompt.md",
+    "Meridian Design System/components/operations/AttestationPanel.prompt.md",
     "Meridian Design System/components/operations/CaseQueue.prompt.md",
+    "Meridian Design System/components/operations/ChangeSetReview.prompt.md",
+    "Meridian Design System/components/operations/ClaimHeader.prompt.md",
+    "Meridian Design System/components/operations/ConnectionState.prompt.md",
+    "Meridian Design System/components/operations/DataCondition.prompt.md",
+    "Meridian Design System/components/operations/DecisionFlow.prompt.md",
     "Meridian Design System/components/operations/DiffView.prompt.md",
     "Meridian Design System/components/operations/EventTimeline.prompt.md",
+    "Meridian Design System/components/operations/EvidenceInspector.prompt.md",
     "Meridian Design System/components/operations/EvidenceLink.prompt.md",
+    "Meridian Design System/components/operations/EvidencePreview.prompt.md",
     "Meridian Design System/components/operations/GateRail.prompt.md",
+    "Meridian Design System/components/operations/HandoverBrief.prompt.md",
     "Meridian Design System/components/operations/LogTail.prompt.md",
     "Meridian Design System/components/operations/ProvenanceChip.prompt.md",
     "Meridian Design System/components/operations/ReadinessPanel.prompt.md",
+    "Meridian Design System/components/operations/ResolutionDrawer.prompt.md",
     "Meridian Design System/components/operations/SeverityBadge.prompt.md",
     "Meridian Design System/components/operations/SlaChip.prompt.md",
+    "Meridian Design System/components/operations/SourceCoverageSummary.prompt.md",
+    "Meridian Design System/components/operations/Status.prompt.md",
+    "Meridian Design System/components/operations/StrategyRunModel.prompt.md",
     "Meridian Design System/components/operations/TrustStrip.prompt.md",
     "Meridian Design System/components/operations/ValidationIssueList.prompt.md",
+    "Meridian Design System/components/operations/ValueEnvelope.prompt.md",
+    "Meridian Design System/components/operations/VersionConflictNotice.prompt.md",
     "Meridian Design System/components/operations/WorkspaceSection.prompt.md",
+    "Meridian Design System/components/shell/GlobalSearch.prompt.md",
     "Meridian Design System/components/shell/NavRail.prompt.md",
+    "Meridian Design System/components/shell/ReturnPath.prompt.md",
+    "Meridian Design System/components/shell/ScreenComposition.prompt.md",
     "Meridian Design System/components/shell/SessionControls.prompt.md",
     "Meridian Design System/components/shell/StatusBar.prompt.md",
+    "Meridian Design System/components/shell/WorkspaceContextBar.prompt.md",
+    "Meridian Design System/components/shell/WorkspaceLayout.prompt.md",
+    "Meridian Design System/components/shell/WorkstationShell.prompt.md",
     "Meridian Design System/components/shell/WorkstationTopbar.prompt.md",
     "Meridian Design System/components/trading/Blotter.prompt.md",
     "Meridian Design System/components/trading/DepthLadder.prompt.md",
     "Meridian Design System/components/trading/FillsFeed.prompt.md",
     "Meridian Design System/components/trading/OptionChainTable.prompt.md",
     "Meridian Design System/components/trading/OrderTicket.prompt.md",
+    "Meridian Design System/components/trading/TimeAndSalesTape.prompt.md",
+    "Meridian Design System/docs/ACCOUNTING_INTERFACE_4_2.md",
+    "Meridian Design System/docs/ACCOUNTING_INTERFACE_4_3.md",
+    "Meridian Design System/docs/ARCHITECTURE.md",
     "Meridian Design System/docs/CONTRACT_AUDIT.md",
     "Meridian Design System/docs/COOKBOOK.md",
+    "Meridian Design System/docs/COORDINATED_COMPONENTS.md",
+    "Meridian Design System/docs/DEPLOYMENT_CHECKLIST_4_1.md",
     "Meridian Design System/docs/GETTING_STARTED.md",
     "Meridian Design System/docs/PERFORMANCE.md",
-    "Meridian Design System/docs/UPGRADING.md",
+    "Meridian Design System/docs/QA_DARK_AUDIT.md",
+    "Meridian Design System/docs/QA_REPORT_3.1.0.md",
+    "Meridian Design System/docs/QA_REPORT_3.3.1.md",
+    "Meridian Design System/docs/QA_REPORT_3.5.md",
+    "Meridian Design System/docs/QA_REPORT_4.2.0.md",
+    "Meridian Design System/docs/QA_REPORT_4.3.0.md",
+    "Meridian Design System/docs/RELEASE_NOTES_3.1.0.md",
+    "Meridian Design System/docs/RELEASE_NOTES_3.2.0.md",
+    "Meridian Design System/docs/RELEASE_NOTES_3.3.1.md",
+    "Meridian Design System/docs/RELEASE_NOTES_3.5.0.md",
+    "Meridian Design System/docs/RELEASE_NOTES_4.2.0.md",
+    "Meridian Design System/docs/RELEASE_NOTES_4.3.0.md",
+    "Meridian Design System/docs/RELEASE_NOTES_R2.md",
+    "Meridian Design System/docs/SEMANTIC_SAFETY_4_4.md",
+    "Meridian Design System/docs/SUITE_COHESION_4_4.md",
+    "Meridian Design System/docs/UX_DEPTH_4_1.md",
     "Meridian Design System/docs/changelog/SYSTEM_STATE_2026-06.md",
+    "Meridian Design System/github.md",
     "Meridian Design System/guidelines/ACCESSIBILITY.md",
+    "Meridian Design System/guidelines/ACTION_SEMANTICS.md",
+    "Meridian Design System/guidelines/ADAPTER_SEMANTICS.md",
+    "Meridian Design System/guidelines/ANALYTICAL_SCOPE.md",
+    "Meridian Design System/guidelines/BRAND_GUIDELINES.md",
+    "Meridian Design System/guidelines/CARD_INDEX.md",
+    "Meridian Design System/guidelines/CONFORMANCE.md",
     "Meridian Design System/guidelines/CONTENT_FUNDAMENTALS.md",
+    "Meridian Design System/guidelines/DECISION_SEMANTICS.md",
     "Meridian Design System/guidelines/ENTITY_SCHEMAS.md",
+    "Meridian Design System/guidelines/EXTENDING.md",
     "Meridian Design System/guidelines/ICONOGRAPHY.md",
+    "Meridian Design System/guidelines/NUMERIC_AUTHORITY.md",
+    "Meridian Design System/guidelines/OBJECT_MODEL.md",
+    "Meridian Design System/guidelines/OPERATING_LANGUAGE.md",
+    "Meridian Design System/guidelines/PROGRESSIVE_DISCLOSURE.md",
+    "Meridian Design System/guidelines/SESSION_CONTINUITY.md",
     "Meridian Design System/guidelines/STATES_AND_ANTIPATTERNS.md",
+    "Meridian Design System/guidelines/TABULAR_CONTRACT.md",
+    "Meridian Design System/guidelines/TEMPLATE_CONTRACT.md",
+    "Meridian Design System/guidelines/TIME_SEMANTICS.md",
     "Meridian Design System/guidelines/TOKEN_REFERENCE.md",
+    "Meridian Design System/guidelines/VALUE_ENVELOPE.md",
+    "Meridian Design System/guidelines/VISUALIZATION_GRAMMAR.md",
     "Meridian Design System/guidelines/VISUAL_FOUNDATIONS.md",
     "Meridian Design System/guidelines/WORKSTATION_BLUEPRINT.md",
+    "Meridian Design System/guidelines/WORKSTATION_HIERARCHY.md",
+    "Meridian Design System/guidelines/financial-numbers.md",
+    "Meridian Design System/templates/PRODUCTION_SCREENS.md",
+    "Meridian Design System/tests/A11Y_RUN_4.2.0.md",
+    "Meridian Design System/tests/A11Y_RUN_4.3.0.md",
+    "Meridian Design System/tests/A11Y_STATIC_AUDIT_4.1.md",
+    "Meridian Design System/tests/BROWSER_TEST_PLAN.md",
     "benchmarks/BOTTLENECK_REPORT.md",
     "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
     "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
@@ -209,7 +348,7 @@
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
     "docs/engineering/archive-compression-replay-safety.md",
-    "docs/generated/configuration-schema.md",
+    "docs/engineering/plans/review-remediation-2026-11-12.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
@@ -296,35 +435,70 @@
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/hosted-provider-pass-37678970064/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-baseline/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
     "docs/testing/evidence/wal-checksum-2026-10-07/runs/local-first-optimized-interrupted/bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md",
+    "Meridian Design System/components/accounting/AccountingPeriodSelector.prompt.md",
     "Meridian Design System/components/accounting/AccountTree.prompt.md",
     "Meridian Design System/components/accounting/AgingTable.prompt.md",
     "Meridian Design System/components/accounting/AllocationEditor.prompt.md",
     "Meridian Design System/components/accounting/AmountCell.prompt.md",
+    "Meridian Design System/components/accounting/Assurance.prompt.md",
+    "Meridian Design System/components/accounting/BasisBridge.prompt.md",
+    "Meridian Design System/components/accounting/BasisComparisonMatrix.prompt.md",
+    "Meridian Design System/components/accounting/CalculationTrace.prompt.md",
+    "Meridian Design System/components/accounting/CloseCalendar.prompt.md",
     "Meridian Design System/components/accounting/CommitmentBar.prompt.md",
     "Meridian Design System/components/accounting/FxRevaluationTable.prompt.md",
+    "Meridian Design System/components/accounting/IncomeSchedule.prompt.md",
     "Meridian Design System/components/accounting/JournalEntryForm.prompt.md",
     "Meridian Design System/components/accounting/LedgerTable.prompt.md",
+    "Meridian Design System/components/accounting/LifecycleRibbon.prompt.md",
     "Meridian Design System/components/accounting/Money.prompt.md",
+    "Meridian Design System/components/accounting/PostingImpactPreview.prompt.md",
     "Meridian Design System/components/accounting/ReconciliationPanel.prompt.md",
+    "Meridian Design System/components/accounting/RollforwardMatrix.prompt.md",
+    "Meridian Design System/components/accounting/RollforwardTrace.prompt.md",
+    "Meridian Design System/components/accounting/ScheduleLadder.prompt.md",
     "Meridian Design System/components/accounting/StatementTable.prompt.md",
     "Meridian Design System/components/accounting/TaxLotTable.prompt.md",
+    "Meridian Design System/components/accounting/TieOutPanel.prompt.md",
     "Meridian Design System/components/accounting/TrialBalance.prompt.md",
+    "Meridian Design System/components/accounting/VarianceCell.prompt.md",
+    "Meridian Design System/components/charts/AnalyticalField.prompt.md",
+    "Meridian Design System/components/charts/AnalyticalFigure.prompt.md",
     "Meridian Design System/components/charts/BarChart.prompt.md",
     "Meridian Design System/components/charts/CandleChart.prompt.md",
+    "Meridian Design System/components/charts/CashFlowLadder.prompt.md",
+    "Meridian Design System/components/charts/ChartAnnotations.prompt.md",
     "Meridian Design System/components/charts/ChartCard.prompt.md",
+    "Meridian Design System/components/charts/ChartFrame.prompt.md",
     "Meridian Design System/components/charts/ChartTooltip.prompt.md",
+    "Meridian Design System/components/charts/ComparisonPlate.prompt.md",
+    "Meridian Design System/components/charts/ControlDependencyGraph.prompt.md",
     "Meridian Design System/components/charts/CorrelationHeatmap.prompt.md",
     "Meridian Design System/components/charts/CoverageMatrix.prompt.md",
     "Meridian Design System/components/charts/DepthChart.prompt.md",
+    "Meridian Design System/components/charts/DistributionRange.prompt.md",
+    "Meridian Design System/components/charts/DonutChart.prompt.md",
+    "Meridian Design System/components/charts/DotMatrix.prompt.md",
     "Meridian Design System/components/charts/DrawdownChart.prompt.md",
+    "Meridian Design System/components/charts/DurationContribution.prompt.md",
     "Meridian Design System/components/charts/EquityCurve.prompt.md",
     "Meridian Design System/components/charts/Histogram.prompt.md",
+    "Meridian Design System/components/charts/IntervalBar.prompt.md",
+    "Meridian Design System/components/charts/LineageGraph.prompt.md",
+    "Meridian Design System/components/charts/MaturityLadder.prompt.md",
     "Meridian Design System/components/charts/OwnershipGraph.prompt.md",
+    "Meridian Design System/components/charts/PeerComparisonStrip.prompt.md",
     "Meridian Design System/components/charts/PnLCalendar.prompt.md",
     "Meridian Design System/components/charts/ScatterChart.prompt.md",
+    "Meridian Design System/components/charts/ScenarioSelector.prompt.md",
+    "Meridian Design System/components/charts/SmallMultiples.prompt.md",
     "Meridian Design System/components/charts/Sparkline.prompt.md",
     "Meridian Design System/components/charts/TimeframeSwitcher.prompt.md",
+    "Meridian Design System/components/charts/TraceChart.prompt.md",
     "Meridian Design System/components/charts/Treemap.prompt.md",
+    "Meridian Design System/components/charts/useChartCrosshair.prompt.md",
+    "Meridian Design System/components/charts/viz.prompt.md",
+    "Meridian Design System/components/charts/WatchlistStrip.prompt.md",
     "Meridian Design System/components/charts/WaterfallChart.prompt.md",
     "Meridian Design System/components/charts/YieldCurve.prompt.md",
     "Meridian Design System/components/core/Accordion.prompt.md",
@@ -333,21 +507,26 @@
     "Meridian Design System/components/core/Breadcrumb.prompt.md",
     "Meridian Design System/components/core/Button.prompt.md",
     "Meridian Design System/components/core/Callout.prompt.md",
+    "Meridian Design System/components/core/Capsule.prompt.md",
     "Meridian Design System/components/core/Checkbox.prompt.md",
     "Meridian Design System/components/core/Combobox.prompt.md",
     "Meridian Design System/components/core/CommandPalette.prompt.md",
     "Meridian Design System/components/core/ContextMenu.prompt.md",
+    "Meridian Design System/components/core/ContinuityFrame.prompt.md",
     "Meridian Design System/components/core/DatePicker.prompt.md",
     "Meridian Design System/components/core/DateRangePicker.prompt.md",
+    "Meridian Design System/components/core/Datum.prompt.md",
     "Meridian Design System/components/core/Delta.prompt.md",
     "Meridian Design System/components/core/DensityToggle.prompt.md",
     "Meridian Design System/components/core/Dialog.prompt.md",
+    "Meridian Design System/components/core/Disclosure.prompt.md",
     "Meridian Design System/components/core/Drawer.prompt.md",
     "Meridian Design System/components/core/ErrorBoundary.prompt.md",
     "Meridian Design System/components/core/Eyebrow.prompt.md",
     "Meridian Design System/components/core/FileUpload.prompt.md",
     "Meridian Design System/components/core/Flex.prompt.md",
     "Meridian Design System/components/core/Form.prompt.md",
+    "Meridian Design System/components/core/FormatProvider.prompt.md",
     "Meridian Design System/components/core/FormField.prompt.md",
     "Meridian Design System/components/core/FormValidation.prompt.md",
     "Meridian Design System/components/core/FreshnessIndicator.prompt.md",
@@ -358,10 +537,14 @@
     "Meridian Design System/components/core/InstrumentChip.prompt.md",
     "Meridian Design System/components/core/Kbd.prompt.md",
     "Meridian Design System/components/core/LinearGauge.prompt.md",
+    "Meridian Design System/components/core/LocalDate.prompt.md",
+    "Meridian Design System/components/core/MaterialityAssessment.prompt.md",
     "Meridian Design System/components/core/Modal.prompt.md",
     "Meridian Design System/components/core/MultiSelect.prompt.md",
     "Meridian Design System/components/core/NotificationCenter.prompt.md",
     "Meridian Design System/components/core/NumberInput.prompt.md",
+    "Meridian Design System/components/core/ObjectModel.prompt.md",
+    "Meridian Design System/components/core/ObjectScope.prompt.md",
     "Meridian Design System/components/core/PanelSurface.prompt.md",
     "Meridian Design System/components/core/Popover.prompt.md",
     "Meridian Design System/components/core/ProgressBar.prompt.md",
@@ -374,16 +557,20 @@
     "Meridian Design System/components/core/Stack.prompt.md",
     "Meridian Design System/components/core/StatusBanner.prompt.md",
     "Meridian Design System/components/core/Stepper.prompt.md",
+    "Meridian Design System/components/core/StrategyModel.prompt.md",
     "Meridian Design System/components/core/Tabs.prompt.md",
     "Meridian Design System/components/core/TagInput.prompt.md",
     "Meridian Design System/components/core/TextArea.prompt.md",
+    "Meridian Design System/components/core/TimeContext.prompt.md",
     "Meridian Design System/components/core/Timestamp.prompt.md",
     "Meridian Design System/components/core/Toast.prompt.md",
     "Meridian Design System/components/core/Tooltip.prompt.md",
     "Meridian Design System/components/core/TreeView.prompt.md",
+    "Meridian Design System/components/core/ValueAuthority.prompt.md",
     "Meridian Design System/components/data/BulkActionBar.prompt.md",
     "Meridian Design System/components/data/ColumnChooser.prompt.md",
     "Meridian Design System/components/data/ColumnManager.prompt.md",
+    "Meridian Design System/components/data/DataStateSwitch.prompt.md",
     "Meridian Design System/components/data/DenseDataTable.prompt.md",
     "Meridian Design System/components/data/EditableCell.prompt.md",
     "Meridian Design System/components/data/EmptyState.prompt.md",
@@ -392,36 +579,64 @@
     "Meridian Design System/components/data/FilterBuilder.prompt.md",
     "Meridian Design System/components/data/FilteredDataTable.prompt.md",
     "Meridian Design System/components/data/KeyValueGrid.prompt.md",
+    "Meridian Design System/components/data/LinkedSelectionProvider.prompt.md",
     "Meridian Design System/components/data/MetricCard.prompt.md",
+    "Meridian Design System/components/data/OptimisticCell.prompt.md",
     "Meridian Design System/components/data/Pagination.prompt.md",
     "Meridian Design System/components/data/SavedViews.prompt.md",
+    "Meridian Design System/components/data/SelectionCompare.prompt.md",
     "Meridian Design System/components/data/SelectionToolbar.prompt.md",
     "Meridian Design System/components/data/Skeleton.prompt.md",
     "Meridian Design System/components/data/Toolbar.prompt.md",
     "Meridian Design System/components/data/VirtualizedList.prompt.md",
     "Meridian Design System/components/data/WorksheetGrid.prompt.md",
+    "Meridian Design System/components/decision/ConsequenceRail.prompt.md",
+    "Meridian Design System/components/decision/DecisionSnapshot.prompt.md",
+    "Meridian Design System/components/decision/EvidenceRail.prompt.md",
+    "Meridian Design System/components/operations/ActionEnvelope.prompt.md",
+    "Meridian Design System/components/operations/ActionGuard.prompt.md",
+    "Meridian Design System/components/operations/ActionQueue.prompt.md",
+    "Meridian Design System/components/operations/AnnotationLayer.prompt.md",
+    "Meridian Design System/components/operations/AttestationPanel.prompt.md",
     "Meridian Design System/components/operations/CaseQueue.prompt.md",
+    "Meridian Design System/components/operations/ChangeSetReview.prompt.md",
+    "Meridian Design System/components/operations/ClaimHeader.prompt.md",
+    "Meridian Design System/components/operations/ConnectionState.prompt.md",
+    "Meridian Design System/components/operations/DataCondition.prompt.md",
+    "Meridian Design System/components/operations/DecisionFlow.prompt.md",
     "Meridian Design System/components/operations/DiffView.prompt.md",
     "Meridian Design System/components/operations/EventTimeline.prompt.md",
+    "Meridian Design System/components/operations/EvidenceInspector.prompt.md",
     "Meridian Design System/components/operations/EvidenceLink.prompt.md",
+    "Meridian Design System/components/operations/EvidencePreview.prompt.md",
     "Meridian Design System/components/operations/GateRail.prompt.md",
     "Meridian Design System/components/operations/LogTail.prompt.md",
     "Meridian Design System/components/operations/ProvenanceChip.prompt.md",
     "Meridian Design System/components/operations/ReadinessPanel.prompt.md",
+    "Meridian Design System/components/operations/ResolutionDrawer.prompt.md",
     "Meridian Design System/components/operations/SeverityBadge.prompt.md",
     "Meridian Design System/components/operations/SlaChip.prompt.md",
+    "Meridian Design System/components/operations/SourceCoverageSummary.prompt.md",
+    "Meridian Design System/components/operations/Status.prompt.md",
+    "Meridian Design System/components/operations/StrategyRunModel.prompt.md",
     "Meridian Design System/components/operations/TrustStrip.prompt.md",
     "Meridian Design System/components/operations/ValidationIssueList.prompt.md",
+    "Meridian Design System/components/operations/VersionConflictNotice.prompt.md",
     "Meridian Design System/components/operations/WorkspaceSection.prompt.md",
+    "Meridian Design System/components/shell/GlobalSearch.prompt.md",
     "Meridian Design System/components/shell/NavRail.prompt.md",
+    "Meridian Design System/components/shell/ReturnPath.prompt.md",
     "Meridian Design System/components/shell/SessionControls.prompt.md",
     "Meridian Design System/components/shell/StatusBar.prompt.md",
+    "Meridian Design System/components/shell/WorkspaceContextBar.prompt.md",
+    "Meridian Design System/components/shell/WorkstationShell.prompt.md",
     "Meridian Design System/components/shell/WorkstationTopbar.prompt.md",
     "Meridian Design System/components/trading/Blotter.prompt.md",
     "Meridian Design System/components/trading/DepthLadder.prompt.md",
     "Meridian Design System/components/trading/FillsFeed.prompt.md",
     "Meridian Design System/components/trading/OptionChainTable.prompt.md",
     "Meridian Design System/components/trading/OrderTicket.prompt.md",
+    "Meridian Design System/components/trading/TimeAndSalesTape.prompt.md",
     "Meridian Design System/SKILL.md",
     "tools/actionlint/docs/README.md",
     "tools/actionlint/docs/reference.md"
@@ -1521,6 +1736,13 @@
       "stale": false
     },
     {
+      "path": "docs/architecture/review-boundary-extractions.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/architecture/runtime-component-state-boundaries.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2011,6 +2233,20 @@
       "stale": false
     },
     {
+      "path": "docs/domain/intercompany-agreements-and-entity-lifecycle.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/intercompany-agreements.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/domain/intercompany-consolidation.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2026,6 +2262,13 @@
     },
     {
       "path": "docs/domain/operational-evidence-graph.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/options-screening-and-assessments.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2151,6 +2394,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/blueprints/intercompany-agreement-registry.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/blueprints/portfolio-cash-ladder-blueprint-2026-07.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2242,6 +2492,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/execution-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/free-development-tools.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2277,6 +2534,20 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/browser-workstation-ux-program.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/carta-inspired-capital-lifecycle.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/desktop-workstation-screen-blueprint.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2291,7 +2562,21 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/plans/intercompany-entity-controls.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/plans/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/review-remediation-2026-11-12.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2473,6 +2758,13 @@
       "stale": false
     },
     {
+      "path": "docs/generated/database/contracts/fund-governance-contracts-page-03.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/generated/database/contracts/fund-governance-contracts.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2516,6 +2808,13 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-05.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/ledger-contracts-page-06.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2592,6 +2891,13 @@
       "stale": false
     },
     {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-08.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/generated/database/contracts/security-master-contracts.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2649,6 +2955,13 @@
     },
     {
       "path": "docs/generated/database/modules/money_market.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/modules/operator_triage.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2830,6 +3143,13 @@
       "stale": false
     },
     {
+      "path": "docs/operators/bond-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/browser-workstation-installer.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2872,6 +3192,13 @@
       "stale": false
     },
     {
+      "path": "docs/operators/financial-visualizations.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/operators/fund-ops-persistence-cutover.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2887,6 +3214,13 @@
     },
     {
       "path": "docs/operators/governed-reporting-operations.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/intercompany-entity-controls.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3566,6 +3900,1672 @@
     },
     {
       "path": "docs/reference/research-briefing-workflow.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-010.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-011.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.application/page-012.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.audit/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.backtesting.sdk/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.backtesting.sdk/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.backtesting.sdk/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.backtesting/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-010.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-011.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-012.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-013.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-014.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-015.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-016.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-017.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-018.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-019.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-020.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-021.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-022.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-023.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-024.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-025.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-026.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-027.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-028.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-029.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-030.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-031.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-032.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-033.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-034.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-035.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-036.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-037.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-038.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-039.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-040.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-041.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-042.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-043.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-044.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-045.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-046.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-047.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-048.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-049.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-050.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-051.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-052.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-053.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-054.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-055.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-056.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-057.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-058.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-059.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-060.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-061.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-062.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-063.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-064.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-065.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-066.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-067.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-068.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-069.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-070.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-071.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-072.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-073.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-074.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-075.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.core/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.core/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.core/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.core/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.core/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.dataintegration/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.dataintegration/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.dataintegration/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.dataintegration/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.dataintegration/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.dataintegration/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.documents/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.domain/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.domain/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.entities/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.execution.sdk/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.execution.sdk/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.execution.sdk/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.execution/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.execution/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.execution/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.execution/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.fsharp/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ibapi.smokestub/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.identity/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.identity/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.infrastructure/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.instruments/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.instruments/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ledger/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ledger/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ledger/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ledger/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ledger/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ledger/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.mcp/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.platform/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.platform/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.platform/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.portfoliorecords/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.processisolation/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.providersdk/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.providersdk/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.providersdk/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.providersdk/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.quantscript/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.referencedata/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.reporting/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.reporting/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.reporting/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.reporting/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.risk/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage.accounting/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-010.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-011.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-012.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-013.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-014.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.storage/page-015.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.strategies/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.strategies/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.strategies/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.strategies/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-010.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-011.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-012.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-013.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-014.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-015.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.services/page-016.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-010.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-011.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-012.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-013.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-014.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-015.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-016.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-017.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.ui.shared/page-018.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.workflow/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-002.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-003.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-006.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-007.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-008.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-010.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-011.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-012.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-013.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-014.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-015.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-016.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-017.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-018.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-019.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-020.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.wpf/page-021.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian/page-001.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/README.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4349,6 +6349,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/api/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/assets/brand/README.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4372,6 +6379,13 @@
     {
       "path": "Meridian Design System/CHANGELOG.md",
       "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/AccountingPeriodSelector.prompt.md",
+      "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -4405,6 +6419,41 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/accounting/Assurance.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/BasisBridge.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/BasisComparisonMatrix.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/CalculationTrace.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/CloseCalendar.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/accounting/CommitmentBar.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4413,6 +6462,13 @@
     },
     {
       "path": "Meridian Design System/components/accounting/FxRevaluationTable.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/IncomeSchedule.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4433,6 +6489,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/accounting/LifecycleRibbon.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/accounting/Money.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4440,7 +6503,35 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/accounting/PostingImpactPreview.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/accounting/ReconciliationPanel.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/RollforwardMatrix.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/RollforwardTrace.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/ScheduleLadder.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4461,7 +6552,35 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/accounting/TieOutPanel.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/accounting/TrialBalance.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/accounting/VarianceCell.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/AnalyticalField.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/AnalyticalFigure.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4482,6 +6601,20 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/CashFlowLadder.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/ChartAnnotations.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/ChartCard.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4489,7 +6622,28 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/ChartFrame.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/ChartTooltip.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/ComparisonPlate.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/ControlDependencyGraph.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4517,7 +6671,35 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/DistributionRange.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/DonutChart.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/DotMatrix.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/DrawdownChart.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/DurationContribution.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4531,6 +6713,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/Figure.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/Histogram.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4538,7 +6727,35 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/IntervalBar.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/LineageGraph.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/MaturityLadder.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/OwnershipGraph.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/PeerComparisonStrip.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4559,6 +6776,20 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/ScenarioSelector.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/SmallMultiples.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/Sparkline.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4573,7 +6804,35 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/charts/TraceChart.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/charts/Treemap.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/useChartCrosshair.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/viz.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/charts/WatchlistStrip.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4636,6 +6895,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/Capsule.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/core/Checkbox.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4664,6 +6930,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/ContinuityFrame.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/core/DatePicker.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4672,6 +6945,13 @@
     },
     {
       "path": "Meridian Design System/components/core/DateRangePicker.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/Datum.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4693,6 +6973,13 @@
     },
     {
       "path": "Meridian Design System/components/core/Dialog.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/Disclosure.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4735,6 +7022,20 @@
     },
     {
       "path": "Meridian Design System/components/core/Form.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/format.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/FormatProvider.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4811,6 +7112,27 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/localDate.js.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/LocalDate.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/MaterialityAssessment.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/core/Modal.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4839,6 +7161,27 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/ObjectModel.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/ObjectScope.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/ObjectTrail.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/core/PanelSurface.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4862,6 +7205,13 @@
     {
       "path": "Meridian Design System/components/core/RadioGroup.prompt.md",
       "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/Registry.prompt.md",
+      "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -4923,6 +7273,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/StrategyModel.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/core/Tabs.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4938,6 +7295,13 @@
     },
     {
       "path": "Meridian Design System/components/core/TextArea.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/TimeContext.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4972,6 +7336,27 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/core/useFormState.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/Validators.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/core/ValueAuthority.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/data/BulkActionBar.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -4987,6 +7372,20 @@
     },
     {
       "path": "Meridian Design System/components/data/ColumnManager.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/data/DataGrid.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/data/DataStateSwitch.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5049,7 +7448,21 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/data/LinkedSelectionProvider.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/data/MetricCard.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/data/OptimisticCell.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5070,6 +7483,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/data/SelectionCompare.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/data/SelectionToolbar.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -5079,6 +7499,13 @@
     {
       "path": "Meridian Design System/components/data/Skeleton.prompt.md",
       "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/data/TableHooks.prompt.md",
+      "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -5105,7 +7532,105 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/decision/ConsequenceRail.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/decision/DecisionSnapshot.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/decision/EvidenceRail.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/ActionEnvelope.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/ActionGuard.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/ActionQueue.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/AdapterDiagnostics.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/AnnotationLayer.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/AttestationPanel.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/operations/CaseQueue.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/ChangeSetReview.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/ClaimHeader.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/ConnectionState.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/DataCondition.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/DecisionFlow.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5126,7 +7651,21 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/operations/EvidenceInspector.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/operations/EvidenceLink.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/EvidencePreview.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5135,6 +7674,13 @@
     {
       "path": "Meridian Design System/components/operations/GateRail.prompt.md",
       "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/HandoverBrief.prompt.md",
+      "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -5161,6 +7707,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/operations/ResolutionDrawer.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/operations/SeverityBadge.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -5169,6 +7722,27 @@
     },
     {
       "path": "Meridian Design System/components/operations/SlaChip.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/SourceCoverageSummary.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/Status.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/StrategyRunModel.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5189,7 +7763,35 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/operations/ValueEnvelope.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/operations/VersionConflictNotice.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/operations/WorkspaceSection.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/shell/GlobalSearch.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5203,6 +7805,20 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/shell/ReturnPath.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/shell/ScreenComposition.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/components/shell/SessionControls.prompt.md",
       "has_heading": false,
       "todo_count": 0,
@@ -5211,6 +7827,27 @@
     },
     {
       "path": "Meridian Design System/components/shell/StatusBar.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/shell/WorkspaceContextBar.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/shell/WorkspaceLayout.prompt.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/components/shell/WorkstationShell.prompt.md",
       "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5259,7 +7896,49 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/components/trading/TimeAndSalesTape.prompt.md",
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/CONTENT_FUNDAMENTALS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/CONTRIBUTING.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/ACCOUNTING_INTERFACE_4_2.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/ACCOUNTING_INTERFACE_4_3.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/ARCHITECTURE.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/AUDIT_4_3_0.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5294,7 +7973,42 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/docs/COORDINATED_COMPONENTS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/DEPLOYMENT_CHECKLIST_4_1.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/EXPORT_4_3_0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/docs/GETTING_STARTED.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/LOCAL_PATCHES.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/METRICS.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5308,7 +8022,140 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/docs/QA_DARK_AUDIT.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/QA_REPORT_3.1.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/QA_REPORT_3.3.1.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/QA_REPORT_3.5.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/QA_REPORT_4.2.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/QA_REPORT_4.3.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/RELEASE_NOTES_3.1.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/RELEASE_NOTES_3.2.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/RELEASE_NOTES_3.3.1.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/RELEASE_NOTES_3.5.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/RELEASE_NOTES_4.2.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/RELEASE_NOTES_4.3.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/RELEASE_NOTES_R2.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/SEMANTIC_SAFETY_4_4.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/SUITE_COHESION_4_4.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/docs/UPGRADING.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/UX_DEPTH_4_1.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/docs/WORKSTATION_BLUEPRINT.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/github.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5322,7 +8169,56 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/guidelines/ACTION_SEMANTICS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/ADAPTER_SEMANTICS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/ANALYTICAL_SCOPE.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/BRAND_GUIDELINES.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/CARD_INDEX.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/CONFORMANCE.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/guidelines/CONTENT_FUNDAMENTALS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/DECISION_SEMANTICS.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5336,7 +8232,70 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/guidelines/EXTENDING.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/financial-numbers.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/guidelines/ICONOGRAPHY.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/NUMERIC_AUTHORITY.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/OBJECT_MODEL.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/OPERATING_LANGUAGE.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/PATTERNS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/PROGRESSIVE_DISCLOSURE.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/SESSION_CONTINUITY.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5350,7 +8309,35 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/guidelines/TABULAR_CONTRACT.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/TEMPLATE_CONTRACT.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/TIME_SEMANTICS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/guidelines/TOKEN_REFERENCE.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/VALUE_ENVELOPE.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5364,7 +8351,21 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/guidelines/VISUALIZATION_GRAMMAR.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/guidelines/WORKSTATION_BLUEPRINT.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/WORKSTATION_HIERARCHY.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5399,8 +8400,99 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/scripts/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/SKILL.md",
       "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/templates/_strategy-executor/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/templates/PRODUCTION_SCREENS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/templates/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/A11Y_RUN_4.2.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/A11Y_RUN_4.3.0.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/A11Y_STATIC_AUDIT_4.1.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/BROWSER_TEST_PLAN.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/FULL_LIBRARY_BROWSER.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/README.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tests/SPECIMEN_MATRIX.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/THIRD_PARTY_NOTICES.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/tokens/README.md",
+      "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
@@ -5763,6 +8855,13 @@
       "stale": false
     },
     {
+      "path": "src/Meridian.Reporting.ReadModels/README.md",
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "src/Meridian.Reporting/README.md",
       "has_heading": true,
       "todo_count": 1,
@@ -5780,6 +8879,13 @@
       "path": "src/Meridian.Setup/README.md",
       "has_heading": true,
       "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Storage.Accounting/README.md",
+      "has_heading": true,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -5883,6 +8989,13 @@
     },
     {
       "path": "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/fixtures/recurring-journal/golden/README.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

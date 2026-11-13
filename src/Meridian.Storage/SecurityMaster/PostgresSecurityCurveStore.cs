@@ -18,7 +18,7 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
     public const string VersionPublishedEvent = "CurveVersionPublished";
 
     private const string DefinitionColumns =
-        "curve_id, curve_key, kind, currency, index_name, tenor, day_count, interpolation, source, description, created_by, created_at";
+        "curve_id, curve_key, kind, currency, index_name, tenor, day_count, interpolation, source, description, created_by, created_at, rate_policy";
 
     private const string VersionColumns =
         "v.curve_version_id, v.curve_id, c.curve_key, v.version, v.as_of, v.recorded_at, v.sourced_at, v.source, v.published_by, v.points::text, v.content_sha256";
@@ -65,7 +65,7 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
                 insert into {_options.Schema}.security_curves
                     ({DefinitionColumns})
                 values
-                    (@curve_id, @curve_key, @kind, @currency, @index_name, @tenor, @day_count, @interpolation, @source, @description, @created_by, @created_at);
+                    (@curve_id, @curve_key, @kind, @currency, @index_name, @tenor, @day_count, @interpolation, @source, @description, @created_by, @created_at, @rate_policy);
                 """;
             insert.Parameters.AddWithValue("curve_id", curveId);
             insert.Parameters.AddWithValue("curve_key", normalized.CurveKey);
@@ -79,6 +79,7 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
             insert.Parameters.AddWithValue("description", (object?)normalized.Description ?? DBNull.Value);
             insert.Parameters.AddWithValue("created_by", normalized.CreatedBy!);
             insert.Parameters.AddWithValue("created_at", createdAt.UtcDateTime);
+            insert.Parameters.AddWithValue("rate_policy", normalized.RatePolicy.ToString());
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
@@ -104,7 +105,8 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
                 stored.DayCount,
                 stored.Interpolation.ToString(),
                 stored.Source,
-                stored.Description),
+                stored.Description)
+            { RatePolicy = stored.RatePolicy },
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return stored;
@@ -185,6 +187,20 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
         {
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return retained;
+        }
+
+        // Provider verification re-reads the same source observation with a new retrieval time.
+        // Compare retained source facts under the curve row lock before appending: retries must
+        // return their ORIGINAL version, even after a different version has been published.
+        // Hashes and evidence remain untouched; this does not change legacy curve idempotency.
+        if (normalized.Points.Any(static point => point.RateEvidence is not null))
+        {
+            var original = await ReadEquivalentRateVersionAsync(connection, transaction, normalized, ct).ConfigureAwait(false);
+            if (original is not null)
+            {
+                await transaction.CommitAsync(ct).ConfigureAwait(false);
+                return original;
+            }
         }
 
         long version;
@@ -312,6 +328,7 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
            && string.Equals(stored.Tenor, declared.Tenor, StringComparison.OrdinalIgnoreCase)
            && string.Equals(stored.DayCount, declared.DayCount, StringComparison.Ordinal)
            && stored.Interpolation == declared.Interpolation
+           && stored.RatePolicy == declared.RatePolicy
            && string.Equals(stored.Source, declared.Source, StringComparison.Ordinal);
 
     private static async Task LockKeyAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, string curveKey, CancellationToken ct)
@@ -366,6 +383,47 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
         return await reader.ReadAsync(ct).ConfigureAwait(false) ? ReadVersion(reader) : null;
     }
 
+    private async Task<SecurityCurveVersionDto?> ReadEquivalentRateVersionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        PublishSecurityCurveVersionRequest request,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            select {VersionColumns}
+            from {_options.Schema}.security_curve_versions v
+            join {_options.Schema}.security_curves c on c.curve_id = v.curve_id
+            where v.curve_id = @id and v.as_of = @as_of
+            order by v.version;
+            """;
+        command.Parameters.AddWithValue("id", request.CurveId);
+        command.Parameters.AddWithValue("as_of", request.AsOf);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        {
+            var candidate = ReadVersion(reader);
+            if (candidate.Source != request.Source || candidate.SourcedAt != request.SourcedAt ||
+                candidate.PublishedBy != request.PublishedBy || candidate.Points.Count != request.Points.Count)
+                continue;
+
+            var retainedPoints = candidate.Points.OrderBy(static point => point.Date).ToArray();
+            if (retainedPoints.Select(WithoutRateRetrievalTime).SequenceEqual(request.Points.Select(WithoutRateRetrievalTime)))
+                return candidate;
+        }
+
+        return null;
+    }
+
+    // Record equality retains every point and source/construction fact, including original
+    // value text, currency, vintage, source units, publication date, role, method and reviewer.
+    private static SecurityCurvePointDto WithoutRateRetrievalTime(SecurityCurvePointDto point)
+        => point.RateEvidence is { } evidence
+            ? point with { RateEvidence = evidence with { Observation = evidence.Observation with { RetrievedAt = default } } }
+            : point;
+
     private static SecurityCurveDefinitionDto ReadDefinition(NpgsqlDataReader reader)
         => new(
             reader.GetGuid(0),
@@ -379,7 +437,10 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
             reader.GetString(8),
             reader.IsDBNull(9) ? null : reader.GetString(9),
             reader.GetString(10),
-            reader.GetFieldValue<DateTimeOffset>(11));
+            reader.GetFieldValue<DateTimeOffset>(11))
+        {
+            RatePolicy = Enum.Parse<SecurityCurveRatePolicy>(reader.GetString(12))
+        };
 
     private static SecurityCurveVersionDto ReadVersion(NpgsqlDataReader reader)
     {

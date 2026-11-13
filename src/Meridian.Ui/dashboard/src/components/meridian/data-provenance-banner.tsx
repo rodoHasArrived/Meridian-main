@@ -21,6 +21,8 @@ export interface DataProvenanceBannerProps {
    * banner shrinks to a thin top-edge stripe instead of repeating the label at full width.
    */
   labeledInMasthead?: boolean;
+  /** Persistent masthead chip. Its enclosing status disclosure owns recovery controls. */
+  compact?: boolean;
 }
 
 /**
@@ -41,10 +43,11 @@ export function DataProvenanceBanner({
   onRetryLiveData,
   retryBusy,
   environment = null,
-  labeledInMasthead = false
+  labeledInMasthead = false,
+  compact = false
 }: DataProvenanceBannerProps) {
   const badge = buildDataProvenanceBadgeViewModel({ provenance, detail });
-  const compact = labeledInMasthead
+  const stripe = labeledInMasthead
     && badge.visible
     && badge.provenance !== "unknown"
     && environment !== null
@@ -54,25 +57,26 @@ export function DataProvenanceBanner({
     return null;
   }
 
-  if (compact) {
+  if (stripe && !compact) {
     const fullText = `${badge.label} — ${badge.headline}. ${badge.detail}`;
+    return <section aria-label="Data provenance" className="workstation-provenance workstation-provenance--stripe" data-compact="true">
+      <div className="workstation-provenance-stripe" data-tone="danger" data-testid={`data-provenance-${badge.provenance}`}
+        role={badge.role} aria-live={badge.ariaLive} title={fullText}><span className="sr-only">{fullText}</span></div>
+    </section>;
+  }
+
+  if (compact) {
     return (
-      <section
-        aria-label="Data provenance"
-        className="workstation-provenance workstation-provenance--stripe"
-        data-compact="true"
+      <span
+        className="workstation-provenance-chip"
+        role={badge.role}
+        aria-live={badge.ariaLive}
+        aria-label={badge.ariaLabel}
+        title={badge.ariaLabel}
+        data-testid={`data-provenance-${badge.provenance}`}
       >
-        <div
-          className="workstation-provenance-stripe"
-          data-tone="danger"
-          data-testid={`data-provenance-${badge.provenance}`}
-          role={badge.role}
-          aria-live={badge.ariaLive}
-          title={fullText}
-        >
-          <span className="sr-only">{fullText}</span>
-        </div>
-      </section>
+        {badge.label}<span className="sr-only"> — {badge.headline}. {badge.detail}</span>
+      </span>
     );
   }
 

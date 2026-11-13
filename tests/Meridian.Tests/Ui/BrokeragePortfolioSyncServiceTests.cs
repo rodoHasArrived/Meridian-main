@@ -22,6 +22,148 @@ namespace Meridian.Tests.Ui;
 /// </summary>
 public sealed class BrokeragePortfolioSyncServiceTests
 {
+    [Theory]
+    [InlineData(125, "brokerage-sync:alpaca")]
+    [InlineData(-125, "brokerage-sync:alpaca")]
+    [InlineData(0, "brokerage-sync:alpaca")]
+    [InlineData(125, "manual:disjoint-components-v2")]
+    [InlineData(-125, "manual:disjoint-components-v2")]
+    [InlineData(125, "brokerage-sync::disjoint-components-v2")]
+    public async Task RunSyncAsync_SeparatesNativeAccrualWithoutChangingProviderEquityOrPositionEvidence(int accrued, string legacySource)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var now = DateTimeOffset.UtcNow;
+            var adapter = new AccruedPortfolioAdapter("alpaca", accrued, "USD");
+            var (service, services) = CreateService(root, adapter, new SequencedCashActivityAdapter("alpaca"),
+                includeSecurityLookup: true, timeProvider: new FixedTimeProvider(now));
+            await using var provider = services;
+            var accounts = provider.GetRequiredService<IFundAccountService>();
+            var accountId = Guid.NewGuid();
+            await accounts.CreateAccountAsync(new CreateAccountRequest(accountId, AccountTypeDto.Brokerage,
+                "AI-NATIVE", "Native accrued-interest account", "USD", now.AddDays(-10), "tests"));
+            var legacy = await accounts.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+                accountId, DateOnly.FromDateTime(now.AddDays(-1).UtcDateTime), "USD", 50_000m,
+                legacySource, SecuritiesMarketValue: 75_000m, AccruedInterest: accrued));
+
+            await service.RunSyncAsync(accountId, new WorkstationBrokerageSyncRunRequestDto("alpaca", "AI-NATIVE", "tests"));
+
+            var snapshot = await accounts.GetLatestBalanceSnapshotAsync(accountId);
+            snapshot.Should().NotBeNull();
+            snapshot!.CashBalance.Should().Be(50_000m);
+            snapshot.Source.Should().Be("brokerage-sync:alpaca:disjoint-components-v2");
+            snapshot.AccruedInterest.Should().Be(accrued);
+            snapshot.SecuritiesMarketValue.Should().Be(75_000m - accrued);
+            (snapshot.CashBalance + snapshot.SecuritiesMarketValue + snapshot.AccruedInterest + snapshot.PendingSettlement)
+                .Should().Be(125_000m, "native components must reproduce the provider equity exactly once for either accrual sign");
+            var positions = await service.GetPositionsAsync(accountId);
+            var retained = positions.Should().ContainSingle(position => position.Symbol == "AAPL").Subject;
+            retained.Quantity.Should().Be(100_000m);
+            retained.MarketPrice.Should().Be(101m);
+            retained.MarketValue.Should().Be(18_750m, "the provider mark is not reconstructed from quantity and price");
+            retained.AccruedInterest.Should().Be(accrued);
+            retained.ValuationBasis.Should().Be(nameof(BrokeragePositionValuationBasis.CostDerived));
+            var raw = await File.ReadAllTextAsync(Directory.GetFiles(Path.Combine(root, "raw", "alpaca", "AI-NATIVE"), "*.json").Single());
+            using (var document = JsonDocument.Parse(raw))
+            {
+                var position = document.RootElement.GetProperty("portfolio").GetProperty("positions")[0];
+                position.GetProperty("marketValue").GetDecimal().Should().Be(18_750m);
+                position.GetProperty("accruedInterest").GetDecimal().Should().Be(accrued);
+            }
+
+            var performance = await service.GetPerformanceAsync(accountId, null, null);
+            performance.BeginningEquity.Should().Be(125_000m, "existing source rows retain their prior cash-plus-securities performance arithmetic");
+            performance.EndingEquity.Should().Be(125_000m);
+            performance.CashAdjustedReturn.Should().Be(0m, "separating an existing accrual is not an economic return");
+            (await accounts.GetBalanceHistoryAsync(accountId)).Single(row => row.SnapshotId == legacy.SnapshotId)
+                .Should().Be(legacy, "legacy retained component and source bytes are not rewritten");
+            var reconciliation = new ProviderLedgerReconciliationService(service, accounts,
+                new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
+                NullLogger<ProviderLedgerReconciliationService>.Instance);
+            var detail = await reconciliation.RunAsync(accountId);
+            detail.Checks.Should().ContainSingle(check => check.CheckId == "total-equity"
+                && check.Status == ProviderLedgerReconciliationCheckStatusDto.Matched
+                && check.ExpectedAmount == 125_000m && check.ActualAmount == 125_000m && check.Variance == 0m);
+            detail.Breaks.Should().NotContain(row => row.Code == "TOTAL_EQUITY_MISMATCH");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Theory]
+    [InlineData("missing-value")]
+    [InlineData("missing-currency")]
+    public async Task RunSyncAsync_UnknownAccrualAllocationKeepsTheFullProviderEquityRemainder(string missing)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var adapter = new AccruedPortfolioAdapter("alpaca", missing == "missing-value" ? null : 125m,
+                missing == "missing-currency" ? null : "USD");
+            var (service, services) = CreateService(root, adapter, new FixedActivityAdapter("alpaca"), includeSecurityLookup: true);
+            await using var provider = services;
+            var accounts = provider.GetRequiredService<IFundAccountService>();
+            var accountId = Guid.NewGuid();
+            await accounts.CreateAccountAsync(new CreateAccountRequest(accountId, AccountTypeDto.Brokerage,
+                "AI-UNKNOWN", "Unknown accrued-interest allocation", "USD", DateTimeOffset.UtcNow.AddDays(-10), "tests"));
+
+            await service.RunSyncAsync(accountId, new WorkstationBrokerageSyncRunRequestDto("alpaca", "AI-UNKNOWN", "tests"));
+
+            var snapshot = await accounts.GetLatestBalanceSnapshotAsync(accountId);
+            snapshot.Should().NotBeNull();
+            snapshot!.AccruedInterest.Should().BeNull("neither a missing amount nor its currency can be inferred");
+            snapshot.SecuritiesMarketValue.Should().Be(75_000m);
+            (snapshot.CashBalance + snapshot.SecuritiesMarketValue).Should().Be(125_000m);
+            var positions = await service.GetPositionsAsync(accountId);
+            var position = positions.Should().ContainSingle(row => row.Symbol == "AAPL").Subject;
+            position.AccruedInterest.Should().Be(adapter.AccruedInterest);
+            position.Currency.Should().Be(adapter.PositionCurrency);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RunSyncAsync_DuplicateDetectionRetainsKnownZeroVersusUnknownAccrualChanges(bool knownFirst)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var adapter = new AccruedPortfolioAdapter("alpaca", knownFirst ? 0m : null, "USD");
+            var (service, services) = CreateService(root, adapter, new FixedActivityAdapter("alpaca"), includeSecurityLookup: true);
+            await using var provider = services;
+            var accounts = provider.GetRequiredService<IFundAccountService>();
+            var accountId = Guid.NewGuid();
+            await accounts.CreateAccountAsync(new CreateAccountRequest(accountId, AccountTypeDto.Brokerage,
+                "AI-REFRESH", "Accrual evidence refresh", "USD", DateTimeOffset.UtcNow.AddDays(-10), "tests"));
+            await service.RunSyncAsync(accountId, new WorkstationBrokerageSyncRunRequestDto("alpaca", "AI-REFRESH", "tests"));
+            adapter.AccruedInterest = knownFirst ? null : 0m;
+
+            await service.RunSyncAsync(accountId);
+            await service.RunSyncAsync(accountId);
+
+            var history = await accounts.GetBalanceHistoryAsync(accountId);
+            history.Should().HaveCount(2, "an evidence-state change is retained, while its exact repeated components are not appended again");
+            history.Should().ContainSingle(row => row.AccruedInterest == 0m);
+            history.Should().ContainSingle(row => row.AccruedInterest == null);
+            history.Should().OnlyContain(row => row.SecuritiesMarketValue == 75_000m && row.CashBalance == 50_000m
+                && row.Source == "brokerage-sync:alpaca:disjoint-components-v2");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+    // Recreating an adapter changes receipt time, not the business facts of an existing source ID.
+    private static readonly DateTimeOffset ActivityEconomicTime = DateTimeOffset.UtcNow;
+
     [Fact]
     public async Task RunSyncAsync_SuccessfulPortfolioCapturePublishesProductionAccountingSnapshot()
     {
@@ -382,6 +524,76 @@ public sealed class BrokeragePortfolioSyncServiceTests
             relinkedStatus.Health.Should().Be(WorkstationBrokerageSyncHealth.Stale,
                 "an explicit relink must not reuse the previous broker account's projection");
             relinkedStatus.LastSuccessfulSyncAt.Should().BeNull();
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
+    public async Task RunSyncAsync_RetainsDeduplicatedActivityHistoryAcrossSyncs()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var activity = new SequencedCashActivityAdapter("alpaca");
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                activity,
+                includeSecurityLookup: true);
+            var fundAccountId = Guid.NewGuid();
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(
+                    fundAccountId,
+                    AccountTypeDto.Brokerage,
+                    "BRK-001",
+                    "Primary Brokerage",
+                    "USD",
+                    DateTimeOffset.UtcNow.AddDays(-10),
+                    "tests"),
+                cts.Token);
+            var request = new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-123", "ops-review");
+
+            // The provider's window moves on: the second sync repeats "cash-2" and no longer
+            // returns "cash-1".
+            activity.CashTransactionIds = ["cash-1", "cash-2"];
+            (await service.RunSyncAsync(fundAccountId, request, cts.Token)).Health
+                .Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            activity.CashTransactionIds = ["cash-2", "cash-3"];
+            (await service.RunSyncAsync(fundAccountId, request, cts.Token)).Health
+                .Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+
+            (await service.GetActivityForActiveLinkAsync(fundAccountId, cts.Token)).Should().NotBeNull();
+            var history = await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token);
+            history.Select(static cash => cash.TransactionId).Should().BeEquivalentTo(["cash-1", "cash-2", "cash-3"]);
+            (await service.GetActivityAsync(fundAccountId, cts.Token))!.CashTransactions
+                .Select(static cash => cash.TransactionId)
+                .Should().BeEquivalentTo(["cash-2", "cash-3"], "the projection stays the latest provider snapshot");
+            (await service.GetCashTransactionHistoryAsync(Guid.NewGuid(), cts.Token)).Should().BeEmpty();
+
+            // Rebuild supplementary history from the accepted inbox after an interrupted or
+            // lost history projection, even when the provider's current window is empty.
+            File.Delete(Path.Combine(root, "activity-history", $"{fundAccountId:N}.json"));
+            activity.CashTransactionIds = [];
+            (await service.RunSyncAsync(fundAccountId, request, cts.Token)).Health
+                .Should().Be(WorkstationBrokerageSyncHealth.Healthy);
+            (await service.GetActivityAsync(fundAccountId, cts.Token))!.CashTransactions.Should().BeEmpty();
+            (await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token))
+                .Select(static cash => cash.TransactionId)
+                .Should().BeEquivalentTo(["cash-1", "cash-2", "cash-3"]);
+
+            // After a relink the retained rows belong to the previous external account and must
+            // not be served as the new account's activity.
+            await service.LinkAccountAsync(fundAccountId,
+                new BrokerageAccountLinkRequestDto("alpaca", "PA-RELINKED", "Relinked account", "tests"), cts.Token);
+            (await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
+            (await service.GetFillHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
+            // The projection still holds the previous account's snapshot until the next sync.
+            (await service.GetActivityAsync(fundAccountId, cts.Token)).Should().NotBeNull();
+            (await service.GetActivityForActiveLinkAsync(fundAccountId, cts.Token)).Should().BeNull();
         }
         finally
         {
@@ -1564,6 +1776,34 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
+    private sealed class AccruedPortfolioAdapter(string providerId, decimal? accruedInterest, string? positionCurrency) : IBrokeragePortfolioSync
+    {
+        public string ProviderId { get; } = providerId;
+        public decimal? AccruedInterest { get; set; } = accruedInterest;
+        public string? PositionCurrency { get; } = positionCurrency;
+
+        public Task<BrokeragePortfolioSnapshotDto> GetPortfolioSnapshotAsync(string externalAccountId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new BrokeragePortfolioSnapshotDto(
+                BuildExternalAccount(ProviderId, externalAccountId),
+                new BrokerageBalanceSnapshotDto(50_000m, 125_000m, 95_000m, "USD"),
+                [
+                    new BrokeragePositionSnapshotDto("AAPL", 100_000m, 99m, 101m, 18_750m, 750m, "bond", Currency: PositionCurrency)
+                    {
+                        AccruedInterest = AccruedInterest,
+                        ValuationBasis = BrokeragePositionValuationBasis.CostDerived
+                    },
+                    new BrokeragePositionSnapshotDto("MSFT", -100m, 105m, 100m, -10_000m, 500m, "equity", Currency: "USD")
+                    {
+                        AccruedInterest = 0m,
+                        ValuationBasis = BrokeragePositionValuationBasis.ProviderReported
+                    }
+                ],
+                DateTimeOffset.UtcNow));
+        }
+    }
+
     private sealed class FixedPortfolioAdapter(string providerId, DateTimeOffset? retrievedAt = null) : IBrokeragePortfolioSync
     {
         public string ProviderId { get; } = providerId;
@@ -1638,8 +1878,39 @@ public sealed class BrokeragePortfolioSyncServiceTests
         }
     }
 
+    private sealed class SequencedCashActivityAdapter(string providerId) : IBrokerageActivitySync
+    {
+        public string ProviderId { get; } = providerId;
+
+        public IReadOnlyList<string> CashTransactionIds { get; set; } = [];
+
+        public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
+            string externalAccountId,
+            DateTimeOffset? since = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new BrokerageActivitySnapshotDto(
+                ProviderId,
+                externalAccountId,
+                DateTimeOffset.UtcNow,
+                [],
+                [],
+                CashTransactionIds
+                    .Select(static id => new BrokerageCashTransactionDto(
+                        id,
+                        "DIV",
+                        12m,
+                        "USD",
+                        ActivityEconomicTime.AddHours(-1),
+                        "AAPL"))
+                    .ToArray()));
+        }
+    }
+
     private sealed class FixedActivityAdapter(string providerId) : IBrokerageActivitySync
     {
+        private readonly DateTimeOffset _sourceTime = ActivityEconomicTime;
         public string ProviderId { get; } = providerId;
 
         public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
@@ -1664,7 +1935,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         0m,
                         185m,
                         null,
-                        DateTimeOffset.UtcNow.AddMinutes(-8))
+                        _sourceTime.AddMinutes(-8))
                 ],
                 [
                     new BrokerageFillSnapshotDto(
@@ -1674,7 +1945,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         OrderSide.Buy,
                         10m,
                         184.25m,
-                        DateTimeOffset.UtcNow.AddMinutes(-12),
+                        _sourceTime.AddMinutes(-12),
                         "XNAS",
                         0m,
                         125m)
@@ -1685,7 +1956,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         "DIV",
                         42.50m,
                         "USD",
-                        DateTimeOffset.UtcNow.AddDays(-1),
+                        _sourceTime.AddDays(-1),
                         "AAPL",
                         "Dividend")
                 ],
@@ -1695,8 +1966,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         "corp-div-aapl",
                         "Dividend",
                         "AAPL",
-                        DateOnly.FromDateTime(DateTime.UtcNow.Date),
-                        DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-2)),
+                        DateOnly.FromDateTime(_sourceTime.UtcDateTime.Date),
+                        DateOnly.FromDateTime(_sourceTime.UtcDateTime.Date.AddDays(-2)),
                         Amount: 0.24m,
                         Currency: "USD",
                         Description: "AAPL dividend")

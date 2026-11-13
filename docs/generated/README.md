@@ -12,6 +12,7 @@ Generated pages in this subtree should carry an auto-generated notice when they 
 
 | Family | Source of truth | Output examples | Maintenance rule |
 | --- | --- | --- | --- |
+| Sample configuration reference | `config/appsettings.sample.json` and `build/scripts/docs/generate-configuration-reference.py` | `configuration-schema.md` | Regenerate exact dotted-key paths, types, and sample values; runtime defaults remain source-owned. |
 | Repository structure | Repository files and `build/scripts/docs/generate-structure-docs.py` | `repository-structure.md` | Regenerate from script. |
 | AI navigation | Repo map inputs and `build/scripts/docs/generate-ai-navigation.py` | `docs/ai/generated/repo-navigation.md`, `docs/ai/generated/repo-navigation.json`, `docs/ai/generated/recent-changes.md` | Regenerate when routing truth changes. |
 | Roadmap views | `docs/roadmap/data/*.yml` and roadmap renderers | `docs/roadmap/generated/*` | Edit YAML registry or renderer, then validate/render. |

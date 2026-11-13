@@ -9,6 +9,8 @@ import {
   AccountDetailScreen,
   ApprovalInboxScreen,
   CloseCalendarScreen,
+  ConsolidationWorkflowScreen,
+  FactorPaydownScreen,
   LedgerExplorerScreen,
   ReconciliationMatchWorkbenchScreen,
   ReportPreviewValidationScreen,
@@ -308,7 +310,7 @@ describe("finance standard pages", () => {
     expect(screen.getAllByText("Publication manifest retained for release control.").length).toBeGreaterThan(0);
 
     const confidence = screen.getByRole("region", { name: "Report preview confidence" });
-    const freshness = within(confidence).getByText("Freshness").parentElement;
+    const freshness = within(confidence).getByText("Freshness:", { selector: "summary span.text-muted-foreground" }).parentElement;
     expect(freshness).toHaveTextContent("Needs review");
     expect(freshness).toHaveTextContent("No as-of date retained");
   });
@@ -409,9 +411,12 @@ describe("finance standard pages", () => {
     expect(screen.getByLabelText("Ledger book")).toBeInTheDocument();
     expect(screen.getByLabelText("Ledger period")).toBeInTheDocument();
     expect(screen.queryByLabelText("Run / period")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Group consolidation" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Elimination book ID")).toHaveValue(LEDGER_BOOK_ID);
-    expect(screen.getByLabelText("Elimination period ID")).toHaveValue(LEDGER_PERIOD_ID);
+    expect(screen.queryByRole("heading", { name: "Group consolidation" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Factor paydown" })).not.toBeInTheDocument();
+    const consolidation = new URL(screen.getByRole("link", { name: "Open consolidation" }).getAttribute("href")!, "http://localhost");
+    expect(consolidation.pathname).toBe("/accounting/consolidation");
+    expect(consolidation.searchParams.get("ledgerBookId")).toBe(LEDGER_BOOK_ID);
+    expect(consolidation.searchParams.get("periodId")).toBe(LEDGER_PERIOD_ID);
 
     // The drill-through carries the period, which is how the detail screen resolves a posted
     // entry. It used to carry a runId, which no posted entry has.
@@ -589,10 +594,67 @@ describe("finance standard pages", () => {
     expect(table).not.toHaveTextContent("$500");
     // Posting lines inherit their entry's status; instruction copy is not a status value.
     expect(table).not.toHaveTextContent("Select amount for proof");
-    // The entry's lines agree on an entity, so the column names it rather than claiming the entry
-    // spans every entity.
-    expect(table).toHaveTextContent("entity-lux");
+    // Missing display-name evidence must not promote an internal identifier to an entity name.
+    expect(table).toHaveTextContent("Entity name unavailable");
+    expect(table).not.toHaveTextContent("entity-lux");
     expect(table).not.toHaveTextContent("All entities");
+  });
+
+  it("keeps entity workspace destinations in the exact source book, period and route scope", async () => {
+    mockPostedBook();
+    const feederBookId = "00000000-0000-0000-0000-0000000000cc";
+    const sourceBook = (await ledgerReportsApi.getLedgerBooks())[0]!;
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      sourceBook,
+      { ...sourceBook, ledgerBookId: feederBookId, displayName: "Feeder Fund", baseCurrency: "EUR" }
+    ]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation(async (query) => query?.ledgerBookId === feederBookId ? [{
+      periodId: LEDGER_PERIOD_ID, ledgerBookId: feederBookId, fiscalYear: 2026, periodNo: 7,
+      label: "July 2026", startDate: "2026-07-01", endDate: "2026-07-31", status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z", closedAt: "2026-08-02T00:00:00Z", version: 1
+    }] as never : []);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([{
+      journalEntryId: "je-feeder", periodId: LEDGER_PERIOD_ID, ledgerBookId: feederBookId,
+      timestamp: "2026-07-31T00:00:00Z", description: "Feeder posting", totalDebits: 500, totalCredits: 500,
+      isBalanced: true, lines: [{ entryId: "line-feeder", journalEntryId: "je-feeder",
+        timestamp: "2026-07-31T00:00:00Z", accountName: "Cash", accountType: "Asset", symbol: null,
+        financialAccountId: "1000", debit: 500, credit: 0, description: "Feeder posting", dimensions: { entityId: "entity-feeder" } }]
+    }] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />,
+      `/accounting/ledger?ledgerBookId=${feederBookId}&periodId=${LEDGER_PERIOD_ID}&symbol=EURUSD&asOf=2026-07-31`);
+
+    const links = screen.getAllByRole("link", { name: "Inspect Entity name unavailable" });
+    expect(links.length).toBeGreaterThan(0);
+    for (const link of links) {
+      const destination = new URL(link.getAttribute("href")!, "https://meridian.test");
+      expect(destination.pathname).toBe("/accounting/ledger");
+      expect(destination.searchParams.get("ledgerBookId")).toBe(feederBookId);
+      expect(destination.searchParams.get("periodId")).toBe(LEDGER_PERIOD_ID);
+      expect(destination.searchParams.get("symbol")).toBe("EURUSD");
+      expect(destination.searchParams.get("asOf")).toBe("2026-07-31");
+      expect(destination.searchParams.has("entityId")).toBe(false);
+      expect(destination.searchParams.has("accountId")).toBe(false);
+    }
+  });
+
+  it("opens consolidation as a scoped workflow rather than a ledger tail", async () => {
+    mockPostedBook();
+    await renderPage(<ConsolidationWorkflowScreen />, `/accounting/consolidation?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`);
+    expect(screen.getByRole("heading", { name: "Group consolidation" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Elimination book ID")).toHaveValue(LEDGER_BOOK_ID);
+    expect(screen.getByLabelText("Elimination period ID")).toHaveValue(LEDGER_PERIOD_ID);
+    expect(ledgerReportsApi.getLedgerPeriodJournalEntries).not.toHaveBeenCalled();
+  });
+
+  it("opens factor paydown with the governed book and period selectors", async () => {
+    mockPostedBook();
+    await renderPage(<FactorPaydownScreen />, `/accounting/factor-paydown?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`);
+    expect(screen.getByRole("region", { name: "Factor paydown" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Ledger book")).toHaveValue(LEDGER_BOOK_ID);
+    expect(screen.getByLabelText("Ledger period")).toHaveValue(LEDGER_PERIOD_ID);
+    expect(ledgerReportsApi.getLedgerPeriodJournalEntries).not.toHaveBeenCalled();
+    expect(screen.queryByRole("heading", { name: "Group consolidation" })).not.toBeInTheDocument();
   });
 
   it("keeps the journal tab's selected book when the operator visits the trial balance", async () => {

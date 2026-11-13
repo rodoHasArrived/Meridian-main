@@ -13,6 +13,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Utilities;
 using Serilog;
 
@@ -39,7 +40,13 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
     private const int MaximumDataPoints = 5000;
 
     private readonly string? _apiKey;
+    private readonly RateLimiterRegistry _rateLimiterRegistry;
     private readonly TimeProvider _timeProvider;
+
+    protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(_apiKey)
+        ? RateLimiter
+        : _rateLimiterRegistry.GetOrCreate(Name, _apiKey, "api-requests", MaxRequestsPerWindow, RateLimitWindow, RateLimitDelay);
+
 
 
     public override string Name => "twelvedata";
@@ -58,15 +65,12 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "EU", "CA", "AU");
 
 
-    public TwelveDataHistoricalDataProvider(
-        string? apiKey = null,
-        HttpClient? httpClient = null,
-        ILogger? log = null,
-        TimeProvider? timeProvider = null)
-        : base(httpClient, log, timeProvider: timeProvider)
+    public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null)
+        : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("TWELVEDATA_API_KEY");
-        _timeProvider = timeProvider ?? TimeProvider.System;
+        _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
+        _timeProvider = _rateLimiterRegistry.TimeProvider;
     }
 
     public override Task<bool> IsAvailableAsync(CancellationToken ct = default)
@@ -117,7 +121,7 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
                       $"&end_date={Uri.EscapeDataString(windowEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " 23:59:59")}" +
                       $"&outputsize={MaximumDataPoints}&format=JSON&apikey={Uri.EscapeDataString(_apiKey)}";
 
-            Log.Information("Requesting Twelve Data history for {Symbol} ({StartDate} to {EndDate})", symbol, windowStart, windowEnd);
+            Log.Information("Requesting bounded Twelve Data historical window");
             var json = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
             // The shared HTTP helper returns null only for HTTP 404. Treat it like the
             // body's unknown-symbol outcome, never as a successfully read date window.
@@ -158,6 +162,14 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
         return bars.Values.OrderBy(b => b.SessionDate).ToArray();
     }
 
+    protected override Task<HttpHandleResult> HandleHttpResponseAsync(
+        HttpResponseMessage response, string symbol, string dataType, CancellationToken ct)
+    {
+        if (CorporateActionFetchResult.IsPartialResponse(response))
+            throw InvalidResponse(symbol, "incomplete HTTP response");
+        return base.HandleHttpResponseAsync(response, symbol, dataType, ct);
+    }
+
     private HistoricalPage ParseJsonResponse(string json, string symbol, DateOnly from, DateOnly to)
     {
         TwelveDataResponse? response;
@@ -165,9 +177,9 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
         {
             response = JsonSerializer.Deserialize(json, TwelveDataHistoricalJsonContext.Default.TwelveDataResponse);
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
-            Log.Error(ex, "Failed to parse Twelve Data response for {Symbol}", symbol);
+            Log.Error("Failed to parse Twelve Data historical response");
             throw InvalidResponse(symbol, "malformed JSON");
         }
 
@@ -207,40 +219,41 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
             throw InvalidResponse(symbol, "daily window exceeded the response limit");
 
         var bars = new List<HistoricalBar>(response.Values.Count);
+        var sessions = new HashSet<DateOnly>();
 
         foreach (var value in response.Values)
         {
             if (value is null)
                 throw InvalidResponse(symbol, "null daily bar");
             if (string.IsNullOrEmpty(value.Datetime))
-                continue;
+                throw InvalidResponse(symbol, "missing daily session date");
 
             if (!ProviderDateParsing.TryParseProviderDate(value.Datetime, "yyyy-MM-dd", out var sessionDate))
-                continue;
+                throw InvalidResponse(symbol, "invalid daily session date");
+            if (!sessions.Add(sessionDate))
+                throw InvalidResponse(symbol, "duplicate daily session date");
 
             if (sessionDate < from)
                 continue;
             if (sessionDate > to)
                 continue;
 
-            if (!decimal.TryParse(value.Open, NumberStyles.Any, CultureInfo.InvariantCulture, out var open))
-                continue;
-            if (!decimal.TryParse(value.High, NumberStyles.Any, CultureInfo.InvariantCulture, out var high))
-                continue;
-            if (!decimal.TryParse(value.Low, NumberStyles.Any, CultureInfo.InvariantCulture, out var low))
-                continue;
-            if (!decimal.TryParse(value.Close, NumberStyles.Any, CultureInfo.InvariantCulture, out var close))
-                continue;
+            if (!decimal.TryParse(value.Open, NumberStyles.Float, CultureInfo.InvariantCulture, out var open))
+                throw InvalidResponse(symbol, "invalid daily price");
+            if (!decimal.TryParse(value.High, NumberStyles.Float, CultureInfo.InvariantCulture, out var high))
+                throw InvalidResponse(symbol, "invalid daily price");
+            if (!decimal.TryParse(value.Low, NumberStyles.Float, CultureInfo.InvariantCulture, out var low))
+                throw InvalidResponse(symbol, "invalid daily price");
+            if (!decimal.TryParse(value.Close, NumberStyles.Float, CultureInfo.InvariantCulture, out var close))
+                throw InvalidResponse(symbol, "invalid daily price");
 
-            if (!IsValidOhlc(open, high, low, close))
-                continue;
-
-            if (low > high)
-                continue;
+            if (!IsValidOhlc(open, high, low, close) || low > high || open < low || open > high || close < low || close > high)
+                throw InvalidResponse(symbol, "inconsistent daily prices");
 
             long volume = 0;
-            if (!string.IsNullOrEmpty(value.Volume))
-                long.TryParse(value.Volume, NumberStyles.Any, CultureInfo.InvariantCulture, out volume);
+            if (!string.IsNullOrEmpty(value.Volume)
+                && (!long.TryParse(value.Volume, NumberStyles.Integer, CultureInfo.InvariantCulture, out volume) || volume < 0))
+                throw InvalidResponse(symbol, "invalid daily volume");
 
             bars.Add(new HistoricalBar(
                 Symbol: symbol.ToUpperInvariant(),

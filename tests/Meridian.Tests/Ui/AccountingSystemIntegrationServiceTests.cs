@@ -6348,7 +6348,8 @@ public sealed partial class AccountingSystemIntegrationServiceTests
             new QuickBooksFixtureAccountingProvider(),
             new XeroFixtureAccountingProvider(),
             new NetSuiteFixtureAccountingProvider()
-        }.Concat(additionalProviders), ledgerJournalStore);
+        }.Concat(additionalProviders), ledgerJournalStore,
+            ledgerJournalStore is null ? null : new ActualLedgerFixtureSchedule(ledgerJournalStore));
 
     private static LedgerDimensionSetDto FullProductionDimensions(Guid ledgerBookId)
         => new(
@@ -7125,6 +7126,16 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         LedgerAccountingPeriod period,
         IReadOnlyList<LedgerJournalEntryRecord> records) : ILedgerJournalStore
     {
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(LedgerJournalEntryQuery query, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                query.LedgerBookId is { } id && id != book.LedgerBookId ? [] : records
+                    .Where(record => query.JournalEntryId is null || record.Entry.JournalEntryId == query.JournalEntryId)
+                    .Where(record => query.EffectiveTo is null || DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime) <= query.EffectiveTo)
+                    .ToArray());
+        }
+
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
             => throw new NotSupportedException("Static ledger journal store is read-only.");
 

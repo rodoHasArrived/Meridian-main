@@ -6,6 +6,9 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { Input } from "@/components/ui/input";
+import { ManualJournalIntercompanyDimensions } from "./accounting-screen.journal-intercompany-dimensions";
+import { IntercompanyJournalReference } from "@/components/accounting/intercompany-journal-reference";
 
 export function focusManualJournalCell(lineId: string, column: string): void {
   const existing = document.getElementById(`manual-je-${column}-${lineId}`);
@@ -142,6 +145,16 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
             <DimensionField label="Cost center" value={view.draft.dimensions?.costCenterId ?? ""} placeholder="Journal-level cost center" onChange={(value) => view.updateDraftDimensions({ costCenterId: value })} />
           </div>
           <p className="text-xs text-muted-foreground">Blank line values inherit journal scope where available. Dimension edits invalidate the current validation and are autosaved as draft changes.</p>
+          <IntercompanyJournalReference key={`${selectedLine.lineId}:${selectedLine.dimensions?.intercompanyAgreementId ?? ""}:${selectedLine.dimensions?.intercompanyAgreementVersion ?? ""}`} line={selectedLine}
+            entityId={selectedLine.entityId ?? view.draft.entityId ?? ""} onApply={patch => {
+              const next = patch.dimensions;
+              const changed = next && (next.intercompanyAgreementId !== selectedLine.dimensions?.intercompanyAgreementId
+                || next.intercompanyAgreementVersion !== selectedLine.dimensions?.intercompanyAgreementVersion
+                || next.counterpartyId !== selectedLine.dimensions?.counterpartyId);
+              view.updateLine(selectedLine.lineId, changed ? { ...patch, dimensions: { ...next, accountingArrangementId: null, accountingArrangementRevisionId: null } } : patch);
+            }} />
+          <p className="text-xs text-muted-foreground">Applying a different legal agreement or counterparty clears the accounting arrangement selection. Select a compatible accounting arrangement before posting an intercompany-role line.</p>
+          <ManualJournalIntercompanyDimensions key={`${view.draft.journalEntryId}:${selectedLine.lineId}`} view={view} line={selectedLine} />
           <TechnicalDetails label="Line system details">
             <dl className="grid gap-2 text-xs">
               <div><dt className="text-muted-foreground">Line ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.lineId}</dd></div>
@@ -173,7 +186,7 @@ function DimensionField({ label, value, placeholder, onChange }: { label: string
   return (
     <label className="space-y-1">
       <span className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase")}>{label}</span>
-      <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value || null)} />
+      <Input className="min-h-9 w-full font-mono" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value || null)} />
     </label>
   );
 }

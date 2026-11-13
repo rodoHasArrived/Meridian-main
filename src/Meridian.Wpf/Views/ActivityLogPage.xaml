@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.ActivityLogPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -377,7 +378,7 @@
 
                                 <TextBlock Grid.Column="0" Text="{Binding Timestamp}"
                                            Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                           FontSize="11" FontFamily="Consolas"
+                                           FontSize="11" FontFamily="{DynamicResource MeridianDataFontFamily}"
                                            VerticalAlignment="Top"/>
 
                                 <Border Grid.Column="1" CornerRadius="999" Padding="8,3"

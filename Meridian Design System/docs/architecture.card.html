@@ -1,0 +1,74 @@
+<!-- @dsCard group="Documentation" viewport="1180x720" name="Architecture & contributing" subtitle="The layer model, the component trio, the governance gates — how to update the system without breaking it" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Meridian — Architecture &amp; contributing</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
+<style>
+body{margin:0;padding:16px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+.cols{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:12px;margin-bottom:12px}
+.panel{background:var(--card-surface);border:1px solid var(--border);border-radius:var(--radius-card);padding:12px 14px}
+.h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-secondary);border-bottom:1px solid var(--border-divider);padding-bottom:6px;margin-bottom:8px}
+.layer{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid var(--border);border-radius:2px;margin-bottom:4px;background:var(--bg-light)}
+.layer .lv{font-family:var(--font-data);font-size:9px;color:var(--text-muted);width:18px;flex:none}
+.layer .nm{font-family:var(--font-data);font-size:11px;font-weight:600}
+.layer .ds{font-size:10px;color:var(--text-muted);margin-left:auto;text-align:right}
+.rule{font-size:10.5px;color:var(--text-secondary);margin-top:8px;padding:6px 8px;background:var(--accent-a10, rgba(197,99,67,.08));border:1px solid var(--border);border-radius:2px}
+.trio{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.file{border:1px solid var(--border);border-radius:2px;padding:8px 10px;background:var(--bg-light)}
+.file .fn{font-family:var(--font-data);font-size:10.5px;font-weight:600;color:var(--text-primary)}
+.file .fd{font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5}
+.gates{width:100%;border-collapse:collapse;font-size:10.5px}
+.gates td{border-top:1px solid var(--border-divider);padding:4px 6px;vertical-align:top}
+.gates td:first-child{font-family:var(--font-data);font-size:10px;white-space:nowrap;color:var(--text-secondary)}
+.play{width:100%;border-collapse:collapse;font-size:10.5px}
+.play td{border-top:1px solid var(--border-divider);padding:4px 6px}
+.play td:last-child{font-family:var(--font-data);font-size:10px;color:var(--text-secondary)}
+.foot{margin-top:10px;font-size:11px;color:var(--text-secondary)}
+code{font-family:var(--font-data);font-size:10px;color:var(--text-primary)}
+</style>
+</head>
+<body class="mds-specimen">
+<div class="cols">
+<div class="panel">
+<div class="h">Layers — imports point down, never up or sideways</div>
+<div class="layer"><span class="lv">L5</span><span class="nm">templates/</span><span class="ds">bundle only</span></div>
+<div class="layer"><span class="lv">L4</span><span class="nm">shell/</span><span class="ds">chrome</span></div>
+<div class="layer"><span class="lv">L3</span><span class="nm">accounting · trading · operations</span><span class="ds">domain</span></div>
+<div class="layer"><span class="lv">L2</span><span class="nm">data/ · charts/</span><span class="ds">surfaces</span></div>
+<div class="layer"><span class="lv">L1</span><span class="nm">core/</span><span class="ds">primitives</span></div>
+<div class="layer"><span class="lv">L0</span><span class="nm">tokens/ → styles.css</span><span class="ds">the only color source</span></div>
+<div class="rule">Templates reach components only through <code>window.MeridianDesignSystem_205d17</code> — they exercise exactly what a consumer gets.</div>
+</div>
+<div class="panel">
+<div class="h">Every component is a trio + specimen</div>
+<div class="trio">
+<div class="file"><div class="fn">Name.d.ts</div><div class="fd">public API contract — typed props, doc comments. The source of truth.</div></div>
+<div class="file"><div class="fn">Name.jsx</div><div class="fd">implementation — tokens only, <code>var(--token, #hex)</code> fallbacks, radii ≤ 8.</div></div>
+<div class="file"><div class="fn">Name.prompt.md</div><div class="fd">usage brief — example + non-obvious behavior. Required (coverage gate).</div></div>
+<div class="file"><div class="fn">domain.card.html</div><div class="fd">live specimen in the Design System tab, grouped by domain.</div></div>
+</div>
+<div class="h">Update playbook — where to touch what</div>
+<table class="play">
+<tr><td>Change a color</td><td>tokens/colors.css + colors-dark.css</td></tr>
+<tr><td>White-label / rebrand</td><td>tokens/theme.css (data-brand block)</td></tr>
+<tr><td>New component</td><td>CONTRIBUTING.md checklist → trio + specimen + readme row</td></tr>
+<tr><td>New template</td><td>templates/&lt;slug&gt;/ + @template comment + readme row</td></tr>
+<tr><td>Release</td><td>CHANGELOG.md (semver) + docs/UPGRADING.md if consumers must act</td></tr>
+<tr><td>Never hand-edit</td><td>_ds_bundle.js · _ds_manifest.json · templates/*/support.js</td></tr>
+</table>
+</div>
+</div>
+<div class="panel">
+<div class="h">Governance gates — scripts/check_design_system_governance.py (+ tests/)</div>
+<table class="gates">
+<tr><td>local-link</td><td>every relative href/src/md-link resolves — no dead references ship</td><td>raw-hex</td><td>component/template source uses tokens; <code>var(--token, #hex)</code> fallback is the one sanctioned hex</td></tr>
+<tr><td>template contract</td><td>viewport meta · <code>&lt;main&gt;</code> · <code>&lt;h1&gt;</code> in every template entry (follows x-imports)</td><td>large-radius</td><td>radii stay on the 2/4/6 scale — nothing above 8px</td></tr>
+<tr><td>prompt-coverage</td><td>no component ships without its .prompt.md brief</td><td>baseline</td><td>governance_baseline.json exemption escape hatch — currently empty; keep it that way</td></tr>
+</table>
+</div>
+<p class="foot">Full spec: <code>docs/ARCHITECTURE.md</code> · checklists: <code>CONTRIBUTING.md</code> · extension recipes: <code>guidelines/EXTENDING.md</code> · every folder has a README locating its contents.</p>
+</body>
+</html>

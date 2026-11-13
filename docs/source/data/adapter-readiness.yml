@@ -49,22 +49,21 @@ adapters:
     brokerage configuration, run id and readiness approval as a live one.
   - Pacing values describe repository defaults; verify current provider terms and the configured account allowance
     before operation.
-  degradation: >-
-    Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails closed
-    when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement.
-    REST and trade-update errors remain observable. Corporate-action FetchWithOutcomeAsync reports complete,
-    partial or failed coverage within its supported cash-dividend and split scope. Missing credentials, HTTP
-    refusals, malformed responses or records, incomplete pagination and internal timeouts retain explicit
-    failure evidence; usable partial observations are available only with their coverage outcome. The legacy
-    FetchAsync collection returns no incomplete history. The adapter remains review-only, and caller
-    cancellation propagates. Option contract discovery and chain snapshots return nothing rather than a
-    partial chain when a page fails or paging does not terminate. Asset search and contract discovery follow
-    the selected credential record's Trading API host, then ALPACA_TRADING_ENVIRONMENT; with neither, a paper
-    key ID goes to paper and anything else stays on the live host. Streaming readiness waits for
-    authentication and full subscription acknowledgments; rejected or timed-out subscription changes
-    invalidate readiness, while transient control errors remain retryable. Automatic correction/cancel
-    channels are limited to requested trades; permanent request errors stop retries. Final subscription-
-    reference removal sends an explicit upstream unsubscribe.
+  degradation: Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails
+    closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement.
+    REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions
+    are logged and return empty action collections; empty results must not be treated as verified absence of actions.
+    Corporate-action ingest reads the fetch outcome instead, which reports missing credentials or a failed first
+    page as unavailable and a failed later page, repeated page token or page-limit overrun as incomplete. Malformed
+    populations and partial HTTP responses are refused; ingest records noncomplete outcomes as errors and withholds
+    their observations. The adapter remains review-only.
+    Cancellation propagates. Option contract discovery and chain snapshots return nothing rather than a partial
+    chain when a page fails or paging does not terminate. Asset search and contract discovery follow the selected
+    credential record's Trading API host, then ALPACA_TRADING_ENVIRONMENT; with neither, a paper key ID goes to
+    paper and anything else stays on the live host. Streaming readiness waits for authentication and full subscription acknowledgments;
+    rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable.
+    Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries.
+    Final subscription-reference removal sends an explicit upstream unsubscribe.
   registration:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
     symbol: ProviderCapabilityDescriptorCatalog

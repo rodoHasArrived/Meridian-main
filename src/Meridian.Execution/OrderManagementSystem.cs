@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
+using Meridian.Contracts.Integrity;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.OrderManagement;
@@ -32,6 +33,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     private readonly BrokerageOrderRecoveryJournal _recoveryJournal;
     private readonly OrderBrokerIdentityIndex _brokerIdentities = new();
     private readonly IRiskValidator? _riskValidator;
+    private readonly ExecutionJournal? _journal;
+    private readonly IOrderMarketReferenceSource? _marketReferences;
+    private readonly IOrderInstrumentCoverageSource? _instrumentCoverage;
     private readonly ExecutionOperatorControlService? _operatorControls;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly OrderApprovalReservations _approvalReservations;
@@ -57,6 +61,20 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     private static readonly TimeSpan InitialReportStreamRetryDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan MaxReportStreamRetryDelay = TimeSpan.FromSeconds(60);
 
+    /// <summary>Retains the original CLR constructor for already-compiled execution hosts.</summary>
+    public OrderManagementSystem(IExecutionGateway gateway, ILogger<OrderManagementSystem> logger,
+        IRiskValidator? riskValidator, ISecurityMasterGate? securityMasterGate,
+        ExecutionOperatorControlService? operatorControls, ExecutionAuditTrailService? auditTrail,
+        Meridian.Execution.Models.IPortfolioState? portfolioState, PaperSessionPersistenceService? sessionPersistence,
+        BrokerageConfiguration? brokerageConfiguration, ILiveOrderReadinessGate? liveOrderReadinessGate,
+        OrderManagementSystemOptions? options, ITradeEventPublisher? tradeEventPublisher,
+        ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore, RiskEscalationQueueService? escalationQueue,
+        FileBrokerageOrderRecoveryStore? recoveryStore)
+        : this(gateway, logger, riskValidator, securityMasterGate, operatorControls, auditTrail, portfolioState,
+            sessionPersistence, brokerageConfiguration, liveOrderReadinessGate, options, tradeEventPublisher,
+            tradeFillHandoffFailureStore, escalationQueue, recoveryStore, null, null, null, null)
+    { }
+
     public OrderManagementSystem(
         IExecutionGateway gateway,
         ILogger<OrderManagementSystem> logger,
@@ -72,11 +90,18 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         ITradeEventPublisher? tradeEventPublisher = null,
         ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null,
         RiskEscalationQueueService? escalationQueue = null,
-        FileBrokerageOrderRecoveryStore? recoveryStore = null)
+        FileBrokerageOrderRecoveryStore? recoveryStore = null,
+        IOrderSessionPolicy? sessionPolicy = null,
+        ExecutionJournal? journal = null,
+        IOrderMarketReferenceSource? marketReferences = null,
+        IOrderInstrumentCoverageSource? instrumentCoverage = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _riskValidator = riskValidator;
+        _journal = journal;
+        _marketReferences = marketReferences;
+        _instrumentCoverage = instrumentCoverage;
         _operatorControls = operatorControls;
 
         _auditTrail = auditTrail;
@@ -99,7 +124,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         }
         _admissionPolicy = new OrderAdmissionPolicy(
             gateway, logger, brokerageConfiguration, securityMasterGate,
-            operatorControls, liveOrderReadinessGate, portfolioState);
+            operatorControls, liveOrderReadinessGate, portfolioState, sessionPolicy, marketReferences, instrumentCoverage);
         _executionFailureState = new ExecutionFailureState(logger);
         _executionReportHub = new ExecutionReportHub(_options, () => gateway.GatewayId, auditTrail, logger, _executionFailureState);
         _executionAudit = new OrderExecutionAudit(auditTrail, () => gateway.GatewayId, logger);
@@ -124,9 +149,20 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     public async Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        using var operation = EnterOperation();
+        OrderManagementLifecycleCoordinator.OperationLease operation;
+        try
+        {
+            operation = EnterOperation();
+        }
+        catch (InvalidOperationException ex)
+        {
+            OrderSubmissionRefusal.MarkBeforeDispatch(ex);
+            throw;
+        }
+        using var operationLease = operation;
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
+        Guid? journalAttemptId = _journal is null ? null : Guid.NewGuid();
         var prepared = _admissionPolicy.Prepare(request, orderId);
         request = prepared.Request;
         var safeRequest = prepared.SafeRequest;
@@ -152,9 +188,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 brokerName,
                 runId,
                 correlationId,
-                ct).ConfigureAwait(false);
+                ct,
+                journalAttemptId).ConfigureAwait(false);
         }
 
+        await RecordJournalIntentAsync(safeRequest, "Intent", journalAttemptId, ct).ConfigureAwait(false);
         var admission = await _admissionPolicy.EvaluatePreflightAsync(prepared, ct).ConfigureAwait(false);
         if (admission.Refusal is { } refusal)
         {
@@ -163,7 +201,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 refusal.Reason, sessionId, ct,
                 rejectionSource: refusal.Source,
                 reasonCode: refusal.ReasonCode,
-                metadata: refusal.Metadata).ConfigureAwait(false);
+                metadata: refusal.Metadata,
+                journalAttemptId: journalAttemptId).ConfigureAwait(false);
         }
         var usesFaceValuePercentageOfPar = admission.UsesFaceValuePercentageOfPar;
         var resolvedOrder = admission.ResolvedOrder
@@ -201,7 +240,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                     orderId, safeRequest, actor, brokerName, runId, correlationId,
                     brokerageLimitRefusal, sessionId, ct,
                     rejectionSource: "brokerage admission limits",
-                    reasonCode: "BROKERAGE_LIMIT_REJECTED").ConfigureAwait(false);
+                    reasonCode: "BROKERAGE_LIMIT_REJECTED",
+                    journalAttemptId: journalAttemptId).ConfigureAwait(false);
             }
 
             if (_riskValidator is not null)
@@ -248,7 +288,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         rejectionSource: "risk validator",
                         metadata: BuildRiskDecisionAuditMetadata(riskResult),
                         riskWarnings: riskResult.Warnings.Count > 0 ? riskResult.Warnings : null,
-                        riskDecision: riskResult.ToSummary())
+                        riskDecision: riskResult.ToSummary(),
+                        journalAttemptId: journalAttemptId)
                         .ConfigureAwait(false);
                 }
 
@@ -277,6 +318,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             orderState = new OrderState
             {
                 OrderId = orderId,
+                JournalAttemptId = journalAttemptId,
                 Symbol = safeRequest.Symbol,
                 Side = safeRequest.Side,
                 Type = safeRequest.Type,
@@ -287,6 +329,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 CreatedAt = DateTimeOffset.UtcNow,
                 StrategyId = safeRequest.StrategyId,
                 FundAccountId = safeRequest.FundAccountId,
+                SessionIntent = safeRequest.SessionIntent,
                 RunId = runId,
                 // Broker-native notional orders route dollars and discard quantity; the
                 // exposure reserve for this working order must value what actually routes.
@@ -350,11 +393,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                         reasonCode: dispatchDecision.RejectCode ?? "OPERATOR_CONTROL_REJECTED",
                         metadata: BuildOrderRejectedByControlAuditMetadata(dispatchDecision),
                         riskWarnings: riskWarnings,
-                        riskDecision: riskDecision?.ToSummary())
+                        riskDecision: riskDecision?.ToSummary(),
+                        journalAttemptId: journalAttemptId)
                         .ConfigureAwait(false);
                 }
             }
 
+            await RecordJournalIntentAsync(safeRequest, "OpeningCheckpoint", journalAttemptId, ct).ConfigureAwait(false);
             if (!TryRegisterOrder(orderId, orderState))
             {
                 // Lost a race with a concurrent submission that claimed the same client order id
@@ -372,7 +417,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                     brokerName,
                     runId,
                     correlationId,
-                    ct).ConfigureAwait(false);
+                    ct,
+                    journalAttemptId).ConfigureAwait(false);
             }
 
             if (orderMultiplier > 1m)
@@ -443,12 +489,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             // process exit must never make an already accepted client id available again.
             if (_gateway is IBrokerageGateway || _recoveryJournal.HasStore)
                 RetainBrokerageDispatch(orderState);
+            await RecordJournalIntentAsync(safeRequest, "Dispatch", journalAttemptId, ct).ConfigureAwait(false);
             var recoveryVersion = _recoveryJournal.CaptureVersion(orderId);
+            if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(safeRequest, ct).ConfigureAwait(false) is { } marketRefusal)
+                throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow dispatch.");
             dispatchAttempted = true;
             var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
             if (_orders.TryGetValue(orderId, out var accountState))
                 ValidateBrokerAccountEvidence(accountState, report);
+            await RecordJournalReportAsync(report, orderState, CancellationToken.None, boundToTrackedAttempt: true).ConfigureAwait(false);
             RememberBrokerOrderId(orderId, report);
 
             // Merge against the latest tracked state: the async report pump may already
@@ -493,6 +543,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                     .ConfigureAwait(false);
             }
 
+            await RecordJournalStateAsync(updatedState, CancellationToken.None).ConfigureAwait(false);
             RetainProcessedBrokerageOrder(orderId, report, recoveryVersion);
 
             try
@@ -609,6 +660,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 OrderId = orderId,
                 ErrorMessage = ex.Message,
                 OrderState = filledState,
+                RequiresOrderReconciliation = true,
                 RiskWarnings = riskWarnings,
                 RiskDecision = riskDecision?.ToSummary()
             };
@@ -647,6 +699,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 (_, current) => dispatchAttempted
                     ? current
                     : current with { Status = OrderStatus.Rejected, LastUpdatedAt = DateTimeOffset.UtcNow });
+            if (!dispatchAttempted && ex is BrokerageRequestNotSentException)
+            {
+                await RecordJournalOperationAsync(rejectedState, "Rejected", CancellationToken.None, detail: ex.Message).ConfigureAwait(false);
+                await RecordJournalStateAsync(rejectedState, CancellationToken.None).ConfigureAwait(false);
+                _recoveryJournal.RetainUnsentRejection(rejectedState);
+            }
             TrimRetainedOrdersIfNeeded();
             await RecordSessionOrderUpdateAsync(sessionId, rejectedState, CancellationToken.None).ConfigureAwait(false);
 
@@ -681,6 +739,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 OrderId = orderId,
                 ErrorMessage = ex.Message,
                 OrderState = rejectedState,
+                RequiresOrderReconciliation = dispatchAttempted,
                 RiskWarnings = riskWarnings,
                 RiskDecision = riskDecision?.ToSummary()
             };
@@ -846,7 +905,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 await foreach (var report in _gateway.StreamExecutionReportsAsync(ct).ConfigureAwait(false))
                 {
                     retryDelay = InitialReportStreamRetryDelay;
-                    await ProcessGatewayReportAsync(report, ct).ConfigureAwait(false);
+                    // Once dequeued, retention/accounting owns this report. Optional
+                    // session bookkeeping may still stop after that durable boundary.
+                    try
+                    { await ProcessGatewayReportAsync(report, ct, completeAcceptedReport: true).ConfigureAwait(false); }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested) { return; }
+                    catch (ExecutionReportDeliveryException) { throw; }
+                    catch (Exception ex)
+                    {
+                        throw new ExecutionReportDeliveryException(report, $"Accepted report retention/accounting failed: {ex.Message}");
+                    }
                 }
 
                 // Stream completed normally: the gateway has no more asynchronous reports
@@ -860,9 +928,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             }
             catch (ExecutionReportDeliveryException ex)
             {
-                MarkTerminalReportPumpFailure(
-                    ex,
-                    $"Execution report delivery from gateway '{_gateway.GatewayId}' failed without durable accounting; the OMS report pump is stopping.");
+                if (!ex.IsJournalFailure)
+                {
+                    MarkTerminalReportPumpFailure(
+                        ex,
+                        $"Execution report delivery from gateway '{_gateway.GatewayId}' failed without durable accounting; the OMS report pump is stopping.");
+                }
                 throw;
             }
             catch (Exception ex)
@@ -887,12 +958,22 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         }
     }
 
-    private async Task ProcessGatewayReportCoreAsync(ExecutionReport report, CancellationToken ct, decimal? authorizedQuantity = null)
+    private async Task ProcessGatewayReportCoreAsync(ExecutionReport report, CancellationToken ct,
+        decimal? authorizedQuantity = null, bool cancellationAcknowledgement = false)
     {
         report = NormalizeBrokerOrderIdentity(report);
         var orderId = report.ClientOrderId ?? report.OrderId;
         if (_orders.TryGetValue(orderId, out var accountState))
             ValidateBrokerAccountEvidence(accountState, report);
+        if (cancellationAcknowledgement)
+        {
+            await RecordCancellationEvidenceAsync(orderId,
+                () => RecordJournalReportAsync(report, accountState, CancellationToken.None, boundToTrackedAttempt: true)).ConfigureAwait(false);
+        }
+        else if (!await RecordJournalReportAsync(report, accountState, CancellationToken.None).ConfigureAwait(false))
+        {
+            return;
+        }
         if (IsCompactedBrokerageReport(report))
             return;
         if (report.ReportType is ExecutionReportType.ModificationPending && !_amendmentBook.Contains(orderId))
@@ -1031,6 +1112,27 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             {
                 if (resolvedAmendment is not null)
                     _amendmentBook.RemoveExpected(orderId!, resolvedAmendment);
+                if (cancellationAcknowledgement)
+                {
+                    await RecordCancellationEvidenceAsync(updatedState.OrderId,
+                        () => RecordJournalStateAsync(updatedState, CancellationToken.None)).ConfigureAwait(false);
+                }
+                else
+                {
+                    try
+                    {
+                        await RecordJournalStateAsync(updatedState, CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        var failure = new ExecutionReportDeliveryException(report, $"Journal state retention failed: {ex.Message}")
+                        {
+                            IsJournalFailure = true
+                        };
+                        _executionFailureState.MarkJournalFailure(failure, "Execution journal state retention failed.");
+                        throw failure;
+                    }
+                }
                 RetainProcessedBrokerageOrder(orderId!, report, recoveryVersion);
                 await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
             }
@@ -1077,9 +1179,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         string? reasonCode = null,
         IReadOnlyDictionary<string, string>? metadata = null,
         IReadOnlyList<string>? riskWarnings = null,
-        RiskDecisionSummary? riskDecision = null)
+        RiskDecisionSummary? riskDecision = null,
+        Guid? journalAttemptId = null)
     {
-        var rejectedState = CreateRejectedState(orderId, request, message);
+        var rejectedState = CreateRejectedState(orderId, request, message) with { JournalAttemptId = journalAttemptId };
         // TryAdd, not the indexer: gate rejections run before the order id is registered, so an
         // existing entry under this id belongs to a different order (e.g. a terminal order whose
         // id a rejected submission tried to reuse) and must survive. The rejection is still
@@ -1101,7 +1204,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             ct,
             rejectionSource,
             reasonCode,
-            metadata).ConfigureAwait(false);
+            metadata,
+            journalAttemptId).ConfigureAwait(false);
 
         return new OrderResult
         {
@@ -1125,14 +1229,21 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         CancellationToken ct,
         string rejectionSource,
         string? reasonCode = null,
-        IReadOnlyDictionary<string, string>? metadata = null)
+        IReadOnlyDictionary<string, string>? metadata = null,
+        Guid? journalAttemptId = null)
     {
+        if (_journal is not null)
+            await _journal.AppendAsync(new ExecutionJournalEntry(1,
+                JournalEventId($"rejection:{orderId}:{reasonCode}:{message}", journalAttemptId),
+                JournalScope, request.FundAccountId, orderId,
+                reasonCode == "DUPLICATE_CLIENT_ORDER_ID" ? "DuplicateSubmission" : "Rejected", DateTimeOffset.UtcNow,
+                Request: request, Detail: message, AttemptId: journalAttemptId), ct).ConfigureAwait(false);
         _logger.LogWarning(
-            "Order {OrderId} for {Symbol} rejected by {RejectionSource}: {Reason}",
+            "Order {OrderId} for {Symbol} rejected by {RejectionSource}; retained reason {ReasonHash}",
             LogSanitizer.Sanitize(orderId),
             LogSanitizer.Sanitize(request.Symbol),
-            rejectionSource,
-            message);
+            LogSanitizer.Sanitize(rejectionSource),
+            Sha256Digest.ComputeUtf8(message ?? string.Empty));
 
         if (_auditTrail is null)
         {
