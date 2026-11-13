@@ -1,3 +1,4 @@
+using Meridian.Core.Exceptions;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -8,7 +9,7 @@ using Meridian.Storage.Archival;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>Raised when the external head journal is unreadable or internally inconsistent.</summary>
-public sealed class AccountingAuditChainAnchorException : Exception
+public sealed class AccountingAuditChainAnchorException : MeridianException
 {
     public AccountingAuditChainAnchorException(
         string message,

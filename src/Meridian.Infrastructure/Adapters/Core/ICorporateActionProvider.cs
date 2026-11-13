@@ -19,6 +19,11 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// Implementations must degrade gracefully (log and return empty) when the upstream
 /// API is unavailable or the ticker is not recognised by the provider.
 /// </para>
+/// <para>
+/// An empty list from <see cref="FetchAsync"/> therefore cannot tell "no actions" from "fetch
+/// failed". Providers that can tell the two apart override
+/// <see cref="FetchWithOutcomeAsync"/>, which is the member ingest calls.
+/// </para>
 /// </remarks>
 [ImplementsAdr("ADR-001", "Provider-agnostic corporate action abstraction follows IHistoricalDataProvider pattern")]
 [ImplementsAdr("ADR-005", "Attribute-based discovery via DataSourceAttribute")]
@@ -53,6 +58,89 @@ public interface ICorporateActionProvider
         string ticker,
         Guid securityId,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Fetches corporate actions and states whether the provider's history was read in full.
+    /// Ingest calls this member so that a fetch that failed or was cut short is not mistaken
+    /// for a provider that has no actions.
+    /// </summary>
+    /// <remarks>
+    /// The default adapts <see cref="FetchAsync"/>: whatever it returns is treated as a complete
+    /// result and whatever it throws propagates, which is the behavior providers had before this
+    /// member existed. A provider that can tell a failed or truncated fetch from an empty history
+    /// overrides it.
+    /// </remarks>
+    async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
+        => CorporateActionFetchResult.Complete(
+            await FetchAsync(ticker, securityId, ct).ConfigureAwait(false));
+}
+
+/// <summary>How much of a provider's corporate-action history a fetch read.</summary>
+public enum CorporateActionFetchStatus
+{
+    /// <summary>The provider answered in full; an empty result means it has no actions.</summary>
+    Complete = 0,
+
+    /// <summary>The fetch began but stopped before the provider's history was read in full.</summary>
+    Incomplete = 1,
+
+    /// <summary>The provider could not be read at all (for example no credentials, or a refused first request).</summary>
+    Unavailable = 2,
+}
+
+/// <summary>
+/// Outcome of <see cref="ICorporateActionProvider.FetchWithOutcomeAsync"/>.
+/// <see cref="Observations"/> is populated only for a <see cref="CorporateActionFetchStatus.Complete"/>
+/// fetch: part of a history is withheld rather than handed on as if it were all of it, and
+/// <see cref="WithheldObservationCount"/> records how many observations were read and withheld.
+/// <see cref="Reason"/> is a fixed provider-authored description; it never carries credentials
+/// or provider response bodies.
+/// </summary>
+public sealed class CorporateActionFetchResult
+{
+    private CorporateActionFetchResult(
+        CorporateActionFetchStatus status,
+        IReadOnlyList<CorporateActionCommand> observations,
+        string? reason,
+        int withheldObservationCount)
+    {
+        Status = status;
+        Observations = observations;
+        Reason = reason;
+        WithheldObservationCount = withheldObservationCount;
+    }
+
+    public CorporateActionFetchStatus Status { get; }
+
+    public IReadOnlyList<CorporateActionCommand> Observations { get; }
+
+    public string? Reason { get; }
+
+    public int WithheldObservationCount { get; }
+
+    public bool IsComplete => Status == CorporateActionFetchStatus.Complete;
+
+    public static CorporateActionFetchResult Complete(IReadOnlyList<CorporateActionCommand> observations)
+    {
+        ArgumentNullException.ThrowIfNull(observations);
+        return new(CorporateActionFetchStatus.Complete, observations, null, 0);
+    }
+
+    public static CorporateActionFetchResult Incomplete(string reason, int withheldObservationCount = 0)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        ArgumentOutOfRangeException.ThrowIfNegative(withheldObservationCount);
+        return new(CorporateActionFetchStatus.Incomplete, [], reason, withheldObservationCount);
+    }
+
+    public static CorporateActionFetchResult Unavailable(string reason)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+        return new(CorporateActionFetchStatus.Unavailable, [], reason, 0);
+    }
 }
 
 /// <summary>

@@ -2,13 +2,6 @@ using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Backtesting;
 
-/// <summary>Loads authoritative, economically effective corporate actions for portfolio replay.</summary>
-public interface IBacktestAssetEventSource
-{
-    Task<IReadOnlyList<AssetEvent>> LoadAsync(
-        IReadOnlyCollection<string> symbols, DateOnly from, DateOnly through, CancellationToken ct = default);
-}
-
 /// <summary>
 /// Bridges the governed Security Master ingest pipeline to simulation. Provider proposals and
 /// announcements cannot grant accounting authority; only confirmed effective actions are consumed.
@@ -19,6 +12,10 @@ public sealed class SecurityMasterBacktestAssetEventSource(
     ISecurityCorporateActionsQueryService actionQuery,
     ISecurityMasterQueryService? securityQuery = null) : IBacktestAssetEventSource
 {
+    public Task<IReadOnlyList<AssetEvent>> GetAssetEventsAsync(
+        IReadOnlyCollection<string> symbols, DateOnly from, DateOnly to, CancellationToken ct = default)
+        => LoadAsync(symbols, from, to, ct);
+
     public async Task<IReadOnlyList<AssetEvent>> LoadAsync(
         IReadOnlyCollection<string> symbols, DateOnly from, DateOnly through, CancellationToken ct = default)
     {

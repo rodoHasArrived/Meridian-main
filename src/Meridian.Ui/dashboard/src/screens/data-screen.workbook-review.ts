@@ -3,6 +3,7 @@ import type {
   DataUploadWorkbookPreviewResult,
   DataUploadWorkbookSheetPreview
 } from "@/types/workstation-3";
+import { formatCount } from "@/lib/format";
 
 /**
  * Pure projection of a workbook preview response into the staged-review surface described by the
@@ -185,8 +186,8 @@ function buildSheetTab(
     statusTone: sheetStatusTone(sheet.status),
     parsedRowCountLabel:
       sheet.parsedRowCount === sheet.previewRowCount
-        ? `${sheet.parsedRowCount.toLocaleString()} rows parsed`
-        : `${sheet.parsedRowCount.toLocaleString()} rows parsed, showing first ${sheet.previewRowCount.toLocaleString()}`,
+        ? `${formatCount(sheet.parsedRowCount)} rows parsed`
+        : `${formatCount(sheet.parsedRowCount)} rows parsed, showing first ${formatCount(sheet.previewRowCount)}`,
     previewHeaders,
     previewRows,
     issues: mapIssues(sheet.issues, `${sheet.sheetName}-issue`),
@@ -252,7 +253,7 @@ export function buildDataUploadWorkbookReviewState(
     errorSummary: null,
     statusLabel,
     statusTone,
-    summary: `${result.sheetCount.toLocaleString()} sheets, ${result.totalParsedRowCount.toLocaleString()} rows parsed from ${result.fileName}.`,
+    summary: `${formatCount(result.sheetCount)} sheets, ${formatCount(result.totalParsedRowCount)} rows parsed from ${result.fileName}.`,
     nextAction: result.nextAction,
     retainedPath: result.retainedPath,
     sheetTabs,
@@ -265,7 +266,7 @@ export function buildDataUploadWorkbookReviewState(
       : result.totalParsedRowCount === 0
         ? "Add at least one data row to the workbook before committing."
         : errorCount > 0
-          ? `Resolve ${errorCount.toLocaleString()} blocking issue${errorCount === 1 ? "" : "s"} before committing this workbook.`
+          ? `Resolve ${formatCount(errorCount)} blocking issue${errorCount === 1 ? "" : "s"} before committing this workbook.`
           : "Every non-empty sheet must be ready for review before committing."
   };
 }

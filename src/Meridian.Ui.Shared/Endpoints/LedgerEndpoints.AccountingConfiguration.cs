@@ -506,12 +506,19 @@ public static partial class LedgerEndpoints
                 }
 
                 var result = await service
-                    .PostCandidateAsync(request with
+                    .PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+                        Candidate: request.Candidate,
+                        Actor: actor,
+                        ApprovalId: request.ApprovalId,
+                        ApprovalNotes: request.ApprovalNotes,
+                        EvidenceLinks: request.EvidenceLinks,
+                        CorrelationId: request.CorrelationId,
+                        ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                        TenantId: tenantContext.TenantId,
+                        CompanyId: tenantContext.CompanyId)
                     {
-                        Actor = actor,
-                        TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId,
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+                        ApprovalEvidence = request.ApprovalEvidence,
+                        AcquisitionTermsCompletion = request.AcquisitionTermsCompletion
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -520,7 +527,8 @@ public static partial class LedgerEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
-            catch (InvalidOperationException ex)
+            // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+            catch (InvalidOperationException ex) when (ex is not Meridian.Application.SecurityMaster.SecurityMasterTermsCapabilityRefusedException)
             {
                 return Results.Conflict(new { error = ex.Message });
             }

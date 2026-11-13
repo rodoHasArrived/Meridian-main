@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.LiveDataViewerPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -255,35 +256,35 @@
                                                            Text="{Binding Timestamp}"
                                                            Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                            FontSize="11"
-                                                           FontFamily="Consolas" />
+                                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                                 <TextBlock Grid.Column="1"
                                                            Text="{Binding Type}"
                                                            Foreground="{Binding TypeColor}"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
-                                                           FontFamily="Consolas" />
+                                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                                 <TextBlock Grid.Column="2"
                                                            Text="{Binding Symbol}"
                                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                            FontSize="11"
-                                                           FontFamily="Consolas" />
+                                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                                 <TextBlock Grid.Column="3"
                                                            Text="{Binding Price}"
                                                            Foreground="{Binding PriceColor}"
                                                            FontSize="11"
-                                                           FontFamily="Consolas"
+                                                           FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                            TextAlignment="Right" />
                                                 <TextBlock Grid.Column="4"
                                                            Text="{Binding Size}"
                                                            Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                            FontSize="11"
-                                                           FontFamily="Consolas"
+                                                           FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                            TextAlignment="Right" />
                                                 <TextBlock Grid.Column="5"
                                                            Text="{Binding Exchange}"
                                                            Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                            FontSize="11"
-                                                           FontFamily="Consolas"
+                                                           FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                            Margin="10,0,0,0" />
                                             </Grid>
                                         </Border>

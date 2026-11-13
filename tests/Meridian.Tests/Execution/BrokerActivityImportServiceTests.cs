@@ -31,6 +31,26 @@ public sealed class BrokerActivityImportServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task CurrentSnapshot_RemainsDistinctFromVerifiedRetainedHistoryAcrossRestartAndEmptyFetch()
+    {
+        await new BrokerActivityImportService(_root).ImportAsync(new Source(_ => Snapshot(Cash("a", 10m))), "account");
+        var current = Snapshot(Cash("b", 20m)) with { RetrievedAt = Time.AddDays(2) };
+
+        var imported = await new BrokerActivityImportService(_root)
+            .ImportWithHistoryAsync(new Source(_ => current), "account");
+
+        imported.Current.Should().BeSameAs(current);
+        imported.Current.CashTransactions.Should().ContainSingle(row => row.TransactionId == "b");
+        imported.Retained.CashTransactions.Select(row => row.TransactionId).Should().BeEquivalentTo("a", "b");
+        imported.Retained.RetrievedAt.Should().Be(current.RetrievedAt);
+
+        var empty = await new BrokerActivityImportService(_root)
+            .ImportWithHistoryAsync(new Source(_ => Snapshot()), "account");
+        empty.Current.CashTransactions.Should().BeEmpty();
+        empty.Retained.CashTransactions.Select(row => row.TransactionId).Should().BeEquivalentTo("a", "b");
+    }
+
+    [Fact]
     public async Task CrashAfterActivityAcceptance_BeforeCheckpoint_RetriesWithoutDuplicateEvidence()
     {
         var failCheckpointOnce = true;

@@ -23,5 +23,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Meridian.Tests" />
+    <InternalsVisibleTo Include="Meridian.Storage.Tests" />
+    <InternalsVisibleTo Include="Meridian.Execution.Tests" />
   </ItemGroup>
 </Project>

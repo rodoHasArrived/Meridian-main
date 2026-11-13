@@ -44,6 +44,7 @@ describe("buildCoverageGapsModel", () => {
     expect(row.symbol).toBe("GME");
     expect(row.sourcesLabel).toBe("configured-streaming, canonical-symbol-registry");
     expect(model.summary).toContain("1 active symbol");
+    expect(model.runAtLabel).toBe("Jul 5, 2026, 12:00 UTC");
   });
 
   it("sorts gaps alphabetically and reports full coverage when none remain", () => {

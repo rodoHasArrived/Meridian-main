@@ -131,10 +131,11 @@ public sealed class StrategyRunResearchRecorder(
     /// </summary>
     private static BacktestResult BoundResultForRetention(BacktestResult result, bool preserveLedger)
     {
+        ArgumentNullException.ThrowIfNull(result.Ledger);
         if (result.Snapshots.Count == 0 &&
             result.CashFlows.Count == 0 &&
             result.Fills.Count == 0 &&
-            (result.Ledger?.JournalEntryCount ?? 0) == 0)
+            result.Ledger.JournalEntryCount == 0)
         {
             return result;
         }

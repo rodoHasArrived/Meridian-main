@@ -124,7 +124,11 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    current_rate_reset_json::text,
                    last_accrual_date,
                    last_payment_date,
-                   servicing_revision
+                   servicing_revision,
+                   pik_interest_accrued_unpaid,
+                   last_pik_capitalization_date,
+                   prepaid_interest,
+                   unapplied_cash
             from {Qualified("loan_servicing_projection")}
             where loan_id = @loan_id;
             """;
@@ -145,16 +149,22 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             reader.GetDecimal(5),
             reader.GetDecimal(6),
             reader.GetDecimal(7),
-            reader.GetDecimal(8));
+            reader.GetDecimal(8),
+            PrepaidInterest: reader.GetDecimal(15),
+            UnappliedCash: reader.GetDecimal(16));
         var currentRateReset = ParseNullableJson<RateResetDto>(reader.IsDBNull(9) ? null : reader.GetString(9));
         DateOnly? lastAccrualDate = reader.IsDBNull(10) ? null : DateOnly.FromDateTime(reader.GetDateTime(10));
         DateOnly? lastPaymentDate = reader.IsDBNull(11) ? null : DateOnly.FromDateTime(reader.GetDateTime(11));
         var servicingRevision = reader.GetInt64(12);
+        var pikInterestAccruedUnpaid = reader.GetDecimal(13);
+        DateOnly? lastPikCapitalizationDate = reader.IsDBNull(14) ? null : DateOnly.FromDateTime(reader.GetDateTime(14));
         await reader.CloseAsync().ConfigureAwait(false);
 
         var drawdownLots = await LoadDrawdownLotsCoreAsync(connection, loanId, ct).ConfigureAwait(false);
         var revisions = await LoadServicingRevisionsCoreAsync(connection, loanId, ct).ConfigureAwait(false);
         var accrualEntries = await LoadAccrualEntriesCoreAsync(connection, loanId, ct).ConfigureAwait(false);
+        var rateResetHistory = await LoadRateResetHistoryCoreAsync(connection, loanId, ct).ConfigureAwait(false);
+        var pikCapitalizations = await LoadPikCapitalizationsCoreAsync(connection, loanId, ct).ConfigureAwait(false);
 
         return new LoanServicingStateDto(
             loanId,
@@ -169,7 +179,11 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             lastPaymentDate,
             servicingRevision,
             revisions,
-            accrualEntries);
+            accrualEntries,
+            PikInterestAccruedUnpaid: pikInterestAccruedUnpaid,
+            LastPikCapitalizationDate: lastPikCapitalizationDate,
+            RateResetHistory: rateResetHistory.Count == 0 ? null : rateResetHistory,
+            PikCapitalizations: pikCapitalizations.Count == 0 ? null : pikCapitalizations);
     }
 
     public async Task<PersistedDirectLendingState?> LoadAsync(Guid loanId, CancellationToken ct = default)
@@ -542,6 +556,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         await ReplaceDrawdownLotsAsync(connection, transaction, loanId, servicing.DrawdownLots, ct).ConfigureAwait(false);
         await ReplaceServicingRevisionsAsync(connection, transaction, loanId, servicing.RevisionHistory, ct).ConfigureAwait(false);
         await ReplaceAccrualEntriesAsync(connection, transaction, loanId, servicing.AccrualEntries, ct).ConfigureAwait(false);
+        await ReplaceRateResetHistoryAsync(connection, transaction, loanId, servicing.RateResetHistory, ct).ConfigureAwait(false);
+        await ReplacePikCapitalizationsAsync(connection, transaction, loanId, servicing.PikCapitalizations, ct).ConfigureAwait(false);
     }
 
     private async Task UpsertContractProjectionAsync(
@@ -662,7 +678,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     grace_period_days,
                     effective_rate_floor,
                     effective_rate_cap,
-                    prepayment_penalty_rate)
+                    prepayment_penalty_rate,
+                    pik_capitalization_json,
+                    rate_reset_schedule_json)
                 values (
                     @loan_id,
                     @terms_version,
@@ -691,7 +709,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @grace_period_days,
                     @effective_rate_floor,
                     @effective_rate_cap,
-                    @prepayment_penalty_rate);
+                    @prepayment_penalty_rate,
+                    cast(@pik_capitalization_json as jsonb),
+                    cast(@rate_reset_schedule_json as jsonb));
                 """;
             insert.Parameters.AddWithValue("loan_id", loanId);
             insert.Parameters.AddWithValue("terms_version", termsVersion.VersionNumber);
@@ -721,6 +741,14 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("effective_rate_floor", (object?)termsVersion.Terms.EffectiveRateFloor ?? DBNull.Value);
             insert.Parameters.AddWithValue("effective_rate_cap", (object?)termsVersion.Terms.EffectiveRateCap ?? DBNull.Value);
             insert.Parameters.AddWithValue("prepayment_penalty_rate", (object?)termsVersion.Terms.PrepaymentPenaltyRate ?? DBNull.Value);
+            insert.Parameters.Add(new NpgsqlParameter("pik_capitalization_json", NpgsqlTypes.NpgsqlDbType.Text)
+            {
+                Value = termsVersion.Terms.PikCapitalization is { } pikPolicy ? JsonSerializer.Serialize(pikPolicy, JsonOptions) : DBNull.Value
+            });
+            insert.Parameters.Add(new NpgsqlParameter("rate_reset_schedule_json", NpgsqlTypes.NpgsqlDbType.Text)
+            {
+                Value = termsVersion.Terms.RateResetSchedule is { } resetSchedule ? JsonSerializer.Serialize(resetSchedule, JsonOptions) : DBNull.Value
+            });
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -753,6 +781,10 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 last_accrual_date,
                 last_payment_date,
                 servicing_revision,
+                pik_interest_accrued_unpaid,
+                last_pik_capitalization_date,
+                prepaid_interest,
+                unapplied_cash,
                 updated_at)
             values (
                 @loan_id,
@@ -770,6 +802,10 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 @last_accrual_date,
                 @last_payment_date,
                 @servicing_revision,
+                @pik_interest_accrued_unpaid,
+                @last_pik_capitalization_date,
+                @prepaid_interest,
+                @unapplied_cash,
                 now())
             on conflict (loan_id) do update
             set aggregate_version = excluded.aggregate_version,
@@ -786,6 +822,10 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 last_accrual_date = excluded.last_accrual_date,
                 last_payment_date = excluded.last_payment_date,
                 servicing_revision = excluded.servicing_revision,
+                pik_interest_accrued_unpaid = excluded.pik_interest_accrued_unpaid,
+                last_pik_capitalization_date = excluded.last_pik_capitalization_date,
+                prepaid_interest = excluded.prepaid_interest,
+                unapplied_cash = excluded.unapplied_cash,
                 updated_at = excluded.updated_at;
             """;
         command.Parameters.AddWithValue("loan_id", loanId);
@@ -799,12 +839,19 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
         command.Parameters.AddWithValue("commitment_fee_accrued_unpaid", servicing.Balances.CommitmentFeeAccruedUnpaid);
         command.Parameters.AddWithValue("fees_accrued_unpaid", servicing.Balances.FeesAccruedUnpaid);
         command.Parameters.AddWithValue("penalty_accrued_unpaid", servicing.Balances.PenaltyAccruedUnpaid);
+        command.Parameters.AddWithValue("prepaid_interest", servicing.Balances.PrepaidInterest);
+        command.Parameters.AddWithValue("unapplied_cash", servicing.Balances.UnappliedCash);
         command.Parameters.AddWithValue(
             "current_rate_reset_json",
             servicing.CurrentRateReset is null ? "null" : JsonSerializer.Serialize(servicing.CurrentRateReset, JsonOptions));
         command.Parameters.AddWithValue("last_accrual_date", (object?)servicing.LastAccrualDate ?? DBNull.Value);
         command.Parameters.AddWithValue("last_payment_date", (object?)servicing.LastPaymentDate ?? DBNull.Value);
         command.Parameters.AddWithValue("servicing_revision", servicing.ServicingRevision);
+        command.Parameters.AddWithValue("pik_interest_accrued_unpaid", servicing.PikInterestAccruedUnpaid);
+        command.Parameters.Add(new NpgsqlParameter("last_pik_capitalization_date", NpgsqlTypes.NpgsqlDbType.Date)
+        {
+            Value = (object?)servicing.LastPikCapitalizationDate ?? DBNull.Value
+        });
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -933,7 +980,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     penalty_amount,
                     annual_rate_applied,
                     recorded_at,
-                    pik_interest_amount)
+                    pik_interest_amount,
+                    pik_capitalization_deferred)
                 values (
                     @accrual_entry_id,
                     @loan_id,
@@ -943,7 +991,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                     @penalty_amount,
                     @annual_rate_applied,
                     @recorded_at,
-                    @pik_interest_amount);
+                    @pik_interest_amount,
+                    @pik_capitalization_deferred);
                 """;
             insert.Parameters.AddWithValue("accrual_entry_id", entry.AccrualEntryId);
             insert.Parameters.AddWithValue("loan_id", loanId);
@@ -954,6 +1003,7 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
             insert.Parameters.AddWithValue("annual_rate_applied", entry.AnnualRateApplied);
             insert.Parameters.AddWithValue("recorded_at", entry.RecordedAt.UtcDateTime);
             insert.Parameters.AddWithValue("pik_interest_amount", entry.PikInterestAmount);
+            insert.Parameters.AddWithValue("pik_capitalization_deferred", entry.PikCapitalizationDeferred);
             await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -1185,7 +1235,9 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    grace_period_days,
                    effective_rate_floor,
                    effective_rate_cap,
-                   prepayment_penalty_rate
+                   prepayment_penalty_rate,
+                   pik_capitalization_json::text,
+                   rate_reset_schedule_json::text
             from {Qualified("loan_terms_version")}
             where loan_id = @loan_id
             order by terms_version desc;
@@ -1218,7 +1270,11 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 reader.IsDBNull(23) ? null : reader.GetInt32(23),
                 reader.IsDBNull(24) ? null : reader.GetDecimal(24),
                 reader.IsDBNull(25) ? null : reader.GetDecimal(25),
-                reader.IsDBNull(26) ? null : reader.GetDecimal(26));
+                reader.IsDBNull(26) ? null : reader.GetDecimal(26))
+            {
+                PikCapitalization = ParseNullableJson<PikCapitalizationPolicy>(reader.IsDBNull(27) ? null : reader.GetString(27)),
+                RateResetSchedule = ParseNullableJson<FloatingRateResetSchedule>(reader.IsDBNull(28) ? null : reader.GetString(28))
+            };
 
             results.Add(new LoanTermsVersionDto(
                 reader.GetInt32(0),
@@ -1317,7 +1373,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                    penalty_amount,
                    annual_rate_applied,
                    recorded_at,
-                   pik_interest_amount
+                   pik_interest_amount,
+                   pik_capitalization_deferred
             from {Qualified("accrual_entry_projection")}
             where loan_id = @loan_id
             order by accrual_date desc, accrual_entry_id;
@@ -1336,7 +1393,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                 reader.GetDecimal(4),
                 reader.GetDecimal(5),
                 new DateTimeOffset(reader.GetDateTime(6), TimeSpan.Zero),
-                reader.GetDecimal(7)));
+                reader.GetDecimal(7),
+                reader.GetBoolean(8)));
         }
 
         return results;

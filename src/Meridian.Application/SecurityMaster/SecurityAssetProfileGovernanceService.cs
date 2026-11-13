@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Operations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 using Meridian.Storage;
@@ -69,6 +70,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
     private readonly IReadOnlyList<SecurityAssetProfileDefinitionDto> _seedProfiles =
         StaticSecurityAssetProfileCatalog.CreateDefault().GetProfiles();
     private readonly string? _persistencePath;
+    private readonly Func<bool> _requireIndependentApprover = static () => false;
     private SecurityAssetProfileGovernanceSnapshot _inMemorySnapshot = new([], []);
 
     public SecurityAssetProfileGovernanceService()
@@ -79,6 +81,23 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
     {
         ArgumentNullException.ThrowIfNull(storageOptions);
         _persistencePath = Path.Combine(storageOptions.RootPath, "governance", "security-asset-profiles.json");
+    }
+
+    /// <summary>
+    /// The composed constructor: an approval by an actor who drafted the version is refused while the
+    /// independent-approver requirement is in force, which is when
+    /// <see cref="SecurityMasterWorkbenchOptions.RequireIndependentProfileApprover"/> is on (off by default)
+    /// or the Institutional governance profile applies. The effective value is read from
+    /// <see cref="ISecurityMasterGovernanceRequirements"/> at approval time so the setting hot-reloads.
+    /// The other constructors keep self-approval allowed.
+    /// </summary>
+    public SecurityAssetProfileGovernanceService(
+        StorageOptions storageOptions,
+        ISecurityMasterGovernanceRequirements governanceRequirements)
+        : this(storageOptions)
+    {
+        ArgumentNullException.ThrowIfNull(governanceRequirements);
+        _requireIndependentApprover = () => governanceRequirements.Current.RequireIndependentProfileApprover;
     }
 
     // The selectable catalog must stay aligned with write-time governance, which accepts a
@@ -196,7 +215,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 EffectiveTo: null,
                 ApprovedBy: resolvedActor,
                 ApprovedAtUtc: now,
-                ChangeReason: rationale);
+                ChangeReason: rationale,
+                DraftedBy: resolvedActor);
             ValidateProfileDefinition(draft);
 
             UpsertProfile(profiles, draft);
@@ -230,6 +250,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         var profileId = Required(request.ProfileId, nameof(request.ProfileId));
         var rationale = Required(request.Rationale, nameof(request.Rationale));
         var approvalReference = Required(request.ApprovalReference, nameof(request.ApprovalReference));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approvalReference, nameof(request.ApprovalReference));
         var correlationId = ResolveCorrelationId(request.CorrelationId, "asset-profile-approve");
         var now = DateTimeOffset.UtcNow;
 
@@ -245,6 +266,13 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             if (draft is null)
             {
                 throw new ArgumentException("A matching draft profile version is required before approval.", nameof(request));
+            }
+
+            if (_requireIndependentApprover() && IsMakerOf(draft, snapshot.AuditEvents, resolvedActor))
+            {
+                throw new ArgumentException(
+                    "A profile version must be approved by someone other than the actor who drafted it.",
+                    nameof(request));
             }
 
             var approved = draft with
@@ -292,6 +320,7 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         var profileId = Required(request.ProfileId, nameof(request.ProfileId));
         var rationale = Required(request.Rationale, nameof(request.Rationale));
         var approvalReference = Required(request.ApprovalReference, nameof(request.ApprovalReference));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approvalReference, nameof(request.ApprovalReference));
         var correlationId = ResolveCorrelationId(request.CorrelationId, "asset-profile-rollback");
         var now = DateTimeOffset.UtcNow;
 
@@ -484,6 +513,32 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
                 EffectiveTo = effectiveFrom.AddDays(-1)
             };
         }
+    }
+
+    /// <summary>
+    /// True when <paramref name="actor"/> drafted this version: the recorded <c>DraftedBy</c>, the
+    /// author a legacy draft (no <c>DraftedBy</c>) still records in <c>ApprovedBy</c>, or any earlier
+    /// "drafted" audit event for the same profile version, so an actor who drafted a version that
+    /// someone else last edited cannot approve it either.
+    /// </summary>
+    private static bool IsMakerOf(
+        SecurityAssetProfileDefinitionDto draft,
+        IReadOnlyList<SecurityAssetProfileGovernanceAuditEventDto> auditEvents,
+        string actor)
+    {
+        static bool Same(string? left, string right)
+            => string.Equals(left?.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+
+        if (Same(draft.DraftedBy ?? draft.ApprovedBy, actor))
+        {
+            return true;
+        }
+
+        return auditEvents.Any(audit =>
+            string.Equals(audit.EventType, "security-asset-profile-drafted", StringComparison.Ordinal)
+            && string.Equals(audit.ProfileId, draft.ProfileId, StringComparison.OrdinalIgnoreCase)
+            && audit.Version == draft.Version
+            && Same(audit.Actor, actor));
     }
 
     private static SecurityAssetProfileGovernanceAuditEventDto BuildAuditEvent(

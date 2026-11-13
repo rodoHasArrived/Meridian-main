@@ -1,7 +1,7 @@
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 
 namespace Meridian.Ui.Shared.Services;
 

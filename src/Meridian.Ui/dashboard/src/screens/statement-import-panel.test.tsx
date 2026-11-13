@@ -277,7 +277,7 @@ describe("StatementImportPanel", () => {
       initialEntries: ["/accounting/statement-import"]
     });
 
-    expect(screen.getByRole("heading", { name: "Import statement" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Upload or fetch a statement" })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByLabelText("Connector")).toBeEnabled());
     expect(screen.getByRole("option", { name: "Auto-detect connector" })).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "Built-in generic (built-in)" })).toBeInTheDocument();

@@ -64,7 +64,7 @@ def _ordering_item(identifier: str, wave: str, sequence: int | None = None) -> s
 
 class ProgramStateSummaryGeneratorTests(unittest.TestCase):
     def test_load_program_state_returns_registry_rows(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             data_dir = root / "docs" / "roadmap" / "data"
             data_dir.mkdir(parents=True)
@@ -94,7 +94,7 @@ class ProgramStateSummaryGeneratorTests(unittest.TestCase):
             + _ordering_item("W9-TRUTH-001", "W9")
         )
 
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             data_dir = root / "docs" / "roadmap" / "data"
             data_dir.mkdir(parents=True)
@@ -119,7 +119,7 @@ class ProgramStateSummaryGeneratorTests(unittest.TestCase):
         self.assertEqual(expected, re.findall(r'"ID": "([^"]+)"', json_payload))
 
     def test_rendered_outputs_reference_roadmap_sources(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             data_dir = root / "docs" / "roadmap" / "data"
             data_dir.mkdir(parents=True)

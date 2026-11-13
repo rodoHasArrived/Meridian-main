@@ -160,6 +160,181 @@ public sealed class SecurityMasterBacktestAssetEventSourceTests
             .Should().NotContain("ApplyStoredCorporateActions=");
     }
 
+    [Fact]
+    public async Task ExplicitPopulation_RejectsPriceAdjustmentBeforeReadingEitherSource()
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var source = new CanonicalSource();
+            var engine = Engine(root, source);
+            var request = Request(root) with { PopulateAssetEventsFromSecurityMaster = true, AdjustForCorporateActions = true };
+
+            Func<Task> run = () => engine.RunAsync(request, new BuyAndHold());
+
+            await run.Should().ThrowAsync<InvalidOperationException>().WithMessage("*requires AdjustForCorporateActions = false*");
+            source.Reads.Should().Be(0);
+        });
+    }
+
+    [Fact]
+    public async Task ExplicitPopulation_ManualEventsWinOverBothConfiguredSources()
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var source = new CanonicalSource();
+            var engine = Engine(root, source);
+            var request = Request(root) with
+            {
+                PopulateAssetEventsFromSecurityMaster = true,
+                AdjustForCorporateActions = false,
+                AssetEvents = [Distribution(1m)]
+            };
+
+            var result = await engine.RunAsync(request, new BuyAndHold());
+
+            source.Reads.Should().Be(0);
+            result.Snapshots[^1].Cash.Should().Be(99_010m);
+            request.ToRealismDescriptor().PopulateAssetEventsFromSecurityMaster.Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public async Task ExplicitPopulation_ReadsCanonicalSourceOnceAndPreservesItsInputHashSetting()
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var source = new CanonicalSource();
+            var request = Request(root) with { PopulateAssetEventsFromSecurityMaster = true, AdjustForCorporateActions = false };
+
+            var result = await Engine(root, source).RunAsync(request, new BuyAndHold());
+
+            source.Reads.Should().Be(1);
+            result.Snapshots[^1].Cash.Should().Be(99_020m);
+            result.Request.ToRealismDescriptor().PopulateAssetEventsFromSecurityMaster.Should().BeTrue();
+        });
+    }
+
+    [Fact]
+    public async Task AutomaticPopulation_AcceptsAnOriginalLoadOnlySourceWithoutDuplicatingTheInterface()
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var source = new LegacySource();
+            var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance,
+                new StorageCatalogService(root, new StorageOptions()))
+            { AssetEventSource = source };
+
+            var result = await engine.RunAsync(Request(root), new BuyAndHold());
+
+            source.Reads.Should().Be(1);
+            result.Snapshots[^1].Cash.Should().Be(99_020m);
+            result.Request.AssetEvents.Should().HaveCount(1);
+        });
+    }
+
+    [Fact]
+    public async Task DisabledPopulation_DoesNotReadTheCompatibilityConstructorSource()
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var source = new CanonicalSource();
+            var request = Request(root) with { ApplyStoredCorporateActions = false, AdjustForCorporateActions = false };
+
+            var result = await Engine(root, source).RunAsync(request, new BuyAndHold());
+
+            source.Reads.Should().Be(0);
+            result.Snapshots[^1].Cash.Should().Be(99_000m);
+        });
+    }
+
+    [Fact]
+    public async Task ExplicitPopulation_AnEmptySuppliedListPreventsAutomaticFallback()
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var source = new CanonicalSource();
+            var request = Request(root) with
+            {
+                PopulateAssetEventsFromSecurityMaster = true,
+                AdjustForCorporateActions = false,
+                AssetEvents = []
+            };
+
+            var result = await Engine(root, source).RunAsync(request, new BuyAndHold());
+
+            source.Reads.Should().Be(0);
+            result.Snapshots[^1].Cash.Should().Be(99_000m);
+        });
+    }
+
+    [Fact]
+    public async Task ExplicitPopulation_WithoutAConfiguredSourceFailsBeforeReplay()
+    {
+        await WithRawReplayAsync(async root =>
+        {
+            var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance,
+                new StorageCatalogService(root, new StorageOptions()));
+            var request = Request(root) with { PopulateAssetEventsFromSecurityMaster = true, AdjustForCorporateActions = false };
+
+            Func<Task> run = () => engine.RunAsync(request, new BuyAndHold());
+
+            await run.Should().ThrowAsync<InvalidOperationException>().WithMessage("*no Security Master asset-event source*");
+        });
+    }
+
+    private static BacktestEngine Engine(string root, IBacktestAssetEventSource source) =>
+        new(NullLogger<BacktestEngine>.Instance, new StorageCatalogService(root, new StorageOptions()),
+            (ISecurityTradingParametersQueryService?)null, assetEventSource: source)
+        { AssetEventSource = source };
+
+    private static BacktestRequest Request(string root) => new(From, Through, Symbols: ["ABC"], DataRoot: root,
+        FillTiming: FillTiming.SameBar, SlippageBasisPoints: 0m, CommissionKind: BacktestCommissionKind.Free);
+
+    private static AssetEvent Distribution(decimal cash) => new(
+        new DateTimeOffset(From.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+        "ABC", AssetEventType.Dividend, CashPerShare: cash);
+
+    private static async Task WithRawReplayAsync(Func<string, Task> exercise)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-population-merge-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(Path.Combine(root, "ABC"));
+        try
+        {
+            var events = Enumerable.Range(0, 4).Select(index =>
+            {
+                var date = From.AddDays(index);
+                var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(16, 0)), TimeSpan.Zero);
+                var bar = new HistoricalBar("ABC", date, 100m, 100m, 100m, 100m, 10_000, "synthetic", IsAdjusted: false);
+                return JsonSerializer.Serialize(MarketEvent.HistoricalBar(at, "ABC", bar, "synthetic"), MarketDataJsonContext.HighPerformanceOptions);
+            });
+            await File.WriteAllLinesAsync(Path.Combine(root, "ABC", "ABC_bars_2024-01-02.jsonl"), events);
+            await exercise(root);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    private sealed class CanonicalSource : IBacktestAssetEventSource
+    {
+        public int Reads { get; private set; }
+        public Task<IReadOnlyList<AssetEvent>> GetAssetEventsAsync(
+            IReadOnlyCollection<string> symbols, DateOnly from, DateOnly to, CancellationToken ct = default)
+        {
+            Reads++;
+            return Task.FromResult<IReadOnlyList<AssetEvent>>([Distribution(2m)]);
+        }
+    }
+
+    private sealed class LegacySource : IBacktestAssetEventSource
+    {
+        public int Reads { get; private set; }
+        public Task<IReadOnlyList<AssetEvent>> LoadAsync(
+            IReadOnlyCollection<string> symbols, DateOnly from, DateOnly to, CancellationToken ct = default)
+        {
+            Reads++;
+            return Task.FromResult<IReadOnlyList<AssetEvent>>([Distribution(2m)]);
+        }
+    }
+
     private static CorporateActionDto Action(Guid security, string type, DateOnly date, decimal? cash = null, decimal? ratio = null) =>
         new(Guid.NewGuid(), security, type, date, null, cash, "USD", ratio, null, null, null, null, null, null,
             LifecycleState: CorporateActionLifecycleStates.Confirmed);

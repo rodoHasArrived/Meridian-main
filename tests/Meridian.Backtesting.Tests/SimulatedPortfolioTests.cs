@@ -10,6 +10,56 @@ public sealed class SimulatedPortfolioTests
     private static SimulatedPortfolio CreatePortfolio(decimal initialCash = 10_000m)
         => new(initialCash, new FixedCommissionModel(0m), annualMarginRate: 0.05, annualShortRebateRate: 0.02);
 
+    [Theory]
+    [InlineData(0.0)]
+    [InlineData(-0.0365)]
+    [InlineData(0.0365)]
+    public void AccrueDailyInterest_MarginRates_PostOnlyNonzeroBalancedLines(double rate)
+    {
+        var ledger = NewLedger();
+        var portfolio = new SimulatedPortfolio(1_000m, new FixedCommissionModel(), rate, 0, ledger);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 20, 100m, 0m, DateTimeOffset.UtcNow));
+        var journalsBefore = ledger.Journal.Count;
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 6)); // Saturday also accrues.
+
+        portfolio.Cash.Should().BeApproximately(-1_000m - 1_000m * (decimal)(rate / 365.0), 0.00000000001m);
+        ledger.Journal.Count.Should().Be(journalsBefore + (rate == 0 ? 0 : 1));
+        ledger.Journal.Should().OnlyContain(j => j.IsBalanced);
+        ledger.GetBalance(LedgerAccounts.CashAccount(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(portfolio.Cash);
+    }
+
+    [Theory]
+    [InlineData(0.0)]
+    [InlineData(-0.0365)]
+    [InlineData(0.0365)]
+    public void AccrueDailyInterest_ShortRebateRates_RespectSignAndSkipZero(double rate)
+    {
+        var ledger = NewLedger();
+        var portfolio = new SimulatedPortfolio(1_000m, new FixedCommissionModel(), 0, rate, ledger);
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10, 100m, 0m, DateTimeOffset.UtcNow));
+        portfolio.UpdateLastPrice("SPY", 100m);
+        var journalsBefore = ledger.Journal.Count;
+
+        portfolio.AccrueDailyInterest(new DateOnly(2024, 1, 7));
+
+        portfolio.Cash.Should().BeApproximately(2_000m + 1_000m * (decimal)(rate / 365.0), 0.00000000001m);
+        ledger.Journal.Count.Should().Be(journalsBefore + (rate == 0 ? 0 : 1));
+        ledger.Journal.Should().OnlyContain(j => j.IsBalanced);
+        ledger.GetBalance(LedgerAccounts.CashAccount(BacktestDefaults.DefaultBrokerageAccountId)).Should().Be(portfolio.Cash);
+    }
+
+    [Fact]
+    public void ProcessFill_CommissionCashFlows_ReconcileToActualCashChange()
+    {
+        var portfolio = CreatePortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10, 100m, 5m, DateTimeOffset.UtcNow));
+        var snapshot = portfolio.TakeSnapshot(DateTimeOffset.UtcNow, new DateOnly(2024, 1, 2));
+
+        snapshot.DayCashFlows.OfType<TradeCashFlow>().Single().Amount.Should().Be(-1_000m);
+        snapshot.DayCashFlows.Sum(flow => flow.Amount).Should().Be(portfolio.Cash - 10_000m);
+    }
+
     [Fact]
     public void ProcessFill_BuyOrder_DeductsCashAndCreatesPosition()
     {
@@ -22,6 +72,55 @@ public sealed class SimulatedPortfolioTests
         portfolio.GetCurrentPositions().Should().ContainKey("SPY");
         portfolio.GetCurrentPositions()["SPY"].Quantity.Should().Be(10);
     }
+
+    [Fact]
+    public void ProcessFill_SellLargerThanLong_ShortSellingDisabled_RejectsWithoutChangingState()
+    {
+        // Long 100, sell 150 would leave a 50-share short. The guard used to fire only when the
+        // account started flat or short, so this flip opened a short on a long-only account.
+        var portfolio = CreateLongOnlyPortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 100L, 50m, 0m, DateTimeOffset.UtcNow, "long-only"));
+        var cashBeforeSell = portfolio.Cash;
+
+        var act = () => portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -150L, 55m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*does not permit short selling*");
+        portfolio.Cash.Should().Be(cashBeforeSell);
+        portfolio.GetCurrentPositions()["SPY"].Quantity.Should().Be(100);
+    }
+
+    [Theory]
+    [InlineData(-40L, 60L)]
+    [InlineData(-100L, 0L)]
+    public void ProcessFill_SellWithinLong_ShortSellingDisabled_IsAllowed(long sellQuantity, long expectedRemaining)
+    {
+        var portfolio = CreateLongOnlyPortfolio();
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 100L, 50m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        portfolio.ProcessFill(
+            new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", sellQuantity, 55m, 0m, DateTimeOffset.UtcNow, "long-only"));
+
+        var positions = portfolio.GetCurrentPositions();
+        if (expectedRemaining == 0)
+            positions.Should().NotContainKey("SPY");
+        else
+            positions["SPY"].Quantity.Should().Be(expectedRemaining);
+    }
+
+    private static SimulatedPortfolio CreateLongOnlyPortfolio()
+        => new(
+            [
+                new FinancialAccount(
+                    "long-only",
+                    "Long Only",
+                    FinancialAccountKind.Brokerage,
+                    "Broker",
+                    10_000m,
+                    new FinancialAccountRules(AllowMargin: false, AllowShortSelling: false))
+            ],
+            "long-only",
+            new FixedCommissionModel(0m));
 
     [Fact]
     public void ProcessFill_SellOrder_AddsCashAndRemovesPosition()
@@ -68,7 +167,7 @@ public sealed class SimulatedPortfolioTests
         var cashBefore = portfolio.Cash;
         portfolio.AccrueDailyInterest(DateOnly.FromDateTime(DateTime.Today));
 
-        // Interest = -1000 * 0.05 / 252 ≈ -0.198
+        // Interest uses ACT/365 fixed because every calendar date accrues.
         portfolio.Cash.Should().BeLessThan(cashBefore);
     }
 

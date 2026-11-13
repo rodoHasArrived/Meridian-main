@@ -1,18 +1,125 @@
 import { CheckCircle, PauseCircle, XCircle } from "lucide-react";
 
+import { DetailFields, type DetailField } from "@/components/meridian/detail-pane";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { formatPercent, formatPrefixedCurrency, formatQuantity, formatUtcDate } from "@/lib/format";
 import type { GovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
-import type { RiskEscalation } from "@/types";
+import type { RiskEscalation, RiskEscalationOptionContract, RiskEscalationOrderLeg } from "@/types";
 
 export interface GovernedApprovalsPanelProps {
   model: GovernedApprovalsViewModel;
 }
 
+// Prices, trail offsets and ratios keep the precision the order carries: an approver has to see
+// the figure being authorized, not a rounded one.
+const PRICE_FORMAT = { maxDecimals: 8 } as const;
+const NOTIONAL_FORMAT = { minimumFractionDigits: 2, maximumFractionDigits: 8 } as const;
+const MISSING = "—";
+
+// Server enum names in operator wording. A name outside these maps is shown as the server sent it.
+const TIME_IN_FORCE_LABELS = new Map([
+  ["Day", "Day"],
+  ["GoodTilCancelled", "Good til cancelled"],
+  ["ImmediateOrCancel", "Immediate or cancel"],
+  ["FillOrKill", "Fill or kill"]
+]);
+const POSITION_INTENT_LABELS = new Map([
+  ["BuyToOpen", "Buy to open"],
+  ["BuyToClose", "Buy to close"],
+  ["SellToOpen", "Sell to open"],
+  ["SellToClose", "Sell to close"]
+]);
+const OPTION_RIGHT_LABELS = new Map([
+  ["C", "Call"],
+  ["P", "Put"]
+]);
+// A leg's enums arrive as ordinals (see RiskEscalationOrderLeg), in server declaration order.
+const LEG_SIDES = ["Buy", "Sell"];
+const LEG_POSITION_INTENTS = ["BuyToOpen", "BuyToClose", "SellToOpen", "SellToClose"];
+
+function formatNotional(value: number): string {
+  return formatPrefixedCurrency(value, NOTIONAL_FORMAT);
+}
+
 function describeOrder(escalation: RiskEscalation): string {
   const price = escalation.limitPrice !== null ? ` @ ${escalation.limitPrice}` : "";
-  return `${escalation.side} ${escalation.quantity} ${escalation.symbol} ${escalation.type.toLowerCase()}${price}`;
+  // A dollar-sized order is routed by its notional, not by a share quantity, so the quantity
+  // field (which can be a placeholder 1) must not be what the approver reads as the order's size.
+  const size = escalation.routedNotional != null
+    ? `${formatNotional(escalation.routedNotional)} notional of ${escalation.symbol}`
+    : `${escalation.quantity} ${escalation.symbol}`;
+  return `${escalation.side} ${size} ${escalation.type.toLowerCase()}${price}`;
+}
+
+function formatExpiration(value: string): string {
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T00:00:00Z`) : null;
+  return date && !Number.isNaN(date.getTime()) ? formatUtcDate(date) : value;
+}
+
+function joinPresent(parts: Array<string | null | undefined>): string {
+  return parts.filter((part): part is string => Boolean(part?.trim())).join(" · ");
+}
+
+/** The contract terms the server supplied; empty when it supplied none. */
+function describeOptionContract(contract: RiskEscalationOptionContract | null | undefined): string {
+  if (!contract) {
+    return "";
+  }
+
+  return joinPresent([
+    contract.underlyingSymbol,
+    contract.expirationDate ? `Expires ${formatExpiration(contract.expirationDate)}` : null,
+    contract.strikePrice != null ? `Strike ${formatQuantity(contract.strikePrice, PRICE_FORMAT)}` : null,
+    contract.right ? OPTION_RIGHT_LABELS.get(contract.right) ?? contract.right : null,
+    contract.multiplier ? `Multiplier ${contract.multiplier}` : null,
+    contract.contractMonth ? `Contract month ${contract.contractMonth}` : null,
+    contract.tradingClass ? `Trading class ${contract.tradingClass}` : null,
+    contract.localSymbol ? `Local symbol ${contract.localSymbol}` : null
+  ]);
+}
+
+function describeLeg(leg: RiskEscalationOrderLeg): string {
+  // An ordinal outside the server enum is shown as missing rather than mapped to a real side.
+  const side = LEG_SIDES[leg.side] ?? MISSING;
+  const intent = leg.positionIntent != null ? LEG_POSITION_INTENTS[leg.positionIntent] : undefined;
+  return joinPresent([
+    `${side} ${leg.symbol}`,
+    `Ratio ${formatQuantity(leg.ratioQuantity, PRICE_FORMAT)}`,
+    intent ? POSITION_INTENT_LABELS.get(intent) : null,
+    describeOptionContract(leg.optionContract)
+  ]);
+}
+
+/**
+ * The economic terms of a parked order beyond its headline. Only a term the server sent gets a
+ * row: an empty value is dropped by the detail list, so a missing term is never shown as a zero
+ * or a default. An opaque identifier (the fund account) goes behind the technical disclosure.
+ */
+function economicDetailFields(escalation: RiskEscalation): DetailField[] {
+  const { timeInForce, positionIntent } = escalation;
+  return [
+    {
+      label: "Routed notional",
+      value: escalation.routedNotional != null ? formatNotional(escalation.routedNotional) : "",
+      kind: "number",
+      detail: "This order is sized in dollars, not in quantity."
+    },
+    { label: "Stop price", value: escalation.stopPrice != null ? formatQuantity(escalation.stopPrice, PRICE_FORMAT) : "", kind: "number" },
+    { label: "Trail amount", value: escalation.trailPrice != null ? formatQuantity(escalation.trailPrice, PRICE_FORMAT) : "", kind: "number" },
+    {
+      label: "Trail percent",
+      value: escalation.trailPercent != null ? formatPercent(escalation.trailPercent, { maximumFractionDigits: 8 }) : "",
+      kind: "number"
+    },
+    { label: "Time in force", value: timeInForce ? TIME_IN_FORCE_LABELS.get(timeInForce) ?? timeInForce : "", kind: "text" },
+    { label: "Position intent", value: positionIntent ? POSITION_INTENT_LABELS.get(positionIntent) ?? positionIntent : "", kind: "text" },
+    { label: "Option contract", value: describeOptionContract(escalation.optionContract), kind: "text" },
+    ...(escalation.legs ?? []).map((leg, index): DetailField => ({ label: `Leg ${index + 1}`, value: describeLeg(leg), kind: "text" })),
+    { label: "Strategy", value: escalation.strategyId ?? "" },
+    { label: "Fund account ID", value: escalation.fundAccountId ?? "", kind: "id" }
+  ];
 }
 
 /**
@@ -77,6 +184,11 @@ export function GovernedApprovalsPanel({ model }: GovernedApprovalsPanelProps) {
                 <span className="text-xs text-muted-foreground">{escalation.ruleName ?? "risk"}</span>
               </div>
               <p className="text-sm text-muted-foreground">{escalation.reason}</p>
+              <DetailFields
+                fields={economicDetailFields(escalation)}
+                label={`Order details for ${escalation.symbol} escalation`}
+                columns="auto"
+              />
               <Input
                 aria-label={`Decision reason for ${escalation.symbol} escalation`}
                 placeholder="Reason for the decision (recorded in the audit trail)"

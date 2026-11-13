@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -13,16 +14,32 @@ using Serilog;
 namespace Meridian.Infrastructure.Adapters.Alpaca;
 
 /// <summary>
-/// Options chain provider using the Alpaca Markets Data API v1beta1.
-/// Provides option chain snapshots, greeks, and contract discovery for US equity options.
-/// Requires a funded Alpaca brokerage account with options trading enabled.
+/// Options chain provider for US equity options on Alpaca Markets. Contract discovery
+/// (expirations and strikes) uses the Trading API; chain snapshots, quotes and greeks use the
+/// Market Data API v1beta1.
 /// </summary>
 /// <remarks>
-/// API Documentation:
-///   Chain snapshot:    GET /v1beta1/options/snapshots/{underlying_symbol}
-///   Contract details:  GET /v1beta1/options/contracts/{symbol}
-///   Available tickers: GET /v1beta1/options/contracts?underlying_symbols={symbol}
-/// Reference: https://docs.alpaca.markets/reference/optionsnapshots
+/// <para>
+/// Endpoints:
+///   Contract discovery: GET {trading}/v2/options/contracts?underlying_symbols={symbol}
+///   Chain snapshot:     GET {data}/v1beta1/options/snapshots/{underlying_symbol}?expiration_date={date}
+///   Contract snapshot:  GET {data}/v1beta1/options/snapshots?symbols={occ_symbol}
+///   Underlying price:   GET {data}/v2/stocks/{symbol}/trades/latest
+/// </para>
+/// <para>
+/// Option snapshots carry no underlying price, and a chain or quote without one is rejected by
+/// the domain records, so the underlying's latest trade is read first; when it is unavailable
+/// no chain or quote is produced. Snapshots carry no open interest either; it is joined from
+/// the contract listing when that listing can be read, and left unknown otherwise.
+/// </para>
+/// <para>
+/// Contract discovery follows the credentials' trading environment (paper or live host), reads
+/// <c>strike_price</c> as the JSON string the API returns, states the expiration window
+/// explicitly because the API otherwise stops at the upcoming weekend, and follows
+/// <c>next_page_token</c>. A failed or unbounded page walk yields an empty result rather than
+/// a truncated chain.
+/// </para>
+/// Reference: https://docs.alpaca.markets/reference/get-options-contracts
 /// </remarks>
 [DataSource("alpaca-options", "Alpaca Options", DataSourceType.Realtime, DataSourceCategory.Broker,
     Priority = 8, Description = "US equity option chains with greeks and IV via Alpaca Markets Data API")]
@@ -41,8 +58,29 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
 {
     private const string DataBaseUrl = "https://data.alpaca.markets";
-    private const string BrokerBaseUrl = "https://broker-api.alpaca.markets";
 
+    /// <summary>Largest page the contracts endpoint serves.</summary>
+    private const int ContractPageSize = 10000;
+
+    /// <summary>
+    /// Upper bound on contract pages per request. Far above any listed chain (the largest
+    /// index-ETF chains are a few pages); it only stops a token loop the API never ends.
+    /// </summary>
+    private const int MaxContractPages = 20;
+
+    /// <summary>
+    /// How far ahead expirations are requested. Listed equity LEAPS run under three years; the
+    /// margin keeps the horizon from clipping the far end of a chain.
+    /// </summary>
+    private const int ExpirationHorizonYears = 5;
+
+    /// <summary>Largest page the snapshot endpoint serves.</summary>
+    private const int SnapshotPageSize = 1000;
+
+    /// <summary>Upper bound on snapshot pages for one expiration; one page holds any listed expiration.</summary>
+    private const int MaxSnapshotPages = 10;
+
+    private readonly string _tradingApiBaseUrl;
     private readonly string? _keyId;
     private readonly string? _secretKey;
     private readonly HttpClient _http;
@@ -82,15 +120,22 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
     /// <param name="secretKey">Alpaca API secret key (falls back to ALPACA_SECRET_KEY env var).</param>
     /// <param name="httpClient">Optional pre-built HTTP client (test-only override).</param>
     /// <param name="log">Optional logger.</param>
+    /// <param name="useSandbox">
+    /// <see langword="true"/> to discover contracts on the paper Trading API,
+    /// <see langword="false"/> for live. When omitted, <c>ALPACA_TRADING_ENVIRONMENT</c> decides
+    /// if it is set; otherwise a paper key ID (<c>PK…</c>) selects paper and anything else live.
+    /// </param>
     public AlpacaOptionsChainProvider(
         IHttpClientFactory httpClientFactory,
         string? keyId = null,
         string? secretKey = null,
         HttpClient? httpClient = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        bool? useSandbox = null)
     {
         ArgumentNullException.ThrowIfNull(httpClientFactory);
         _keyId = keyId ?? Environment.GetEnvironmentVariable("ALPACA_KEY_ID");
+        _tradingApiBaseUrl = AlpacaTradingApi.ResolveBaseUrl(useSandbox, _keyId);
         _secretKey = secretKey ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY");
         _http = httpClient
             ?? httpClientFactory.CreateClient(HttpClientNames.AlpacaOptions);
@@ -122,31 +167,16 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             return Array.Empty<DateOnly>();
         }
 
-        // GET /v1beta1/options/contracts?underlying_symbols={symbol}&limit=10000
-        var url = $"{DataBaseUrl}/v1beta1/options/contracts" +
-                  $"?underlying_symbols={Uri.EscapeDataString(underlyingSymbol)}" +
-                  "&limit=10000";
-
         try
         {
-            using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                _log.Warning("Alpaca expirations request failed: {StatusCode} for {Symbol}",
-                    response.StatusCode, underlyingSymbol);
-                return Array.Empty<DateOnly>();
-            }
-
-            var json = await response.Content.ReadFromJsonAsync(
-                AlpacaOptionsJsonContext.Default.AlpacaContractsResponse,
-                ct).ConfigureAwait(false);
-
-            if (json?.OptionContracts is not { } contracts)
+            var contracts = await FetchContractsAsync(underlyingSymbol, expiration: null, ct).ConfigureAwait(false);
+            if (contracts is null)
                 return Array.Empty<DateOnly>();
 
             var expirations = contracts
-                .Where(c => c.ExpirationDate is not null)
-                .Select(c => DateOnly.Parse(c.ExpirationDate!))
+                .Select(static c => TryParseContractDate(c.ExpirationDate, out var date) ? date : (DateOnly?)null)
+                .Where(static date => date.HasValue)
+                .Select(static date => date!.Value)
                 .Distinct()
                 .OrderBy(d => d)
                 .ToArray();
@@ -154,7 +184,7 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             _log.Debug("Alpaca fetched {Count} expirations for {Symbol}", expirations.Length, underlyingSymbol);
             return expirations;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _log.Error(ex, "Error fetching Alpaca expirations for {Symbol}", underlyingSymbol);
             return Array.Empty<DateOnly>();
@@ -174,29 +204,12 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             return Array.Empty<decimal>();
         }
 
-        var expirationStr = expiration.ToString("yyyy-MM-dd");
-
-        // GET /v1beta1/options/contracts?underlying_symbols={symbol}&expiration_date={date}&limit=10000
-        var url = $"{DataBaseUrl}/v1beta1/options/contracts" +
-                  $"?underlying_symbols={Uri.EscapeDataString(underlyingSymbol)}" +
-                  $"&expiration_date={expirationStr}" +
-                  "&limit=10000";
+        var expirationStr = FormatContractDate(expiration);
 
         try
         {
-            using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                _log.Warning("Alpaca strikes request failed: {StatusCode} for {Symbol} {Expiration}",
-                    response.StatusCode, underlyingSymbol, expirationStr);
-                return Array.Empty<decimal>();
-            }
-
-            var json = await response.Content.ReadFromJsonAsync(
-                AlpacaOptionsJsonContext.Default.AlpacaContractsResponse,
-                ct).ConfigureAwait(false);
-
-            if (json?.OptionContracts is not { } contracts)
+            var contracts = await FetchContractsAsync(underlyingSymbol, expiration, ct).ConfigureAwait(false);
+            if (contracts is null)
                 return Array.Empty<decimal>();
 
             var strikes = contracts
@@ -208,12 +221,88 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
 
             return strikes;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _log.Error(ex, "Error fetching Alpaca strikes for {Symbol} {Expiration}", underlyingSymbol, expirationStr);
             return Array.Empty<decimal>();
         }
     }
+
+    /// <summary>
+    /// Reads every active contract for one underlying from the Trading API, either for a single
+    /// expiration or for the whole forward horizon. Returns <see langword="null"/> when any page
+    /// fails or the page walk does not terminate, so a caller never presents part of a chain as
+    /// the chain.
+    /// </summary>
+    private async Task<IReadOnlyList<AlpacaContractInfo>?> FetchContractsAsync(
+        string underlyingSymbol,
+        DateOnly? expiration,
+        CancellationToken ct)
+    {
+        // Without an expiration bound the endpoint returns only contracts expiring by the
+        // upcoming weekend, so the horizon is always stated.
+        var window = expiration is { } single
+            ? $"&expiration_date={FormatContractDate(single)}"
+            : $"&expiration_date_lte={FormatContractDate(DateOnly.FromDateTime(DateTime.UtcNow).AddYears(ExpirationHorizonYears))}";
+        var baseUrl = $"{_tradingApiBaseUrl}/v2/options/contracts" +
+                      $"?underlying_symbols={Uri.EscapeDataString(underlyingSymbol)}" +
+                      "&status=active" +
+                      window +
+                      $"&limit={ContractPageSize}";
+
+        var contracts = new List<AlpacaContractInfo>();
+        var seenPageTokens = new HashSet<string>(StringComparer.Ordinal);
+        string? pageToken = null;
+        for (var page = 0; page < MaxContractPages; page++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var url = pageToken is null
+                ? baseUrl
+                : $"{baseUrl}&page_token={Uri.EscapeDataString(pageToken)}";
+            using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                _log.Warning("Alpaca option contracts request failed: {StatusCode} for {Symbol} on the {Environment} Trading API",
+                    response.StatusCode, underlyingSymbol, AlpacaTradingApi.DescribeEnvironment(_tradingApiBaseUrl));
+                return null;
+            }
+
+            var json = await response.Content.ReadFromJsonAsync(
+                AlpacaOptionsJsonContext.Default.AlpacaContractsResponse,
+                ct).ConfigureAwait(false);
+            // An underlying with no listed contracts answers with an empty array; a page without
+            // the array at all is not a listing and must not read as "no contracts".
+            if (json?.OptionContracts is not { } pageContracts)
+            {
+                _log.Warning("Alpaca option contracts response for {Symbol} carried no contract list; discarding the page walk",
+                    underlyingSymbol);
+                return null;
+            }
+
+            contracts.AddRange(pageContracts);
+
+            pageToken = json?.NextPageToken;
+            if (string.IsNullOrEmpty(pageToken))
+                return contracts;
+
+            if (!seenPageTokens.Add(pageToken))
+            {
+                _log.Warning("Alpaca option contracts paging repeated a page token for {Symbol}; discarding the partial chain",
+                    underlyingSymbol);
+                return null;
+            }
+        }
+
+        _log.Warning("Alpaca option contracts paging exceeded {MaxPages} pages for {Symbol}; discarding the partial chain",
+            MaxContractPages, underlyingSymbol);
+        return null;
+    }
+
+    private static string FormatContractDate(DateOnly date) =>
+        date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static bool TryParseContractDate(string? value, out DateOnly date) =>
+        DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
 
     /// <inheritdoc/>
     public async Task<OptionChainSnapshot?> GetChainSnapshotAsync(
@@ -229,16 +318,60 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             return null;
         }
 
-        var expirationStr = expiration.ToString("yyyy-MM-dd");
-
-        // GET /v1beta1/options/snapshots/{underlying_symbol}?expiration_date={date}&feed=indicative
-        var url = $"{DataBaseUrl}/v1beta1/options/snapshots/{Uri.EscapeDataString(underlyingSymbol)}" +
-                  $"?expiration_date={expirationStr}" +
-                  "&feed=indicative" +
-                  "&limit=1000";
+        var expirationStr = FormatContractDate(expiration);
 
         try
         {
+            var underlyingPrice = await GetUnderlyingPriceAsync(underlyingSymbol, ct).ConfigureAwait(false);
+            if (underlyingPrice <= 0m)
+            {
+                _log.Warning("Alpaca has no usable underlying price for {Symbol}; no chain snapshot is produced", underlyingSymbol);
+                return null;
+            }
+
+            var snapshots = await FetchChainSnapshotsAsync(underlyingSymbol, expirationStr, ct).ConfigureAwait(false);
+            if (snapshots is null)
+                return null;
+            if (snapshots.Count == 0)
+            {
+                _log.Information("Alpaca returned empty chain for {Symbol} {Expiration}", underlyingSymbol, expirationStr);
+                return null;
+            }
+
+            var openInterest = await FetchOpenInterestAsync(underlyingSymbol, expiration, ct).ConfigureAwait(false);
+            return MapToChainSnapshot(underlyingSymbol, expiration, snapshots, strikeRange, underlyingPrice, openInterest);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            _log.Error(ex, "Error fetching Alpaca chain for {Symbol} {Expiration}", underlyingSymbol, expirationStr);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Reads every snapshot of one expiration. Returns <see langword="null"/> when a page fails
+    /// or the page walk does not terminate, so part of a chain is never presented as the chain.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, AlpacaOptionSnapshot>?> FetchChainSnapshotsAsync(
+        string underlyingSymbol,
+        string expirationStr,
+        CancellationToken ct)
+    {
+        // GET /v1beta1/options/snapshots/{underlying_symbol}?expiration_date={date}&feed=indicative
+        var baseUrl = $"{DataBaseUrl}/v1beta1/options/snapshots/{Uri.EscapeDataString(underlyingSymbol)}" +
+                      $"?expiration_date={expirationStr}" +
+                      "&feed=indicative" +
+                      $"&limit={SnapshotPageSize}";
+
+        var snapshots = new Dictionary<string, AlpacaOptionSnapshot>(StringComparer.Ordinal);
+        var seenPageTokens = new HashSet<string>(StringComparer.Ordinal);
+        string? pageToken = null;
+        for (var page = 0; page < MaxSnapshotPages; page++)
+        {
+            ct.ThrowIfCancellationRequested();
+            var url = pageToken is null
+                ? baseUrl
+                : $"{baseUrl}&page_token={Uri.EscapeDataString(pageToken)}";
             using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
@@ -250,20 +383,79 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             var json = await response.Content.ReadFromJsonAsync(
                 AlpacaOptionsJsonContext.Default.AlpacaSnapshotsResponse,
                 ct).ConfigureAwait(false);
-
-            if (json?.Snapshots is not { } snapshots || snapshots.Count == 0)
+            if (json?.Snapshots is { } pageSnapshots)
             {
-                _log.Information("Alpaca returned empty chain for {Symbol} {Expiration}", underlyingSymbol, expirationStr);
-                return null;
+                foreach (var (ticker, snapshot) in pageSnapshots)
+                    snapshots[ticker] = snapshot;
             }
 
-            return MapToChainSnapshot(underlyingSymbol, expiration, snapshots, strikeRange);
+            pageToken = json?.NextPageToken;
+            if (string.IsNullOrEmpty(pageToken))
+                return snapshots;
+
+            if (!seenPageTokens.Add(pageToken))
+                break;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+
+        _log.Warning("Alpaca chain snapshot paging did not terminate for {Symbol} {Expiration}; discarding the partial chain",
+            underlyingSymbol, expirationStr);
+        return null;
+    }
+
+    /// <summary>
+    /// Latest trade price of the underlying, or 0 when the market-data API has none for it.
+    /// The feed is left to the API, which serves the best one the account is entitled to.
+    /// </summary>
+    private async Task<decimal> GetUnderlyingPriceAsync(string underlyingSymbol, CancellationToken ct)
+    {
+        var url = $"{DataBaseUrl}/v2/stocks/{Uri.EscapeDataString(underlyingSymbol)}/trades/latest";
+        using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
         {
-            _log.Error(ex, "Error fetching Alpaca chain for {Symbol} {Expiration}", underlyingSymbol, expirationStr);
-            return null;
+            _log.Warning("Alpaca latest trade request failed: {StatusCode} for {Symbol}", response.StatusCode, underlyingSymbol);
+            return 0m;
         }
+
+        var latest = await response.Content.ReadFromJsonAsync(
+            AlpacaOptionsJsonContext.Default.AlpacaLatestTradeResponse,
+            ct).ConfigureAwait(false);
+        return latest?.Trade?.Price ?? 0m;
+    }
+
+    /// <summary>
+    /// Open interest by OCC symbol from the contract listing. Best effort: the snapshot is still
+    /// usable without it, so a listing that cannot be read leaves open interest unknown.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, long>> FetchOpenInterestAsync(
+        string underlyingSymbol,
+        DateOnly expiration,
+        CancellationToken ct)
+    {
+        var openInterest = new Dictionary<string, long>(StringComparer.Ordinal);
+        IReadOnlyList<AlpacaContractInfo>? contracts;
+        try
+        {
+            contracts = await FetchContractsAsync(underlyingSymbol, expiration, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            // A transport failure, timeout or unreadable listing costs the enrichment only; the
+            // prices and snapshots already fetched are still a usable chain.
+            _log.Warning(ex, "Alpaca open interest lookup failed for {Symbol} {Expiration}; returning the chain without it",
+                underlyingSymbol, FormatContractDate(expiration));
+            return openInterest;
+        }
+
+        if (contracts is null)
+            return openInterest;
+
+        foreach (var contract in contracts)
+        {
+            if (contract.Symbol is { Length: > 0 } symbol && contract.OpenInterest is { } value)
+                openInterest[symbol] = value;
+        }
+
+        return openInterest;
     }
 
     /// <inheritdoc/>
@@ -281,13 +473,21 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
         // Alpaca uses OCC format for option ticker symbols
         var occSymbol = contract.ToOccSymbol().Replace(" ", "");
 
-        // GET /v1beta1/options/snapshots/{underlying_symbol}?symbols={occ_symbol}&feed=indicative
-        var url = $"{DataBaseUrl}/v1beta1/options/snapshots/{Uri.EscapeDataString(contract.UnderlyingSymbol)}" +
+        // GET /v1beta1/options/snapshots?symbols={occ_symbol}&feed=indicative
+        // The per-underlying chain route refuses a symbols filter; single contracts have their own route.
+        var url = $"{DataBaseUrl}/v1beta1/options/snapshots" +
                   $"?symbols={Uri.EscapeDataString(occSymbol)}" +
                   "&feed=indicative";
 
         try
         {
+            var underlyingPrice = await GetUnderlyingPriceAsync(contract.UnderlyingSymbol, ct).ConfigureAwait(false);
+            if (underlyingPrice <= 0m)
+            {
+                _log.Warning("Alpaca has no usable underlying price for {Symbol}; no option quote is produced", contract.UnderlyingSymbol);
+                return null;
+            }
+
             using var response = await _http.GetAsync(url, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
             {
@@ -302,9 +502,9 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             if (json?.Snapshots is not { } snapshots || !snapshots.TryGetValue(occSymbol, out var snap))
                 return null;
 
-            return MapToOptionQuote(contract, occSymbol, snap, DateTimeOffset.UtcNow);
+            return MapToOptionQuote(contract, occSymbol, snap, DateTimeOffset.UtcNow, underlyingPrice, openInterest: null);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _log.Error(ex, "Error fetching Alpaca quote for {OccSymbol}", occSymbol);
             return null;
@@ -324,37 +524,51 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
 
     private bool IsConfigured => IsCredentialsConfigured;
 
+    /// <summary>
+    /// The strike closest to the money and up to <paramref name="strikeRange"/> listed strikes on
+    /// each side of it. Sides are counted by position in the listing, not by distance, so
+    /// unevenly spaced strikes cannot crowd one side out of the result.
+    /// </summary>
+    internal static IReadOnlyList<decimal> SelectStrikesAroundTheMoney(
+        IReadOnlyList<decimal> ascendingStrikes, decimal underlyingPrice, int strikeRange)
+    {
+        if (ascendingStrikes.Count == 0 || strikeRange <= 0)
+            return ascendingStrikes;
+
+        var atTheMoney = 0;
+        for (var index = 1; index < ascendingStrikes.Count; index++)
+        {
+            // Strictly closer only: of two equidistant strikes the lower one is at the money.
+            if (Math.Abs(ascendingStrikes[index] - underlyingPrice) < Math.Abs(ascendingStrikes[atTheMoney] - underlyingPrice))
+                atTheMoney = index;
+        }
+
+        // Bounding the reach by the listing keeps an oversized range from overflowing the index.
+        var reach = Math.Min(strikeRange, ascendingStrikes.Count);
+        var first = Math.Max(0, atTheMoney - reach);
+        var last = Math.Min(ascendingStrikes.Count - 1, atTheMoney + reach);
+        var kept = new decimal[last - first + 1];
+        for (var index = first; index <= last; index++)
+            kept[index - first] = ascendingStrikes[index];
+        return kept;
+    }
+
     private static OptionChainSnapshot? MapToChainSnapshot(
         string underlyingSymbol,
         DateOnly expiration,
         IReadOnlyDictionary<string, AlpacaOptionSnapshot> snapshots,
-        int? strikeRange)
+        int? strikeRange,
+        decimal underlyingPrice,
+        IReadOnlyDictionary<string, long> openInterest)
     {
         var now = DateTimeOffset.UtcNow;
         var calls = new List<OptionQuote>();
         var puts = new List<OptionQuote>();
         var strikeSet = new SortedSet<decimal>();
 
-        // Alpaca's snapshot endpoint does not provide a separate underlying spot price field.
-        // UnderlyingPrice is left as 0 to signal "not available" rather than using an option
-        // contract quote (AskPrice of an option is not the underlying price).
-        const decimal underlyingPrice = 0m;
-
         foreach (var (ticker, snap) in snapshots)
         {
-            // Decode right from ticker: OCC format has C/P before strike digits
-            var right = ticker.Contains('C') ? OptionRight.Call : OptionRight.Put;
-
-            // Extract strike from the ticker — last 8 digits / 1000
-            decimal strike = 0m;
-            if (ticker.Length >= 8)
-            {
-                var strikePart = ticker[^8..];
-                if (long.TryParse(strikePart, out long strikeMillis))
-                    strike = strikeMillis / 1000m;
-            }
-
-            if (strike <= 0m)
+            if (!TryParseOccRightAndStrike(ticker, out var right, out var strike))
                 continue;
 
             var contract = new OptionContractSpec(
@@ -369,7 +583,8 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
                 OccSymbol: ticker,
                 InstrumentType: InstrumentType.EquityOption);
 
-            var quote = MapToOptionQuote(contract, ticker, snap, now);
+            var quote = MapToOptionQuote(contract, ticker, snap, now, underlyingPrice,
+                openInterest.TryGetValue(ticker, out var contractOpenInterest) ? contractOpenInterest : null);
             if (quote is null)
                 continue;
 
@@ -385,6 +600,14 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             return null;
 
         IReadOnlyList<decimal> strikes = strikeSet.ToArray();
+        if (strikeRange is > 0)
+        {
+            var kept = SelectStrikesAroundTheMoney(strikes, underlyingPrice, strikeRange.Value);
+            var keptSet = kept.ToHashSet();
+            calls = calls.Where(call => keptSet.Contains(call.Contract.Strike)).ToList();
+            puts = puts.Where(put => keptSet.Contains(put.Contract.Strike)).ToList();
+            strikes = kept;
+        }
 
         return new OptionChainSnapshot(
             Timestamp: now,
@@ -399,11 +622,51 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             Source: "alpaca");
     }
 
+    /// <summary>
+    /// Reads the right and strike from a compact OCC symbol (root, yyMMdd, C or P, then the
+    /// strike in thousandths as eight digits). The right is the single character before the
+    /// strike digits; searching the whole symbol misreads every put whose root contains a C.
+    /// </summary>
+    internal static bool TryParseOccRightAndStrike(string ticker, out OptionRight right, out decimal strike)
+    {
+        right = default;
+        strike = 0m;
+        if (string.IsNullOrWhiteSpace(ticker) || ticker.Length < 16)
+            return false;
+
+        // The six characters before the right are the yyMMdd expiration.
+        foreach (var digit in ticker.AsSpan(ticker.Length - 15, 6))
+        {
+            if (!char.IsAsciiDigit(digit))
+                return false;
+        }
+
+        switch (ticker[^9])
+        {
+            case 'C':
+                right = OptionRight.Call;
+                break;
+            case 'P':
+                right = OptionRight.Put;
+                break;
+            default:
+                return false;
+        }
+
+        if (!long.TryParse(ticker.AsSpan(ticker.Length - 8), NumberStyles.None, CultureInfo.InvariantCulture, out var strikeMillis))
+            return false;
+
+        strike = strikeMillis / 1000m;
+        return strike > 0m;
+    }
+
     private static OptionQuote? MapToOptionQuote(
         OptionContractSpec contract,
         string ticker,
         AlpacaOptionSnapshot snap,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        decimal underlyingPrice,
+        long? openInterest)
     {
         var bid = snap.LatestQuote?.BidPrice ?? 0m;
         var ask = snap.LatestQuote?.AskPrice ?? 0m;
@@ -411,11 +674,6 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
 
         if (bid <= 0m && ask <= 0m && last <= 0m)
             return null;
-
-        // Alpaca's option snapshot endpoint does not expose the underlying spot price directly.
-        // UnderlyingPrice is set to 0 to signal "not available" to callers rather than using
-        // a meaningless placeholder that could mislead downstream moneyness checks.
-        const decimal underlyingPrice = 0m;
 
         return new OptionQuote(
             Timestamp: now,
@@ -432,8 +690,9 @@ public sealed class AlpacaOptionsChainProvider : IOptionsChainProvider
             Gamma: snap.Greeks?.Gamma.HasValue == true ? (decimal)snap.Greeks.Gamma!.Value : null,
             Theta: snap.Greeks?.Theta.HasValue == true ? (decimal)snap.Greeks.Theta!.Value : null,
             Vega: snap.Greeks?.Vega.HasValue == true ? (decimal)snap.Greeks.Vega!.Value : null,
-            OpenInterest: snap.OpenInterest,
-            Volume: (long?)snap.LatestTrade?.Size,
+            OpenInterest: openInterest,
+            // The session's volume, not the size of the last print.
+            Volume: snap.DailyBar?.Volume,
             SequenceNumber: 0,
             Source: "alpaca");
     }
@@ -463,7 +722,9 @@ internal sealed class AlpacaContractInfo
     [JsonPropertyName("expiration_date")]
     public string? ExpirationDate { get; set; }
 
+    /// <summary>The Trading API returns the strike as a JSON string (for example "270").</summary>
     [JsonPropertyName("strike_price")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public decimal? StrikePrice { get; set; }
 
     [JsonPropertyName("type")]
@@ -471,6 +732,11 @@ internal sealed class AlpacaContractInfo
 
     [JsonPropertyName("style")]
     public string? Style { get; set; }
+
+    /// <summary>Open interest as of the listing's <c>open_interest_date</c>; a JSON string.</summary>
+    [JsonPropertyName("open_interest")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public long? OpenInterest { get; set; }
 }
 
 internal sealed class AlpacaSnapshotsResponse
@@ -496,8 +762,26 @@ internal sealed class AlpacaOptionSnapshot
     [JsonPropertyName("impliedVolatility")]
     public double? ImpliedVolatility { get; set; }
 
-    [JsonPropertyName("openInterest")]
-    public long? OpenInterest { get; set; }
+    [JsonPropertyName("dailyBar")]
+    public AlpacaOptionBar? DailyBar { get; set; }
+}
+
+internal sealed class AlpacaOptionBar
+{
+    [JsonPropertyName("v")]
+    public long? Volume { get; set; }
+}
+
+internal sealed class AlpacaLatestTradeResponse
+{
+    [JsonPropertyName("trade")]
+    public AlpacaLatestTrade? Trade { get; set; }
+}
+
+internal sealed class AlpacaLatestTrade
+{
+    [JsonPropertyName("p")]
+    public decimal? Price { get; set; }
 }
 
 internal sealed class AlpacaOptionQuote
@@ -554,6 +838,7 @@ internal sealed class AlpacaGreeks
 [JsonSerializable(typeof(AlpacaContractsResponse))]
 [JsonSerializable(typeof(AlpacaSnapshotsResponse))]
 [JsonSerializable(typeof(AlpacaOptionSnapshot))]
+[JsonSerializable(typeof(AlpacaLatestTradeResponse))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 internal sealed partial class AlpacaOptionsJsonContext : JsonSerializerContext
 {

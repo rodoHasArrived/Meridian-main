@@ -11,6 +11,8 @@ last_reviewed: 2026-07-27
 
 # src/Meridian
 
+`UiServer` paper composition registers `IOrderGateway` as a read-only view over the OMS paper `IExecutionGateway` (no second paper simulator). The optional StockSharp gateway no longer registers placeholder account-catalog, portfolio or activity sync adapters; the runtime surface reports those as missing.
+
 The browser host can compose the Alpaca brokerage execution portfolio. `BrokeragePortfolioState`
 projects broker observations for the existing portfolio and position-tracker consumers; mandatory
 account synchronization and readiness gates reject missing, stale or inconsistent authority.
@@ -42,6 +44,12 @@ and process-host concerns isolated from domain and application logic.
 - `Properties/` - launch and host metadata.
 
 ## Important workflows
+
+`UiServer` invokes Application's shared `DatabaseStartupPlan` before its existing optional reporting
+migration gate and before starting hosted services. It retains its successful-readiness cache,
+serialized lifecycle operations, and retry after a pre-host migration failure. Desktop child
+`HostStartup` graphs do not repeat the parent's database migrations. The shared plan validates
+module prerequisites before running the established sequential initialization order.
 
 Use this module when changing host startup, CLI routing, runtime hosting, configuration bootstrap,
 local workstation API process behavior, or production API binding policy.
@@ -75,7 +83,9 @@ add placeholder StockSharp services when the connector package is absent. Host o
 paper-first by default: brokerage
 execution resolves to paper gateways unless live execution is explicitly enabled, and Paper -> Live
 promotion claims must be tied to execution-governance audit or manual-override evidence before they
-are presented as readiness evidence.
+are presented as readiness evidence. The host registers the paper futures daily settlement job
+(`AddPaperFuturesSettlement`) beside the paper sessions; it is off unless
+`PaperTrading:FuturesSettlement:Enabled` is true.
 
 `UiServer` delegates workstation accounting and reconciliation adapter registration to
 `AddWorkstationSharedServices`. Statement reconciliation endpoints therefore use the shared
@@ -101,6 +111,10 @@ API-only status-code fallback converts otherwise empty 4xx/5xx results to the sa
 contract. Browser routes and static assets remain outside that fallback, while missing runtime
 services and safe server failures return typed errors instead of successful placeholder payloads
 or raw exception text.
+
+`UiServer.StartAsync` calls `WarmProvidersAsync` once the web application has started, so the
+provider registry and its brokerage, options and corporate-action objects are built with their
+credentials read ahead instead of on first use.
 
 ## Diagrams
 

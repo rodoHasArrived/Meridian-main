@@ -8,7 +8,7 @@ using FluentAssertions;
 using Meridian.Contracts.Integrity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 
 namespace Meridian.Tests.Reconciliation;
 

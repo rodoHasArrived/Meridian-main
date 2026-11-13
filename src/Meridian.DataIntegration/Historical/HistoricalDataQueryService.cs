@@ -668,8 +668,31 @@ public sealed class HistoricalDataQueryService
         return files.OrderBy(f => f).ToList();
     }
 
+    /// <summary>
+    /// Whether <paramref name="symbol"/> can be used as a single directory or file-name component.
+    /// A symbol is spliced into paths and search patterns under the data root, so path syntax
+    /// (separators, a drive or stream colon, <c>.</c> and <c>..</c>) and wildcards are refused.
+    /// Punctuation that is not path syntax, as in <c>BRK.B</c>, <c>ES=F</c> or <c>^VIX</c>, is allowed.
+    /// </summary>
+    public static bool IsSafeSymbolPathComponent(string? symbol)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || symbol.Length > 64 || symbol is "." or "..")
+            return false;
+
+        foreach (var ch in symbol)
+        {
+            if (char.IsControl(ch) || ch is '/' or '\\' or ':' or '*' or '?' or '"' or '<' or '>' or '|')
+                return false;
+        }
+
+        return true;
+    }
+
     private List<string> FindDataFilesForSymbol(string symbol)
     {
+        if (!IsSafeSymbolPathComponent(symbol))
+            throw new ArgumentException("Symbol is not a valid historical data name.", nameof(symbol));
+
         var files = new List<string>();
 
         if (!Directory.Exists(_dataRoot))
@@ -695,7 +718,56 @@ public sealed class HistoricalDataQueryService
                 .Where(f => f.EndsWith(".jsonl") || f.EndsWith(".jsonl.gz")));
         }
 
-        return files.Distinct().ToList();
+        var distinct = files.Distinct().ToList();
+        foreach (var file in distinct)
+            RequireInsideDataRootWithoutLinks(file);
+        return distinct;
+    }
+
+    /// <summary>
+    /// Refuses a discovered file that resolves outside the data root or is reached through a
+    /// symbolic link below it. The configured root itself is trusted and may be a link.
+    /// </summary>
+    private void RequireInsideDataRootWithoutLinks(string file)
+    {
+        var root = Path.GetFullPath(_dataRoot);
+        var fullPath = Path.GetFullPath(file);
+        if (!IsInsideDataRoot(root, fullPath))
+            throw new UnauthorizedAccessException("Historical data file is outside the configured data root.");
+
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var trimmedRoot = Path.TrimEndingDirectorySeparator(root);
+        for (var current = fullPath;
+             current is not null && !string.Equals(Path.TrimEndingDirectorySeparator(current), trimmedRoot, comparison);
+             current = Path.GetDirectoryName(current))
+        {
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(current);
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                // Retention or compression removed it after discovery. It is not a link to refuse;
+                // the per-file read reports the missing file without failing the whole request.
+                return;
+            }
+
+            if ((attributes & FileAttributes.ReparsePoint) != 0)
+                throw new UnauthorizedAccessException("Historical data cannot be read through a symbolic link.");
+        }
+    }
+
+    /// <summary>
+    /// Whether <paramref name="fullPath"/> lies strictly below <paramref name="dataRoot"/>. Both are
+    /// full paths. A filesystem root such as <c>/</c> or <c>D:\\</c> keeps its trailing separator,
+    /// so the separator is appended only when the root does not already end with one.
+    /// </summary>
+    public static bool IsInsideDataRoot(string dataRoot, string fullPath)
+    {
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var prefix = Path.EndsInDirectorySeparator(dataRoot) ? dataRoot : dataRoot + Path.DirectorySeparatorChar;
+        return fullPath.Length > prefix.Length && fullPath.StartsWith(prefix, comparison);
     }
 
     private async Task<List<HistoricalDataRecord>> ReadDataFileAsync(

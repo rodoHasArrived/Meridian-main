@@ -23,7 +23,8 @@ public sealed class BacktestEngine(
     ISecurityTradingParametersQueryService? securityMasterQueryService,
     ICorporateActionAdjustmentService? corporateActionAdjustment = null,
     IBacktestPreflightService? backtestPreflightService = null,
-    ISecurityIdentityQueryService? securityIdentityQueryService = null)
+    ISecurityIdentityQueryService? securityIdentityQueryService = null,
+    IBacktestAssetEventSource? assetEventSource = null)
 {
     /// <summary>Retains the aggregate-query constructor used by compiled consumers.</summary>
     public BacktestEngine(
@@ -110,7 +111,9 @@ public sealed class BacktestEngine(
         logger.LogInformation("Universe contains {Count} symbols: {Symbols}",
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
-        var storedActionSource = request.ApplyStoredCorporateActions
+        // The explicit population mode retains its original request-event precedence and
+        // adjusted-price refusal. Do not populate automatically first and bypass those guards.
+        var storedActionSource = request.ApplyStoredCorporateActions && !request.PopulateAssetEventsFromSecurityMaster
             ? AssetEventSource ?? (_securityIdentity is not null && securityMasterQueryService is ISecurityCorporateActionsQueryService actions
                 ? new SecurityMasterBacktestAssetEventSource(_securityIdentity, actions,
                     securityMasterQueryService as ISecurityMasterQueryService)
@@ -118,7 +121,7 @@ public sealed class BacktestEngine(
             : null;
         if (storedActionSource is not null)
         {
-            var storedEvents = await storedActionSource.LoadAsync(universe.ToArray(), request.From, request.To, ct).ConfigureAwait(false);
+            var storedEvents = await storedActionSource.GetAssetEventsAsync(universe.ToArray(), request.From, request.To, ct).ConfigureAwait(false);
             request = request with
             {
                 AssetEvents = SecurityMasterBacktestAssetEventSource.Merge(storedEvents, request.AssetEvents ?? [])
@@ -173,7 +176,11 @@ public sealed class BacktestEngine(
         var allSnapshots = new List<PortfolioSnapshot>();
         var allCashFlows = new List<CashFlowEntry>();
         var allFills = new List<FillEvent>();
-        var assetEventsByDate = BuildAssetEventIndex(request.AssetEvents, request.From, request.To);
+        var resolvedAssetEvents = await ResolveAssetEventsAsync(request, universe, ct).ConfigureAwait(false);
+        var assetEventsByDate = BuildAssetEventIndex(
+            resolvedAssetEvents,
+            request.From,
+            request.To);
 
         // 3. Initialise strategy
         ctx.CurrentTime = startTimestamp;
@@ -188,7 +195,7 @@ public sealed class BacktestEngine(
             .ToDictionary(static pair => pair.symbol, static pair => pair.rank, StringComparer.OrdinalIgnoreCase);
         // Position/cash economics and backwards-adjusted bars cannot both account for the same
         // action. Retain the original request and the captured events as run provenance.
-        var portfolioActionAccounting = storedActionSource is not null || request.AssetEvents is { Count: > 0 };
+        var portfolioActionAccounting = storedActionSource is not null || resolvedAssetEvents is { Count: > 0 };
         var streams = await BuildSymbolStreamsAsync(replaySymbols,
             portfolioActionAccounting ? request with { AdjustForCorporateActions = false } : request, ct).ConfigureAwait(false);
 
@@ -204,10 +211,10 @@ public sealed class BacktestEngine(
         {
             ct.ThrowIfCancellationRequested();
 
-            if (portfolioActionAccounting && request.AssetEvents is { Count: > 0 } &&
+            if (portfolioActionAccounting && resolvedAssetEvents is { Count: > 0 } &&
                 evt.Payload is HistoricalBar { IsAdjusted: true })
                 throw new InvalidOperationException("Stored corporate-action portfolio accounting requires unadjusted historical bars; adjusted prices would count the same action twice.");
-            if (storedActionSource is not null && request.AssetEvents is { Count: > 0 } &&
+            if (storedActionSource is not null && resolvedAssetEvents is { Count: > 0 } &&
                 evt.Payload is HistoricalBar { IsAdjusted: null })
                 throw new InvalidOperationException("Automatic corporate-action accounting requires bars explicitly marked IsAdjusted=false; the stored data's adjustment regime is unknown.");
 
@@ -237,7 +244,7 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, commissionModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
@@ -538,6 +545,45 @@ public sealed class BacktestEngine(
         }
     }
 
+    /// <summary>
+    /// Explicit request events always win. Otherwise, when the request opts in, events come from
+    /// the configured source. The opt-in fails closed rather than silently running without events
+    /// or counting each action twice on back-adjusted prices.
+    /// </summary>
+    private async Task<IReadOnlyList<AssetEvent>?> ResolveAssetEventsAsync(
+        BacktestRequest request,
+        IReadOnlyCollection<string> universe,
+        CancellationToken ct)
+    {
+        if (request.AssetEvents is not null || !request.PopulateAssetEventsFromSecurityMaster)
+        {
+            return request.AssetEvents;
+        }
+
+        if (request.AdjustForCorporateActions)
+        {
+            throw new InvalidOperationException(
+                "PopulateAssetEventsFromSecurityMaster requires AdjustForCorporateActions = false: " +
+                "back-adjusted prices already contain dividends and splits, so applying them as asset events would count them twice.");
+        }
+
+        var source = assetEventSource ?? AssetEventSource;
+        if (source is null)
+        {
+            throw new InvalidOperationException(
+                "PopulateAssetEventsFromSecurityMaster was requested but no Security Master asset-event source is configured on this host.");
+        }
+
+        var assetEvents = await source
+            .GetAssetEventsAsync(universe, request.From, request.To, ct)
+            .ConfigureAwait(false);
+        logger.LogInformation(
+            "Populated {Count} asset events from the Security Master for {SymbolCount} symbols",
+            assetEvents.Count,
+            universe.Count);
+        return assetEvents;
+    }
+
     private static Dictionary<DateOnly, List<AssetEvent>> BuildAssetEventIndex(
         IReadOnlyList<AssetEvent>? assetEvents,
         DateOnly from,
@@ -691,6 +737,7 @@ public sealed class BacktestEngine(
         IFillModel lobModel,
         IFillModel barModel,
         IFillModel marketImpactModel,
+        ICommissionModel commissionModel,
         SimulatedPortfolio portfolio,
         IBacktestStrategy strategy,
         BacktestContext ctx,
@@ -716,9 +763,20 @@ public sealed class BacktestEngine(
             var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
             var result = model.TryFill(order, evt);
             var acceptedFilledQuantity = 0L;
+            var acceptedCommission = 0m;
+            var acceptedNotional = 0m;
+            var commissionOrder = order;
 
-            foreach (var fill in result.Fills)
+            foreach (var candidate in result.Fills)
             {
+                // A preceding model slice may have been refused by the account. Its fee was
+                // never booked, so only accepted executions may consume a per-order minimum
+                // or maximum. Re-price this candidate before checking available cash.
+                var fill = candidate with
+                {
+                    Commission = OrderCommission.CalculateIncrement(commissionModel, commissionOrder,
+                        candidate.FilledQuantity, candidate.FillPrice)
+                };
                 try
                 {
                     portfolio.ProcessFill(fill);
@@ -736,6 +794,14 @@ public sealed class BacktestEngine(
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
                 acceptedFilledQuantity += fill.FilledQuantity;
+                acceptedCommission += fill.Commission;
+                acceptedNotional += Math.Abs(fill.FilledQuantity) * fill.FillPrice;
+                commissionOrder = commissionOrder with
+                {
+                    FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
+                    CommissionCharged = order.CommissionCharged + acceptedCommission,
+                    FilledNotional = order.FilledNotional + acceptedNotional
+                };
                 rollingState.IncrementFills();
                 strategy.OnOrderFill(fill, ctx);
 
@@ -743,8 +809,24 @@ public sealed class BacktestEngine(
                     pendingOrders.Add(contingentOrder);
             }
 
+            // The fill model decides when an order stops working: an immediate-or-cancel or
+            // fill-or-kill order that takes what its first executable event offers is cancelled,
+            // not left to fill on a later one. An immediate order whose fills this account
+            // rejected has had its one attempt as well.
+            var cancelledByModel = result.RemoveOrder
+                && result.UpdatedOrder.Status is OrderStatus.Cancelled or OrderStatus.Expired or OrderStatus.Rejected;
+            var immediateAttemptSpent = result.Fills.Count > 0
+                && order.TimeInForce is TimeInForce.ImmediateOrCancel or TimeInForce.FillOrKill;
+            var stopsWorking = cancelledByModel || immediateAttemptSpent;
+
             if (acceptedFilledQuantity == 0)
             {
+                if (stopsWorking)
+                {
+                    filled.Add(order.OrderId);
+                    continue;
+                }
+
                 // Preserve trigger activation even when all generated fills were rejected.
                 pendingOrders[i] = result.WasTriggered
                     ? order with { IsTriggered = true }
@@ -755,13 +837,15 @@ public sealed class BacktestEngine(
             var updatedOrder = order with
             {
                 FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
+                CommissionCharged = order.CommissionCharged + acceptedCommission,
+                FilledNotional = order.FilledNotional + acceptedNotional,
                 Status = order.RemainingQuantity - Math.Abs(acceptedFilledQuantity) == 0
                     ? OrderStatus.Filled
                     : OrderStatus.PartiallyFilled,
                 IsTriggered = result.UpdatedOrder.IsTriggered
             };
 
-            if (updatedOrder.IsComplete)
+            if (updatedOrder.IsComplete || stopsWorking)
             {
                 filled.Add(order.OrderId);
                 continue;
@@ -1279,7 +1363,7 @@ internal sealed class RollingMetricsState
             var mean = _sumExcess / n;
             var variance = (_sumSqExcess / n) - (mean * mean);
             var stdDev = variance > 0 ? Math.Sqrt(variance) : 0;
-            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(252) : 0;
+            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(365) : 0;
         }
 
         var drawdownPct = _peakEquity > 0

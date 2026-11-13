@@ -191,21 +191,151 @@ public sealed class LedgerAnalysisExportTests : IDisposable
     }
 
     [Fact]
-    public async Task PortablePackage_RestoresLedgerAndRefusesTamperingBeforeImport()
+    public async Task PortablePackage_RefusesLedgerEvidenceWithoutAccountingValidatorBeforePublishingOrImport()
     {
-        var packager = new PortableDataPackager(Path.Combine(_root, "source"));
-        var result = await packager.CreatePackageAsync(new()
+        var source = Path.Combine(_root, "source");
+        var configured = PortableLedgerPackaging.CreatePackager(source);
+        var bareTransport = new PortableDataPackager(source);
+        var payload = PortableLedgerSnapshot.CapturePayload(CreateLedger());
+        var output = Path.Combine(_root, "unconfigured-output");
+
+        var unconfiguredCreate = await bareTransport.CreatePackageAsync(new()
         {
-            Name = "ledger",
-            Ledger = CreateLedger(),
+            Name = "unconfigured",
+            Ledger = payload,
+            OutputDirectory = output
+        });
+        unconfiguredCreate.Success.Should().BeFalse();
+        unconfiguredCreate.Error.Should().Contain("validation is not configured");
+        Directory.Exists(output).Should().BeFalse();
+
+        var package = await configured.CreatePackageAsync(new()
+        {
+            Name = "requires-accounting",
+            Ledger = payload,
             OutputDirectory = _root,
             IncludeLoaderScripts = false,
             IncludeDataDictionary = false
         });
+        package.Success.Should().BeTrue(package.Error);
+        var validation = await bareTransport.ValidatePackageAsync(package.PackagePath!);
+        validation.IsValid.Should().BeFalse();
+        validation.Error.Should().Contain("validation is not configured");
+        var destination = Path.Combine(_root, "unconfigured-import");
+        var import = await bareTransport.ImportPackageAsync(package.PackagePath!, destination, validateChecksums: false);
+        import.Success.Should().BeFalse();
+        import.Error.Should().Contain("validation is not configured");
+        Directory.Exists(destination).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task PortablePackage_RefusesSemanticallyChangedLedgerEvenWhenFileHashMatches()
+    {
+        var payload = PortableLedgerSnapshot.CapturePayload(CreateLedger());
+        var packager = PortableLedgerPackaging.CreatePackager(Path.Combine(_root, "source"));
+        var altered = System.Text.Json.Nodes.JsonNode.Parse(payload.Json)!;
+        // Keep valid JSON and balanced journals; only the independently retained balance digest
+        // disagrees. Matching the transport hash must never substitute for accounting replay.
+        var falseChecksum = new string('0', 64);
+        altered[nameof(PortableLedgerSnapshot.BalanceChecksumSha256)] = falseChecksum;
+        var package = await packager.CreatePackageAsync(new()
+        {
+            Name = "altered-ledger",
+            Ledger = payload,
+            OutputDirectory = _root
+        });
+        package.Success.Should().BeTrue(package.Error);
+        var alteredJson = altered.ToJsonString();
+        using (var archive = ZipFile.Open(package.PackagePath!, ZipArchiveMode.Update))
+        {
+            var manifestEntry = archive.GetEntry("manifest.json")!;
+            System.Text.Json.Nodes.JsonNode manifest;
+            using (var reader = new StreamReader(manifestEntry.Open()))
+                manifest = System.Text.Json.Nodes.JsonNode.Parse(await reader.ReadToEndAsync())!;
+            manifest["ledgerSnapshotSha256"] = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(alteredJson);
+            manifest["ledgerBalanceChecksumSha256"] = falseChecksum;
+            archive.GetEntry("metadata/ledger.json")!.Delete();
+            await using (var ledgerStream = archive.CreateEntry("metadata/ledger.json").Open())
+                await ledgerStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes(alteredJson));
+            manifestEntry.Delete();
+            await using var manifestStream = archive.CreateEntry("manifest.json").Open();
+            await manifestStream.WriteAsync(System.Text.Encoding.UTF8.GetBytes(manifest.ToJsonString()));
+        }
+        var destination = Path.Combine(_root, "invalid-balance-import");
+        var result = await packager.ImportPackageAsync(package.PackagePath!, destination, validateChecksums: false);
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("account-balance checksum mismatch");
+        Directory.Exists(destination).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("metadata/ledger.json")]
+    [InlineData("metadata/./ledger.json")]
+    [InlineData("metadata/part/../ledger.json")]
+    [InlineData("metadata\\ledger.json")]
+    [InlineData("METADATA/ledger.json")]
+    [InlineData("metadata/ledger.json.")]
+    [InlineData("metadata/ledger.json ")]
+    [InlineData("metadata/ledger.json::$DATA")]
+    [InlineData("manifest.json")]
+    [InlineData("./manifest.json")]
+    [InlineData("MANIFEST.JSON")]
+    public async Task PortablePackage_RefusesDuplicateOrAliasedAuthoritiesBeforeImport(string alias)
+    {
+        var packager = PortableLedgerPackaging.CreatePackager(Path.Combine(_root, "source"));
+        var package = await packager.CreatePackageAsync(new()
+        {
+            Name = "aliased-authority",
+            Ledger = PortableLedgerSnapshot.CapturePayload(CreateLedger()),
+            OutputDirectory = _root,
+            IncludeLoaderScripts = false,
+            IncludeDataDictionary = false
+        });
+        package.Success.Should().BeTrue(package.Error);
+        using (var archive = ZipFile.Open(package.PackagePath!, ZipArchiveMode.Update))
+        {
+            await using var contents = archive.CreateEntry(alias).Open();
+            await contents.WriteAsync("{}"u8.ToArray());
+        }
+        var destination = Path.Combine(_root, "aliased-import");
+        var result = await packager.ImportPackageAsync(package.PackagePath!, destination, validateChecksums: false);
+
+        result.Success.Should().BeFalse();
+        result.Error.Should().Contain("duplicate or aliased reserved entry");
+        Directory.Exists(destination).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task PortablePackage_RestoresLedgerAndRefusesTamperingBeforeImport()
+    {
+        var packager = PortableLedgerPackaging.CreatePackager(Path.Combine(_root, "source"));
+        var result = await packager.CreatePackageAsync(new()
+        {
+            Name = "ledger",
+            Ledger = PortableLedgerSnapshot.CapturePayload(CreateLedger()),
+            OutputDirectory = _root,
+            IncludeLoaderScripts = true,
+            IncludeDataDictionary = false
+        });
         result.Success.Should().BeTrue(result.Error);
+        using (var archive = ZipFile.OpenRead(result.PackagePath!))
+        {
+            archive.Entries.Count(entry => entry.FullName == "manifest.json").Should().Be(1);
+            await using var manifestStream = archive.GetEntry("manifest.json")!.Open();
+            using var manifest = await System.Text.Json.JsonDocument.ParseAsync(manifestStream);
+            manifest.RootElement.GetProperty("ledgerSnapshotSha256").GetString()
+                .Should().Be(result.Manifest!.LedgerSnapshotSha256);
+            manifest.RootElement.GetProperty("ledgerBalanceChecksumSha256").GetString()
+                .Should().Be(result.Manifest.LedgerBalanceChecksumSha256);
+            manifest.RootElement.GetProperty("supplementaryFiles").EnumerateArray()
+                .Select(item => item.GetProperty("path").GetString())
+                .Should().Contain(["README.md", "scripts/load_data.py", "scripts/load_data.R"]);
+        }
         var restored = await packager.ReadLedgerAsync(result.PackagePath!);
         restored!.GetBalance(LedgerAccounts.CashAccount("account-a")).Should().Be(100m);
         (await packager.ValidatePackageAsync(result.PackagePath!)).IsValid.Should().BeTrue();
+        var successfulImport = await packager.ImportPackageAsync(result.PackagePath!, Path.Combine(_root, "verified-import"));
+        successfulImport.Success.Should().BeTrue(successfulImport.Error);
         using (var archive = ZipFile.Open(result.PackagePath!, ZipArchiveMode.Update))
         {
             archive.GetEntry("metadata/ledger.json")!.Delete();

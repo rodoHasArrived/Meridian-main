@@ -52,4 +52,7 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Occurrence of a retained versioned recurring journal template.</summary>
     RecurringTemplate,
+
+    /// <summary>A distribution to an investor, declared and split through the waterfall.</summary>
+    DistributionDeclared,
 }

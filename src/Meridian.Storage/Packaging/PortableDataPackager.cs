@@ -23,6 +23,7 @@ public sealed partial class PortableDataPackager
     private readonly ILogger _log = LoggingSetup.ForContext<PortableDataPackager>();
     private readonly string _dataRoot;
     private readonly CompressionProfileManager? _compressionManager;
+    private readonly IPortableLedgerValidator? _ledgerValidator;
 
     private const string ManifestFileName = "manifest.json";
     private const string DataDirectory = "data";
@@ -38,9 +39,18 @@ public sealed partial class PortableDataPackager
     public event EventHandler<PackageProgress>? ProgressChanged;
 
     public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager = null)
+        : this(dataRoot, compressionManager, ledgerValidator: null)
+    {
+    }
+
+    /// <summary>Configures an accounting-owned validator without introducing accounting model
+    /// dependencies into the storage transport. The original constructor remains market-data only.</summary>
+    public PortableDataPackager(string dataRoot, CompressionProfileManager? compressionManager,
+        IPortableLedgerValidator? ledgerValidator)
     {
         _dataRoot = dataRoot;
         _compressionManager = compressionManager;
+        _ledgerValidator = ledgerValidator;
     }
 
     /// <summary>
@@ -67,6 +77,10 @@ public sealed partial class PortableDataPackager
                     $"Package format '{options.Format}' is not implemented; use PackageFormat.Zip.");
             }
 
+            var ledgerPayload = options.Ledger;
+            if (ledgerPayload is not null)
+                await ValidateLedgerPayloadAsync(ledgerPayload, ct);
+
             // Ensure output directory exists
             Directory.CreateDirectory(options.OutputDirectory);
 
@@ -74,7 +88,7 @@ public sealed partial class PortableDataPackager
             ReportProgress(result.JobId, PackageStage.Scanning, 0, 0, 0, 0);
             var sourceFiles = await ScanSourceFilesAsync(options, ct);
 
-            if (sourceFiles.Count == 0 && options.Ledger is null)
+            if (sourceFiles.Count == 0 && ledgerPayload is null)
             {
                 return PackageResult.CreateFailure("No data files found matching the specified criteria");
             }
@@ -85,13 +99,12 @@ public sealed partial class PortableDataPackager
             ReportProgress(result.JobId, PackageStage.GeneratingManifest, 0, sourceFiles.Count, 0, 0);
             var manifest = await BuildManifestAsync(sourceFiles, options, ct);
             // Snapshot once; concurrent subsequent postings cannot change the packaged generation.
-            var ledgerSnapshot = options.Ledger is null ? null : PortableLedgerSnapshot.Capture(options.Ledger);
-            var ledgerContent = ledgerSnapshot is null ? null : PortableLedgerSnapshot.Serialize(ledgerSnapshot);
+            var ledgerContent = ledgerPayload?.Json;
             if (ledgerContent is not null)
             {
                 manifest.LedgerSnapshotPath = "metadata/ledger.json";
                 manifest.LedgerSnapshotSha256 = Sha256Digest.ComputeUtf8(ledgerContent);
-                manifest.LedgerBalanceChecksumSha256 = ledgerSnapshot!.BalanceChecksumSha256;
+                manifest.LedgerBalanceChecksumSha256 = ledgerPayload!.BalanceChecksumSha256;
             }
 
             // Determine output file name
@@ -108,11 +121,11 @@ public sealed partial class PortableDataPackager
             var packageChecksum = await ComputeFileChecksumAsync(packagePath, ct);
             var packageInfo = new FileInfo(packagePath);
 
+            // Hash and size describe the final file on disk, so they are recorded on the
+            // returned manifest/result only. A zip cannot embed its own checksum: rewriting the
+            // manifest entry afterwards would change the bytes the checksum was computed over.
             manifest.PackageChecksum = packageChecksum;
             manifest.PackageSizeBytes = packageInfo.Length;
-
-            // Update the manifest inside the package with final checksum
-            await UpdateManifestInPackageAsync(packagePath, manifest, options.Format, ct);
 
             // Build result
             result = PackageResult.CreateSuccess(packagePath, manifest);
@@ -372,7 +385,8 @@ public sealed partial class PortableDataPackager
             CreatedAt = manifest.CreatedAt,
             TotalFiles = manifest.TotalFiles,
             TotalEvents = manifest.TotalEvents,
-            PackageSizeBytes = manifest.PackageSizeBytes,
+            // The embedded manifest cannot record the size of the file that contains it.
+            PackageSizeBytes = new FileInfo(packagePath).Length,
             UncompressedSizeBytes = manifest.UncompressedSizeBytes,
             Symbols = manifest.Symbols,
             EventTypes = manifest.EventTypes,

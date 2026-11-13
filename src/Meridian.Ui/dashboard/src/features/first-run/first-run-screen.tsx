@@ -5,6 +5,8 @@ import { apiGetJson, apiPostJson } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { Button } from "@/components/ui/button";
 import type { FirstRunStatus, SampleWorkspace } from "./types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const goals = [
   ["monitor-investments", "Monitor investments"],
@@ -41,10 +43,22 @@ export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatu
   const [dataChoice, setDataChoice] = useState("sample");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
-    if (!status) apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus).then(setStatus).catch((reason) => setError(String(reason)));
-  }, [status]);
+    if (status) return;
+    const controller = new AbortController();
+    apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus, { signal: controller.signal })
+      .then((next) => {
+        if (!controller.signal.aborted) setStatus(next);
+      })
+      .catch((reason) => {
+        if (!controller.signal.aborted) {
+          setError(reason instanceof Error ? reason.message : "Meridian could not load workspace setup.");
+        }
+      });
+    return () => controller.abort();
+  }, [status, loadAttempt]);
 
   useEffect(() => {
     const recommended = status?.starterKits.find((kit) => kit.goal === goal);
@@ -76,7 +90,15 @@ export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatu
     }
   }
 
-  if (!status) return <div className="min-h-screen bg-slate-950 p-8 text-slate-100">Preparing Meridian…</div>;
+  if (!status) return (
+    <main className="min-h-screen bg-slate-950 p-8 text-slate-100" aria-labelledby="first-run-loading-title">
+      <h1 id="first-run-loading-title" className="text-2xl font-semibold">{error ? "Workspace setup could not be loaded" : "Preparing Meridian…"}</h1>
+      {error ? <>
+        <p className="mt-4 text-red-200" role="alert">Meridian could not load the setup status. Try again to continue. Details: {error}</p>
+        <Button className="mt-6" onClick={() => { setError(null); setLoadAttempt((attempt) => attempt + 1); }}>Retry</Button>
+      </> : <p className="mt-4 text-slate-300" role="status">Loading workspace setup…</p>}
+    </main>
+  );
 
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-8 text-slate-100" aria-labelledby="first-run-title">
@@ -181,7 +203,7 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
             onClick={() => onOpen(highlight.route)}
             className="rounded-xl border border-slate-700 bg-slate-900/50 p-4 text-left transition hover:border-cyan-400"
           >
-            <span className="text-xs uppercase tracking-wide text-slate-400">{highlight.label}</span>
+            <span className={cn("text-xs text-slate-400", usesTrackedCaps(highlight.label) && "uppercase tracking-wide")}>{highlight.label}</span>
             <strong className="mt-1 block text-lg text-slate-100">{highlight.value}</strong>
             <span className="mt-1 block text-xs text-slate-400">{highlight.detail}</span>
           </button>
@@ -248,13 +270,13 @@ function SampleWorkspacePanel({ workspace, onOpen }: { workspace: SampleWorkspac
 }
 
 function Stat({ label, value, tone = "text-slate-100" }: { label: string; value: string; tone?: string }) {
-  return <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4"><span className="text-xs uppercase tracking-wide text-slate-400">{label}</span><strong className={`mt-1 block text-xl ${tone}`}>{value}</strong></div>;
+  return <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4"><span className={cn("text-xs text-slate-400", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</span><strong className={`mt-1 block text-xl ${tone}`}>{value}</strong></div>;
 }
 
 function ArtifactCard({ title, artifact, onOpen }: { title: string; artifact: SampleWorkspace["report"]; onOpen: (route: string) => void }) {
   return (
     <button type="button" onClick={() => onOpen(artifact.route)} className="rounded-xl border border-slate-800 bg-slate-900/40 p-3 text-left transition hover:border-cyan-400">
-      <span className="text-xs uppercase tracking-wide text-slate-400">{title}</span>
+      <span className={cn("text-xs text-slate-400", usesTrackedCaps(title) && "uppercase tracking-wide")}>{title}</span>
       <strong className="mt-1 block text-slate-100">{artifact.name}</strong>
       <span className="mt-1 block text-xs text-cyan-300">{artifact.status}</span>
       <span className="mt-1 block text-xs text-slate-400">{artifact.detail}</span>

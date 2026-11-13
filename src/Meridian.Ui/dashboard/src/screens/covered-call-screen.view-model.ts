@@ -1219,7 +1219,7 @@ function buildCoveredCallTradeTimelineRow(
       ? "success"
       : "danger";
   const id = coveredCallTradeRowId(trade, index);
-  const summary = `${underlyingSymbol} trade ${index + 1}, entry ${trade.entryDate}, exit ${trade.exitDate}, strike ${strikeLabel}, PnL ${pnlLabel}, status ${statusLabel}.`;
+  const summary = `${underlyingSymbol} trade ${index + 1}, entry ${trade.entryDate}, exit ${trade.exitDate}, strike ${strikeLabel}, P&L ${pnlLabel}, status ${statusLabel}.`;
 
   return {
     id,
@@ -1263,7 +1263,7 @@ function buildCoveredCallTradeTimelineDetail(
     eyebrow: "Selected trade",
     title: `${underlyingSymbol} ${strikeLabel} call`,
     subtitle: `${trade.entryDate} to ${trade.exitDate} · ${trade.contracts} contract${trade.contracts === 1 ? "" : "s"}`,
-    description: `${statusLabel}; exit reason ${exitReasonLabel}; ${totalPnl} total net PnL.`,
+    description: `${statusLabel}; exit reason ${exitReasonLabel}; ${totalPnl} total net P&L.`,
     statusLabel,
     statusBadgeVariant,
     fields: [
@@ -1271,7 +1271,7 @@ function buildCoveredCallTradeTimelineDetail(
       { label: "Entry credit", value: formatSignedMoney(trade.entryCredit) },
       { label: "Exit debit", value: formatSignedMoney(trade.exitDebit) },
       { label: "Net per contract", value: formatSignedMoney(trade.netPnlPerContract) },
-      { label: "Total net PnL", value: totalPnl },
+      { label: "Total net P&L", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
       { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatRatioAsPercent(trade.entryImpliedVolatility) },
@@ -1522,7 +1522,7 @@ export interface CoveredCallScreenViewModel extends CoveredCallScreenState {
   selectChainRow: (index: number) => void;
   startRun: () => Promise<void>;
   cancelRun: () => Promise<void>;
-  loadHistory: () => Promise<void>;
+  loadHistory: (signal?: AbortSignal) => Promise<void>;
   openRun: (runId: string) => Promise<void>;
   selectTradeRow: (index: number) => void;
   selectOpenPosition: (index: number) => void;
@@ -1810,17 +1810,19 @@ export function useCoveredCallScreenViewModel(
     }
   }, [pendingCancelRunId, run.isCancelling, run.runId, services, stopPolling]);
 
-  const loadHistory = useCallback(async () => {
+  const loadHistory = useCallback(async (signal?: AbortSignal) => {
     setHistoryLoading(true);
     setHistoryError(null);
     try {
-      const items = await services.listRuns(50);
-      setHistory(items);
+      const items = await services.listRuns(50, signal);
+      if (!signal?.aborted) setHistory(items);
     } catch (error) {
-      setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
+      if (!signal?.aborted) setHistoryError(describeApiError(error, "Previous covered-call runs failed to load."));
     } finally {
-      setHistoryLoaded(true);
-      setHistoryLoading(false);
+      if (!signal?.aborted) {
+        setHistoryLoaded(true);
+        setHistoryLoading(false);
+      }
     }
   }, [services]);
 

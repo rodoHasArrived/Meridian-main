@@ -95,6 +95,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
     // Configuration
     private readonly TimeSpan _flushInterval;
+    private readonly TimeProvider _timeProvider;
     private readonly int _batchSize;
     private readonly int _maxAdaptiveBatchSize;
     private readonly bool _enablePeriodicFlush;
@@ -160,7 +161,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         IEventValidator? validator = null,
         DeadLetterSink? deadLetterSink = null,
         IDedupStore? dedupLedger = null,
-        int consumerCount = 1)
+        int consumerCount = 1,
+        TimeProvider? timeProvider = null)
         : this(
             sink,
             new EventPipelinePolicy(capacity, fullMode),
@@ -176,7 +178,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             validator,
             deadLetterSink,
             dedupLedger,
-            consumerCount)
+            consumerCount,
+            timeProvider)
     {
     }
 
@@ -214,9 +217,11 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         IEventValidator? validator = null,
         DeadLetterSink? deadLetterSink = null,
         IDedupStore? dedupLedger = null,
-        int consumerCount = 1)
+        int consumerCount = 1,
+        TimeProvider? timeProvider = null)
     {
         _sink = sink ?? throw new ArgumentNullException(nameof(sink));
+        _timeProvider = timeProvider ?? TimeProvider.System;
         _logger = logger ?? NullLogger<EventPipeline>.Instance;
         _auditTrail = auditTrail;
         _wal = wal;
@@ -241,7 +246,16 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         _enablePeriodicFlush = enablePeriodicFlush;
         _consumerCount = DetermineConsumerCount(consumerCount, _wal, _validator, _deadLetterSink, _dedupLedger, _logger);
 
-        _channel = policy.CreateChannel<TracedMarketEvent>(singleReader: _consumerCount == 1, singleWriter: false);
+        // In the evicting modes a write succeeds while the channel silently discards an event
+        // that was already queued, so the producer path never sees the loss. Count those
+        // evictions through the channel's drop callback; DropWrite is already counted by the
+        // capacity pre-check in TryPublish and must not be counted twice.
+        _channel = _fullMode is BoundedChannelFullMode.DropOldest or BoundedChannelFullMode.DropNewest
+            ? policy.CreateChannel<TracedMarketEvent>(
+                evicted => RecordDrop(evicted.Event),
+                singleReader: _consumerCount == 1,
+                singleWriter: false)
+            : policy.CreateChannel<TracedMarketEvent>(singleReader: _consumerCount == 1, singleWriter: false);
 
         // Start one or more long-running consumers. Multi-consumer mode is enabled only
         // when WAL / dedup / validation side effects are disabled so ordering-sensitive
@@ -260,7 +274,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             _flusher = PeriodicFlushAsync();
         }
 
-        Interlocked.Exchange(ref _lastFlushTimestamp, Stopwatch.GetTimestamp());
+        Interlocked.Exchange(ref _lastFlushTimestamp, _timeProvider.GetTimestamp());
     }
 
     private static int DetermineConsumerCount(
@@ -344,8 +358,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         get
         {
             var lastTs = Interlocked.Read(ref _lastFlushTimestamp);
-            return TimeSpan.FromTicks((long)((Stopwatch.GetTimestamp() - lastTs) *
-                (TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency)));
+            return _timeProvider.GetElapsedTime(lastTs);
         }
     }
 
@@ -709,7 +722,10 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         return _highWaterMarkWarned ? PublishResult.AcceptedUnderPressure : PublishResult.Accepted;
     }
 
-    /// <summary>Records a dropped event — shared by DropWrite pre-check and Wait-mode TryWrite failure.</summary>
+    /// <summary>
+    /// Records a dropped event — shared by the DropWrite pre-check, a Wait-mode TryWrite failure,
+    /// and the channel's eviction callback in DropOldest/DropNewest mode.
+    /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)] // keep off the hot inlined path
     private void RecordDrop(in MarketEvent evt)
     {
@@ -862,7 +878,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         }
 
         await _sink.FlushAsync(ct).ConfigureAwait(false);
-        Interlocked.Exchange(ref _lastFlushTimestamp, Stopwatch.GetTimestamp());
+        Interlocked.Exchange(ref _lastFlushTimestamp, _timeProvider.GetTimestamp());
 
         // Warn callers if events were dropped during this flush window so they
         // understand that the returned flush is not a full-fidelity confirmation.
@@ -1520,7 +1536,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         {
             while (!_cts.Token.IsCancellationRequested)
             {
-                await Task.Delay(_flushInterval, _cts.Token).ConfigureAwait(false);
+                await Task.Delay(_flushInterval, _timeProvider, _cts.Token).ConfigureAwait(false);
 
                 try
                 {
@@ -1530,7 +1546,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                     flushTimeoutCts.CancelAfter(_sinkFlushTimeout);
 
                     await _sink.FlushAsync(flushTimeoutCts.Token).ConfigureAwait(false);
-                    Interlocked.Exchange(ref _lastFlushTimestamp, Stopwatch.GetTimestamp());
+                    Interlocked.Exchange(ref _lastFlushTimestamp, _timeProvider.GetTimestamp());
 
                     // Periodically truncate committed WAL files to reclaim disk space
                     if (_wal != null && _lastCommittedWalSequence > 0)

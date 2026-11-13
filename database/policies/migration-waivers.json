@@ -43,6 +43,12 @@
       "review_after": "2027-03-22"
     },
     {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable agreement snapshots, approved revisions, audit events and command receipts. The migration truncates no data. This follows fund-structure migration 005; PostgreSQL regression coverage attempts truncation and verifies refusal with retained history unchanged.",
+      "review_after": "2027-02-12"
+    },
+    {
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/034_security_master_dated_price_history.sql",
       "rule_id": "migration-drop-table-member",
       "reason": "Requires human schema/storage and release-operations review. Replaces only security_raw_prices_pkey (security_id, source_id) with (security_id, source_id, price_as_of) so earlier observations remain retained; no row or column is removed. PostgresMigrationRunner executes the constraint replacement and migration-ledger append under one transaction and advisory migration lock, so failed DDL restores the original primary key. Drain legacy price writers before rollout because their old ON CONFLICT target is no longer valid. After multiple dated observations exist, prefer a forward fix; do not restore the old key by deleting history. Any reverse migration requires separately reviewed preservation of every retained observation and proof that the old uniqueness can be restored safely.",
@@ -65,6 +71,24 @@
       "rule_id": "migration-truncate",
       "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master governance event log; no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies the events are retained.",
       "review_after": "2027-04-16"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/059_security_events_append_only_guard.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master economic event log (security_events); no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies refusal.",
+      "review_after": "2027-05-01"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires independent human schema/storage review. Authorized by the repository owner on 2026-11-11, who stated they had reviewed the migration and the findings of the agent-run technical review of 2026-11-10 (recorded in docs/architecture/security-master-extensibility-review.md). It found the DDL, the Baseline contents and the append-only guards sound and set three apply conditions: stop every Security Master writer while the migration runs, because the Baseline backfill can deadlock with a writer that holds a securities row lock; let no pre-062 binary write after it commits, because such a writer changes security_identifiers without recording a revision; and above about one million identifier rows raise the command timeout for that start. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated. The migration creates the table, one index, three comments, the rejection function and two triggers, and appends Baseline revisions for existing security_identifiers rows; it changes nothing in security_identifiers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests, SecurityMasterIdentifierRevisionMigrationTests) attempts update, delete and truncate, runs the backfill on a populated pre-062 schema across failure, retry and restart, and verifies refusal and retention.",
+      "review_after": "2027-05-04"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers on the newly created bounded cash-dividend declaration history, reservations, event aliases, postings and attestation receipts. No TRUNCATE command or data removal is executed. UPDATE and DELETE guards remain intact. The real PostgreSQL native-post regression attempts UPDATE, DELETE and raw TRUNCATE CASCADE after a successful posting, requires SQLSTATE 55000 from the rejection triggers, and checks that every original row remains unchanged. This exception covers only this migration's truncation-rejection trigger declarations.",
+      "review_after": "2027-05-12"
     },
     {
       "path": "src/Meridian.Storage/AssetOperations/Migrations/006_asset_operations_write_events_truncate_guard.sql",

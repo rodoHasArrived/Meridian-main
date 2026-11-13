@@ -25,6 +25,18 @@ public sealed class BrokerActivityImportService(string rootDirectory)
         string accountId,
         DateTimeOffset? since = null,
         CancellationToken ct = default)
+        => (await ImportWithHistoryAsync(provider, accountId, since, ct).ConfigureAwait(false)).Retained;
+
+    /// <summary>
+    /// Returns the current provider observation separately from accepted historical activity.
+    /// Consumers can publish the provider's current window without relabeling historical rows,
+    /// while recovering a downstream history projection from the complete durable inbox.
+    /// </summary>
+    public async Task<BrokerActivityImportResult> ImportWithHistoryAsync(
+        IBrokerageActivitySync provider,
+        string accountId,
+        DateTimeOffset? since = null,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentException.ThrowIfNullOrWhiteSpace(provider.ProviderId);
@@ -120,10 +132,10 @@ public sealed class BrokerActivityImportService(string rootDirectory)
         await AtomicFileWriter.WriteAsync(checkpointPath,
             JsonSerializer.Serialize(accepted, ExecutionJsonContext.Default.BrokerActivityImportCheckpoint), ct).ConfigureAwait(false);
 
-        // The workstation's current projection retains accepted history, even when a subsequent
-        // incremental fetch is empty. Raw per-ID records remain immutable audit evidence.
+        // Retained history survives an empty incremental fetch; it is distinct from the current
+        // observation and can rebuild downstream history after an interrupted projection write.
         var rows = retained.Values.OrderBy(row => row.EventId, StringComparer.Ordinal).ToArray();
-        return incoming with
+        var history = incoming with
         {
             Fills = rows.Where(row => row.Fill is not null).Select(row => row.Fill!).ToArray(),
             CashTransactions = rows.Where(row => row.Cash is not null).Select(row => row.Cash!).ToArray(),
@@ -132,6 +144,7 @@ public sealed class BrokerActivityImportService(string rootDirectory)
             // Retrieval completeness describes this fetch; never relabel an incomplete response.
             Cursor = incoming.Cursor
         };
+        return new BrokerActivityImportResult(incoming, history);
     }
 
     private static Dictionary<string, BrokerActivityImportRecord> BuildRecords(BrokerageActivitySnapshotDto snapshot)
@@ -185,6 +198,11 @@ public sealed class BrokerActivityImportService(string rootDirectory)
     private static string Serialize(BrokerActivityImportRecord row) =>
         JsonSerializer.Serialize(row, ExecutionJsonContext.Default.BrokerActivityImportRecord);
 }
+
+/// <summary>The current provider observation and the checksum-verified accepted activity history.</summary>
+public sealed record BrokerActivityImportResult(
+    BrokerageActivitySnapshotDto Current,
+    BrokerageActivitySnapshotDto Retained);
 
 internal sealed record BrokerActivityImportRecord(
     string EventId,

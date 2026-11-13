@@ -106,6 +106,22 @@ public sealed class SessionTcaReporterTests
     }
 
     [Fact]
+    public void Generate_MultipliedContract_ReportsCommissionRateOnTheMultipliedPrincipal()
+    {
+        // One contract at $10 with multiplier 100 is $1,000 of principal; a $1 commission is
+        // 10 bp of it, not the 1,000 bp an unmultiplied $10 notional would report.
+        var fills = new[]
+        {
+            MakeFill("AAPL261218C00250000", OrderSide.Buy, 1m, 10m, commission: 1m) with { LotMultiplier = 100m }
+        };
+
+        var report = SessionTcaReporter.Generate("s", "strat", fills);
+
+        report.CostSummary.TotalNotional.Should().Be(1_000m);
+        report.CostSummary.CommissionRateBps.Should().BeApproximately(10.0, 0.01);
+    }
+
+    [Fact]
     public void Generate_ComputesPerSymbolVwapAndSortsByCommission()
     {
         var fills = new[]

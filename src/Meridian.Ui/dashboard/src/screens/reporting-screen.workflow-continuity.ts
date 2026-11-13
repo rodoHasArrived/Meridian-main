@@ -4,6 +4,7 @@ import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
 } from "@/lib/reporting-workspace";
+import { pluralizeCount } from "@/lib/format";
 
 export function buildReportingGovernedReportContinuityStatus(
   reportingPayload: ReportingWorkspacePayload | null
@@ -16,6 +17,6 @@ export function buildReportingGovernedReportContinuityStatus(
   const distributions = getReportPackDistributions(reporting);
   const pendingCount = countPendingReportPackDistributions(reporting);
   return distributions.length > 0
-    ? { label: pendingCount > 0 ? `${pendingCount} pending` : `${distributions.length} recipients`, tone: pendingCount > 0 ? "review" : "ready" }
+    ? { label: pendingCount > 0 ? `${pendingCount} pending` : pluralizeCount(distributions.length, "recipient"), tone: pendingCount > 0 ? "review" : "ready" }
     : { label: "Needs recipient", tone: "review" };
 }

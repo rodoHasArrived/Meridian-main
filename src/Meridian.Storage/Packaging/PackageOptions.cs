@@ -10,7 +10,7 @@ public sealed class PackageOptions
     /// <summary>Optional source-backed journal to include with its balance checksum. Supplied
     /// by the authorized host, never deserialized from an untrusted package request.</summary>
     [JsonIgnore]
-    public Meridian.Ledger.IReadOnlyLedger? Ledger { get; set; }
+    public PortableLedgerPayload? Ledger { get; set; }
 
     /// <summary>
     /// Name for the package (used in file name and manifest).

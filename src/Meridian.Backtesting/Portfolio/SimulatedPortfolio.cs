@@ -136,7 +136,9 @@ internal sealed class SimulatedPortfolio
 
         account.Positions.TryGetValue(symbol, out var existingQty);
 
-        if (qty < 0 && existingQty <= 0 && !account.Rules.AllowShortSelling)
+        // Any sell that leaves the position net short opens short exposure, including a sell
+        // larger than the current long (long 100, sell 150 => short 50).
+        if (qty < 0 && existingQty + qty < 0 && !account.Rules.AllowShortSelling)
             throw new InvalidOperationException($"Account '{accountId}' does not permit short selling.");
 
         var cashImpact = -(qty * price) - commission;
@@ -235,7 +237,7 @@ internal sealed class SimulatedPortfolio
             account.AvgCost[symbol] = ComputeAvgCost(account, symbol);
         }
 
-        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, cashImpact, symbol, qty, price, accountId));
+        _cashFlows.Add(new TradeCashFlow(fill.FilledAt, -(qty * price), symbol, qty, price, accountId));
 
         if (commission > 0)
             _cashFlows.Add(new CommissionCashFlow(fill.FilledAt, -commission, symbol, fill.OrderId, accountId));
@@ -375,6 +377,7 @@ internal sealed class SimulatedPortfolio
 
     // ── Day-end accruals ─────────────────────────────────────────────────────
 
+    // ACT/365 fixed: the engine accrues on every calendar date, including weekends.
     public void AccrueDailyInterest(DateOnly date)
     {
         _stateVersion++;
@@ -382,9 +385,9 @@ internal sealed class SimulatedPortfolio
 
         foreach (var account in _accounts.Values)
         {
-            if (account.MarginBalance < 0)
+            if (account.MarginBalance < 0 && account.Rules.AnnualMarginRate != 0)
             {
-                var interest = account.MarginBalance * (decimal)(account.Rules.AnnualMarginRate / 252.0);
+                var interest = account.MarginBalance * (decimal)(account.Rules.AnnualMarginRate / 365.0);
                 account.Cash += interest;
                 account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
                 _cashFlows.Add(new MarginInterestCashFlow(ts, interest, account.MarginBalance, account.Rules.AnnualMarginRate, account.Account.AccountId));
@@ -394,15 +397,15 @@ internal sealed class SimulatedPortfolio
                     ts,
                     $"Margin interest accrual – {account.Account.DisplayName} ({account.Rules.AnnualMarginRate:P2} p.a.)",
                     [
-                        (LedgerAccounts.MarginInterestExpenseFor(account.Account.AccountId), charge, 0m),
-                        (LedgerAccounts.CashAccount(account.Account.AccountId), 0m, charge),
+                        (LedgerAccounts.MarginInterestExpenseFor(account.Account.AccountId), interest < 0 ? charge : 0m, interest > 0 ? charge : 0m),
+                        (LedgerAccounts.CashAccount(account.Account.AccountId), interest > 0 ? charge : 0m, interest < 0 ? charge : 0m),
                     ],
                     BuildAccountMetadata(account, "margin_interest"));
             }
 
             if (account.Rules.AnnualCashInterestRate > 0 && account.Cash > 0)
             {
-                var cashInterest = account.Cash * (decimal)(account.Rules.AnnualCashInterestRate / 252.0);
+                var cashInterest = account.Cash * (decimal)(account.Rules.AnnualCashInterestRate / 365.0);
                 account.Cash += cashInterest;
                 _cashFlows.Add(new CashInterestCashFlow(ts, cashInterest, account.Rules.AnnualCashInterestRate, account.Account.AccountId));
                 _ledger?.PostLines(
@@ -417,7 +420,7 @@ internal sealed class SimulatedPortfolio
 
             foreach (var (symbol, qty) in account.Positions)
             {
-                if (qty >= 0)
+                if (qty >= 0 || account.Rules.AnnualShortRebateRate == 0)
                     continue;
 
                 var lastPrice = _lastPrices.GetValueOrDefault(symbol, 0m);
@@ -425,7 +428,7 @@ internal sealed class SimulatedPortfolio
                     continue;
 
                 var shortNotional = Math.Abs(qty) * lastPrice;
-                var rebate = shortNotional * (decimal)(account.Rules.AnnualShortRebateRate / 252.0);
+                var rebate = shortNotional * (decimal)(account.Rules.AnnualShortRebateRate / 365.0);
                 account.Cash += rebate;
                 _cashFlows.Add(new ShortRebateCashFlow(ts, rebate, symbol, Math.Abs(qty), account.Rules.AnnualShortRebateRate, account.Account.AccountId));
 
@@ -433,8 +436,8 @@ internal sealed class SimulatedPortfolio
                     ts,
                     $"Short rebate – {symbol} / {account.Account.DisplayName} ({account.Rules.AnnualShortRebateRate:P2} p.a.)",
                     [
-                        (LedgerAccounts.CashAccount(account.Account.AccountId), rebate, 0m),
-                        (LedgerAccounts.ShortRebateIncomeFor(account.Account.AccountId), 0m, rebate),
+                        (LedgerAccounts.CashAccount(account.Account.AccountId), Math.Max(rebate, 0m), Math.Max(-rebate, 0m)),
+                        (LedgerAccounts.ShortRebateIncomeFor(account.Account.AccountId), Math.Max(-rebate, 0m), Math.Max(rebate, 0m)),
                     ],
                     BuildAccountMetadata(account, "short_rebate", symbol));
             }

@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-10-30
+Snapshot date: 2026-11-12
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -717,7 +717,7 @@ Implementation completed 2026-08-10. The phase-1 client-grade rendering lane had
 
 ### Current Summary
 
-Implementation verified complete 2026-08-10; the calculation surface the 2026-07-21 summary said "still lives in Excel" has been ledger-backed source for some time and the missing piece was the exit-criterion golden-file evidence. Unitization - ShareClassUnitRegisterProjector folds dated subscriptions/redemptions into a pure, deterministic per-class unit register (units outstanding, per-investor holdings, NAV per unit via NavPerUnitCalculator, running high-water mark, and single-NAV equalisation credits/contingent redemptions via EqualizationCalculator for equalising classes), with the movement-level register as the auditable calculation trail and restatement handled by re-projection plus the report-pack restatement lifecycle. Fee economics - the Meridian.FSharp.Ledger FundEconomics kernels compute day-weighted management fees, straight-line expense accruals, and performance fees with hurdle, high-water mark, and crystallization treatment, and FundEconomicsJournalFactory converts fee, NAV, and waterfall outcomes into governed journal drafts. Waterfall and commitments - EuropeanDistributionWaterfall runs return-of-capital, preferred-return, solved GP catch-up (including sub-100 percent catch-up rates), and carried-interest tiers with cumulative threading across distributions; CapitalCallScheduleDraftBuilder, CapitalCallPlanBuilder, and CommitmentRollForwardCalculator maintain the net-called plus uncalled plus expired equals total invariant with recallable-distribution handling; and the ledger partners-capital reconciliation suite ties these to the W9-REPORT-005 statement. The 2026-08-10 acceptance candidate closes criterion four by adding a golden-file worked-example pack (tests/fixtures/fund-economics/golden) with hand-computed figures independent of the implementation - day-count fee and expense examples, a four-period threaded performance-fee cycle proving the high-water mark moves only on crystallization and only to post-fee NAV, a three-distribution threaded waterfall whose cumulative GP take is exactly its carry share of profit, a sub-100 percent catch-up example pinning the documented pool-rounding drift, equalisation credit/contingent cases, and a full-year unit-register scenario whose aggregate holding value ties to class NAV - all asserted step by step against the real kernels. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate.
+Implementation verified complete 2026-08-10; the calculation surface the 2026-07-21 summary said "still lives in Excel" has been ledger-backed source for some time and the missing piece was the exit-criterion golden-file evidence. Unitization - ShareClassUnitRegisterProjector folds dated subscriptions/redemptions into a pure, deterministic per-class unit register (units outstanding, per-investor holdings, NAV per unit via NavPerUnitCalculator, running high-water mark, and single-NAV equalisation credits/contingent redemptions via EqualizationCalculator for equalising classes), with the movement-level register as the auditable calculation trail and restatement handled by re-projection plus the report-pack restatement lifecycle. Fee economics - the Meridian.FSharp.Ledger FundEconomics kernels compute day-weighted management fees, straight-line expense accruals, and performance fees with hurdle, high-water mark, and crystallization treatment, and FundEconomicsJournalFactory converts fee, NAV, and waterfall outcomes into governed journal drafts. Waterfall and commitments - EuropeanDistributionWaterfall runs return-of-capital, preferred-return, solved GP catch-up (including sub-100 percent catch-up rates), and carried-interest tiers with cumulative threading across distributions; CapitalCallScheduleDraftBuilder, CapitalCallPlanBuilder, and CommitmentRollForwardCalculator maintain the net-called plus uncalled plus expired equals total invariant with recallable-distribution handling; and the ledger partners-capital reconciliation suite ties these to the W9-REPORT-005 statement. The 2026-08-10 acceptance candidate closes criterion four by adding a golden-file worked-example pack (tests/fixtures/fund-economics/golden) with hand-computed figures independent of the implementation - day-count fee and expense examples, a four-period threaded performance-fee cycle proving the high-water mark moves only on crystallization and only to post-fee NAV, a three-distribution threaded waterfall whose cumulative GP take is exactly its carry share of profit, a sub-100 percent catch-up example pinning the documented pool-rounding drift, equalisation credit/contingent cases, and a full-year unit-register scenario whose aggregate holding value ties to class NAV - all asserted step by step against the real kernels. Accepted 2026-08-29 by operator decision DEC-W9-ACCEPTANCE-001; the acceptance evidence the status taxonomy requires is recorded in docs/product/w9-operator-acceptance-2026-08-29.md and linked from this row. Acceptance closes the governance gate on this row only - it does not move the row to done, which still needs the release or status documentation this lane owns, and it does not certify a release or close the P0 release-certification gate. Posting path connected 2026-11-11 - the management-fee, performance-fee and expense-accrual drafts of FundEconomicsJournalFactory are now produced by the W10-JRNL-001 recurring-journal runner from ledger net assets and reach the ledger through the existing approve-then-post flow; the distribution-waterfall draft is produced by the distribution intake, which runs EuropeanDistributionWaterfall per investor and carries earlier tiers in a durable distribution register. Status is unchanged by this note.
 
 ### Exit Criteria
 
@@ -997,11 +997,11 @@ Implemented one shared valuation freshness policy with default blocking, require
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-26 |
+| Last reviewed | 2026-11-10 |
 
 ### Current Summary
 
-Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Current focused, hosted, Windows and rendered operator verification remain required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
+Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Focused verification ran on 2026-11-10 against source 471d651e - the lineage, SLA-calendar, statement-intake and statement-lineage test classes passed locally on Linux (39 tests), the same filter passed on hosted Linux (Targeted Test run 42910954556), and FundReconciliationWorkbenchServiceTests passed on hosted Windows with the full WPF build (Targeted Test run 42910959791, 12 tests). The browser source-observation test was not rerun in that pass, and rendered operator verification remains required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
 
 ### Exit Criteria
 
@@ -1093,11 +1093,11 @@ Rank 4 of the 2026-07 W10 depth slate and predominantly activation rather than c
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-10-01 |
+| Last reviewed | 2026-11-11 |
 
 ### Current Summary
 
-Implementation in progress 2026-10-01. FileRecurringJournalStore retains versioned schedule and template definitions, exact source evidence, one deterministic claim per schedule and effective date, and occurrence history under an OS-exclusive lease spanning intake. AutomatedJournalScheduledWorker invokes RecurringJournalRunner through the existing journal-intake and manual workbench path; the runner never submits, approves or posts. The existing PostgreSQL ledger remains authoritative for periods, lock owners and governed reopens; unavailable retained state or authority blocks generation. Recurring provenance is retained through draft validation and the human approval lifecycle. Definition drift blocks rather than replacing a draft, with explicit actor-and-reason restoration of exact retained versions. Browser and WPF Accounting queues consume the shared recurring occurrence contract. Linked regression sources cover restart, concurrent runners, interrupted intake completion, retries, version drift, missing evidence, period locks and queue parity. Actual validation results belong to the implementation PR; operator acceptance and production certification are not claimed. The supported occurrence-store boundary is processes sharing one filesystem data root.
+Implementation in progress 2026-10-01. FileRecurringJournalStore retains versioned schedule and template definitions, exact source evidence, one deterministic claim per schedule and effective date, and occurrence history under an OS-exclusive lease spanning intake. AutomatedJournalScheduledWorker invokes RecurringJournalRunner through the existing journal-intake and manual workbench path; the runner never submits, approves or posts. The existing PostgreSQL ledger remains authoritative for periods, lock owners and governed reopens; unavailable retained state or authority blocks generation. Recurring provenance is retained through draft validation and the human approval lifecycle. Definition drift blocks rather than replacing a draft, with explicit actor-and-reason restoration of exact retained versions. Browser and WPF Accounting queues consume the shared recurring occurrence contract. Linked regression sources cover restart, concurrent runners, interrupted intake completion, retries, version drift, missing evidence, period locks and queue parity. Actual validation results belong to the implementation PR; operator acceptance and production certification are not claimed. The supported occurrence-store boundary is processes sharing one filesystem data root. Extended 2026-11-11 with calculated templates - a template may name a posting calculation instead of fixed lines, and the runner drafts management fee, performance fee, fund expense, fixed-income coupon and amortization, and unrealized FX revaluation amounts from ledger inputs once per occurrence, recording NoDraftRequired when nothing is due. Coupons accrue by day within each window; FX revaluation requires a dated, sourced rate within a schedule-set age and records that evidence in the memo; close readiness gates on the period's recurring occurrences being posted or needing no draft. A durable fixed-asset register feeds a fixed-asset-depreciation calculation, and journal-automation intakes draft capital-call default interest and European-waterfall distributions (with a durable distribution register carrying earlier tiers). Limits are stated in docs/domain/recurring-journal.md - no production path writes a foreign-currency journal leg yet, so FX revaluation reports nothing due until W12-BOOK-001 adds governed foreign-currency posting; the rate table is operator-maintained rather than a governed rate store; and high-water mark and hurdle are operator-maintained schedule terms.
 
 ### Exit Criteria
 
@@ -1582,16 +1582,16 @@ Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-D
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-17 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-10 |
 
 ### Current Summary
 
-Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-DIRECTION-001. Extend the durable operator lifecycle around existing share-class unit registers, single-NAV equalization, partnership allocation, fees, waterfalls, and capital-account reconciliation. Reuse the bounded W9-NAV-006 economics and W9-REPORT-005 output without reopening their acceptance. Charter Sections 6.2.2, 6.7, and 10 define effective participation, supported master-feeder/SPV graphs, series methods, and conservation; Section 22.6 governs slice readiness and acceptance. Book/FX controls use W12-BOOK-001 and close uses W10-SEAM-001. Capital acceptance ties to the existing W9-REPORT-005 statement; W12-FINRPT-001 consumes the records for richer downstream packs and is not an acceptance prerequisite. Series support includes the corresponding fee-state scope as one slice. Inventory display order does not change legal ownership, consolidation authority, W9-W11 priorities, or production gates.
+Registered in the unranked fund-operations direction under DEC-FUND-OPERATIONS-DIRECTION-001. Extend the durable operator lifecycle around existing share-class unit registers, single-NAV equalization, partnership allocation, fees, waterfalls, and capital-account reconciliation. Reuse the bounded W9-NAV-006 economics and W9-REPORT-005 output without reopening their acceptance. Charter Sections 6.2.2, 6.7, and 10 define effective participation, supported master-feeder/SPV graphs, series methods, and conservation; Section 22.6 governs slice readiness and acceptance. Book/FX controls use W12-BOOK-001 and close uses W10-SEAM-001. Capital acceptance ties to the existing W9-REPORT-005 statement; W12-FINRPT-001 consumes the records for richer downstream packs and is not an acceptance prerequisite. Series support includes the corresponding fee-state scope as one slice. Inventory display order does not change legal ownership, consolidation authority, W9-W11 priorities, or production gates. The 2026-11-10 commitment-to-cash increment is in progress: versioned commitment authority, governed call issuance and bank-evidenced funding, atomic capacity controls, certified posted-call notices, and the existing browser capital-calls workspace. The scoped delivery plan records acceptance requirements and later Carta-inspired candidates. This increment does not accept full investor allocation, equalization/series, master-feeder, WPF parity, or production readiness.
 
 ### Exit Criteria
 
@@ -1810,6 +1810,43 @@ Adopted as planned product direction under DEC-TRADING-STRATEGY-DIRECTION-001 an
 - `SRC-EXECUTION`
 - `SRC-CONTRACTS`
 - `SRC-STORAGE`
+- `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W14-ATTEST-001 - Single-principal attestation for governed approvals in the single-operator envelope
+| Field | Value |
+| --- | --- |
+| Wave | W14 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | medium |
+| Owner lane | Platform Security and Governance |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-12 |
+
+### Current Summary
+
+Active development under the owner's 2026-11-12 instruction to validate and implement recommendation 1, following the unranked direction in DEC-SINGLE-PRINCIPAL-001. The owner selected development option 2 for confirmed regular mandatory USD dividend recognition on source ex-date, with a complete-related-event gross cap of USD 10000 and selected-book, source-ex-date-calendar-month gross cap of USD 100000, both inclusive. The exact existing dividend-receivable debit, dividend-income revenue credit and promoted rule/version must be explicitly bound; no cash settlement, account creation, policy mutation, correction, FX or lot effect is authorized. Default-off B evidence acknowledgments and newly server-bound non-postable Security draft checks retain separate preparer receipts, declarations, revocations, original proof exports and source disclosures. Connected ordinary authority consumers refuse preparer receipts; opaque legacy approval text and unequal actor IDs still do not authenticate a second human. The separate native C lane implements complete-book entitlement, reconciliation support, exact current scope/preparer/operands, durable event/month reservations and lease-backed ledger/event-spine posting. Conservative entitlement requires an explicit completed coherent record date, unchanged canonical lot identities/quantities from pre-ex cutoff through record date, and no ambiguous related source peers. Posted and frozen-report amount proofs classify retained native journal decisions independently of source readiness and deny ordinary-approval credit to preparer-only or unknown dependencies, even with report-level approval. Browser and WPF source paths and focused tests are linked; native Windows runtime, full both-workstation validation, full matrix execution and operational review are not established. Status moves to in_progress because implementation and verification are active, not because an operator acceptance occurred. Yellow health records the remaining evidence and acceptance gaps. Financial Verified Coverage, its denominator/headline and independent human Security and Accounting review remain open. This changes no rank, ADR-019 deployment envelope, PRD-000 sign-off, release authority or historical acceptance. Narrow validation and exact exclusions are in Section 12 of the policy and Section 6 of the acceptance matrix.
+
+### Exit Criteria
+
+- An audited, tenant-scoped single-principal declaration exists; with it off, existing guarded approvals and their documented exceptions behave exactly as today, with no attestation authority.
+- With it on, eligible approvals are recorded as attestations by the preparer, distinct from independent approvals in contracts, storage, and audit events; material or high-risk classes named by policy stay blocked.
+- Every Number Passport, decision trace, report package, and audit view shows "attested by preparer - not independently reviewed" on both the browser and WPF workstations, and a delivered package reproduces its original attestation label after the declaration is withdrawn.
+- Verified Coverage reports attested items separately and never merges them with independently approved items; whether attested items count toward the headline is decided under W11-COVER-001.
+- Turning the declaration on or off is an audited administrative action, and items created after it is withdrawn require independent approval.
+- Roadmap status remains planned until this item links implementation paths, the excluded-class policy, and browser and WPF evidence; these active-development links were added on 2026-11-12 without claiming acceptance. The row changes no ADR-019 envelope or PRD-000 sign-off.
+
+### Source Modules
+
+- `SRC-APP`
+- `SRC-DESIGN-IDENTITY`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-STRATEGIES`
+- `SRC-CONTRACTS`
 - `SRC-UI-SHARED`
 - `SRC-UI-SERVICES`
 - `SRC-UI-DASHBOARD`

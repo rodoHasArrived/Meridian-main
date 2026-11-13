@@ -17,6 +17,21 @@ namespace Meridian.Tests.SecurityMaster;
 public sealed class UnitizedLotTests
 {
     [Fact]
+    public void TryFor_ReportsTheReasonInsteadOfThrowing()
+    {
+        LotQuantity.TryFor("Equity", 400m, null, out var shares, out var noError).Should().BeTrue();
+        shares.Should().Be(new LotQuantity(400m, SecurityLotUnitKind.Shares, 1m));
+        noError.Should().BeNull();
+
+        LotQuantity.TryFor("NotAClass", 1m, null, out _, out var unknown).Should().BeFalse();
+        unknown.Should().Contain("registered asset class");
+
+        LotQuantity.TryFor("Future", 1m, JsonSerializer.SerializeToElement(new { multiplier = -5m }), out _, out var badMultiplier)
+            .Should().BeFalse();
+        badMultiplier.Should().Contain("multiplier");
+    }
+
+    [Fact]
     public void UnitFor_ReadsTheRegistryUnitAndTheDeclaredMultiplierTerm()
     {
         var terms = JsonSerializer.SerializeToElement(new { multiplier = 100m });

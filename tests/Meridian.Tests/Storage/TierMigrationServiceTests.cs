@@ -436,6 +436,225 @@ public sealed class TierMigrationServiceTests : IDisposable
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Scenario_SourceLinkEscape_IsRefusedWithoutReadingOrDeletingOutsideEvidence(bool directoryLink)
+    {
+        var outside = Path.Combine(_root, "..", $"tier-outside-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outside);
+        var evidence = Path.Combine(outside, "evidence.jsonl");
+        await File.WriteAllTextAsync(evidence, "outside evidence");
+        var link = Path.Combine(_hot, directoryLink ? "linked-directory" : "linked-file.jsonl");
+        try
+        {
+            if (directoryLink)
+                Directory.CreateSymbolicLink(link, outside);
+            else
+                File.CreateSymbolicLink(link, evidence);
+
+            var requested = directoryLink ? Path.Combine(link, "evidence.jsonl") : link;
+            var result = await _sut.MigrateAsync(requested, StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true));
+
+            result.Success.Should().BeFalse();
+            result.FilesProcessed.Should().Be(0);
+            (await File.ReadAllTextAsync(evidence)).Should().Be("outside evidence");
+            Directory.EnumerateFileSystemEntries(_warm).Should().BeEmpty();
+        }
+        finally
+        {
+            if (directoryLink)
+                Directory.Delete(link);
+            else
+                File.Delete(link);
+            Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Scenario_BulkSourceLinkRefusal_RetainsSuccessfulSafeSibling(bool directoryLink)
+    {
+        var outside = Path.Combine(_root, "..", $"tier-outside-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outside);
+        var evidence = Path.Combine(outside, "evidence.jsonl");
+        await File.WriteAllTextAsync(evidence, "outside evidence");
+        var safe = Path.Combine(_hot, "safe.jsonl");
+        await File.WriteAllTextAsync(safe, "safe evidence");
+        var link = Path.Combine(_hot, directoryLink ? "linked-directory" : "linked-file.jsonl");
+        try
+        {
+            if (directoryLink)
+                Directory.CreateSymbolicLink(link, outside);
+            else
+                File.CreateSymbolicLink(link, evidence);
+
+            var result = await _sut.MigrateAsync(_hot, StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true, ParallelFiles: 1));
+
+            result.Success.Should().BeFalse();
+            result.FilesProcessed.Should().Be(1);
+            result.FilesFailed.Should().Be(1);
+            File.Exists(safe).Should().BeFalse();
+            File.Exists(Path.Combine(_warm, "hot", "safe.jsonl.gz")).Should().BeTrue();
+            (await File.ReadAllTextAsync(evidence)).Should().Be("outside evidence");
+            Directory.EnumerateFiles(_warm, "*", SearchOption.AllDirectories).Should().ContainSingle();
+        }
+        finally
+        {
+            if (directoryLink)
+                Directory.Delete(link);
+            else
+                File.Delete(link);
+            Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Scenario_TargetLinkEscape_IsRefusedIncludingFinalCompressionPath(bool directoryLink)
+    {
+        var outside = Path.Combine(_root, "..", $"tier-outside-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outside);
+        var evidence = Path.Combine(outside, "evidence.jsonl.gz");
+        await File.WriteAllTextAsync(evidence, "outside evidence");
+        var source = Path.Combine(_hot, "evidence.jsonl");
+        await File.WriteAllTextAsync(source, "source evidence");
+        var parent = Path.Combine(_warm, "hot");
+        var link = directoryLink ? parent : Path.Combine(parent, "evidence.jsonl.gz");
+        try
+        {
+            if (directoryLink)
+                Directory.CreateSymbolicLink(link, outside);
+            else
+            {
+                Directory.CreateDirectory(parent);
+                File.CreateSymbolicLink(link, evidence);
+            }
+
+            var result = await _sut.MigrateAsync(source, StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true));
+
+            result.Success.Should().BeFalse();
+            result.FilesProcessed.Should().Be(0);
+            result.FilesFailed.Should().Be(1);
+            (await File.ReadAllTextAsync(source)).Should().Be("source evidence");
+            (await File.ReadAllTextAsync(evidence)).Should().Be("outside evidence");
+            Directory.EnumerateFiles(outside).Should().ContainSingle();
+        }
+        finally
+        {
+            if (directoryLink)
+                Directory.Delete(link);
+            else
+                File.Delete(link);
+            Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_TrustedParentAliasAboveConfiguredRoots_RemainsSupported()
+    {
+        var physical = Path.Combine(_root, "..", $"tier-admin-root-{Guid.NewGuid():N}");
+        var physicalData = Path.Combine(physical, "data");
+        Directory.CreateDirectory(physicalData);
+        var alias = Path.Combine(_root, "admin-parent");
+        Directory.CreateSymbolicLink(alias, physical);
+        try
+        {
+            var root = Path.Combine(alias, "data");
+            var warm = Path.Combine(alias, "archive");
+            var source = Path.Combine(root, "evidence.jsonl");
+            await File.WriteAllTextAsync(source, "authorized evidence");
+            var service = new TierMigrationService(new StorageOptions
+            {
+                RootPath = root,
+                Tiering = new TieringOptions
+                {
+                    Enabled = true,
+                    Tiers = [new TierConfig { Name = "Warm", Path = warm, Compression = CompressionCodec.Gzip }]
+                }
+            });
+
+            var result = await service.MigrateAsync(source, StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true));
+
+            result.Success.Should().BeTrue();
+            result.FilesProcessed.Should().Be(1);
+            (await ReadGzipTextAsync(Path.Combine(warm, "evidence.jsonl.gz"))).Should().Be("authorized evidence");
+            File.Exists(source).Should().BeFalse();
+        }
+        finally
+        {
+            Directory.Delete(alias);
+            Directory.Delete(physical, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Scenario_ConfiguredRootReparsePoint_IsRefusedBeforeMutation(bool targetRoot)
+    {
+        var outside = Path.Combine(_root, "..", $"tier-outside-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outside);
+        var evidence = Path.Combine(outside, "evidence.jsonl");
+        await File.WriteAllTextAsync(evidence, "outside evidence");
+        var link = targetRoot ? _warm : Path.Combine(_root, "linked-root");
+        if (targetRoot)
+            Directory.Delete(_warm);
+        Directory.CreateSymbolicLink(link, outside);
+        try
+        {
+            var source = targetRoot ? Path.Combine(_hot, "source.jsonl") : Path.Combine(link, "evidence.jsonl");
+            if (targetRoot)
+                await File.WriteAllTextAsync(source, "source evidence");
+            var service = targetRoot ? _sut : new TierMigrationService(new StorageOptions
+            {
+                RootPath = link,
+                Tiering = new TieringOptions
+                {
+                    Enabled = true,
+                    Tiers = [new TierConfig { Name = "Warm", Path = _warm, Compression = CompressionCodec.Gzip }]
+                }
+            });
+
+            var result = await service.MigrateAsync(source, StorageTier.Warm,
+                new MigrationOptions(DeleteSource: true, VerifyChecksum: true));
+
+            result.Success.Should().BeFalse();
+            result.FilesProcessed.Should().Be(0);
+            File.Exists(source).Should().BeTrue();
+            (await File.ReadAllTextAsync(evidence)).Should().Be("outside evidence");
+            Directory.EnumerateFileSystemEntries(outside).Should().ContainSingle();
+        }
+        finally
+        {
+            Directory.Delete(link);
+            Directory.Delete(outside, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task Scenario_WindowsCaseEquivalentSource_UsesDiscoveredCanonicalPath()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        var source = Path.Combine(_hot, "case-preserved.jsonl");
+        await File.WriteAllTextAsync(source, "source evidence");
+
+        var result = await _sut.MigrateAsync(source.ToUpperInvariant(), StorageTier.Warm,
+            new MigrationOptions(DeleteSource: false, VerifyChecksum: true));
+
+        result.Success.Should().BeTrue();
+        result.FilesProcessed.Should().Be(1);
+        File.Exists(Path.Combine(_warm, "hot", "case-preserved.jsonl.gz")).Should().BeTrue();
+        File.Exists(source).Should().BeTrue();
+    }
+
     [Fact]
     public async Task Scenario_TierObservability_StatisticsReportHotAndWarmEvidenceInventory()
     {

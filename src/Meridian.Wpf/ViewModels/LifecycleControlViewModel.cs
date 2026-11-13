@@ -1,5 +1,6 @@
 using Meridian.Contracts.Lifecycle;
 using Meridian.Wpf.Services;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -311,7 +312,7 @@ public sealed class LifecycleControlViewModel : BindableBase
     {
         LatestReceiptText = receipt is null
             ? "No prior shutdown receipt is available."
-            : $"{receipt.Outcome} · {receipt.Reason} · {receipt.CompletedAtUtc.ToLocalTime():g} · forced: {(receipt.ForcedTermination ? "yes" : "no")}";
+            : $"{receipt.Outcome} · {receipt.Reason} · {UtcFormat.FormatUtcTimestamp(receipt.CompletedAtUtc)} · forced: {(receipt.ForcedTermination ? "yes" : "no")}";
     }
 
     private void ApplyUnavailable(string message)

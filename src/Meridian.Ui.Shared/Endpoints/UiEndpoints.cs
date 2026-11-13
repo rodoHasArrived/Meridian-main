@@ -181,6 +181,7 @@ public static class UiEndpoints
 
         // Checkpoint and ingestion job endpoints (P0)
         app.MapCheckpointEndpoints(jsonOptions);
+        app.MapIngestionJobEndpoints(jsonOptions);
 
         // Options / Derivatives endpoints
         app.MapOptionsEndpoints(jsonOptions);
@@ -192,11 +193,15 @@ public static class UiEndpoints
         app.MapFundAccountEndpoints(jsonOptions);
         app.MapLedgerEndpoints(jsonOptions);
 
+        // Banking payment approval workflow and bank transaction records
+        app.MapBankingEndpoints(jsonOptions);
+
         // Portfolio-wide cash ladder and liquidity scenarios
         app.MapPortfolioCashLadderEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapIntercompanyAgreementEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
         app.MapReportingIncomeComparisonEndpoints(jsonOptions);
         app.MapSecureReportingDistributionEndpoints();
@@ -218,6 +223,7 @@ public static class UiEndpoints
         app.MapCryptoReferenceEndpoints(jsonOptions);
         app.MapDepositReferenceEndpoints(jsonOptions);
         app.MapMoneyMarketFundReferenceEndpoints(jsonOptions);
+        app.MapMoneyMarketFundEndpoints(jsonOptions);
         app.MapCertificateOfDepositReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 

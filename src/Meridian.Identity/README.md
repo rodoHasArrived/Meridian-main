@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-IDENTITY
 path: src/Meridian.Identity
 status: active
 owner_lane: Identity and Access
-last_reviewed: 2026-06-09
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Identity
@@ -17,6 +17,16 @@ last_reviewed: 2026-06-09
 effective account source used for authentication. Governed accounts take precedence; environment
 and development demo accounts are counted only when selected by that existing precedence.
 The deployment guard includes disabled accounts and exposes no credential material.
+
+### Single-principal preparer-assertion permissions
+
+`UserPermission` separates `ManageSinglePrincipalDeclarations`, `RecordPreparerAttestations`
+and `ViewPreparerAttestations`. No built-in role receives these flags automatically. An explicit
+grant to administer a declaration supplies neither the grant to attest nor an existing domain
+approval or posting permission. The shared Evidence Vault adapter also requires authenticated
+human origin and the existing target-modification permission for a mutation; a client-supplied
+actor or origin cannot confer that authority. See the
+[policy development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12).
 
 ## Purpose
 
@@ -84,7 +94,8 @@ hosts without the wrapper preserve live environment reads and credential rotatio
 `AuthenticationModeResolver` is the shared strict parser used by host startup and sessions.
 Invalid modes refuse construction, including Development/Test and configured-account hosts.
 Durable sessions reload authoritative state under an exclusive cross-process file lease for
-every operation. Session hashes and bounded login-failure windows commit atomically together;
+every operation; the lease is taken through `Core.IO.ExclusiveFileLock`, which retries only
+contention. Session hashes and bounded login-failure windows commit atomically together;
 logout, user/global revocation, lockout, and expiry are observed by every instance using the same
 store. The previous hashed-session array upgrades on its next mutation. Corrupt or inaccessible
 state refuses access without falling back to cached permissions. All cooperating instances must

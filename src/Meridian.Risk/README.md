@@ -11,10 +11,19 @@ last_reviewed: 2026-08-11
 
 # src/Meridian.Risk
 
+`DrawdownCircuitBreaker` is not composed by any host; the enforced drawdown guardrail is `Meridian.Ui.Shared.Services.DrawdownGuardrailRule`.
+
+`PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended. A pending amendment counts as its larger-quantity outcome (`IOrderManager.GetUnitReservingOrders`).
+
 `BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before
 live admission, independently of configurable exposure ceilings. Scoped exposure uses broker
 holdings, cash, buying power and currency, with remaining working orders reserved in the same
 account. Local paper projections keep their existing aggregation behavior.
+
+Risk admission depends on `Meridian.Execution.Sdk` contracts, including explicit circuit-breaker,
+approval-queue and audit authorities. Concrete Execution services stay at the host composition
+boundary. Rebuild all host/plugin consumers after the constructor contract extraction described in
+[boundary extractions](../../docs/architecture/review-boundary-extractions.md).
 
 ## Purpose
 
@@ -162,6 +171,11 @@ Risk decisions are log evidence, so the gate renders caller-supplied text throug
 `LogSanitizer.Sanitize` before logging it. Both the symbol and a rule's reason can carry it — the
 F# position-limit rule embeds the symbol in its reason — and an unconstrained value containing a
 line break would otherwise render as a second log line that reads like a risk decision.
+
+**Position limit and bracket legs.** When `PositionLimitRule` sums same-side working orders,
+broker-side exit legs of one parent (`OrderState.ParentOrderId`) are one-cancels-other, so each
+parent contributes only its largest leg. A long protected by a take-profit and a stop-loss is not
+read as an oversized short.
 
 ## Diagrams
 

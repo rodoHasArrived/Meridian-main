@@ -12,8 +12,8 @@ using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityM
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Golden-scenario regression sweep for <see cref="SecurityMasterLedgerBridge"/>: every
-/// fixture tagged with a ledger invariant is posted through the real bridge and checked with
+/// Golden-scenario regression sweep for <see cref="HistoricalCorporateActionLedgerFixture"/>: every
+/// fixture tagged with a ledger invariant is posted through the retired poster fixture and checked with
 /// <see cref="CorporateActionLedgerInvariants"/>. Fixtures and the known-defect registry live
 /// under tests/fixtures/corporate-actions/golden/.
 /// </summary>
@@ -130,7 +130,7 @@ public sealed class CorporateActionGoldenLedgerTests
 
     // ── Wiring ────────────────────────────────────────────────────────────────
 
-    private static async Task<(GoldenCorporateActionScenario Scenario, SecurityMasterLedgerBridge Bridge, DomainLedger Ledger)>
+    private static async Task<(GoldenCorporateActionScenario Scenario, HistoricalCorporateActionLedgerFixture Bridge, DomainLedger Ledger)>
         PostScenarioAsync(string scenarioId)
     {
         var scenario = GoldenCorporateActionScenarioLoader.Load(scenarioId);
@@ -143,16 +143,17 @@ public sealed class CorporateActionGoldenLedgerTests
         return (scenario, bridge, ledger);
     }
 
-    private static (SecurityMasterLedgerBridge Bridge, ISecurityMasterQueryService QueryService) CreateBridge()
+    private static (HistoricalCorporateActionLedgerFixture Bridge, ISecurityMasterQueryService QueryService) CreateBridge()
     {
         var queryService = Substitute.For<ISecurityMasterQueryService>();
-        var bridge = new SecurityMasterLedgerBridge(queryService, NullLogger<SecurityMasterLedgerBridge>.Instance);
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService);
+        var bridge = new HistoricalCorporateActionLedgerFixture(queryService, NullLogger<HistoricalCorporateActionLedgerFixture>.Instance);
         return (bridge, queryService);
     }
 
-    internal static CorporateActionLedgerPostingContext? ToPostingContext(GoldenCorporateActionScenario scenario)
+    internal static HistoricalCorporateActionPostingContext? ToPostingContext(GoldenCorporateActionScenario scenario)
         => scenario.PostingContext is { } context
-            ? new CorporateActionLedgerPostingContext(
+            ? new HistoricalCorporateActionPostingContext(
                 context.PositionQuantity, context.WithholdingTaxRate, context.FinancialAccountId)
             : null;
 }

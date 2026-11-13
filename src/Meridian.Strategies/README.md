@@ -6,13 +6,27 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-08-03
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Strategies
 
-Run ledger read models support inclusive economic-time cuts without mutating retained journals. Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting exports. Historical journal rows, account balances and posting counts are rebuilt from the same validated posting population.
+Run ledger read models support inclusive economic-time cuts without mutating retained journals.
+Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting
+exports. Historical journal rows, account balances and posting counts are rebuilt from the same
+validated posting population.
 
+Reconciliation casework rejects reserved preparer-attestation references as ordinary approval.
+The optional scoped receipt classifier also recognizes retained legacy receipt IDs; client command
+and assertion IDs never become approval denials. Single and bulk commands validate this boundary
+before mutation, retain existing maker-checker rules, and fail closed if configured receipt history
+cannot be read. No attestation grants waiver, supersession, material-break suppression or sign-off.
+
+`LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
+
+Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
+OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
+face-value fills keep their par scaling.
 
 SLA calculation anchors to OccurrenceFirstObservedAt, resolves named business and holiday calendars, retains fractional hours and resolves timezone boundaries separately for each date. Unknown names, missing coverage and ambiguous/nonexistent shift boundaries are refused. Source clearing leaves casework SLA and approval obligations intact.
 
@@ -32,6 +46,18 @@ Security Master consumers import the shared Contracts interfaces. Strategies doe
 an Application dependency through Execution.
 
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
+
+## Security Master accounting rate units and disposition
+
+`SecurityMasterAccountingEventService` reads a fixed coupon through the shared
+`RateUnitNormalizer` (review D10, slice 4, 2026-11-04): the record's declared
+`scheduleConventions.couponRateUnit`, carried on `SecurityFixedIncomeTerms.CouponRateUnit` by
+`SecurityMasterAccountingEventSourceAdapter`, then the coupon field's default for
+`SecurityFixedIncomeTerms.TermsAssetClass`. An undeclared rate raises a High
+`SM_COUPON_RATE_UNIT_UNDECLARED` issue (`SM_COUPON_RATE_OUT_OF_RANGE` outside the declared range or
+sign policy) and no accrual or coupon receipt is generated; the retired `> 1 means percent` guess is
+gone. Accounting-slice membership comes from the catalog's explicit disposition, so StructuredNote,
+which is outside the slice, cannot reach bond posting through its `FixedIncome` taxonomy.
 
 ## Reconciliation source lineage
 
@@ -189,7 +215,10 @@ on read. The exact legacy XIRR string `"NaN"` remains readable; infinite XIRR va
 Profit factor and Sortino preserve their defined positive-infinity outcomes through their scoped
 SDK attributes, while unrelated nonfinite metrics remain invalid. General SDK and comparison API
 JSON serialization retain the named XIRR marker contract; the null override applies only to durable
-strategy snapshots.
+strategy snapshots. Durable append APIs report a caller snapshot rejected by a JSON converter as
+an invalid `entry` argument before retaining history; the original converter exception is preserved.
+Live summary fills remain in `BacktestResult.Fills`; they do not establish completed outcomes for
+`TotalTrades`, win rate, or profit factor.
 
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
@@ -277,6 +306,11 @@ snapshot, audit-chain, and close-scope integrity checks. A failed probe clears t
 again, so repeated checks remain fail-closed until the durable snapshot is actually repaired; it
 does not silently accept the last in-memory state.
 
+`SecurityMasterAccountingEventSourceAdapter` accepts an optional
+`ISecurityActualCashActivitySource`. When one is supplied, its rows become the request's
+`ActualActivity`, so expected coupons and paydowns are compared with reported cash; without one
+the request carries no actual activity and every expected cash event reads as missing, as before.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
@@ -286,6 +320,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-STRATEGIES -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |

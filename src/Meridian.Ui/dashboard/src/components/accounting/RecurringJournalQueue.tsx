@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ErrorNotice } from "@/components/ui/error-notice";
 import { getRecurringJournalQueue, type RecurringJournalQueue as Queue, type RecurringJournalScope } from "@/lib/api/recurring-journals.api";
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 
 export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds }: Props) {
   const [queue, setQueue] = useState<Queue | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [revision, setRevision] = useState(0);
   const generation = useRef(0);
@@ -32,7 +33,7 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
       .then((result) => { if (generation.current === current) setQueue(result); })
       .catch((reason: unknown) => {
         if (generation.current === current && !controller.signal.aborted) {
-          setError(reason instanceof Error ? reason.message : "The retained occurrence state could not be read.");
+          setError(reason ?? new Error("The retained occurrence state could not be read."));
         }
       })
       .finally(() => { if (generation.current === current) setLoading(false); });
@@ -51,7 +52,13 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
         </div>
       </div>
       {!scope ? <p role="status" className="text-sm text-muted-foreground">Select a fund, ledger book and entity to load recurring occurrences.</p> : null}
-      {error ? <p role="alert" className="break-words text-sm text-danger">Recurring queue unavailable: {error}</p> : null}
+      {error ? (
+        <ErrorNotice
+          error={error}
+          title="Recurring journals could not be loaded."
+          fallback="The retained occurrence state could not be read."
+        />
+      ) : null}
       {loading ? <p role="status" className="text-sm text-muted-foreground">Loading retained occurrences…</p> : null}
       {visibleQueue?.occurrences.length === 0 ? <p role="status" className="text-sm text-muted-foreground">No retained recurring occurrences for this scope.</p> : null}
       <div className="space-y-3">
@@ -60,10 +67,17 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
             <p className="break-words font-semibold">{row.scheduleId} · v{row.scheduleVersion}</p>
             <p className="break-words text-muted-foreground">Template {row.templateId} · v{row.templateVersion}</p>
             <p>{row.effectiveDate} · {row.periodId ?? "Period unresolved"}</p>
-            <p className="mt-2 font-semibold">{row.state} · Approval: {row.approvalStatus ?? "Not submitted"}</p>
+            <p className="mt-2 font-semibold">
+              {row.state === "NoDraftRequired" ? "Nothing to post" : `${row.state} · Approval: ${row.approvalStatus ?? "Not submitted"}`}
+            </p>
             <p className="break-all text-muted-foreground">Occurrence {row.occurrenceId}</p>
             {row.journalEntryId ? <p className="break-all">Draft {row.journalEntryId}</p> : null}
-            {row.blockers.length ? <ul className="mt-2 list-disc space-y-1 pl-4 text-danger">{row.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : null}
+            {row.blockers.length ? (
+              // A calculated occurrence with nothing to post explains why; that is a note, not a blocker.
+              <ul className={`mt-2 list-disc space-y-1 pl-4 ${row.state === "NoDraftRequired" ? "text-muted-foreground" : "text-danger"}`}>
+                {row.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}
+              </ul>
+            ) : null}
             {row.periodLockOwner ? <p className="mt-2 break-words">Period lock owner: {row.periodLockOwner}</p> : null}
             {row.governedReopenPath ? <p className="break-words">Governed reopen: {row.governedReopenPath}</p> : null}
             <details className="mt-2">

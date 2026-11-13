@@ -1,4 +1,5 @@
 using Meridian.Application.FundStructure;
+using Meridian.Application.SecurityMaster;
 using Meridian.Application.Tenancy;
 using Meridian.Contracts.Tenancy;
 using Microsoft.AspNetCore.Diagnostics;
@@ -57,6 +58,10 @@ public sealed class MeridianApiExceptionHandler : IExceptionHandler
                 "A tenant-scoped session is required to read the fund structure."),
             LocalTenantMigrationRequiredException => ApiProblemDetails.ServiceUnavailable(
                 httpContext, "tenant migration", LocalTenantMigrationGate.RefusalMessage),
+            // A node whose Security Master terms capability floor refuses it cannot serve this write
+            // until an operator verifies the floor; another node may. Not a fault, so not a 500.
+            SecurityMasterTermsCapabilityRefusedException => ApiProblemDetails.ServiceUnavailable(
+                httpContext, "security master terms capability", SecurityMasterTermsCapabilityRefusedException.RefusalMessage),
             TimeoutException => ApiProblemDetails.Timeout(httpContext),
             OperationCanceledException => ApiProblemDetails.Timeout(httpContext),
             _ => ApiProblemDetails.Internal(httpContext)
@@ -67,7 +72,8 @@ public sealed class MeridianApiExceptionHandler : IExceptionHandler
             or UnauthorizedAccessException
             or TenantScopeRejectedException
             or LocalTenantMigrationRequiredException
-            or FundStructureTenantScopeException)
+            or FundStructureTenantScopeException
+            or SecurityMasterTermsCapabilityRefusedException)
         {
             _logger.LogWarning(
                 exception,

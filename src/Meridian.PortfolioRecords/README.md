@@ -11,6 +11,8 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.PortfolioRecords
 
+Account reconciliation run summaries total only cash-denominated variances (Cash and Continuity checks) in `BreakAmountTotal`; the position-count check's line-count variance still counts as a break but no longer enters the monetary total.
+
 `BankStatementClosingBalanceAuthority` projects complete highest-revision batches before selecting
 balances or aggregating cash flows. Competing batches at the same account/header-date/revision remain
 unavailable, including when their closing balances happen to agree. Currency filtering follows revision
@@ -60,6 +62,11 @@ otherwise the tenant-guarded local snapshot service. `IFundAccountService`,
 `IAccountManagementService`, and `IAccountQueryService` share one service instance. Strict tenant
 enforcement refuses unpartitioned local snapshots; explicit deployment-boundary compatibility is
 required for reviewed local migration access.
+
+Local snapshots fail startup if they are unreadable, malformed, use an unsupported format, or
+contain missing or duplicate account records. The error is logged and the original file remains
+unchanged. Restore a known-good snapshot or repair the retained file before restarting; only a
+missing file initializes a new empty local store.
 
 ## Important workflows
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatNumber, pluralizeCount } from "@/lib/format";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -345,6 +345,8 @@ export interface LiveMarketDataWorkspaceViewModel {
   description: string;
   symbolSet: string[];
   symbolSetLabel: string;
+  /** False until the operator adds a symbol; the screen then shows one empty state, not several. */
+  hasSymbols: boolean;
   selectedSymbol: string | null;
   selectedSymbolSummary: string;
   matrixRows: LiveQuoteMatrixRowViewModel[];
@@ -1153,11 +1155,12 @@ export function buildLiveMarketDataWorkspaceViewModel({
     title: "Live Market Data Workspace",
     description: "Monitor real-time quotes, trades, BBO, spreads, provider posture, and latency from one symbol set.",
     symbolSet: [...symbolSet],
-    symbolSetLabel: symbolSet.length > 0 ? symbolSet.join(", ") : "No symbols",
+    symbolSetLabel: symbolSet.join(", "),
+    hasSymbols: symbolSet.length > 0,
     selectedSymbol: selectedRow?.symbol ?? null,
     selectedSymbolSummary: selectedRow
       ? `${selectedRow.symbol} ${selectedRow.stateLabel}; bid ${selectedRow.bidLabel}, ask ${selectedRow.askLabel}, spread ${selectedRow.spreadLabel}.`
-      : "No selected symbol summary is available.",
+      : "",
     matrixRows,
     selectedDetail,
     diagnostics,
@@ -1528,17 +1531,14 @@ export function formatMarketPrice(value: number | null | undefined, fractionDigi
   if (value === null || value === undefined || Number.isNaN(value)) {
     return LIVE_QUOTES_EMPTY_VALUE;
   }
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: fractionDigits
-  });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: fractionDigits, fallback: LIVE_QUOTES_EMPTY_VALUE });
 }
 
 export function formatMarketSize(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return LIVE_QUOTES_EMPTY_VALUE;
   }
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatPriceSize(price: number | null | undefined, size: number | null | undefined): string {
@@ -1968,20 +1968,20 @@ function formatUtcTimeWithMilliseconds(date: Date): string {
 function formatChange(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return LIVE_QUOTES_EMPTY_VALUE;
   const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
 }
 
 function formatChangePct(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return LIVE_QUOTES_EMPTY_VALUE;
   const sign = value > 0 ? "+" : value < 0 ? "" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 
 function formatVolume(value: number): string {
   if (!Number.isFinite(value) || value <= 0) return LIVE_QUOTES_EMPTY_VALUE;
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
   if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatWindowSpan(startIso: string | null, endIso: string | null): string {

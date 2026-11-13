@@ -160,6 +160,61 @@
           "required": false
         }
       ]
+    },
+    {
+      "termsVersion": 5,
+      "fields": [
+        {
+          "key": "callSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "callableDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "cashFlowContract",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "couponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "putSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "rateUnit",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "scheduleConventions",
+          "type": "Object",
+          "required": false
+        }
+      ]
     }
   ]
 }

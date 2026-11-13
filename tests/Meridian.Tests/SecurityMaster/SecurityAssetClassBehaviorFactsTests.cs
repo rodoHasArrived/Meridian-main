@@ -28,8 +28,19 @@ public sealed class SecurityAssetClassBehaviorFactsTests
         => Classes(static d => d.CarriesBondCouponStructure).Should().Equal("Bond");
 
     [Fact]
+    public void SupportsRecurringFixedIncomeAccrual_AdmitsBondAndStructuredCredit()
+    {
+        Classes(static d => d.SupportsRecurringFixedIncomeAccrual).Should().Equal("Bond", "StructuredCredit");
+        SecurityAssetClassCatalog.GetOrDefault("NotAClass").SupportsRecurringFixedIncomeAccrual.Should().BeFalse();
+    }
+
+    [Fact]
     public void UsesOccOptionSymbols_IsOptionAndWarrant()
         => Classes(static d => d.UsesOccOptionSymbols).Should().BeEquivalentTo(["Option", "Warrant"]);
+
+    [Fact]
+    public void SettlesDailyVariationMargin_IsFutureOnly()
+        => Classes(static d => d.SettlesDailyVariationMargin).Should().Equal("Future");
 
     [Fact]
     public void QuotesRatesAsFractions_IsDepositOnly()
@@ -49,7 +60,7 @@ public sealed class SecurityAssetClassBehaviorFactsTests
     {
         Classes(static d => d.CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs).Should().Equal("Swap");
         Classes(static d => d.CashFlowBehavior == SecurityCashFlowBehavior.FinancingInterest).Should().Equal("Repo");
-        Classes(static d => d.ProjectionKind == SecurityTermsProjectionKind.Specialized).Should().Equal("Option");
+        Classes(static d => d.ProjectionKind == SecurityTermsProjectionKind.Specialized).Should().Equal("Option", "CustomAsset");
         Classes(static d => d is { LotUnit: SecurityLotUnitKind.Shares, CashFlowBehavior: SecurityCashFlowBehavior.Dividends }).Should().Equal("Equity");
     }
 

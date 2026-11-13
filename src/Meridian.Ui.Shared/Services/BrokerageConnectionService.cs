@@ -113,7 +113,7 @@ public sealed class BrokerageConnectionService
             return BuildStatus(null, "Robinhood authorization code received, but no token endpoint is configured.");
         }
 
-        using var client = _httpClientFactory?.CreateClient(nameof(BrokerageConnectionService)) ?? new HttpClient();
+        using var client = CreateClient();
         using var response = await client.PostAsync(
             _options.TokenEndpoint,
             new FormUrlEncodedContent(BuildTokenRequest(code)),
@@ -159,7 +159,7 @@ public sealed class BrokerageConnectionService
         {
             try
             {
-                using var client = _httpClientFactory?.CreateClient(nameof(BrokerageConnectionService)) ?? new HttpClient();
+                using var client = CreateClient();
                 using var request = new HttpRequestMessage(HttpMethod.Post, _options.RevokeEndpoint)
                 {
                     Content = new FormUrlEncodedContent(new Dictionary<string, string>
@@ -190,6 +190,11 @@ public sealed class BrokerageConnectionService
            && !string.IsNullOrWhiteSpace(_options.TokenEndpoint)
            && !string.IsNullOrWhiteSpace(_options.ClientId)
            && !string.IsNullOrWhiteSpace(_options.RedirectUri);
+
+    private HttpClient CreateClient()
+        => (_httpClientFactory ?? throw new InvalidOperationException(
+            "An HTTP client factory is required to exchange or revoke brokerage credentials."))
+            .CreateClient(nameof(BrokerageConnectionService));
 
     private BrokerageConnectionStatusDto BuildStatus(string? authorizationUrl, string? lastError)
     {

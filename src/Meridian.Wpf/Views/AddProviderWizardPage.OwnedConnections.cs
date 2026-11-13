@@ -75,6 +75,9 @@ public partial class AddProviderWizardPage
     }
 
     private async void OwnedConnectionSelectionChanged(object sender, SelectionChangedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => OwnedConnectionSelectionChangedCoreAsync(sender, e), nameof(OwnedConnectionSelectionChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task OwnedConnectionSelectionChangedCoreAsync(object sender, SelectionChangedEventArgs e)
     {
         if (_updatingConnectionSelection || sender is not ComboBox selector) return;
         await ApplyOwnedConnectionSelectionAsync(selector.SelectedItem as ProviderConnectionDto);
@@ -138,6 +141,9 @@ public partial class AddProviderWizardPage
     }
 
     private async void ReloadOwnedConnections_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ReloadOwnedConnections_ClickCoreAsync(sender, e), nameof(ReloadOwnedConnections_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ReloadOwnedConnections_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         ResetOwnedConnectionScope();
         var generation = _credentialScopeGeneration;
@@ -173,7 +179,11 @@ public partial class AddProviderWizardPage
 
     private bool IsCurrentCredentialScope(long generation) => generation == Volatile.Read(ref _credentialScopeGeneration);
 
-    private async void RemoveOwnedCredentials_Click(object sender, RoutedEventArgs e) => await RemoveOwnedCredentialsAsync();
+    private async void RemoveOwnedCredentials_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => RemoveOwnedCredentials_ClickCoreAsync(sender, e), nameof(RemoveOwnedCredentials_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task RemoveOwnedCredentials_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await RemoveOwnedCredentialsAsync();
     internal async Task RemoveOwnedCredentialsAsync()
     {
         if (_selectedProvider is not { } provider || _operationInProgress || !_viewModel.RemoveCredentialsConfirmed

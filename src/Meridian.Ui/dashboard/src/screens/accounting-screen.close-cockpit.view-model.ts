@@ -98,6 +98,7 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
+import { formatCount as formatCountValue } from "@/lib/format";
 
 const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
   getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
@@ -973,7 +974,7 @@ export function buildAccountingWorkflowLaunchViewState({
       caption: "Investor evidence, allocation rules, statements, and audit support.",
       href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
       metricLabel: "Investor rows",
-      metricValue: data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount.toLocaleString() ?? "0",
+      metricValue: formatCountValue(data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount) ?? "0",
       statusLabel: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "Evidence ready" : "No activity",
       tone: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "success" : "warning",
       workstream
@@ -1084,7 +1085,7 @@ export function buildAccountingWorkflowLaunchViewState({
 
   return {
     title: "Accounting workflow",
-    description: "Books-before-broker accounting, reconciliation, approvals, and retained report evidence are grouped in one operator lane.",
+    description: "Books-before-broker accounting, reconciliation, approvals, and retained report evidence are grouped in one operator workflow.",
     ariaLabel: "Accounting workflow launch paths",
     taskMode: activeTaskMode,
     activeLabel: `${activeStepLabel} active`,
@@ -1913,7 +1914,7 @@ function buildAccountingCloseWorkflowSteps({
       label: "Period lock",
       statusLabel: locked ? "Locked" : closePlan ? "Open" : "Pending",
       detail: locked
-        ? "The close period is locked; new close mutations require a governed reopen workflow."
+        ? "The close period is locked; new close changes require a governed reopen workflow."
         : closePlan
           ? "Period lock submits workflow version, report package, checklist approvals, manifest route, and ledger-book evidence to the shared service."
           : "Load a close plan before period-lock review.",
@@ -2160,6 +2161,8 @@ function formatClosePostingBalanceScope(dimensions: LedgerDimensionSet | null | 
     ["Tax lot", dimensions?.taxLotId],
     ["Cost center", dimensions?.costCenterId],
     ["Counterparty", dimensions?.counterpartyId],
+    ["Agreement", dimensions?.intercompanyAgreementId],
+    ["Agreement version", dimensions?.intercompanyAgreementVersion == null ? null : String(dimensions.intercompanyAgreementVersion)],
     ["Organization", dimensions?.organizationId],
     ["Portfolio", dimensions?.portfolioId],
     ["Book", dimensions?.bookId],

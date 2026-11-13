@@ -275,6 +275,8 @@ export interface FinancialRecordExplorerScopeItemDto {
 }
 
 export interface FinancialRecordExplorerSavedViewDto {
+  isReadOnly?: boolean;
+  origin?: string | null;
   viewId: string;
   label: string;
   description: string;
@@ -744,12 +746,40 @@ export interface WorkspaceSummary {
   maturity: ProductMaturity;
 }
 
+/** Where a headline figure comes from, so it can be traced without cross-checking another panel. */
+export interface MetricProvenance {
+  /** The read model or feed the figure is taken from, e.g. "Portfolio workspace". */
+  source: string;
+  /** When the figure was last confirmed: an ISO timestamp, or display text when none exists. */
+  asOf?: string | null;
+  /** The accounts, fund or run the figure covers, e.g. "All loaded accounts". */
+  scope?: string | null;
+}
+
+/** Whether the data behind a figure is current: `stale` is past its budget, `unverified` has no evidence. */
+export type MetricFreshness = "fresh" | "stale" | "unverified";
+
 export interface MetricSnapshot {
   id: string;
   label: string;
   value: string;
+  /**
+   * A change or a short caption under the figure. A bare change ("+8%", "+2") is shown only with a
+   * `baseline`; see `resolveMetricDelta` in `@/lib/metric-trust`.
+   */
   delta: string;
   tone: "default" | "success" | "warning" | "danger";
+  /** What `delta` is measured against, e.g. "vs prior session". */
+  baseline?: string;
+  provenance?: MetricProvenance;
+  freshness?: MetricFreshness;
+
+  /** Producer-declared comparison window; never inferred from the magnitude. */
+  comparisonPeriod?: string | null;
+  basis?: string | null;
+  asOf?: string | null;
+  source?: string | null;
+  numberPassport?: import("./number-passport-reference").NumberPassportReference | null;
 }
 
 
@@ -775,6 +805,10 @@ export interface StrategyRunSummaryApiRecord {
   auditReference?: string | null;
 }
 export interface StrategyRunRecord {
+  searchText?: string | null;
+  maxDrawdown?: number | null;
+  trendValues?: number[] | null;
+  trendDates?: string[] | null;
   id: string;
   strategyName: string;
   engine: string;
@@ -1053,6 +1087,39 @@ export interface RiskRuleConfigUpdateRequest {
   priceCollarPercent?: number | null;
 }
 
+/**
+ * Option contract identity on a parked order or one of its legs, as the server serializes
+ * `OptionContractIdentity`. Every member is nullable server-side and is written as `null`
+ * rather than omitted.
+ */
+export interface RiskEscalationOptionContract {
+  underlyingSymbol: string | null;
+  /** Calendar date, e.g. "2026-12-18". */
+  expirationDate: string | null;
+  strikePrice: number | null;
+  /** Normalized right code ("C" or "P") where available. */
+  right: string | null;
+  multiplier: string | null;
+  contractMonth: string | null;
+  tradingClass: string | null;
+  localSymbol: string | null;
+}
+
+/**
+ * One leg of a parked multi-leg order, as the server serializes `OrderLeg`. The order-level
+ * `side` and `positionIntent` are written as enum names by the escalation projection; the enums
+ * of a leg arrive as ordinals because the endpoint serializes the leg record directly.
+ */
+export interface RiskEscalationOrderLeg {
+  symbol: string;
+  /** `OrderSide` ordinal: 0 Buy, 1 Sell. */
+  side: number;
+  ratioQuantity: number;
+  /** `PositionIntent` ordinal: 0 BuyToOpen, 1 BuyToClose, 2 SellToOpen, 3 SellToClose. */
+  positionIntent: number | null;
+  optionContract: RiskEscalationOptionContract | null;
+}
+
 /** A parked risk escalation awaiting (or resolved by) governed operator approval. */
 export interface RiskEscalation {
   escalationId: string;
@@ -1068,6 +1135,26 @@ export interface RiskEscalation {
   resolvedBy: string | null;
   resolutionReason: string | null;
   resolvedAt: string | null;
+  // The rest of what the approver is authorizing. The server writes each of these on every
+  // escalation and uses null where the order does not carry the term.
+  stopPrice: number | null;
+  /** Trailing-stop offset as a price amount. */
+  trailPrice: number | null;
+  /** Trailing-stop offset in percent units (2.5 means 2.5%). */
+  trailPercent: number | null;
+  /** `TimeInForce` name: "Day", "GoodTilCancelled", "ImmediateOrCancel" or "FillOrKill". */
+  timeInForce: string | null;
+  /**
+   * Dollar amount the broker routes when the order is sized in dollars rather than quantity;
+   * null for a quantity-sized order. When set, `quantity` is not the size of the order.
+   */
+  routedNotional: number | null;
+  fundAccountId: string | null;
+  strategyId: string | null;
+  /** `PositionIntent` name: "BuyToOpen", "BuyToClose", "SellToOpen" or "SellToClose". */
+  positionIntent: string | null;
+  optionContract: RiskEscalationOptionContract | null;
+  legs: RiskEscalationOrderLeg[] | null;
 }
 
 /** Result of approving a parked escalation, with the release attempt when one was made. */

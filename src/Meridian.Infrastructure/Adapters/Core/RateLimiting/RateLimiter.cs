@@ -12,9 +12,9 @@ public sealed class RateLimiter : IDisposable
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly ConcurrentQueue<DateTimeOffset> _requestTimestamps = new();
-    private readonly int _maxRequests;
-    private readonly TimeSpan _window;
-    private readonly TimeSpan _minDelay;
+    private sealed record Limits(int MaxRequests, TimeSpan Window, TimeSpan MinDelay);
+    private Limits _limits;
+    private readonly object _cleanupLock = new();
     private readonly ILogger _log;
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
@@ -30,11 +30,20 @@ public sealed class RateLimiter : IDisposable
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxRequestsPerWindow, 0, nameof(maxRequestsPerWindow));
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(window, TimeSpan.Zero, nameof(window));
 
-        _maxRequests = maxRequestsPerWindow;
-        _window = window;
-        _minDelay = minDelayBetweenRequests ?? TimeSpan.Zero;
+        ArgumentOutOfRangeException.ThrowIfLessThan(minDelayBetweenRequests ?? TimeSpan.Zero, TimeSpan.Zero, nameof(minDelayBetweenRequests));
+        _limits = new Limits(maxRequestsPerWindow, window, minDelayBetweenRequests ?? TimeSpan.Zero);
         _log = log ?? LoggingSetup.ForContext<RateLimiter>();
         _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    /// <summary>Updates admission limits in place, retaining recent request history.</summary>
+    public void UpdateLimits(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(maxRequestsPerWindow, 0, nameof(maxRequestsPerWindow));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(window, TimeSpan.Zero, nameof(window));
+        ArgumentOutOfRangeException.ThrowIfLessThan(minDelayBetweenRequests ?? TimeSpan.Zero, TimeSpan.Zero, nameof(minDelayBetweenRequests));
+        Volatile.Write(ref _limits, new Limits(maxRequestsPerWindow, window, minDelayBetweenRequests ?? TimeSpan.Zero));
     }
 
     /// <summary>
@@ -54,11 +63,11 @@ public sealed class RateLimiter : IDisposable
             CleanupOldTimestamps();
 
             // Check if we need to wait for rate limit window
-            while (_requestTimestamps.Count >= _maxRequests)
+            while (_requestTimestamps.Count >= Volatile.Read(ref _limits).MaxRequests)
             {
                 if (_requestTimestamps.TryPeek(out var oldest))
                 {
-                    var waitTime = oldest.Add(_window) - _timeProvider.GetUtcNow();
+                    var waitTime = oldest.Add(Volatile.Read(ref _limits).Window) - _timeProvider.GetUtcNow();
                     if (waitTime > TimeSpan.Zero)
                     {
                         _log.Debug("Rate limit reached, waiting {WaitMs}ms", waitTime.TotalMilliseconds);
@@ -69,10 +78,11 @@ public sealed class RateLimiter : IDisposable
             }
 
             // Enforce minimum delay between requests
+            var minDelay = Volatile.Read(ref _limits).MinDelay;
             var timeSinceLastRequest = _timeProvider.GetUtcNow() - _lastRequest;
-            if (timeSinceLastRequest < _minDelay)
+            if (timeSinceLastRequest < minDelay)
             {
-                var delayNeeded = _minDelay - timeSinceLastRequest;
+                var delayNeeded = minDelay - timeSinceLastRequest;
                 _log.Debug("Enforcing min delay, waiting {WaitMs}ms", delayNeeded.TotalMilliseconds);
                 await Task.Delay(delayNeeded, _timeProvider, ct).ConfigureAwait(false);
             }
@@ -111,20 +121,23 @@ public sealed class RateLimiter : IDisposable
 
         if (_requestTimestamps.TryPeek(out var oldest))
         {
-            remaining = oldest.Add(_window) - _timeProvider.GetUtcNow();
+            remaining = oldest.Add(Volatile.Read(ref _limits).Window) - _timeProvider.GetUtcNow();
             if (remaining < TimeSpan.Zero)
                 remaining = TimeSpan.Zero;
         }
 
-        return (_requestTimestamps.Count, _maxRequests, remaining);
+        return (_requestTimestamps.Count, Volatile.Read(ref _limits).MaxRequests, remaining);
     }
 
     private void CleanupOldTimestamps()
     {
-        var cutoff = _timeProvider.GetUtcNow() - _window;
-        while (_requestTimestamps.TryPeek(out var oldest) && oldest < cutoff)
+        // Peek and dequeue must stay together: another cleanup could otherwise dequeue a
+        // fresh entry after both callers peeked the same expired timestamp.
+        lock (_cleanupLock)
         {
-            _requestTimestamps.TryDequeue(out _);
+            var cutoff = _timeProvider.GetUtcNow() - Volatile.Read(ref _limits).Window;
+            while (_requestTimestamps.TryPeek(out var oldest) && oldest <= cutoff)
+                _requestTimestamps.TryDequeue(out _);
         }
     }
 
@@ -143,6 +156,7 @@ public sealed class RateLimiter : IDisposable
 public sealed class RateLimiterRegistry : IDisposable
 {
     private readonly ConcurrentDictionary<string, RateLimiter> _limiters = new();
+    private readonly object _registryGate = new();
     private readonly ILogger _log;
     private bool _disposed;
 
@@ -158,12 +172,20 @@ public sealed class RateLimiterRegistry : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        return _limiters.GetOrAdd(providerName, _ =>
+        lock (_registryGate)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_limiters.TryGetValue(providerName, out var existing))
+            {
+                existing.UpdateLimits(maxRequests, window, minDelay);
+                return existing;
+            }
             _log.Information("Creating rate limiter for {Provider}: {MaxReq} requests per {Window}",
                 providerName, maxRequests, window);
-            return new RateLimiter(maxRequests, window, minDelay, _log);
-        });
+            var limiter = new RateLimiter(maxRequests, window, minDelay, _log);
+            _limiters[providerName] = limiter;
+            return limiter;
+        }
     }
 
     /// <summary>
@@ -179,14 +201,14 @@ public sealed class RateLimiterRegistry : IDisposable
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-
-        foreach (var limiter in _limiters.Values)
+        lock (_registryGate)
         {
-            limiter.Dispose();
+            if (_disposed)
+                return;
+            _disposed = true;
+            foreach (var limiter in _limiters.Values)
+                limiter.Dispose();
+            _limiters.Clear();
         }
-        _limiters.Clear();
     }
 }

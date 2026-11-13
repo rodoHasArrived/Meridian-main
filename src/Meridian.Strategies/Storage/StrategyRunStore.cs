@@ -939,9 +939,16 @@ public sealed class StrategyRunStore : IStrategyRepository
 
     private static StrategyRunEntry SnapshotEntry(StrategyRunEntry entry)
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(entry, StrategyRunPersistenceJson.Options);
-        return JsonSerializer.Deserialize<StrategyRunEntry>(bytes, StrategyRunPersistenceJson.Options)
-               ?? throw new ArgumentException("The strategy run could not be snapshotted.", nameof(entry));
+        try
+        {
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(entry, StrategyRunPersistenceJson.Options);
+            return JsonSerializer.Deserialize<StrategyRunEntry>(bytes, StrategyRunPersistenceJson.Options)
+                   ?? throw new ArgumentException("The strategy run could not be snapshotted.", nameof(entry));
+        }
+        catch (JsonException exception)
+        {
+            throw new ArgumentException("The strategy run could not be snapshotted.", nameof(entry), exception);
+        }
     }
 
     private static void ValidateRetainedPredecessor(

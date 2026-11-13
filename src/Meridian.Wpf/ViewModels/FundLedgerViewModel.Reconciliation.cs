@@ -5,6 +5,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -516,7 +517,7 @@ public sealed partial class FundLedgerViewModel
             : activeFund.BaseCurrency;
         ReconciliationScopeText = HumanizeLedgerScope(activeFund.DefaultLedgerScope);
         ReconciliationWorkspaceAsOfText = ResolveWorkspaceAsOfText(snapshot.Summary);
-        ReconciliationLastRefreshText = snapshot.RefreshedAt.LocalDateTime.ToString("g");
+        ReconciliationLastRefreshText = UtcFormat.FormatUtcTimestamp(snapshot.RefreshedAt);
         OpenBreaksText = readPresentation.OpenBreaksText;
         ReconciliationRunsText = readPresentation.ReconciliationRunsText;
         InReviewBreaksText = readPresentation.InReviewBreaksText;
@@ -631,7 +632,7 @@ public sealed partial class FundLedgerViewModel
                 .GetSnapshotAsync(activeFund.FundProfileId, ct)
                 ;
             await ApplyReconciliationWorkbenchAsync(activeFund, snapshot, ct);
-            ReconciliationActionFeedbackText = $"Reconciliation workbench refreshed at {snapshot.RefreshedAt.LocalDateTime:g}.";
+            ReconciliationActionFeedbackText = $"Reconciliation workbench refreshed at {UtcFormat.FormatUtcTimestamp(snapshot.RefreshedAt)}.";
         }
         finally
         {

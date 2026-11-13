@@ -1,49 +1,49 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-11T09:51:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-12T17:22:14Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Core/Currency/CurrencyMinorUnits.cs` | Host and Composition | 2026-11-01T14:32:19Z | `248a331817` | style: whitespace formatting in CurrencyMinorUnits | 2 |
-| `src/Meridian.Ledger/LedgerEntry.cs` | Domain, Ledger, and F# | 2026-11-01T12:05:53Z | `3c42029ec2` | fix(ledger): let the FX conversion check honour the functional currency's minor units | 1 |
-| `src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs` | Desktop and UI Workflows | 2026-11-01T11:47:14Z | `81febe098b` | Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI | 2 |
-| `src/Meridian.Application/Commands/ConfigCommands.cs` | Host and Composition | 2026-11-01T11:47:14Z | `81febe098b` | Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI | 1 |
-| `src/Meridian.Application/Services/ConfigurationService.cs` | Host and Composition | 2026-11-01T11:47:14Z | `81febe098b` | Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI | 1 |
-| `src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs` | Desktop and UI Workflows | 2026-11-01T11:47:14Z | `81febe098b` | Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI | 1 |
-| `src/Meridian.Wpf/ViewModels/FireAndForget.cs` | Desktop and UI Workflows | 2026-11-01T11:47:14Z | `81febe098b` | Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI | 1 |
-| `src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs` | Desktop and UI Workflows | 2026-11-01T11:47:14Z | `81febe098b` | Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/bond-analytics-panel.test.tsx` | Desktop and UI Workflows | 2026-11-01T04:17:13Z | `455ecc70d1` | ci: repair the hosted lane failures on the base branch | 4 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | 2026-11-01T04:17:13Z | `455ecc70d1` | ci: repair the hosted lane failures on the base branch | 4 |
-| `src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs` | Desktop and UI Workflows | 2026-11-01T04:17:13Z | `455ecc70d1` | ci: repair the hosted lane failures on the base branch | 2 |
-| `src/Meridian.Wpf/Views/DirectLendingPage.xaml` | Desktop and UI Workflows | 2026-11-01T04:17:13Z | `455ecc70d1` | ci: repair the hosted lane failures on the base branch | 2 |
-| `src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs` | Host and Composition | 2026-11-01T03:53:41Z | `39b16557bd` | fix: neutralize request-supplied ids in credential ownership logs; harden event reader in disposable schema-control test | 6 |
-| `src/Meridian.Application/ProviderRouting/ProviderRoutingLogValues.cs` | Host and Composition | 2026-11-01T03:53:41Z | `39b16557bd` | fix: neutralize request-supplied ids in credential ownership logs; harden event reader in disposable schema-control test | 1 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | 2026-11-01T00:06:40Z | `22f694e987` | D1: short borrow fee and payment-in-lieu instruction, projector and posting guard | 4 |
-| `src/Meridian.Ledger/LedgerAccounts.cs` | Domain, Ledger, and F# | 2026-11-01T00:06:40Z | `22f694e987` | D1: short borrow fee and payment-in-lieu instruction, projector and posting guard | 2 |
-| `src/Meridian.Contracts/Accounting/Lots/ShortCarryInstruction.cs` | Host and Composition | 2026-11-01T00:06:40Z | `22f694e987` | D1: short borrow fee and payment-in-lieu instruction, projector and posting guard | 1 |
-| `src/Meridian.FinancialOperations/Ledger/ShortCarryPostingGuard.cs` | Unmapped | 2026-11-01T00:06:40Z | `22f694e987` | D1: short borrow fee and payment-in-lieu instruction, projector and posting guard | 1 |
-| `src/Meridian.Ledger/ShortCarryProjector.cs` | Domain, Ledger, and F# | 2026-11-01T00:06:40Z | `22f694e987` | D1: short borrow fee and payment-in-lieu instruction, projector and posting guard | 1 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.bond-cutover.test.tsx` | Desktop and UI Workflows | 2026-10-31T23:51:55Z | `baaf4b6d8a` | C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001 | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.bond-cutover.tsx` | Desktop and UI Workflows | 2026-10-31T23:51:55Z | `baaf4b6d8a` | C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001 | 2 |
-| `src/Meridian.Wpf/Services/WorkstationBondCutoverApiClient.cs` | Desktop and UI Workflows | 2026-10-31T23:51:55Z | `baaf4b6d8a` | C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001 | 2 |
-| `src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs` | Desktop and UI Workflows | 2026-10-31T23:51:55Z | `baaf4b6d8a` | C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001 | 2 |
-| `src/Meridian.Wpf/Views/AdminMaintenancePage.xaml` | Desktop and UI Workflows | 2026-10-31T23:51:55Z | `baaf4b6d8a` | C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001 | 2 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 9 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 7 |
-| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 6 |
-| `src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 6 |
-| `src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 4 |
-| `src/Meridian.Application/Composition/Features/ProviderRoutingFeatureRegistration.cs` | Host and Composition | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 3 |
-| `src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.cs` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 3 |
-| `src/Meridian.Contracts/Api/ProviderCredentialOwnershipApiModels.cs` | Host and Composition | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Ui/dashboard/src/lib/api/provider-ownership.api.ts` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-provider-ownership-panel.test.tsx` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-provider-ownership-panel.tsx` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Ui/dashboard/src/types/provider-ownership.types.ts` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Wpf/Services/WorkstationProviderOwnershipApiClient.cs` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
-| `src/Meridian.Wpf/Views/CredentialManagementPage.xaml` | Desktop and UI Workflows | 2026-10-31T23:45:48Z | `fd66f699fa` | C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations | 2 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 78 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 65 |
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 54 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 31 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 27 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 22 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 20 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 17 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 16 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 12 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 9 |
+| `src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 9 |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` | Providers and Storage | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.tsx` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 7 |
+| `src/Meridian.Application/Backfill/HistoricalBackfillService.cs` | Host and Composition | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 6 |
+| `src/Meridian.Application/Pipeline/PersistentDedupLedger.cs` | Host and Composition | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 6 |
+| `src/Meridian.DataIntegration/README.md` | Unmapped | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 6 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 6 |
+| `src/Meridian/UiServer.cs` | Host and Composition | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 6 |
+| `src/Meridian.Risk/README.md` | Execution, Risk, and Strategies | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 5 |
+| `src/Meridian.Backtesting/FillModels/MarketImpactFillModel.cs` | Backtesting and Strategy Analytics | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 4 |
+| `src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs` | Execution, Risk, and Strategies | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 4 |
+| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.test.tsx` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 4 |
+| `src/Meridian.Wpf/App.xaml.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 4 |
+| `src/Meridian.Wpf/ViewModels/Accounting/AccountingConfigureViewModel.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 4 |
+| `src/Meridian.Backtesting/Engine/BacktestEngine.cs` | Backtesting and Strategy Analytics | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | Backtesting and Strategy Analytics | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs` | Providers and Storage | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Mcp/Services/RepoPathService.cs` | MCP Integration | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs` | Providers and Storage | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Storage/Sinks/CompositeSink.cs` | Providers and Storage | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs` | Desktop and UI Workflows | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 3 |
+| `src/Meridian.Application/Pipeline/EventPipeline.cs` | Host and Composition | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 2 |
+| `src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs` | Host and Composition | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 2 |
+| `src/Meridian.Backtesting/FillModels/BarMidpointFillModel.cs` | Backtesting and Strategy Analytics | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 2 |
+| `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | Backtesting and Strategy Analytics | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 2 |
+| `src/Meridian.Backtesting/WalkForward/WalkForwardService.cs` | Backtesting and Strategy Analytics | 2026-11-12T16:06:18Z | `01649c7a44` | fix: resolve codebase review defects and extract boundaries | 2 |
 

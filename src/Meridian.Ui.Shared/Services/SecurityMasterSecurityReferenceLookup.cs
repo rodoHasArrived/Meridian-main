@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.FSharp.Domain;
 using Meridian.Strategies.Services;
 
 namespace Meridian.Ui.Shared.Services;
@@ -173,19 +174,52 @@ public sealed class SecurityMasterSecurityReferenceLookup : ISecurityReferenceLo
     /// aggregate rebuild. Returns null for asset classes that do not have a unique sub-type
     /// (e.g. Equity, which can be CommonShare, Adr, or ReitShare).
     /// </summary>
-    internal static string? DeriveSubType(string? assetClass) => assetClass switch
+    /// <summary>
+    /// Workstation sub-type spellings that predate the registry-derived default. Reconciliation
+    /// lines and workstation reads carry these exact values, so they stay as declared exceptions
+    /// rather than converging on the domain labels ("CorporateBond", "TimeDeposit",
+    /// "MoneyMarketFund"). <c>WorkstationSecuritySubTypeCoverageTests</c> pins every catalog
+    /// class's derived value, these three included.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string> LegacyWorkstationSubTypes =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Bond"] = "Bond",
+            ["Deposit"] = "Deposit",
+            ["MoneyMarketFund"] = "MoneyMarket",
+        };
+
+    /// <summary>
+    /// Classes whose records carry sub-variants the class name alone cannot pick, so the class
+    /// derives no sub-type: an Equity record may be a common share, preferred share, ADR or MLP
+    /// unit, and the registry's <c>CommonShare</c> is only the default for a plain equity kind.
+    /// Bond, Deposit and MoneyMarketFund are the same situation handled the pre-registry way:
+    /// their legacy spellings above are deliberately generic labels rather than the registry's
+    /// defaults.
+    /// </summary>
+    private static readonly IReadOnlySet<string> SubTypeAmbiguousClasses =
+        new HashSet<string>(StringComparer.Ordinal) { "Equity" };
+
+    /// <summary>
+    /// The workstation sub-type for a canonical asset-class name: the legacy workstation spelling
+    /// where one is declared above, null where the class is declared sub-type-ambiguous, else the
+    /// asset-class registry's declared sub-type label — so every catalog class resolves or is a
+    /// declared exception, instead of the eleven a hand-written switch happened to cover.
+    /// A name the registry does not declare (vendor spellings, free text) stays null, as before.
+    /// </summary>
+    internal static string? DeriveSubType(string? assetClass)
     {
-        "Bond" => "Bond",
-        "TreasuryBill" => "TreasuryBill",
-        "Option" => "OptionContract",
-        "Future" => "FutureContract",
-        "Swap" => "SwapContract",
-        "DirectLoan" => "DirectLoan",
-        "Deposit" => "Deposit",
-        "MoneyMarketFund" => "MoneyMarket",
-        "CertificateOfDeposit" => "CertificateOfDeposit",
-        "CommercialPaper" => "CommercialPaper",
-        "Repo" => "Repo",
-        _ => null
-    };
+        if (string.IsNullOrWhiteSpace(assetClass) || SubTypeAmbiguousClasses.Contains(assetClass))
+        {
+            return null;
+        }
+
+        if (LegacyWorkstationSubTypes.TryGetValue(assetClass, out var legacySpelling))
+        {
+            return legacySpelling;
+        }
+
+        var descriptor = AssetClassRegistry.tryDescriptorByName(assetClass);
+        return descriptor is null ? null : SecurityClassificationModule.subTypeName(descriptor.Value.SubType);
+    }
 }

@@ -2,11 +2,7 @@
 // overlaid equity curves, paired drawdown/returns panes, and the configuration diff.
 // Mounted by the DC via <x-import>; reads components from the compiled bundle.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Select,
-  ChartCard, EquityCurve, DrawdownChart, Histogram, DenseDataTable, StatusBanner, DiffView,
-} = window.MeridianDesignSystem_4f61be;
-const { useState } = React;
+const { useState, useEffect } = React;
 
 const NAV = [
   { label: "Strategy", items: [
@@ -79,9 +75,15 @@ const METRICS = [
 
 const RUN_OPTIONS = Object.keys(RUNS).map((k) => ({ value: k, label: RUNS[k].label }));
 
-function BacktestCompareScreen({ environment = "FIXTURE", runA: runAProp = "1841", runB: runBProp = "1847", highlightDeltas = true }) {
+function BacktestCompareScreen({ environment = "FIXTURE", state: dataState = "ready", runA: runAProp = "1841", runB: runBProp = "1847", highlightDeltas = true }) {
+  const {
+    WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Select,
+    ChartCard, EquityCurve, DrawdownChart, Histogram, DataGrid, StatusBanner, DiffView, DataStateSwitch,
+  } = window.MeridianDesignSystem_205d17;
   const [a, setA] = useState(String(runAProp));
   const [b, setB] = useState(String(runBProp));
+  useEffect(() => setA(String(runAProp)), [runAProp]);
+  useEffect(() => setB(String(runBProp)), [runBProp]);
   const A = RUNS[a] || RUNS["1841"], B = RUNS[b] || RUNS["1847"];
   const sA = seriesFor(a in RUNS ? a : "1841"), sB = seriesFor(b in RUNS ? b : "1847");
   const env = String(environment).toUpperCase();
@@ -113,6 +115,7 @@ function BacktestCompareScreen({ environment = "FIXTURE", runA: runAProp = "1841
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="runs" sections={NAV} onSelect={() => {}} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+          <DataStateSwitch state={dataState} label="Backtest comparison">
 
           <div style={{ display: "flex", alignItems: "flex-end", gap: 10, flexWrap: "wrap" }}>
             <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)", whiteSpace: "nowrap" }}>Compare runs</h1>
@@ -137,12 +140,12 @@ function BacktestCompareScreen({ environment = "FIXTURE", runA: runAProp = "1841
                   <div style={{ flex: 1 }}></div>
                   <span style={{ ...mono, fontSize: 11, color: "var(--text-muted)" }}>Δ = B − A · 2024-07-01 → 2026-06-30</span>
                 </div>
-                <DenseDataTable
+                <DataGrid rowKey="metric" label="Backtest KPI deltas"
                   columns={[
                     { key: "metric", label: "Metric" },
-                    { key: "a", label: "A \u00b7 " + A.id, align: "right", render: (r) => cell(r.a, "var(--text-secondary)") },
-                    { key: "b", label: "B \u00b7 " + B.id, align: "right", render: (r) => cell(r.b) },
-                    { key: "d", label: "\u0394", align: "right", render: (r) => cell(r.d, r.color) },
+                    { key: "a", label: "A \u00b7 " + A.id, align: "right", cell: (r) => cell(r.a, "var(--text-secondary)") },
+                    { key: "b", label: "B \u00b7 " + B.id, align: "right", cell: (r) => cell(r.b) },
+                    { key: "d", label: "\u0394", align: "right", cell: (r) => cell(r.d, r.color) },
                   ]}
                   rows={kpiRows} />
               </PanelSurface>
@@ -210,6 +213,7 @@ function BacktestCompareScreen({ environment = "FIXTURE", runA: runAProp = "1841
               </PanelSurface>
             </div>
           </div>
+          </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

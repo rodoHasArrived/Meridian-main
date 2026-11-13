@@ -6,10 +6,181 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Storage
+
+`AnalysisExportService.WriteInvariantTextTableAsync` writes schema-preserving text tables as CSV,
+XLSX, Parquet or Arrow. It owns format IO, formula-safe spreadsheet escaping and checksums without
+interpreting accounting records. Ledger-backed `ExportLedgerAsync` projections are extension methods
+compiled by `Meridian.Storage.Accounting`, keeping the primitives assembly independent of Ledger.
+
+JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
+retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
+the current buffer. Failed flushes restore their batches and retain the buffer. Parquet filenames
+and policy directories both use the event's UTC date. `CompositeSink` in `FailOnAnyFailure` mode
+retains per-child acknowledgements for the same in-process event admission, preventing retries
+from re-appending to successful children; this is not cross-process replay deduplication.
+`CatalogSyncSink` carries whole-file counts and ranges across flush windows and restarts, with
+directory indexes persisted when a file first enters the catalog.
+
+`ListTaxLotAccrualSnapshotsAsync` reads one tenant/book/security/position scope under repeatable
+read. It reconstructs daily open shares and pre-paydown interest factors from retained mutations,
+including the final interest day of a fully paid-down lot. It preserves same-day disposals and
+refuses incomplete quantity histories or missing acquisition face terms. The read does not
+change posted journals, lot facts or current concurrency versions.
+
+Ledger-period reopen and shared instrument-role approval validation reject reserved W14 preparer
+assertion references before governed writes. Instrument-role validation applies to both in-memory
+and PostgreSQL projection stores. A preparer assertion cannot supply ordinary write approval.
+
+`ILedgerSecurityEntitlementInventory` adds a complete, unpaged book/security inventory for bounded
+cash-dividend eligibility. The PostgreSQL reader requires exact authenticated tenant/company book
+ownership, inspects all book lots for unidentified legacy positions, verifies acquisition journals,
+and reconstructs dated quantities with the existing retained mutation-history rules in a repeatable
+read transaction. Its retained population and hash include later-disposed lots when held at the
+cutoff; missing identity, acquisition or historical quantity facts fail closed. Existing account and
+position lot-read APIs keep their behavior.
+
+The separate economic-attestation store also reads every retained processing option and evidence
+record for the exact tenant/company case version. That repeatable-read snapshot supports explicit
+case-fact exclusions without inferring tax or election terms from freeform document prose. Its
+content digest excludes workflow-only case-version increments so recovery after an attestation
+stage can reuse unchanged source facts.
+
+The bounded W14 cash-dividend path uses a native PostgreSQL book declaration, separate immutable
+capacity reservations, and a sealed invocation lease. Migration 066 preserves ordinary approval
+rows and adds distinct preparer receipts and posted proof. Source ex-date fixes the monthly bucket;
+provider aliases cannot move a retained event into another bucket. Exact reaffirmation reuses its
+reservation, while rollback or withdrawal never releases uncertain capacity. Declaration withdrawal
+serializes with the journal, both lifecycle stages and the case receipt in one database transaction.
+Posting locks run in this order: economic owner scope, complete-book entitlement advisory lock,
+ledger book row, Security Master parent row, canonical security chain, and exact case. Parent-row
+share authority freezes current security metadata; the existing chain lock prevents cancellation
+or supersession. Ordinary journal, lot, backfill, position and book-specific accounting-configuration
+writers take the matching shared lock first, keeping the exact promoted account/rule binding
+stable through posting as well as the inventory.
+The producer also rereads the retained candidate's dated ticker against the current native
+Security Master identity and version in that held transaction; missing, ambiguous or changed
+instrument authority refuses before the journal append.
+Only that lease permits the native preparer-attested journal and spine append. Host policy defaults
+off, and enabling the declaration requires a separately authorized explicit existing account/rule
+binding. All receipts retain the original declaration, reviewed projection and evidence digest.
+These new economic transactions use ReadCommitted after acquiring the exclusive tenant/company
+scope lock: a queued command sees the preceding budget commit rather than retaining a snapshot
+from before its lock wait. Exact case versions, the complete-book inventory lock, period-row
+locking and the event-stream compare-and-swap remain enforced through the final commit. Ordinary
+transaction isolation is unchanged.
+
+Maintenance windows and trading-session checks use the configured `PrimaryTimeZone`,
+including the starting weekday of overnight windows and the offset at each window boundary.
+The scheduler scans deferred queue entries without blocking other due jobs, and counts running
+admissions before case-history writes complete when enforcing scheduled-job concurrency.
+Explicit `ExecuteJobAsync` calls retain their existing manual-execution bypass of window admission.
+
+Date-only natural-language search filters use UTC midnight boundaries. Parquet timestamp-column
+conversion shares the export timestamp parser, treating date-only strings and unspecified
+`DateTime` values as UTC while preserving the instant carried by explicit timestamp offsets.
+
+`PostgresIntercompanyAgreementStore` uses fund-structure migration `006`: a tenant-qualified head
+points to immutable command snapshots, approved revisions, audit decisions and command receipts.
+One command atomically checks its expected head and retains its result; command identities are
+unique within a tenant. Database guards refuse history rewrites and tenant reassignment. Party
+reads remain stable under entity authority locks; sorted shared agreement leases survive through
+the ledger store's owned commit. Explicit references require that authority, while unsupported
+caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
+The exception still requires unit-successor lineage, an originating atomic mutation batch and a
+retained basis adjustment; ordinary acquisitions retain exact quantity/price/basis checks.
+
+`FileProviderIntegrationManifestStore` stores identity decisions under each sync run's
+`identity-decisions` directory. Entity locking protects append-only retention: identical retries
+reuse the existing decision, while a changed payload under the same decision ID is refused.
+Staged source records remain unchanged.
+
+Security Master migration 065 adds nullable quotation evidence and an unconstrained `price_exact`
+column for new CLR-decimal observations. The existing `price numeric(28,10)` column remains a
+compatibility mirror, including its limit of eighteen integer digits; new values outside that
+range are still refused. Reads and same-timestamp idempotence use `COALESCE(price_exact, price)`
+so quotes that share a rounded mirror remain distinct. Existing rows keep null exact prices and
+unknown quotation metadata: no missing historical digits are backfilled. Nullable metadata is
+omitted from legacy canonical serialization, and retained receipt payloads and hashes stay unchanged.
+Curve point JSON can retain typed rate observations and reviewed construction
+evidence; only evidence-bearing versions add it to content hashes, preserving legacy curve hashes.
+Typed-rate retries compare all retained source and construction facts except retrieval time under
+the curve row lock. A retry returns its original immutable version, hash and evidence, including
+after a newer distinct publication; it never makes the older observation latest again.
+
+Security Master migration 062 now checks its apply conditions in the runner without changing
+the shipped SQL: upgrades require explicit stopped-writer and retired-legacy-writer attestations,
+hold source-table write locks through commit, and refuse the usual thirty-second command timeout
+above one million identifier rows. Fresh installations and already-applied restarts are exempt
+from upgrade attestations. See the [migration procedure](../../docs/operators/security-master-governed-edit-rollout.md#identifier-history-migration-062).
+
+`BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
+
+`JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
+
+`SharedStorageCoordinationStore` accepts an optional `TimeProvider` for lease expiry and takeover decisions (system clock by default).
+
+Maintenance schedule and history stores bound their cross-process lock acquisition (default 30 seconds) and throw a `TimeoutException` naming the lock, instead of retrying forever during construction.
+
+Archive maintenance status counts today's executions from the start of the UTC day rather than a host-offset-shifted midnight.
+
+`CompositeSink` tolerates individual sink failures under `ContinueOnPartialFailure` only while at least
+one sink accepts the write. When no sink accepts an append, or no sink can be flushed because every
+circuit is open, it throws, so the pipeline never treats an unpersisted event as durable or truncates
+the WAL holding it. Under `FailOnAnyFailure` an append also throws while any sink's circuit breaker
+is open, instead of skipping that sink and writing to the healthy ones only.
+
+Native capital-call journals require approved commitment/call authority at the final PostgreSQL
+append boundary. Posting serializes with commitment amendments, rechecks the effective revision,
+unchanged allocation basis and remaining capacity, and commits one receipt with the journal.
+Commitment approval, call retention, and final issuance validate cumulative called capital at every
+posted issuance and effective-revision date under that same lock. Allocation is measured as of the
+notice date while approved future reductions and later posted calls remain binding on the timeline.
+External capital-call append transactions must use `ReadCommitted` or `Serializable`; repeatable-read
+and other unsupported isolation levels refuse before any capital write because their retained
+snapshot can hide a successor approval after the commitment lock is acquired. Ordinary journals
+retain their existing transaction contract.
+Competing drafts reserve no capacity. Funding additionally locks the retained `CapitalCallFunding`
+bank transaction in the same database and enforces unique receipt/bank-line consumption. The
+`PrivateCapitalBankingSchema` ledger option defaults to `banking`; absent or separate-database
+banking authority refuses funding. Unreconciled historical capital activity blocks native posting.
+
+Ledger migration `054` adds private-capital commitment revisions, immutable call plans, and posting
+receipts in the same PostgreSQL database as journals. `PostgresPrivateCapitalStore` checks retained
+book/entity/currency ownership and serializes commitment amendments with final posting through the
+same commitment advisory-lock identity. Historical capital journals without native receipts require
+opening reconciliation. Funding receipt and bank-line uniqueness span the owning tenant/company,
+and database triggers protect approved authority, retained calls, and posting receipts from rewrite.
+
+`JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
+torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
+for logs that grow with every event. `AtomicFileWriter.AppendLinesAsync` still copies the whole
+destination per call and remains for small, low-frequency artifacts.
+
+Workstation SQL queries retain a completed result once for export. `DataQuery.MaxRows` limits
+the preview; SQL-authored limits remain part of the result. Retention defaults are 250,000 rows,
+32 MiB per execution, 128 MiB across retained executions and 30 minutes. The optional
+`RetainedResultsRoot` must resolve outside the queryable storage tree. The private default path
+and owner binding include the canonical source identity; tokens also bind tenant, company and
+operator. An incomplete, expired, corrupt, over-quota or foreign result cannot export. Wide decimal
+values retain their exact digits; unsupported complex/time types require an explicit SQL cast.
+
+Corporate-action inbox exports read every actionable provider-economic reference observation and
+the authenticated tenant/company's processing cases within one repeatable-read cut. The normal
+inbox retains its browse limits. The shared export adapter distinguishes global source references
+from scoped cases and includes only fields already exposed by the corresponding browse projection.
+
+`Workstation/` retains operator triage metadata separately from financial source workflows.
+`PostgresOperatorTriageStore` uses the shared migration runner and a tenant/company/item advisory
+lock to commit state, activity and idempotency receipts together. Production triage defaults to the
+`operator_triage` schema (`MERIDIAN_OPERATOR_TRIAGE_SCHEMA` overrides it). `FileOperatorTriageStore`
+supports deterministic synthetic hosts with cross-process writer leases and atomic replacement;
+it is not selected as a production fallback.
 
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
@@ -24,6 +195,12 @@ V3 remaining-face amortization verifies each immutable paydown receipt before wa
 partial-disposal/amortization history. The current/booked factor scales surviving face once;
 booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
 
+The Security Master store also answers the ADR-024 decision-5 retirement-gate count
+(`CountUntaggedAssetSpecificTermsAsync`): one SQL aggregate over `securities` for rows whose
+terms payload is not an object or whose `termsFormat` member is absent or non-string, pinned to
+the C# `SecurityTermsEnvelope.GetDeclaredFormat` verdict by `SecurityMasterPostgresRoundTripTests`
+— the gauge never loads projections.
+
 Security Master projection writes validate dated economic schedules through Contracts-owned
 `SecurityEconomicScheduleParser` before mutation. Invalid schedules raise source/row diagnostics
 and roll back rather than deleting prior projections or publishing partial schedules. Principal and
@@ -33,21 +210,34 @@ version stamps remain unchanged. Forward migration 058 widens only the two sched
 to unconstrained numeric, preserving full accepted decimal precision. See
 [dated economic schedules](../../docs/domain/security.md#dated-economic-schedule-validation).
 
-Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
-is denied while an existing destination is open, publication uses `File.Replace` with a temporary
-backup. Sync and async overwrite publication share bounded gates within this process, keyed by
-the normalized, case-insensitive destination path; temporary-file writes and flushes
-remain concurrent. This prevents competing replacements and their recovery steps from overlapping.
-Readers that share deletion keep their old generation while fresh readers see the complete
-replacement. A failed replacement restores the old generation only when the destination is absent;
-an unrestored `.atomic-recovery.<id>.tmp` backup is retained beside the destination for recovery.
-The recovery error log identifies that generated backup name and the error code without logging
-caller-controlled paths or exception text. Backup cleanup after successful publication is best
-effort. Transient Windows sharing/access failures use the existing ten-attempt, growing 20 ms
-backoff, including when a brief deletion-denying handle coexists with a retained snapshot reader.
-Async waits release the thread. A retained backup that could not be restored ends retries so later
-attempts cannot overwrite the recovery evidence. A handle that stays open still fails publication,
-and permission failures remain visible.
+Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, publication
+uses one `SetFileInformationByHandle(FileRenameInfoEx)` replacement with POSIX semantics, so
+readers that share deletion keep their old generation while every fresh open sees a complete
+published file. There is no rename-away interval at the live path. Native rename support is
+required; unsupported filesystems fail before the live file changes. Delete-access handles retain
+the sharing protection of readers that deny deletion. Sync and async publishers share bounded
+gates within this process, keyed by normalized, case-insensitive destination paths; temporary-file
+writes and flushes remain concurrent. Local, UNC and extended-length paths use the same primitive.
+Existing destination access rules are explicitly copied and persisted before publication, retaining
+protected DACLs on the replacement as well as its backup.
+
+Windows diagnostic run `43327730266` passed 2,777 tests and failed one backup descriptor
+assertion: the backup retained the same access rules but returned `D:P` instead of `D:PAI`.
+The backup now reapplies the original access descriptor after creation and before either
+publication. Subsequent manual and pull-request Windows runs on `7798dc2b18` each passed all
+2,778 tests, including all 60 atomic-writer cases and both protected-DACL rows; smoke publication
+also passed. The earlier failed diagnostic remains historical evidence.
+
+`ReplaceAsync` stages and flushes the previous generation in a recovery file created with the
+original DACL, then prepares both live and backup publications. A failure before the live commit
+preserves the destination and existing `.bak`. After the live rename commits, the staged snapshot
+is promoted to `.bak`. If a later filesystem fault prevents backup promotion, the committed write
+still returns successfully and the durable `.atomic-recovery.<id>.bak` snapshot remains beside
+the destination. Its `.bak` suffix protects recovery evidence from temporary-file orphan cleanup.
+The error log identifies only that generated recovery filename and an error code, without
+caller-controlled paths or exception text. Transient Windows sharing/access failures use the
+existing ten-attempt, growing 20 ms backoff; async waits release the thread. A handle that stays
+open still fails publication, and permission failures remain visible.
 `AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
 retention, including coordinated publishers using equivalent path spellings. These locks do not
 coordinate separate processes, add a Windows power-loss guarantee, or make concurrent appends transactional.
@@ -269,7 +459,8 @@ remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, O
 Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
 CommitmentGuarantee) a relational projection written by the same declarative
 `SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
-profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+profile-governed CustomAsset was then projected (25 of 26; migration 064 below closes CustomAsset).
+Guid-typed terms project as `uuid`
 columns. The tables are created empty; an existing database populates them through
 `SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
 
@@ -282,6 +473,19 @@ the contract marks Required; the tables are created empty and populate as record
 Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
 `cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
 rate columns are signed because negative strikes are valid in negative-rate currencies.
+
+Migration `064_custom_asset_profile_field_projection.sql` closes the last gap (32 of 32).
+CustomAsset fields are governed per profile, so `custom_asset_profile_field_projection` holds one
+row per `profileFields` key, keyed by `(security_id, field_key)`, with `custom_profile_id`,
+`profile_version` and the record `version`. `raw_value` (jsonb) keeps the stored value; `value_kind`
+is its `jsonb_typeof`, and `text_value`/`numeric_value`/`boolean_value` are derived from it in SQL,
+so a date-looking string stays a string and a number keeps full precision. A specialized
+`AssetProjectionWriter` (catalog `ProjectionKind.Specialized`, beside Option) replaces the rows on
+every write and clears them when the record has no complete envelope (a legacy or unmapped row) or
+leaves the class. `ICustomAssetProfileFieldProjectionStore`
+(`PostgresCustomAssetProfileFieldProjectionStore`) reads them by security, profile (and version) or
+exact string value. The table is created empty and populates as CustomAsset records are persisted
+or rebuilt. Migration 064 still needs the repository's independent schema/storage review.
 
 Security Master migration `050_otc_contracts.sql` creates the OTC contract model (master
 agreements, collateral agreements, netting sets, bilateral contracts) written by
@@ -356,6 +560,45 @@ availability timestamps can precede commit. They do not certify historical trans
 and the same timestamp-cutoff query can change after a pending transaction commits.
 Fresh-install and populated through-036 and through-037 upgrade tests cover rollback, retry and
 restart receipts, retaining the previously applied migration checksums and close-price evidence.
+
+Migration `062_security_master_identifier_revisions.sql` adds the append-only
+`security_identifier_revisions` table; row triggers refuse update and delete and a statement
+trigger refuses truncate (SQL state 23514). `security_identifiers` stays the reconstructible
+current-state projection, and projection replacement still replaces its rows, but in the same
+transaction it now appends one revision per changed row identity (kind, value, valid-from):
+`Added`, `Amended`, `Expired` (valid-to first set) or `Removed`; an unchanged replay appends
+nothing. Replacement keeps the stored `source`, `confidence` and `manual_override` of an identity it
+already held instead of resetting them to `SecurityMaster`/null/false; new rows still get those
+defaults. Pre-existing rows become `Baseline` revisions available only from the migration
+(`history_available_from`), so earlier cutoffs report unknown history, not an absence.
+Every revision one replacement appends carries one recorded time, placed after everything the
+security already holds, so a recorded-as-of read never returns part of a replacement. A populated
+through-060 upgrade test runs the migration's own Baseline backfill across failure, retry and
+restart. Apply conditions from the 2026-11-10 review: stop Security Master writers while 062 runs
+(the backfill can deadlock with a writer holding a `securities` row lock), and let no pre-062 binary
+write afterwards, because it would change identifiers without recording a revision. The stored
+`listing_mic` is resolved by `SecurityListingIdentity.ResolvePrimaryListingMic`, the contract-level
+rule the data-quality scan's listing checks share.
+`ISecurityIdentifierHistoryStore` (implemented by `PostgresSecurityMasterStore`) reads every
+revision at a recorded cutoff and the recorded view of held identifiers with an optional
+valid-time filter. Recorded timestamps are transaction-start times kept monotonic per identity;
+like alias revisions they establish eligibility, not commit visibility. The economic identifier
+values were already retained in `security_events` payloads and replayed by the recorded
+identifier lookup; this table adds the row-level metadata and projection-only writes those
+payloads do not carry. Revisions name the projection-replacement actor; the authenticated actor of
+an event-sourced change remains on its event. The migration requires the repository's independent
+schema/storage review before merge.
+
+Governance payloads are typed. Each stream/event type declares a version-1 payload record in
+`SecurityGovernancePayloads.cs`, serialized through the source-generated
+`SecurityGovernanceJsonContext`; `PostgresSecurityGovernanceEventLog.AppendAsync<TPayload>` accepts
+only the declared type and writes `payload_version` explicitly. `SecurityGovernanceEvent.ReadPayload<T>`
+and `TryReadPayload<T>` dispatch on the stored version and refuse undeclared event types or
+versions this node cannot read; the raw `Payload` element remains available. Every retained row is
+version 1. Fixtures captured from the earlier reflective writers
+(`tests/fixtures/security-master/governance-payloads/v1-captured.json`) pin that those rows read
+unchanged and that new writes reproduce them byte for byte, including the PascalCase rebuild
+record entries. A shape change needs a new version and a reader for the old one.
 
 Symbol registry reconciliation persists canonical ownership for new Security Master entries, follows
 primary ticker changes, and withdraws names whose remaining authority is exclusively Security Master.
@@ -635,6 +878,13 @@ Migration 009 reconciles the historical `projected_flow_id` column with the cash
 identity name consumed by the store. It adds and backfills the current column names while retaining legacy IDs and foreign keys.
 A trigger synchronizes writes through either name and rejects conflicting IDs during rollout.
 
+Migration 010 (PRD-115) adds `prepaid_interest` and `unapplied_cash` to `loan_servicing_projection`
+as `numeric(24,2) not null default 0`, so existing loans read as 0. They are balances owed to the
+borrower, not receivables. The store reads and writes both; the `loan_state` JSON and snapshots
+carry them as `OutstandingBalancesDto` members, and state saved before them deserializes to 0. It
+is numbered below 011 because 010 was reserved for this blueprint; both are additive and
+independent, so their apply order does not matter.
+
 
 Direct-lending projection and reconciliation persistence serializes matching run identities with
 a PostgreSQL transaction advisory lock. A committed identity returns its existing run before any
@@ -843,7 +1093,8 @@ lookup paths, and evidence trails those layers rely on.
   read once at host start in ordinal file-name order through the strict source-generated
   `BusinessDayCalendarFileJsonContext` (camelCase, unknown and repeated members refused) beside the
   built-in `WEEKENDS`. A file is refused, with a Warning naming it and the reason, for malformed or
-  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$` or not equal to its
+  missing members, a version below 1, an id outside `^[A-Z][A-Z0-9]{1,15}$`
+  (`BusinessDayCalendars.IsCanonicalCalendarId` in `Meridian.Contracts`) or not equal to its
   file stem, the reserved `WEEKENDS`, a weekend day that is not an exact English day name, no
   working day, inverted coverage or an id another file that passes these checks also defines (both
   are refused). A refused file loads nothing, and its Warning says whether each id it names (its
@@ -939,26 +1190,12 @@ lookup paths, and evidence trails those layers rely on.
 
 ## Accounting exports and portable evidence
 
-`AnalysisExportService.ExportLedgerAsync` exports an immutable journal generation, as-of trial
-balance and reconciled cash-flow statement as CSV, XLSX, Parquet or Arrow. Every amount and quantity
-uses invariant decimal text to preserve booked precision; consumers must parse it with a decimal
-type. Empty reports retain their accounting columns. Output lives in a unique directory and failed
-exports remove their partial artifacts.
-
-Authorized callers may supply exact open-lot valuation and closed-parcel evidence. The browser run
-export maps retained account snapshots through `BacktestLedgerExportMapper`; missing historical
-snapshots produce explicit availability rows and warnings rather than fabricated zero balances.
-Fill disposals include exact basis, fees and direction; corporate-action cash-in-lieu and return of
-capital are separately exported from their authoritative journals. Fractional corporate-action
-acquisition parcel dates are not retained by the simulator, so that aggregate schedule explicitly
-reports the evidence gap and is not represented as a complete tax filing.
-
-`PackageOptions.Ledger` includes a source-generated portable journal snapshot and canonical account
-balance checksum. `ReadLedgerAsync`, package validation and import replay the ledger invariants and
-verify both file and balance checksums before publishing any imported file. This validation remains
-mandatory when optional market-data checksum checking is disabled. A portable journal is evidence;
-import does not automatically post it into an existing governed book. ZIP remains the supported
-archive format.
+Ledger-aware export projections, lot schedules and typed portable-journal validation belong to
+the [accounting adapters](../Meridian.Storage.Accounting/README.md). Storage supplies generic
+text-table writers, ZIP IO and an opaque payload-validation port; it does not reconstruct journals
+or interpret accounting balances. Ledger-bearing package operations require the configured
+accounting validator before publication or extraction. Market-data-only package callers retain
+their existing behavior.
 
 ## Important workflows
 
@@ -1051,6 +1288,10 @@ long-retention evidence moving through hot, warm, cold, and archive tiers. Tier 
 copied payload checksums before deleting source evidence when a rollover is configured to move
 rather than copy files, and rejects non-positive parallelism before touching hot-tier or target-tier
 files so operator misconfiguration cannot hang a migration or delete evidence.
+Migration selects source entries through discovery beneath the configured root and rejects symbolic
+links or reparse points instead of trusting lexical containment alone. Rooted guards also check the
+final compression-adjusted destination before access and again after copying and compression finish,
+before atomic publication. Source deletion rechecks both paths after successful target verification.
 `Config/StorageConfigExtensions.cs` keeps the shared AppConfig storage
 section-to-`StorageOptions` mapping in the same project that owns the durable storage option types
 and profile presets.
@@ -1126,6 +1367,10 @@ mapping evidence for the same instrument. This prevents an accounting entry from
 symbol at the journal level while posting a different instrument line underneath it. Until durable
 journal writes carry line-level Security Master ids, one journal entry may not combine multiple
 instrument symbols behind one entry-level Security Master id.
+
+Direct-lending loan accounts (`LoanPrincipal`, the interest, fee and penalty receivables, and since
+PRD-115 `PrepaidInterestLiability` and `UnappliedCashLiability`) are on the guard's instrument-account
+list, so a line on any of them needs Security Master evidence even if it arrives without a symbol.
 
 Ledger journal writes that opt into treasury-ledger metadata also fail closed. When a posting carries
 effective-date, idempotency, fund-event, capital-account, investor, payment-intent, or settlement
@@ -1388,6 +1633,14 @@ authority.
 - **Write-ahead log (WAL)** - a crash-safety log that records intended changes before the final
   storage file is updated, making recovery possible if the process stops mid-write.
 
+## Audit hardening (2026-11)
+
+- **Portable packages.** `PortableDataPackager` writes through `AtomicFileWriter.WriteStreamAsync`, so a cancelled or failed run never leaves a truncated `.zip` under the final name. The package checksum and size are recorded only on the returned manifest and `PackageResult`, and they match the file on disk. The manifest embedded in the zip leaves them empty, because a file cannot contain its own hash; `ListPackageContentsAsync` reports the size from the file on disk. The embedded manifest is written as the last entry, so it includes the supplementary-file inventory.
+- **Parquet conversion.** `ParquetConversionService` writes atomically and throws on cancellation, so a partial output can never be mistaken for a completed conversion.
+- **ETL audit and reject logs.** `EtlAuditStore` and `EtlRejectSink` append through `DurableLineAppender`. Appends to one file are serialized by striped locks, hashed case-insensitively on Windows and macOS, and each line is flushed to disk. When a log file or job directory is newly created, its directory entry is fsynced before the append is acknowledged.
+
+`ScheduledArchiveMaintenanceService` computes its "executions today" window in UTC.
+
 ## Diagrams
 
 The storage module participates in the repository-level `DIA-ASSURANCE-LOOP` in
@@ -1446,6 +1699,7 @@ ordinary lifecycle transitions cannot replace the preparation link or relax sour
 <!-- source-roadmap-traceability:begin module=SRC-STORAGE -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `W2-TRD-001` | Paper trading cockpit reliability |

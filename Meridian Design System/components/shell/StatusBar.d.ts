@@ -1,3 +1,4 @@
+import type React from "react";
 /** Near-black footer status bar — a row of mono telemetry fields (connection, sync, counts, latency). */
 export interface StatusBarItem {
   /** Optional small-caps label preceding the value. */
@@ -11,4 +12,4 @@ export interface StatusBarItem {
 export interface StatusBarProps {
   items: StatusBarItem[];
 }
-export declare function StatusBar(props: StatusBarProps): JSX.Element;
+export declare function StatusBar(props: StatusBarProps): React.JSX.Element;

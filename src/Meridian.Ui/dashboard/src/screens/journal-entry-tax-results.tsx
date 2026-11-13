@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { formatNumber } from "@/lib/format";
+import { formatDateTime, formatNumber } from "@/lib/format";
 import { formatTaxAmount as amount, formatTaxDecimal } from "@/lib/ledger-tax-results-format";
 import { getLedgerJournalEntryTaxResults, type LedgerTaxResultScope } from "@/lib/ledger-tax-results-api";
 import type { LedgerDisposalTaxResult, LedgerJournalTaxResults, LedgerDisposalTaxParcel } from "@/types/ledger-tax-results";
@@ -135,7 +135,7 @@ function TaxFact({ label, value }: { label: string; value: string }) {
 
 function retainedTime(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : `${date.toLocaleString("en-US", {
+  return Number.isNaN(date.getTime()) ? value : `${formatDateTime(date, {
     year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "UTC"
   })} UTC`;
 }

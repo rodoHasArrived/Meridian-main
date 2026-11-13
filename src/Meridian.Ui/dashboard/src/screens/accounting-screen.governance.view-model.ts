@@ -93,6 +93,7 @@ import type {
   RuleDryRunResult,
   GeneratedPostingLine,
 } from "@/types";
+import { formatCount as formatCountValue } from "@/lib/format";
 
 const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
 interface AccountingTenantAdministrationProfileDraft {
@@ -2274,7 +2275,7 @@ export function useAccountingConfigurationViewModel(
         };
       });
     const ledgerBookSummaryLabel = workspace
-      ? `${ledgerBookRows.length.toLocaleString()} ledger book${ledgerBookRows.length === 1 ? "" : "s"} registered${selectedLedgerBook ? ` | selected ${selectedLedgerBook.displayName}` : workspace.ledgerBookId ? " | selected book missing from catalog" : " | fund-level scope"}.`
+      ? `${formatCountValue(ledgerBookRows.length)} ledger book${ledgerBookRows.length === 1 ? "" : "s"} registered${selectedLedgerBook ? ` | selected ${selectedLedgerBook.displayName}` : workspace.ledgerBookId ? " | selected book missing from catalog" : " | fund-level scope"}.`
       : "Ledger-book catalog is not loaded.";
     const ledgerBookEmptyText = workspace && ledgerBookRows.length === 0
       ? "No registered ledger books are available in this configuration workspace."
@@ -2987,7 +2988,7 @@ function parseExternalGlAccountMappings(value: string): Record<string, string> {
   return mappings;
 }
 
-type LedgerDimensionScalarKey = Exclude<keyof LedgerDimensionSet, "externalGlDimensions">;
+type LedgerDimensionScalarKey = Exclude<keyof LedgerDimensionSet, "externalGlDimensions" | "intercompanyAgreementVersion">;
 
 const LEDGER_DIMENSION_KEYS = new Map<string, LedgerDimensionScalarKey>([
   ["fundid", "fundId"],
@@ -4066,7 +4067,7 @@ function buildAccountingMigrationRolloutPlanRows(plan: AccountingMigrationRollou
   });
 }
 
-type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions">;
+type LedgerScopeScalarKey = Exclude<keyof NonNullable<PostingRule["scope"]>, "externalGlDimensions" | "intercompanyAgreementVersion">;
 
 const LEDGER_SCOPE_SCALAR_KEYS: LedgerScopeScalarKey[] = [
   "fundId",
@@ -4657,6 +4658,8 @@ function formatLedgerDimensionSet(dimensions?: PostingRule["scope"]): string[] {
     ["Tax lot", dimensions.taxLotId],
     ["Cost center", dimensions.costCenterId],
     ["Counterparty", dimensions.counterpartyId],
+    ["Agreement", dimensions.intercompanyAgreementId],
+    ["Agreement version", dimensions.intercompanyAgreementVersion == null ? null : String(dimensions.intercompanyAgreementVersion)],
     ["Organization", dimensions.organizationId],
     ["Portfolio", dimensions.portfolioId],
     ["Book", dimensions.bookId],

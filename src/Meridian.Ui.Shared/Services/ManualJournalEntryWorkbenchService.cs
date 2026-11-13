@@ -31,6 +31,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     private readonly IGovernedLedgerPostingTarget? _postingTarget;
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
     private readonly IBankTransactionSource? _bankTransactionSource;
+    private readonly IPrivateCapitalStore? _privateCapitalAuthorityStore;
 
     public ManualJournalEntryWorkbenchService(
         IManualJournalEntryDraftStore draftStore,
@@ -48,7 +49,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService? assetCandidatePosting = null,
         Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService? assetAccountingSource = null,
         Func<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService?>? assetCandidatePostingFactory = null,
-        Func<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService?>? assetAccountingSourceFactory = null)
+        Func<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService?>? assetAccountingSourceFactory = null,
+        IPrivateCapitalStore? privateCapitalStore = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -58,6 +60,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _postingTarget = postingTarget;
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
+        _privateCapitalAuthorityStore = privateCapitalStore;
         _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
         _recurringStore = recurringStore;
         _consolidationGuard = consolidationGuard;
@@ -317,8 +320,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             AutomationEvidenceAssessment = existing is null
                 ? request.Draft.AutomationEvidenceAssessment
                 : existing.AutomationEvidenceAssessment,
+            PrivateCapitalAuthorityJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.PrivateCapitalAuthorityJson : null)
+                : existing.PrivateCapitalAuthorityJson,
+            DistributionDeclarationJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.DistributionDeclarationJson : null)
+                : existing.DistributionDeclarationJson,
             TreasuryContext = existing is not null &&
-                (existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
+                (existing.PrivateCapitalAuthorityJson is not null ||
+                 DistributionDeclarationDraftProducer.IsDeclarationDraft(existing) ||
+                 existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
                  RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
                  existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
                  ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey) ||
@@ -379,6 +390,17 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         {
             throw new InvalidOperationException(
                 $"Manual journal entry '{existing.JournalEntryId:D}' is {existing.Status} and cannot be edited through draft save; use the governed lifecycle or correction workflow.");
+        }
+
+        if (existing is not null && DistributionDeclarationDraftProducer.IsDeclarationDraft(existing) &&
+            (existing.EntryType != normalizedDraft.EntryType || existing.AccountingDate != normalizedDraft.AccountingDate ||
+             existing.AccountingBasis != normalizedDraft.AccountingBasis || existing.PeriodId != normalizedDraft.PeriodId ||
+             existing.EntityId != normalizedDraft.EntityId || existing.FundNodeId != normalizedDraft.FundNodeId ||
+             existing.Currency != normalizedDraft.Currency || existing.TreasuryContext != normalizedDraft.TreasuryContext ||
+             !SamePostingDimensions(existing.Dimensions, normalizedDraft.Dimensions) ||
+             !SamePostingLines(existing.Lines, normalizedDraft.Lines)))
+        {
+            throw new InvalidOperationException("The posting terms of a retained distribution draft are fixed. Reject the draft and use a new declaration to change them.");
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -449,6 +471,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             TenantId = tenantId,
             CompanyId = companyId,
             // A read-only validation request is not authority to invent a policy or source receipt.
+            PrivateCapitalAuthorityJson = existing?.PrivateCapitalAuthorityJson,
+            DistributionDeclarationJson = existing?.DistributionDeclarationJson,
             RecurringJournalEvidenceJson = existing?.RecurringJournalEvidenceJson,
             RecurringJournalEvidenceDigest = existing?.RecurringJournalEvidenceDigest,
             RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
@@ -1082,6 +1106,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AddMetadataTag(tags, "private-capital.authority", draft.PrivateCapitalAuthorityJson);
         AddMetadataTag(tags, RecurringJournalEvidenceGuard.EvidenceTag, draft.RecurringJournalEvidenceJson);
         AddMetadataTag(tags, RecurringJournalEvidenceGuard.DigestTag, draft.RecurringJournalEvidenceDigest);
         AddMetadataTag(tags, ValuationMarkEvidenceGuard.EvidenceTag, draft.ValuationMarkEvidenceJson);
@@ -1358,7 +1383,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
     }
 
@@ -1531,4 +1558,23 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             request.Actor, request.CorrelationId, request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
         return result;
     }
+
+    // Record equality compares the external GL dictionary by reference, and normalization
+    // allocates a new one on every save, so posting terms are compared by value.
+    private static bool SamePostingDimensions(LedgerDimensionSetDto? left, LedgerDimensionSetDto? right)
+    {
+        if (left is null || right is null)
+            return left is null && right is null;
+        var shared = left.ExternalGlDimensions;
+        return left == right with { ExternalGlDimensions = shared } &&
+               left.ExternalGlDimensions.Count == right.ExternalGlDimensions.Count &&
+               left.ExternalGlDimensions.All(item => right.ExternalGlDimensions.TryGetValue(item.Key, out var value) &&
+                   string.Equals(item.Value, value, StringComparison.Ordinal));
+    }
+
+    private static bool SamePostingLines(IReadOnlyList<ManualJournalEntryLineDto> left, IReadOnlyList<ManualJournalEntryLineDto> right)
+        => left.Count == right.Count &&
+           left.Zip(right).All(static pair =>
+               pair.First with { Dimensions = null } == pair.Second with { Dimensions = null } &&
+               SamePostingDimensions(pair.First.Dimensions, pair.Second.Dimensions));
 }

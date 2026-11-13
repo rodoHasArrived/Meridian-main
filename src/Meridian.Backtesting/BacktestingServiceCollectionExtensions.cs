@@ -2,6 +2,7 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
+using Meridian.Instruments.AssetOperations;
 using Meridian.Storage;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,9 +49,10 @@ public static class BacktestingServiceCollectionExtensions
                     catalogService,
                     sp.GetService<ISecurityTradingParametersQueryService>()
                         ?? sp.GetService<ISecurityMasterQueryService>(),
-                    sp.GetService<ICorporateActionAdjustmentService>(),
+                    sp.GetService<ICorporateActionAdjustmentService>() ?? CreateSecurityMasterAdjustment(sp),
                     sp.GetService<IBacktestPreflightService>(),
-                    identity)
+                    identity,
+                    sp.GetService<IBacktestAssetEventSource>() ?? CreateSecurityMasterAssetEventSource(sp))
                 {
                     AssetEventSource = sp.GetService<IBacktestAssetEventSource>() ??
                         (identity is not null && actions is not null
@@ -63,5 +65,42 @@ public static class BacktestingServiceCollectionExtensions
         });
 
         return services;
+    }
+
+    internal static IBacktestAssetEventSource? CreateSecurityMasterAssetEventSource(IServiceProvider sp)
+    {
+        var corporateActions = sp.GetService<ISecurityCorporateActionsQueryService>()
+            ?? sp.GetService<ISecurityMasterQueryService>();
+        var resolver = sp.GetService<ISecurityResolver>();
+        return corporateActions is null || resolver is null
+            ? null
+            : new SecurityMasterAssetEventSource(
+                corporateActions,
+                resolver,
+                sp.GetRequiredService<ILogger<SecurityMasterAssetEventSource>>());
+    }
+
+    /// <summary>
+    /// Builds the Security Master backed adjustment service for hosts that register the Security
+    /// Master but no <see cref="ICorporateActionAdjustmentService"/> of their own. Without this a
+    /// request with <c>AdjustForCorporateActions</c> ran unadjusted on those hosts. Returns
+    /// <c>null</c> when the Security Master is not configured, which keeps the engine's existing
+    /// "corporate actions not applied" reporting.
+    /// </summary>
+    internal static ICorporateActionAdjustmentService? CreateSecurityMasterAdjustment(IServiceProvider sp)
+    {
+        var corporateActions = sp.GetService<ISecurityCorporateActionsQueryService>()
+            ?? sp.GetService<ISecurityMasterQueryService>();
+        var resolver = sp.GetService<ISecurityResolver>();
+        if (corporateActions is null || resolver is null)
+        {
+            return null;
+        }
+
+        return new CorporateActionAdjustmentService(
+            corporateActions,
+            resolver,
+            sp.GetRequiredService<ILogger<CorporateActionAdjustmentService>>(),
+            sp.GetService<IFactorPaydownProjectionService>());
     }
 }

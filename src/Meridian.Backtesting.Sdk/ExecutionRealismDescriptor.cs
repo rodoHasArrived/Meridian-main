@@ -42,7 +42,8 @@ public sealed record ExecutionRealismDescriptor(
     double AnnualShortRebateRate = 0.0,
     string? AccountFinancingCanonical = null,
     string? RiskFreeRateSeriesCanonical = null,
-    string? DefaultBrokerageAccountId = null)
+    string? DefaultBrokerageAccountId = null,
+    bool PopulateAssetEventsFromSecurityMaster = false)
 {
     /// <summary>Null preserves the canonical fingerprint of descriptors retained before this option existed.</summary>
     public bool? ApplyStoredCorporateActions { get; init; }
@@ -88,6 +89,14 @@ public sealed record ExecutionRealismDescriptor(
         if (DefaultBrokerageAccountId is not null)
         {
             Append(builder, nameof(DefaultBrokerageAccountId), DefaultBrokerageAccountId);
+        }
+
+        // Security Master asset events add dividend cash and split position changes to a raw-price
+        // run. Emitted only when enabled, for the same reason as the field above: descriptors
+        // persisted before it existed must keep their original canonical form.
+        if (PopulateAssetEventsFromSecurityMaster)
+        {
+            Append(builder, nameof(PopulateAssetEventsFromSecurityMaster), "true");
         }
 
         return builder.ToString();

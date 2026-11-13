@@ -8,6 +8,7 @@ import {
   isIsoDate,
   shiftIsoDate
 } from "@/lib/reporting-periods";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface ReportingPeriodSwitcherProps {
   asOfDate: string;
@@ -50,7 +51,7 @@ export function ReportingPeriodSwitcher({
         className
       )}
     >
-      <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</span>
+      <span className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.14em]")}>{label}</span>
       <span className="font-mono text-sm text-foreground" aria-live="polite">
         {valid ? formatReportingPeriodLabel(asOfDate) : asOfDate}
       </span>

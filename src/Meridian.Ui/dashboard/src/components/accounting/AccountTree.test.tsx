@@ -48,4 +48,100 @@ describe("AccountTree", () => {
     await userEvent.click(screen.getByRole("button", { name: "Expand Assets" }));
     expect(screen.getByText("Cash")).toBeInTheDocument();
   });
+
+  it("reaches a child row with the arrow keys through a single roving tab stop", async () => {
+    render(<AccountTree nodes={nodes} />);
+    const items = screen.getAllByRole("treeitem");
+    expect(items.filter((item) => item.tabIndex === 0)).toHaveLength(1);
+    const assets = screen.getByRole("treeitem", { name: /1000 Assets/ });
+    expect(assets).toHaveAttribute("tabindex", "0");
+
+    assets.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    const cash = screen.getByRole("treeitem", { name: /1010 Cash/ });
+    expect(cash).toHaveFocus();
+    expect(cash).toHaveAttribute("tabindex", "0");
+    expect(assets).toHaveAttribute("tabindex", "-1");
+
+    await userEvent.keyboard("{End}");
+    expect(screen.getByRole("treeitem", { name: /1020 Receivables/ })).toHaveFocus();
+    await userEvent.keyboard("{ArrowUp}");
+    expect(cash).toHaveFocus();
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(assets).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(cash).toHaveFocus();
+    await userEvent.keyboard("{Home}");
+    expect(assets).toHaveFocus();
+  });
+
+  it("enters and leaves the whole tree through one Tab stop while disclosure stays clickable", async () => {
+    const user = userEvent.setup();
+    render(<>
+      <button type="button">Before tree</button>
+      <AccountTree nodes={nodes} />
+      <button type="button">After tree</button>
+    </>);
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Before tree" })).toHaveFocus();
+    await user.tab();
+    const assets = screen.getByRole("treeitem", { name: /1000 Assets/ });
+    expect(assets).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "After tree" })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(assets).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("treeitem", { name: /1010 Cash/ })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "After tree" })).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Collapse Assets" }));
+    expect(screen.queryByText("Cash")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Expand Assets" }));
+    expect(screen.getByText("Cash")).toBeInTheDocument();
+  });
+
+  it("expands and collapses from the keyboard without onSelect", async () => {
+    render(<AccountTree nodes={nodes} defaultExpandedDepth={0} />);
+    const assets = screen.getByRole("treeitem", { name: /1000 Assets/ });
+    expect(assets).toHaveAttribute("aria-expanded", "false");
+
+    assets.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    expect(assets).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("Cash")).toBeInTheDocument();
+
+    await userEvent.keyboard("{ArrowLeft}");
+    expect(assets).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText("Cash")).toBeNull();
+
+    await userEvent.keyboard("{Enter}");
+    expect(screen.getByText("Cash")).toBeInTheDocument();
+  });
+
+  it("returns the tab stop to the parent when the focused child is collapsed away", async () => {
+    // Two roots, and the collapsed branch is the second: a fallback to the first row of the
+    // tree would put the tab stop on Equity and fail this.
+    const twoRoots: AccountNode[] = [{ code: "3000", name: "Equity", balance: 100 }, ...nodes];
+    render(<AccountTree nodes={twoRoots} />);
+    await userEvent.click(screen.getByRole("treeitem", { name: /1010 Cash/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Collapse Assets" }));
+    expect(screen.getByRole("treeitem", { name: /1000 Assets/ })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("treeitem", { name: /3000 Equity/ })).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("exposes aria-level and keeps the column header outside the tree", () => {
+    render(<AccountTree nodes={nodes} />);
+    expect(screen.getByRole("treeitem", { name: /1000 Assets/ })).toHaveAttribute("aria-level", "1");
+    expect(screen.getByRole("treeitem", { name: /1010 Cash/ })).toHaveAttribute("aria-level", "2");
+    const tree = screen.getByRole("tree", { name: "Chart of accounts" });
+    expect(Array.from(tree.children).every((child) => child.getAttribute("role") === "treeitem")).toBe(true);
+    expect(tree).not.toHaveTextContent("Balance");
+  });
+
+  it("renders an empty state when there are no accounts", () => {
+    render(<AccountTree nodes={[]} />);
+    expect(screen.getByText("No accounts")).toBeInTheDocument();
+    expect(screen.queryAllByRole("treeitem")).toHaveLength(0);
+  });
 });

@@ -60,7 +60,7 @@ class RepairOutcomeTests(unittest.TestCase):
                 pr["head"]["repo"]["full_name"] = "contributor/fork"
             api = mock.Mock(repository=REPOSITORY)
             api.get.side_effect = [source_run(event="pull_request_target", head_sha=HEAD), pr]
-            with self.subTest(fork=fork, configured=configured), tempfile.TemporaryDirectory() as temp, \
+            with self.subTest(fork=fork, configured=configured), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp, \
                  mock.patch.dict(os.environ, {"TRUSTED_DISPATCH_CONFIGURED": str(configured).lower()}), \
                  mock.patch.object(repair, "fetch_pr"), \
                  mock.patch.object(repair, "loop_suppressed", return_value=False):
@@ -80,7 +80,7 @@ class RepairOutcomeTests(unittest.TestCase):
         pr = pull()
         pr["base"]["ref"] = "feature-base"
         api.get.side_effect = [source_run(), pr]
-        with tempfile.TemporaryDirectory() as temp, mock.patch.object(repair, "fetch_pr") as fetch:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp, mock.patch.object(repair, "fetch_pr") as fetch:
             result = repair.prepare_generation(Path("."), api, 99, "main", Path(temp) / "result.json")
         self.assertEqual(result["status"], "ineligible")
         fetch.assert_not_called()
@@ -96,7 +96,7 @@ class RepairOutcomeTests(unittest.TestCase):
         api.request.assert_not_called()
 
     def test_machine_outcomes_keep_routing_status_and_record_attempt(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             output = Path(temp) / "out.json"
             summary = Path(temp) / "summary.md"
             step = Path(temp) / "outputs.txt"
@@ -116,7 +116,7 @@ class RepairOutcomeTests(unittest.TestCase):
             self.assertIn("Next action:", summary.read_text())
 
     def test_artifact_only_requires_no_credentials_or_network(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             output = Path(temp) / "result.json"
             output.write_text(json.dumps({"status": "ready", "request": request()}))
             argv = ["generated_repair.py", "artifact-only", "--result", str(output)]
@@ -129,7 +129,7 @@ class RepairOutcomeTests(unittest.TestCase):
             self.assertIn("administrator", result["next_action"])
 
     def test_published_receipt_preserves_inspected_source_evidence(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             output = Path(temp) / "result.json"
             prepared = {"status": "ready", "request": request(), "source_run_id": 99,
                         "source_run_attempt": 1, "workflow_execution_sha": BASE,

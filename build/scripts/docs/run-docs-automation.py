@@ -90,7 +90,15 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
-        "args": ["--output", "docs/status/doc-health-dashboard.md", "--json-output", "docs/status/doc-health-dashboard.json"],
+        # Line counts go only to the ignored artifacts/ tree; see generate-health-dashboard.py.
+        "args": [
+            "--output",
+            "docs/status/doc-health-dashboard.md",
+            "--json-output",
+            "docs/status/doc-health-dashboard.json",
+            "--volatile-json-output",
+            "artifacts/docs/doc-health-line-metrics.json",
+        ],
         "output": "docs/status/doc-health-dashboard.md",
     },
     "repair-links": {
@@ -219,6 +227,18 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "args": ["--output", "docs/status/coverage-report.md"],
         "output": "docs/status/coverage-report.md",
     },
+    "check-public-type-reference": {
+        "script": "render-public-type-reference.py",
+        "args": ["--check"],
+    },
+    "check-endpoint-reference": {
+        "script": "render-endpoint-reference.py",
+        "args": ["--check"],
+    },
+    "check-configuration-reference": {
+        "script": "generate-configuration-reference.py",
+        "args": ["--check"],
+    },
     "generate-changelog": {
         "script": "generate-changelog.py",
         "args": ["--output", "docs/status/CHANGELOG.md", "--recent", "50"],
@@ -288,6 +308,9 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
 
 PROFILE_CONFIG: Dict[str, List[str]] = {
     "quick": [
+        "check-public-type-reference",
+        "check-endpoint-reference",
+        "check-configuration-reference",
         "scan-todos",
         "validate-docs-structure",
         "check-docfx-navigation",
@@ -306,6 +329,9 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-workflow-manifest",
     ],
     "core": [
+        "check-public-type-reference",
+        "check-endpoint-reference",
+        "check-configuration-reference",
         "scan-todos",
         "validate-docs-structure",
         "check-docfx-navigation",
@@ -332,6 +358,9 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-workflow-manifest",
     ],
     "full": [
+        "check-public-type-reference",
+        "check-endpoint-reference",
+        "check-configuration-reference",
         "scan-todos",
         "validate-docs-structure",
         "check-docfx-navigation",

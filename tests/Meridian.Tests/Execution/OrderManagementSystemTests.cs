@@ -106,8 +106,13 @@ public sealed class OrderManagementSystemTests : IDisposable
     public async Task PlaceOrderAsync_WithPaperTradingPortfolio_AppliesFillToSharedPortfolio()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
+        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed.RecordTrade("MSFT", new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, "MSFT", 25m, 100, Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
+        await using var gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance, liveFeed: feed,
+            costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
         using var oms = new OrderManagementSystem(
-            _gateway,
+            gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
         await oms.StartAsync();
@@ -2924,6 +2929,12 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             .Single(static p => p.Symbol == "AAPL");
 
         position.ContractMultiplier.Should().Be(100m);
+
+        // The premium is paid at quote x contracts x multiplier, the same scale the risk
+        // layer sizes the order at; commissions, if any, only take more cash.
+        var paper = portfolio.Accounts.Single().Positions["AAPL"];
+        paper.AverageCostBasis.Should().BePositive();
+        portfolio.Cash.Should().BeLessThanOrEqualTo(1_000_000m - 10m * paper.AverageCostBasis * 100m);
     }
 
     [Fact]

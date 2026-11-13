@@ -356,6 +356,86 @@ public sealed class PaperLedgerIntegrityTests
         }
     }
 
+    [Theory]
+    [InlineData(false, 200)]
+    [InlineData(true, 200)]
+    [InlineData(false, 1)]
+    [InlineData(true, 1)]
+    public void ContractPartialRelief_ReconcilesScaledMoneyAndRetainsUnitQuotes(bool shortBook, int doubledMultiplier)
+    {
+        var multiplier = doubledMultiplier / 2m;
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio(10_000m, ledger);
+        var start = ledger.Journal.Single().Timestamp;
+        var open = shortBook ? OrderSide.Sell : OrderSide.Buy;
+        var close = shortBook ? OrderSide.Buy : OrderSide.Sell;
+        portfolio.ApplyFill(ContractFill(open, 1m, 10m, start.AddSeconds(1)));
+        portfolio.ApplyFill(ContractFill(open, 2m, 20m, start.AddSeconds(2)));
+        portfolio.ApplyFill(ContractFill(close, 1m, 15m, start.AddSeconds(3)));
+
+        portfolio.GetPositions().Single().AverageCostBasis.Should().Be(20m);
+        portfolio.CheckLedgerIntegrity().Should().BeEmpty();
+        portfolio.ApplyFill(ContractFill(close, 2m, 25m, start.AddSeconds(4)));
+
+        var realized = (shortBook ? -15m : 15m) * multiplier;
+        portfolio.RealisedPnl.Should().Be(realized);
+        portfolio.Cash.Should().Be(10_000m + realized);
+        portfolio.CheckLedgerIntegrity().Should().BeEmpty();
+        var cashFlow = LedgerFinancialStatementBuilder.BuildForPeriod(ledger, start, start.AddSeconds(5)).CashFlow!;
+        cashFlow.InvestingCashFlow.Should().Be(realized);
+        cashFlow.IsReconciled.Should().BeTrue();
+
+        ExecutionReport ContractFill(OrderSide side, decimal quantity, decimal price, DateTimeOffset at) =>
+            Fill(side, quantity, price) with
+            {
+                AssetClass = "Option",
+                LotUnitKind = SecurityLotUnitKind.Contracts,
+                LotMultiplier = multiplier,
+                BookedMoneyMultiplier = multiplier,
+                BookedVariationMargin = false,
+                Timestamp = at
+            };
+    }
+
+    [Fact]
+    public void MultiAccountVariationMargin_ReconcilesCashWithoutInventingNotionalSecuritiesBasis()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        var portfolio = new PaperTradingPortfolio([
+            new("futures", "Futures", AccountKind.Brokerage, 1_000_000m),
+            new("other", "Other", AccountKind.Brokerage, 2_000m)
+        ], ledger);
+        var start = ledger.Journal.Max(entry => entry.Timestamp);
+        var future = Fill(OrderSide.Buy, 1m, 6_000m) with
+        {
+            Symbol = "ESZ6",
+            AssetClass = "Future",
+            LotUnitKind = SecurityLotUnitKind.Contracts,
+            LotMultiplier = 50m,
+            BookedMoneyMultiplier = 50m,
+            BookedVariationMargin = true,
+            Timestamp = start.AddSeconds(1)
+        };
+        portfolio.ApplyFill("futures", future);
+        portfolio.CheckLedgerIntegrity().Should().BeEmpty();
+
+        portfolio.ApplyVariationMarginSettlement("futures", "ESZ6", 6_010m, start.AddSeconds(2)).Should().Be(500m);
+        portfolio.CheckLedgerIntegrity().Should().BeEmpty();
+        portfolio.ApplyFill("futures", future with
+        {
+            OrderId = Guid.NewGuid().ToString("N"),
+            Side = OrderSide.Sell,
+            FillPrice = 6_020m,
+            Timestamp = start.AddSeconds(3)
+        });
+
+        portfolio.CheckLedgerIntegrity().Should().BeEmpty();
+        ledger.GetBalance(LedgerAccounts.CashAccount("futures")).Should().Be(1_001_000m);
+        ledger.GetBalance(LedgerAccounts.FuturesMtmSettlement("ESZ6", "futures")).Should().Be(-1_000m);
+        ledger.GetBalance(LedgerAccounts.CashAccount("other")).Should().Be(2_000m);
+        ledger.Accounts.Should().NotContain(account => account.FinancialAccountId is null);
+    }
+
     private static ExecutionReport Fill(OrderSide side, decimal quantity, decimal price, decimal commission = 0m) => new()
     {
         OrderId = Guid.NewGuid().ToString("N"),

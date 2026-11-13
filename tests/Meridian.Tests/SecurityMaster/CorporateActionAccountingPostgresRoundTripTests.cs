@@ -27,7 +27,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// are test evidence, not certification of source fan-out or legacy binding.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class CorporateActionAccountingPostgresRoundTripTests
+public sealed partial class CorporateActionAccountingPostgresRoundTripTests
 {
     private const string Tenant = "corpact-test-tenant";
     private const string Company = "corpact-test-company";

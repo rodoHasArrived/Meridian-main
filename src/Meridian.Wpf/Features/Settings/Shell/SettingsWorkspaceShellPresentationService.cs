@@ -1,5 +1,6 @@
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 
@@ -34,7 +35,7 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
                 WorkspaceSubtitle = "Preferences, credentials, diagnostics, notifications, services, and support.",
                 PrimaryScopeLabel = "Shell density",
                 PrimaryScopeValue = snapshot.ShellDensityLabel,
-                AsOfValue = snapshot.AsOfUtc.ToLocalTime().ToString("g"),
+                AsOfValue = UtcFormat.FormatUtcTimestamp(snapshot.AsOfUtc),
                 FreshnessValue = "Local workstation",
                 ReviewStateLabel = "Credential posture",
                 ReviewStateValue = postureLabel,

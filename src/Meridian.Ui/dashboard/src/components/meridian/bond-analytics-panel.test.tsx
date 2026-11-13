@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { axe } from "jest-axe";
@@ -11,7 +11,7 @@ function result(securityId = SECURITY_ID): BondAnalyticsResult {
   return {
     securityId,
     currency: "USD",
-    modelVersion: "bond-analytics-v1",
+    modelVersion: "bond-analytics-v2",
     context: { asOf: "2026-10-29T00:00:00Z", settlementDate: "2026-10-30" },
     yieldConvention: "NominalPeriodic",
     cleanPrice: "99.125",
@@ -54,6 +54,71 @@ function result(securityId = SECURITY_ID): BondAnalyticsResult {
   };
 }
 
+function floatingResult(): BondAnalyticsResult {
+  // Presentation fixture: arithmetic and retained input selection are exercised by the service integration tests.
+  return {
+    ...result(),
+    modelVersion: "bond-analytics-v3",
+    context: { asOf: "2026-02-15T00:00:00Z", settlementDate: "2026-02-15" },
+    yieldToMaturity: "0.03",
+    accruedInterest: "0.333333333333",
+    spreadDv01: "0.019123456789",
+    inputs: [
+      ...result().inputs,
+      {
+        kind: "ForwardCurveVersion",
+        key: "Synthetic SOFR",
+        version: 4,
+        versionId: "bbbbbbbb-0000-0000-0000-000000000002",
+        contentSha256: "curve-content-hash"
+      }
+    ],
+    cashFlows: [
+      {
+        flowId: "observed-sofr",
+        paymentDate: "2026-07-15",
+        accrualStart: "2026-01-15",
+        accrualEnd: "2026-07-15",
+        interest: "2",
+        principal: "0",
+        timeInYears: "0.416666666667",
+        floatingCoupon: {
+          resetDate: "2026-01-15",
+          isObserved: true,
+          indexName: "SOFR",
+          indexRate: "0.03",
+          spreadBps: "100",
+          couponRate: "0.04",
+          source: "Retained reset schedule"
+        }
+      },
+      {
+        flowId: "forecast-sofr",
+        paymentDate: "2027-01-15",
+        accrualStart: "2026-07-15",
+        accrualEnd: "2027-01-15",
+        interest: "1.5",
+        principal: "0",
+        timeInYears: "0.916666666667",
+        floatingCoupon: {
+          resetDate: "2026-07-15",
+          isObserved: false,
+          indexName: "SOFR",
+          indexRate: "0.02",
+          spreadBps: "100",
+          couponRate: "0.03",
+          source: "Synthetic retained SOFR curve"
+        }
+      }
+    ]
+  };
+}
+
+function submitPrice() {
+  fireEvent.change(screen.getByLabelText("Clean price / 100"), { target: { value: "100" } });
+  fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+}
+
 describe("bond analytics panel", () => {
   it("provides accessible labels and semantic input groups", async () => {
     const { container } = render(<BondAnalyticsPanel securityId={SECURITY_ID} />);
@@ -71,6 +136,7 @@ describe("bond analytics panel", () => {
       SECURITY_ID,
       expect.objectContaining({
         cleanPrice: "99.125",
+        calculationVersion: "bond-analytics-v2",
         yieldConvention: "NominalPeriodic"
       }),
       expect.objectContaining({ allowDevelopmentFallback: false })
@@ -81,6 +147,7 @@ describe("bond analytics panel", () => {
     expect(screen.getByRole("table", { name: "Projected bond payments" })).toBeInTheDocument();
     await user.type(screen.getByLabelText("Clean price / 100"), "1");
     expect(screen.queryByText("0.0512345")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "Projected bond payments" })).not.toBeInTheDocument();
   });
 
   it("shows unsupported reasons without substituting calculated metrics", async () => {
@@ -133,6 +200,131 @@ describe("bond analytics panel", () => {
   });
 });
 
+describe("bond analytics calculation versions", () => {
+  it("keeps v2 as the default and explicitly supports legacy v1 without floating measures", async () => {
+    const calculate = vi.fn().mockResolvedValue({ ...result(), modelVersion: "bond-analytics-v1" });
+    const user = userEvent.setup();
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} />);
+    const selector = screen.getByLabelText("Calculation version");
+    expect(selector).toHaveValue("bond-analytics-v2");
+    await user.selectOptions(selector, "bond-analytics-v1");
+    submitPrice();
+    await screen.findByText("Calculation ready.");
+    expect(calculate.mock.calls[0][1]).toMatchObject({ calculationVersion: "bond-analytics-v1" });
+    expect(screen.getByText("Model: bond-analytics-v1")).toBeInTheDocument();
+    expect(screen.getByText("YTM (annual fraction)")).toBeInTheDocument();
+    expect(screen.queryByText(/SpreadDv01/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Fixing / source")).not.toBeInTheDocument();
+  });
+
+  it("requests v3 and displays source-selected fixings, projected-flow yield and distinct spread sensitivity", async () => {
+    const calculate = vi.fn().mockResolvedValue(floatingResult());
+    const user = userEvent.setup();
+    const { container } = render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} />);
+    await user.selectOptions(screen.getByLabelText("Calculation version"), "bond-analytics-v3");
+    fireEvent.change(screen.getByLabelText("Calculation date (UTC)"), { target: { value: "2026-02-15" } });
+    fireEvent.change(screen.getByLabelText("Settlement date"), { target: { value: "2026-02-15" } });
+    fireEvent.change(screen.getByLabelText("Input basis"), { target: { value: "yield" } });
+    fireEvent.change(screen.getByLabelText("Annual yield (0.05 = 5%)"), { target: { value: "0.03" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    await screen.findByText("Calculation ready.");
+    expect(calculate).toHaveBeenCalledWith(SECURITY_ID, {
+      asOf: "2026-02-15T00:00:00Z",
+      settlementDate: "2026-02-15",
+      calculationVersion: "bond-analytics-v3",
+      yield: "0.03",
+      yieldConvention: "NominalPeriodic"
+    }, expect.objectContaining({ allowDevelopmentFallback: false }));
+    expect(screen.getByText("Model: bond-analytics-v3")).toBeInTheDocument();
+    expect(screen.getByText("Projected-flow yield (annual fraction)")).toBeInTheDocument();
+    expect(screen.getByText(/not a discount margin/)).toBeInTheDocument();
+    expect(screen.getByText("DV01 (price points / 100 / bp)")).toBeInTheDocument();
+    expect(screen.getByText("SpreadDv01 (price points / 100 / +1 bp)")).toBeInTheDocument();
+    expect(screen.getByText("0.019123456789")).toBeInTheDocument();
+    expect(screen.queryByText("Yield to worst (annual fraction)")).not.toBeInTheDocument();
+    await user.click(screen.getByText("Projected contractual payments (2)"));
+    const payments = within(screen.getByRole("table", { name: "Projected bond payments" }));
+    expect(payments.getByText("Observed fixing · SOFR")).toBeInTheDocument();
+    expect(payments.getByText("Forecast fixing · SOFR")).toBeInTheDocument();
+    expect(payments.getByText("Reset 2026-01-15")).toBeInTheDocument();
+    expect(payments.getByText("Reset 2026-07-15")).toBeInTheDocument();
+    expect(payments.getByText("Index fraction: 0.03")).toBeInTheDocument();
+    expect(payments.getByText("Index fraction: 0.02")).toBeInTheDocument();
+    expect(payments.getAllByText("Spread: 100 bp")).toHaveLength(2);
+    expect(payments.getByText("Coupon fraction: 0.04")).toBeInTheDocument();
+    expect(payments.getByText("Retained reset schedule")).toBeInTheDocument();
+    expect(payments.getByText("Synthetic retained SOFR curve")).toBeInTheDocument();
+    await user.click(screen.getByText("Input provenance and operation support"));
+    expect(screen.getByText("Version ID bbbbbbbb-0000-0000-0000-000000000002")).toBeInTheDocument();
+    expect(screen.getByText(/Synthetic SOFR · version 4/)).toBeInTheDocument();
+    expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it.each(["MissingFixing", "ForwardCurveRequired", "UnsupportedCouponStructure"])(
+    "displays a %s refusal without metrics, payments or a retry using a different model",
+    async (code) => {
+      const calculate = vi.fn().mockResolvedValue({
+        ...floatingResult(),
+        isBlocked: true,
+        blockers: [{ code, reason: "Retained inputs do not support this calculation." }]
+      });
+      render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} />);
+      fireEvent.change(screen.getByLabelText("Calculation version"), { target: { value: "bond-analytics-v3" } });
+      submitPrice();
+      expect(await screen.findByText(`${code}: Retained inputs do not support this calculation.`)).toBeInTheDocument();
+      expect(screen.getByLabelText("Calculation version")).toHaveValue("bond-analytics-v3");
+      expect(calculate).toHaveBeenCalledTimes(1);
+      expect(calculate.mock.calls[0][1].calculationVersion).toBe("bond-analytics-v3");
+      expect(screen.queryByText("Projected-flow yield (annual fraction)")).not.toBeInTheDocument();
+      expect(screen.queryByText("0.019123456789")).not.toBeInTheDocument();
+      expect(screen.queryByRole("table", { name: "Projected bond payments" })).not.toBeInTheDocument();
+    }
+  );
+
+  it("cancels a pending request on model selection and ignores its late result", async () => {
+    let resolve: (value: BondAnalyticsResult) => void;
+    const calculate = vi.fn().mockReturnValue(new Promise<BondAnalyticsResult>((done) => { resolve = done; }));
+    const user = userEvent.setup();
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} />);
+    await user.selectOptions(screen.getByLabelText("Calculation version"), "bond-analytics-v3");
+    submitPrice();
+    await user.selectOptions(screen.getByLabelText("Calculation version"), "bond-analytics-v2");
+    expect(calculate.mock.calls[0][2].signal.aborted).toBe(true);
+    await act(async () => resolve(floatingResult()));
+    expect(screen.queryByText("Calculation ready.")).not.toBeInTheDocument();
+    expect(screen.queryByText("0.019123456789")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Calculate bond analytics" })).toBeEnabled();
+  });
+
+  it("refuses a response from a different model without displaying or retrying it", async () => {
+    const calculate = vi.fn().mockResolvedValue(result());
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} />);
+    fireEvent.change(screen.getByLabelText("Calculation version"), { target: { value: "bond-analytics-v3" } });
+    submitPrice();
+    expect(await screen.findByRole("alert")).toHaveTextContent("different model version");
+    expect(screen.queryByText("0.0512345")).not.toBeInTheDocument();
+    expect(calculate).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows unavailable evidence and sensitivity without deriving a fixing or inserting zero", async () => {
+    const floating = floatingResult();
+    const calculate = vi.fn().mockResolvedValue({
+      ...floating,
+      spreadDv01: null,
+      cashFlows: floating.cashFlows.map((flow) => ({ ...flow, floatingCoupon: null }))
+    });
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} />);
+    fireEvent.change(screen.getByLabelText("Calculation version"), { target: { value: "bond-analytics-v3" } });
+    submitPrice();
+    await screen.findByText("Calculation ready.");
+    const spreadMetric = screen.getByText("SpreadDv01 (price points / 100 / +1 bp)").parentElement!;
+    expect(within(spreadMetric).getByText("Unavailable")).toBeInTheDocument();
+    expect(screen.getAllByText("Fixing evidence unavailable")).toHaveLength(2);
+    expect(screen.queryByText("Observed fixing · SOFR")).not.toBeInTheDocument();
+    expect(screen.queryByText("Forecast fixing · SOFR")).not.toBeInTheDocument();
+  });
+});
+
 describe("bond analytics inputs", () => {
   it("accepts a leading-dot decimal and normalizes a cutoff without seconds to a UTC instant", async () => {
     const calculate = vi.fn().mockResolvedValue(result());
@@ -152,4 +344,89 @@ describe("bond analytics inputs", () => {
     fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
     expect(await screen.findByText("1,234,567.123456789012")).toBeInTheDocument();
   });
+});
+
+describe("retained bond observations", () => {
+  it("routes observed and forward blockers separately and preserves inputs when a fixing receipt is selected", async () => {
+    const onSelectFixing = vi.fn();
+    const onSelectForwardCurve = vi.fn();
+    const calculate = vi.fn().mockResolvedValue({ ...floatingResult(), isBlocked: true, blockers: [{ code: "MissingFixing", reason: "No observed fixing for 2026-01-15." }] });
+    const props = { securityId: SECURITY_ID, calculate, onSelectFixing, onSelectForwardCurve };
+    const { rerender } = render(<BondAnalyticsPanel {...props} />);
+    fireEvent.change(screen.getByLabelText("Calculation version"), { target: { value: "bond-analytics-v3" } });
+    fireEvent.change(screen.getByLabelText("Calculation date (UTC)"), { target: { value: "2026-02-15" } });
+    fireEvent.change(screen.getByLabelText("Settlement date"), { target: { value: "2026-02-16" } });
+    fireEvent.change(screen.getByLabelText("Recorded cutoff (UTC, optional)"), { target: { value: "2026-02-16T12:00" } });
+    fireEvent.change(screen.getByLabelText("Clean price / 100"), { target: { value: "98.123456789012345678" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Select observed fixing" }));
+    expect(onSelectFixing).toHaveBeenCalledOnce(); expect(onSelectForwardCurve).not.toHaveBeenCalled();
+    calculate.mockResolvedValue({ ...floatingResult(), isBlocked: true, blockers: [{ code: "ForwardCurveRequired", reason: "Future resets require a curve." }] });
+    rerender(<BondAnalyticsPanel {...props} observedFixingReceiptIds={["fixing-receipt"]} />);
+    expect(screen.getByLabelText("Calculation version")).toHaveValue("bond-analytics-v3");
+    expect(screen.getByLabelText("Clean price / 100")).toHaveValue("98.123456789012345678");
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Select forward curve" }));
+    expect(onSelectForwardCurve).toHaveBeenCalledOnce();
+    expect(calculate.mock.calls[1][1]).toMatchObject({ calculationVersion: "bond-analytics-v3", asOf: "2026-02-15T00:00:00Z",
+      settlementDate: "2026-02-16", knownAt: "2026-02-16T12:00:00Z", cleanPrice: "98.123456789012345678", observedFixingReceiptIds: "fixing-receipt" });
+  });
+
+  it("shows provider quotation evidence and submits only the immutable receipt", async () => {
+    const calculate = vi.fn().mockResolvedValue(result());
+    const loadObservations = vi.fn().mockResolvedValue([{
+      securityId: SECURITY_ID, selectedSource: "Dealer A", goldenCopyPrice: "98.500000000000000001",
+      priceAsOf: "2026-10-29T00:00:00Z", selectionReceiptId: "receipt-a", unit: "PercentOfPar",
+      isStaleFallback: false, daysStale: 0,
+      quotation: { basis: "Clean", convention: "Per100Face", status: "Bid", settlementDate: "2026-10-30", settlementBasis: "T+1 US government" }
+    }]);
+    const user = userEvent.setup();
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} loadObservations={loadObservations} />);
+    await user.selectOptions(screen.getByLabelText("Input basis"), "retained");
+    await user.click(screen.getByRole("button", { name: "Load retained observations" }));
+    await screen.findByRole("option", { name: /Dealer A.*Fresh.*Bid.*Clean.*T\+1/ });
+    await user.selectOptions(screen.getByLabelText("Use retained observation"), "receipt-a");
+    expect(screen.getByLabelText("Retained observation evidence")).toHaveTextContent("98.500000000000000001");
+    await user.click(screen.getByRole("button", { name: "Calculate bond analytics" }));
+    await screen.findByText("Calculation ready.");
+    const query = calculate.mock.calls[0][1];
+    expect(query.selectionReceiptId).toBe("receipt-a");
+    expect(query).not.toHaveProperty("cleanPrice");
+    expect(query).not.toHaveProperty("yield");
+    fireEvent.change(screen.getByLabelText("Calculation date (UTC)"), { target: { value: "2026-10-30" } });
+    expect(screen.getByLabelText("Use retained observation")).toHaveValue("");
+    expect(screen.queryByLabelText("Retained observation evidence")).not.toBeInTheDocument();
+  });
+
+  it("keeps calculation inputs while an actionable blocker opens convention review", async () => {
+    const onReviewConventions = vi.fn();
+    const calculate = vi.fn().mockResolvedValue({ ...result(), isBlocked: true,
+      blockers: [{ code: "DeclaredScheduleRequired", reason: "Explicit day count required." }] });
+    render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} onReviewConventions={onReviewConventions} />);
+    fireEvent.change(screen.getByLabelText("Clean price / 100"), { target: { value: "98.5" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Review conventions" }));
+    expect(onReviewConventions).toHaveBeenCalledOnce();
+    expect(screen.getByLabelText("Clean price / 100")).toHaveValue("98.5");
+    expect(screen.getByText(/DeclaredScheduleRequired:/)).toBeInTheDocument();
+  });
+});
+
+it("clears the prior calculation when source observations are reloaded", async () => {
+  const calculate = vi.fn().mockResolvedValue(result());
+  const loadObservations = vi.fn().mockResolvedValue([{
+    securityId: SECURITY_ID, selectedSource: "Source", goldenCopyPrice: "100", priceAsOf: "2026-10-29T00:00:00Z",
+    selectionReceiptId: "receipt", isStaleFallback: false, unit: "PercentOfPar"
+  }]);
+  const user = userEvent.setup();
+  render(<BondAnalyticsPanel securityId={SECURITY_ID} calculate={calculate} loadObservations={loadObservations} />);
+  await user.selectOptions(screen.getByLabelText("Input basis"), "retained");
+  await user.click(screen.getByRole("button", { name: "Load retained observations" }));
+  await screen.findByRole("option", { name: /Source.*Fresh/ });
+  await user.selectOptions(screen.getByLabelText("Use retained observation"), "receipt");
+  await user.click(screen.getByRole("button", { name: "Calculate bond analytics" }));
+  await screen.findByText("Calculation ready.");
+  await user.click(screen.getByRole("button", { name: "Load retained observations" }));
+  expect(screen.queryByText("0.0512345")).not.toBeInTheDocument();
+  expect(screen.getByLabelText("Use retained observation")).toHaveValue("");
 });

@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-11T09:51:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-12T17:22:14Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Core/Currency/CurrencyMinorUnits.cs` | Host and Composition | `248a331817` (2026-11-01T14:32:19Z) | 2 |
-| `src/Meridian.Ledger/LedgerEntry.cs` | Domain, Ledger, and F# | `3c42029ec2` (2026-11-01T12:05:53Z) | 1 |
-| `src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 2 |
-| `src/Meridian.Application/Commands/ConfigCommands.cs` | Host and Composition | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
-| `src/Meridian.Application/Services/ConfigurationService.cs` | Host and Composition | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
-| `src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
-| `src/Meridian.Wpf/ViewModels/FireAndForget.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
-| `src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs` | Desktop and UI Workflows | `81febe098b` (2026-11-01T11:47:14Z) | 1 |
-| `src/Meridian.Ui/dashboard/src/components/meridian/bond-analytics-panel.test.tsx` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 4 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 4 |
-| `src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 2 |
-| `src/Meridian.Wpf/Views/DirectLendingPage.xaml` | Desktop and UI Workflows | `455ecc70d1` (2026-11-01T04:17:13Z) | 2 |
-| `src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs` | Host and Composition | `39b16557bd` (2026-11-01T03:53:41Z) | 6 |
-| `src/Meridian.Application/ProviderRouting/ProviderRoutingLogValues.cs` | Host and Composition | `39b16557bd` (2026-11-01T03:53:41Z) | 1 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `22f694e987` (2026-11-01T00:06:40Z) | 4 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 78 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 65 |
+| `src/Meridian.Application/README.md` | Host and Composition | `01649c7a44` (2026-11-12T16:06:18Z) | 54 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 31 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 27 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 22 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 20 |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 17 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 16 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `01649c7a44` (2026-11-12T16:06:18Z) | 12 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | `01649c7a44` (2026-11-12T16:06:18Z) | 9 |
+| `src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 9 |
+| `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs` | Providers and Storage | `01649c7a44` (2026-11-12T16:06:18Z) | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.tsx` | Desktop and UI Workflows | `01649c7a44` (2026-11-12T16:06:18Z) | 7 |
 

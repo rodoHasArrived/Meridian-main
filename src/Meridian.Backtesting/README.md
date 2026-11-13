@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-30
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Backtesting
@@ -15,6 +15,22 @@ Simulated security buys, disposals, short sales/covers, return of capital and fr
 corporate-action settlements retain producer-supplied investing cash-flow attribution when
 their journals are first posted. Reported cash flows therefore use the actual cash movement;
 carrying-basis relief and realized gain/loss do not become separate operating cash flows.
+
+With short selling disabled, `SimulatedPortfolio` rejects any sell that would leave the position net short, including a sell larger than the current long (long 100, sell 150); it previously rejected only sells from a flat or short position.
+
+An annualised return too large for `decimal` (a 25% one-day gain compounds past it) is reported capped at 1e12 instead of aborting the metrics build. Walk-forward stitched out-of-sample total and annualised returns use the same cap.
+
+`MarketImpactFillModel` fills an all-or-none order completely or not at all; a limit order whose later slices cross the limit no longer returns a partial fill when partial fills are disallowed.
+
+XIRR is computed from investor-boundary flows only (initial capital out, terminal equity in); internal trade, commission and dividend flows are already inside equity. A loss of 100% or more reports an annualised return of -100% instead of aborting the metrics build.
+
+`MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps
+square-root impact at `MaxImpactFraction` (50%), so a thin bar can no longer drive a sell fill price
+to zero or below.
+
+Reducing an OCO sibling after the other leg fills keeps the sibling's own filled shares in its
+total `Quantity`, so a partly filled bracket exit keeps working the full remaining position instead
+of losing the already-filled amount a second time.
 
 ## Purpose
 
@@ -36,6 +52,13 @@ and implements the canonical live-position adjuster. Existing aggregate query ca
 identity fallback, while hosts can compose the narrow services independently.
 The original aggregate-query constructor remains available with its original CLR signature and
 optional arguments for existing compiled callers.
+
+`AddMeridianBacktesting` composes `CorporateActionAdjustmentService` from the corporate-action
+query and resolver when no adjustment service is registered, retaining adjusted-price support
+across browser, CLI and WPF hosts. Identity and corporate-action queries also enable the broader
+automatic portfolio-event source. The factory retains `SecurityMasterAssetEventSource` as the
+narrow explicit opt-in compatibility source; request policy selects one population path before
+replay. An unavailable Security Master remains visible in the run's bias disclosure.
 
 ## Key folders and files
 
@@ -142,12 +165,19 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 
 - `SecurityMasterBacktestAssetEventSource` connects the existing provider ingest/proposal pipeline
   to native portfolio replay. `ApplyStoredCorporateActions` defaults to true when the host has
-  Security Master query services. Only confirmed, effective, non-cancelled revisions become
-  automatic events; identical economics are deduplicated and conflicting instructions fail before
+  Security Master query services, unless explicit compatibility mode is selected below. Only
+  confirmed, effective, non-cancelled revisions become automatic events. Identical economics are
+  deduplicated and conflicting instructions fail before
   replay. Stored splits, USD dividends, return of capital, mergers and ticker changes are supported.
   Successor securities are followed after mergers, and later actions use the successor ticker.
   Unsupported action types, missing successor terms, non-USD cash and ambiguous same-day successor
   ordering require reviewed manual events with automatic loading disabled.
+- `PopulateAssetEventsFromSecurityMaster = true` selects the explicit compatibility path instead
+  of broad automatic loading. A supplied `AssetEvents` list, including an empty list, takes
+  precedence. Without that list, the path requires `AdjustForCorporateActions = false` and a
+  configured source. Its `SecurityMasterAssetEventSource` maps confirmed cash distributions and
+  share splits; it does not map mergers, spin-offs or other position transformations. Selecting
+  this path never also calls the broad source.
 - Portfolio action accounting uses unadjusted prices, including when explicit `AssetEvents` are
   supplied. Already-adjusted bars are refused for an event-bearing replay so splits and cash cannot
   be counted twice. Stored dividends credit ex-date holders on the ex-date; payable-date settlement
@@ -162,6 +192,13 @@ inspectable `LedgerIntegrityException.Breaks`. Comparisons use the shared ledger
 and include residual accounts for closed positions. Return-of-capital distributions reduce each
 long lot/component's exact basis to zero before recognizing excess gain. `BasisReturned` stays
 separate from income in cash-flow evidence and symbol attribution; short payments remain expenses.
+
+Financing accrues on every calendar date using ACT/365 fixed. Sharpe, Sortino, rolling replay
+metrics, and stitched walk-forward metrics use the same 365-observation annualization because
+the native snapshot series includes weekends. Trade cash flows contain only consideration;
+commission cash flows carry fees separately, and their sum reconciles to the cash movement.
+Fill models apply fixed, minimum, and maximum commissions cumulatively per order across all
+accepted partial fills rather than charging each execution as a new order.
 
 - `BacktestRequest.FillTiming` defaults to `NextBar`: an order can only fill against events
   strictly later than the event that generated it, eliminating same-bar look-ahead. Under
@@ -196,6 +233,14 @@ separate from income in cash-flow evidence and symbol attribution; short payment
 - `BacktestRequest.MaxParticipationRate` caps per-bar participation for bar-midpoint and
   market-impact fills. A value of `0` preserves the historical full-fill behavior; positive values
   leave oversized market-impact orders working across bars when partial fills are allowed.
+- The bar-based fill models honour time-in-force the same way the order-book model does. An
+  `ImmediateOrCancel` or `FillOrKill` order is resolved on the first bar it is executable: IOC keeps
+  what filled and cancels the remainder, FOK fills completely or is cancelled with no fill, and
+  neither stays working on later bars. An order with `AllowPartialFills = false` never ends
+  partially filled, including when market-impact slices are skipped for crossing the limit price.
+  The replay engine acts on that result: an order the fill model cancels, and an immediate order
+  whose generated fills the account rejected, is removed from the pending set and cannot fill on a
+  later event. This applies to every fill model, including the order-book model.
 - `MeridianNativeBacktestStudioEngine` stamps native engine output through
   `CanonicalBacktestResultNormalizer.FromNative`, matching the metadata contract used by
   QuantConnect Lean imports.

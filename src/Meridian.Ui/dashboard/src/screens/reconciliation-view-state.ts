@@ -18,8 +18,11 @@ const queryKeys = {
   selectedBreakId: "reconciliationBreak",
   queueSearch: "reconciliationSearch",
   queueStatus: "reconciliationStatus",
-  queueSort: "reconciliationSort"
+  queueSort: "reconciliationSort",
+  hiddenColumns: "reconciliationColumns"
 } as const;
+/** The break queue's hideable columns (C4); hidden ones travel in the link so saved views keep them. */
+export const RECONCILIATION_QUEUE_HIDEABLE_COLUMNS = ["category", "owner", "updated", "source"] as const;
 const scopeKeys = ["fundAccountId", "symbol", "runId", "provider", "from", "to", "date", "asOf"];
 
 export function readReconciliationViewState(search: string) {
@@ -32,6 +35,7 @@ export function readReconciliationViewState(search: string) {
     queueSearch: params.get(queryKeys.queueSearch) ?? "",
     queueStatus: (["Open", "InReview", "Resolved", "Dismissed", "SignedOff"].includes(status ?? "") ? status : "all") as ReconciliationQueueStatus,
     queueSort: (["oldest", "newest", "severity"].includes(sort ?? "") ? sort : "default") as ReconciliationQueueSort,
+    hiddenColumns: RECONCILIATION_QUEUE_HIDEABLE_COLUMNS.filter((id) => (params.get(queryKeys.hiddenColumns) ?? "").split(",").includes(id)) as string[],
     scopeKey: JSON.stringify(scopeKeys.map((key) => params.get(key)))
   };
 }
@@ -50,8 +54,9 @@ export function useReconciliationViewState(enabled = true) {
     const params = new URLSearchParams(location.search);
     Object.entries(patch).forEach(([key, value]) => {
       const queryKey = queryKeys[key as keyof typeof queryKeys];
-      if (value === null || value === "" || value === "all" || value === "default") params.delete(queryKey);
-      else params.set(queryKey, value);
+      const text = Array.isArray(value) ? value.join(",") : value;
+      if (text === null || text === undefined || text === "" || text === "all" || text === "default") params.delete(queryKey);
+      else params.set(queryKey, text);
     });
     // The queue records scroll on the current history entry without rerendering Router.
     // Preserve that state when navigating from this entry; MemoryRouter keeps its own state.
@@ -77,6 +82,7 @@ export function useReconciliationViewState(enabled = true) {
     clearQueueFilters: () => update({ queueSearch: "", queueStatus: "all" }),
     setQueueSearch: (queueSearch: string) => update({ queueSearch }, true),
     setQueueStatus: (queueStatus: ReconciliationQueueStatus) => update({ queueStatus }),
-    setQueueSort: (queueSort: ReconciliationQueueSort) => update({ queueSort })
+    setQueueSort: (queueSort: ReconciliationQueueSort) => update({ queueSort }),
+    setHiddenColumns: (hiddenColumns: string[]) => update({ hiddenColumns }, true)
   };
 }

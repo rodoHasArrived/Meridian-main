@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, pluralizeCount } from "@/lib/format";
 import {
   exportEvidenceManifest,
   getEvidencePacket,
@@ -415,6 +415,7 @@ export interface EvidenceVaultDocumentIndexRowViewModel {
 
 export interface EvidenceVaultDocumentDetailViewModel {
   id: string;
+  attestationTarget?: { vaultId: string; documentId: string };
   title: string;
   subtitle: string;
   ariaLabel: string;
@@ -1347,6 +1348,7 @@ function buildVaultDocumentIndexRow(
   ];
   const detail: EvidenceVaultDocumentDetailViewModel = {
     id: `${entry.vaultId}:${document.documentId}:detail`,
+    attestationTarget: { vaultId: entry.vaultId, documentId: document.documentId },
     title: document.fileName,
     subtitle: `${classificationLabel} retained for ${selectedSubjectLabel}`,
     ariaLabel: `Selected Evidence Vault document: ${document.fileName}`,
@@ -2011,7 +2013,7 @@ function buildIntakeResultLabel(result: EvidenceVaultIntakeResponse | null): str
     return null;
   }
 
-  const sizeLabel = `${result.sizeBytes.toLocaleString()} bytes`;
+  const sizeLabel = `${formatCountValue(result.sizeBytes)} bytes`;
   return `Retained ${result.fileName} as ${result.intakeId}; ${sizeLabel}; ${result.contentHashSha256}.`;
 }
 

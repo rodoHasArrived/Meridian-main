@@ -78,8 +78,8 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
     // under high load. Using a bounded HashSet avoids double-counting duplicates without the
     // overhead of the sequence-based PersistentDedupLedger (which won't catch trades that arrive
     // with the same content but different assigned sequence numbers).
-    private readonly HashSet<(string symbol, decimal price, long size, DateTimeOffset ts)> _recentTrades = new();
-    private readonly Queue<(string symbol, decimal price, long size, DateTimeOffset ts)> _recentTradeOrder = new();
+    private readonly HashSet<(string symbol, long tradeId, string? venue, decimal price, long size, DateTimeOffset ts)> _recentTrades = new();
+    private readonly Queue<(string symbol, long tradeId, string? venue, decimal price, long size, DateTimeOffset ts)> _recentTradeOrder = new();
     private const int MaxDedupWindowSize = 2048;
 
     public AlpacaMarketDataClient(TradeDataCollector tradeCollector, QuoteCollector quoteCollector, AlpacaOptions opt)
@@ -745,9 +745,11 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
             }
 
             // Content-based deduplication: Alpaca's WebSocket is known to re-deliver identical
-            // trade messages during reconnections. Deduplicate on (symbol, price, size, exchange
-            // timestamp) using a bounded sliding window so we don't double-count phantom trades.
-            var dedupKey = (sym!, price, size, dto);
+            // trade messages during reconnections. Deduplicate on (symbol, trade id, venue, price,
+            // size, exchange timestamp) using a bounded sliding window so we don't double-count
+            // phantom trades. A re-delivered message repeats every field, while the trade id and
+            // venue keep distinct prints at the same price, size, and timestamp from collapsing.
+            var dedupKey = (sym!, tradeId, venue, price, size, dto);
             lock (_recentTrades)
             {
                 if (!_recentTrades.Add(dedupKey))
