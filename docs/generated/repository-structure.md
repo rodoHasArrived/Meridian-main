@@ -1833,6 +1833,7 @@ Meridian-main
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
 │   │   ├── etl-execution-ownership.md
+│   │   ├── execution-workflows.md
 │   │   ├── free-development-tools.md
 │   │   ├── generated-merge-recovery.md
 │   │   ├── live-trading-engine.md
@@ -2075,7 +2076,8 @@ Meridian-main
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.backtesting.sdk
 │   │   │   │   ├── page-001.md
-│   │   │   │   └── page-002.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   └── page-003.md
 │   │   │   ├── meridian.contracts
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -2290,7 +2292,8 @@ Meridian-main
 │   │   │   │   ├── page-014.md
 │   │   │   │   ├── page-015.md
 │   │   │   │   ├── page-016.md
-│   │   │   │   └── page-017.md
+│   │   │   │   ├── page-017.md
+│   │   │   │   └── page-018.md
 │   │   │   ├── meridian.workflow
 │   │   │   │   └── page-001.md
 │   │   │   ├── meridian.wpf
@@ -4951,6 +4954,7 @@ Meridian-main
 │   │   │   ├── manual-overview.json
 │   │   │   ├── manual-strategy-and-trading.json
 │   │   │   └── screenshot-catalog.json
+│   │   ├── alpaca_paper_order_probe.py
 │   │   ├── build-ibapi-smoke.ps1
 │   │   ├── build-ibapi-vendor.ps1
 │   │   ├── capture-desktop-screenshots.ps1
@@ -5569,14 +5573,15 @@ Meridian-main
 │   │   │   │   ├── AdvancedCarryDecisionEngine.cs
 │   │   │   │   ├── AdvancedCarryModels.cs
 │   │   │   │   └── CarryTradeBacktestStrategy.cs
-│   │   │   └── OptionsOverwrite
-│   │   │       ├── BlackScholesCalculator.cs
-│   │   │       ├── CoveredCallOverwriteStrategy.cs
-│   │   │       ├── OptionsOverwriteFilters.cs
-│   │   │       ├── OptionsOverwriteMetricsCalculator.cs
-│   │   │       ├── OptionsOverwriteModels.cs
-│   │   │       ├── OptionsOverwriteParams.cs
-│   │   │       └── OptionsOverwriteScoring.cs
+│   │   │   ├── OptionsOverwrite
+│   │   │   │   ├── BlackScholesCalculator.cs
+│   │   │   │   ├── CoveredCallOverwriteStrategy.cs
+│   │   │   │   ├── OptionsOverwriteFilters.cs
+│   │   │   │   ├── OptionsOverwriteMetricsCalculator.cs
+│   │   │   │   ├── OptionsOverwriteModels.cs
+│   │   │   │   ├── OptionsOverwriteParams.cs
+│   │   │   │   └── OptionsOverwriteScoring.cs
+│   │   │   └── MovingAverageCrossoverStrategy.cs
 │   │   ├── AssetEvent.cs
 │   │   ├── BacktestEngineMode.cs
 │   │   ├── BacktestProgressEvent.cs
@@ -6510,7 +6515,9 @@ Meridian-main
 │   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── BrokerageExecutionReconciliationService.cs
+│   │   │   ├── ExecutionAlerts.cs
 │   │   │   ├── ExecutionAuditTrailService.cs
+│   │   │   ├── ExecutionJournal.cs
 │   │   │   ├── ExecutionOperatorControlService.cs
 │   │   │   ├── FileBrokerageOrderRecoveryStore.cs
 │   │   │   ├── ILiveOrderReadinessGate.cs
@@ -6518,6 +6525,7 @@ Meridian-main
 │   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
 │   │   │   ├── OrderManagementHostedService.cs
+│   │   │   ├── OrderPreviewService.cs
 │   │   │   ├── PaperSessionOptions.cs
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
@@ -6546,6 +6554,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.cs
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
 │   │   ├── OrderManagementSystem.FillIdentity.cs
+│   │   ├── OrderManagementSystem.Journal.cs
 │   │   ├── OrderManagementSystem.KillSwitch.cs
 │   │   ├── OrderManagementSystem.Lifecycle.cs
 │   │   ├── OrderManagementSystem.Modifications.cs
@@ -6575,6 +6584,7 @@ Meridian-main
 │   │   ├── BrokerNotionalMetadata.cs
 │   │   ├── CanonicalTaxLotAdapter.cs
 │   │   ├── ExecutionOrderMetadataPolicy.cs
+│   │   ├── ExecutionWorkflows.cs
 │   │   ├── GatewayResolvedOrder.cs
 │   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
@@ -6597,6 +6607,7 @@ Meridian-main
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
 │   │   ├── OrderSizingMetadata.cs
+│   │   ├── OrderSubmissionRefusal.cs
 │   │   ├── PositionExtensions.cs
 │   │   ├── README.md
 │   │   ├── RiskContracts.cs
@@ -6872,6 +6883,7 @@ Meridian-main
 │   │   ├── Interop.SecurityMaster.fs
 │   │   ├── Interop.SecurityMaster.GeneratedWriter.fs
 │   │   ├── Interop.SecurityStructures.fs
+│   │   ├── Interop.SecurityTermsWriteVersion.fs
 │   │   ├── Meridian.FSharp.fsproj
 │   │   └── README.md
 │   ├── Meridian.FSharp.DirectLending.Aggregates
@@ -7060,6 +7072,7 @@ Meridian-main
 │   │   │   │   └── NYSEServiceExtensions.cs
 │   │   │   ├── OpenFigi
 │   │   │   │   ├── OpenFigiClient.cs
+│   │   │   │   ├── OpenFigiRequestCredentials.cs
 │   │   │   │   └── OpenFigiSymbolResolver.cs
 │   │   │   ├── Plaid
 │   │   │   │   ├── FilePlaidConnectionRepository.cs
@@ -8934,6 +8947,7 @@ Meridian-main
 │   │   │   │   │       ├── entity-setup-wizard.test.tsx
 │   │   │   │   │       └── entity-setup-wizard.tsx
 │   │   │   │   ├── hooks
+│   │   │   │   │   ├── use-notification-center.test.ts
 │   │   │   │   │   ├── use-notification-center.ts
 │   │   │   │   │   ├── use-portfolio-positions-table.test.tsx
 │   │   │   │   │   ├── use-portfolio-positions-table.ts
@@ -8988,6 +9002,7 @@ Meridian-main
 │   │   │   │   │   │   ├── direct-lending.api.ts
 │   │   │   │   │   │   ├── execution-audit.api.ts
 │   │   │   │   │   │   ├── execution-blotter.api.ts
+│   │   │   │   │   │   ├── execution-workflows.api.ts
 │   │   │   │   │   │   ├── factor-paydown.api.test.ts
 │   │   │   │   │   │   ├── factor-paydown.api.ts
 │   │   │   │   │   │   ├── family-office.api.ts
@@ -9042,6 +9057,7 @@ Meridian-main
 │   │   │   │   │   │   ├── indicators.ts
 │   │   │   │   │   │   └── indicators.worker.ts
 │   │   │   │   │   ├── notification-center
+│   │   │   │   │   │   ├── execution.test.ts
 │   │   │   │   │   │   ├── merge.test.ts
 │   │   │   │   │   │   ├── merge.ts
 │   │   │   │   │   │   ├── read-state-status.test.ts
@@ -9621,6 +9637,8 @@ Meridian-main
 │   │   │   │   │   ├── settings-route-state.ts
 │   │   │   │   │   ├── settings-screen.a11y.test.tsx
 │   │   │   │   │   ├── settings-screen.date-format.ts
+│   │   │   │   │   ├── settings-screen.execution-alerts.test.tsx
+│   │   │   │   │   ├── settings-screen.execution-alerts.tsx
 │   │   │   │   │   ├── settings-screen.operations-control.ts
 │   │   │   │   │   ├── settings-screen.operations-form-options.ts
 │   │   │   │   │   ├── settings-screen.test.tsx
@@ -9656,6 +9674,7 @@ Meridian-main
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
 │   │   │   │   │   ├── strategy-screen.formatters.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts
+│   │   │   │   │   ├── strategy-screen.parity.tsx
 │   │   │   │   │   ├── strategy-screen.status-announcement.ts
 │   │   │   │   │   ├── strategy-screen.test.tsx
 │   │   │   │   │   ├── strategy-screen.tsx
@@ -9686,11 +9705,15 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
 │   │   │   │   │   ├── trading-screen.headline-evidence.test.ts
 │   │   │   │   │   ├── trading-screen.headline-evidence.ts
+│   │   │   │   │   ├── trading-screen.journal.test.tsx
+│   │   │   │   │   ├── trading-screen.journal.tsx
 │   │   │   │   │   ├── trading-screen.linked-context.ts
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-form.tsx
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
 │   │   │   │   │   ├── trading-screen.readiness-summary.ts
+│   │   │   │   │   ├── trading-screen.server-preview.test.tsx
+│   │   │   │   │   ├── trading-screen.server-preview.tsx
 │   │   │   │   │   ├── trading-screen.test.tsx
 │   │   │   │   │   ├── trading-screen.tones.ts
 │   │   │   │   │   ├── trading-screen.tsx
@@ -10051,6 +10074,7 @@ Meridian-main
 │   │   │   ├── EvidenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.SinglePrincipalAttestation.cs
 │   │   │   ├── ExecutionEndpoints.cs
+│   │   │   ├── ExecutionEndpoints.Workflows.cs
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
 │   │   │   ├── FirstRunEndpoints.cs
@@ -10253,6 +10277,7 @@ Meridian-main
 │   │   ├── Serialization
 │   │   │   ├── CoveredCallJsonContext.cs
 │   │   │   ├── DirectLendingJsonContext.cs
+│   │   │   ├── ExecutionWorkflowJsonContext.cs
 │   │   │   ├── FamilyOfficeJsonContext.cs
 │   │   │   ├── QualityApiJsonContext.cs
 │   │   │   ├── ReportingCertifiedArtifactJsonContext.cs
@@ -10333,6 +10358,8 @@ Meridian-main
 │   │   │   ├── Dk1PromotionTrustEvidenceProvider.cs
 │   │   │   ├── Dk1TrustGateReadinessService.cs
 │   │   │   ├── DrawdownGuardrailRule.cs
+│   │   │   ├── EquityOrderSessionPolicy.cs
+│   │   │   ├── ExecutionWorkflowWorker.cs
 │   │   │   ├── FamilyOfficeReadService.cs
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileAccountingAuditPendingMarkerStore.cs
@@ -10521,6 +10548,7 @@ Meridian-main
 │   │   │   ├── StatementReconciliationIntakeAuthority.Lineage.cs
 │   │   │   ├── StorageAssuranceService.cs
 │   │   │   ├── StrategyRunComparisonService.cs
+│   │   │   ├── StrategyRunParityService.cs
 │   │   │   ├── StrategyRunReviewPacketService.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGate.cs
 │   │   │   ├── TradingOperatorReadinessService.BrokerageRecovery.cs
@@ -12422,8 +12450,10 @@ Meridian-main
 │   │   │   ├── BrokerOrderSweepTests.cs
 │   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
+│   │   │   ├── ExecutionJournalAttemptTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
 │   │   │   ├── ExecutionReportHubTests.cs
+│   │   │   ├── ExecutionWorkflowTests.cs
 │   │   │   ├── FileBrokerageOrderRecoveryStoreTests.cs
 │   │   │   ├── FixedIncomeFillBookingTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
@@ -12684,6 +12714,8 @@ Meridian-main
 │   │   │   │   ├── FreeHistoricalProviderParsingTests.cs
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
+│   │   │   │   ├── HistoricalHttpRetryTests.cs
+│   │   │   │   ├── HostedProviderCredentialSelectionTests.cs
 │   │   │   │   ├── IBApiVersionValidatorTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.AmendmentRaces.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
@@ -12738,12 +12770,14 @@ Meridian-main
 │   │   │   │   ├── ProviderRegistryCapabilityFactoryTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
+│   │   │   │   ├── RequestBudgetTimeProvider.cs
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
 │   │   │   │   ├── RobinhoodMarketDataClientTests.cs
 │   │   │   │   ├── RobinhoodOptionsChainPaginationTests.cs
 │   │   │   │   ├── RobinhoodReadOnlyBrokerageSyncAdapterTests.cs
 │   │   │   │   ├── RobinhoodSymbolSearchProviderTests.cs
+│   │   │   │   ├── SharedProviderRequestBudgetTests.cs
 │   │   │   │   ├── StooqHistoricalDataProviderTests.cs
 │   │   │   │   ├── StoredProviderCredentialPreparationTests.cs
 │   │   │   │   ├── StreamingFailoverServiceTests.cs
@@ -13582,6 +13616,7 @@ Meridian-main
 │   │   │   ├── LiveStrategyRunSessionCompletionTests.cs
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
+│   │   │   ├── MovingAverageParityTests.cs
 │   │   │   ├── PortfolioReadServiceTests.cs
 │   │   │   ├── PromotionServiceLiveGovernanceTests.cs
 │   │   │   ├── PromotionServiceTests.cs
@@ -13655,7 +13690,8 @@ Meridian-main
 │   │   │   ├── SignalingMarketEventPublisher.cs
 │   │   │   ├── StubHttpMessageHandler.cs
 │   │   │   ├── TestMarketEventPublisher.cs
-│   │   │   └── ThrowingMarketEventPublisher.cs
+│   │   │   ├── ThrowingMarketEventPublisher.cs
+│   │   │   └── TwelveDataTestBudget.cs
 │   │   ├── Testing
 │   │   │   └── TestArtifactDirectory.cs
 │   │   ├── TestSupport
@@ -13764,6 +13800,7 @@ Meridian-main
 │   │   │   ├── DirectLendingServicingScheduleEndpointsTests.cs
 │   │   │   ├── DirectLendingSubledgerTieOutTests.cs
 │   │   │   ├── EdgarReferenceDataEndpointsTests.cs
+│   │   │   ├── EquityOrderSessionPolicyTests.cs
 │   │   │   ├── EvidenceWorkflowFabricTests.cs
 │   │   │   ├── ExecutionGovernanceEndpointsTests.cs
 │   │   │   ├── ExecutionRouteContractParityTests.cs
@@ -14409,6 +14446,7 @@ Meridian-main
 │   │   ├── test_adapter_readiness.py
 │   │   ├── test_agent_toolchain_install.py
 │   │   ├── test_ai_setup_dotnet_channel.py
+│   │   ├── test_alpaca_paper_order_probe.py
 │   │   ├── test_analysis_level_baseline.py
 │   │   ├── test_api_contract_coverage_dashboard.py
 │   │   ├── test_archive_code_tombstones.py

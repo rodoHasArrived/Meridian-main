@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
+import { getExecutionNotifications, type ExecutionNotification } from "@/lib/api/execution-workflows.api";
 import { getOperatorInbox } from "@/lib/api";
 import {
   buildNotificationCenterModel,
@@ -47,6 +48,38 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
   const { overview, fundAccountId, fetchInbox = getOperatorInbox, storage, pollIntervalMs = DEFAULT_INBOX_POLL_INTERVAL_MS } = options;
   const priceAlerts = usePriceAlerts();
   const [inbox, setInbox] = useState<OperatorInbox | null>(null);
+  const [execution, setExecution] = useState<ExecutionNotification[]>([]);
+  useEffect(() => {
+    setExecution([]);
+    if (!fundAccountId) return;
+    const controller = new AbortController();
+    let snapshotGeneration = 0;
+    const load = () => {
+      const generation = ++snapshotGeneration;
+      void getExecutionNotifications(fundAccountId, { signal: controller.signal })
+        .then((items) => {
+          if (!controller.signal.aborted && generation === snapshotGeneration) {
+            setExecution(items.filter((item) => item.accountId.toLowerCase() === fundAccountId.toLowerCase()));
+          }
+        })
+        .catch(() => { /* Retained snapshots remain visible until reconnect; scope changes clear them. */ });
+    };
+    load();
+    const stream = typeof EventSource === "undefined" ? null : new EventSource(`/api/execution/notifications/stream?accountId=${encodeURIComponent(fundAccountId)}`);
+    stream?.addEventListener("execution-notifications", (event) => {
+      try {
+        const items = JSON.parse((event as MessageEvent<string>).data) as ExecutionNotification[];
+        if (!controller.signal.aborted && Array.isArray(items)) {
+          const next = items.filter((item) => item.accountId.toLowerCase() === fundAccountId.toLowerCase());
+          // A streamed snapshot supersedes every GET started before it arrived.
+          snapshotGeneration += 1;
+          setExecution(next);
+        }
+      } catch { load(); }
+    });
+    const timer = window.setInterval(load, 30_000);
+    return () => { controller.abort(); stream?.close(); window.clearInterval(timer); };
+  }, [fundAccountId]);
   const [readState, setReadState] = useState<NotificationReadState>(() => loadNotificationReadState(storage));
 
   const mountedRef = useRef(true);
@@ -91,12 +124,13 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
   const model = useMemo(
     () =>
       buildNotificationCenterModel({
+        execution: execution.filter((item) => item.accountId.toLowerCase() === fundAccountId?.toLowerCase()),
         inbox: inbox?.items ?? [],
         systemEvents: overview?.recentEvents ?? [],
         priceTriggers: priceAlerts.state.triggers,
         readState
       }),
-    [inbox, overview, priceAlerts.state.triggers, readState]
+    [execution, fundAccountId, inbox, overview, priceAlerts.state.triggers, readState]
   );
 
   const findEnvelope = useCallback(

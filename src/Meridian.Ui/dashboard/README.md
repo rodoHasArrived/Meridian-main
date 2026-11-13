@@ -11,6 +11,12 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+Execution notifications retain an accepted stream snapshot when an older snapshot request finishes.
+Execution-alert preference loading and save feedback stay bound to the current account and attempt;
+account changes and unmounting retire older callbacks. The preference, journal and server-preview
+controls use the shared keyboard-focus and target-size contracts. The journal's **Before date**
+filter uses an exclusive UTC end boundary, matching the execution summary.
+
 Settings provider runtime evidence and integration setup components are owned by
 `settings-provider-integration.tsx`; the Settings screen composes them without changing routes
 or mutation authority. Accounting Security Master selection/search state belongs to

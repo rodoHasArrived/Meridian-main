@@ -40,6 +40,7 @@ public sealed class ProviderFactoryCredentialContextTests
             ["nasdaq"] = "nasdaq",
             ["nasdaq-corp-actions"] = "nasdaq",
             ["nasdaq-symbols"] = "nasdaq",
+            ["openfigi"] = "openfigi",
             ["polygon"] = "polygon",
             ["polygon-options"] = "polygon",
             ["robinhood"] = "robinhood",
