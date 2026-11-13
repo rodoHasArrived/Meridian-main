@@ -46,7 +46,7 @@ messages:
       ┌─────────────────────────────────────────────────────────────┐
       │                   Infrastructure Layer                       │
       │  Streaming (IMarketDataClient): IB, Alpaca, Polygon, NYSE,  │
-      │    StockSharp, Synthetic, CppTrader (90+ sources)           │
+      │    StockSharp, Synthetic (90+ sources)                      │
       │  Historical (IHistoricalDataProvider): Alpaca, Yahoo,       │
       │    Polygon, Tiingo, Finnhub, Stooq, AlphaVantage, FRED,     │
       │    Nasdaq, StockSharp, Synthetic (10+)                      │
@@ -92,7 +92,6 @@ messages:
       | `Meridian.FSharp.Ledger` | Double-entry ledger (journal entries, reconciliation) |
       | `Meridian.FSharp.DirectLending.Aggregates` | DL aggregate root types and state transitions |
       | `Meridian.Infrastructure` | Provider adapters: streaming, historical, symbol search, brokerage |
-      | `Meridian.Infrastructure.CppTrader` | Native CppTrader matching engine integration |
       | `Meridian.Storage` | JSONL/Parquet sinks, WAL, export, SecurityMaster/DL persistence |
       | `Meridian.Contracts` | Shared interfaces and DTOs — leaf project, zero project references |
       | `Meridian.Core` | Config, exceptions, serialization, scheduling, performance primitives |
@@ -109,7 +108,6 @@ messages:
       | `Meridian.Ui.Services` | Platform-independent UI service layer |
       | `Meridian.Wpf` | WPF desktop app (Windows-only, net10.0-windows, MVVM) |
       | `Meridian.Mcp` | Internal MCP server (ADR tools, audit, convention tools) |
-      | `Meridian.McpServer` | Market-data MCP server (backfill, storage, symbol, provider tools) |
 
       ---
 
@@ -250,17 +248,9 @@ messages:
       - Outbox pattern: `DirectLendingOutboxDispatcher` for reliable event delivery
       - Workflow orchestration: `DirectLendingWorkflowSupport`
 
-      #### CppTrader Native Integration
-      - `CppTraderHostManager` manages the native CppTrader process lifecycle
-      - `LengthPrefixedProtocolStream` for framed binary communication
-      - `CppTraderMarketDataClient` feeds live L3 order book data into the pipeline
-      - `CppTraderOrderGateway` routes orders to the native matching engine
-      - `CppTraderItchIngestionService` parses ITCH protocol feeds
-
-      #### MCP Servers
+      #### MCP Server
       - `Meridian.Mcp`: Internal tooling server — ADR lookup, audit tools, convention checks, known-error registry
-      - `Meridian.McpServer`: Market-data server — backfill tools, storage query, symbol management, provider status
-      - Both use the Model Context Protocol (MCP) SDK with ASP.NET minimal API hosting
+      - Uses the Model Context Protocol (MCP) SDK with ASP.NET minimal API hosting
 
       #### WPF Desktop Architecture
       - Project: `src/Meridian.Wpf/` (Windows-only, `net10.0-windows`)
@@ -316,7 +306,7 @@ messages:
       | Direct Lending | `src/Meridian.Application/DirectLending/` |
       | Backtest engine | `src/Meridian.Backtesting/Engine/BacktestEngine.cs` |
       | Paper trading | `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` |
-      | MCP tools | `src/Meridian.Mcp/Tools/` and `src/Meridian.McpServer/Tools/` |
+      | MCP tools | `src/Meridian.Mcp/Tools/` |
       | ADRs | `docs/adr/` |
 
   - role: user
