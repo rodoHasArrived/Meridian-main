@@ -29,6 +29,16 @@ export interface NumberFormatOptions {
   fallback?: string;
 }
 
+export interface SignableNumberFormatOptions extends NumberFormatOptions {
+  /** Explicit "+" on positives and "-" on negatives; zero (including -0) stays unsigned, e.g. "+1,234.5". */
+  signed?: boolean;
+}
+
+/** "+" for a positive value, "-" for a negative one, "" for zero, so the sign follows the value, not its rounding. */
+function signPrefix(value: number): string {
+  return value > 0 ? "+" : value < 0 ? "-" : "";
+}
+
 export interface CurrencyFormatOptions extends NumberFormatOptions {
   /** ISO 4217 code; blank or unknown codes render as "CODE 1,234.56". */
   currency?: string;
@@ -45,14 +55,18 @@ function isRenderable(value: NullableNumber): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-/** Grouped plain number, e.g. "1,234.56". */
-export function formatNumber(value: NullableNumber, options: NumberFormatOptions = {}): string {
-  const { minimumFractionDigits, maximumFractionDigits = 2, notation, useGrouping, fallback = DEFAULT_FALLBACK } = options;
+/** Grouped plain number, e.g. "1,234.56"; `signed` gives "+1,234.56" / "-1,234.56". */
+export function formatNumber(value: NullableNumber, options: SignableNumberFormatOptions = {}): string {
+  const { minimumFractionDigits, maximumFractionDigits = 2, notation, useGrouping, signed = false, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  return value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits, notation, useGrouping });
+  const localeOptions = { minimumFractionDigits, maximumFractionDigits, notation, useGrouping };
+  if (signed) {
+    return `${signPrefix(value)}${Math.abs(value).toLocaleString(FORMAT_LOCALE, localeOptions)}`;
+  }
+  return value.toLocaleString(FORMAT_LOCALE, localeOptions);
 }
 
 // PERCENT UNITS: the workstation carries percent-like values in two different units,
@@ -64,8 +78,8 @@ export function formatNumber(value: NullableNumber, options: NumberFormatOptions
 // `maxDrawdownPercent`, which arrives as a fraction from the walk-forward path and
 // as percent units from the live-metrics path.
 
-/** Percent display for values already expressed in percent units, e.g. 42.5 -> "42.5%". */
-export function formatPercent(value: NullableNumber, options: NumberFormatOptions = {}): string {
+/** Percent display for values already expressed in percent units, e.g. 42.5 -> "42.5%"; `signed` gives "+42.5%". */
+export function formatPercent(value: NullableNumber, options: SignableNumberFormatOptions = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
@@ -74,8 +88,8 @@ export function formatPercent(value: NullableNumber, options: NumberFormatOption
   return `${formatNumber(value, options)}%`;
 }
 
-/** Percent display for values expressed as a fraction of 1, e.g. 0.425 -> "42.5%". */
-export function formatRatioAsPercent(value: NullableNumber, options: NumberFormatOptions = {}): string {
+/** Percent display for values expressed as a fraction of 1, e.g. 0.425 -> "42.5%"; `signed` gives "+42.5%". */
+export function formatRatioAsPercent(value: NullableNumber, options: SignableNumberFormatOptions = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
@@ -118,7 +132,7 @@ export function formatPrefixedCurrency(value: NullableNumber, options: NumberFor
   }
 
   const prefix = value < 0 ? "-$" : "$";
-  return `${prefix}${formatNumber(Math.abs(value), options)}`;
+  return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
 /** Explicitly signed dollar amount, e.g. "+$1,234" / "-$1,234". */
@@ -133,7 +147,7 @@ export function formatSignedCurrency(value: NullableNumber, options: SignedCurre
   }
 
   const prefix = value < 0 ? "-$" : "+$";
-  return `${prefix}${formatNumber(Math.abs(value), options)}`;
+  return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
 /** Compact dollar amount, e.g. "$1.2M", "$3.4K", "-$512". */
@@ -177,30 +191,50 @@ export function pluralizeCount(count: number, singular: string, options: Plurali
   return `${renderedCount} ${count === 1 ? singular : plural}`;
 }
 
-/** Amount with an ISO code suffix and no symbol, e.g. "1,234.56 USD". */
+/** Amount with an ISO code suffix and no symbol, e.g. "1,234.56 USD"; `signed` gives "+1,234.56 USD". */
 export function formatAmountWithCode(
   value: NullableNumber,
   currency: string | null | undefined,
-  options: NumberFormatOptions = {}
+  options: SignableNumberFormatOptions = {}
 ): string {
-  const { minimumFractionDigits = 2, maximumFractionDigits = 2, fallback = DEFAULT_FALLBACK } = options;
+  const { minimumFractionDigits = 2, maximumFractionDigits = 2, signed = false, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  const text = value.toLocaleString(FORMAT_LOCALE, { minimumFractionDigits, maximumFractionDigits });
+  const text = formatNumber(value, { minimumFractionDigits, maximumFractionDigits, signed });
   const code = currency?.trim();
   return code ? `${text} ${code}` : text;
 }
 
-/** Grouped count, e.g. 1234 -> "1,234"; the same output as `value.toLocaleString("en-US")`. */
-export function formatCount(value: NullableNumber, options: Pick<NumberFormatOptions, "fallback"> = {}): string {
-  const { fallback = DEFAULT_FALLBACK } = options;
+export interface CurrencyWithCodeFormatOptions {
+  /** Explicit "+" on positives and two fraction digits on every non-zero amount, e.g. "+€100.00 EUR". */
+  signed?: boolean;
+}
+
+/**
+ * Symbol-style currency that keeps the ISO code visible when the symbol alone is ambiguous,
+ * e.g. "$100 USD", "-£100 GBP", "AED 100" (the code is not repeated when Intl already shows it).
+ * Unsigned amounts drop trailing zero cents ("€100 EUR"); `signed` pins two decimals on non-zero
+ * amounts ("+€100.00 EUR") and leaves zero, including -0, unsigned ("€0 EUR"). A blank code means USD.
+ */
+export function formatCurrencyWithCode(value: number, currency: string, options: CurrencyWithCodeFormatOptions = {}): string {
+  const { signed = false } = options;
+  const code = currency.trim().toUpperCase();
+  const normalizedValue = value === 0 ? 0 : value;
+  const amount = formatCurrency(normalizedValue, { currency: code || "USD", minimumFractionDigits: signed && normalizedValue !== 0 ? 2 : 0 });
+  const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
+  return code && !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
+}
+
+/** Grouped count, e.g. 1234 -> "1,234"; the same output as `value.toLocaleString("en-US")`. `signed` gives "+1,234". */
+export function formatCount(value: NullableNumber, options: Pick<SignableNumberFormatOptions, "fallback" | "signed"> = {}): string {
+  const { signed = false, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
     return fallback;
   }
 
-  return value.toLocaleString(FORMAT_LOCALE);
+  return signed ? `${signPrefix(value)}${Math.abs(value).toLocaleString(FORMAT_LOCALE)}` : value.toLocaleString(FORMAT_LOCALE);
 }
 
 /**

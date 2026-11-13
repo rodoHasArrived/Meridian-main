@@ -24,7 +24,7 @@ import {
   type QualitySymbolHealth,
   type QualityTopErrorSymbol
 } from "@/types/data-quality-watch.types";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatPercent as formatPercentValue } from "@/lib/format";
 
 export type QualityTone = "default" | "success" | "warning" | "danger";
 
@@ -251,7 +251,7 @@ export function buildUnacknowledgedAnomalyRow(anomaly: QualityAnomaly): Unacknow
     severityLabel,
     severityTone: anomalySeverityTone(anomaly.severity),
     description: anomaly.description?.trim() || "No description recorded.",
-    deviationLabel: `${formatSignedPercent(anomaly.deviationPercent)} (z ${anomaly.zScore.toFixed(2)})`,
+    deviationLabel: `${formatPercentValue(anomaly.deviationPercent, { signed: true, minimumFractionDigits: 1, maximumFractionDigits: 1 })} (z ${anomaly.zScore.toFixed(2)})`,
     detectedAt: anomaly.detectedAt,
     ariaLabel: `${severityLabel} ${typeLabel} on ${anomaly.symbol}, detected ${anomaly.detectedAt}.`
   };
@@ -337,15 +337,6 @@ function resolveOrdinal(
 
 function formatPercent(fraction: number): string {
   return `${(fraction * 100).toFixed(1)}%`;
-}
-
-function formatSignedPercent(percent: number): string {
-  const formatted = `${Math.abs(percent).toFixed(1)}%`;
-  if (percent > 0) {
-    return `+${formatted}`;
-  }
-
-  return percent < 0 ? `-${formatted}` : formatted;
 }
 
 function formatMs(value: number): string {

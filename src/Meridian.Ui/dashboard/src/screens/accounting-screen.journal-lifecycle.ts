@@ -1,4 +1,4 @@
-import { formatCount, formatCurrencyWithCode, formatDateTimeLabel } from "./accounting-screen.formatting";
+import { formatCount, formatDateTimeLabel } from "./accounting-screen.formatting";
 import type { AssetAccountingWorkflowViewModel } from "./accounting-screen.asset-workflow";
 import type {
   AccountingToolingTone,
@@ -8,7 +8,7 @@ import type {
   ManualJournalLifecycleTransitionViewModel,
 } from "./accounting-screen.view-model";
 import type { JournalEntryLifecycleAction, JournalEntryLifecycleTransition, ManualJournalEntryDraft } from "@/types";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
 
 export const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the governed asset workflow; generic approval, posting and corrections are unavailable.";
 

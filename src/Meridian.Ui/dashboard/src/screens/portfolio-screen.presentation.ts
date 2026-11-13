@@ -1,4 +1,4 @@
-import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, formatPrefixedCurrency, formatSignedCurrency as formatSignedCurrencyAmount, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
+import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
 import type { TradingWorkspaceResponse } from "@/types";
 import type {
   PortfolioDetailField,
@@ -65,18 +65,6 @@ export function sumNumericStrings(values: string[]): number {
     const parsed = parseFloat(cleaned);
     return sum + (Number.isNaN(parsed) ? 0 : parsed);
   }, 0);
-}
-
-export function formatCurrency(value: number): string {
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
-}
-
-export function formatSignedCurrency(value: number): string {
-  return formatSignedCurrencyAmount(value, { maximumFractionDigits: 0 });
-}
-
-export function formatCurrencyPrecise(value: number): string {
-  return formatPrefixedCurrency(value, { minimumFractionDigits: 2 });
 }
 
 /** Input is a fraction of 1 (0.425 -> "42.5%"), not percent units. */

@@ -646,12 +646,16 @@ not been recorded.
 - **Number style.** One style for a financial figure, wherever it appears:
   - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
     separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
-    gives the matching green/red tone, so sign and color never disagree.
+    gives the matching green/red tone, so sign and color never disagree. Other signed deltas
+    pass `signed: true` to `formatNumber`, `formatPercent`, `formatRatioAsPercent`,
+    `formatCount`, `formatAmountWithCode` or `formatMoney` (`+12.5%`, `-3`, `0`) instead of
+    prepending a sign in the screen.
   - *Spelling*: profit and loss is "P&L" in every label. `normalizeFinancialLabel` rewrites
     "PnL", "P/L" and "P & L"; the stat strip, metric card, record explorer and proof drawer
     apply it to labels that arrive from a read model.
   - *Currency*: pass the ISO code whenever more than one currency is in scope
-    (`formatMoney(value, { currency })`, or `formatAmountWithCode` for a code suffix).
+    (`formatMoney(value, { currency })`, `formatAmountWithCode` for a code suffix, or
+    `formatCurrencyWithCode` for a symbol amount that keeps the code, e.g. `€100 EUR`).
   - *Decimals*: currency minor units for money, instrument precision for prices and
     quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
     figure. Figures render in tabular numerals.
@@ -661,7 +665,7 @@ not been recorded.
   - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
     counts `.toFixed(` in screens, which skips separators and the sign convention;
     `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
-    imported from `@/lib/format`.
+    imported from `@/lib/format`; its baseline is empty, so a new one fails the ratchet test.
 - **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
   to every `MetricSnapshot`, so a screen cannot opt out by accident:
   - *Source*: a figure states where it comes from. `provenance` carries source, as-of time
@@ -794,9 +798,9 @@ not been recorded.
   every status fact, and one shell attention state (`src/app-shell.attention.ts`) feeds the
   masthead attention pill, every page status row, Today's status row and the status bar. The
   same input therefore gives the same status on each surface; see "Status signals" below. The
-  status bar's Sync item reports the workstation's own read of the API, and when the attention
-  state needs review or is blocked the bar repeats the pill's worst issue as an Attention item, so
-  a green Sync is never its whole answer under a masthead warning. The Daily Control Tower's
+  status bar's Sync item reports the workstation's own read of the API. The masthead pill is the
+  one shell place that names the worst issue: the status bar and page status rows do not repeat
+  it (UX consolidation P1). The Daily Control Tower's
   Evidence line names only the event correlated with the leading decision's queue row; with none
   it says so and cites the latest event as workstation context.
 - **Page freshness in the status bar.** The shell attention state covers shell-wide sources; the
@@ -989,11 +993,12 @@ disagree:
 - **Page status row** (`OperationalTrustSummary`, rendered by `StatusRow`): one line that reads
   `All sources current` or names only the facts that are not ready
   (`Scope: none selected`, `Freshness: 187d stale`). The per-fact breakdown, with detail and
-  recovery actions, is behind `Details`. The row also folds in shell source issues (provider
-  posture, unverified provenance, workspace data that did not load, degraded host), so a page
-  cannot read `All sources current` while the pill warns about the same sources.
-- **Status bar** (footer): Sync, plus the pill's worst issue when the state needs review or is
-  blocked, with a count of the rest (`+5 more issues`).
+  recovery actions, is behind `Details`. Shell source issues (provider posture, unverified
+  provenance, workspace data that did not load, degraded host) are the pill's to name: the row
+  lists them only under `Details` (`contextFacts`), and when the page's own facts are ready it
+  reads `This page's sources are current · N workspace issues in the trust strip`, so it never
+  says `All sources current` under a warning pill and never repeats the pill's items.
+- **Status bar** (footer): Sync and the page's Freshness only; it never repeats the pill's issue.
 
 Rules worth knowing when adding a signal:
 

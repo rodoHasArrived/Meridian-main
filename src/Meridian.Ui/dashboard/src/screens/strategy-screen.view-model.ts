@@ -6,14 +6,13 @@ import {
   countBy,
   distinctFormattedValues,
   formatCount,
-  formatMoney,
   formatNullableNumber,
   formatOptionalNotes,
   formatPromotionState,
-  formatSignedCount,
-  formatSignedNullableNumber,
-  formatSignedPercent,
   formatText,
+  STRATEGY_MONEY,
+  STRATEGY_SIGNED_MONEY,
+  STRATEGY_SIGNED_RETURN,
   isLiveAdjacentMode,
   parseDecimalToken,
   parsePercentToken
@@ -37,7 +36,7 @@ import type {
   RunComparisonRow,
   RunDiff
 } from "@/types";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatMoney, formatNumber, formatRatioAsPercent as formatRatioAsPercentValue } from "@/lib/format";
 import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 
 export type StrategyCommand = "compare" | "diff" | "history";
@@ -1986,10 +1985,10 @@ export function buildPlotToolState({
     detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
   };
   const momentRows: StrategyPlotMomentRow[] = [
-    { id: "net-pnl", label: "Net P&L", value: formatMoney(netPnl, true), benchmark: "Pair summary" },
-    { id: "return", label: "Total return", value: formatSignedPercent(parsedReturn), benchmark: "Run linked" },
+    { id: "net-pnl", label: "Net P&L", value: formatMoney(netPnl, STRATEGY_SIGNED_MONEY), benchmark: "Pair summary" },
+    { id: "return", label: "Total return", value: formatRatioAsPercentValue(parsedReturn, STRATEGY_SIGNED_RETURN), benchmark: "Run linked" },
     { id: "sharpe", label: "Sharpe ratio", value: formatNullableNumber(parsedSharpe, 3), benchmark: "Operator review" },
-    { id: "drawdown", label: "Max drawdown", value: formatSignedPercent(maxDrawdown), benchmark: "Distribution tail" },
+    { id: "drawdown", label: "Max drawdown", value: formatRatioAsPercentValue(maxDrawdown, STRATEGY_SIGNED_RETURN), benchmark: "Distribution tail" },
     { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy posture" },
     { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
   ];
@@ -2174,7 +2173,7 @@ export function buildPlotToolState({
         {
           id: "drawdown",
           label: "Max DD",
-          value: formatSignedPercent(maxDrawdown),
+          value: formatRatioAsPercentValue(maxDrawdown, STRATEGY_SIGNED_RETURN),
           detail: "Recent window",
           tone: maxDrawdown === null ? "default" : maxDrawdown < -0.1 ? "danger" : "warning"
         }
@@ -2320,9 +2319,9 @@ export function buildComparisonRow(
   const strategyName = formatText(row.strategyName);
   const modeText = titleCase(formatText(row.mode));
   const statusText = formatText(row.status);
-  const netPnlText = formatMoney(row.netPnl, true);
-  const totalReturnText = formatSignedPercent(row.totalReturn);
-  const maxDrawdownText = formatSignedPercent(row.maxDrawdown);
+  const netPnlText = formatMoney(row.netPnl, STRATEGY_SIGNED_MONEY);
+  const totalReturnText = formatRatioAsPercentValue(row.totalReturn, STRATEGY_SIGNED_RETURN);
+  const maxDrawdownText = formatRatioAsPercentValue(row.maxDrawdown, STRATEGY_SIGNED_RETURN);
   const sharpeRatioText = formatNullableNumber(row.sharpeRatio, 3);
   const fillCountText = Number.isFinite(row.fillCount) ? formatCountValue(row.fillCount) : "Unavailable";
   const promotionStateText = formatPromotionState(row.promotionState);
@@ -2333,7 +2332,7 @@ export function buildComparisonRow(
   return {
     runId: row.runId,
     strategyName,
-    equityText: `Equity ${formatMoney(row.finalEquity)}`,
+    equityText: `Equity ${formatMoney(row.finalEquity, STRATEGY_MONEY)}`,
     modeText,
     modeBadgeVariant: badgeVariantForMode(row.mode),
     statusText,
@@ -2503,12 +2502,12 @@ export function buildDiffPanel(
 }
 
 function buildDiffMetricRows(metrics: MetricsDiff): StrategyDiffMetricRow[] {
-  const netPnlValue = formatMoney(metrics.netPnlDelta, true);
-  const returnValue = formatSignedPercent(metrics.totalReturnDelta);
-  const fillValue = formatSignedCount(metrics.fillCountDelta);
-  const finalEquityValue = formatMoney(metrics.finalEquityDelta ?? null, true);
-  const drawdownValue = formatMoney(metrics.maxDrawdownDelta ?? null, true);
-  const sharpeValue = formatSignedNullableNumber(metrics.sharpeRatioDelta ?? null, 3);
+  const netPnlValue = formatMoney(metrics.netPnlDelta, STRATEGY_SIGNED_MONEY);
+  const returnValue = formatRatioAsPercentValue(metrics.totalReturnDelta, STRATEGY_SIGNED_RETURN);
+  const fillValue = formatCountValue(metrics.fillCountDelta, { signed: true, fallback: "Unavailable" });
+  const finalEquityValue = formatMoney(metrics.finalEquityDelta ?? null, STRATEGY_SIGNED_MONEY);
+  const drawdownValue = formatMoney(metrics.maxDrawdownDelta ?? null, STRATEGY_SIGNED_MONEY);
+  const sharpeValue = formatNumber(metrics.sharpeRatioDelta ?? null, { signed: true, minimumFractionDigits: 3, maximumFractionDigits: 3, fallback: "Unavailable" });
 
   return [
     {
@@ -2516,14 +2515,14 @@ function buildDiffMetricRows(metrics: MetricsDiff): StrategyDiffMetricRow[] {
       label: "Net P&L delta",
       value: netPnlValue,
       tone: toneForSignedValue(metrics.netPnlDelta),
-      ariaLabel: `Net P&L delta ${netPnlValue}. Base ${formatMoney(metrics.baseNetPnl)}. Target ${formatMoney(metrics.targetNetPnl)}.`
+      ariaLabel: `Net P&L delta ${netPnlValue}. Base ${formatMoney(metrics.baseNetPnl, STRATEGY_MONEY)}. Target ${formatMoney(metrics.targetNetPnl, STRATEGY_MONEY)}.`
     },
     {
       id: "return-delta",
       label: "Return delta",
       value: returnValue,
       tone: toneForSignedValue(metrics.totalReturnDelta),
-      ariaLabel: `Return delta ${returnValue}. Base ${formatSignedPercent(metrics.baseTotalReturn)}. Target ${formatSignedPercent(metrics.targetTotalReturn)}.`
+      ariaLabel: `Return delta ${returnValue}. Base ${formatRatioAsPercentValue(metrics.baseTotalReturn, STRATEGY_SIGNED_RETURN)}. Target ${formatRatioAsPercentValue(metrics.targetTotalReturn, STRATEGY_SIGNED_RETURN)}.`
     },
     {
       id: "fill-delta",
@@ -2537,14 +2536,14 @@ function buildDiffMetricRows(metrics: MetricsDiff): StrategyDiffMetricRow[] {
       label: "Final equity delta",
       value: finalEquityValue,
       tone: toneForSignedValue(metrics.finalEquityDelta ?? null),
-      ariaLabel: `Final equity delta ${finalEquityValue}. Base ${formatMoney(metrics.baseFinalEquity ?? null)}. Target ${formatMoney(metrics.targetFinalEquity ?? null)}.`
+      ariaLabel: `Final equity delta ${finalEquityValue}. Base ${formatMoney(metrics.baseFinalEquity ?? null, STRATEGY_MONEY)}. Target ${formatMoney(metrics.targetFinalEquity ?? null, STRATEGY_MONEY)}.`
     },
     {
       id: "drawdown-delta",
       label: "Drawdown delta",
       value: drawdownValue,
       tone: toneForDrawdownDelta(metrics.maxDrawdownDelta ?? null),
-      ariaLabel: `Max drawdown delta ${drawdownValue}. Base ${formatMoney(metrics.baseMaxDrawdown ?? null)}. Target ${formatMoney(metrics.targetMaxDrawdown ?? null)}.`
+      ariaLabel: `Max drawdown delta ${drawdownValue}. Base ${formatMoney(metrics.baseMaxDrawdown ?? null, STRATEGY_MONEY)}. Target ${formatMoney(metrics.targetMaxDrawdown ?? null, STRATEGY_MONEY)}.`
     },
     {
       id: "sharpe-delta",
@@ -2567,10 +2566,10 @@ function buildPositionDiffRow(
   const pnlDelta = item.targetPnl - item.basePnl;
   const baseQuantityText = formatCount(item.baseQuantity);
   const targetQuantityText = formatCount(item.targetQuantity);
-  const quantityText = `Qty ${formatSignedCount(quantityDelta)}`;
-  const basePnlText = formatMoney(item.basePnl);
-  const targetPnlText = formatMoney(item.targetPnl);
-  const pnlText = `P&L ${formatMoney(pnlDelta, true)}`;
+  const quantityText = `Qty ${formatCountValue(quantityDelta, { signed: true, fallback: "Unavailable" })}`;
+  const basePnlText = formatMoney(item.basePnl, STRATEGY_MONEY);
+  const targetPnlText = formatMoney(item.targetPnl, STRATEGY_MONEY);
+  const pnlText = `P&L ${formatMoney(pnlDelta, STRATEGY_SIGNED_MONEY)}`;
 
   return {
     key,

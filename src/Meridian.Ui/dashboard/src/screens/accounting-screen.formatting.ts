@@ -1,4 +1,4 @@
-import { formatCurrency as formatCurrencyAmount, formatPrefixedCurrency, formatSignedCurrency as formatSignedCurrencyAmount, pluralizeCount, formatUtcTimestamp } from "@/lib/format";
+import { pluralizeCount, formatUtcTimestamp } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
   return pluralizeCount(count, singular);
@@ -21,26 +21,6 @@ export function formatBytes(value: number): string {
     ? size.toFixed(0)
     : size.toFixed(1).replace(/\.0$/, "");
   return `${formatted} ${units[unitIndex]}`;
-}
-
-export function formatCurrency(value: number) {
-  return formatPrefixedCurrency(value);
-}
-
-export function formatCurrencyWithCode(value: number, currency: string, signed = false): string {
-  const code = currency.trim().toUpperCase();
-  const normalizedValue = value === 0 ? 0 : value;
-  const amount = formatCurrencyAmount(normalizedValue, { currency: code || "USD", minimumFractionDigits: signed && normalizedValue !== 0 ? 2 : 0 });
-  const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
-  return code && !amount.includes(code) ? `${prefix}${amount} ${code}` : `${prefix}${amount}`;
-}
-
-export function formatCurrencyForCode(value: number, currency: string): string {
-  return formatCurrencyAmount(value, { currency, minimumFractionDigits: 0 });
-}
-
-export function formatSignedCurrency(value: number): string {
-  return formatSignedCurrencyAmount(value, { minimumFractionDigits: 2, zeroLabel: "$0" });
 }
 
 export function formatDateTimeLabel(value: string | null | undefined): string {

@@ -31,7 +31,7 @@ import type {
   SecurityMasterTrustSnapshot,
   TradingParameters
 } from "@/types";
-import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
+import { formatAmountWithCode, formatCount as formatCountValue, formatNumber } from "@/lib/format";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -731,7 +731,7 @@ export function buildSecurityOpenLotRows(
         ? formatQuantity(lot.factorAdjustedFace)
         : "—";
     const costBasisLabel = formatScheduleAmount(lot.costBasis, lot.currency);
-    const unrealizedPnlLabel = lot.unrealizedPnl !== null ? formatSignedScheduleAmount(lot.unrealizedPnl, lot.currency) : "—";
+    const unrealizedPnlLabel = lot.unrealizedPnl !== null ? formatAmountWithCode(lot.unrealizedPnl, lot.currency, { signed: true, minimumFractionDigits: 0, maximumFractionDigits: 2 }) : "—";
     const statusTone = openLotStatusTone(lot.lotStatus);
 
     return {
@@ -1369,20 +1369,6 @@ export function formatScheduleAmount(value: number | null, currency: string): st
   const prefix = value >= 0 ? "" : "-";
   const amount = formatNumber(Math.abs(value), { maximumFractionDigits: 2, minimumFractionDigits: 0 });
   return `${prefix}${amount} ${currency}`;
-}
-
-
-export function formatSignedScheduleAmount(value: number, currency: string): string {
-  if (!Number.isFinite(value)) {
-    return "—";
-  }
-
-  if (value === 0) {
-    return `0 ${currency}`;
-  }
-
-  const sign = value > 0 ? "+" : "-";
-  return `${sign}${formatNumber(Math.abs(value), { maximumFractionDigits: 2 })} ${currency}`;
 }
 
 

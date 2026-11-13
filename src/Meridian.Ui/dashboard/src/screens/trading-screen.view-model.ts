@@ -1883,11 +1883,11 @@ function buildPaperSessionRows({
     return {
       sessionId: session.sessionId,
       strategyId: session.strategyId,
-      initialCashText: formatUsdValue(session.initialCash),
+      initialCashText: formatCurrency(session.initialCash),
       statusLabel,
       isActive: session.isActive,
       isSelected: selectedSessionId === session.sessionId,
-      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatUsdValue(session.initialCash)} initial cash`,
+      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatCurrency(session.initialCash)} initial cash`,
       restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring…" : "Restore",
       verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying…" : "Verify replay",
       closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing…" : "Close",
@@ -1944,14 +1944,14 @@ function buildPaperSessionDetailPanel(
     ariaLabel: `Paper session detail for ${detail.summary.sessionId}`,
     infoRows: [
       { label: "Strategy", value: detail.summary.strategyId },
-      { label: "Initial cash", value: formatUsdValue(detail.summary.initialCash) },
+      { label: "Initial cash", value: formatCurrency(detail.summary.initialCash) },
       { label: "Tracked symbols", value: detail.symbols.length > 0 ? detail.symbols.join(", ") : "None" },
       { label: "Orders retained", value: String(detail.orderHistory?.length ?? 0) }
     ],
     metricRows: detail.portfolio
       ? [
-          { label: "Cash", value: formatUsdValue(detail.portfolio.cash) },
-          { label: "Portfolio value", value: formatUsdValue(detail.portfolio.portfolioValue) },
+          { label: "Cash", value: formatCurrency(detail.portfolio.cash) },
+          { label: "Portfolio value", value: formatCurrency(detail.portfolio.portfolioValue) },
           { label: "Open positions", value: String(detail.portfolio.positions.length) }
         ]
       : [],
@@ -2030,10 +2030,6 @@ function parsePaperSessionCash(value: string): number | null {
 
 function getPaperSessionStatus(session: PaperSessionSummary): string {
   return session.isActive ? "Active" : "Closed";
-}
-
-function formatUsdValue(value: number): string {
-  return formatCurrency(value);
 }
 
 export type SessionReplayCommandKind =
@@ -3539,7 +3535,7 @@ export function buildOrderPreview({ form, positions, risk }: BuildOrderPreviewOp
 
   const riskNote = buildOrderPreviewRiskNote(risk);
   const referencePriceLabel = referencePrice === null ? "—" : formatPrice(referencePrice);
-  const notionalLabel = notional === null ? "—" : formatMoney(notional);
+  const notionalLabel = notional === null ? "—" : formatMoneyValue(notional, { context: "trading", decimals: 2 });
   const resultingPositionLabel = available
     ? describeResultingPosition(resultingSignedQuantity, symbol)
     : "—";
@@ -3808,7 +3804,7 @@ function buildOrderPreviewSummary({
 }): string {
   const qtyText = formatQuantity(quantity);
   const priceText = referencePrice !== null
-    ? ` ≈ ${formatMoney(referencePrice * quantity)} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
+    ? ` ≈ ${formatMoneyValue(referencePrice * quantity, { context: "trading", decimals: 2 })} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
     : "";
   return `${side} ${qtyText} ${symbol} ${type.toLowerCase()}${priceText}`;
 }
@@ -3827,10 +3823,6 @@ function parseLooseNumber(value: string | null | undefined): number | null {
 
 function formatPrice(value: number): string {
   return formatQuantityValue(value, { minDecimals: 2, maxDecimals: 2 });
-}
-
-function formatMoney(value: number): string {
-  return formatMoneyValue(value, { context: "trading", decimals: 2 });
 }
 
 function formatQuantity(value: number): string {

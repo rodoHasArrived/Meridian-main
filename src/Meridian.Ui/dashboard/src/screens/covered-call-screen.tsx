@@ -636,8 +636,8 @@ function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewMod
     ["Win rate", fmtPct(result.metrics.winRate)],
     ["Assignment rate", fmtPct(result.metrics.assignmentRate)],
     ["Total trades", String(result.metrics.totalOptionTrades)],
-    ["Total premium", fmtMoney(result.metrics.totalPremiumCollected)],
-    ["Option P&L", fmtMoney(result.metrics.totalOptionPnl)],
+    ["Total premium", formatPrefixedCurrency(result.metrics.totalPremiumCollected)],
+    ["Option P&L", formatPrefixedCurrency(result.metrics.totalOptionPnl)],
     ["Up capture", fmtPct(result.metrics.upCapture)],
     ["Down capture", fmtPct(result.metrics.downCapture)]
   ];
@@ -678,26 +678,26 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
       title="Equity curve"
       subtitle="Strategy vs underlying-only buy-and-hold."
       readout={[
-        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #2E7655)" },
-        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #606870)" }
+        { label: "Strategy", value: formatPrefixedCurrency(finalStrategy), color: "var(--chart-equity, #2E7655)" },
+        { label: "Underlying", value: formatPrefixedCurrency(finalUnderlying), color: "var(--chart-axis, #606870)" }
       ]}
       height={220}
       style={{ flexShrink: 0 }}
     >
       <EquityCurveChart
         ariaLabel="Covered-call strategy versus underlying equity curve"
-        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${fmtMoney(
+        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${formatPrefixedCurrency(
           finalStrategy
-        )}, underlying buy-and-hold ${fmtMoney(finalUnderlying)}.`}
+        )}, underlying buy-and-hold ${formatPrefixedCurrency(finalUnderlying)}.`}
         accessibleData={{
           columns: ["Date", "Strategy", "Underlying"],
-          rows: points.map((p) => [p.date, fmtMoney(p.strategyEquity), fmtMoney(p.underlyingEquity)])
+          rows: points.map((p) => [p.date, formatPrefixedCurrency(p.strategyEquity), formatPrefixedCurrency(p.underlyingEquity)])
         }}
         series={[
           { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
           { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
         ]}
-        valueFmt={fmtMoney}
+        valueFmt={(value) => formatPrefixedCurrency(value)}
       />
     </ChartCard>
   );
@@ -873,9 +873,4 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 function fmtPct(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return `${(value * 100).toFixed(2)}%`;
-}
-
-function fmtMoney(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 2 });
 }

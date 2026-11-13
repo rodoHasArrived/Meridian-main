@@ -8,6 +8,7 @@ import {
   formatAmountWithCode,
   formatCompactCurrency,
   formatCurrency,
+  formatCurrencyWithCode,
   formatNumber,
   formatPercent,
   formatPrefixedCurrency,
@@ -41,6 +42,15 @@ describe("formatNumber", () => {
     expect(formatNumber(undefined)).toBe("—");
     expect(formatNumber(Number.NaN, { fallback: "0" })).toBe("0");
   });
+
+  it("signs positives and negatives explicitly when signed, leaving zero unsigned", () => {
+    expect(formatNumber(1234.5, { signed: true })).toBe("+1,234.5");
+    expect(formatNumber(-1234.5, { signed: true })).toBe("-1,234.5");
+    expect(formatNumber(0, { signed: true })).toBe("0");
+    expect(formatNumber(-0, { signed: true })).toBe("0");
+    expect(formatNumber(0.001, { signed: true, minimumFractionDigits: 2 })).toBe("+0.00");
+    expect(formatNumber(Number.NaN, { signed: true, fallback: "Unavailable" })).toBe("Unavailable");
+  });
 });
 
 describe("formatPercent", () => {
@@ -51,6 +61,12 @@ describe("formatPercent", () => {
 
   it("renders the fallback for non-finite values", () => {
     expect(formatPercent(null, { fallback: "Not measured" })).toBe("Not measured");
+  });
+
+  it("signs the value when signed", () => {
+    expect(formatPercent(12.34, { signed: true, minimumFractionDigits: 1, maximumFractionDigits: 1 })).toBe("+12.3%");
+    expect(formatPercent(-5, { signed: true, minimumFractionDigits: 1, maximumFractionDigits: 1 })).toBe("-5.0%");
+    expect(formatPercent(0, { signed: true })).toBe("0%");
   });
 });
 
@@ -70,6 +86,12 @@ describe("formatRatioAsPercent", () => {
     expect(formatRatioAsPercent(0.12345, { maximumFractionDigits: 1 })).toBe("12.3%");
     expect(formatRatioAsPercent(null, { fallback: "Unavailable" })).toBe("Unavailable");
     expect(formatRatioAsPercent(Number.NaN, { fallback: "Unavailable" })).toBe("Unavailable");
+  });
+
+  it("signs the scaled value when signed", () => {
+    expect(formatRatioAsPercent(0.1234, { signed: true, minimumFractionDigits: 2 })).toBe("+12.34%");
+    expect(formatRatioAsPercent(-0.05, { signed: true, minimumFractionDigits: 2 })).toBe("-5.00%");
+    expect(formatRatioAsPercent(0, { signed: true, minimumFractionDigits: 2 })).toBe("0.00%");
   });
 });
 
@@ -161,6 +183,32 @@ describe("formatAmountWithCode", () => {
   it("renders the fallback for non-finite values", () => {
     expect(formatAmountWithCode(Number.NaN, "USD", { fallback: "-" })).toBe("-");
   });
+
+  it("signs the amount when signed, leaving zero unsigned", () => {
+    expect(formatAmountWithCode(1234.5, "EUR", { signed: true, minimumFractionDigits: 0 })).toBe("+1,234.5 EUR");
+    expect(formatAmountWithCode(-12, "EUR", { signed: true, minimumFractionDigits: 0 })).toBe("-12 EUR");
+    expect(formatAmountWithCode(0, "EUR", { signed: true, minimumFractionDigits: 0 })).toBe("0 EUR");
+  });
+});
+
+describe("formatCurrencyWithCode", () => {
+  it.each([
+    [100, "EUR", false, "€100 EUR"],
+    [-100, "GBP", false, "-£100 GBP"],
+    [100, " eur ", true, "+€100.00 EUR"],
+    [-100, "EUR", true, "-€100.00 EUR"],
+    [0, "EUR", true, "€0 EUR"],
+    [100, "USD", false, "$100 USD"],
+    [100, "AED", false, "AED\u00a0100"],
+    [-100, "AED", true, "-AED\u00a0100.00"],
+    [100, "??", false, "?? 100"],
+    [-0, "USD", true, "$0 USD"],
+    [-0, "EUR", false, "€0 EUR"],
+    [100, "", false, "$100"],
+    [Number.NaN, "EUR", true, "— EUR"]
+  ])("formats %s in %s (signed: %s)", (value, currency, signed, expected) => {
+    expect(formatCurrencyWithCode(value, currency, { signed })).toBe(expected);
+  });
 });
 
 describe("pluralizeCount", () => {
@@ -188,6 +236,12 @@ describe("formatCount", () => {
     expect(formatCount(0)).toBe("0");
     expect(formatCount(Number.NaN)).toBe("—");
     expect(formatCount(null, { fallback: "Unavailable" })).toBe("Unavailable");
+  });
+
+  it("signs the count when signed", () => {
+    expect(formatCount(1234, { signed: true })).toBe("+1,234");
+    expect(formatCount(-3, { signed: true })).toBe("-3");
+    expect(formatCount(0, { signed: true })).toBe("0");
   });
 });
 

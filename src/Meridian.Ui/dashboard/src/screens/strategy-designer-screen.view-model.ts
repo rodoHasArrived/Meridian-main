@@ -1709,7 +1709,7 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
 
   return {
     totalNotional,
-    totalNotionalLabel: formatCurrency(totalNotional),
+    totalNotionalLabel: formatPrefixedCurrency(totalNotional, { maximumFractionDigits: 0 }),
     longNotional,
     shortNotional,
     netDirection,
@@ -2350,8 +2350,8 @@ function buildSliceDetail(leg: StrategyLeg): string {
 
 function buildNetDirectionLabel(direction: "Long" | "Short" | "Flat", longNotional: number, shortNotional: number): string {
   if (direction === "Flat") return "Balanced long/short notional";
-  if (direction === "Long") return `Long-biased by ${formatCurrency(longNotional - shortNotional)} notional`;
-  return `Short-biased by ${formatCurrency(shortNotional - longNotional)} notional`;
+  if (direction === "Long") return `Long-biased by ${formatPrefixedCurrency(longNotional - shortNotional, { maximumFractionDigits: 0 })} notional`;
+  return `Short-biased by ${formatPrefixedCurrency(shortNotional - longNotional, { maximumFractionDigits: 0 })} notional`;
 }
 
 function formatPrice(value: number): string {
@@ -2361,10 +2361,6 @@ function formatPrice(value: number): string {
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) return "—";
   return formatNumber(value, { maximumFractionDigits: 4 });
-}
-
-function formatCurrency(value: number): string {
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
 }
 
 function slugifyId(value: string): string {

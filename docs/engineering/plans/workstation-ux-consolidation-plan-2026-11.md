@@ -77,11 +77,22 @@ Each phase ships on its own, behind the existing browser smoke tests and screens
 masthead's worst issue ("Cash variance needs review +5 more"). It holds Sync and page Freshness
 only, so the trust strip is the one shell place that names the worst open issue.
 
+**P1 second step and P3 formatter burn-down (landed 2026-11-13):**
+- Page status rows (`OperationalTrustSummary`) no longer list the masthead's shell-wide issues in
+  their one-line summary. Those issues stay under "Details", and a page whose own facts are ready
+  reads "This page's sources are current · N workspace issues in the trust strip".
+- `localMoneyFormatters` is at 0 (was 24 occurrences in 13 files). Screen-local money and signed
+  formatters were replaced with `@/lib/format`, which gained a `signed` option on `formatNumber`,
+  `formatPercent`, `formatRatioAsPercent`, `formatAmountWithCode` and `formatCount`, and now hosts
+  `formatCurrencyWithCode`. `handRolledNumberFormatting` went from 75 to 72. The only output
+  changes are thousands separators on signed percents and returns of 1,000 or more, "-0" counts
+  now reading "0", and a trimmed currency code.
+
 **Remaining in Phase 1:**
 - Merge `lib/format.ts` `formatMoney` and the accounting one behind one API.
-- Bring the `localMoneyFormatters` (24) and `handRolledNumberFormatting` (75) ratchets to 0.
+- Bring `handRolledNumberFormatting` (now 72) to 0.
 - One date format with a time-zone preference.
-- The rest of P1 (per-screen trust rows show only differences; one merged Today queue) and the P4 scope bar.
+- The rest of P1 (one merged Today queue) and the P4 scope bar.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the

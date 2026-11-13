@@ -24,7 +24,6 @@ import {
 } from "@/lib/api";
 import {
   formatCount,
-  formatCurrency,
   formatDateOnly,
   formatDateTimeLabel,
 } from "./accounting-screen.formatting";
@@ -93,7 +92,7 @@ import type {
   RuleDryRunResult,
   GeneratedPostingLine,
 } from "@/types";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, formatPrefixedCurrency } from "@/lib/format";
 
 const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
 interface AccountingTenantAdministrationProfileDraft {
@@ -2403,7 +2402,7 @@ export function useAccountingConfigurationViewModel(
         title: template.displayName,
         subtitle: `${template.version} | ${template.description || "No description supplied."}`,
         lineCountLabel: `${template.lines.length} line${template.lines.length === 1 ? "" : "s"}`,
-        balanceLabel: `${formatCurrency(debitTotal)} debit / ${formatCurrency(creditTotal)} credit`,
+        balanceLabel: `${formatPrefixedCurrency(debitTotal)} debit / ${formatPrefixedCurrency(creditTotal)} credit`,
         statusLabel: template.isArchived ? "Archived" : debitTotal === creditTotal ? "Balanced" : "Unbalanced"
       };
     });
@@ -2441,13 +2440,13 @@ export function useAccountingConfigurationViewModel(
     const previewView = preview
       ? {
           title: preview.displayName,
-          balanceLabel: `${formatCurrency(preview.totalDebits)} debit / ${formatCurrency(preview.totalCredits)} credit`,
+          balanceLabel: `${formatPrefixedCurrency(preview.totalDebits)} debit / ${formatPrefixedCurrency(preview.totalCredits)} credit`,
           statusLabel: preview.isBalanced ? "Balanced non-posting preview" : "Unbalanced preview",
           lineRows: preview.lines.map((line, index) => ({
             id: `${line.accountPath}-${line.side}-${index}`,
             account: `${line.accountPath} | ${line.accountName}`,
             side: line.side,
-            amount: `${formatCurrency(line.amount)} ${line.currency}`,
+            amount: `${formatPrefixedCurrency(line.amount)} ${line.currency}`,
             description: line.description ?? "Template line"
           }))
         }
@@ -4441,12 +4440,12 @@ function buildAccountingRulesStudioDryRunViewModel(result: RuleDryRunResult): Ac
   return {
     title: `${result.sourceEventType} dry run`,
     balanceLabel: result.isPostingBalanced
-      ? `Balanced ${formatCurrency(result.eventAmount)} ${result.currency}`
-      : `Unbalanced ${formatCurrency(result.eventAmount)} ${result.currency}`,
+      ? `Balanced ${formatPrefixedCurrency(result.eventAmount)} ${result.currency}`
+      : `Unbalanced ${formatPrefixedCurrency(result.eventAmount)} ${result.currency}`,
     selectedRuleLabel: result.selectedRuleId ? `Selected rule ${result.selectedRuleId}` : "No rule selected",
     matchRows: result.ruleMatches.map(formatRuleDryRunMatch),
     generatedLineRows: result.generatedLines.map((line, index) =>
-      `${index + 1}. ${line.side} ${line.accountPath} ${formatCurrency(line.amount)} ${line.currency} - ${line.description ?? line.accountName}`
+      `${index + 1}. ${line.side} ${line.accountPath} ${formatPrefixedCurrency(line.amount)} ${line.currency} - ${line.description ?? line.accountName}`
     ),
     generatedPostingRows: generatedPostingLines.length > 0
       ? generatedPostingLines.map(formatGeneratedPostingLine)
@@ -4478,8 +4477,8 @@ function buildAccountingRulesStudioJournalCandidateViewModel(
       ? `Selected rule ${result.selectedRuleId}${result.selectedRuleVersion ? ` version ${result.selectedRuleVersion}` : ""}`
       : "No selected posting rule",
     balanceLabel: result.isBalanced
-      ? `Balanced ${formatCurrency(result.totalDebits)} / ${formatCurrency(result.totalCredits)}`
-      : `Unbalanced by ${formatCurrency(result.imbalance)}`,
+      ? `Balanced ${formatPrefixedCurrency(result.totalDebits)} / ${formatPrefixedCurrency(result.totalCredits)}`
+      : `Unbalanced by ${formatPrefixedCurrency(result.imbalance)}`,
     commandLabel,
     approvalLabel,
     evidenceLabel: `${result.evidenceLinks.length} evidence link${result.evidenceLinks.length === 1 ? "" : "s"}`,
@@ -4512,7 +4511,7 @@ function buildAccountingRulesStudioTestCaseViewModel(testCase: AccountingRuleTes
   return {
     id: testCase.testCaseId,
     title: testCase.displayName,
-    subtitle: `${request.sourceEventType} | ${request.effectiveDate} | ${formatCurrency(request.eventAmount)} ${request.currency}`,
+    subtitle: `${request.sourceEventType} | ${request.effectiveDate} | ${formatPrefixedCurrency(request.eventAmount)} ${request.currency}`,
     assertionLabel: `Expect ${expectedRule}${expectedVersion}, ${testCase.expectBalancedPosting ? "balanced" : "unbalanced"}, ${expectedIssues}, ${expectedPostings}.`,
     evidenceLabel: evidenceCount > 0
       ? `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
@@ -4621,7 +4620,7 @@ function formatAccountingRuleConditionGroup(group: NonNullable<PostingRule["cond
 }
 
 function formatAccountingRuleFormula(formula: NonNullable<PostingRule["formulas"]>[number]): string {
-  return `${formula.formulaId}: ${formula.kind} ${formatCurrency(formula.value)} ${formula.currency}${formula.description ? ` - ${formula.description}` : ""}`;
+  return `${formula.formulaId}: ${formula.kind} ${formatPrefixedCurrency(formula.value)} ${formula.currency}${formula.description ? ` - ${formula.description}` : ""}`;
 }
 
 function formatAllocationRule(allocation: AllocationRule): string {
@@ -4631,7 +4630,7 @@ function formatAllocationRule(allocation: AllocationRule): string {
 
 function formatGeneratedPostingLine(line: GeneratedPostingLine): string {
   const scope = formatLedgerDimensionSet(line.dimensions).join(", ");
-  return `${line.side} ${line.accountPath} ${formatCurrency(line.amount)} ${line.currency} via ${line.amountFormulaId}${scope ? ` | ${scope}` : ""}${line.description ? ` - ${line.description}` : ""}`;
+  return `${line.side} ${line.accountPath} ${formatPrefixedCurrency(line.amount)} ${line.currency} via ${line.amountFormulaId}${scope ? ` | ${scope}` : ""}${line.description ? ` - ${line.description}` : ""}`;
 }
 
 function formatRuleDryRunMatch(match: AccountingRuleDryRunMatch): string {

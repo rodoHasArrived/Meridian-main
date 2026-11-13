@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
+import { formatAmountWithCode, formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import {
   collectCloseWorkflowEvidenceLinks,
@@ -3488,6 +3488,11 @@ function mapNavSupportPackageRow(packageDto: PrivateCapitalNavSupportPackage): O
   const actions = (packageDto.requiredActions ?? [])
     .map((action) => action.trim())
     .filter(Boolean);
+  // ISO codes render symbol-style ("$1,250,000.00"); any other code keeps the amount with the code as a suffix.
+  const shadowNavCurrency = packageDto.currency ?? "USD";
+  const shadowNavAmount = /^[A-Z]{3}$/.test(shadowNavCurrency)
+    ? formatCurrencyAmount(packageDto.shadowNav, { currency: shadowNavCurrency, fallback: "Not recorded" })
+    : formatAmountWithCode(packageDto.shadowNav, shadowNavCurrency, { minimumFractionDigits: 0, maximumFractionDigits: 4, fallback: "Not recorded" });
 
   return {
     id: packageDto.packageId,
@@ -3500,7 +3505,7 @@ function mapNavSupportPackageRow(packageDto: PrivateCapitalNavSupportPackage): O
       : `${readyComponentCount}/${components.length} components ready; review ${reviewComponents.join(", ")}`,
     shadowNavLabel: packageDto.shadowNav === null || packageDto.shadowNav === undefined
       ? "Shadow NAV not retained"
-      : `${formatCurrency(packageDto.shadowNav, packageDto.currency ?? "USD")} shadow NAV`,
+      : `${shadowNavAmount} shadow NAV`,
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
     routeHref,
@@ -3953,18 +3958,6 @@ function formatOperatorDisplayName(value: string | null): string {
 
 function formatDecimal(value: number | null | undefined): string {
   return formatNumber(value, { maximumFractionDigits: 4, fallback: "Not recorded" });
-}
-
-function formatCurrency(value: number | null | undefined, currency: string): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Not recorded";
-  }
-
-  if (!/^[A-Z]{3}$/.test(currency)) {
-    return `${formatDecimal(value)} ${currency}`;
-  }
-
-  return formatCurrencyAmount(value, { currency });
 }
 
 /** Input is already in percent units (readiness scores are 0-100). For fractions use `formatRatioAsPercent`. */
