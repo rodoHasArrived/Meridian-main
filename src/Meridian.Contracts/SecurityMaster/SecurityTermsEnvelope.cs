@@ -189,46 +189,122 @@ public static class SecurityTermsEnvelope
 
     private static string BuildStamped(JsonElement payload, string format)
     {
-        var builder = new System.Text.StringBuilder();
-        var first = true;
-        var wroteFormat = false;
-        void Append(string rawName, string rawValue)
-        {
-            if (!first)
-            {
-                builder.Append(',');
-            }
+        // A text splice, not a rebuild: the declaration is inserted into the payload's own bytes and
+        // every other byte (including the payload's own whitespace and separators) is kept, so
+        // RemoveRedundantDeclaredFormat is its exact inverse and a hash taken over the stamp-free text
+        // equals the hash of the same terms before they were stamped.
+        var utf8 = System.Text.Encoding.UTF8.GetBytes(payload.GetRawText());
 
-            first = false;
-            builder.Append('"').Append(rawName).Append("\":").Append(rawValue);
+        // A non-string termsFormat member (for example null) declares nothing; it is replaced,
+        // never kept, so the stamped document carries exactly one termsFormat key.
+        while (ReadTopLevelMembers(utf8, out _) is var members
+               && members.FindIndex(static member => member.IsFormat) is var index and >= 0)
+        {
+            utf8 = RemoveMember(utf8, members, index);
         }
 
-        builder.Append('{');
-        foreach (var property in payload.EnumerateObject())
-        {
-            // A non-string termsFormat member (for example null) declares nothing; it is replaced,
-            // never copied, so the stamped document carries exactly one termsFormat key.
-            if (property.NameEquals(FormatKey))
-            {
-                continue;
-            }
+        var remaining = ReadTopLevelMembers(utf8, out var openEnd);
+        var schemaVersion = remaining.FindIndex(static member => member.IsSchemaVersion);
+        var anchor = schemaVersion >= 0 ? remaining[schemaVersion].ValueEnd
+            : remaining.Count > 0 ? remaining[^1].ValueEnd
+            : openEnd;
+        var declaration = (remaining.Count > 0 ? "," : string.Empty) + "\"" + FormatKey + "\":\"" + format + "\"";
+        return System.Text.Encoding.UTF8.GetString(utf8, 0, anchor)
+            + declaration
+            + System.Text.Encoding.UTF8.GetString(utf8, anchor, utf8.Length - anchor);
+    }
 
-            var rawName = System.Text.Encoding.UTF8.GetString(
-                System.Runtime.InteropServices.JsonMarshal.GetRawUtf8PropertyName(property));
-            Append(rawName, property.Value.GetRawText());
-            if (!wroteFormat && property.NameEquals(SchemaVersionKey))
-            {
-                Append(FormatKey, "\"" + format + "\"");
-                wroteFormat = true;
-            }
+    /// <summary>
+    /// The raw text of asset-specific terms without a top-level <see cref="FormatKey"/> member that
+    /// only restates the family the frozen shape rule infers for the rest of the document
+    /// (<see cref="SecurityTermsLegacyEventClassifier.GetStampableFormat"/>) — exactly the declaration a
+    /// writer stamp, a replay stamp or migration 068 adds to untagged terms. The member is cut out of
+    /// the payload's own text together with one adjacent separator, so every other byte is kept and the
+    /// result is the text the same terms had before they were stamped (by <see cref="StampDeclaredFormat(JsonElement)"/>,
+    /// or by <c>jsonb_set</c> in PostgreSQL's canonical <c>jsonb</c> text form). Any other payload —
+    /// untagged, a non-object, a duplicate or non-string <see cref="FormatKey"/>, or a declaration that
+    /// differs from what the shape rule infers (for example <see cref="SecurityTermsFormats.Economic"/>) —
+    /// is returned as its raw text unchanged, so a declaration that could change what the terms decode
+    /// to always stays in the text.
+    /// </summary>
+    public static string RemoveRedundantDeclaredFormat(JsonElement payload)
+    {
+        var raw = payload.GetRawText();
+        if (payload.ValueKind != JsonValueKind.Object || GetDeclaredFormat(payload) is not { } declared)
+        {
+            return raw;
         }
 
-        if (!wroteFormat)
+        var utf8 = System.Text.Encoding.UTF8.GetBytes(raw);
+        var members = ReadTopLevelMembers(utf8, out _);
+        var formatMembers = members.FindAll(static member => member.IsFormat);
+        if (formatMembers.Count != 1)
         {
-            Append(FormatKey, "\"" + format + "\"");
+            return raw;
         }
 
-        return builder.Append('}').ToString();
+        var stripped = System.Text.Encoding.UTF8.GetString(RemoveMember(utf8, members, members.IndexOf(formatMembers[0])));
+        using var document = JsonDocument.Parse(stripped);
+        return string.Equals(SecurityTermsLegacyEventClassifier.GetStampableFormat(document.RootElement), declared, StringComparison.Ordinal)
+            ? stripped
+            : raw;
+    }
+
+    /// <summary>
+    /// <see cref="RemoveRedundantDeclaredFormat"/> as an element: the same payload when it carries no
+    /// redundant declaration, otherwise a detached element over the stamp-free text.
+    /// </summary>
+    public static JsonElement WithoutRedundantDeclaredFormat(JsonElement payload)
+    {
+        if (payload.ValueKind != JsonValueKind.Object || GetDeclaredFormat(payload) is null)
+        {
+            return payload;
+        }
+
+        var stripped = RemoveRedundantDeclaredFormat(payload);
+        if (string.Equals(stripped, payload.GetRawText(), StringComparison.Ordinal))
+        {
+            return payload;
+        }
+
+        using var document = JsonDocument.Parse(stripped);
+        return document.RootElement.Clone();
+    }
+
+    private readonly record struct TopLevelMember(int NameStart, int ValueEnd, bool IsFormat, bool IsSchemaVersion);
+
+    private static List<TopLevelMember> ReadTopLevelMembers(byte[] utf8, out int openEnd)
+    {
+        var reader = new Utf8JsonReader(utf8);
+        reader.Read();
+        openEnd = checked((int)reader.BytesConsumed);
+        var members = new List<TopLevelMember>();
+        while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+        {
+            var nameStart = checked((int)reader.TokenStartIndex);
+            var isFormat = reader.ValueTextEquals(FormatKey);
+            var isSchemaVersion = reader.ValueTextEquals(SchemaVersionKey);
+            reader.Read();
+            reader.Skip();
+            members.Add(new(nameStart, checked((int)reader.BytesConsumed), isFormat, isSchemaVersion));
+        }
+
+        return members;
+    }
+
+    /// <summary>
+    /// Cuts one top-level member out of an object's text with one adjacent separator: the separator
+    /// before it when it has a predecessor, otherwise the separator (and whitespace) after it.
+    /// </summary>
+    private static byte[] RemoveMember(byte[] utf8, List<TopLevelMember> members, int index)
+    {
+        var (start, end) = index > 0 ? (members[index - 1].ValueEnd, members[index].ValueEnd)
+            : members.Count > 1 ? (members[0].NameStart, members[1].NameStart)
+            : (members[0].NameStart, members[0].ValueEnd);
+        var result = new byte[utf8.Length - (end - start)];
+        utf8.AsSpan(0, start).CopyTo(result);
+        utf8.AsSpan(end).CopyTo(result.AsSpan(start));
+        return result;
     }
 
     /// <summary>

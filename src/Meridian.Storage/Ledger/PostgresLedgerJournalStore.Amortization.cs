@@ -103,7 +103,7 @@ public sealed partial class PostgresLedgerJournalStore
             || _backfillPositions?.Invoke() is not PostgresAssetOperationsProjectionStore positions)
             throw new LedgerValidationException("Amortization requires authoritative PostgreSQL Security Master and book-position stores.");
         var security = await securities.LockForLotPostingAsync(connection, transaction, instruction.ExpectedLot.SecurityId, ct).ConfigureAwait(false);
-        if (security is null || OpenLotAmortization.SecurityHash(security) != OpenLotAmortization.SecurityHash(instruction.Security))
+        if (security is null || !OpenLotAmortization.SameSecurityHash(security, instruction.Security))
             throw new LedgerValidationException("Amortization Security Master evidence is missing or stale; rebuild and review the projection.");
         var position = await positions.LockForLotPostingAsync(connection, transaction, instruction.ExpectedLot.BookPositionId, ct).ConfigureAwait(false);
         var book = await LoadLedgerBookAsync(connection, transaction, command.LedgerBookId, ct).ConfigureAwait(false);

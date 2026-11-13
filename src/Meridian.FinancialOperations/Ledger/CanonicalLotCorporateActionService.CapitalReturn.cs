@@ -52,7 +52,7 @@ public sealed partial class CanonicalLotCorporateActionService
             throw new InvalidOperationException("The reviewed capital-return lot is stale.");
         var security = await securityStore.GetProjectionAsync(reviewed.ExpectedLot.SecurityId, ct).ConfigureAwait(false);
         if (security is null || security.Version != reviewed.ExpectedSecurityVersion
-            || OpenLotAmortization.SecurityHash(security) != reviewed.ExpectedSecurityHash)
+            || !OpenLotAmortization.AcceptedSecurityHashes(security).Contains(reviewed.ExpectedSecurityHash))
             throw new InvalidOperationException("Capital-return Security Master evidence is missing or stale.");
         var position = await positionStore.GetBookPositionAsync(reviewed.ExpectedLot.BookPositionId, ct).ConfigureAwait(false);
         if (position is null || position.SecurityId != reviewed.ExpectedLot.SecurityId

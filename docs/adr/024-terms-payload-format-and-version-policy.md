@@ -129,6 +129,7 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Writers | `src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs`, `src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`, `src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs` | Flat writers that stamp the envelope |
 | Declared-family stamp | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs`, `src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs` | `StampDeclaredFormat` choke point before every service upsert; the WPF profile-backed create (amendment 2026-11-13) |
 | Terms digest | `src/Meridian.Contracts/CashFlows/ContractualCashFlowJsonContext.cs` | `SecurityTermsDigest` hashes asset-specific terms without the declared `termsFormat` (amendment 2026-11-13) |
+| Bond terms hash | `src/Meridian.Contracts/FixedIncome/BondSecurityTermsDigest.cs`, `src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs` | Bond `SecurityTerms` input and lot evidence hashes ignore a redundant declared `termsFormat` and keep retained receipts verifying (amendment 2026-11-13) |
 | Validation | `src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs` | Format rules; the informational terms-version notice |
 | Upgrade hook | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs` | Runs a class's declared steps on read; identity steps return the stored payload itself |
 | Upgrade steps | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrade.cs` | Identity and transform steps declared on `SecurityAssetClassDescriptor.TermsUpgrades` |
@@ -710,6 +711,25 @@ draining through writes.
    resolve. Re-running the preview produces a matching run. Reviewers should confirm that this
    one-time break is acceptable.
 
+   The bond `SecurityTerms` input hash and the lot `SecurityHash` evidence identity follow the same
+   rule, but without the one-time break, because a retained settlement receipt or lot evidence
+   hash gates a posting. `BondSecurityTermsDigest.Compute` hashes the common terms and the
+   asset-specific terms text with only a *redundant* top-level `termsFormat` cut out
+   (`SecurityTermsEnvelope.RemoveRedundantDeclaredFormat`: a single string declaration equal to
+   what the frozen shape rule infers for the rest of the document). The cut keeps every other
+   byte, and the writer and replay stamps are byte splices, so it is the exact inverse of the
+   in-memory stamp and of 068's `jsonb_set` in PostgreSQL's `jsonb` text. A receipt retained over
+   untagged terms therefore still matches. A receipt retained over terms that were already tagged
+   (flat writers before this amendment) recorded the raw-text hash, so
+   `BondSecurityTermsDigest.Resolve` reports that retained hash only when it equals the raw-text
+   hash of exactly the terms resolved now. The settlement verifier
+   (`BondSettlementConsiderationService.VerifyAsync`) and `BondWorkflowService.ReplayAsync` pass
+   the retained hash in. Any other retained value is ignored, so changed terms still fail with
+   `SettlementInputsChanged`. `OpenLotAmortization.AcceptedSecurityHashes` (the hash as read, plus
+   the hash without a redundant declaration) and `SameSecurityHash` serve the lot evidence checks
+   in amortization, bond income, coupon recognition, factor paydown, capital return and
+   corporate-action preparation and posting. New evidence still records `SecurityHash` as read.
+
 8. **Live code no longer infers the family (step 5, implemented).**
    - `SecurityTermsEnvelope.ResolveFormat` and
      `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` read the declared
@@ -762,6 +782,9 @@ refused by the store and by migration 068's constraint.
 family-explicit flatten, a create of every profile-backed family, a deactivation of a stored
 untagged envelope, a scoped rebuild of untagged v1 and v2 events, and in-memory decoding.
 `SecurityTermsWriteGoldenTests.EveryWriterOutput_DeclaresItsFormat` is the writer-output guard.
+`BondSecurityTermsDigestTests` pin the byte-exact removal and the settlement and lot evidence
+compatibility; `BondSecurityTermsDigestPostgresTests` check the `jsonb` text before and after 068's
+stamp.
 `SecurityMasterTermsFormatBackfillMigrationTests` (PostgreSQL integration lane) apply 068 to a
 populated through-067 schema across failure, retry and restart, re-run its statements, prove the
 constraint refuses untagged and disagreeing rows, cover every refusal and both apply gates, rebuild
