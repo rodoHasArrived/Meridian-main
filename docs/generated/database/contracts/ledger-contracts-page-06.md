@@ -2,11 +2,44 @@
 
 # `ledger-contracts` data objects - page 6 of 6
 
-Objects 401-426 of 426. References crossing pages remain available in the dependency manifest.
+Objects 401-430 of 430. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PrivateCapitalScopeDto["PrivateCapitalScopeDto"] {
+        +string CompanyId
+        +string Currency
+        +string EntityId
+        +string FundProfileId
+        +Guid LedgerBookId
+        +string TenantId
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto["PrivateCapitalWorkbenchDto"] {
+        +IReadOnlyList~PrivateCapitalCallDto~ Calls
+        +IReadOnlyList~PrivateCapitalCommitmentDto~ Commitments
+        +DateTimeOffset GeneratedAtUtc
+        +IReadOnlyList~PrivateCapitalNoticeSummaryDto~ Notices
+        +IReadOnlyList~PrivateCapitalPostingReceiptDto~ Receipts
+        +PrivateCapitalScopeDto Scope
+    }
+    class Meridian_Contracts_Ledger_RealizedGainLossReportDto["RealizedGainLossReportDto"] {
+        +AccountingCertificationStateDto CertificationState
+        +string Currency
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundProfileId
+        +Guid? LedgerBookId
+        +string PeriodId
+        +decimal RealizedGainLoss
+        +string ReportId
+    }
+    class Meridian_Contracts_Ledger_RefreshIntercompanyProposalRequest["RefreshIntercompanyProposalRequest"] {
+        +int ExpectedDraftVersion
+        +string PreviewFingerprint
+        +string Reason
+        +Guid RequestId
+    }
     class Meridian_Contracts_Ledger_RejectedIntercompanyDraftEvidenceDto["RejectedIntercompanyDraftEvidenceDto"] {
         +Guid JournalEntryId
         +Guid LedgerBookId
@@ -276,6 +309,7 @@ classDiagram
         +bool PeriodIsLocked
         +string? TenantId
     }
+    Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalScopeDto
     Meridian_Contracts_Ledger_ReportExportArtifactDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
     Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
 ```

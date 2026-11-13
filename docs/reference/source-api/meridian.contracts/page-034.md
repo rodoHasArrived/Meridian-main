@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExternalGlMappingProfileDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ExternalGlMappingProfileDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:24](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L24).
+
+```csharp
+public sealed record ExternalGlMappingProfileDto(string ProfileId, string ProviderId, string DisplayName, DateTimeOffset UpdatedAtUtc, IReadOnlyList<DimensionMappingProfileDto> DimensionMappings, IReadOnlyDictionary<string, string>? AccountMappings = null, AccountingCertificationStateDto CertificationState = AccountingCertificationStateDto.Draft)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyDictionary&lt;string, string&gt; AccountMappings { get; init; } = AccountMappings?? new Dictionary&lt;string, string&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L33) |  |
+
+## FactorPaydownPreparationDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FactorPaydownPreparationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs:36](../../../../src/Meridian.Contracts/Ledger/FactorPaydownPreparationDtos.cs#L36).
+
+Read-only preview. Decimal component strings preserve exact workstation display.
+
+```csharp
+public sealed record FactorPaydownPreparationDto(OpenLotFactorPaydownInstructionDto Instruction, AssetLotMutationInstructionDto LotMutation, ProjectAssetAccountingEventRequestDto ProjectRequest, IReadOnlyDictionary<string, string> Components, string PreparationFingerprint);
+```
+
+## FinancialStatementPackageDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.FinancialStatementPackageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:788](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L788).
+
+```csharp
+public sealed record FinancialStatementPackageDto(string PackageId, string FundProfileId, Guid? LedgerBookId, string PeriodId, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> StatementIds, IReadOnlyList<string> EvidenceLinks, ReportCertificationDto? Certification = null, RestatementWorkflowDto? Restatement = null, IReadOnlyList<ReportLineProvenanceDto>? LineProvenance = null, LedgerDimensionSetDto? Dimensions = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ReportLineProvenanceDto&gt; LineProvenance { get; init; } = LineProvenance??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:801](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L801) |  |
+| <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(FundId : FundProfileId, BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:804](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L804) |  |
+
 ## GeneratedPostingLineDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.GeneratedPostingLineDto</code>. Kind: `record`.
@@ -769,52 +814,3 @@ One posting to an account with the account balance after it.
 ```csharp
 public sealed record LedgerAccountRunningBalancePointDto(Guid JournalEntryId, Guid EntryId, long GlobalSequence, DateTimeOffset Timestamp, string Description, decimal Debit, decimal Credit, decimal Balance);
 ```
-
-## LedgerAdjustmentApprovalMetadataDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:84](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L84).
-
-```csharp
-public sealed record LedgerAdjustmentApprovalMetadataDto(string ApprovalId, LedgerAdjustmentApprovalStatusDto Status, string ApprovedBy, DateTimeOffset ApprovedAt, string ReasonCode, string? GovernanceCaseId = null, string? EvidenceLink = null, string? Notes = null);
-```
-
-## LedgerAdjustmentApprovalStatusDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAdjustmentApprovalStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:57](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L57).
-
-```csharp
-public enum LedgerAdjustmentApprovalStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L59) |  |
-| <code>Approved = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:60](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L60) |  |
-| <code>Rejected = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:61](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L61) |  |
-| <code>Superseded = 3</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L62) |  |
-
-## LedgerAgreementDimensions
-
-Qualified name: <code>Meridian.Contracts.Ledger.LedgerAgreementDimensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:6](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L6).
-
-Canonical optional agreement provenance carried by ledger line dimensions.
-
-```csharp
-public static class LedgerAgreementDimensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string AppendSignature(string signature, Guid? agreementId, int? agreementVersion, string separator = &quot;&#124;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:9](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L9) | Preserves legacy signatures exactly when agreement provenance is absent. |
-| <code>public static Guid? ReadId(IReadOnlyDictionary&lt;string, string&gt;? tags, string prefix = &quot;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:18](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L18) |  |
-| <code>public static int? ReadVersion(IReadOnlyDictionary&lt;string, string&gt;? tags, string prefix = &quot;&quot;);</code> | [src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs:27](../../../../src/Meridian.Contracts/Ledger/LedgerAgreementDimensions.cs#L27) |  |

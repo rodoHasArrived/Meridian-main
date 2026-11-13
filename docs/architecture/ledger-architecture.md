@@ -96,6 +96,23 @@ income-statement rows, balance-sheet rows, net income, ending equity, and an acc
 variance. Totals are computed from the flat trial balance to avoid double-counting parent rollups;
 rows use the chart hierarchy for operator-facing statement sections.
 
+`BuildIncomeStatementForPeriod` separately measures revenue and expense activity over
+`(periodStart, asOf]`. Opening balances and pure transfers into retained earnings are excluded;
+ordinary reversals retain their signed period impact. This result remains meaningful after close.
+The existing point-in-time statements keep accumulated unclosed P&L for the balance-sheet equation.
+`ExportLedgerAsync` in `Meridian.Storage.Accounting` exports both views through the existing CSV,
+XLSX, Parquet and Arrow writers. Its financial summary names period earnings and as-of unclosed
+earnings separately, and retains exact decimal text for downstream calculations.
+
+Authoritative PostgreSQL hard close also retains a cumulative balance checkpoint in the same
+transaction as the period version, close event and audit record. Checkpoints preserve account and
+line-dimension identity, including accounts with zero balances. An as-of balance read combines a
+checkpoint with subsequent journal activity, including later backdated entries and earlier
+future-dated entries that were outside the checkpoint's time boundary. Reopen retains the original
+checkpoint and immutable journals. Checkpoint reads verify their retained close evidence and audit
+chain; compatibility stores use full journal hydration. Reports that need individual source lines
+continue to capture full journal provenance.
+
 Closed-period trial-balance endpoints also expose `LedgerTrialBalanceReportDto`, which wraps the
 same server-derived period rows with locked-period status, debit/credit/net-income totals,
 accounting-policy lineage, and a SHA-256 checksum signature. The line-list route remains available

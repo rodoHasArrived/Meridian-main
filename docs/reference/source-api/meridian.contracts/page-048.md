@@ -6,6 +6,74 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAccountingDisposition
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1393](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1393).
+
+Whether, and how, an asset class takes part in the Security Master accounting slice.
+
+```csharp
+public enum SecurityAccountingDisposition
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1396](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1396) | No disposition is declared: a missing mapping, not a decision. |
+| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1399](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1399) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
+| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1402](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1402) | The class is intentionally outside the slice and must not reach any posting by fallback. |
+
+## SecurityAccountingInstrumentClasses
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1417](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1417).
+
+The closed vocabulary of accounting-slice instrument classes a Security Master record can post as. These are the values the Security Master accounting event slice gates on; keeping them here stops producers and that gate drifting on spelling.
+
+```csharp
+public static class SecurityAccountingInstrumentClasses
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1420](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1420) | Coupon-bearing and discount fixed income booked against par. |
+| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1423](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1423) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
+
+## SecurityAliasDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L100).
+
+```csharp
+public sealed record SecurityAliasDto(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string? Reason, string CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, bool IsEnabled);
+```
+
+## SecurityAliasHistoryConflictException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:119](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L119).
+
+Raised when an alias write cannot be recorded as a revision of that alias&#x27;s history: the alias ID is already recorded against a different security (an alias ID stays bound to the security it was first recorded against), or the store could not confirm that the write was persisted.
+
+```csharp
+public sealed class SecurityAliasHistoryConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityAliasHistoryConflictException(Guid aliasId) : base($&quot;Alias &#x27;{aliasId}&#x27; conflicts with its recorded history. &quot; + &quot;An alias ID stays bound to the security it was first recorded against; corrections append an alias revision, and re-pointing requires a new alias ID.&quot;);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L121) |  |
+| <code>public Guid AliasId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs:129](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs#L129) |  |
+
 ## SecurityAliasScope
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAliasScope</code>. Kind: `enum`.
@@ -872,80 +940,4 @@ The designated vocabulary member that absorbs a value outside the declared vocab
 
 ```csharp
 public sealed record SecurityAssetTermVocabularyEscape(string Value, string LabelKey, IReadOnlyList<string> DependentKeys);
-```
-
-## SecurityCanonicalAssetHomes
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L4).
-
-Legacy labels whose economics have a first-class canonical asset home.
-
-```csharp
-public static class SecurityCanonicalAssetHomes
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;string&gt; SecuritizedLabels { get; } = Array.AsReadOnly&lt;string&gt;([&quot;StructuredCredit&quot;, &quot;AssetBacked&quot;, &quot;AssetBackedSecurity&quot;, &quot;ABS&quot;, &quot;MortgageBacked&quot;, &quot;MortgageBackedSecurity&quot;, &quot;MBS&quot;, &quot;AgencyMbs&quot;, &quot;NonAgencyMbs&quot;, &quot;CommercialMbs&quot;, &quot;CMBS&quot;, &quot;Cmo&quot;, &quot;Clo&quot;, &quot;Cdo&quot;, &quot;PrincipalOnly&quot;, &quot;InterestOnly&quot;, &quot;InverseInterestOnly&quot;, &quot;CollateralizedLoanObligation&quot;, &quot;CommercialMortgageBacked&quot;, &quot;CommercialMortgageBackedSecurity&quot;]);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L8) |  |
-| <code>public static string NormalizeLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L20) | Uses the same separator-insensitive spelling as catalog label resolution. |
-| <code>public static bool IsSecuritizedLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L23) |  |
-| <code>public static bool IsBankLoanLabel(string? label) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCanonicalAssetHomes.cs#L26) |  |
-
-## SecurityCashFlowBehavior
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:35](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L35).
-
-How an asset class produces cash flows.
-
-```csharp
-public enum SecurityCashFlowBehavior
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L38) | The class produces no scheduled cash flows. |
-| <code>ContractualSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L41) | Coupon, interest and principal flows calculated from contractual terms. |
-| <code>FactorAmortizing</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L44) | Contractual flows whose principal amortizes by a dated pool factor. |
-| <code>SwapLegs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L47) | Exchanges calculated per swap leg. |
-| <code>FinancingInterest</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L50) | Financing interest calculated from rate and term (repo). |
-| <code>Dividends</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L53) | Declared dividends, recorded as corporate actions rather than calculated. |
-| <code>FundDistributions</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L56) | Fund distributions, recorded from the administrator rather than calculated. |
-| <code>ProviderSupplied</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L59) | Flows supplied by a provider or administrator (capital calls, rents, draws). |
-
-## SecurityCashFlowBehaviorExtensions
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBehaviorExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:77](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L77).
-
-Behaviour derived from SecurityCashFlowBehavior.
-
-```csharp
-public static class SecurityCashFlowBehaviorExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsCalculatedFromTerms(this SecurityCashFlowBehavior behavior) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L80) | Whether flows of this kind are calculated from the security&#x27;s terms. |
-
-## SecurityCashFlowBlockerDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityInterestSupport.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityInterestSupport.cs#L4).
-
-A calculation capability refusal, separate from the validity of the retained terms.
-
-```csharp
-public sealed record SecurityCashFlowBlockerDto(string Code, string Reason);
 ```

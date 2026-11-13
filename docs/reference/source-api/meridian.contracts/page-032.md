@@ -138,6 +138,26 @@ Enum declarations:
 | <code>Medium = 1</code> | [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L10) |  |
 | <code>High = 2</code> | [src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs:11](../../../../src/Meridian.Contracts/Ledger/AutomatedJournalEvidenceDtos.cs#L11) |  |
 
+## CanonicalAmortizationOccurrenceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.CanonicalAmortizationOccurrenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs:20](../../../../src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs#L20).
+
+```csharp
+public sealed record CanonicalAmortizationOccurrenceDto(DateOnly Date, decimal TransactionCostBasis, decimal FunctionalCostBasis);
+```
+
+## CanonicalAmortizationPreparationDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.CanonicalAmortizationPreparationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs:15](../../../../src/Meridian.Contracts/Ledger/CanonicalAmortizationPreparationDtos.cs#L15).
+
+```csharp
+public sealed record CanonicalAmortizationPreparationDto(OpenLotAmortizationInstructionDto Instruction, OpenLotAmortizationProjectionDto Projection, string PreparationFingerprint, IReadOnlyList<ProjectedAccountingEffectLineDto> Lines, AssetAccountingEventScopeDto Scope, IReadOnlyList<CanonicalAmortizationOccurrenceDto> Occurrences);
+```
+
 ## CapitalAccountWorkbenchAllocationInputDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.CapitalAccountWorkbenchAllocationInputDto</code>. Kind: `record`.
@@ -693,34 +713,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;CloseSignOffRequirementDto&gt; SignOffRequirements { get; init; } = SignOffRequirements??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:267](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L267) |  |
-
-## CloseTaskSignOffRequirementConfigurationDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CloseTaskSignOffRequirementConfigurationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:182](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L182).
-
-```csharp
-public sealed record CloseTaskSignOffRequirementConfigurationDto(string Role, int RequiredApprovalCount, string? EvidenceRequirement = null);
-```
-
-## CloseTaskStatusDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.CloseTaskStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:125](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L125).
-
-```csharp
-public enum CloseTaskStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotStarted = 0</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:127](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L127) |  |
-| <code>WaitingOnDependency = 1</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:128](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L128) |  |
-| <code>InProgress = 2</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:129](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L129) |  |
-| <code>ReadyForSignOff = 3</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:130](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L130) |  |
-| <code>SignedOff = 4</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:131](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L131) |  |
-| <code>Blocked = 5</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:132](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L132) |  |

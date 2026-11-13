@@ -6,10 +6,13 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Storage
+
+Position snapshots preserve reviewed preparation lineages alongside economic-state history.
+Historical reads still exclude lineage effective after their requested date.
 
 `FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
 partitions with process-wide file leases, atomic publication, content validation and immutable
@@ -39,6 +42,13 @@ compiled by `Meridian.Storage.Accounting`, keeping the primitives assembly indep
 
 The business adapters in the linked FundStructure and Ledger folders compile into
 `Meridian.Storage.Accounting`; generic storage primitives remain in `Meridian.Storage`.
+
+The linked ledger adapter commits immutable native balance checkpoints with governed book
+hard-close events and their audited digests. Its as-of balance capability combines the retained
+prefix with a verified journal tail in one repeatable-read transaction, preserving reopened and
+backdated activity, future-dated postings, exact dimensions and known zero accounts. See the
+[accounting adapter guide](../Meridian.Storage.Accounting/README.md#durable-balance-checkpoints)
+for the audit boundary and compatibility-store fallback.
 
 Intercompany accounting profiles link to the canonical legal registry through exact approved
 GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;

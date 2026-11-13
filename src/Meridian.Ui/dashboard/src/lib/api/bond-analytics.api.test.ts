@@ -16,6 +16,7 @@ describe("bond calculation API adapters", () => {
         settlementDate: "2026-10-30",
         knownAt: "2026-10-29T12:00:00Z",
         calculationVersion: "bond-analytics-v3",
+        securityVersion: "7",
         cleanPrice: "99.123456789012345678",
         yieldConvention: "AnnualEffective"
       },
@@ -28,6 +29,7 @@ describe("bond calculation API adapters", () => {
     expect(params.has("yield")).toBe(false);
     expect(params.get("knownAt")).toBe("2026-10-29T12:00:00Z");
     expect(params.get("calculationVersion")).toBe("bond-analytics-v3");
+    expect(params.get("securityVersion")).toBe("7");
     expect(options.signal).toBe(controller.signal);
   });
 

@@ -11,6 +11,32 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+
+The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
+entry points. Bond settlement preparation resolves an optional service explicitly (503 when absent)
+and returns exact decimal strings. Curve definition/history/publication and curve valuation retain
+their existing Security Master permission boundaries and also serialize financial decimals exactly.
+Yield analysis accepts an exact retained terms version; curve inputs belong to DCF valuation.
+
+Accrual-schedule adapters expose the recurring store/planner/runner through scoped definition,
+preview, configuration and due-occurrence actions. Reviewed fund-account scope is carried into
+period/subject authority and journal dimensions for account-owned and sleeve-owned books.
+Canonical amortization adapters resolve the lot,
+acquisition policy, retained reference evidence, current book/period and versions before calculating
+an occurrence and its schedule. Reviewed fingerprint checks precede immutable asset journal draft
+intake. Draft creation retains the exact reviewed occurrence lineage on the authoritative position
+without changing acquisition history or posting economics, and preserves its full dimensions;
+journal validation, independent approval and atomic posting retain their authority. No
+preview alone grants journal or lot mutation authority.
+This browser amortization handoff supports matching acquisition/functional currencies at unit
+acquisition FX. Other lots are refused before calculation or source retention because the current
+governed journal handoff cannot preserve their transaction-currency posting evidence.
+
+Provider-backed bond discovery requires tenant scope and Security Master read permission, uses
+Alpaca's fixed-income filter and authoritative error propagation, and exposes modification permission
+separately for candidate staging. The browser stages the reviewed identity through the existing
+retained asset-information upload; discovery never supplies approved economic terms. Tests use
+synthetic fixtures; live provider behavior remains untested.
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source
@@ -52,6 +78,12 @@ endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow
 require an exact retained valuation cut. Its availability table distinguishes absent lot evidence
 from measured empty schedules. Temporary export files are removed after ZIP construction. The
 paper-accounting reconciliation host is registered after the shared portfolio registry.
+
+Daily valuation carrying-value reads use the durable store's as-of trial-balance capability,
+which can combine an immutable period-close checkpoint with subsequent journal activity.
+Compatibility stores retain journal hydration. Both paths preserve entity scope and distinguish
+an absent securities account from a retained account whose balance is zero; integrity failures
+are propagated before a valuation draft is prepared.
 
 Fund workspace research-ledger reads hydrate archived journal details only after the fund and
 selected-run filters admit a run, then recheck its run, fund, archive hash and retained count.

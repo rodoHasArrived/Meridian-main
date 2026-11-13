@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FailoverEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FailoverEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs#L24).
+
+Extension methods for registering failover-related API endpoints. Shared between web dashboard and desktop application hosts.
+
+```csharp
+public static class FailoverEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapFailoverEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:29](../../../../src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs#L29) | Maps all failover API endpoints. |
+
+## FirstRunEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FirstRunEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs#L13).
+
+Maps first-run experience reads and administrative activation completion commands.
+
+```csharp
+public static class FirstRunEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapFirstRunEndpoints(this WebApplication app);</code> | [src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs#L15) |  |
+
+## FixedIncomeHttpJson
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.FixedIncomeHttpJson</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs:11](../../../../src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs#L11).
+
+Exact decimal text at the HTTP boundary only. Retained calculations, receipt bytes and content hashes continue to use their existing canonical serialization options.
+
+```csharp
+public static class FixedIncomeHttpJson
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static JsonSerializerOptions Options(JsonSerializerOptions source);</code> | [src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/FixedIncomeHttpJson.cs#L13) |  |
+
 ## FundAccountEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.FundAccountEndpoints</code>. Kind: `class`.
@@ -467,6 +521,18 @@ public static partial class LedgerEndpoints
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:31](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs#L31).
 
 Shared account oversight over exact, already-owned account ledger books.
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs#L25).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Amortization.cs#L18).
 
 ```csharp
 public static partial class LedgerEndpoints
@@ -1089,57 +1155,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapPromotionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L19) |  |
-
-## ProviderConnectionEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L15).
-
-Maps provider connection discovery, credential changes, and verification operations.
-
-```csharp
-public static class ProviderConnectionEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L17) |  |
-
-## ProviderCredentialEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderCredentialEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs#L19).
-
-Compatibility provider-credential endpoints. Canonical mutation and verification routes live under /api/providers/{providerId}/credentials and /api/providers/{providerId}/verify.
-
-```csharp
-public static class ProviderCredentialEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderCredentialEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs#L21) |  |
-
-## ProviderCredentialOwnershipEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderCredentialOwnershipEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs#L14).
-
-Administrative ownership commands shared by the browser and installed workstation.
-
-```csharp
-public static class ProviderCredentialOwnershipEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapProviderCredentialOwnershipEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs#L16) |  |
