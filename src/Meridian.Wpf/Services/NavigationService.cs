@@ -359,6 +359,9 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
     {
         var serviceProvider = scopedProvider ?? _serviceProvider;
         var page = CreatePage(pageTag, pageType, serviceProvider);
+        // Construction failures retain their compatibility UI, but a fallback does not
+        // establish that the registered page is rendered for screenshot readiness.
+        var renderedPageTag = pageType.IsInstanceOfType(page) ? pageTag : null;
         if (page is IWorkspaceShellPageContextAware contextAware)
         {
             contextAware.ApplyWorkspaceShellPageTag(pageTag);
@@ -386,7 +389,7 @@ public sealed class NavigationService : NavigationServiceBase, INavigationServic
         }
 
         // Keep rendered content identity separate from the shell's requested navigation state.
-        element.SetValue(ContentPageTagProperty, pageTag);
+        element.SetValue(ContentPageTagProperty, renderedPageTag);
         return element;
     }
 

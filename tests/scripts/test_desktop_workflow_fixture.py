@@ -35,6 +35,7 @@ $definitions = @($ast.FindAll({
 if ($definitions.Count -ne $functions.Count) { throw 'Fixture functions were not found' }
 foreach ($definition in $definitions) { Invoke-Expression $definition.Extent.Text }
 function Write-Warn([string]$Message) { throw $Message }
+function Write-Info([string]$Message) { }
 $script:DesktopProcessName = 'Meridian.Desktop'
 function Get-Process {
     [CmdletBinding()]
@@ -94,12 +95,51 @@ catch {
 }
 
 $seed = $null
+$cleanup = $null
 if (-not $failed) {
     $seed = Get-Content -LiteralPath (Join-Path $applicationData 'appsettings.json') -Raw | ConvertFrom-Json
     # FirstRunService refreshes this recovery copy while the fixture app is running.
     Copy-Item -LiteralPath (Join-Path $applicationData 'appsettings.json') `
         -Destination (Join-Path $applicationData 'appsettings.json.last-known-good') -Force
-    Restore-FileState -States $states
+    if ($Scenario -in @('report-failure', 'report-restore-failure')) {
+        $workflowTry = @($ast.EndBlock.Statements | Where-Object {
+            $_ -is [System.Management.Automation.Language.TryStatementAst] -and $null -ne $_.Finally
+        })
+        if ($workflowTry.Count -ne 1) { throw 'The actual workflow finally block was not found' }
+        $script:cleanupEvents = [System.Collections.Generic.List[string]]::new()
+        function Stop-Process {
+            [CmdletBinding()]
+            param([int]$Id, [switch]$Force)
+            $script:cleanupEvents.Add('process-stop')
+        }
+        function Stop-Transcript { $script:cleanupEvents.Add('transcript-stop') }
+        function Set-Content {
+            param([string]$LiteralPath, [string]$Encoding, [Parameter(ValueFromPipeline = $true)]$Value)
+            process { throw 'Injected report write failure' }
+        }
+        $manifest = [ordered]@{ run = [ordered]@{ status = 'ok' }; steps = @() }
+        $retryTelemetry = [System.Collections.ArrayList]::new()
+        $manifestPath = Join-Path $TestRoot 'manifest.json'
+        $ownedProcess = [pscustomobject]@{ HasExited = $false; Id = 123 }
+        $KeepAppOpen = $false
+        $fixtureFileStates = $states
+        $workflowTranscriptActive = $true
+        $originalWorkflowEnv = @{ MDC_FIXTURE_LIFECYCLE_TEST = 'operator-env' }
+        [Environment]::SetEnvironmentVariable('MDC_FIXTURE_LIFECYCLE_TEST', 'fixture-env', 'Process')
+        if ($Scenario -eq 'report-restore-failure') {
+            Remove-Item -LiteralPath $states[2].BackupPath -Force
+        }
+        $cleanupError = $null
+        try { Invoke-Expression ('& ' + $workflowTry[0].Finally.Extent.Text) } catch { $cleanupError = $_.Exception.Message }
+        $cleanup = [ordered]@{
+            error = $cleanupError
+            events = @($script:cleanupEvents)
+            restoredEnvironment = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_LIFECYCLE_TEST', 'Process')
+        }
+    }
+    else {
+        Restore-FileState -States $states
+    }
 }
 $restored = @{}
 foreach ($name in $names) {
@@ -117,6 +157,7 @@ foreach ($name in $names) {
     restored = $restored
     bundleBackups = @(if (Test-Path -LiteralPath $bundle) { Get-ChildItem -LiteralPath $bundle -File | Select-Object -ExpandProperty Name })
     privateBackups = @(if (Test-Path -LiteralPath $privateBackup) { Get-ChildItem -LiteralPath $privateBackup -File | Select-Object -ExpandProperty Name })
+    cleanup = $cleanup
 } | ConvertTo-Json -Depth 8 -Compress
 """,
                 encoding="utf-8",
@@ -182,6 +223,21 @@ foreach ($name in $names) {
         result = self.run_fixture("missing-backup")
         self.assertTrue(result["failed"])
         self.assertTrue(result["retained"])
+
+    def test_report_write_failure_still_stops_process_and_restores_fixture_environment_and_transcript(self) -> None:
+        result = self.run_fixture("report-failure")
+        self.assertEqual(result["cleanup"]["error"], "Injected report write failure")
+        self.assertEqual(result["cleanup"]["events"], ["process-stop", "transcript-stop"])
+        self.assertEqual(result["cleanup"]["restoredEnvironment"], "operator-env")
+        self.assert_offline_seed(result)
+
+    def test_restoration_failure_remains_visible_after_report_failure_and_environment_cleanup(self) -> None:
+        result = self.run_fixture("report-restore-failure")
+        self.assertIn("Expected fixture backup", result["cleanup"]["error"])
+        self.assertEqual(result["cleanup"]["events"], ["process-stop", "transcript-stop"])
+        self.assertEqual(result["cleanup"]["restoredEnvironment"], "operator-env")
+        self.assertFalse(result["restored"]["appsettings.json"])
+        self.assertTrue(all(restored for name, restored in result["restored"].items() if name != "appsettings.json"))
 
 
 if __name__ == "__main__":

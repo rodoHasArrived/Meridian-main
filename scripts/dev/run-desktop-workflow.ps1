@@ -2067,98 +2067,101 @@ catch {
     throw
 }
 finally {
-    $manifest.run.finishedAt = (Get-Date).ToString('o')
-    $manifest.retryTelemetry = @($retryTelemetry)
-    $manifest.retrySummary = [ordered]@{
-        total = $retryTelemetry.Count
-        failures = @(
-            $retryTelemetry |
-                Where-Object { $_.status -eq 'failed' -and $null -ne $_.failure } |
-                Group-Object { $_.failure.code } |
-                Sort-Object Count -Descending |
-                ForEach-Object {
-                    [ordered]@{
-                        code = $_.Name
-                        count = $_.Count
-                    }
-                }
-        )
-    }
-    $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
-    $stageStatusEntries | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
-    if ($null -ne $lastSuccessfulStep) {
-        $lastSuccessfulStep | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
-    }
-    else {
-        [ordered]@{
-            message = 'No successful workflow step was recorded.'
-            generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
-        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
-    }
-
     try {
-        & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'summarize-desktop-workflow-bundle.ps1') `
-            -BundlePath $bundleDirectory `
-            -ManifestPath $manifestPath `
-            -WorkflowName $workflowDefinition.name `
-            -UseFixture:$useFixture `
-            -SkipBuild:$SkipBuild `
-            -ReuseExistingApp:$ReuseExistingApp | Out-Null
-    }
-    catch {
-        Write-Warn "Failed to summarize desktop workflow bundle: $($_.Exception.Message)"
-    }
-    $runSummary = [ordered]@{
-        workflow = $Workflow
-        runDirectory = $runDirectory
-        manifestPath = $manifestPath
-        generatedAt = (Get-Date).ToString('o')
-        lastSuccessfulStage = $lastSuccessfulStage
-        stages = $stageStatuses
-        totals = [ordered]@{
-            steps = @($manifest.steps).Count
-            succeeded = @($manifest.steps | Where-Object { $_.status -eq 'ok' }).Count
-            failed = @($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count
+        $manifest.run.finishedAt = (Get-Date).ToString('o')
+        $manifest.retryTelemetry = @($retryTelemetry)
+        $manifest.retrySummary = [ordered]@{
+            total = $retryTelemetry.Count
+            failures = @(
+                $retryTelemetry |
+                    Where-Object { $_.status -eq 'failed' -and $null -ne $_.failure } |
+                    Group-Object { $_.failure.code } |
+                    Sort-Object Count -Descending |
+                    ForEach-Object {
+                        [ordered]@{
+                            code = $_.Name
+                            count = $_.Count
+                        }
+                    }
+            )
         }
-        status = if (@($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count -gt 0) { 'partial' } else { [string]$manifest.run.status }
-    }
-    $runSummary | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $runSummaryPath -Encoding utf8
+        $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
+        $stageStatusEntries | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
+        if ($null -ne $lastSuccessfulStep) {
+            $lastSuccessfulStep | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
+        }
+        else {
+            [ordered]@{
+                message = 'No successful workflow step was recorded.'
+                generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
+            } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
+        }
 
-    if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
         try {
-            if (-not $ownedProcess.HasExited) {
-                Write-Info 'Stopping Meridian desktop...'
-                Stop-Process -Id $ownedProcess.Id -Force -ErrorAction SilentlyContinue
+            & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'summarize-desktop-workflow-bundle.ps1') `
+                -BundlePath $bundleDirectory `
+                -ManifestPath $manifestPath `
+                -WorkflowName $workflowDefinition.name `
+                -UseFixture:$useFixture `
+                -SkipBuild:$SkipBuild `
+                -ReuseExistingApp:$ReuseExistingApp | Out-Null
+        }
+        catch {
+            Write-Warn "Failed to summarize desktop workflow bundle: $($_.Exception.Message)"
+        }
+        $runSummary = [ordered]@{
+            workflow = $Workflow
+            runDirectory = $runDirectory
+            manifestPath = $manifestPath
+            generatedAt = (Get-Date).ToString('o')
+            lastSuccessfulStage = $lastSuccessfulStage
+            stages = $stageStatuses
+            totals = [ordered]@{
+                steps = @($manifest.steps).Count
+                succeeded = @($manifest.steps | Where-Object { $_.status -eq 'ok' }).Count
+                failed = @($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count
+            }
+            status = if (@($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count -gt 0) { 'partial' } else { [string]$manifest.run.status }
+        }
+        $runSummary | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $runSummaryPath -Encoding utf8
+    }
+    finally {
+        if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
+            try {
+                if (-not $ownedProcess.HasExited) {
+                    Write-Info 'Stopping Meridian desktop...'
+                    Stop-Process -Id $ownedProcess.Id -Force -ErrorAction SilentlyContinue
+                }
+            }
+            catch {
+                Write-Warn "Failed to stop Meridian desktop cleanly: $($_.Exception.Message)"
             }
         }
-        catch {
-            Write-Warn "Failed to stop Meridian desktop cleanly: $($_.Exception.Message)"
-        }
-    }
 
-    $fixtureRestoreError = $null
-    if ($fixtureFileStates.Count -gt 0 -and (-not $KeepAppOpen -or $null -eq $ownedProcess -or $ownedProcess.HasExited)) {
-        try {
-            Restore-FileState -States $fixtureFileStates
+        $fixtureRestoreError = $null
+        if ($fixtureFileStates.Count -gt 0 -and (-not $KeepAppOpen -or $null -eq $ownedProcess -or $ownedProcess.HasExited)) {
+            try {
+                Restore-FileState -States $fixtureFileStates
+            }
+            catch {
+                $fixtureRestoreError = $_
+            }
         }
-        catch {
-            $fixtureRestoreError = $_
-        }
-    }
 
-    foreach ($entry in $originalWorkflowEnv.GetEnumerator()) {
-        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
-    }
-    if ($workflowTranscriptActive) {
-        try {
-            Stop-Transcript | Out-Null
+        foreach ($entry in $originalWorkflowEnv.GetEnumerator()) {
+            [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
         }
-        catch {
-            Write-Warn "Failed to stop workflow transcript: $($_.Exception.Message)"
+        if ($workflowTranscriptActive) {
+            try {
+                Stop-Transcript | Out-Null
+            }
+            catch {
+                Write-Warn "Failed to stop workflow transcript: $($_.Exception.Message)"
+            }
         }
-    }
-    if ($null -ne $fixtureRestoreError) {
-        throw $fixtureRestoreError
+        if ($null -ne $fixtureRestoreError) {
+            throw $fixtureRestoreError
+        }
     }
 }
 

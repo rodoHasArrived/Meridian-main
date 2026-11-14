@@ -162,6 +162,37 @@ public sealed class NavigationServiceTests : IDisposable
         });
     }
 
+    [Theory]
+    [InlineData("PortfolioShell")]
+    [InlineData("RunMat")]
+    public void CreatePageContent_WhenPageConstructionFails_ShouldNotCertifyFallbackAsRendered(string pageTag)
+    {
+        WpfTestThread.Run(() =>
+        {
+            var service = NavigationService.Instance;
+            var pageType = service.GetPageType(pageTag)!;
+            var constructionAttempted = false;
+            var services = new ServiceCollection();
+            services.AddTransient(pageType, _ =>
+            {
+                constructionAttempted = true;
+                throw new InvalidOperationException("Injected page construction failure");
+            });
+
+            using var provider = services.BuildServiceProvider();
+            service.SetServiceProvider(provider);
+
+            var content = service.CreatePageContent(pageTag);
+            var fallback = NavigationHostInspector.ResolveInnermostContent(content);
+
+            constructionAttempted.Should().BeTrue();
+            fallback.Should().BeAssignableTo<Page>("compatibility fallback behavior is retained");
+            pageType.IsInstanceOfType(fallback).Should().BeFalse();
+            NavigationService.GetContentPageTag(content).Should().BeNull(
+                "a fallback must not satisfy the rendered-page readiness check");
+        });
+    }
+
     [Fact]
     public void NavigateTo_WithWorkspaceScope_ShouldResolvePageFromScope()
     {
