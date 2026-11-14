@@ -1031,6 +1031,24 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt;&gt; ListEffectiveRevisionsAsync(string tenantId, Guid entityId, DateOnly economicDate, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L16) |  |
 | <code>public async Task&lt;IIntercompanyAccountingArrangementLegalLease&gt; AcquireLeaseAsync(string tenantId, IReadOnlyList&lt;IntercompanyCanonicalAgreementReferenceDto&gt; references, LegalEntityReadAuthorityProof? structureAuthority = null, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs:32](../../../../src/Meridian.Application/FundStructure/IntercompanyAccountingArrangementLegalAuthority.cs#L32) |  |
 
+## IntercompanyAccrualPreviewService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAccrualPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L20).
+
+Turns declared fixed-rate loan terms into an interest amount for a half-open accrual window. Pure: it never reads a ledger, fetches a fixing, creates a draft or authorizes a journal.
+
+```csharp
+public sealed class IntercompanyAccrualPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyAccrualPreviewDto Preview(IntercompanyAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs:23](../../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs#L23) |  |
+
 ## IntercompanyAgreementRules
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementRules</code>. Kind: `class`.
@@ -1326,24 +1344,3 @@ Declared public members:
 | <code>public ProviderIntegrationActivationService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationActivationService&gt;? logger = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:15](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L15) |  |
 | <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:23](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L23) |  |
 | <code>public async Task&lt;ProviderIntegrationActivationResultDto&gt; ActivateAsync(string? tenantId, ProviderIntegrationActivationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs:28](../../../../src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs#L28) |  |
-
-## ProviderIntegrationDryRunService
-
-Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationDryRunService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L18).
-
-Validates manually supplied CSV data against a provider integration manifest without activating it.
-
-```csharp
-public sealed class ProviderIntegrationDryRunService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderIntegrationDryRunService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationDryRunService&gt;? logger = null) : this(store, logger, null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L26) |  |
-| <code>public ProviderIntegrationDryRunService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationDryRunService&gt;? logger, IBusinessDayCalendarSource? calendars = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:31](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L31) |  |
-| <code>public async Task&lt;ProviderIntegrationDryRunResultDto&gt; RunManualCsvDryRunAsync(ManualCsvProviderIntegrationDryRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:41](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L41) |  |
-| <code>public async Task&lt;ProviderIntegrationDryRunResultDto&gt; RunManualCsvDryRunAsync(string? tenantId, ManualCsvProviderIntegrationDryRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:46](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L46) |  |

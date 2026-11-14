@@ -14,7 +14,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 830 / 830 |
+| Endpoints documented | 832 / 832 |
 | Workstation contracts documented | 1051 / 1051 |
 
 ## Endpoint Coverage
@@ -357,18 +357,20 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/ledger/intercompany/account-bindings` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:16` |
 | `POST` | `/api/ledger/intercompany/account-bindings` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:54` |
 | `GET` | `/api/ledger/intercompany/account-bindings/history` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:35` |
+| `POST` | `/api/ledger/intercompany/accruals/drafts` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:150` |
+| `POST` | `/api/ledger/intercompany/accruals/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:128` |
 | `GET` | `/api/ledger/intercompany/balance-schedule` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:69` |
-| `GET` | `/api/ledger/intercompany/breaks` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:127` |
+| `GET` | `/api/ledger/intercompany/breaks` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:173` |
 | `GET` | `/api/ledger/intercompany/capabilities` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:19` |
 | `GET` | `/api/ledger/intercompany/legacy-attributions` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:16` |
 | `POST` | `/api/ledger/intercompany/legacy-attributions` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:63` |
 | `GET` | `/api/ledger/intercompany/legacy-attributions/candidates` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:29` |
 | `GET` | `/api/ledger/intercompany/obligations` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:22` |
 | `GET` | `/api/ledger/intercompany/proposals` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:57` |
-| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/link` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:163` |
+| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/link` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:209` |
 | `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:105` |
 | `GET` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:87` |
-| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/retry` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:140` |
+| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/retry` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:186` |
 | `GET` | `/api/ledger/journal-automation/accrual-schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:29` |
 | `POST` | `/api/ledger/journal-automation/accrual-schedules/configure` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:115` |
 | `POST` | `/api/ledger/journal-automation/accrual-schedules/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:69` |

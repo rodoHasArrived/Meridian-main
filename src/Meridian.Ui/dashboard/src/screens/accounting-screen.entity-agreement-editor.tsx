@@ -12,7 +12,7 @@ import type { AccountingArrangementPartyMapping, AccountingArrangementRecord, Ac
 import { effectiveUtc, MutationFeedback, newIdentity, OperationError, OperationField, today, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 import { AgreementPartyAccounts } from "./accounting-screen.entity-party-accounts";
 
-const templates: AccountingArrangementTemplate[] = ["Loan", "CostRecharge", "ManagementFee", "ExpenseShare", "CashSweep", "Guarantee", "Manual"];
+const templates: AccountingArrangementTemplate[] = ["Loan", "CostRecharge", "ManagementFee", "ExpenseShare", "CashSweep", "Guarantee", "Manual", "LoanInterest"];
 const emptyParty = (entityId = ""): AccountingArrangementPartyMapping => ({ entityId, ledgerBookId: "", receivableAccountNodeId: "", payableAccountNodeId: "", settlementAccountNodeId: null, revenueAccountNodeId: null, expenseAccountNodeId: null });
 export const canonicalAgreementPath = (agreementId?: string, bookId?: string) => `${WORKSTATION_ROUTE_CATALOG.accountingConfigure}?${new URLSearchParams({ ...(agreementId ? { agreementId } : {}), ...(bookId ? { ledgerBookId: bookId } : {}) })}#configure-section-agreements`;
 

@@ -23,6 +23,12 @@ attestations retain reviewer and operator identities, while obligation-monitor D
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
 
+Governed loan-interest accrual contracts (ADR-028) carry the computation input, slices and preview
+under rule `intercompany-accrual-v1`, plus the retained `IntercompanyAccrualEvidenceDto` and its
+guard. `ManualJournalEntryDraftDto` gains null-omitted `IntercompanyAccrualEvidenceJson` and digest
+fields, so historical drafts serialize unchanged. `LoanInterest` is appended to the accounting
+template kinds; `Loan` keeps its principal-only meaning.
+
 Optional legacy-attribution revocation records a reviewed exact-pin successor, preserving native
 legal hashes. Exact decimal strings are a transport convention of the new obligation-monitor
 endpoint; canonical balance-schedule serialization and evidence hashes remain unchanged.

@@ -2617,6 +2617,49 @@ W12-FINRPT-001: planned; health green; evidence planned_evidence. Bind existing 
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
 
+## W12-ICACCRUAL-001 - Governed intercompany loan-interest accrual from structured terms
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-14 |
+
+### Current Summary
+
+W12-ICACCRUAL-001: in_progress; health yellow; evidence in_progress. Fixed-rate simple interest is calculated from approved structured terms and retained as a reviewed source draft whose counterpart arrives through the existing proposal pipeline; operator screens, fees, floating rates and service-backed evidence remain open.
+
+### Status References
+
+- Decisions: DEC-IC-ACCRUAL-001
+- PR references (not inferred acceptance): none recorded
+- Evidence: [docs/adr/028-governed-intercompany-interest-accrual.md](../../adr/028-governed-intercompany-interest-accrual.md)
+- Evidence: [src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs](../../../src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs)
+- Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs)
+- Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs)
+
+
+### Exit Criteria
+
+- Interest for a half-open accrual window is calculated only from the approved legal revision and LoanInterest profile revision applicable on each day, using the shared schedule and day-count kernels; no rate, day count, principal or amount is accepted from the caller.
+- A rate reset or amendment inside an accrual period is prorated by day under the stated intercompany-accrual-v1 rule, slices are rounded once, and any day without approved authority, declared schedule coverage or provable posted principal refuses the whole window.
+- The computed amount becomes a source-side draft in ordinary journal review and its counterpart arrives as a proposal draft in the destination review queue after the source posts; neither side posts automatically.
+- Each accrual retains the agreement version, profile revision, principal journals, calendar and kernel identity and any governed FX conversion; a client save cannot replace that evidence and edited lines block review.
+- Cross-currency loans convert through the governed FX authority or are unavailable; fees, floating rates and compounding stay uncalculated until their missing terms or authorities are declared.
+- Shared browser and WPF surfaces for requesting an accrual, and service-backed post-and-deliver evidence, are recorded before acceptance.
+
+### Source Modules
+
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-UI-SHARED`
+
 ## W12-ICAGREE-001 - Intercompany accounting profiles and legacy attribution
 | Field | Value |
 | --- | --- |

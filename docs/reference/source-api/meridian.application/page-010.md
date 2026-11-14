@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterRestatementDecision
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRestatementDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:32](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L32).
+
+The restatement outcome a publish reports to the operator: whether a closed-period edit requires restatement, and the report packs proposed for it (the operator approves each via the existing governed report-pack restatement path; the workbench only proposes).
+
+```csharp
+public sealed record SecurityMasterRestatementDecision(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates);
+```
+
 ## SecurityMasterRevisionFieldBase
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionFieldBase</code>. Kind: `record`.
@@ -1068,36 +1080,3 @@ Summary of all validation results.
 ```csharp
 public sealed record ValidationSummary(IReadOnlyList<ValidationResult> Results, bool AllValid, IReadOnlyList<string> Warnings);
 ```
-
-## DailySummary
-
-Qualified name: <code>Meridian.Application.Services.DailySummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:719](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L719).
-
-Daily summary data structure.
-
-```csharp
-public sealed class DailySummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTimeOffset GeneratedAt { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:721](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L721) |  |
-| <code>public DateOnly Date { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:722](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L722) |  |
-| <code>public string MarketStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:723](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L723) |  |
-| <code>public bool IsHalfDay { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:724](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L724) |  |
-| <code>public long TotalEventsPublished { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:727](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L727) |  |
-| <code>public long TotalEventsConsumed { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:728](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L728) |  |
-| <code>public long TotalEventsDropped { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:729](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L729) |  |
-| <code>public long PeakQueueSize { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:730](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L730) |  |
-| <code>public double AverageProcessingTimeUs { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:731](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L731) |  |
-| <code>public int StaleSymbolCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:734](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L734) |  |
-| <code>public string[] StaleSymbols { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:735](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L735) |  |
-| <code>public string SystemHealthStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:738](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L738) |  |
-| <code>public int WarningCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:739](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L739) |  |
-| <code>public string[] Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:740](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L740) |  |
-| <code>public double MemoryUsageMb { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:743](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L743) |  |
-| <code>public GcStats GcCollections { get; init; } = new ();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:744](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L744) |  |

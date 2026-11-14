@@ -6,6 +6,261 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityValidationSnapshotRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationSnapshotRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L49).
+
+```csharp
+public sealed record SecurityValidationSnapshotRequestDto(SecurityValidationWorkflowDto Workflow, string? WorkflowReference, string? Actor, string Reason, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
+## SecurityValidationWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationWorkflowDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L39).
+
+```csharp
+public enum SecurityValidationWorkflowDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L41) |  |
+| <code>StrategyRunPreflight = 1</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L42) |  |
+| <code>LedgerPosting = 2</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L43) |  |
+| <code>ReconciliationBreakIntake = 3</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L44) |  |
+| <code>ReportPackEvidence = 4</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L45) |  |
+| <code>OverrideApproval = 5</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L46) |  |
+
+## SecurityValuationAccountingTreatment
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1507](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1507).
+
+The declared mark-based accounting treatment for an asset class.
+
+```csharp
+public enum SecurityValuationAccountingTreatment
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1509](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1509) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1510](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1510) |  |
+
+## SecurityValuationBlockerDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L64).
+
+Why no value could be produced. When any blocker is present no number is substituted.
+
+```csharp
+public sealed record SecurityValuationBlockerDto(string Code, string Reason);
+```
+
+## SecurityValuationCurveInput
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationCurveInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L34).
+
+A curve the caller pins for a role; Role is Discount in this increment.
+
+```csharp
+public sealed record SecurityValuationCurveInput(string Role, Guid CurveId, Guid? CurveVersionId = null);
+```
+
+## SecurityValuationInputDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationInputDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L54).
+
+One retained input a value was built from, so the value can be rebuilt from the same evidence.
+
+```csharp
+public sealed record SecurityValuationInputDto(string Kind, string Reference, Guid? Id = null, long? Version = null, string? ContentSha256 = null, DateTimeOffset? AsOf = null, DateTimeOffset? RecordedAt = null);
+```
+
+## SecurityValuationModelKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationModelKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L7).
+
+The model a security is valued with.
+
+```csharp
+public enum SecurityValuationModelKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QuotedPrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L10) | The golden-copy price selected through the pricing hierarchy. |
+| <code>DiscountedCashFlow</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L13) | The projected cash flows discounted on a stored discount curve. |
+
+## SecurityValuationObservability
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationObservability</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L21).
+
+How observable the inputs behind a value are. The mark lane maps this to the ledger&#x27;s FairValueLevel; Contracts cannot reference Ledger.
+
+```csharp
+public enum SecurityValuationObservability
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>QuotedPrice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L24) | A quoted price selected from retained observations. |
+| <code>ObservableInputs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L27) | A model on stored market inputs (curves) only. |
+| <code>UnobservableInputs</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L30) | A model that fell back to an unobservable input, such as a flat forward at the last fixing. |
+
+## SecurityValuationRequest
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L43).
+
+Value one security as of a date with these market inputs. AsOf is the economic cutoff (curves and schedules use its UTC date); KnownAt the knowledge cutoff, as the golden-copy as-of read takes it. Quantity is in the class&#x27;s lot unit and enables SecurityValuationResult.MarketValue. Model overrides the catalog&#x27;s DefaultValuationModel.
+
+```csharp
+public sealed record SecurityValuationRequest(Guid SecurityId, DateTimeOffset AsOf, DateTimeOffset? KnownAt = null, string? AccountId = null, decimal? Quantity = null, IReadOnlyList<SecurityValuationCurveInput>? Curves = null, SecurityValuationModelKind? Model = null, IReadOnlyDictionary<string, string>? Parameters = null);
+```
+
+## SecurityValuationResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L74).
+
+The outcome of valuing a security. Price is the per-unit quote in PriceUnit when one exists; PresentValue the model&#x27;s PV on the projected principal or notional basis; ObservedAsOf the oldest market input used (the selected price&#x27;s as-of for a quote; the earlier of the discount curve&#x27;s as-of and every forward curve&#x27;s as-of the projection read for discounted cash flow). When IsBlocked, Price, PresentValue and MarketValue are null; zero is never substituted.
+
+```csharp
+public sealed record SecurityValuationResult(Guid SecurityId, SecurityValuationModelKind Model, string ModelKey, string ModelVersion, DateTimeOffset AsOf, DateTimeOffset KnowledgeAsOf, string Currency, decimal? Price, SecurityPriceUnit PriceUnit, decimal? PresentValue, decimal? Quantity, decimal? MarketValue, DateTimeOffset? ObservedAsOf, SecurityValuationObservability Observability, IReadOnlyList<SecurityValuationInputDto> Inputs, IReadOnlyList<string> Diagnostics, IReadOnlyList<SecurityValuationBlockerDto> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L93) |  |
+| <code>public static SecurityValuationResult Blocked(SecurityValuationRequest request, SecurityDetailDto security, SecurityValuationModelKind model, string modelKey, string modelVersion, DateTimeOffset knowledgeAsOf, IReadOnlyList&lt;SecurityValuationBlockerDto&gt; blockers, IReadOnlyList&lt;SecurityValuationInputDto&gt;? inputs = null, IReadOnlyList&lt;string&gt;? diagnostics = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L96) | A blocked result for model: no price, value or market value, and the blockers given. |
+
+## SecurityVersionedTermDecoding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityVersionedTermDecoding</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L50).
+
+Which versioned containers a payload decodes (ADR-024 decision 3). A versioned container (SecurityVersionedTerms.IsVersionedContainer) is decoded only from a payload that is not profile-governed and only when its version is at or below Through; every other field is decoded as before. Built by SecurityVersionedTerms.Decoding.
+
+```csharp
+public readonly record struct SecurityVersionedTermDecoding(bool ProfileGoverned, int Through)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool WriteMode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L53) | Write validation skips readable modules whose authoring remains disabled. |
+| <code>public bool Decodes(SecurityAssetTermField field);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L56) | Whether field is decoded from the payload this decoding describes. |
+
+## SecurityVersionedTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityVersionedTerms</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L73).
+
+The versioned class-term containers of the flat terms family (ADR-024, readable before writable): the scheduleConventions block and the callSchedule and putSchedule arrays, at the payload root and inside array elements (a swap leg&#x27;s block). It holds their keys, the one predicate deciding which of them a payload decodes, and the one reader of the block, so the mapping, the schema validator and the cash-flow engine cannot disagree about what a row declares.
+
+```csharp
+public static class SecurityVersionedTerms
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ScheduleConventionsKey = &quot;scheduleConventions&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L76) | The schedule-conventions block (ADR-025). |
+| <code>public const string CallScheduleKey = &quot;callSchedule&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L79) | The declared call schedule. |
+| <code>public const string PutScheduleKey = &quot;putSchedule&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L82) | The declared put schedule. |
+| <code>public const string DeclaredScheduleMappingVersion = &quot;security-master-declared-schedule-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L92) | The version of the mapping from a declared scheduleConventions block to a schedule specification (ADR-025). Schedule evidence and the startup capability line report it, so a node&#x27;s logs and its evidence name one mapping. This is the only literal: the schedule factory&#x27;s DeclaredMappingVersion must be declared as this constant, never as its own string, and its tests must assert that the two are equal. Any change to how a declared block maps to a schedule ships under a new value. |
+| <code>public static bool IsVersionedContainer(SecurityAssetTermField field);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L104) | Whether field is a versioned container: an object or array term introduced above asset-class terms version 1. Its members are frozen with it, and it is never walked, decoded or validated in a profile envelope (ADR-024 decision 3). Containers that predate per-class versioning (swap legs, a bond&#x27;s principalSchedule) and later scalar terms are not. |
+| <code>public static SecurityVersionedTermDecoding Decoding(string assetClass, JsonElement payload, bool writeMode) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L116) | The decoding of a payload of assetClass. A read decodes the versioned containers at or below the payload&#x27;s own stamp; a write decodes those at or below the class&#x27;s write version. A profile envelope decodes none in either mode. |
+| <code>public static ScheduleConventionTerms ReadScheduleConventions(JsonElement container, string key);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:135](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L135) | Reads the scheduleConventions block under key (exact case) of container, tolerantly and verbatim, without any version gate: callers decide whether the container is decoded (SecurityVersionedTermDecoding.Decodes). A key whose value is not an object, and a container that is not an object, read as ScheduleConventionTerms.Empty. Members match exactly by name; strings are read only from string tokens and keep blanks; booleans only from true or false; the lag only from a number that fits an int; dates through the current culture&#x27;s DateOnly.TryParse(string?, out DateOnly); calendars from the string items of an array, dropping whitespace-only ids without trimming the rest. |
+| <code>public static SecurityDeclaredConventionsRead ReadDeclaredScheduleConventions(string assetClass, JsonElement storedTerms);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:170](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L170) | The root scheduleConventions block a stored row of assetClass declares, decided exactly as the Read-mode mapping decodes it. SecurityDeclaredConventionsStatus.None when the terms are not an object, the class declares no root block, the payload declares a format other than flat or custom profile (economic terms are read through their own family), the row does not decode the block, or the block is empty. SecurityDeclaredConventionsStatus.Unreadable when the row&#x27;s stamp is one this node does not read. There is no flat-format check: a row of a class without profile-backed terms decodes its root block by its own stamp even when it carries a customProfileId and profileFields. |
+| <code>public static SecurityDeclaredConventionsRead ReadDeclaredLegScheduleConventions(string assetClass, JsonElement storedTerms);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/SecurityVersionedTerms.cs#L206) | The scheduleConventions blocks a stored row of assetClass declares inside the elements of an array term (today only swap legs), decided exactly as the Read-mode mapping decodes them. The elements come from the container the mapping reads: the first of the term&#x27;s key and aliases, in that order and matched case-insensitively, whose value is a non-empty array. A row the mapping cannot read, because one of those keys holds something other than an array, declares nothing. The format, stamp and decode rules are those of ReadDeclaredScheduleConventions; the result is Declared with SecurityDeclaredConventionsRead.ElementBlocks when any object element carries a non-empty block. |
+
+## SplitCorporateActionTerms
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:160](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L160).
+
+Unit count scaled by a ratio (forward or reverse split).
+
+```csharp
+public sealed record SplitCorporateActionTerms(string EventType, decimal? Ratio) : CorporateActionTerms(EventType);
+```
+
+## StructuredCashFlowCalendarEvidence
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:308](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L308).
+
+One business-day calendar a declared schedule (ADR-025) was generated or measured with.
+
+```csharp
+public sealed record StructuredCashFlowCalendarEvidence(string CalendarId, string ContentHash, string Purpose);
+```
+
+## StructuredCashFlowCoverageGap
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:321](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L321).
+
+The dates a calendar was asked about outside its declared coverage while a declared schedule was generated or measured: one row per calendar, from the first to the last such date. A gap is informational (ADR-025 decision 2): a holiday on those dates may be missing from the calendar data.
+
+```csharp
+public sealed record StructuredCashFlowCoverageGap(string CalendarId, DateOnly FirstDate, DateOnly LastDate);
+```
+
+## StructuredCashFlowInterestSegment
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowInterestSegment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L96).
+
+Retained interest economics for one constant-principal portion of a coupon. Interest is measured over (Start, End&#93;; the original coupon anchors remain explicit so subwindows use differences of cumulative day-count fractions rather than assume that a convention is additive across arbitrary dates. ReferencePrincipal is the balance before any principal payment on the segment&#x27;s end date, and Factor is the pool factor carried by that balance. Interest remains unrounded until allocated to a holder; the rounded sum of segments reconciles to the schedule row&#x27;s interest.
+
+```csharp
+public sealed record StructuredCashFlowInterestSegment(DateOnly Start, DateOnly End, decimal ReferencePrincipal, decimal UnroundedInterestAmount, decimal Factor, DateOnly PeriodStart, DateOnly PeriodEnd)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? FactorAfter { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L111) | Exact pool factor after principal movements on End, for reconciling the closing lot state separately from the face that earned interest through that date. Required on current segment evidence; omitted only when no such evidence was retained. |
+
 ## StructuredCashFlowLeg
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg</code>. Kind: `record`.
@@ -547,332 +802,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>bool IsOnline { get; }</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:13](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L13) | Gets whether the system is currently online. |
 | <code>event EventHandler&lt;bool&gt;? ConnectivityChanged;</code> | [src/Meridian.Contracts/Services/IConnectivityProbeService.cs:18](../../../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs#L18) | Raised when connectivity state changes (true = online, false = offline). |
-
-## IEntityLifecycleProjectionSink
-
-Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleProjectionSink</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:15](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L15).
-
-Local compatibility projection; implementations must verify the retained revision.
-
-```csharp
-public interface IEntityLifecycleProjectionSink
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task ApplyLifecycleProjectionAsync(EntityLifecycleRevisionDto revision, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:17](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L17) |  |
-
-## IEntityLifecycleService
-
-Qualified name: <code>Meridian.Contracts.Services.IEntityLifecycleService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:6](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L6).
-
-Tenant-authorized immutable entity lifecycle history.
-
-```csharp
-public interface IEntityLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EntityLifecycleRevisionDto?&gt; GetAsync(Guid entityId, long? revision = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:8](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:9](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L9) |  |
-| <code>Task&lt;EntityLifecycleRevisionDto&gt; TransitionAsync(AppendEntityLifecycleRevisionRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEntityLifecycleService.cs:11](../../../../src/Meridian.Contracts/Services/IEntityLifecycleService.cs#L11) |  |
-
-## IEnvironmentDesignService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentDesignService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L8).
-
-Creates, retrieves, and saves environment design drafts.
-
-```csharp
-public interface IEnvironmentDesignService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;EnvironmentDraftDto&gt;&gt; ListDraftsAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L10) |  |
-| <code>Task&lt;EnvironmentDraftDto?&gt; GetDraftAsync(Guid draftId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L12) |  |
-| <code>Task&lt;EnvironmentDraftDto&gt; CreateDraftAsync(CreateEnvironmentDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:14](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L14) |  |
-| <code>Task&lt;EnvironmentDraftDto&gt; SaveDraftAsync(EnvironmentDraftDto draft, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:16](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L16) |  |
-| <code>Task DeleteDraftAsync(Guid draftId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:18](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L18) |  |
-| <code>Task&lt;IReadOnlyList&lt;PublishedEnvironmentVersionDto&gt;&gt; ListPublishedVersionsAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:20](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L20) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto?&gt; GetPublishedVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:24](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L24) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto?&gt; GetCurrentPublishedVersionAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentDesignService.cs:26](../../../../src/Meridian.Contracts/Services/IEnvironmentDesignService.cs#L26) |  |
-
-## IEnvironmentPublishService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentPublishService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L8).
-
-Previews, publishes, and rolls back versioned environment configurations.
-
-```csharp
-public interface IEnvironmentPublishService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EnvironmentPublishPreviewDto&gt; PreviewPublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L10) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto&gt; PublishAsync(EnvironmentPublishPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L12) |  |
-| <code>Task&lt;PublishedEnvironmentVersionDto&gt; RollbackAsync(RollbackEnvironmentVersionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentPublishService.cs:14](../../../../src/Meridian.Contracts/Services/IEnvironmentPublishService.cs#L14) |  |
-
-## IEnvironmentRuntimeProjectionService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentRuntimeProjectionService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L8).
-
-Retrieves the runtime projection of the current or a specified published environment version.
-
-```csharp
-public interface IEnvironmentRuntimeProjectionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetCurrentRuntimeAsync(Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L10) |  |
-| <code>Task&lt;PublishedEnvironmentRuntimeDto?&gt; GetRuntimeForVersionAsync(Guid versionId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs:12](../../../../src/Meridian.Contracts/Services/IEnvironmentRuntimeProjectionService.cs#L12) |  |
-
-## IEnvironmentValidationService
-
-Qualified name: <code>Meridian.Contracts.Services.IEnvironmentValidationService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:8](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L8).
-
-Validates an environment design and returns its validation findings.
-
-```csharp
-public interface IEnvironmentValidationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EnvironmentValidationResultDto&gt; ValidateAsync(EnvironmentDraftDto draft, EnvironmentPublishPlanDto? publishPlan = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IEnvironmentValidationService.cs:10](../../../../src/Meridian.Contracts/Services/IEnvironmentValidationService.cs#L10) |  |
-
-## IFundAccountTraversalQueryService
-
-Qualified name: <code>Meridian.Contracts.Services.IFundAccountTraversalQueryService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IFundAccountTraversalQueryService.cs:8](../../../../src/Meridian.Contracts/Services/IFundAccountTraversalQueryService.cs#L8).
-
-Traverses fund structure relationships to retrieve the applicable accounts.
-
-```csharp
-public interface IFundAccountTraversalQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;AccountSummaryDto&gt;&gt; GetFundAccountsAsync(Guid fundId, AccountTypeDto? accountType, bool activeOnly, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundAccountTraversalQueryService.cs:10](../../../../src/Meridian.Contracts/Services/IFundAccountTraversalQueryService.cs#L10) |  |
-
-## IFundStructureService
-
-Qualified name: <code>Meridian.Contracts.Services.IFundStructureService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IFundStructureService.cs:10](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L10).
-
-Manages the organization-rooted governance structure graph that supports advisory and fund-operating views over shared portfolios, accounts, and legal overlays.
-
-```csharp
-public interface IFundStructureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;OrganizationSummaryDto&gt; CreateOrganizationAsync(CreateOrganizationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:12](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L12) |  |
-| <code>Task&lt;BusinessSummaryDto&gt; CreateBusinessAsync(CreateBusinessRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:16](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L16) |  |
-| <code>Task&lt;ClientSummaryDto&gt; CreateClientAsync(CreateClientRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:20](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L20) |  |
-| <code>Task&lt;FundSummaryDto&gt; CreateFundAsync(CreateFundRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:24](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L24) |  |
-| <code>Task&lt;SleeveSummaryDto&gt; CreateSleeveAsync(CreateSleeveRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:28](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L28) |  |
-| <code>Task&lt;VehicleSummaryDto&gt; CreateVehicleAsync(CreateVehicleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:32](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L32) |  |
-| <code>Task&lt;LegalEntitySummaryDto&gt; CreateLegalEntityAsync(CreateLegalEntityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:36](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L36) |  |
-| <code>Task&lt;LegalEntitySummaryDto&gt; UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:40](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L40) |  |
-| <code>Task&lt;InvestmentPortfolioSummaryDto&gt; CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:44](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L44) |  |
-| <code>Task&lt;OwnershipLinkDto&gt; LinkNodesAsync(LinkFundStructureNodesRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:48](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L48) |  |
-| <code>Task&lt;OwnershipLinkDto&gt; UpdateOwnershipLinkAsync(UpdateOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:52](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L52) |  |
-| <code>Task&lt;OwnershipLinkDto&gt; ExpireOwnershipLinkAsync(ExpireOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:56](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L56) |  |
-| <code>Task&lt;OwnershipLinkDto&gt; ReplaceOwnershipLinkAsync(ReplaceOwnershipLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:60](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L60) |  |
-| <code>Task&lt;OwnershipGraphValidationResultDto&gt; ValidateOwnershipGraphAsync(ValidateOwnershipGraphRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:64](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L64) |  |
-| <code>Task&lt;FundStructureAssignmentDto&gt; AssignNodeAsync(AssignFundStructureNodeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:68](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L68) |  |
-| <code>Task&lt;OrganizationStructureGraphDto&gt; GetOrganizationStructureAsync(OrganizationStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:72](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L72) |  |
-| <code>Task&lt;FundStructureGraphDto&gt; GetFundStructureGraphAsync(FundStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:76](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L76) |  |
-| <code>Task&lt;AdvisoryStructureViewDto?&gt; GetAdvisoryViewAsync(AdvisoryStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:80](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L80) |  |
-| <code>Task&lt;FundOperatingViewDto?&gt; GetFundOperatingViewAsync(FundOperatingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:84](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L84) |  |
-| <code>Task&lt;AccountingStructureViewDto&gt; GetAccountingViewAsync(AccountingStructureQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:88](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L88) |  |
-| <code>Task&lt;GovernanceCashFlowViewDto?&gt; GetCashFlowViewAsync(GovernanceCashFlowQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IFundStructureService.cs:92](../../../../src/Meridian.Contracts/Services/IFundStructureService.cs#L92) |  |
-
-## IGovernanceSharedDataAccessService
-
-Qualified name: <code>Meridian.Contracts.Services.IGovernanceSharedDataAccessService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IGovernanceSharedDataAccessService.cs:10](../../../../src/Meridian.Contracts/Services/IGovernanceSharedDataAccessService.cs#L10).
-
-Builds shared Security Master, historical price, and backfill accessibility summaries for governance structure views without coupling those views to position-level holdings data.
-
-```csharp
-public interface IGovernanceSharedDataAccessService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;FundStructureSharedDataAccessDto&gt; GetSharedDataAccessAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IGovernanceSharedDataAccessService.cs:12](../../../../src/Meridian.Contracts/Services/IGovernanceSharedDataAccessService.cs#L12) |  |
-
-## IIntercompanyAgreementAccessAuthority
-
-Qualified name: <code>Meridian.Contracts.Services.IIntercompanyAgreementAccessAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:18](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L18).
-
-```csharp
-public interface IIntercompanyAgreementAccessAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;bool&gt; CanAccessEntitiesAsync(IntercompanyAgreementCallContext context, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:20](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L20) |  |
-
-## IIntercompanyAgreementEvidenceAuthority
-
-Qualified name: <code>Meridian.Contracts.Services.IIntercompanyAgreementEvidenceAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:23](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L23).
-
-```csharp
-public interface IIntercompanyAgreementEvidenceAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt;&gt; ResolveAsync(IntercompanyAgreementCallContext context, Guid agreementId, Guid proposalId, IReadOnlyList&lt;IntercompanyAgreementEvidenceDto&gt; evidence, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:25](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L25) |  |
-
-## IIntercompanyAgreementService
-
-Qualified name: <code>Meridian.Contracts.Services.IIntercompanyAgreementService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:5](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L5).
-
-```csharp
-public interface IIntercompanyAgreementService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IntercompanyAgreementListDto&gt; ListAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:7](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L7) |  |
-| <code>Task&lt;IntercompanyAgreementDetailDto?&gt; GetAsync(IntercompanyAgreementCallContext context, Guid agreementId, DateOnly? asOf = null, DateTimeOffset? knownAtUtc = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:8](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L8) |  |
-| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:9](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L9) |  |
-| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; CreateProposalAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:10](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L10) |  |
-| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; SaveDraftAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:11](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L11) |  |
-| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; SubmitAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:12](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L12) |  |
-| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; ApproveAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:13](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L13) |  |
-| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; RejectAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:14](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L14) |  |
-| <code>Task&lt;IntercompanyAgreementCommandResultDto&gt; WithdrawAsync(IntercompanyAgreementCallContext context, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs:15](../../../../src/Meridian.Contracts/Services/IIntercompanyAgreementService.cs#L15) |  |
-
-## IOperationalScheduler
-
-Qualified name: <code>Meridian.Contracts.Services.IOperationalScheduler</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:136](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L136).
-
-Centralized operational scheduler for coordinating maintenance tasks, backfill operations, and other scheduled activities with trading hours.
-
-```csharp
-public interface IOperationalScheduler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;ScheduleDecision&gt; CanExecuteAsync(OperationType operationType, ResourceRequirements? requirements = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:145](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L145) | Checks if an operation can execute now based on current conditions. |
-| <code>Task&lt;ScheduleSlot?&gt; FindNextAvailableSlotAsync(OperationType operationType, TimeSpan minDuration, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:157](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L157) | Finds the next available slot for an operation. |
-| <code>bool IsWithinTradingHours { get; }</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:165](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L165) | Gets whether we are currently within trading hours for any market. |
-| <code>bool IsWithinMaintenanceWindow { get; }</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:170](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L170) | Gets whether we are currently within a maintenance window. |
-| <code>TradingSession? GetCurrentTradingSession();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:176](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L176) | Gets the current trading session if any. |
-| <code>TradingSession? GetNextTradingSession();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:182](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L182) | Gets the next trading session. |
-| <code>MaintenanceWindow? GetCurrentMaintenanceWindow();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:188](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L188) | Gets the current maintenance window if any. |
-| <code>MaintenanceWindow? GetNextMaintenanceWindow();</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:194](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L194) | Gets the next maintenance window. |
-| <code>void RegisterMaintenanceWindow(MaintenanceWindow window);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:200](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L200) | Registers a maintenance window. |
-| <code>void RemoveMaintenanceWindow(string windowName);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:206](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L206) | Removes a maintenance window. |
-
-## IOperationalTradingCalendar
-
-Qualified name: <code>Meridian.Contracts.Services.IOperationalTradingCalendar</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:213](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L213).
-
-Provides the deterministic trading-calendar policy used by local operational scheduling. This is intentionally separate from provider-supplied calendar data.
-
-```csharp
-public interface IOperationalTradingCalendar
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>bool IsTradingDay(DateOnly date, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:221](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L221) | Checks if a specific date is a trading day. |
-| <code>IReadOnlyList&lt;TradingSession&gt; GetTradingSessions(DateOnly date, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:229](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L229) | Gets trading hours for a specific date. |
-| <code>DateOnly GetNextTradingDay(DateOnly after, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:237](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L237) | Gets the next trading day. |
-| <code>IReadOnlyList&lt;DateOnly&gt; GetHolidays(int year, string market = &quot;US&quot;);</code> | [src/Meridian.Contracts/Services/IOperationalScheduler.cs:245](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L245) | Gets market holidays for a year. |
-
-## ISecurityValidationGateService
-
-Qualified name: <code>Meridian.Contracts.Services.ISecurityValidationGateService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:8](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L8).
-
-Workflow-facing Security Master validation gate.
-
-```csharp
-public interface ISecurityValidationGateService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:13](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L13) | Validates Security Master identity and policy posture for a symbol-scoped workflow. |
-| <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:24](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L24) | Validates Security Master identity and policy posture for a known security. |
-
-## ITradingCalendarProvider
-
-Qualified name: <code>Meridian.Contracts.Services.ITradingCalendarProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:256](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L256).
-
-Compatibility alias for the former local scheduling calendar contract. New local scheduling code must use IOperationalTradingCalendar; provider adapters must use Meridian.ProviderSdk.ITradingCalendarProvider so their calendar output retains provider provenance.
-
-```csharp
-public interface ITradingCalendarProvider : IOperationalTradingCalendar
-```

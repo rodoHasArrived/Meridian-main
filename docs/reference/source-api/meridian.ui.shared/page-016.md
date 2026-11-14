@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingDeliveryReleaseAuthorizationFactory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryReleaseAuthorizationFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:15](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L15).
+
+Creates the delivery authorization envelope from the immutable governed run. The proof is a stable content digest, not a caller credential: authorization still requires a fresh comparison with the authoritative governance repository through GovernanceReportingReleaseAuthorizationVerifier.
+
+```csharp
+public static class ReportingDeliveryReleaseAuthorizationFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReportingDeliveryReleaseAuthorization Create(GovernedReportingRun run);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L17) |  |
+| <code>public static bool HasValidSelfProof(ReportingDeliveryReleaseAuthorization authorization);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:68](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L68) |  |
+| <code>public static bool Matches(ReportingDeliveryReleaseAuthorization supplied, ReportingDeliveryReleaseAuthorization authoritative);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs:74](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceReleaseAuthorizationVerifier.cs#L74) |  |
+
 ## ReportingDeliveryWorkerReadinessState
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryWorkerReadinessState</code>. Kind: `class`.
@@ -851,13 +871,3 @@ Declared public members:
 | <code>public IReadOnlySet&lt;string&gt; GetEnabledTemplateIds(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L239) |  |
 | <code>public ReportingStarterKitProvisionResultDto Provision(string kitId, string actor, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:247](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L247) |  |
 | <code>public static ReportingStarterKitDto ToDto(ReportingStarterKitDefinition kit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:341](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L341) |  |
-
-## ReportingStarterKitStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStarterKitStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L9).
-
-```csharp
-public sealed record ReportingStarterKitStoreOptions(string SnapshotPath);
-```

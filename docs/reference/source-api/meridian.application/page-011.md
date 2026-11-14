@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DailySummary
+
+Qualified name: <code>Meridian.Application.Services.DailySummary</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:719](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L719).
+
+Daily summary data structure.
+
+```csharp
+public sealed class DailySummary
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateTimeOffset GeneratedAt { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:721](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L721) |  |
+| <code>public DateOnly Date { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:722](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L722) |  |
+| <code>public string MarketStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:723](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L723) |  |
+| <code>public bool IsHalfDay { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:724](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L724) |  |
+| <code>public long TotalEventsPublished { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:727](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L727) |  |
+| <code>public long TotalEventsConsumed { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:728](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L728) |  |
+| <code>public long TotalEventsDropped { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:729](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L729) |  |
+| <code>public long PeakQueueSize { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:730](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L730) |  |
+| <code>public double AverageProcessingTimeUs { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:731](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L731) |  |
+| <code>public int StaleSymbolCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:734](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L734) |  |
+| <code>public string[] StaleSymbols { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:735](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L735) |  |
+| <code>public string SystemHealthStatus { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:738](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L738) |  |
+| <code>public int WarningCount { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:739](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L739) |  |
+| <code>public string[] Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:740](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L740) |  |
+| <code>public double MemoryUsageMb { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:743](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L743) |  |
+| <code>public GcStats GcCollections { get; init; } = new ();</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:744](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L744) |  |
+
 ## DailySummaryResult
 
 Qualified name: <code>Meridian.Application.Services.DailySummaryResult</code>. Kind: `record struct`.
@@ -930,32 +963,3 @@ Provider availability status.
 ```csharp
 public sealed record ProviderStatus(string Name, string DisplayName, int Priority, bool Available);
 ```
-
-## SchedulingService
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.SchedulingService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:16](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L16).
-
-Service for scheduling symbol subscription enable/disable by time/date.
-
-```csharp
-public sealed class SchedulingService : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SchedulingService(ConfigStore configStore, string? schedulesPath = null, ILogger? log = null) : this(configStore, schedulesPath, log, null);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:32](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L32) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:58](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L58) | Initialize the service and load existing schedules. |
-| <code>public IReadOnlyList&lt;SubscriptionSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:77](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L77) | Get all schedules. |
-| <code>public SubscriptionSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:85](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L85) | Get a specific schedule. |
-| <code>public ScheduleExecutionStatus? GetExecutionStatus(string scheduleId);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:93](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L93) | Get execution status for a schedule. |
-| <code>public IReadOnlyList&lt;ScheduleExecutionStatus&gt; GetAllExecutionStatuses();</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:101](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L101) | Get all execution statuses. |
-| <code>public async Task&lt;SubscriptionSchedule&gt; CreateScheduleAsync(CreateScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:109](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L109) | Create a new schedule. |
-| <code>public async Task&lt;SubscriptionSchedule?&gt; UpdateScheduleAsync(string scheduleId, CreateScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:135](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L135) | Update an existing schedule. |
-| <code>public async Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:166](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L166) | Enable or disable a schedule. |
-| <code>public async Task&lt;bool&gt; DeleteScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:188](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L188) | Delete a schedule. |
-| <code>public async Task&lt;ScheduleExecutionStatus&gt; ExecuteNowAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:205](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L205) | Manually execute a schedule now. |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:579](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L579) |  |

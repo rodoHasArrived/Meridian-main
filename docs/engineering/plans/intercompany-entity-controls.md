@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-13
+**Reviewed:** 2026-11-14
 
 The adopted scope is P1–P5: an agreement registry, effective entity controls, stable account roles
 and N-entity consolidation, reviewed counterpart proposals, and full reporting-currency
@@ -51,8 +51,9 @@ account, policy and FX population. Independent approval opens a new empty dedica
 strictly later cutover, rebuilding the new target without importing old overlays. The old book
 remains historical before cutover and is blocked afterward. Unknown or unapproved in-place member
 changes still block. Former-member external exposures stay in gross without elimination. Guarantee posting,
-loan-interest mirroring, automatic economic novation, automatic posting, live provider FX sourcing
-and external-GL posting are outside this implementation. Browser and WPF use shared contracts and
+automatic economic novation, automatic posting, live provider FX sourcing and external-GL posting are
+outside this implementation. Loan-interest mirroring was outside the original P1–P5 scope and is now
+covered by the governed accrual extension below. Browser and WPF use shared contracts and
 APIs; WPF runtime proof requires Windows.
 
 Verification must cover old v1 evidence, three/ten-entity populations, account rename/retirement,
@@ -79,3 +80,23 @@ advisory companion. Existing schedule blockers, posting controls, reporting tran
 JSONB snapshots without schema replacement or historical hash migration. Acceptance evidence for
 this extension is separate from full W10/W12 completion; roadmap statuses are not promoted merely
 because the source exists. See the [domain extension](../../domain/intercompany-agreements-and-entity-lifecycle.md#obligation-monitoring-and-structured-legal-terms).
+
+## Governed loan-interest accrual extension
+
+`DEC-IC-ACCRUAL-001` and [ADR-028](../../adr/028-governed-intercompany-interest-accrual.md) bring one
+calculation into scope; roadmap row `W12-ICACCRUAL-001` carries its status. It depends on the P1
+registry and profile stages and on the P3 proposal pipeline, and on the governed FX authority for
+cross-currency loans.
+
+| Piece | Decision and boundary |
+| --- | --- |
+| Calculator | `IntercompanyAccrualPreviewService` is pure. It reuses the date preview's schedule mapping and the shared day-count kernel, and refuses anything that would need an inferred term. |
+| Proration | Rule `intercompany-accrual-v1`: each day accrues under the approved revision applicable on that day; the window is cut at profile-revision, schedule-period and principal boundaries; slices are rounded once. |
+| Principal | Read from posted journals of the approved `Loan` profile of the same legal agreement in the source book. It is never entered by the operator. |
+| Profile | `LoanInterest` is a new reviewed template for loan agreements. Existing `Loan` profiles keep their principal-only mirror. |
+| Routing | The source side is a draft in ordinary journal review. The destination side is a counterpart proposal draft after the source posts. Nothing posts automatically. |
+| Evidence | Agreement version and hash, profile revision, principal journals, calendar and kernel identity and FX conversion are retained with a digest on the draft and the posted journal. |
+
+Fees, floating rates, compounding, scheduled runs, and browser or WPF screens for requesting an
+accrual are not part of this increment. Unit-level tests cover the calculation, refusals, evidence
+retention and the counterpart mirror; no PostgreSQL-backed post-and-deliver run is recorded yet.

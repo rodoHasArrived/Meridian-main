@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PricingStoreOtcContractValuationSource
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Otc.PricingStoreOtcContractValuationSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:16](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L16).
+
+The first IOtcContractValuationSource: marks a contract from the golden-copy price recorded for its instrument. Declared convention: a SecurityPriceUnit.PercentOfPar observation on a bilateral instrument is the value per 100 of notional to the buyer of that instrument as OtcContractDirection defines buying, so the mark is sign(direction) × notional × price / 100. Any other unit, a missing or stale price, or a notional in another currency leaves the contract unvalued with a named blocker. The price hierarchy retains a selection receipt on every call, which is the replayable provenance the snapshot records as its input reference.
+
+```csharp
+public sealed class PricingStoreOtcContractValuationSource : IOtcContractValuationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Method = &quot;otc-mtm-observed-price-v1&quot;;</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:18](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L18) |  |
+| <code>public PricingStoreOtcContractValuationSource(ISecurityMasterPricingService pricing);</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:23](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L23) |  |
+| <code>public async Task&lt;OtcContractValuationDto&gt; ValueAsync(OtcContractValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs:28](../../../../src/Meridian.Application/SecurityMaster/Otc/PricingStoreOtcContractValuationSource.cs#L28) |  |
+
 ## PeriodAwareRestatementResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.PeriodAwareRestatementResolver</code>. Kind: `class`.
@@ -997,15 +1017,3 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:330](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L330) |  |
 | <code>public async Task&lt;PreferredEquityTermsDto?&gt; GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:333](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L333) |  |
 | <code>public async Task&lt;ConvertibleEquityTermsDto?&gt; GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs:365](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs#L365) |  |
-
-## SecurityMasterRestatementDecision
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRestatementDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs:32](../../../../src/Meridian.Application/SecurityMaster/IPeriodAwareRestatementResolver.cs#L32).
-
-The restatement outcome a publish reports to the operator: whether a closed-period edit requires restatement, and the report packs proposed for it (the operator approves each via the existing governed report-pack restatement path; the workbench only proposes).
-
-```csharp
-public sealed record SecurityMasterRestatementDecision(bool RestatementRequired, IReadOnlyList<RestatementCandidateDto> Candidates);
-```

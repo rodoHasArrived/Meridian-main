@@ -556,6 +556,9 @@ public sealed partial class ManualJournalEntryWorkbenchService
                     AccountingConfigurationValidationSeverityDto.Critical, recurringReason, "recurringJournalEvidence",
                     "Restore the retained source evidence and accounting scope before human approval."));
         }
+        if (IntercompanyAccrualEvidenceGuard.IsAccrualDraft(draft) && IntercompanyAccrualEvidenceGuard.Validate(draft) is { } accrualReason)
+            issues.Add(Issue("manual-je.intercompany-accrual-evidence", AccountingConfigurationValidationSeverityDto.Critical,
+                accrualReason, "intercompanyAccrualEvidence", "Recompute the accrual from its approved terms; computed lines are not hand-edited."));
         if (draft.RequiresValuationMarkEvidence || ValuationMarkEvidenceGuard.IsValuation(draft.TreasuryContext?.IdempotencyKey) ||
             draft.ValuationMarkEvidenceJson is not null)
         {

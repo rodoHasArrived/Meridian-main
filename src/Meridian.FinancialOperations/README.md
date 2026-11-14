@@ -102,6 +102,10 @@ provenance through the existing dimensions. Conditional hash/grouping suffixes r
 identities for unreferenced lines. Legal provenance alone grants no accrual or settlement authority. Accounting profiles and
 account-role controls govern counterpart drafts and versioned consolidation, while native
 legal-only lines retain their separate advisory coverage. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+`IntercompanyAccrualSourceBuilder` holds the pure pieces of the governed loan-interest accrual
+(ADR-028): profile authority by day, principal read from posted `Loan`-profile journals, posted-window
+overlap detection and the evidence-pinned source draft. It posts nothing; the counterpart still
+arrives through `IntercompanyProposalDraftBuilder` after the source journal commits.
 
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their

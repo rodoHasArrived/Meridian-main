@@ -868,6 +868,13 @@ public sealed record ManualJournalEntryDraftDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? IntercompanyRefreshRequestDigest { get; init; }
 
+    /// <summary>Server-retained loan-interest computation; see <see cref="IntercompanyAccrualEvidenceGuard"/>.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntercompanyAccrualEvidenceJson { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntercompanyAccrualEvidenceDigest { get; init; }
+
     /// <summary>Server-retained distribution terms and tiers used to recover an interrupted declaration.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? DistributionDeclarationJson { get; init; }

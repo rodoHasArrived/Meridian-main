@@ -342,6 +342,11 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             IntercompanyProposalSourceDigest = existing?.IntercompanyProposalSourceDigest ?? (trustedAutomatedIntake ? request.Draft.IntercompanyProposalSourceDigest : null),
             IntercompanyFx = trustedAutomatedIntake && existing?.Status is ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix or ManualJournalEntryStatusDto.Rejected
                 ? request.Draft.IntercompanyFx : existing?.IntercompanyFx ?? (trustedAutomatedIntake ? request.Draft.IntercompanyFx : null),
+            // Only the accrual service may state or recompute provenance, and only before human review begins.
+            IntercompanyAccrualEvidenceJson = trustedAutomatedIntake && CanReplaceAccrualEvidence(existing)
+                ? request.Draft.IntercompanyAccrualEvidenceJson : existing?.IntercompanyAccrualEvidenceJson,
+            IntercompanyAccrualEvidenceDigest = trustedAutomatedIntake && CanReplaceAccrualEvidence(existing)
+                ? request.Draft.IntercompanyAccrualEvidenceDigest : existing?.IntercompanyAccrualEvidenceDigest,
             PrivateCapitalAuthorityJson = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.PrivateCapitalAuthorityJson : null)
                 : existing.PrivateCapitalAuthorityJson,
@@ -1172,6 +1177,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, "manualJournalEntryType", draft.EntryType.ToString());
         AddMetadataTag(tags, "intercompany.proposalId", draft.IntercompanyProposalId?.ToString("D"));
         AddMetadataTag(tags, "intercompany.sourceDigest", draft.IntercompanyProposalSourceDigest);
+        AddMetadataTag(tags, IntercompanyAccrualEvidenceGuard.EvidenceTag, draft.IntercompanyAccrualEvidenceJson);
+        AddMetadataTag(tags, IntercompanyAccrualEvidenceGuard.DigestTag, draft.IntercompanyAccrualEvidenceDigest);
         AddMetadataTag(tags, "accountingBasis", draft.AccountingBasis.ToString());
         AddMetadataTag(tags, "ledgerBookId", draft.LedgerBookId?.ToString("D"));
         AddMetadataTag(tags, "periodId", draft.PeriodId);

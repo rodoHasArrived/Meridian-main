@@ -6,8 +6,8 @@
   "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
-    "endpoint_count": 830,
-    "documented_endpoint_count": 830,
+    "endpoint_count": 832,
+    "documented_endpoint_count": 832,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 1051,
     "documented_workstation_contract_count": 1051,
@@ -2031,21 +2031,33 @@
       "documented": true
     },
     {
+      "method": "POST",
+      "path": "/api/ledger/intercompany/accruals/preview",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:128",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/intercompany/accruals/drafts",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:150",
+      "documented": true
+    },
+    {
       "method": "GET",
       "path": "/api/ledger/intercompany/breaks",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:127",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:173",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/intercompany/proposals/{proposalId:guid}/retry",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:140",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:186",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/ledger/intercompany/proposals/{proposalId:guid}/link",
-      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:163",
+      "source": "src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:209",
       "documented": true
     },
     {

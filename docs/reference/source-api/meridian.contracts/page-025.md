@@ -690,7 +690,7 @@ public sealed record CreateFundRequest(Guid FundId, string Code, string Name, st
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateIntercompanyAccountingArrangementRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:74](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L74).
+Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:75](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L75).
 
 ```csharp
 public sealed record CreateIntercompanyAccountingArrangementRequest(Guid RequestId, Guid ArrangementId, Guid OrganizationId, string ArrangementReference, IntercompanyAccountingTemplateKindDto TemplateKind, Guid CanonicalAgreementId, int CanonicalAgreementVersion, string CanonicalPayloadHash, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<IntercompanyPartyMappingDto> PartyMappings);

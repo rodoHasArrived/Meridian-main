@@ -963,6 +963,22 @@
       "Status Detail": "docs/roadmap/snapshots/status-prose-2026-11-14/W12-FINRPT-001.md"
     },
     {
+      "ID": "W12-ICACCRUAL-001",
+      "Wave": "W12",
+      "Title": "Governed intercompany loan-interest accrual from structured terms",
+      "Workspaces": "Accounting",
+      "Status": "in_progress",
+      "Health": "yellow",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "in_progress",
+      "Evidence": "docs/adr/028-governed-intercompany-interest-accrual.md; src/Meridian.Application/FundStructure/IntercompanyAccrualPreviewService.cs; src/Meridian.FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilder.cs; src/Meridian.Ui.Shared/Services/IntercompanyAccrualDraftService.cs; tests/Meridian.FundStructure.Tests/IntercompanyAccrualPreviewServiceTests.cs; tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyAccrualSourceBuilderTests.cs",
+      "Last Reviewed": "2026-11-14",
+      "Decisions": "DEC-IC-ACCRUAL-001",
+      "PR References": "",
+      "Status Detail": ""
+    },
+    {
       "ID": "W12-ICAGREE-001",
       "Wave": "W12",
       "Title": "Intercompany accounting profiles and legacy attribution",

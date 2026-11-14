@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationDryRunService
+
+Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationDryRunService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:18](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L18).
+
+Validates manually supplied CSV data against a provider integration manifest without activating it.
+
+```csharp
+public sealed class ProviderIntegrationDryRunService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderIntegrationDryRunService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationDryRunService&gt;? logger = null) : this(store, logger, null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:26](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L26) |  |
+| <code>public ProviderIntegrationDryRunService(IProviderIntegrationManifestStore store, ILogger&lt;ProviderIntegrationDryRunService&gt;? logger, IBusinessDayCalendarSource? calendars = null);</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:31](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L31) |  |
+| <code>public async Task&lt;ProviderIntegrationDryRunResultDto&gt; RunManualCsvDryRunAsync(ManualCsvProviderIntegrationDryRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:41](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L41) |  |
+| <code>public async Task&lt;ProviderIntegrationDryRunResultDto&gt; RunManualCsvDryRunAsync(string? tenantId, ManualCsvProviderIntegrationDryRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs:46](../../../../src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs#L46) |  |
+
 ## ProviderIntegrationHttpClientTransport
 
 Qualified name: <code>Meridian.Application.Integrations.ProviderIntegrationHttpClientTransport</code>. Kind: `class`.
@@ -1004,34 +1025,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>ValidationResult Validate(in MarketEvent evt);</code> | [src/Meridian.Application/Pipeline/IEventValidator.cs:20](../../../../src/Meridian.Application/Pipeline/IEventValidator.cs#L20) | Validates a market event and returns a result indicating whether the event is acceptable for persistence. Invalid events should be routed to a dead-letter sink. |
-
-## IngestionJobService
-
-Qualified name: <code>Meridian.Application.Pipeline.IngestionJobService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/IngestionJobService.cs:21](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L21).
-
-Manages the lifecycle of unified IngestionJob instances, bridging the contract model to the existing backfill and realtime infrastructure. Provides create, transition, checkpoint, and query operations with disk persistence.
-
-```csharp
-public sealed class IngestionJobService : IEtlIngestionJobCoordinator, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;IngestionJob, IngestionJobState, IngestionJobState&gt;? JobStateChanged;</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:39](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L39) | Event raised when a job&#x27;s state changes. |
-| <code>public event Action&lt;IngestionJob, IngestionCheckpointToken&gt;? CheckpointUpdated;</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:44](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L44) | Event raised when a job&#x27;s checkpoint is updated. |
-| <code>public IngestionJobService(string? persistenceDir = null, IScheduledWorkOwnershipService? ownershipService = null);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:46](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L46) |  |
-| <code>public async Task LoadJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:66](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L66) | Loads persisted jobs from disk on startup. |
-| <code>public async Task&lt;IngestionJob&gt; CreateJobAsync(IngestionWorkloadType workloadType, string[] symbols, string provider, DateTime? fromDate = null, DateTime? toDate = null, IngestionSla? sla = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:99](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L99) | Creates a new ingestion job in Draft state. |
-| <code>public async Task&lt;bool&gt; TransitionAsync(string jobId, IngestionJobState newState, string? errorMessage = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:136](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L136) | Transitions a job to a new state if the transition is valid. |
-| <code>public async Task UpdateCheckpointAsync(string jobId, IngestionCheckpointToken checkpoint, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:212](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L212) | Updates the checkpoint token for a job, enabling resume from the last durable offset. |
-| <code>public async Task UpdateSymbolProgressAsync(string jobId, string symbol, long dataPointsProcessed, long? expectedDataPoints = null, DateTime? lastCommittedDate = null, string? errorMessage = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:246](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L246) | Updates progress for a specific symbol within a job. |
-| <code>public IngestionJob? GetJob(string jobId);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:298](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L298) | Gets a job by its ID. |
-| <code>public IReadOnlyList&lt;IngestionJob&gt; GetJobs(IngestionJobState? stateFilter = null, IngestionWorkloadType? workloadFilter = null);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:306](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L306) | Gets all jobs, optionally filtered by state or workload type. |
-| <code>public IReadOnlyList&lt;IngestionJob&gt; GetResumableJobs();</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:324](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L324) | Gets all jobs that are resumable (failed or paused with a checkpoint). |
-| <code>public IngestionJobSummary GetSummary();</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:335](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L335) | Gets a summary of all jobs. |
-| <code>public Task&lt;bool&gt; DeleteJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:358](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L358) | Deletes a terminal job by ID. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Pipeline/IngestionJobService.cs:411](../../../../src/Meridian.Application/Pipeline/IngestionJobService.cs#L411) |  |

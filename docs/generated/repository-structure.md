@@ -1408,6 +1408,7 @@ Meridian-main
 │   │   ├── 025-contractual-schedule-kernel.md
 │   │   ├── 026-stored-curves-and-valuation-seam.md
 │   │   ├── 027-single-economic-model-consolidation.md
+│   │   ├── 028-governed-intercompany-interest-accrual.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -5320,6 +5321,7 @@ Meridian-main
 │   │   │   ├── InMemoryFundStructureService.Lifecycle.cs
 │   │   │   ├── InMemoryFundStructureService.Persistence.cs
 │   │   │   ├── IntercompanyAccountingArrangementLegalAuthority.cs
+│   │   │   ├── IntercompanyAccrualPreviewService.cs
 │   │   │   ├── IntercompanyAgreementRules.cs
 │   │   │   ├── IntercompanyAgreementRules.StructuredTerms.cs
 │   │   │   ├── IntercompanyAgreementService.cs
@@ -6007,6 +6009,7 @@ Meridian-main
 │   │   │   ├── FundStructureSetupWorkflowDtos.cs
 │   │   │   ├── IntercompanyAccountingArrangementDtos.cs
 │   │   │   ├── IntercompanyAccountingArrangementRevisionResolver.cs
+│   │   │   ├── IntercompanyAccrualDtos.cs
 │   │   │   ├── IntercompanyAgreementDtos.cs
 │   │   │   ├── IntercompanyAgreementJournalLineDtos.cs
 │   │   │   ├── IntercompanyExternalReviewDtos.cs
@@ -6046,6 +6049,7 @@ Meridian-main
 │   │   │   ├── FactorPaydownPreparationDtos.cs
 │   │   │   ├── IConsolidationBookPolicyValidator.cs
 │   │   │   ├── IntercompanyAccountDtos.cs
+│   │   │   ├── IntercompanyAccrualEvidenceDtos.cs
 │   │   │   ├── IntercompanyBalanceScheduleDtos.cs
 │   │   │   ├── IntercompanyObligationMonitorDtos.cs
 │   │   │   ├── IntercompanyProposalDtos.cs
@@ -6864,6 +6868,7 @@ Meridian-main
 │   │   ├── Intercompany
 │   │   │   ├── FundStructureIntercompanyAccountingArrangementScopeAuthority.cs
 │   │   │   ├── IntercompanyAccountingArrangementService.cs
+│   │   │   ├── IntercompanyAccrualSourceBuilder.cs
 │   │   │   ├── IntercompanyBalanceScheduleService.cs
 │   │   │   ├── IntercompanyCounterpartReversalBuilder.cs
 │   │   │   ├── IntercompanyJournalFamily.cs
@@ -11079,6 +11084,7 @@ Meridian-main
 │   │   │   ├── InitialAccountBootstrapService.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuard.cs
 │   │   │   ├── InMemoryOperatorInboxService.cs
+│   │   │   ├── IntercompanyAccrualDraftService.cs
 │   │   │   ├── IntercompanyAgreementAuthorities.cs
 │   │   │   ├── IntercompanyAgreementJournalProjection.cs
 │   │   │   ├── IntercompanyP1P2ServiceRegistration.cs
@@ -12475,6 +12481,7 @@ Meridian-main
 │   │   ├── InMemoryFundStructureServiceTests.cs
 │   │   ├── InMemoryFundStructureServiceTests.ScheduleCharacterization.cs
 │   │   ├── IntercompanyAccountingArrangementTests.cs
+│   │   ├── IntercompanyAccrualPreviewServiceTests.cs
 │   │   ├── IntercompanyAgreementRulesTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
@@ -13209,6 +13216,7 @@ Meridian-main
 │   │   │   │   ├── ConsolidationTransitionServiceTests.cs
 │   │   │   │   └── LegacyIntercompanyAttributionTests.cs
 │   │   │   ├── Intercompany
+│   │   │   │   ├── IntercompanyAccrualSourceBuilderTests.cs
 │   │   │   │   ├── IntercompanyBalanceScheduleTests.cs
 │   │   │   │   ├── IntercompanyCounterpartReversalBuilderTests.cs
 │   │   │   │   ├── IntercompanyObligationExpiryChronologyTests.cs
@@ -14513,6 +14521,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationServiceTests.Consolidation.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ConsolidationChartRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
+│   │   │   ├── AccountingConfigurationServiceTests.IntercompanyAccrual.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualAuditRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryArchive.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryScope.cs
@@ -14623,6 +14632,7 @@ Meridian-main
 │   │   │   ├── FundProfileScopeEndpointFilterTests.cs
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
+│   │   │   ├── IntercompanyAccrualDraftServiceTests.cs
 │   │   │   ├── IntercompanyAgreementAuthorityTests.cs
 │   │   │   ├── IntercompanyAgreementEndpointTests.cs
 │   │   │   ├── IntercompanyAgreementEvidenceAuthorityTests.cs

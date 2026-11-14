@@ -6,6 +6,207 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceReadinessCheckDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReadinessCheckDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:79](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L79).
+
+```csharp
+public sealed record ReportingGovernanceReadinessCheckDto(string CheckId, bool Passed, IReadOnlyList<string> EvidenceIds, string? FailureReason);
+```
+
+## ReportingGovernanceReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:85](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L85).
+
+```csharp
+public sealed record ReportingGovernanceReadinessDto(string ReceiptId, string ReceiptHash, DateTimeOffset EvaluatedAtUtc, bool IsReady, IReadOnlyList<ReportingGovernanceReadinessCheckDto> Checks);
+```
+
+## ReportingGovernanceReleaseDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReleaseDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:116](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L116).
+
+```csharp
+public sealed record ReportingGovernanceReleaseDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ReleasedAtUtc, string ManifestId, string ManifestHash, IReadOnlyList<ReportingGovernanceArtifactDto> Artifacts, IReadOnlyList<string> EvidenceIds);
+```
+
+## ReportingGovernanceRestatementApprovalDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:198](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L198).
+
+```csharp
+public sealed record ReportingGovernanceRestatementApprovalDto(ReportingGovernanceRestatementDto Request, GovernedReportingRunDto DraftRun);
+```
+
+## ReportingGovernanceRestatementApprovalRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:29](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L29).
+
+Optimistic concurrency token for approval of a retained restatement request. The replacement certified snapshot is resolved and verified by the server.
+
+```csharp
+public sealed record ReportingGovernanceRestatementApprovalRequestDto(long ExpectedVersion);
+```
+
+## ReportingGovernanceRestatementDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:176](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L176).
+
+```csharp
+public sealed record ReportingGovernanceRestatementDto(string RequestId, string PredecessorRunId, string SeriesId, int PredecessorRevision, long PredecessorVersion, string Reason, IReadOnlyList<ReportingGovernanceChangedLineDto> ChangedLines, ReportingGovernanceAuthorityDto RequestedBy, DateTimeOffset RequestedAtUtc, string State, long Version, ReportingGovernanceAuthorityDto? ApprovedBy, DateTimeOffset? ApprovedAtUtc, string? DraftRunId, IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail, IReadOnlyList<ReportingGovernanceActionAvailabilityDto>? ActionAvailability = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:194](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L194) |  |
+
+## ReportingGovernanceRestatementRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:21](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L21).
+
+Human rationale for opening a governed restatement. Changed-line evidence and replacement certification are computed from server-owned records rather than accepted from the caller.
+
+```csharp
+public sealed record ReportingGovernanceRestatementRequestDto(long ExpectedVersion, string Reason);
+```
+
+## ReportingGovernanceRetainedArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:106](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L106).
+
+Discoverable immutable artifact retained for a successfully executed governed run. Preview access is available before release; final distribution remains release-gated.
+
+```csharp
+public sealed record ReportingGovernanceRetainedArtifactDto(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string Kind, bool IsPreview, string DownloadRoute);
+```
+
+## ReportingGovernanceSeriesHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceSeriesHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:202](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L202).
+
+```csharp
+public sealed record ReportingGovernanceSeriesHistoryDto(string SeriesId, IReadOnlyList<GovernedReportingRunDto> Runs, IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);
+```
+
+## ReportingGovernanceVersionRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceVersionRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:10](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L10).
+
+Optimistic concurrency token for a governed reporting transition. Actor, tenant, company, permissions, command origin, readiness, artifact hashes, and evidence are intentionally absent; the server resolves those values from the authenticated request and retained state.
+
+```csharp
+public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
+```
+
+## DecisionInput
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:6](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L6).
+
+Identifies a kernel input subject and supporting context.
+
+```csharp
+public sealed record DecisionInput(string SubjectId, string? SubjectType = null, string? Context = null, IReadOnlyDictionary<string, string?>? Attributes = null);
+```
+
+## DecisionReason
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionReason</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:26](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L26).
+
+Explains a single weighted rule contribution to a kernel decision.
+
+```csharp
+public sealed record DecisionReason(string RuleId, double Weight, string ReasonCode, string HumanExplanation, DecisionSeverity Severity = DecisionSeverity.Info, IReadOnlyList<string>? EvidenceRefs = null);
+```
+
+## DecisionResult (generic arity 1)
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:47](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L47).
+
+Standardized output envelope for all rule-evaluation kernels.
+
+```csharp
+public sealed record DecisionResult<TScore>(TScore Score, IReadOnlyList<DecisionReason> Reasons, DecisionTrace Trace);
+```
+
+## DecisionSeverity
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:15](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L15).
+
+Indicates how severe a specific rule reason is for downstream automation and UI.
+
+```csharp
+public enum DecisionSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info = 0</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:17](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L17) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:18](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L18) |  |
+| <code>Error = 2</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:19](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L19) |  |
+| <code>Critical = 3</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:20](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L20) |  |
+
+## DecisionTrace
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionTrace</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:37](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L37).
+
+Versioned and traceable metadata for decision kernel outputs.
+
+```csharp
+public sealed record DecisionTrace(string SchemaVersion, string KernelVersion, DateTimeOffset EvaluatedAt, string? CorrelationId = null, IReadOnlyDictionary<string, string?>? Metadata = null);
+```
+
+## IDecisionKernel (generic arity 2)
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.IDecisionKernel</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:55](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L55).
+
+Contract for rule kernels that evaluate a decision subject into a standardized envelope.
+
+```csharp
+public interface IDecisionKernel<in TInput, TScore>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DecisionResult&lt;TScore&gt; Evaluate(TInput input, CancellationToken ct = default);</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:57](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L57) |  |
+
 ## DataDictionary
 
 Qualified name: <code>Meridian.Contracts.Schema.DataDictionary</code>. Kind: `class`.
@@ -486,223 +687,4 @@ Explicit eligibility binding to two existing chart accounts and one already-prom
 
 ```csharp
 public sealed record CashDividendAccountRoleBindingDto(Guid LedgerBookId, string DividendReceivableAccount, string DividendIncomeAccount, string RulePackId, string RulePackVersion, string SelectedRuleId, string SelectedRuleVersion, int SchemaVersion = 1, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? DividendReceivableAccountName = null, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? DividendIncomeAccountName = null);
-```
-
-## CashDividendAttestationDeclarationDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L7).
-
-One selected USD book for the bounded economic attestation policy.
-
-```csharp
-public sealed record CashDividendAttestationDeclarationDto(Guid DeclarationId, long Revision, string TenantId, string CompanyId, Guid LedgerBookId, bool Enabled, string PrincipalId, string PolicyVersion, string PolicyHash, string ChangedBy, DateTimeOffset RecordedAtUtc, string Reason, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CashDividendAccountRoleBindingDto? AccountRoleBinding = null);
-```
-
-## CashDividendAttestationDeclarationResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L43).
-
-```csharp
-public sealed record CashDividendAttestationDeclarationResultDto(CashDividendAttestationDeclarationDto Declaration, bool Replayed);
-```
-
-## CashDividendAttestationDeclarationStateDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendAttestationDeclarationStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L47).
-
-```csharp
-public sealed record CashDividendAttestationDeclarationStateDto(string TenantId, string CompanyId, bool PolicyEnabled, string PolicyVersion, string PolicyHash, CashDividendAttestationDeclarationDto? Declaration, IReadOnlyList<CashDividendAttestationDeclarationDto> History);
-```
-
-## CashDividendDeclarationAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendDeclarationAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L23).
-
-```csharp
-public sealed record CashDividendDeclarationAuthorityDto(bool CanAdministerDeclaration, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator, bool CanBindAccountingRoles = false);
-```
-
-## CashDividendReconciliationAccountDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendReconciliationAccountDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs:3](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs#L3).
-
-```csharp
-public sealed record CashDividendReconciliationAccountDto(string FinancialAccountId, decimal ExpectedLongQuantity);
-```
-
-## CashDividendReconciliationSupportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDividendReconciliationSupportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendReconciliationSupport.cs#L6).
-
-Frozen external reconciliation evidence for every account in the complete book inventory.
-
-```csharp
-public sealed record CashDividendReconciliationSupportDto(string EvidenceHash, string EvidenceJson);
-```
-
-## CashFlowLegDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L204).
-
-Which side of a multi-leg structure a leg sits on, from the holder&#x27;s perspective.
-
-```csharp
-public enum CashFlowLegDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Receive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L206) |  |
-| <code>Pay</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L207) |  |
-
-## CashFlowLegRateKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegRateKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:197](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L197).
-
-How a cash-flow leg&#x27;s rate is determined.
-
-```csharp
-public enum CashFlowLegRateKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fixed</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:199](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L199) |  |
-| <code>Floating</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L200) |  |
-
-## ChangeCashDividendAttestationDeclarationRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L28).
-
-```csharp
-public sealed record ChangeCashDividendAttestationDeclarationRequestDto(Guid CommandId, long ExpectedRevision, string TenantId, string CompanyId, Guid LedgerBookId, bool Enabled, string PolicyVersion, string PolicyHash, string Reason, string Actor, CashDividendDeclarationAuthorityDto? Authority = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CashDividendAccountRoleBindingDto? AccountRoleBinding = null);
-```
-
-## ClassificationLabelReader
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ClassificationLabelReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L27).
-
-Read-side decoder for stored Security Master classification labels (asset class, family and sub-type). Writes now persist the F# domain&#x27;s explicit names (assetClassName, familyName, subTypeName), but events and projections written earlier retain the F# option/union ToString() rendering: Some(PreferredEquity), None, OtherFamily &quot;x&quot;, OtherSubType &quot;x&quot; and Some(OtherFamily &quot;x&quot;). Retained events and projections are append-only evidence and are never rewritten; consumers that display, match or group a stored label call Normalize instead. The decode is structural and single-pass, never a fixed-point loop: at most one Some(…) wrapper is removed, and only around a legacy shape (a known case name, a union payload or a quoted literal). A union payload&#x27;s string is the free-text label itself and is returned verbatim, so a legacy OtherSubType &quot;Some(Nested)&quot; reads as Some(Nested) and OtherSubType &quot;None&quot; as None. Anything that is not a legacy shape (every canonical label, including free text such as Some(Nested)) is returned trimmed and unchanged, which makes the function idempotent on its outputs that are canonical. A bare OtherFamily/OtherSubType (no payload) is returned unchanged: it is the InstrumentTypeDescriptorCatalog placeholder, not a legacy domain rendering.
-
-```csharp
-public static class ClassificationLabelReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlySet&lt;string&gt; KnownCaseNames { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { &quot;Equity&quot;, &quot;FixedIncome&quot;, &quot;Fund&quot;, &quot;CashEquivalent&quot;, &quot;Financing&quot;, &quot;Derivative&quot;, &quot;PrivateCredit&quot;, &quot;Other&quot;, &quot;Sovereign&quot;, &quot;CorporateDebt&quot;, &quot;BankProduct&quot;, &quot;CommonEquity&quot;, &quot;PreferredEquity&quot;, &quot;PartnershipEquity&quot;, &quot;MoneyMarket&quot;, &quot;RepurchaseAgreement&quot;, &quot;StructuredCash&quot;, &quot;SecuritizedCredit&quot;, &quot;ListedDerivative&quot;, &quot;PrivateLoan&quot;, &quot;TreasuryBill&quot;, &quot;TreasuryNote&quot;, &quot;TreasuryBond&quot;, &quot;Tips&quot;, &quot;TreasuryFrn&quot;, &quot;CommercialPaper&quot;, &quot;CertificateOfDeposit&quot;, &quot;TimeDeposit&quot;, &quot;DemandDeposit&quot;, &quot;MoneyMarketFund&quot;, &quot;Repo&quot;, &quot;CashSweep&quot;, &quot;CorporateBond&quot;, &quot;MunicipalBond&quot;, &quot;CommonShare&quot;, &quot;PreferredShare&quot;, &quot;Adr&quot;, &quot;MlpUnit&quot;, &quot;LimitedPartnershipInterest&quot;, &quot;ReitShare&quot;, &quot;OptionContract&quot;, &quot;FutureContract&quot;, &quot;SwapContract&quot;, &quot;DirectLoan&quot;, &quot;StructuredCredit&quot;, &quot;PrivateCompanyEquity&quot;, &quot;RealEstateHolding&quot;, &quot;CommitmentGuarantee&quot;, };</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L36) | The nullary case names of the F# AssetClass, AssetFamily and SecuritySubType unions, which is what the retired writer rendered inside Some(…). A test pins this set to the F# unions by reflection. |
-| <code>public static string? Normalize(string? value);</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L56) | Returns the canonical label for a stored classification label, decoding legacy F# option/union renderings. null, whitespace and a legacy option None read as null; anything else that is not a legacy rendering is returned trimmed. |
-| <code>public static bool IsAmbiguousFreeText(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L106) | True when value is free text the decoder would change, because it looks like a retired rendering. New writes refuse such text so stored labels stay unambiguous. |
-| <code>public static string NormalizeRequired(string value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L114) | Normalizes a label for a non-optional field (asset class, sub-type), keeping the stored value when the decoder would produce no label rather than turning a required field null. |
-| <code>public static SecurityEconomicDefinitionRecord NormalizeLabels(SecurityEconomicDefinitionRecord record);</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L122) | Returns a read-side copy of record whose asset-class, family and sub-type labels are canonical. The record&#x27;s classification JSON and every other field are kept as stored; the original instance is returned when no label changes. |
-
-## CommitmentLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CommitmentLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L12).
-
-Canonical open lot for commitment-denominated holdings: private fund interests, unfunded commitments and guarantees, whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Commitment. The lot&#x27;s size is the amount committed; how much of it has been called is a separate fact (FundedAmount), so funded and unfunded are never inferred from a cost basis. Distributions the manager may recall (RecallableDistributions) restore unfunded commitment without changing the commitment itself.
-
-```csharp
-public sealed record CommitmentLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CommitmentLot(string lotId, Guid securityId, DateOnly committedDate, decimal totalCommitment, decimal fundedAmount = 0m, decimal recallableDistributions = 0m);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L14) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L43) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L53) | Security Master identity the lot&#x27;s reference data (sponsor, vintage, fee terms) resolves from. |
-| <code>public DateOnly CommittedDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L56) | Date the commitment became binding. |
-| <code>public decimal TotalCommitment { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L59) | Total amount committed, in the commitment currency. |
-| <code>public decimal FundedAmount { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L62) | Cumulative capital contributed against the commitment. |
-| <code>public decimal RecallableDistributions { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L65) | Distributions returned to the holder that the manager may call again. |
-| <code>public decimal UnfundedCommitment =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L68) | Capital still callable: the commitment, less contributions, plus recallable distributions. |
-| <code>public decimal FundedFraction =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L71) | Contributions as a fraction of the commitment; exceeds one once recalled distributions are re-contributed. |
-| <code>public bool IsFullyFunded =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L73) |  |
-| <code>public CommitmentLot Draw(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L76) | Records a capital call being met: amount moves from unfunded to funded. |
-| <code>public CommitmentLot RecordRecallableDistribution(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L87) | Records a distribution the manager may recall, which restores unfunded commitment. |
-
-## ComputeOtcExposureSnapshotRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ComputeOtcExposureSnapshotRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:243](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L243).
-
-Asks for a netting set&#x27;s exposure to be computed and recorded as of a date. A KnowledgeAsOf earlier than the computation replays what was known then; the snapshot is recorded as evidence and no call is issued from it.
-
-```csharp
-public sealed record ComputeOtcExposureSnapshotRequest(DateOnly AsOfDate, DateTimeOffset? KnowledgeAsOf = null);
-```
-
-## ConvertibleEquityTermsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:210](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L210).
-
-Convertible-equity-specific terms returned by the convertible-equity-terms query.
-
-```csharp
-public sealed record ConvertibleEquityTermsDto(Guid SecurityId, string? Classification, Guid? UnderlyingSecurityId, decimal? ConversionRatio, decimal? ConversionPrice, DateOnly? ConversionStartDate, DateOnly? ConversionEndDate, long Version);
-```
-
-## CorporateActionAccountingApprovalResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:180](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L180).
-
-```csharp
-public sealed record CorporateActionAccountingApprovalResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseAccountingApprovalDto Approval, CorporateActionCaseTransitionDto Transition, bool Replayed);
-```
-
-## CorporateActionAccountingDecisionAuthorityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L118).
-
-Server-stamped downstream accounting authority. Deliberately separate from CorporateActionCaseTransitionAuthorityDto so preparation authority can never grant an approval or posting outcome.
-
-```csharp
-public sealed record CorporateActionAccountingDecisionAuthorityDto(bool CanApproveAccounting, bool CanPostAccounting);
-```
-
-## CorporateActionAccountingPostingResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAccountingPostingResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L186).
-
-```csharp
-public sealed record CorporateActionAccountingPostingResultDto(CorporateActionProcessingCaseDto Case, CorporateActionCaseAccountingPostingDto Posting, CorporateActionCaseTransitionDto Transition, bool Replayed);
 ```
