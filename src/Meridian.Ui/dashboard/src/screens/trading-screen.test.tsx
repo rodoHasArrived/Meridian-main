@@ -192,10 +192,10 @@ vi.mock("@/lib/api", async () => {
 
 const data: TradingWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
-    { id: "m2", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
-    { id: "m3", label: "Fills", value: "13", delta: "+3", tone: "success" },
-    { id: "m4", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
+    { id: "pnl", label: "Net P&L", value: "+$3,100", delta: "+2.1%", tone: "success" },
+    { id: "orders", label: "Open Orders", value: "4", delta: "+1", tone: "default" },
+    { id: "fills", label: "Fills", value: "13", delta: "+3", tone: "success" },
+    { id: "risk", label: "Risk", value: "Observe", delta: "0%", tone: "warning" }
   ],
   positions: [{ symbol: "AAPL", side: "Long", quantity: "100", averagePrice: "188.10", markPrice: "189.00", dayPnl: "+$90", unrealizedPnl: "+$90", exposure: "$18,900" }],
   openOrders: [{ orderId: "PO-1", symbol: "MSFT", side: "Buy", type: "Limit", quantity: "20", limitPrice: "414.20", status: "Working", submittedAt: "09:42:00 ET" }],
@@ -399,7 +399,7 @@ describe("TradingScreen", () => {
     expect(within(workflowStrip).getByRole("button", { name: /open strategy controls panel/i })).toHaveAttribute("aria-expanded", "false");
     // Route-scoped views: blotters live on their focused routes, not the overview.
     expect(screen.queryByText("Live positions")).not.toBeInTheDocument();
-    expect(screen.queryByText("Open orders")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Open orders" })).not.toBeInTheDocument();
   });
 
   it("renders the position book with wiring state on the positions route", async () => {

@@ -18,6 +18,7 @@ remaining compatibility-lane cleanup.
 | Operator procedures | `docs/operators/` | Link to setup, provider, runbook, deployment, troubleshooting, and support procedures. |
 | Lookup material | `docs/reference/` | Keep APIs, environment variables, CLI flags, schemas, glossary, and matrices discoverable. |
 | Roadmap truth | `docs/roadmap/data/*.yml` | Validate and render; do not hand-author competing durable roadmap truth. |
+| Production readiness | `docs/roadmap/data/production-readiness.yml` | Edit structured gate fields and evidence; render `docs/product/implementation-todo-list.md`. |
 | Source-module truth | `docs/source/data/*.yml` and registered `src/**/README.md` | Update with source behavior, ownership, validation, TODO, and diagram changes. |
 | Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/ai/exports/`, `docs/reference/source-api/` | Update generators or inputs, not emitted files by hand. |
 | Automation-owned status output | `docs/status/` | Keep generated reports and compatibility artifacts at the paths consumed by tooling; do not create competing roadmap truth. |
@@ -40,6 +41,9 @@ remaining compatibility-lane cleanup.
 
 - Do not keep two active docs claiming the same durable truth.
 - Prefer registry data and generated views for roadmap and source-module status.
+- Keep current status in bounded schema fields, decisions, evidence links, and PR references.
+  Detailed migration snapshots are linked context, not an alternative status registry. Load them
+  only when the task needs their detailed reservations or evidence history.
 - Prefer root shims for `README.md`, `AGENTS.md`, and `CLAUDE.md`; avoid long duplicated command catalogs.
 - Keep `docs/README.md` as the canonical documentation front door.
 - Keep AI workflow rules synchronized through `docs/ai/assistant-workflow-contract.md` and assistant-specific indexes.

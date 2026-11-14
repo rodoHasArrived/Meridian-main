@@ -79,6 +79,7 @@ import {
 } from "@/components/ui/sheet";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ToastProvider } from "@/components/ui/toast";
+import { KpiProvider } from "@/lib/kpi-context";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed, pinWorkflowPreset } from "@/lib/api";
 import { getOperatorScopePreference, saveOperatorScopePreference } from "@/lib/api/operator-workstation.api";
@@ -908,6 +909,7 @@ function AppShell({
     <ShellStatusSignalsProvider value={shellStatusSignals}>
     <WorkspaceFigureContextProvider value={workspaceFigureContext}>
     <PageTrustProvider registry={pageTrustRegistry}>
+    <KpiProvider models={{ portfolio, trading, overview, strategy, data, accounting, crossScreenCounts }}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -1157,6 +1159,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </KpiProvider>
     </PageTrustProvider>
     </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>

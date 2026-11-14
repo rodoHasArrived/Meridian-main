@@ -1,4 +1,5 @@
 import { SectionDescription } from "@/components/ui/section-description";
+import { KpiProvider, useKpiModels } from "@/lib/kpi-context";
 import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
@@ -136,7 +137,19 @@ function inferSettingsTaskView({
   return "access";
 }
 
-export function SettingsScreen({
+export function SettingsScreen(props: SettingsScreenProps) {
+  const crossScreenCounts = useSharedCrossScreenCounts();
+  return (
+    <KpiProvider models={{
+      overview: props.overview, portfolio: props.portfolio, trading: props.trading,
+      strategy: props.strategy, data: props.data, accounting: props.accounting, crossScreenCounts
+    }}>
+      <SettingsScreenContent {...props} />
+    </KpiProvider>
+  );
+}
+
+function SettingsScreenContent({
   fundAccountId,
   session,
   overview,
@@ -169,13 +182,14 @@ export function SettingsScreen({
   const location = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const providerHealth = selectSharedProviderHealth(sharedCounts, data?.providers);
+  const kpiModels = useKpiModels();
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
     crossScreenCounts: sharedCounts,
     strategy,
     trading,
-    portfolio,
+    portfolio: kpiModels.portfolio ?? portfolio,
     data,
     accounting,
     reporting,

@@ -462,6 +462,38 @@ the same reviewed request for retry. Focused tests are in
 `accounting-screen.factor-paydown-panel.test.tsx`, `factor-paydown.api.test.ts`,
 `accounting-screen.asset-workflow.test.ts` and `asset-accounting-workflow.api.test.ts`.
 
+## Registry-owned headline figures
+
+Workspace `StatStrip` and `MetricCard` accept typed IDs from `lib/kpi-registry.ts`,
+not caller-supplied labels or values. Each definition records its owning read model,
+computation, applied scope dimensions, and currency rule. `KpiProvider` supplies shared
+read models; unavailable owners stay unavailable rather than borrowing a different
+workspace's summary. Feature-local, non-headline presentation uses `MetricTile` or
+`SnapshotMetricTile`; these are not substitutes for registry-owned workspace KPIs.
+
+`portfolio.open-positions` counts the Portfolio projection's positions on Portfolio,
+Settings and Today. Live total exposure sums the same holdings' supplied exposure
+amounts. Missing or mixed denominations withhold the aggregate; no FX rate, market
+value, or missing component is invented. The current Portfolio read model is an
+all-holdings projection: retained account/run/symbol URL scope is not claimed as an
+applied financial filter. Trading metrics remain owned by the Trading read model.
+
+Portfolio defaults to Live holdings. The source selector reveals retained run records
+with their own market-value and record-count definitions; exposure and market value
+are distinct measures. Compare position sources is a collapsed disclosure. Holding
+table and inspector values retain their source's supplied meaning.
+
+The screenshot harness independently reads `[data-kpi-rendered-value]`, checks it
+against the registry display annotation, then compares KPI ID + applied scope across
+routes within each scenario (and explicit source revision, when supplied). Both raw
+and formatted discrepancies fail the run and remain in `manifest.kpiConsistency`.
+Fixtures must be consistent within the same scenario; differing sources need distinct
+registry IDs/scopes, not cosmetic labels that hide discrepancies.
+
+Focused verification: `kpi-registry.test.ts`, `stat-strip.test.tsx`, registry card tests,
+Portfolio/Settings suites, and `node --test scripts/dev/capture-web-screenshots.test.mjs
+scripts/dev/web-screenshot-scenarios.test.mjs` from the repository root.
+
 ## Financial visual evidence
 
 Report-writer chart previews are explicitly labeled **Signed value summary** beside the configured

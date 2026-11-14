@@ -1,7 +1,7 @@
 schema:
   id: meridian.program-state
-  version: "1.0.0"
-  minimum_renderer_version: "1.0.0"
+  version: "2.0.0"
+  minimum_renderer_version: "3.0.0"
 
 program:
   id: meridian-program
@@ -9,7 +9,62 @@ program:
   owner: Core Team
   snapshot_date: 2026-11-12
   status: active
-  active_scope: Closed W1-W5 operational record baseline plus completed W5X shared explorer, connector-library, Financial Operations control-center, Evidence Vault, statement-onboarding, bounded W6 backtest-evidence, and bounded W7 live-readiness governance milestones; WPF parity and browser workstation screen consolidation remain in progress; the ranked W9 first-order improvement slate has moved out of pure planning - W9-ASSET-010 is done, W9-DEMO-002 closed to done on 2026-09-16 under operator decision DEC-W9-DONE-001 once the closure record in docs/product/w9-demo-002-closure-2026-09-16.md supplied the status documentation the taxonomy gates done on, W9-TRUTH-001 returns to bounded accepted with complete evidence and green health on 2026-09-26 under DEC-W9-ACCEPTANCE-005 and issue 2626 comment 5845555204, which satisfies both security/storage and reconciliation-lineage review lanes by explicit owner exception accepting completed owner self-review; independent non-author verdicts were not obtained, and the retained correction and certification evidence is unchanged; W9-PAPER-003, W9-REPORT-005 and W9-NAV-006 remain accepted under operator decision DEC-W9-ACCEPTANCE-001, W9-CORPACT-011, reopened under DEC-W9-ACCEPTANCE-002, reached ready_for_acceptance on 2026-09-22 once its accounting lane posted end to end on PostgreSQL and was accepted with reservations on 2026-10-19 under DEC-W9-ACCEPTANCE-007, W9-ALPACA-004 was accepted on 2026-09-01 under DEC-W9-ACCEPTANCE-003 once its three recorded fill-path caveats were closed in source, W9-SAFETY-007 was accepted on 2026-09-11 under DEC-W9-ACCEPTANCE-004 with the recorded OCO and deferred risk-journal/read-surface/WPF-parity reservations, restored from PR 2945 on 2026-09-23, and W9-GOV-008 and W9-INGEST-009 were accepted on 2026-10-18 under DEC-W9-ACCEPTANCE-006, closing the W9 slate with every row accepted or done and no ready_for_acceptance row remaining; the historical acceptances closed governance gates on bounded rows only and did not themselves move any row to done or certify a release - W9-DEMO-002 reached done separately under DEC-W9-DONE-001, which likewise certifies no release. The W10 depth slate deepens existing functionality; W10-LOT-002, W10-MARK-001, W10-SEAM-001, W10-JRNL-001, and W10-PROV-001 remain in progress. Roadmap selection retains the registry ranking and recorded operator-session plan. The separate user-requested work queue completes LOT, then MARK, then SEAM before opening W10-RECON-001 in that queue only; this priority override adds no roadmap dependency and preserves each row's sequence, implementation gates, and operator acceptance requirements. The owner-directed expansion on 2026-10-30 registers W13-STRAT-001 and W13-OMS-001 as unranked planned strategy and order-management direction under DEC-TRADING-STRATEGY-DIRECTION-001, without changing historical acceptance, current implementation postures, or release authority. The owner-directed decision on 2026-11-01 registers W14-ATTEST-001 as unranked planned direction under DEC-SINGLE-PRINCIPAL-001, adopting labeled single-principal attestation as the only supported self-approval path in the single-operator envelope; it changes no envelope text, source enforcement, rank, acceptance, or release authority. The subsequent 2026-11-12 owner instruction to validate and implement recommendation 1 and selection of development option 2 move W14-ATTEST-001 to in_progress with yellow health and default-off B preparer assertions and bounded native regular mandatory USD dividend recognition are active implementation, with USD 10000 complete-related-event and USD 100000 selected-book/source-ex-date-calendar-month gross caps, existing account/rule binding and unchanged posting controls. Native Windows runtime, full both-workstation validation, full matrix acceptance, operational review and financial-coverage adoption are not established; this is no operator acceptance or release decision.
+  active_scope:
+    roadmap_items:
+    - W1-DATA-001
+    - W10-JRNL-001
+    - W10-LOT-002
+    - W10-MARK-001
+    - W10-PROV-001
+    - W10-RECON-001
+    - W10-SEAM-001
+    - W13-OMS-001
+    - W13-STRAT-001
+    - W14-ATTEST-001
+    - W2-PROMO-001
+    - W2-TRD-001
+    - W3-CONT-001
+    - W4-RECON-001
+    - W4-RPT-001
+    - W5-ACCT-001
+    - W5-MASSET-001
+    - W5X-CONNECT-001
+    - W5X-EVIDENCE-001
+    - W5X-FINOPS-001
+    - W5X-FREX-001
+    - W5X-STMT-ONBOARD-001
+    - W6-BTSTUDIO-001
+    - W7-LIVE-001
+    - W8-UX-CONSOL-001
+    - W8-WPF-PARITY-001
+    - W9-ALPACA-004
+    - W9-ASSET-010
+    - W9-CORPACT-011
+    - W9-DEMO-002
+    - W9-GOV-008
+    - W9-INGEST-009
+    - W9-NAV-006
+    - W9-PAPER-003
+    - W9-REPORT-005
+    - W9-SAFETY-007
+    - W9-TRUTH-001
+    decision_ids:
+    - DEC-SINGLE-PRINCIPAL-001
+    - DEC-TRADING-STRATEGY-DIRECTION-001
+    - DEC-W9-ACCEPTANCE-001
+    - DEC-W9-ACCEPTANCE-002
+    - DEC-W9-ACCEPTANCE-003
+    - DEC-W9-ACCEPTANCE-004
+    - DEC-W9-ACCEPTANCE-005
+    - DEC-W9-ACCEPTANCE-006
+    - DEC-W9-ACCEPTANCE-007
+    - DEC-W9-DONE-001
+    work_queue:
+    - W10-LOT-002
+    - W10-MARK-001
+    - W10-SEAM-001
+    - W10-RECON-001
+    status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/program-active-scope.md
   scope_gate: >-
     New product work should strengthen financial operations, strategy formulation and validation,
     governed order management and execution, data confidence, reconciliation, approvals, accounting

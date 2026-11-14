@@ -1,5 +1,6 @@
 // Profile authentication, system posture, and appearance sections of the Settings screen.
 import { SeverityBadge } from "@/components/operations";
+import { useKpi } from "@/lib/kpi-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DensityToggle } from "@/components/ui/density-toggle";
@@ -26,6 +27,7 @@ interface SettingsAccessPostureSectionProps {
 
 /** Profile authentication and system posture cards. */
 export function SettingsAccessPostureSection({ vm, overview, providerHealth }: SettingsAccessPostureSectionProps) {
+  const openPositionsKpi = useKpi("portfolio.open-positions");
   return (
     <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
       <Card
@@ -137,7 +139,7 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
           <div className="flex flex-wrap gap-2">
             <SettingsChip label="Providers healthy" value={providerHealth ? `${providerHealth.healthy} / ${providerHealth.total}` : "—"} />
             <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
-            <SettingsChip label="Positions" value={overview ? String(overview.openPositions) : "—"} />
+            <SettingsChip label="Positions" kpi={openPositionsKpi} />
             <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />
           </div>
           {vm.hasOverview ? (

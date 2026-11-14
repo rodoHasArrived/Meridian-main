@@ -12,6 +12,7 @@ import {
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
+  PortfolioWorkspaceResponse,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
   ProviderConnectionRow,
@@ -420,6 +421,29 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "Stale · May 1, 2026, 00:00 UTC" && i.tone === "danger")).toBe(true);
     expect(vm.systemTone).toBe("warning");
+  });
+
+  it("uses the loaded portfolio population for system position facts", () => {
+    const portfolio: PortfolioWorkspaceResponse = {
+      metrics: [],
+      positions: [{
+        symbol: "AAPL", side: "Long", quantity: "10", averagePrice: "$100",
+        markPrice: "$110", dayPnl: "$0", unrealizedPnl: "$100", exposure: "$1,100"
+      }],
+      risk: {
+        state: "Healthy", summary: "Ready", netExposure: "$1,100", grossExposure: "$1,100",
+        var95: "$0", maxDrawdown: "0%", buyingPowerUsed: "0%", activeGuardrails: []
+      },
+      brokerage: {
+        provider: "Synthetic", account: "synthetic-account", environment: "paper", connection: "Connected",
+        lastHeartbeat: "2026-05-01T00:00:00Z", orderIngress: "healthy", fillFeed: "healthy", notes: "Synthetic"
+      },
+      runs: [], cashFlow: null
+    };
+    const loaded = buildSettingsScreenViewModel({ session, overview, portfolio });
+    expect(loaded.systemItems.find((item) => item.label === "Open positions")?.value).toBe("1");
+    const unavailable = buildSettingsScreenViewModel({ session, overview });
+    expect(unavailable.systemItems.find((item) => item.label === "Open positions")?.value).toBe("Unavailable");
   });
 
   it("classifies freshness evidence without presenting old timestamps as current", () => {
