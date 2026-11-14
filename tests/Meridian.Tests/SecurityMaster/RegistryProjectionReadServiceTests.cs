@@ -112,6 +112,7 @@ public sealed class RegistryProjectionReadServiceTests
 
         await store.DidNotReceiveWithAnyArgs().GetProjectionAsync(default, default);
         rows.Statements.Should().BeEmpty();
+        rows.SnapshotsOpened.Should().Be(0);
     }
 
     [Fact]
@@ -126,6 +127,7 @@ public sealed class RegistryProjectionReadServiceTests
         (await missing.GetAsync("CommercialPaper", SecurityId)).Should().BeNull();
 
         rows.Statements.Should().BeEmpty();
+        rows.SnapshotsOpened.Should().Be(0);
     }
 
     [Fact]
@@ -139,6 +141,50 @@ public sealed class RegistryProjectionReadServiceTests
         var projection = await new RegistryProjectionReadService(Options, StoreReturning("Bond"), issuerless).GetAsync("Bond", SecurityId);
 
         projection!.SatelliteTables.Single(table => table.TableName == bond.Satellites[^1].TableName).Row.Should().BeNull();
+    }
+
+    [Theory]
+    [MemberData(nameof(EveryDescriptor))]
+    public async Task GetAsync_ReadsTheGateParentChildrenAndSatellites_InOneSnapshot(string assetClass)
+    {
+        var descriptor = SecurityTermsProjectionRegistry.Require(assetClass);
+        var rows = new FakeRowSource();
+        var service = new RegistryProjectionReadService(Options, StoreReturning(assetClass), rows);
+
+        (await service.GetAsync(assetClass, SecurityId)).Should().NotBeNull();
+
+        rows.SnapshotsOpened.Should().Be(1, "the whole composite is read on one connection and transaction");
+        rows.SnapshotsDisposed.Should().Be(1, "the snapshot is released when the read completes");
+        rows.GateSnapshots.Should().Equal(1);
+        rows.StatementSnapshots.Should().HaveCount(1 + descriptor.ChildTables.Count + descriptor.Satellites.Count)
+            .And.AllBeEquivalentTo(1);
+    }
+
+    [Fact]
+    public async Task GetAsync_AReclassificationVisibleInTheSnapshot_IsNull_WithoutReadingAProjectionTable()
+    {
+        // The store gate saw DirectLoan; by the time the snapshot was taken the security had been
+        // reclassified. The snapshot's own gate decides, so no stale DirectLoan row is returned.
+        var rows = new FakeRowSource { CurrentAssetClassInSnapshot = "Repo" };
+        var service = new RegistryProjectionReadService(Options, StoreReturning("DirectLoan"), rows);
+
+        (await service.GetAsync("DirectLoan", SecurityId)).Should().BeNull();
+
+        rows.GateSnapshots.Should().Equal(1);
+        rows.Statements.Should().BeEmpty();
+        rows.SnapshotsDisposed.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetAsync_NoProjectionRow_StillReleasesTheSnapshot()
+    {
+        var rows = new FakeRowSource { ParentRows = 0 };
+        var service = new RegistryProjectionReadService(Options, StoreReturning("DirectLoan"), rows);
+
+        (await service.GetAsync("DirectLoan", SecurityId)).Should().BeNull();
+
+        rows.SnapshotsOpened.Should().Be(1);
+        rows.SnapshotsDisposed.Should().Be(1);
     }
 
     [Fact]
@@ -174,7 +220,8 @@ public sealed class RegistryProjectionReadServiceTests
 
     /// <summary>
     /// Answers each select with rows whose values name their table and column, so a test can see
-    /// which table a value came from. Records every statement in the order it was sent.
+    /// which table a value came from. Records every statement in the order it was sent, and which
+    /// snapshot (one per <see cref="OpenSnapshotAsync"/>) each gate check and statement ran in.
     /// </summary>
     internal sealed class FakeRowSource : IRegistryProjectionRowSource
     {
@@ -182,17 +229,79 @@ public sealed class RegistryProjectionReadServiceTests
 
         public int ParentRows { get; init; } = 1;
 
+        /// <summary>When set, the snapshot reports this as the security's current class (a reclassification).</summary>
+        public string? CurrentAssetClassInSnapshot { get; init; }
+
         public HashSet<string> EmptyTables { get; } = new(StringComparer.Ordinal);
 
         public List<string> Statements { get; } = [];
 
         public List<Guid> SecurityIds { get; } = [];
 
-        public Task<IReadOnlyList<IReadOnlyDictionary<string, JsonElement>>> ReadAsync(
+        /// <summary>The snapshot number each statement in <see cref="Statements"/> ran in.</summary>
+        public List<int> StatementSnapshots { get; } = [];
+
+        /// <summary>The snapshot number of each class gate check, in order.</summary>
+        public List<int> GateSnapshots { get; } = [];
+
+        public int SnapshotsOpened { get; private set; }
+
+        public int SnapshotsDisposed { get; private set; }
+
+        public Task<IRegistryProjectionRowSnapshot> OpenSnapshotAsync(CancellationToken ct)
+        {
+            SnapshotsOpened++;
+            return Task.FromResult<IRegistryProjectionRowSnapshot>(new Snapshot(this, SnapshotsOpened));
+        }
+
+        private sealed class Snapshot : IRegistryProjectionRowSnapshot
+        {
+            private readonly FakeRowSource _source;
+            private readonly int _number;
+            private bool _disposed;
+
+            public Snapshot(FakeRowSource source, int number)
+            {
+                _source = source;
+                _number = number;
+            }
+
+            public Task<bool> IsCurrentAssetClassAsync(Guid securityId, string assetClass, CancellationToken ct)
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                _source.GateSnapshots.Add(_number);
+                return Task.FromResult(
+                    _source.CurrentAssetClassInSnapshot is null
+                    || string.Equals(_source.CurrentAssetClassInSnapshot, assetClass, StringComparison.Ordinal));
+            }
+
+            public Task<IReadOnlyList<IReadOnlyDictionary<string, JsonElement>>> ReadAsync(
+                string sql,
+                IReadOnlyList<string> columns,
+                Guid securityId,
+                CancellationToken ct)
+            {
+                ObjectDisposedException.ThrowIf(_disposed, this);
+                _source.StatementSnapshots.Add(_number);
+                return _source.ReadAsync(sql, columns, securityId);
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                if (!_disposed)
+                {
+                    _disposed = true;
+                    _source.SnapshotsDisposed++;
+                }
+
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        private Task<IReadOnlyList<IReadOnlyDictionary<string, JsonElement>>> ReadAsync(
             string sql,
             IReadOnlyList<string> columns,
-            Guid securityId,
-            CancellationToken ct)
+            Guid securityId)
         {
             Statements.Add(sql);
             SecurityIds.Add(securityId);

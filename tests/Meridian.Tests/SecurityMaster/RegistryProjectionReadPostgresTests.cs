@@ -96,6 +96,161 @@ public sealed class RegistryProjectionReadPostgresTests : IClassFixture<Security
         schedule.Select(row => row["amount"].GetDecimal()).Should().Equal(1_250_000m, 1_500_000m);
     }
 
+    [SecurityMasterDatabaseFact]
+    public async Task DirectLoan_AnAmendCommittedBetweenTheParentAndChildReads_CannotTearTheComposite()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        await store.UpsertProjectionAsync(Record(securityId, "DirectLoan", version: 1, DirectLoanTerms(
+            "Meridian Industrials LLC",
+            [("MaxLeverage", "4.5x"), ("MinFixedCharge", "1.10x")],
+            [("2027-03-31", 1_250_000m), ("2028-03-31", 1_500_000m)])));
+
+        // The amend lands from another connection after the parent row has been read and before
+        // any child table is: an old parent with new child rows is exactly the torn result.
+        var rows = new AmendAfterParentRowSource(
+            new PostgresRegistryProjectionRowSource(_fixture.Options),
+            ct => store.UpsertProjectionAsync(Record(securityId, "DirectLoan", version: 2, DirectLoanTerms(
+                "Meridian Industrials Holdings LLC",
+                [("MaxLeverage", "5.0x")],
+                [("2029-06-30", 9_000_000m)])), ct));
+        var service = new RegistryProjectionReadService(_fixture.Options, store, rows);
+
+        var during = await service.GetAsync("DirectLoan", securityId);
+
+        rows.AmendsCommitted.Should().Be(1, "the amend committed while the composite read was under way");
+        during!.Columns["version"].GetInt64().Should().Be(1L);
+        during.Columns["borrower"].GetString().Should().Be("Meridian Industrials LLC");
+        Covenants(during).Should().Equal("MaxLeverage:4.5x", "MinFixedCharge:1.10x");
+        Schedule(during).Should().Equal("2027-03-31:1250000", "2028-03-31:1500000");
+
+        var after = await new RegistryProjectionReadService(_fixture.Options, store).GetAsync("DirectLoan", securityId);
+
+        after!.Columns["version"].GetInt64().Should().Be(2L);
+        after.Columns["borrower"].GetString().Should().Be("Meridian Industrials Holdings LLC");
+        Covenants(after).Should().Equal("MaxLeverage:5.0x");
+        Schedule(after).Should().Equal("2029-06-30:9000000");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task DirectLoanStores_ReadThroughOneSnapshot_SeeOneCommittedVersion()
+    {
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        await store.UpsertProjectionAsync(Record(securityId, "DirectLoan", version: 1, DirectLoanTerms(
+            "Snapshot Borrower LLC",
+            [("MaxLeverage", "4.5x"), ("MinFixedCharge", "1.10x")],
+            [("2027-03-31", 1_250_000m)])));
+
+        var loans = PostgresDirectLoanReferenceProjectionStore.CreateLoanStore(_fixture.Options);
+        var covenants = PostgresDirectLoanReferenceProjectionStore.CreateCovenantStore(_fixture.Options);
+        var bySecurity = new Npgsql.NpgsqlParameter[] { new("security_id", securityId) };
+
+        await using (var snapshot = await loans.BeginSnapshotAsync(CancellationToken.None))
+        {
+            var loan = await loans.GetBySecurityIdAsync(snapshot, securityId, CancellationToken.None);
+
+            await store.UpsertProjectionAsync(Record(securityId, "DirectLoan", version: 2, DirectLoanTerms(
+                "Snapshot Borrower Holdings LLC",
+                [("MaxLeverage", "5.0x")],
+                [("2029-06-30", 9_000_000m)])));
+
+            var inSnapshot = await covenants.ListAsync(
+                snapshot,
+                PostgresDirectLoanReferenceProjectionStore.ChildrenBySecurity,
+                bySecurity,
+                CancellationToken.None);
+
+            loan!.Version.Should().Be(1L);
+            loan.Borrower.Should().Be("Snapshot Borrower LLC");
+            inSnapshot.Select(row => row.CovenantType + ":" + row.Threshold).Should().Equal("MaxLeverage:4.5x", "MinFixedCharge:1.10x");
+        }
+
+        // Outside a snapshot each single-table read sees the latest commit, as before.
+        (await loans.GetBySecurityIdAsync(securityId, CancellationToken.None))!.Version.Should().Be(2L);
+        (await covenants.ListAsync(
+                PostgresDirectLoanReferenceProjectionStore.ChildrenBySecurity,
+                [new Npgsql.NpgsqlParameter("security_id", securityId)],
+                CancellationToken.None))
+            .Select(row => row.CovenantType + ":" + row.Threshold).Should().Equal("MaxLeverage:5.0x");
+    }
+
+    private static object DirectLoanTerms(
+        string borrower,
+        IReadOnlyList<(string Type, string Threshold)> covenants,
+        IReadOnlyList<(string Date, decimal Amount)> principal)
+        => new
+        {
+            schemaVersion = 1,
+            borrower,
+            maturity = "2030-03-31",
+            spreadBps = 425m,
+            covenants = covenants.Select(c => new { covenantType = c.Type, threshold = c.Threshold, notes = (string?)null }).ToArray(),
+            principalSchedule = principal.Select(p => new { paymentDate = p.Date, amount = p.Amount }).ToArray()
+        };
+
+    private static IEnumerable<string> Covenants(SecurityTermsProjectionReadDto projection)
+        => projection.ChildTables.Single(table => table.TableName == "direct_loan_covenant_projection").Rows
+            .Select(row => $"{row["covenant_type"].GetString()}:{row["threshold"].GetString()}");
+
+    private static IEnumerable<string> Schedule(SecurityTermsProjectionReadDto projection)
+        => projection.ChildTables.Single(table => table.TableName == "direct_loan_principal_schedule_projection").Rows
+            .Select(row => $"{row["payment_date"].GetString()}:{row["amount"].GetDecimal():0.##}");
+
+    /// <summary>
+    /// Delegates to the PostgreSQL row source and, once the first projection select (the parent
+    /// row) has returned, commits <c>amend</c> from a separate connection before the read continues.
+    /// </summary>
+    private sealed class AmendAfterParentRowSource : IRegistryProjectionRowSource
+    {
+        private readonly IRegistryProjectionRowSource _inner;
+        private readonly Func<CancellationToken, Task> _amend;
+
+        public AmendAfterParentRowSource(IRegistryProjectionRowSource inner, Func<CancellationToken, Task> amend)
+        {
+            _inner = inner;
+            _amend = amend;
+        }
+
+        public int AmendsCommitted { get; private set; }
+
+        public async Task<IRegistryProjectionRowSnapshot> OpenSnapshotAsync(CancellationToken ct)
+            => new Snapshot(this, await _inner.OpenSnapshotAsync(ct));
+
+        private sealed class Snapshot : IRegistryProjectionRowSnapshot
+        {
+            private readonly AmendAfterParentRowSource _source;
+            private readonly IRegistryProjectionRowSnapshot _inner;
+
+            public Snapshot(AmendAfterParentRowSource source, IRegistryProjectionRowSnapshot inner)
+            {
+                _source = source;
+                _inner = inner;
+            }
+
+            public Task<bool> IsCurrentAssetClassAsync(Guid securityId, string assetClass, CancellationToken ct)
+                => _inner.IsCurrentAssetClassAsync(securityId, assetClass, ct);
+
+            public async Task<IReadOnlyList<IReadOnlyDictionary<string, JsonElement>>> ReadAsync(
+                string sql,
+                IReadOnlyList<string> columns,
+                Guid securityId,
+                CancellationToken ct)
+            {
+                var rows = await _inner.ReadAsync(sql, columns, securityId, ct);
+                if (_source.AmendsCommitted == 0)
+                {
+                    await _source._amend(ct);
+                    _source.AmendsCommitted++;
+                }
+
+                return rows;
+            }
+
+            public ValueTask DisposeAsync() => _inner.DisposeAsync();
+        }
+    }
+
     private static SecurityProjectionRecord Record(Guid securityId, string assetClass, long version, object assetSpecificTerms)
     {
         var identifierValue = $"REGREAD-{securityId:N}";

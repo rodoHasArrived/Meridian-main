@@ -113,6 +113,40 @@ internal sealed class RegistryReferenceProjectionStore<TRow>
         CancellationToken ct)
         => _reader.QuerySingleAsync(Resolve(query), parameters, _map, ct);
 
+    /// <summary>
+    /// Opens one read-only <c>REPEATABLE READ</c> snapshot over the Security Master database. A
+    /// composite read across several stores — a parent row and its child tables — passes the same
+    /// snapshot to each store's snapshot overloads so the tables are read from one committed state.
+    /// </summary>
+    public Task<ProjectionReadSnapshot> BeginSnapshotAsync(CancellationToken ct)
+        => _reader.BeginSnapshotAsync(ct);
+
+    /// <summary>The parent row for <paramref name="securityId"/> read inside <paramref name="snapshot"/>, or <see langword="null"/>.</summary>
+    public Task<TRow?> GetBySecurityIdAsync(ProjectionReadSnapshot snapshot, Guid securityId, CancellationToken ct)
+        => SingleAsync(snapshot, RegistryProjectionQuery.BySecurityId, [new NpgsqlParameter("security_id", securityId)], ct);
+
+    /// <summary>Every row <paramref name="query"/> matches inside <paramref name="snapshot"/>, in the order its predicate states.</summary>
+    public Task<IReadOnlyList<TRow>> ListAsync(
+        ProjectionReadSnapshot snapshot,
+        RegistryProjectionQuery query,
+        IReadOnlyList<NpgsqlParameter> parameters,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        return snapshot.QueryAsync(Resolve(query), parameters, _map, ct);
+    }
+
+    /// <summary>The first row <paramref name="query"/> matches inside <paramref name="snapshot"/>, or <see langword="null"/>.</summary>
+    public Task<TRow?> SingleAsync(
+        ProjectionReadSnapshot snapshot,
+        RegistryProjectionQuery query,
+        IReadOnlyList<NpgsqlParameter> parameters,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        return snapshot.QuerySingleAsync(Resolve(query), parameters, _map, ct);
+    }
+
     private string Resolve(RegistryProjectionQuery query)
     {
         ArgumentNullException.ThrowIfNull(query);

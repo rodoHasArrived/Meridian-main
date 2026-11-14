@@ -24,12 +24,28 @@ public interface IRegistryProjectionReadService
 }
 
 /// <summary>
-/// Executes one registry select for one security and returns every row as named JSON columns. The
-/// seam between the descriptor-driven read and PostgreSQL, so the read itself is testable without
-/// a database.
+/// Opens the single-snapshot scope one registry read runs in. The seam between the
+/// descriptor-driven read and PostgreSQL, so the read itself is testable without a database.
 /// </summary>
 internal interface IRegistryProjectionRowSource
 {
+    /// <summary>
+    /// Opens one snapshot: every read through it sees the same committed database state, so the
+    /// class gate, parent row, child tables and satellites of one composite read agree.
+    /// </summary>
+    Task<IRegistryProjectionRowSnapshot> OpenSnapshotAsync(CancellationToken ct);
+}
+
+/// <summary>One consistent view of the Security Master tables for one composite read.</summary>
+internal interface IRegistryProjectionRowSnapshot : IAsyncDisposable
+{
+    /// <summary>
+    /// <see langword="true"/> when the security exists in this snapshot and its current asset
+    /// class (canonicalized) is <paramref name="assetClass"/>.
+    /// </summary>
+    Task<bool> IsCurrentAssetClassAsync(Guid securityId, string assetClass, CancellationToken ct);
+
+    /// <summary>Executes one registry select for one security and returns every row as named JSON columns.</summary>
     Task<IReadOnlyList<IReadOnlyDictionary<string, JsonElement>>> ReadAsync(
         string sql,
         IReadOnlyList<string> columns,
@@ -42,6 +58,13 @@ internal interface IRegistryProjectionRowSource
 /// current asset class gates the read: it is taken from <see cref="ISecurityMasterStore.GetProjectionAsync"/>
 /// and must be the requested class, so a request can never read another class's table for a
 /// security, nor a stale row a reclassified security left behind.
+/// <para>
+/// The composite itself is read from one database snapshot: the class is confirmed again, and the
+/// parent row, every child table and every satellite are read, on one connection inside one
+/// read-only <c>REPEATABLE READ</c> transaction. The writer commits all of a security's tables
+/// together, so an amend that commits while the read is under way is either wholly visible or
+/// wholly invisible; the result is never an old parent with new child rows.
+/// </para>
 /// </summary>
 public sealed class RegistryProjectionReadService : IRegistryProjectionReadService
 {
@@ -64,7 +87,7 @@ public sealed class RegistryProjectionReadService : IRegistryProjectionReadServi
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _reader = new PostgresReferenceProjectionReader(options);
-        _rows = rows ?? new PostgresRowSource(_reader);
+        _rows = rows ?? new PostgresRegistryProjectionRowSource(_reader);
     }
 
     /// <summary>
@@ -100,8 +123,17 @@ public sealed class RegistryProjectionReadService : IRegistryProjectionReadServi
             return null;
         }
 
+        await using var snapshot = await _rows.OpenSnapshotAsync(ct).ConfigureAwait(false);
+
+        // The store gate above answers the request; this confirms it inside the snapshot the rows
+        // are read from, so a reclassification committed in between cannot pair with stale rows.
+        if (!await snapshot.IsCurrentAssetClassAsync(securityId, descriptor.AssetClass, ct).ConfigureAwait(false))
+        {
+            return null;
+        }
+
         var parentColumns = SecurityTermsProjectionRegistry.ParentColumnNames(descriptor);
-        var parentRows = await _rows.ReadAsync(
+        var parentRows = await snapshot.ReadAsync(
                 _reader.SelectSql(descriptor.AssetClass, BySecurityId),
                 parentColumns,
                 securityId,
@@ -115,7 +147,7 @@ public sealed class RegistryProjectionReadService : IRegistryProjectionReadServi
         var children = new List<SecurityTermsProjectionChildRowsDto>(descriptor.ChildTables.Count);
         foreach (var child in descriptor.ChildTables)
         {
-            var rows = await _rows.ReadAsync(
+            var rows = await snapshot.ReadAsync(
                     _reader.SelectChildSql(descriptor.AssetClass, child.TableName, ChildrenBySecurityId),
                     SecurityTermsProjectionRegistry.ChildColumnNames(child),
                     securityId,
@@ -127,7 +159,7 @@ public sealed class RegistryProjectionReadService : IRegistryProjectionReadServi
         var satellites = new List<SecurityTermsProjectionSatelliteRowDto>(descriptor.Satellites.Count);
         foreach (var satellite in descriptor.Satellites)
         {
-            var rows = await _rows.ReadAsync(
+            var rows = await snapshot.ReadAsync(
                     _reader.SelectSatelliteSql(descriptor.AssetClass, satellite.TableName, BySecurityId),
                     SecurityTermsProjectionRegistry.SatelliteColumnNames(satellite),
                     securityId,
@@ -145,13 +177,51 @@ public sealed class RegistryProjectionReadService : IRegistryProjectionReadServi
             satellites);
     }
 
-    private sealed class PostgresRowSource : IRegistryProjectionRowSource
+}
+
+/// <summary>
+/// The PostgreSQL <see cref="IRegistryProjectionRowSource"/>: each snapshot is one connection with
+/// one read-only <c>REPEATABLE READ</c> transaction from
+/// <see cref="PostgresReferenceProjectionReader.BeginSnapshotAsync"/>.
+/// </summary>
+internal sealed class PostgresRegistryProjectionRowSource : IRegistryProjectionRowSource
+{
+    private readonly PostgresReferenceProjectionReader _reader;
+
+    public PostgresRegistryProjectionRowSource(SecurityMasterOptions options)
+        : this(new PostgresReferenceProjectionReader(options))
+    {
+    }
+
+    internal PostgresRegistryProjectionRowSource(PostgresReferenceProjectionReader reader)
+    {
+        _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+    }
+
+    public async Task<IRegistryProjectionRowSnapshot> OpenSnapshotAsync(CancellationToken ct)
+        => new Snapshot(_reader, await _reader.BeginSnapshotAsync(ct).ConfigureAwait(false));
+
+    private sealed class Snapshot : IRegistryProjectionRowSnapshot
     {
         private readonly PostgresReferenceProjectionReader _reader;
+        private readonly ProjectionReadSnapshot _snapshot;
 
-        public PostgresRowSource(PostgresReferenceProjectionReader reader)
+        public Snapshot(PostgresReferenceProjectionReader reader, ProjectionReadSnapshot snapshot)
         {
             _reader = reader;
+            _snapshot = snapshot;
+        }
+
+        public async Task<bool> IsCurrentAssetClassAsync(Guid securityId, string assetClass, CancellationToken ct)
+        {
+            var current = await _snapshot.QuerySingleAsync(
+                    $"select asset_class from {_reader.Qualified("securities")} where security_id = @security_id;",
+                    [new NpgsqlParameter("security_id", securityId)],
+                    static row => row.String("asset_class"),
+                    ct)
+                .ConfigureAwait(false);
+            return current is not null
+                && string.Equals(SecurityAssetClassCatalog.Canonicalize(current), assetClass, StringComparison.Ordinal);
         }
 
         public Task<IReadOnlyList<IReadOnlyDictionary<string, JsonElement>>> ReadAsync(
@@ -159,10 +229,12 @@ public sealed class RegistryProjectionReadService : IRegistryProjectionReadServi
             IReadOnlyList<string> columns,
             Guid securityId,
             CancellationToken ct)
-            => _reader.QueryAsync(
+            => _snapshot.QueryAsync(
                 sql,
                 [new NpgsqlParameter("security_id", securityId)],
                 row => row.ToJsonColumns(columns),
                 ct);
+
+        public ValueTask DisposeAsync() => _snapshot.DisposeAsync();
     }
 }
