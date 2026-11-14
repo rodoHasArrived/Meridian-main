@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ImportOnboardingOpeningBalancesRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L56).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L58).
 
 Imports the incumbent&#x27;s opening state for the workspace start date. File sources carry base64 content; the GL trial balance source carries the exact retained provider import identity instead.
 
@@ -457,7 +457,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.IssueParallelRunCertificateRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:97](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L97).
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L109).
 
 ```csharp
 public sealed record IssueParallelRunCertificateRequestDto(int ExpectedVersion);

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowEvidenceBadge
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowEvidenceBadge</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:52](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L52).
+
+Lightweight evidence chip supporting a workflow recommendation.
+
+```csharp
+public sealed record WorkflowEvidenceBadge(string Label, string Value, string Tone);
+```
+
 ## WorkflowLibraryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowLibraryDto</code>. Kind: `record`.
@@ -550,14 +562,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:310](../
 
 ```csharp
 public sealed record WorkstationPlotToolPayload(WorkstationPlotToolWorkspacePayload Workspace, WorkstationPlotToolStatisticsPayload Statistics, IReadOnlyList<WorkstationPlotToolStudyPayload> Studies, IReadOnlyList<WorkstationPlotToolTabState> Tabs, string ActiveView = "workspace", string AnalyticsEvidenceStatus = "Unavailable");
-```
-
-## WorkstationPlotToolPointPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolPointPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L209).
-
-```csharp
-public sealed record WorkstationPlotToolPointPayload(int X, int Y, bool Emphasis);
 ```

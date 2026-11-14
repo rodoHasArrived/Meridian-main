@@ -394,6 +394,9 @@ classified difference explanations, per-period agreement summaries, the hashed p
 certificate, the promotion decision and a hash-chained shadow audit entry. `IBookOfRecordGuard`
 answers whether a ledger book may act as the book of record; a shadow or withdrawn-trial book may
 not. New fields on `OnboardingDtos.cs` are omitted from JSON when unset so retained hashes still verify.
+`OnboardingComparisonDto.OpeningKinds` scopes an opening import to the kinds it supplies, and the opening
+report carries per-source summaries (`OnboardingOpeningSourceSummaryDto`), each line's source, and the
+required kinds still uncovered.
 
 `Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
 calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.

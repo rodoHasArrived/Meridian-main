@@ -18214,6 +18214,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningSourceSummaryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto"
     },
     {
@@ -50637,6 +50643,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.OnboardingOpeningBalanceReportDto",
+      "target": "contract:Meridian.Contracts.Workstation.OnboardingOpeningSourceSummaryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
       "target": "contract:Meridian.Contracts.Workstation.OnboardingComparisonDto"
     },
@@ -66913,7 +66925,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "366b9d34f76f56ed8691038e34c71a0f2a1b30cfd6345f83f7d41bd92bd959f5",
+  "fingerprint": "8debc8b67e768ef85e31f55edaee66186a86bdbe8000b822c88f9a0aee27afd0",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -85178,6 +85190,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.OnboardingOpeningSourceSummaryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.OnboardingOpeningSourceSummaryDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Workstation.OnboardingPacketContentDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.OnboardingPacketContentDto"
@@ -98271,11 +98289,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4152,
-    "contract_set_memberships": 5337,
-    "edges": 11115,
+    "contract_references": 4153,
+    "contract_set_memberships": 5338,
+    "edges": 11117,
     "foreign_keys": 206,
     "logical_references": 6,
-    "nodes": 5452
+    "nodes": 5453
   }
 }

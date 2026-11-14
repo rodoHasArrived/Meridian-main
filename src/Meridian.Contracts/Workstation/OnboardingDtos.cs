@@ -81,7 +81,9 @@ public sealed record OnboardingComparisonDto(
     string AlgorithmVersion, string? BaselineComparisonId = null,
     // Shadow-mode additions are omitted when unset so retained comparison hashes stay reproducible.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool IsOpening = false,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? OpeningSourceKind = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? OpeningSourceKind = null,
+    // Kinds an opening import compares; null on legacy comparisons, which claimed every required kind.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<string>? OpeningKinds = null);
 
 public sealed record OnboardingDifferenceAssignmentDto(
     string DifferenceKey, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds,
