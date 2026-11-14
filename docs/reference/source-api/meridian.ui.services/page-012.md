@@ -6,6 +6,197 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IWorkstationIntercompanyAgreementApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationIntercompanyAgreementApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:8](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L8).
+
+Agreement commands use the authenticated server identity and authority.
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyAgreementListDto&gt;&gt; ListAsync(IntercompanyAgreementQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L10) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyAgreementDetailDto&gt;&gt; GetAsync(Guid agreementId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L11) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyAgreementJournalLinesDto&gt;&gt; GetJournalLinesAsync(Guid agreementId, Guid ledgerBookId, DateOnly asOf, string? cursor = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L12) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyAgreementCommandResultDto&gt;&gt; ExecuteAsync(string action, IntercompanyAgreementCommandDto command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.cs#L13) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L10).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyLegacyCoverageCandidate[]&gt;&gt; GetLegacyCoverageCandidatesAsync(Guid bookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L12) |  |
+| <code>Task&lt;ApiResponse&lt;LegacyIntercompanyAttributionDto[]&gt;&gt; GetLegacyCoverageHistoryAsync(Guid bookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L14) |  |
+| <code>Task&lt;ApiResponse&lt;ResolvedIntercompanyAccountingArrangementDto[]&gt;&gt; GetCoverageProfilesAsync(Guid bookId, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L16) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyAccountBindingDto[]&gt;&gt; GetCoverageBindingsAsync(Guid bookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L18) |  |
+| <code>Task&lt;ApiResponse&lt;LegacyIntercompanyAttributionDto&gt;&gt; AppendLegacyCoverageAsync(AppendLegacyIntercompanyAttributionRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs#L20) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs:10](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs#L10).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyObligationMonitorDto&gt;&gt; GetObligationMonitorAsync(IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs#L12) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyStructuredTermsPreviewDto&gt;&gt; PreviewStructuredTermsAsync(Guid agreementId, DateOnly asOf, int? agreementVersion = null, Guid? proposalId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs#L14) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L11).
+
+```csharp
+public partial interface IWorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IntercompanyOperationCapabilities&gt;&gt; GetIntercompanyCapabilitiesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L13) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyProposalDto[]&gt;&gt; GetCounterpartProposalsAsync(Guid sourceBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L15) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyBreakDto[]&gt;&gt; GetCounterpartBreaksAsync(Guid sourceBookId, DateOnly asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L17) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyProposalDto&gt;&gt; RetryCounterpartProposalAsync(Guid proposalId, RetryIntercompanyProposalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L19) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyProposalDto&gt;&gt; LinkCounterpartProposalAsync(Guid proposalId, LinkIntercompanyCounterpartRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L21) |  |
+| <code>Task&lt;ApiResponse&lt;IntercompanyRefreshPreviewDto&gt;&gt; PreviewCounterpartRefreshAsync(Guid proposalId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L23) |  |
+| <code>Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; RefreshCounterpartProposalAsync(Guid proposalId, RefreshIntercompanyProposalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L25) |  |
+
+## IWorkstationManualJournalApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationManualJournalApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:7](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L7).
+
+The existing journal workbench through the authenticated server&#x27;s authority.
+
+```csharp
+public interface IWorkstationManualJournalApiClient : IManualJournalEntryWorkbenchService, IManualJournalEntryLifecycleService;
+```
+
+## PostedLedgerProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.PostedLedgerProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L19).
+
+Presentation projection for the posted-journal ledger surface — the governed book of record, scoped by ledger period. Lives here rather than in the desktop assembly on purpose: WPF cannot execute its tests off Windows (Microsoft.WindowsDesktop.App has no Linux build), so the decisions worth testing — which period is the default subject, whether a missing summary is a notice or a failure, how a period reads to an operator — are kept in a net10.0 assembly where they run on any platform. The desktop view model is a thin shell over these functions, and mirrors the browser panel&#x27;s behaviour so the two lanes cannot disagree about the book.
+
+```csharp
+public static class PostedLedgerProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;LedgerPeriodDto&gt; SortPeriodsDescending(IEnumerable&lt;LedgerPeriodDto&gt;? periods);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L22) | Newest period first, by fiscal year then period number, with a stable id tie-break. |
+| <code>public static Guid? ResolveDefaultPeriodId(IEnumerable&lt;LedgerPeriodDto&gt;? periods);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L41) | The period a freshly opened surface should show: the latest closed one. Trial balance and P&amp;L publish from the closed-period summary, so defaulting to an open period would land the operator on the &quot;not closed yet&quot; notice instead of the book. |
+| <code>public static string DescribePeriod(LedgerPeriodDto period);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L54) | Operator-facing label for a period, falling back to its fiscal coordinates. |
+| <code>public static string DescribePeriodStatus(LedgerPeriodStatusDto status) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L63) |  |
+| <code>public static string DescribeSignoffStatus(LedgerPeriodSignoffStatusDto status) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L70) |  |
+| <code>public static bool IsMissingSummary(int statusCode) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:83](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L83) | A 404 from the trial-balance or P&amp;L route means the period has no closed-period summary yet — an expected state for an open period. It must read as a notice, never as a failure, or every open period looks like an outage. |
+| <code>public const string MissingSummaryNotice = &quot;This period has no closed-period summary yet. Trial balance and P&amp;L publish from the posted journal when the period closes.&quot;;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:85](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L85) |  |
+| <code>public static decimal SumBalances(IEnumerable&lt;LedgerPeriodTrialBalanceLineDto&gt;? lines) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:89](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L89) | Debits minus credits across the posted lines; non-zero means the book does not tie. |
+| <code>public static bool IsOutOfBalance(IEnumerable&lt;LedgerPeriodTrialBalanceLineDto&gt;? lines);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:96](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L96) | True when the posted trial balance does not tie. Uses a half-cent tolerance so decimal rounding in a currency column cannot raise a false alarm. |
+| <code>public static IReadOnlyList&lt;LedgerPeriodTrialBalanceLineDto&gt; FilterByBasis(IEnumerable&lt;LedgerPeriodTrialBalanceLineDto&gt;? lines, AccountingBasisKindDto basis) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:108](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L108) | Filters posted lines to the selected accounting basis. |
+| <code>public static bool MatchesAccountFilter(LedgerPeriodTrialBalanceLineDto line, string? filter);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:117](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L117) | Matches a posted line against an operator&#x27;s free-text account filter, over the same fields the browser panel searches. |
+| <code>public static string DescribeDimensionScope(LedgerPeriodTrialBalanceLineDto line);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:140](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L140) | Names the dimensional scope a posted line covers, or an empty string when it carries none. The ledger service deliberately returns one row per account *per dimension set*, so an account posted in several funds, entities, sleeves or cost centres comes back as several rows with identical account name, type and symbol. Rendering only those three makes those rows indistinguishable, and an operator cannot tell which scope&#x27;s balance they are signing off. Ordered widest-to-narrowest so the label reads as an address. |
+| <code>public static string DescribeDimensionScope(LedgerDimensionSetDto? dimensions, string separator = &quot; · &quot;);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:155](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L155) | The canonical dimension-scope label, over any retained dimension set. One definition on purpose. Three separate enumerations of the same eighteen-member contract had drifted apart, each omitting a different subset, so the same balance was distinguishable on one surface and not another. Empty when no dimension is set — the caller owns what to say about that, because a grid column and a detail field want different words. |
+| <code>public static IReadOnlyList&lt;LedgerBookDto&gt; SortBooks(IEnumerable&lt;LedgerBookDto&gt;? books) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:221](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L221) | Books newest-usable first: by display name, with a stable id tie-break. Defers to LedgerBookOrdering, which the books route already applied before serving. Re-sorting an already-canonical list is a no-op; what matters is that there is one definition of the order rather than one per client. |
+| <code>public static Guid? ResolveDefaultBookId(IEnumerable&lt;LedgerBookDto&gt;? books) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:230](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L230) | The book a freshly opened surface should show. There is no notion of a &quot;default&quot; book in the contract, so this is simply the first in a stable order — the point is that the surface names the book it chose rather than presenting whichever book happened to own the latest closed period as though it were the fund&#x27;s only one. |
+| <code>public static IReadOnlyList&lt;LedgerPeriodDto&gt; FilterPeriodsByBook(IEnumerable&lt;LedgerPeriodDto&gt;? periods, Guid? ledgerBookId) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:234](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L234) | Periods belonging to one book, newest first. |
+| <code>public static string FormatAmount(decimal value, string? currencyCode);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:251](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L251) | Formats a ledger amount in the book&#x27;s own base currency. Deliberately not ToString(&quot;C&quot;, CultureInfo.CurrentCulture): that takes the currency symbol from the operator&#x27;s OS culture, so a USD book renders as pounds on a machine set to en-GB — the same number, relabelled as another currency, with no conversion. The ledger contract carries a currency code rather than a locale, so the code itself is shown. A book with no declared currency formats as a bare number rather than borrowing a symbol. |
+| <code>public static IReadOnlyList&lt;AccountingBasisKindDto&gt; AvailableBases(IEnumerable&lt;LedgerPeriodTrialBalanceLineDto&gt;? lines) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:264](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L264) | The accounting bases actually present in a period&#x27;s posted lines, in enum order. A closed period can carry a Primary projection alongside GAAP, tax or statutory ones; they are different books of basis over the same accounts, so a surface must show one at a time rather than stacking them into duplicate rows and a meaningless total. |
+| <code>public static AccountingBasisKindDto ResolveDefaultBasis(IEnumerable&lt;LedgerPeriodTrialBalanceLineDto&gt;? lines);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:276](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L276) | The basis a freshly loaded period should show: Primary when present, else the first available. Defaulting to Primary unconditionally would render a GAAP-only period empty. |
+| <code>public static string DescribeBasis(AccountingBasisKindDto basis) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:291](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L291) | Human-readable basis name for a picker. |
+| <code>public static PostedLedgerPnlProjection ProjectPnl(LedgerPeriodPnlSummaryDto summary, AccountingBasisKindDto basis, int availableBasisCount);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:347](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L347) | Scopes a period&#x27;s P&amp;L to one accounting basis. The endpoint&#x27;s TotalRevenue and TotalExpenses are plain sums of the lines it returns, across every basis the period holds, so a GAAP trial balance sat beside a P&amp;L that added Primary and GAAP together. Summing the same lines filtered to one basis reproduces the endpoint&#x27;s figures exactly for a single-basis period and scopes them correctly for a mixed one. Net income is derived as revenue less expenses, the way the server derives its own realized figures, because the endpoint&#x27;s NetIncome is a period-level value that cannot be attributed to one basis. This is the desktop and browser workstations&#x27; shared definition of those figures: the two clients showing different revenue for the same period and basis is the conflation this exists to prevent. |
+
+## PostedLedgerPnlProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.PostedLedgerProjection.PostedLedgerPnlProjection</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:322](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L322).
+
+The P&amp;L figures for one accounting basis, and whether each of them could actually be attributed to that basis.
+
+```csharp
+public readonly record struct PostedLedgerPnlProjection(decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal? PeriodOnPeriodVariance, bool IsBasisScoped, bool IsVarianceBasisScoped);
+```
+
+## WorkstationAccountingCloseApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationAccountingCloseApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L14).
+
+Transports close commands and retained plans through the server&#x27;s accounting authority. Tenant, company, actor and controller authority are resolved by authenticated server middleware.
+
+```csharp
+public sealed class WorkstationAccountingCloseApiClient(ApiClientService apiClient) : IWorkstationAccountingCloseApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ClosePeriodPlanDto?&gt; GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L16) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; GetPeriodPlanScopedAsync(Guid workflowId, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:27](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L27) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; ConfigurePeriodPlanAsync(UpsertClosePeriodPlanConfigurationRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:31](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L31) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; RequestLateAdjustmentAsync(CreateLateAdjustmentRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:35](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L35) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; ReviewLateAdjustmentAsync(ReviewLateAdjustmentRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:39](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L39) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; SignOffCloseTaskAsync(SignOffCloseTaskRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L43) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; ReviewCloseEvidenceAsync(ReviewCloseEvidenceRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L47) |  |
+| <code>public Task&lt;ClosePeriodLockResultDto?&gt; LockClosePeriodAsync(LockClosePeriodRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L51) |  |
+| <code>public Task&lt;ClosePeriodLockResultDto?&gt; LockClosePeriodScopedAsync(LockClosePeriodRequestDto request, string actor, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L55) |  |
+| <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodAsync(ReopenClosePeriodRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L59) |  |
+| <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodScopedAsync(ReopenClosePeriodRequestDto request, string actor, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L63) |  |
+
+## WorkstationEntityConsolidationApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationEntityConsolidationApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L18).
+
+```csharp
+public sealed partial class WorkstationEntityConsolidationApiClient(ApiClientService api) : IWorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetStructureAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L20) |  |
+| <code>public async Task&lt;EntityTimelineDto&gt; GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L23) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; GetPeriodsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L32) |  |
+| <code>public async Task&lt;ConsolidationViewDto&gt; PreviewAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L40) |  |
+| <code>public async Task&lt;ConsolidationViewDto&gt; CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:46](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L46) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L15).
+
+```csharp
+public sealed partial class WorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L17) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L19) |  |
+
 ## WorkstationIntercompanyAgreementApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationIntercompanyAgreementApiClient</code>. Kind: `class`.
@@ -53,6 +244,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;ApiResponse&lt;IntercompanyObligationMonitorDto&gt;&gt; GetObligationMonitorAsync(IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs#L20) |  |
 | <code>public Task&lt;ApiResponse&lt;IntercompanyStructuredTermsPreviewDto&gt;&gt; PreviewStructuredTermsAsync(Guid agreementId, DateOnly asOf, int? agreementVersion = null, Guid? proposalId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Obligations.cs#L51) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:29](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L29).
+
+```csharp
+public sealed partial class WorkstationIntercompanyAgreementApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;ApiResponse&lt;IntercompanyOperationCapabilities&gt;&gt; GetIntercompanyCapabilitiesAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:33](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L33) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyProposalDto[]&gt;&gt; GetCounterpartProposalsAsync(Guid sourceBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L36) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyBreakDto[]&gt;&gt; GetCounterpartBreaksAsync(Guid sourceBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L43) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyProposalDto&gt;&gt; RetryCounterpartProposalAsync(Guid proposalId, RetryIntercompanyProposalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L51) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyProposalDto&gt;&gt; LinkCounterpartProposalAsync(Guid proposalId, LinkIntercompanyCounterpartRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L54) |  |
+| <code>public async Task&lt;ApiResponse&lt;IntercompanyRefreshPreviewDto&gt;&gt; PreviewCounterpartRefreshAsync(Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:62](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L62) |  |
+| <code>public async Task&lt;ApiResponse&lt;ManualJournalEntryDraftDto&gt;&gt; RefreshCounterpartProposalAsync(Guid proposalId, RefreshIntercompanyProposalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Proposals.cs#L70) |  |
 
 ## WorkstationManualJournalApiClient
 
@@ -1061,150 +1270,3 @@ Declared public members:
 | <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L46) |  |
 | <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:47](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L47) |  |
 | <code>public int DurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L48) |  |
-
-## NotificationHistoryItem
-
-Qualified name: <code>Meridian.Ui.Services.Services.NotificationHistoryItem</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:29](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L29).
-
-Notification history item.
-
-```csharp
-public sealed class NotificationHistoryItem
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:31](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L31) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:32](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L32) |  |
-| <code>public NotificationType Type { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L33) |  |
-| <code>public DateTime Timestamp { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:34](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L34) |  |
-| <code>public string Tag { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:35](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L35) |  |
-| <code>public bool IsRead { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L36) |  |
-
-## NotificationServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.NotificationServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L57).
-
-Abstract base class for notification management shared between platforms. Provides smart suppression (deduplication + rate limiting), history tracking, settings management, and domain-specific notification methods. Part of Phase 2 service extraction.
-
-```csharp
-public abstract class NotificationServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event EventHandler&lt;NotificationEventArgs&gt;? NotificationReceived;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:72](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L72) |  |
-| <code>public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info, int durationMs = 5000);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:74](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L74) |  |
-| <code>public Task NotifyErrorAsync(string title, string message, Exception? exception = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:149](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L149) |  |
-| <code>public void NotifySuccess(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:161](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L161) |  |
-| <code>public void NotifyWarning(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:164](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L164) |  |
-| <code>public Task NotifyWarningAsync(string title, string message);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:171](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L171) |  |
-| <code>public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:177](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L177) |  |
-| <code>public void NotifyInfo(string title, string message) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:183](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L183) |  |
-| <code>public Task NotifyConnectionStatusAsync(bool connected, string providerName, string? details = null);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:186](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L186) |  |
-| <code>public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:207](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L207) |  |
-| <code>public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:223](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L223) |  |
-| <code>public Task NotifyDataGapAsync(string symbol, DateTime gapStart, DateTime gapEnd, int missingBars);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:238](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L238) |  |
-| <code>public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:252](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L252) |  |
-| <code>public void SendTestNotification() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:268](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L268) |  |
-| <code>public void UpdateSettings(NotificationSettings settings) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:271](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L271) |  |
-| <code>public NotificationSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:274](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L274) |  |
-| <code>public IReadOnlyList&lt;NotificationHistoryItem&gt; GetHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:276](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L276) |  |
-| <code>public void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:282](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L282) |  |
-| <code>public void MarkAsRead(int index);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:293](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L293) |  |
-| <code>public int GetUnreadCount();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:302](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L302) |  |
-
-## NotificationSettings
-
-Qualified name: <code>Meridian.Ui.Services.Services.NotificationSettings</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L12).
-
-Notification settings.
-
-```csharp
-public sealed class NotificationSettings
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L14) |  |
-| <code>public bool NotifyConnectionStatus { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L15) |  |
-| <code>public bool NotifyErrors { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L16) |  |
-| <code>public bool NotifyBackfillComplete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L17) |  |
-| <code>public bool NotifyDataGaps { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L18) |  |
-| <code>public bool NotifyStorageWarnings { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L19) |  |
-| <code>public string SoundType { get; set; } = &quot;Default&quot;;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L20) |  |
-| <code>public bool QuietHoursEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L21) |  |
-| <code>public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L22) |  |
-| <code>public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L23) |  |
-
-## OnboardingTip
-
-Qualified name: <code>Meridian.Ui.Services.Services.OnboardingTip</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:20](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L20).
-
-An onboarding tip to show new users. Shared across desktop platforms.
-
-```csharp
-public sealed class OnboardingTip
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:22](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L22) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:23](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L23) |  |
-| <code>public string Content { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:24](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L24) |  |
-| <code>public string TargetElement { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:25](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L25) |  |
-| <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:26](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L26) |  |
-
-## PeriodicRefreshScheduler
-
-Qualified name: <code>Meridian.Ui.Services.Services.PeriodicRefreshScheduler</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:11](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L11).
-
-Cross-platform recurring refresh scheduler backed by PeriodicTimer.
-
-```csharp
-public sealed class PeriodicRefreshScheduler : IRefreshScheduler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void Start(TimeSpan interval, Func&lt;CancellationToken, Task&gt; callback, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:17](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L17) |  |
-| <code>public void Stop();</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:34](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L34) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:42](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L42) |  |
-
-## ProviderCatalogEntry
-
-Qualified name: <code>Meridian.Ui.Services.Services.ProviderCatalogEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:622](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L622).
-
-Provider catalog entry for the provider marketplace display.
-
-```csharp
-public sealed record ProviderCatalogEntry(string Id, string DisplayName, ProviderTier Tier, bool SupportsStreaming, bool SupportsHistorical, bool SupportsSymbolSearch, string Description, int RateLimitPerMinute, CredentialFieldInfo[] CredentialFields, bool SupportsOptions = false, bool SupportsBrokerage = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string[] RequiredEnvVars =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:635](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L635) |  |

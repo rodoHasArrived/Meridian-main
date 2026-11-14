@@ -123,6 +123,12 @@ responses preserve local edits. The desktop surface does not maintain its own ag
 posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
 native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
+`IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
+book, retained source lines and provenance, delivery retry, explicit FX repricing with a
+before-and-after preview, and linking an existing counterpart journal. The desktop holds no
+proposal state and never posts; the same Windows-only validation boundary applies.
+
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
 It also displays the host's effective governance profile, source, restart latch, enforced edit and

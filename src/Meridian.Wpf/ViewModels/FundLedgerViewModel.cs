@@ -97,6 +97,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private readonly DesktopAuthenticationSession? _authenticationSession;
     public IntercompanyAgreementWorkspace? Agreements { get; }
+    /// <summary>Counterpart delivery queue over the same shared proposal API as the browser workstation.</summary>
+    public IntercompanyCounterpartQueueWorkspace? CounterpartProposals { get; }
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -126,6 +128,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _financialOperationsCommandCenterReadService = financialOperationsCommandCenterReadService;
         _authenticationSession = authenticationSession;
         Agreements = intercompanyAgreementClient is null ? null : new IntercompanyAgreementWorkspace(intercompanyAgreementClient);
+        CounterpartProposals = intercompanyAgreementClient is null ? null : new IntercompanyCounterpartQueueWorkspace(intercompanyAgreementClient);
         if (_authenticationSession is not null)
         {
             _authenticationSession.SignedOut += OnAgreementSessionChanged;
@@ -1066,6 +1069,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             _authenticationSession.SignedIn -= OnAgreementSessionChanged;
         }
         Agreements?.Dispose();
+        CounterpartProposals?.Dispose();
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         DisposeReconciliationWorkbench();
     }
@@ -1074,9 +1078,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
         if (dispatcher is not null && !dispatcher.CheckAccess())
-            dispatcher.Invoke(() => Agreements?.ResetSession());
+            dispatcher.Invoke(ResetIntercompanySessions);
         else
-            Agreements?.ResetSession();
+            ResetIntercompanySessions();
+    }
+
+    private void ResetIntercompanySessions()
+    {
+        Agreements?.ResetSession();
+        CounterpartProposals?.ResetSession();
     }
 
     private async Task<FundProfileDetail?> ResolveActiveFundAsync(

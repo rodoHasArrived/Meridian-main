@@ -871,16 +871,16 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;int&gt; RunOnceAsync(string workerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:24](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L24) |  |
-| <code>public async Task&lt;IntercompanyRefreshPreviewDto&gt; RefreshPreviewAsync(string tenant, Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:152](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L152) |  |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; RefreshAsync(string tenant, Guid proposalId, RefreshIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:206](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L206) |  |
-| <code>public async Task LinkAsync(string tenant, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:248](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L248) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyBreakDto&gt;&gt; BreaksAsync(string tenant, Guid sourceBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:440](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L440) |  |
+| <code>public async Task&lt;IntercompanyRefreshPreviewDto&gt; RefreshPreviewAsync(string tenant, Guid proposalId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:153](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L153) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; RefreshAsync(string tenant, Guid proposalId, RefreshIntercompanyProposalRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:207](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L207) |  |
+| <code>public async Task LinkAsync(string tenant, Guid proposalId, LinkIntercompanyCounterpartRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:249](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L249) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyBreakDto&gt;&gt; BreaksAsync(string tenant, Guid sourceBookId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:441](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L441) |  |
 
 ## IntercompanyProposalHostedService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IntercompanyProposalHostedService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:492](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L492).
+Source: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs:493](../../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs#L493).
 
 ```csharp
 public sealed class IntercompanyProposalHostedService(IServiceProvider services, ILogger<IntercompanyProposalHostedService> logger) : BackgroundService

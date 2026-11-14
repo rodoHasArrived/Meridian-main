@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RoutingMatrixViewModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.RoutingMatrixViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:18](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L18).
+
+Exposes an observable collection of source-to-target routing rows.
+
+```csharp
+public sealed class RoutingMatrixViewModel : Meridian.Wpf.ViewModels.BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;RoutingMatrixRow&gt; Rows { get; } = [];</code> | [src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs:20](../../../../src/Meridian.Wpf/Workstation/ViewModels/Base/RoutingMatrixViewModel.cs#L20) |  |
+
 ## TableViewModel (generic arity 1)
 
 Qualified name: <code>Meridian.Wpf.Workstation.ViewModels.Base.TableViewModel</code>. Kind: `class`.

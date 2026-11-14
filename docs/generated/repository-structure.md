@@ -10520,6 +10520,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyAgreementWorkspace.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.LegacyCoverage.cs
 │   │   │   │   ├── IntercompanyAgreementWorkspace.StructuredTerms.cs
+│   │   │   │   ├── IntercompanyCounterpartQueueWorkspace.cs
 │   │   │   │   ├── PostedLedgerProjection.cs
 │   │   │   │   ├── WorkstationAccountingCloseApiClient.cs
 │   │   │   │   ├── WorkstationEntityConsolidationApiClient.cs
@@ -10527,6 +10528,7 @@ Meridian-main
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.LegacyCoverage.cs
 │   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Obligations.cs
+│   │   │   │   ├── WorkstationIntercompanyAgreementApiClient.Proposals.cs
 │   │   │   │   └── WorkstationManualJournalApiClient.cs
 │   │   │   ├── DataQuality
 │   │   │   │   ├── DataQualityApiClient.cs
@@ -11979,6 +11981,8 @@ Meridian-main
 │   │   │   ├── InstitutionalShellFrameControl.cs
 │   │   │   ├── IntercompanyAgreementsControl.xaml
 │   │   │   ├── IntercompanyAgreementsControl.xaml.cs
+│   │   │   ├── IntercompanyCounterpartProposalsControl.xaml
+│   │   │   ├── IntercompanyCounterpartProposalsControl.xaml.cs
 │   │   │   ├── KeyboardShortcutsPage.xaml
 │   │   │   ├── KeyboardShortcutsPage.xaml.cs
 │   │   │   ├── LeanIntegrationPage.xaml
@@ -12475,6 +12479,7 @@ Meridian-main
 │   │   ├── InMemoryFundStructureServiceTests.cs
 │   │   ├── InMemoryFundStructureServiceTests.ScheduleCharacterization.cs
 │   │   ├── IntercompanyAccountingArrangementTests.cs
+│   │   ├── IntercompanyAccountingArrangementTests.LegalNovation.cs
 │   │   ├── IntercompanyAgreementRulesTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.cs
 │   │   ├── IntercompanyAgreementServiceTests.ExternalReview.cs
@@ -13195,11 +13200,13 @@ Meridian-main
 │   │   │   ├── Consolidation
 │   │   │   │   ├── ConsolidationArrangementMatchingTests.cs
 │   │   │   │   ├── ConsolidationFxTests.cs
+│   │   │   │   ├── ConsolidationGovernedPopulationTests.cs
 │   │   │   │   ├── ConsolidationGovernedServiceTests.cs
 │   │   │   │   ├── ConsolidationPerimeterResolverTests.cs
 │   │   │   │   ├── ConsolidationServiceTests.cs
 │   │   │   │   ├── ConsolidationServiceTests.EndpointCapabilities.cs
 │   │   │   │   ├── ConsolidationServiceTests.EvidenceFormats.cs
+│   │   │   │   ├── ConsolidationServiceTests.GovernedRaces.cs
 │   │   │   │   ├── ConsolidationServiceTests.GovernedWorkbench.cs
 │   │   │   │   ├── ConsolidationServiceTests.Header.cs
 │   │   │   │   ├── ConsolidationServiceTests.PolicyPeriod.cs
@@ -14284,6 +14291,7 @@ Meridian-main
 │   │   │   ├── IntercompanyAgreementPostingGuardTests.cs
 │   │   │   ├── IntercompanyAgreementPostingPostgresTests.cs
 │   │   │   ├── IntercompanyProposalPostgresTests.cs
+│   │   │   ├── IntercompanyProposalPostgresTests.Restart.cs
 │   │   │   ├── JsonFileIBDataResultStoreTests.cs
 │   │   │   ├── JsonFileSnapshotStoreTests.cs
 │   │   │   ├── JsonlAppendStreamTests.cs
@@ -14300,6 +14308,7 @@ Meridian-main
 │   │   │   ├── LedgerBalanceCheckpointPostgresTests.PrefixTailGuard.cs
 │   │   │   ├── LedgerBalanceCheckpointPostgresTests.ScopeAndGuards.cs
 │   │   │   ├── LedgerBalanceSnapshotExtensionsTests.cs
+│   │   │   ├── LedgerBookControlsPostgresTests.Activation.cs
 │   │   │   ├── LedgerBookControlsPostgresTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerCurrencyBackfillTests.cs
@@ -14314,6 +14323,8 @@ Meridian-main
 │   │   │   ├── LedgerPostgresTestDatabase.cs
 │   │   │   ├── LedgerPostgresTestDatabase.LotReferences.cs
 │   │   │   ├── LedgerReplayAfterControlsPostgresTests.cs
+│   │   │   ├── LegacyIntercompanyAttributionPostgresTests.cs
+│   │   │   ├── LegacyIntercompanyControlsFixture.cs
 │   │   │   ├── LegalEntityReadAuthorityPostgresTests.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
 │   │   │   ├── MaintenanceFileLockTests.cs
@@ -14631,6 +14642,10 @@ Meridian-main
 │   │   │   ├── IntercompanyCloseAdvisoryAuthorizationTests.cs
 │   │   │   ├── IntercompanyCloseAdvisoryMembershipTests.cs
 │   │   │   ├── IntercompanyObligationEndpointTests.cs
+│   │   │   ├── IntercompanyProposalBreakAgingTests.cs
+│   │   │   ├── IntercompanyProposalDeliveryRetryTests.cs
+│   │   │   ├── IntercompanyProposalDestinationAuthorityTests.cs
+│   │   │   ├── IntercompanyProposalMissingArrangementTests.cs
 │   │   │   ├── IntercompanyProposalResolutionTests.cs
 │   │   │   ├── IntercompanyProposalReversalDeliveryTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
@@ -14970,6 +14985,7 @@ Meridian-main
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.Structured.cs
+│   │   │   ├── IntercompanyCounterpartQueueWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
 │   │   │   ├── LiveDataServiceTests.cs
 │   │   │   ├── LoggingServiceBaseTests.cs
@@ -15003,6 +15019,7 @@ Meridian-main
 │   │   │   ├── WorkstationEntityConsolidationApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.cs
 │   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Obligations.cs
+│   │   │   ├── WorkstationIntercompanyAgreementApiClientTests.Proposals.cs
 │   │   │   └── WorkstationManualJournalApiClientTests.cs
 │   │   ├── Meridian.Ui.Tests.csproj
 │   │   └── README.md
@@ -15265,6 +15282,7 @@ Meridian-main
 │   │   │   ├── FullNavigationSweepTests.cs
 │   │   │   ├── FundProfileSelectionPageSmokeTests.cs
 │   │   │   ├── HelpPageSmokeTests.cs
+│   │   │   ├── IntercompanyNativeControlSmokeTests.CounterpartProposals.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.cs
 │   │   │   ├── IntercompanyNativeControlSmokeTests.Fixtures.cs
 │   │   │   ├── LifecycleControlPageSmokeTests.cs

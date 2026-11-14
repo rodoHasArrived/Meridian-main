@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IssueDisplayItem
+
+Qualified name: <code>Meridian.Wpf.Views.IssueDisplayItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:472](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L472).
+
+Presents an archive issue&#x27;s severity, suggested action, and automatic-fix availability.
+
+```csharp
+public sealed class IssueDisplayItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IssueDisplayItem(ArchiveIssue issue);</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:476](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L476) |  |
+| <code>public string Id =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:481](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L481) |  |
+| <code>public string Message =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:482](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L482) |  |
+| <code>public string? SuggestedAction =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:483](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L483) |  |
+| <code>public string Severity =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:484](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L484) |  |
+| <code>public bool IsAutoFixable =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:485](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L485) |  |
+| <code>public Brush SeverityColor =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:487](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L487) |  |
+| <code>public Visibility IsAutoFixableVisibility =&gt; …;</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:494](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L494) |  |
+
 ## IWorkspaceShellPageContextAware
 
 Qualified name: <code>Meridian.Wpf.Views.IWorkspaceShellPageContextAware</code>. Kind: `interface`.
@@ -1085,21 +1110,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ShellMastheadControl();</code> | [src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ShellMastheadControl.xaml.cs#L10) |  |
-
-## ShellRailControl
-
-Qualified name: <code>Meridian.Wpf.Views.ShellRailControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/ShellRailControl.xaml.cs:10](../../../../src/Meridian.Wpf/Views/ShellRailControl.xaml.cs#L10).
-
-Hosts desktop workspace navigation and handles rail item activation.
-
-```csharp
-public partial class ShellRailControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ShellRailControl();</code> | [src/Meridian.Wpf/Views/ShellRailControl.xaml.cs:12](../../../../src/Meridian.Wpf/Views/ShellRailControl.xaml.cs#L12) |  |

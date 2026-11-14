@@ -6,6 +6,126 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## VerifiedFile
+
+Qualified name: <code>Meridian.Ui.Services.VerifiedFile</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:173](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L173).
+
+A verified file with checksum.
+
+```csharp
+public sealed class VerifiedFile
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:175](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L175) |  |
+| <code>public string Checksum { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:176](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L176) |  |
+| <code>public bool IsVerified { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:177](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L177) |  |
+| <code>public long Size { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L178) |  |
+
+## ViolationSeverity
+
+Qualified name: <code>Meridian.Ui.Services.ViolationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:73](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L73).
+
+Severity level for violations.
+
+```csharp
+public enum ViolationSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:75](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L75) |  |
+| <code>Warning</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:76](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L76) |  |
+| <code>Error</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:77](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L77) |  |
+
+## VolumePriceLevel
+
+Qualified name: <code>Meridian.Ui.Services.VolumePriceLevel</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ChartingService.cs:621](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L621).
+
+Volume at price level.
+
+```csharp
+public sealed class VolumePriceLevel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal PriceLevel { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:623](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L623) |  |
+| <code>public decimal Volume { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:624](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L624) |  |
+| <code>public double Intensity { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:625](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L625) |  |
+
+## VolumeProfileData
+
+Qualified name: <code>Meridian.Ui.Services.VolumeProfileData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ChartingService.cs:610](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L610).
+
+Volume profile data.
+
+```csharp
+public sealed class VolumeProfileData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;VolumePriceLevel&gt; Levels { get; } = new ();</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:612](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L612) |  |
+| <code>public decimal PointOfControl { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:613](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L613) |  |
+| <code>public decimal ValueAreaHigh { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:614](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L614) |  |
+| <code>public decimal ValueAreaLow { get; set; }</code> | [src/Meridian.Ui.Services/Services/ChartingService.cs:615](../../../../src/Meridian.Ui.Services/Services/ChartingService.cs#L615) |  |
+
+## WatchlistData
+
+Qualified name: <code>Meridian.Ui.Services.WatchlistData</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:104](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L104).
+
+Watchlist data containing watched symbols.
+
+```csharp
+public sealed class WatchlistData
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;WatchlistItem&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:106](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L106) |  |
+| <code>public List&lt;WatchlistGroup&gt; Groups { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:107](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L107) |  |
+
+## WatchlistGroup
+
+Qualified name: <code>Meridian.Ui.Services.WatchlistGroup</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/WatchlistService.cs:123](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L123).
+
+A group of symbols in a watchlist.
+
+```csharp
+public sealed class WatchlistGroup
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:125](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L125) |  |
+| <code>public List&lt;string&gt; Symbols { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/WatchlistService.cs:126](../../../../src/Meridian.Ui.Services/Services/WatchlistService.cs#L126) |  |
+
 ## WatchlistItem
 
 Qualified name: <code>Meridian.Ui.Services.WatchlistItem</code>. Kind: `class`.
