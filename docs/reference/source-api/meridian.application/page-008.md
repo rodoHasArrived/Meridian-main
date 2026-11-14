@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataVendorEntitlementService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.DataVendorEntitlementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:11](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L11).
+
+Reads and maintains data-vendor entitlement records and their expiration state.
+
+```csharp
+public sealed class DataVendorEntitlementService : IDataVendorEntitlementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataVendorEntitlementService(IDataVendorEntitlementStore store);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:15](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L15) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetAllAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:20](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L20) |  |
+| <code>public Task&lt;IReadOnlyList&lt;DataVendorEntitlementDto&gt;&gt; GetExpiringAsync(int withinDays, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:23](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L23) |  |
+| <code>public async Task&lt;DataVendorEntitlementDto&gt; UpsertAsync(UpsertDataVendorEntitlementRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:27](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L27) |  |
+| <code>public async Task DeactivateAsync(Guid entitlementId, string actor, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs:66](../../../../src/Meridian.Application/SecurityMaster/DataVendorEntitlementService.cs#L66) |  |
+
 ## EdgarIngestOrchestrator
 
 Qualified name: <code>Meridian.Application.SecurityMaster.EdgarIngestOrchestrator</code>. Kind: `class`.
@@ -985,22 +1007,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public Task BackfillAllAsync(string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:308](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L308) |  |
 | <code>public Task BackfillTickerAsync(string ticker, Guid securityId, string initiatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:310](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L310) |  |
-
-## OtcExposureService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Otc.OtcExposureService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:17](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L17).
-
-Computes and records a netting set&#x27;s exposure: reads the netting set with its agreements and contracts, the collateral balances under its collateral agreement and the netting sets that reference that agreement, values each contract that enters the exposure through the registered IOtcContractValuationSource at one knowledge time (the request&#x27;s, else the computation instant the snapshot is stamped with), applies OtcExposureRules.Compute and appends the result as the next snapshot version for the date. The knowledge time is recorded on the snapshot&#x27;s inputs, so a call is refused once market data for a valued security is recorded after it, or when it is earlier than the computation (a replay). An as-of date after the current UTC date is refused before anything is read or valued.
-
-```csharp
-public sealed class OtcExposureService : IOtcExposureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OtcExposureService(IOtcContractStore contracts, IOtcCollateralStore collateral, IOtcContractValuationSource valuation, ILogger&lt;OtcExposureService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:24](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L24) |  |
-| <code>public async Task&lt;OtcExposureSnapshotDto?&gt; ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs:36](../../../../src/Meridian.Application/SecurityMaster/Otc/OtcExposureService.cs#L36) |  |

@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TrueBreakEscalationStatus
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.TrueBreakEscalationStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:224](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L224).
+
+Lifecycle status of a TrueBreakEscalation.
+
+```csharp
+public enum TrueBreakEscalationStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Open</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:226](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L226) |  |
+| <code>Escalated</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:227](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L227) |  |
+| <code>Resolved</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:228](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L228) |  |
+
+## WorkflowSlaPolicy
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:28](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L28).
+
+A generic service-level-agreement policy: how long a tracked activity has before it is due, and the fraction of that window after which it enters a warning state. Unlike the reconciliation-only ReconciliationSlaCalculator, this is a general middle-office timer usable for booking cut-offs, break resolution, and file-distribution deadlines.
+
+```csharp
+public sealed record WorkflowSlaPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkflowSlaPolicy(string policyId, TimeSpan duration, double warningFraction = 0.5);</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:30](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L30) |  |
+| <code>public string PolicyId { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:44](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L44) |  |
+| <code>public TimeSpan Duration { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:46](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L46) |  |
+| <code>public double WarningFraction { get; }</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:48](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L48) |  |
+
 ## WorkflowSlaState
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaState</code>. Kind: `enum`.
@@ -1108,37 +1149,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static PrivateCapitalActivityProjectionDto Build(PrivateCapitalActivityProjectionInput input);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:63](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L63) |  |
-
-## PrivateCapitalActivityProjectionInput
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalActivityProjectionInput</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:9](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L9).
-
-```csharp
-public sealed record PrivateCapitalActivityProjectionInput(string FundProfileId, Guid? LedgerBookId, IReadOnlyList<ManualJournalEntryDraftDto> Drafts, IReadOnlyList<AccountingActionAuditEventDto> Audit, IReadOnlyList<BankTransactionDto> BankTransactions, PostedPrivateCapitalActivityProjection? PostedProjection, IReadOnlyList<ReportPackWorkflowRecordDto>? ReportPackWorkflowRecords = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ReportPackWorkflowRecords { get; init; } = ReportPackWorkflowRecords??[];</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L18) |  |
-
-## PrivateCapitalCapitalAccountSubledgerBuilder
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCapitalAccountSubledgerBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L8).
-
-Builds investor capital-account subledger views from private-capital activity.
-
-```csharp
-public static class PrivateCapitalCapitalAccountSubledgerBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; Build(string fundProfileId, Guid? ledgerBookId, DateTimeOffset projectedAtUtc, IReadOnlyList&lt;PrivateCapitalCapitalAccountActivityDto&gt; capitalAccounts, IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; fundEventRecords, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; projectionValidationIssues) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L10) |  |

@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationService
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L11).
+
+Validates, normalizes, and reconciles statement imports using the selected mapping profile.
+
+```csharp
+public sealed class StatementReconciliationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StatementReconciliationService(StatementMappingProfileRegistry? mappingProfiles = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:16](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L16) |  |
+| <code>public Task&lt;string&gt; ValidateAsync(string sourceKind, string sourcePath, CancellationToken ct) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:21](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L21) |  |
+| <code>public Task&lt;string&gt; ValidateAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:24](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L24) |  |
+| <code>public Task&lt;NormalizedStatementImportResult&gt; ImportAsync(string sourceKind, string sourcePath, CancellationToken ct) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L48) |  |
+| <code>public async Task&lt;NormalizedStatementImportResult&gt; ImportAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:51](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L51) |  |
+| <code>public Task&lt;(string ImportId, int MatchCount, int UnresolvedCount)&gt; ReconcileAsync(string sourceKind, string sourcePath, CancellationToken ct) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:80](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L80) |  |
+| <code>public Task&lt;(string ImportId, int MatchCount, int UnresolvedCount)&gt; ReconcileAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:83](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L83) |  |
+| <code>public Task&lt;ExternalStatementCaseIntakeResult&gt; CreateExternalStatementCasesAsync(string sourceKind, string sourcePath, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:91](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L91) |  |
+| <code>public Task&lt;ExternalStatementCaseIntakeResult&gt; CreateExternalStatementCasesAsync(string sourceKind, string sourcePath, string? mappingProfileId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:97](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L97) |  |
+| <code>public (IReadOnlyList&lt;ReconciliationMatchLink&gt; Matches, IReadOnlyList&lt;ReconciliationCase&gt; Cases) MatchRows(IReadOnlyList&lt;NormalizedStatementRow&gt; rows, IReadOnlyList&lt;InternalPortfolioPosition&gt;? internalPositions = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs:802](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs#L802) | Matches normalized statement rows into match links and reconciliation cases. Position rows are matched by the shared StatementMatchingEngine against the supplied internal portfolio positions (none by default for file-only intake); rows the engine cannot match at exact or tolerance tier fall through to break classification and casework, the same as every other row kind. |
+
+## StatementReconciliationStage
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationStage</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:6](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L6).
+
+```csharp
+public enum StatementReconciliationStage
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotStarted</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L8) |  |
+| <code>Validate</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:9](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L9) |  |
+| <code>Import</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L10) |  |
+| <code>Reconcile</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L11) |  |
+| <code>Completed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L12) |  |
+| <code>Failed</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs:13](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationOrchestrator.cs#L13) |  |
+
 ## StatementReconciliationValidationRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationValidationRequest</code>. Kind: `record`.

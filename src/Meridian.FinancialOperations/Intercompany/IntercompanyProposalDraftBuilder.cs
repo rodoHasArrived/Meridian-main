@@ -75,7 +75,7 @@ public static class IntercompanyProposalDraftBuilder
             || source.Lines.Sum(line => line.Debit - line.Credit) != 0m)
             throw new InvalidOperationException("Every retained source leg must belong exclusively to one balanced, supported intercompany event. Split unrelated or ambiguous activity before proposing a counterpart.");
         if (agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan && hasOperatingLeg)
-            throw new InvalidOperationException("Loan interest requires its own reviewed treatment; the loan mirror supports principal only.");
+            throw new InvalidOperationException("The loan mirror supports principal only; book interest under a separately reviewed LoanInterest accounting profile.");
         var contraNode = agreement.TemplateKind == IntercompanyAccountingTemplateKindDto.Loan || !hasOperatingLeg
             ? targetMap.SettlementAccountNodeId
             : sourceReceivable ? targetMap.ExpenseAccountNodeId : targetMap.RevenueAccountNodeId;

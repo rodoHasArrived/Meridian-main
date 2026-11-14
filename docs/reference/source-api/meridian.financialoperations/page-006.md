@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OfxParseBound
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxParseBound</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:456](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L456).
+
+Which ingress bound, if any, stopped an OFX parse before the document was complete.
+
+```csharp
+public enum OfxParseBound
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:459](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L459) | The document was parsed in full. |
+| <code>TooManyEntries = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:462](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L462) | Entry discovery stopped the parse. |
+| <code>NestingTooDeep = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:465](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L465) | Aggregate nesting exceeded the depth bound. |
+| <code>TooManyNodes = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:468](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L468) | The retained node budget - aggregates plus leaves - stopped the parse. |
+
+## OfxStatementConnector
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxStatementConnector</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L12).
+
+OFX statement connector covering bank statements (cash transactions + ledger balance) and investment statements (buys/sells + positions), OFX 1.x SGML and 2.x XML alike. Entries are flattened to tag pseudo-columns and mapped through the same declarative profiles as CSV, so operators can remap or reclassify OFX activity without a release.
+
+```csharp
+public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog, StatementIngressLimits? ingressLimits = null) : IStatementConnector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConnectorId = &quot;ofx&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L18) |  |
+| <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;OFX / QFX statement&quot;, [&quot;.ofx&quot;, &quot;.qfx&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : true, DefaultProfileId : StatementBuiltInProfiles.OfxBankV1ProfileId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L20) |  |
+| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L29) |  |
+| <code>public async Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L40) |  |
+
 ## StatementBalanceRole
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementBalanceRole</code>. Kind: `enum`.
@@ -793,42 +835,3 @@ Declared public members:
 | <code>public async Task AppendHistoryAsync(ReconciliationResolutionHistoryEntry history, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:27](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L27) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;BrokerCustodianMatchDecision&gt;&gt; ListDecisionsAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:33](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L33) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationResolutionHistoryEntry&gt;&gt; ListHistoryAsync(string decisionId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs:39](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationDecisionJournal.cs#L39) |  |
-
-## FileReconciliationFxRateProvider
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileReconciliationFxRateProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs:22](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs#L22).
-
-Loads the production IReconciliationFxRateProvider from an operator-maintained rate table under the deployment data root (reconciliation/fx-rates.json). This is the seam that lets statement reconciliation normalize a non-USD statement line against its base-currency internal balance instead of always failing closed to a cross-currency break.
-
-```csharp
-public static class FileReconciliationFxRateProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RelativePath = &quot;reconciliation/fx-rates.json&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs:26](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs#L26) |  |
-| <code>public static IReconciliationFxRateProvider Load(string dataRoot, ILogger? logger = null);</code> | [src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs:28](../../../../src/Meridian.FinancialOperations/Reconciliation/FileReconciliationFxRateProvider.cs#L28) |  |
-
-## FileStatementMatchResultRepository
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.FileStatementMatchResultRepository</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:421](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L421).
-
-Persists statement matching results in local run artifacts.
-
-```csharp
-public sealed class FileStatementMatchResultRepository : IStatementMatchResultRepository
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileStatementMatchResultRepository(string dataDirectory);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:426](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L426) |  |
-| <code>public async Task SaveAsync(string runId, StatementMatchResultArtifact result, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:431](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L431) |  |
-| <code>public async Task&lt;StatementMatchResultArtifact?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs:453](../../../../src/Meridian.FinancialOperations/Reconciliation/StatementRepositories.cs#L453) |  |

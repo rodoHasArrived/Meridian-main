@@ -2,11 +2,86 @@
 
 # `ledger-contracts` data objects - page 6 of 6
 
-Objects 401-439 of 439. References crossing pages remain available in the dependency manifest.
+Objects 401-447 of 447. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PrivateCapitalCommitmentApprovalStatus["PrivateCapitalCommitmentApprovalStatus"] {
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalCommitmentDto["PrivateCapitalCommitmentDto"] {
+        +PrivateCapitalCommitmentApprovalStatus ApprovalStatus
+        +DateTimeOffset? ApprovedAtUtc
+        +string? ApprovedBy
+        +decimal CalledAmount
+        +string CapitalAccountId
+        +DateOnly CommitmentDate
+        +string CommitmentId
+        +DateTimeOffset CreatedAtUtc
+        +string CreatedBy
+        +DateOnly EffectiveFrom
+        +IReadOnlyList~string~ EvidenceLinks
+        +decimal FundedAmount
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalEvidenceCategoryDto["PrivateCapitalEvidenceCategoryDto"] {
+        +string CategoryId
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool IsReady
+        +string Label
+        +IReadOnlyList~string~ RequiredEvidence
+        +string Summary
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto["PrivateCapitalFundEventCommandCenterDto"] {
+        +int BlockedLaneCount
+        +string CommandCenterRoute
+        +string FundEventId
+        +PrivateCapitalFundEventLedgerRecordDto FundEventRecord
+        +string FundEventType
+        +string FundProfileId
+        +IReadOnlyList~PrivateCapitalFundEventCommandCenterLaneDto~ Lanes
+        +Guid? LedgerBookId
+        +IReadOnlyList~string~ LiveCapabilities
+        +string NextAction
+        +string? NextActionRoute
+        +IReadOnlyList~string~ PlannedCapabilities
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterLaneDto["PrivateCapitalFundEventCommandCenterLaneDto"] {
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool IsReady
+        +string Label
+        +string LaneId
+        +IReadOnlyList~string~ RequiredActions
+        +string? Route
+        +string Status
+        +string Summary
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterSupportPackageDto["PrivateCapitalFundEventCommandCenterSupportPackageDto"] {
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Label
+        +string PackageId
+        +IReadOnlyList~string~ RequiredActions
+        +string? Route
+        +string Status
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalFundEventDto["PrivateCapitalFundEventDto"] {
+        +string? ApprovalId
+        +string CapitalAccountId
+        +string Currency
+        +DateOnly EffectiveDate
+        +ManualJournalEntryTypeDto EntryType
+        +IReadOnlyList~string~ EvidenceLinks
+        +string FundEventId
+        +string FundEventType
+        +decimal GrossAmount
+        +string? InvestorId
+        +bool IsPosted
+        +Guid JournalEntryId
+    }
+    class Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerReadinessDto["PrivateCapitalFundEventLedgerReadinessDto"] {
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto["PrivateCapitalFundEventLedgerRecordDto"] {
         +string ActivityRoute
         +string? ApprovalId
@@ -414,6 +489,15 @@ classDiagram
         +bool PeriodIsLocked
         +string? TenantId
     }
+    Meridian_Contracts_Ledger_PrivateCapitalCommitmentDto --> Meridian_Contracts_Ledger_PrivateCapitalCommitmentApprovalStatus
+    Meridian_Contracts_Ledger_PrivateCapitalCommitmentDto --> Meridian_Contracts_Ledger_PrivateCapitalScopeDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterLaneDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterSupportPackageDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerReadinessDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalEvidenceCategoryDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerReadinessDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalLedgerImpactDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalReportOutputDto
@@ -421,6 +505,7 @@ classDiagram
     Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceDto --> Meridian_Contracts_Ledger_PrivateCapitalPaymentIntentEvidenceStatusDto
     Meridian_Contracts_Ledger_PrivateCapitalPostingAuthorityDto --> Meridian_Contracts_Ledger_PrivateCapitalScopeDto
     Meridian_Contracts_Ledger_PrivateCapitalPostingReceiptDto --> Meridian_Contracts_Ledger_PrivateCapitalScopeDto
+    Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalCommitmentDto
     Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalNoticeSummaryDto
     Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalPostingReceiptDto
     Meridian_Contracts_Ledger_PrivateCapitalWorkbenchDto --> Meridian_Contracts_Ledger_PrivateCapitalScopeDto

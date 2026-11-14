@@ -905,7 +905,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**469 declarations** from **57 source files**.
+**471 declarations** from **57 source files**.
 
 
 ### HostAdapters
@@ -1451,9 +1451,11 @@ Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs](..
 | `/api/ledger/intercompany/balance-schedule` | GET | `async (Guid ledgerBookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json`; `Results.Conflict` | — | [L69](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L69) |
 | `/api/ledger/intercompany/proposals/{proposalId}/refresh-preview` | GET | `async (Guid proposalId, HttpContext context) => …` | `Results.Json`; `Results.Conflict` | — | [L87](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L87) |
 | `/api/ledger/intercompany/proposals/{proposalId}/refresh` | POST | `async (Guid proposalId, RefreshIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L105](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L105) |
-| `/api/ledger/intercompany/breaks` | GET | `async (Guid sourceBookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json` | — | [L127](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L127) |
-| `/api/ledger/intercompany/proposals/{proposalId}/retry` | POST | `async (Guid proposalId, RetryIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L140](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L140) |
-| `/api/ledger/intercompany/proposals/{proposalId}/link` | POST | `async (Guid proposalId, LinkIntercompanyCounterpartRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L163](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L163) |
+| `/api/ledger/intercompany/accruals/preview` | POST | `async (IntercompanyAccrualRequestDto request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json` | — | [L128](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L128) |
+| `/api/ledger/intercompany/accruals/drafts` | POST | `async (CreateIntercompanyAccrualDraftRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L150](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L150) |
+| `/api/ledger/intercompany/breaks` | GET | `async (Guid sourceBookId, DateOnly? asOf, HttpContext context) => …` | `Results.Json` | — | [L173](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L173) |
+| `/api/ledger/intercompany/proposals/{proposalId}/retry` | POST | `async (Guid proposalId, RetryIntercompanyProposalRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L186](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L186) |
+| `/api/ledger/intercompany/proposals/{proposalId}/link` | POST | `async (Guid proposalId, LinkIntercompanyCounterpartRequest request, HttpContext context) => …` | `Results.Unauthorized`; `Results.Json`; `Results.Conflict` | — | [L209](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs#L209) |
 
 ### LedgerEndpoints.CloseSnapshots
 

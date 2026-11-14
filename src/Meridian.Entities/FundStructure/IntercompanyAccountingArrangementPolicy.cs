@@ -27,7 +27,7 @@ public static class IntercompanyAccountingArrangementPolicy
             throw new ArgumentException("Accounting mapping validity must fit the pinned legal revision's window.");
         var compatible = arrangement.TemplateKind switch
         {
-            IntercompanyAccountingTemplateKindDto.Loan => legal.Terms.AgreementType == IntercompanyAgreementTypeDto.Loan,
+            IntercompanyAccountingTemplateKindDto.Loan or IntercompanyAccountingTemplateKindDto.LoanInterest => legal.Terms.AgreementType == IntercompanyAgreementTypeDto.Loan,
             IntercompanyAccountingTemplateKindDto.ManagementFee => legal.Terms.AgreementType == IntercompanyAgreementTypeDto.ManagementFee,
             IntercompanyAccountingTemplateKindDto.CostRecharge or IntercompanyAccountingTemplateKindDto.ExpenseShare => legal.Terms.AgreementType == IntercompanyAgreementTypeDto.CostShare,
             IntercompanyAccountingTemplateKindDto.CashSweep => legal.Terms.AgreementType == IntercompanyAgreementTypeDto.CashSweep,
@@ -54,7 +54,15 @@ public static class IntercompanyAccountingArrangementPolicy
             if (mapping.ReceivableAccountNodeId == mapping.PayableAccountNodeId)
                 throw new ArgumentException("Receivable and payable require different chart nodes.");
         }
+        // Interest income and expense are the operating legs of every interest accrual; a profile that
+        // cannot place one side's income against the other side's expense cannot be reviewed as complete.
+        if (arrangement.TemplateKind == IntercompanyAccountingTemplateKindDto.LoanInterest
+            && !(HasInterestLegs(arrangement.PartyMappings[0], arrangement.PartyMappings[1])
+                || HasInterestLegs(arrangement.PartyMappings[1], arrangement.PartyMappings[0])))
+            throw new ArgumentException("A loan-interest profile requires an interest-income node on one party and an interest-expense node on the other.");
     }
+    private static bool HasInterestLegs(IntercompanyPartyMappingDto lender, IntercompanyPartyMappingDto borrower)
+        => !string.IsNullOrWhiteSpace(lender.RevenueAccountNodeId) && !string.IsNullOrWhiteSpace(borrower.ExpenseAccountNodeId);
     public static IntercompanyAccountingArrangementStatusDto Transition(IntercompanyAccountingArrangementStatusDto status,
         IntercompanyAccountingArrangementActionDto action) => (status, action) switch
         {

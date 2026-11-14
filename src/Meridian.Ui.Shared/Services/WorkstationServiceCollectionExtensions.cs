@@ -1243,6 +1243,20 @@ public static class WorkstationServiceCollectionExtensions
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench,
                     sp.GetRequiredService<IFundProfileTenancyRegistry>(), sp.GetRequiredService<IConsolidationFxAuthority>(),
                     sp.GetRequiredService<TimeProvider>()) : null!);
+        services.TryAddSingleton<IIntercompanyAccrualPreviewService>(sp =>
+            sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
+                ? new Meridian.Application.FundStructure.IntercompanyAccrualPreviewService(calendars) : null!);
+        // Accrual drafting needs the same durable authorities as counterpart delivery; without them it is unavailable.
+        services.TryAddSingleton<IntercompanyAccrualDraftService>(sp =>
+            sp.GetService<IIntercompanyProposalStore>() is not null &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
+            sp.GetService<ManualJournalEntryWorkbenchService>() is { } workbench &&
+            sp.GetService<IIntercompanyAccrualPreviewService>() is { } calculator
+                ? new IntercompanyAccrualDraftService(sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
+                    sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
+                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>()) : null!);
         if (services.Any(item => item.ServiceType == typeof(IIntercompanyProposalStore)
             && item.ImplementationType == typeof(PostgresIntercompanyProposalStore)))
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyProposalHostedService>());

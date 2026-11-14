@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConnectivityTestService
+
+Qualified name: <code>Meridian.Application.Services.ConnectivityTestService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ConnectivityTestService.cs:15](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L15).
+
+Service for testing connectivity to data providers and reporting results. Helps users diagnose network and configuration issues.
+
+```csharp
+public sealed class ConnectivityTestService : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ConnectivityTestService(Meridian.Contracts.Configuration.ConnectivityProbeOptions? probeOptions = null);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:23](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L23) |  |
+| <code>public async Task&lt;ConnectivitySummary&gt; TestAllAsync(AppConfig config, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:56](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L56) | Tests connectivity to all configured providers. |
+| <code>public void DisplaySummary(ConnectivitySummary summary);</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:158](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L158) | Displays the connectivity test summary. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ConnectivityTestService.cs:515](../../../../src/Meridian.Application/Services/ConnectivityTestService.cs#L515) |  |
+
 ## ConnectivitySummary
 
 Qualified name: <code>Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary</code>. Kind: `record`.
@@ -938,15 +959,3 @@ Declared public members:
 | <code>public async Task UpdateMetadataAsync(SymbolMetadata metadata, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:193](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L193) | Update metadata for a symbol. |
 | <code>public async Task UpdateMetadataBatchAsync(IEnumerable&lt;SymbolMetadata&gt; metadataList, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:203](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L203) | Update metadata for multiple symbols. |
 | <code>public static MarketCapCategory CategorizeMarketCap(decimal marketCap);</code> | [src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs:219](../../../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs#L219) | Categorize market cap value. |
-
-## MonitoredSymbolInfo
-
-Qualified name: <code>Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:708](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L708).
-
-Information about a monitored symbol.
-
-```csharp
-public sealed record MonitoredSymbolInfo(string Symbol, bool SubscribeTrades, bool SubscribeDepth, int DepthLevels, string SecurityType, string Exchange, string Currency);
-```

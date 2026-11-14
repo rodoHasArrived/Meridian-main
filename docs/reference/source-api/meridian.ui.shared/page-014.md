@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LiveBrokeragePortfolioSyncService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioSyncService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs:6](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.ContractMultipliers.cs#L6).
+
+```csharp
+public sealed partial class LiveBrokeragePortfolioSyncService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:38](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L38).
+
+Publishes a live account only after complete portfolio evidence and OMS reconciliation agree. Restart, disconnect, stale evidence, and subsequent order/fill changes require a fresh sync. No cached snapshot is restored as trading authority after a restart.
+
+```csharp
+public sealed partial class LiveBrokeragePortfolioSyncService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LiveBrokeragePortfolioSyncService(Func&lt;IBrokerageGateway?&gt; gatewayAccessor, Func&lt;IOrderManager?&gt; orderManagerAccessor, BrokerageExecutionReconciliationService reconciliation, TimeProvider? timeProvider = null, TimeSpan? maxAge = null, ISecurityMasterQueryService? securityMaster = null);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:50](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L50) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:67](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L67) |  |
+| <code>public TimeSpan MaximumAge =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:69](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L69) |  |
+| <code>public void InvalidateAccountBinding(Guid fundAccountId, string providerId, string externalAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:71](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L71) |  |
+| <code>public IReadOnlyList&lt;LiveBrokeragePortfolioStatus&gt; GetStatuses() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:89](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L89) |  |
+| <code>public BrokeragePortfolioSnapshotDto? GetRiskSnapshot(Guid fundAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:92](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L92) |  |
+| <code>public IReadOnlyList&lt;OrderState&gt; GetExposureReservingOrders(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:99](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L99) | Keeps the last reconciled unfilled reservation until holdings are refreshed. Retiring it from a new fill while retaining old broker holdings would briefly lose that fill&#x27;s exposure. |
+| <code>public LiveBrokeragePortfolioStatus GetStatus(Guid fundAccountId);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:139](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L139) |  |
+| <code>public async Task&lt;LiveBrokeragePortfolioStatus&gt; SynchronizeAsync(Guid fundAccountId, string externalAccountId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:178](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L178) |  |
+
 ## LoanAccountingSourceReader
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LoanAccountingSourceReader</code>. Kind: `class`.
@@ -121,10 +153,10 @@ Declared public members:
 | <code>public async Task&lt;ManualJournalEntryWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:117](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L117) |  |
 | <code>public async Task&lt;PrivateCapitalActivityProjectionDto&gt; GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:155](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L155) |  |
 | <code>public Task&lt;ManualJournalEntryDraftDto&gt; SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:284](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L284) |  |
-| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:472](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L472) |  |
-| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:522](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L522) |  |
-| <code>public Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:599](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L599) |  |
-| <code>public Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:672](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L672) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:477](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L477) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:527](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L527) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:604](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L604) |  |
+| <code>public Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:677](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L677) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Intercompany.cs:7](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Intercompany.cs#L7).
 
@@ -1000,13 +1032,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddPrivateCapitalRecords(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs:12](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalRecordServiceCollectionExtensions.cs#L12) | Uses the existing account database or durable, partitioned local record authority. |
-
-## ProductExposure
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProductExposure</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:25](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L25).
-
-```csharp
-public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
-```

@@ -23,6 +23,13 @@ External-review evidence verifies accepted immutable documents, separately from 
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
 
+`IntercompanyAccrualDraftService` backs `/api/ledger/intercompany/accruals/preview` and `/drafts`
+(ADR-028). It resolves approved `LoanInterest` profile revisions, their pinned legal revisions and
+posted `Loan`-profile principal, calls the pure calculator, and retains a source-side journal draft
+through trusted workbench intake. It never submits, approves or posts. The workbench retains the
+accrual evidence against client saves, blocks review when lines no longer match it, refuses a draft
+whose window a posted accrual already covers, and carries the evidence onto the posted journal.
+
 Account/group close advisories require canonical exact-scope membership and retained evidence;
 the book node ID is not substituted for a legal-entity ID. Missing membership yields unknown.
 

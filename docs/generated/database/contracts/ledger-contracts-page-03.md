@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 6
 
-Objects 161-240 of 439. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 447. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -553,6 +553,10 @@ classDiagram
         +string ExpectedPreparationFingerprint
         +PrepareFactorPaydownRequestDto Request
     }
+    class Meridian_Contracts_Ledger_CreateIntercompanyAccrualDraftRequest["CreateIntercompanyAccrualDraftRequest"] {
+        +IntercompanyAccrualRequestDto Accrual
+        +string ExpectedEvidenceDigest
+    }
     class Meridian_Contracts_Ledger_CreateLateAdjustmentRequestDto["CreateLateAdjustmentRequestDto"] {
         +OperationsActionOriginDto ActionOrigin
         +decimal Amount
@@ -702,10 +706,6 @@ classDiagram
         +string PeriodId
         +RestatementWorkflowDto? Restatement
         +IReadOnlyList~string~ StatementIds
-    }
-    class Meridian_Contracts_Ledger_GeneratePrivateCapitalNoticeRequest["GeneratePrivateCapitalNoticeRequest"] {
-        +string? CommitmentId
-        +Guid OperationId
     }
     Meridian_Contracts_Ledger_ClosePeriodLockResultDto --> Meridian_Contracts_Ledger_ClosePeriodPlanDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_ClosePlanPreparationLineageDto
