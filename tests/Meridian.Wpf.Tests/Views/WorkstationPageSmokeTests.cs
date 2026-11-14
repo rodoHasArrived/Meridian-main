@@ -1,7 +1,6 @@
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Wpf.Models;
@@ -161,7 +160,7 @@ public sealed class WorkstationPageSmokeTests
 
                     var frame = new Frame
                     {
-                        NavigationUIVisibility = NavigationUIVisibility.Hidden
+                        NavigationUIVisibility = System.Windows.Navigation.NavigationUIVisibility.Hidden
                     };
                     var window = new Window { Width = 1280, Height = 900, Content = frame };
                     try
