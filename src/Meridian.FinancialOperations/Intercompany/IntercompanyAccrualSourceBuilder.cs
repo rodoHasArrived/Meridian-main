@@ -108,7 +108,8 @@ public static class IntercompanyAccrualSourceBuilder
         }
         var openingDigest = Sha256Digest.ComputeUtf8(string.Join("\n", opening.Select(item =>
             FormattableString.Invariant($"{item.JournalEntryId:D}:{item.EffectiveDate:yyyy-MM-dd}:{item.SignedAmount}"))));
-        return new(segments, new(principalArrangementId, role, opening.Sum(item => item.SignedAmount),
+        return new(segments, new(principalArrangementId, role, receivableNodes.Order(StringComparer.Ordinal).ToArray(),
+            payableNodes.Order(StringComparer.Ordinal).ToArray(), opening.Sum(item => item.SignedAmount),
             opening.Length, openingDigest, inWindow), null);
     }
 
@@ -124,7 +125,8 @@ public static class IntercompanyAccrualSourceBuilder
             .OrderBy(item => item.Transaction, StringComparer.Ordinal))
         {
             if (IsInverse(record, records) || records.Any(candidate => candidate.SourceJournalEntryId == record.Entry.JournalEntryId
-                    && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry)))
+                    && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry))
+                || IsReversedCounterpart(record, records))
                 continue;
             if (IntercompanyAccrualEvidenceGuard.TryParseWindow(transaction, out var postedFrom, out var postedTo)
                 && postedFrom < to && from < postedTo)
@@ -145,14 +147,20 @@ public static class IntercompanyAccrualSourceBuilder
         return PostedAccruals(records, interestArrangementId).Count(item => item.Transaction == transaction);
     }
 
-    /// <summary>Journals the workbench posted from an accrual draft, identified by their retained evidence tag.</summary>
+    /// <summary>
+    /// Journals that recognize interest for a window in this book: those the workbench posted from an accrual
+    /// draft (evidence tag) and the counterparts it posted from a proposal draft (proposal origin tag), so the
+    /// other entity cannot accrue the same days again from its own book. A manual settlement carries neither.
+    /// </summary>
     private static IEnumerable<(LedgerJournalEntryRecord Record, string Transaction)> PostedAccruals(
         IReadOnlyList<LedgerJournalEntryRecord> records, Guid interestArrangementId)
     {
         var arrangement = interestArrangementId.ToString("D");
         foreach (var record in records)
         {
-            if (string.IsNullOrWhiteSpace(record.Entry.Metadata.Tags?.GetValueOrDefault(IntercompanyAccrualEvidenceGuard.DigestTag)))
+            var tags = record.Entry.Metadata.Tags;
+            if (string.IsNullOrWhiteSpace(tags?.GetValueOrDefault(IntercompanyAccrualEvidenceGuard.DigestTag))
+                && string.IsNullOrWhiteSpace(tags?.GetValueOrDefault(IntercompanyAccrualEvidenceGuard.CounterpartOriginTag)))
                 continue;
             var transaction = record.Entry.Lines.Select(line => line.Dimensions)
                 .Where(dimensions => string.Equals(dimensions?.AccountingArrangementId, arrangement, StringComparison.OrdinalIgnoreCase))
@@ -161,6 +169,19 @@ public static class IntercompanyAccrualSourceBuilder
             if (transaction is not null)
                 yield return (record, transaction);
         }
+    }
+
+    /// <summary>
+    /// A counterpart reversal is delivered as its own proposal draft, not as a source-linked correction, so a
+    /// counterpart and the proposal-originated exact inverse of it cancel as a pair.
+    /// </summary>
+    private static bool IsReversedCounterpart(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
+    {
+        static bool FromProposal(LedgerJournalEntryRecord item)
+            => !string.IsNullOrWhiteSpace(item.Entry.Metadata.Tags?.GetValueOrDefault(IntercompanyAccrualEvidenceGuard.CounterpartOriginTag));
+        return FromProposal(record) && records.Any(candidate => !ReferenceEquals(candidate, record) && FromProposal(candidate)
+            && candidate.Entry.JournalEntryId != record.Entry.JournalEntryId
+            && IntercompanyJournalCorrectionEvidence.IsExactInverse(candidate.Entry, record.Entry));
     }
 
     private static bool IsInverse(LedgerJournalEntryRecord record, IReadOnlyList<LedgerJournalEntryRecord> records)
@@ -174,6 +195,22 @@ public static class IntercompanyAccrualSourceBuilder
             request.InterestArrangementId.ToString("D"), request.SourceBookId.ToString("D"),
             request.AccrualFrom.ToString("yyyyMMdd"), request.AccrualTo.ToString("yyyyMMdd"))
             + (generation == 0 ? string.Empty : FormattableString.Invariant($":g{generation}"))).AsSpan(0, 16));
+
+    /// <summary>
+    /// Null when posted principal still reads exactly as retained; otherwise why the accrual must be recomputed.
+    /// A backdated repayment or correction after drafting changes the interest the window should carry.
+    /// </summary>
+    public static string? VerifyPrincipal(IntercompanyAccrualEvidenceDto evidence, IReadOnlyList<LedgerJournalEntryRecord> principalJournals)
+    {
+        var retained = evidence.Principal;
+        var current = BuildPrincipal(principalJournals, retained.PrincipalArrangementId, evidence.SourceBookId,
+            retained.ReceivableAccountNodeIds.ToHashSet(StringComparer.Ordinal),
+            retained.PayableAccountNodeIds.ToHashSet(StringComparer.Ordinal), evidence.Computation.Currency!,
+            evidence.FunctionalCurrency, evidence.Computation.AccrualFrom, evidence.Computation.AccrualTo);
+        return current.Evidence is not null && IntercompanyAccrualEvidenceGuard.Serialize(current.Evidence)
+            == IntercompanyAccrualEvidenceGuard.Serialize(retained) ? null
+            : "Posted principal changed after this accrual was computed. Recompute the accrual before review or posting.";
+    }
 
     /// <summary>
     /// The source-side draft: the lender debits interest receivable and credits interest income; the borrower

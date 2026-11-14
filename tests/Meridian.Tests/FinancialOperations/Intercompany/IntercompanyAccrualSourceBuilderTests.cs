@@ -121,6 +121,48 @@ public sealed class IntercompanyAccrualSourceBuilderTests
     }
 
     [Fact]
+    public void PostedCounterpart_BlocksTheOtherEntityFromAccruingTheSameDays_UntilItsOwnReversalPosts()
+    {
+        var interest = Data.AccountingArrangementId;
+        var window = IntercompanyAccrualEvidenceGuard.TransactionId(From, To);
+        // The borrower's book holds the counterpart the proposal pipeline delivered; it carries proposal
+        // provenance, not accrual evidence.
+        var counterpart = AccrualJournal(interest, "b-int-pay", window, credit: 4166.67m, accrualTag: false, proposalTag: true);
+        var counterpartReversal = Inverse(counterpart) with { SourceJournalEntryId = null };
+
+        Assert.Equal(window, IntercompanyAccrualSourceBuilder.FindPostedOverlap([counterpart], interest, From, To));
+        Assert.Equal(1, IntercompanyAccrualSourceBuilder.PostedGeneration([counterpart], interest, From, To));
+        Assert.Null(IntercompanyAccrualSourceBuilder.FindPostedOverlap([counterpart, counterpartReversal], interest, From, To));
+    }
+
+    [Fact]
+    public void BackdatedPrincipalMovementAfterDrafting_MakesTheRetainedAccrualStale()
+    {
+        var drawdown = PrincipalJournal(new(2026, 5, 15), "a-receivable", debit: 1_000_000m);
+        var retained = IntercompanyAccrualSourceBuilder.BuildPrincipal([drawdown], PrincipalArrangement, Data.BookA,
+            Receivables, Payables, "USD", "USD", From, To).Evidence!;
+        var evidence = BuildDraft().Evidence! with { Principal = retained };
+        var repayment = PrincipalJournal(From, "a-receivable", credit: 1_000_000m);
+        var laterPeriod = PrincipalJournal(To, "a-receivable", credit: 5m);
+
+        Assert.Null(IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, [drawdown]));
+        Assert.Null(IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, [drawdown, laterPeriod]));
+        Assert.Contains("Recompute", IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, [drawdown, repayment]));
+        Assert.Contains("Recompute", IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, []));
+    }
+
+    [Fact]
+    public void CorrectionOfAPostedAccrual_HasItsOwnPostingIdentity()
+    {
+        var posted = Guid.NewGuid();
+        var first = IntercompanyAccrualEvidenceGuard.CorrectionKey(posted, Guid.NewGuid());
+
+        Assert.NotEqual(first, IntercompanyAccrualEvidenceGuard.CorrectionKey(posted, Guid.NewGuid()));
+        Assert.DoesNotContain("intercompany-accrual:", first);
+        Assert.Contains(posted.ToString("D"), first);
+    }
+
+    [Fact]
     public void RecomputationAfterReversal_GetsANewRetryStableIdentity_AndLeavesTheOriginalAlone()
     {
         var interest = Data.AccountingArrangementId;
@@ -352,7 +394,7 @@ public sealed class IntercompanyAccrualSourceBuilderTests
             ["Calculated proposal input only."]);
 
     private static IntercompanyAccrualPrincipalEvidenceDto Principal(IntercompanyAccountRoleDto role = IntercompanyAccountRoleDto.Receivable)
-        => new(PrincipalArrangement, role, 1_000_000m, 1, new string('d', 64), []);
+        => new(PrincipalArrangement, role, ["a-receivable"], ["a-payable"], 1_000_000m, 1, new string('d', 64), []);
 
     private static LedgerBookRecord SourceBook() => new(Data.BookA, "source-fund", Data.EntityA, FundStructureNodeKindDto.Entity,
         "Source", "USD", Data.Now, Data.Now);
@@ -381,8 +423,8 @@ public sealed class IntercompanyAccrualSourceBuilderTests
         => Journal(date, arrangement ?? PrincipalArrangement, node, "drawdown", debit, credit, transactionCurrency);
 
     private static LedgerJournalEntryRecord AccrualJournal(Guid arrangement, string node, string transaction, decimal debit = 0m,
-        decimal credit = 0m, bool accrualTag = true)
-        => Journal(Data.Date, arrangement, node, transaction, debit, credit, null, accrualTag);
+        decimal credit = 0m, bool accrualTag = true, bool proposalTag = false)
+        => Journal(Data.Date, arrangement, node, transaction, debit, credit, null, accrualTag, proposalTag);
 
     /// <summary>The posted reversal the correction workflow produces: same scope and provenance, sides swapped, source-linked.</summary>
     private static LedgerJournalEntryRecord Inverse(LedgerJournalEntryRecord original)
@@ -395,7 +437,7 @@ public sealed class IntercompanyAccrualSourceBuilderTests
     }
 
     private static LedgerJournalEntryRecord Journal(DateOnly date, Guid arrangement, string node, string transaction,
-        decimal debit, decimal credit, string? transactionCurrency, bool accrualTag = false)
+        decimal debit, decimal credit, string? transactionCurrency, bool accrualTag = false, bool proposalTag = false)
     {
         var id = Guid.NewGuid();
         var timestamp = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
@@ -413,7 +455,8 @@ public sealed class IntercompanyAccrualSourceBuilderTests
             new(Guid.NewGuid(), id, timestamp, new("Assets:Cash", LedgerAccountType.Asset), credit > 0m ? amount : 0m,
                 debit > 0m ? amount : 0m, "Synthetic journal")
         ], new JournalEntryMetadata(EffectiveDate: date, Tags: accrualTag
-            ? new Dictionary<string, string> { [IntercompanyAccrualEvidenceGuard.DigestTag] = new string('e', 64) } : null));
+            ? new Dictionary<string, string> { [IntercompanyAccrualEvidenceGuard.DigestTag] = new string('e', 64) }
+            : proposalTag ? new Dictionary<string, string> { [IntercompanyAccrualEvidenceGuard.CounterpartOriginTag] = Guid.NewGuid().ToString("D") } : null));
         return new(entry, Guid.NewGuid(), Guid.NewGuid(), null, null, 1, timestamp);
     }
 }

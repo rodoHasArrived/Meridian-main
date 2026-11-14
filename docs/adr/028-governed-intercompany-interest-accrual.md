@@ -187,6 +187,12 @@ the terms do not declare inside the same evidence chain.
 - A posted accrual stops blocking its window only when a source-linked exact inverse reverses it.
   Settling the receivable or payable does not: the balance nets to zero while the interest stays
   posted. A recomputation after a reversal gets a new draft identity; the original is not reused.
+- A counterpart posted from a proposal counts as an accrual of its window in the destination book,
+  so the other entity cannot accrue the same days again from its side.
+- Before an accrual draft is submitted, approved or posted, posted principal is read again and must
+  match what the draft retained. A backdated repayment or correction makes the draft stale until
+  it is recomputed.
+- A reversal or rebook of a posted accrual gets its own posting identity.
 - The evidence guard binds the debit and credit direction to the retained lending direction, so a
   balanced draft with both sides swapped is refused.
 

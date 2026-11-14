@@ -114,5 +114,13 @@ public sealed partial class ManualJournalEntryWorkbenchService
         if (Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.FindPostedOverlap(posted, arrangementId,
             from, to) is { } overlap)
             throw new InvalidOperationException($"Posted accrual {overlap} already covers part of this window. Reverse it or discard this draft; the same days are never accrued twice.");
+        // The amount was computed from posted principal; a later backdated movement makes it stale.
+        if (IntercompanyAccrualEvidenceGuard.Deserialize(draft.IntercompanyAccrualEvidenceJson!) is { } evidence)
+        {
+            var principal = await _journalStore.QueryAsync(new(LedgerBookId: bookId,
+                LineDimensions: new() { AccountingArrangementId = evidence.Principal.PrincipalArrangementId.ToString("D") }), ct).ConfigureAwait(false);
+            if (Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, principal) is { } stale)
+                throw new InvalidOperationException(stale);
+        }
     }
 }

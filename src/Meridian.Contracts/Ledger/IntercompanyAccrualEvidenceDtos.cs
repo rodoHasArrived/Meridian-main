@@ -18,6 +18,7 @@ public sealed record IntercompanyAccrualPrincipalMovementDto(Guid JournalEntryId
 
 /// <summary>Principal is read from posted journals of the reviewed loan profile; it is never typed in.</summary>
 public sealed record IntercompanyAccrualPrincipalEvidenceDto(Guid PrincipalArrangementId, IntercompanyAccountRoleDto Role,
+    IReadOnlyList<string> ReceivableAccountNodeIds, IReadOnlyList<string> PayableAccountNodeIds,
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal OpeningPrincipal,
     int OpeningJournalCount, string OpeningJournalDigest, IReadOnlyList<IntercompanyAccrualPrincipalMovementDto> Movements);
 
@@ -53,6 +54,13 @@ public static class IntercompanyAccrualEvidenceGuard
     public const string DigestTag = "intercompany.accrualEvidence.sha256";
     public const string TransactionPrefix = "loan-interest:";
 
+    /// <summary>Tag the workbench puts on a journal posted from a counterpart proposal draft.</summary>
+    public const string CounterpartOriginTag = "intercompany.proposalId";
+
+    /// <summary>A correction is a different journal and needs its own retry-stable posting identity.</summary>
+    public static string CorrectionKey(Guid postedJournalEntryId, Guid correctionJournalEntryId)
+        => $"intercompany-accrual-correction:{postedJournalEntryId:D}:{correctionJournalEntryId:D}";
+
     public static string TransactionId(DateOnly accrualFrom, DateOnly accrualTo)
         => $"{TransactionPrefix}{accrualFrom:yyyyMMdd}-{accrualTo:yyyyMMdd}";
 
@@ -69,6 +77,11 @@ public static class IntercompanyAccrualEvidenceGuard
             && accrualFrom < accrualTo;
     }
 
+    public static IntercompanyAccrualEvidenceDto? Deserialize(string evidenceJson)
+        => JsonSerializer.Deserialize(evidenceJson, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto);
+    /// <summary>Canonical text of the principal facts, for comparing a rebuilt reading with the retained one.</summary>
+    public static string Serialize(IntercompanyAccrualPrincipalEvidenceDto principal)
+        => JsonSerializer.Serialize(principal, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualPrincipalEvidenceDto);
     public static string Serialize(IntercompanyAccrualEvidenceDto evidence)
         => JsonSerializer.Serialize(evidence, IntercompanyAccrualJsonContext.Default.IntercompanyAccrualEvidenceDto);
     public static string Digest(string evidenceJson) => Sha256Digest.ComputeUtf8(evidenceJson);
@@ -153,6 +166,7 @@ public static class IntercompanyAccrualEvidenceGuard
 [JsonSerializable(typeof(IntercompanyAccrualRequestDto))]
 [JsonSerializable(typeof(CreateIntercompanyAccrualDraftRequest))]
 [JsonSerializable(typeof(IntercompanyAccrualEvidenceDto))]
+[JsonSerializable(typeof(IntercompanyAccrualPrincipalEvidenceDto))]
 [JsonSerializable(typeof(IntercompanyAccrualProposalDto))]
 [JsonSerializable(typeof(IntercompanyAccrualPreviewDto))]
 public partial class IntercompanyAccrualJsonContext : JsonSerializerContext;

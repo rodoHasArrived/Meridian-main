@@ -100,7 +100,9 @@ classDiagram
         +int OpeningJournalCount
         +string OpeningJournalDigest
         +decimal OpeningPrincipal
+        +IReadOnlyList~string~ PayableAccountNodeIds
         +Guid PrincipalArrangementId
+        +IReadOnlyList~string~ ReceivableAccountNodeIds
         +IntercompanyAccountRoleDto Role
     }
     class Meridian_Contracts_Ledger_IntercompanyAccrualPrincipalMovementDto["IntercompanyAccrualPrincipalMovementDto"] {

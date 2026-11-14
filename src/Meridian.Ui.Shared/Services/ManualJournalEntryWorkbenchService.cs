@@ -1693,6 +1693,15 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 { IdempotencyKey = $"portfolio-opening-correction:{posted.JournalEntryId:D}:{correctionId:D}" }
             };
         }
+        if (IntercompanyAccrualEvidenceGuard.IsAccrualDraft(posted))
+        {
+            // The clone would otherwise reuse the posted accrual's posting identity for different content.
+            correction = correction with
+            {
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = IntercompanyAccrualEvidenceGuard.CorrectionKey(posted.JournalEntryId, correctionId) }
+            };
+        }
         if (posted.RecurringJournalEvidenceJson is { } recurringJson)
         {
             var evidence = RecurringJournalEvidenceGuard.Deserialize(recurringJson)
