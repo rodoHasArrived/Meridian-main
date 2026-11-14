@@ -394,6 +394,7 @@ Meridian-main
 │   │   ├── goals
 │   │   │   ├── example.yml
 │   │   │   ├── operational-integrity-fixes.yml
+│   │   │   ├── provider-controls.yml
 │   │   │   ├── README.md
 │   │   │   └── reporting-p0-completion.yml
 │   │   ├── repo
@@ -408,6 +409,7 @@ Meridian-main
 │   │   ├── tasks
 │   │   │   ├── example.yml
 │   │   │   ├── operational-integrity-fixes.yml
+│   │   │   ├── provider-controls.yml
 │   │   │   ├── README.md
 │   │   │   └── reporting-p0-completion.yml
 │   │   ├── index.yml
@@ -5192,6 +5194,7 @@ Meridian-main
 │   │   │   │   ├── OAuthTokenRefreshService.cs
 │   │   │   │   ├── ProviderCredentialAuditReplayHostedService.cs
 │   │   │   │   └── ProviderCredentialResolver.cs
+│   │   │   ├── BackfillRoutingLint.cs
 │   │   │   ├── ConfigurationPipeline.cs
 │   │   │   ├── ConfigurationResolutionRules.cs
 │   │   │   ├── ConfigValidatorCli.cs
@@ -5256,7 +5259,8 @@ Meridian-main
 │   │   ├── Http
 │   │   │   ├── Endpoints
 │   │   │   │   └── StatusEndpointHandlers.cs
-│   │   │   └── ConfigStore.cs
+│   │   │   ├── ConfigStore.cs
+│   │   │   └── ConfigurationChangeTracker.cs
 │   │   ├── Integrations
 │   │   │   ├── BondHoldingImportService.cs
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
@@ -5306,6 +5310,7 @@ Meridian-main
 │   │   │   ├── IngestionJobService.cs
 │   │   │   └── PersistentDedupLedger.cs
 │   │   ├── ProviderRouting
+│   │   │   ├── BackfillRoutingPreview.cs
 │   │   │   ├── BestOfBreedProviderSelector.cs
 │   │   │   ├── KernelObservabilityService.cs
 │   │   │   ├── LegacyProviderRuntimeCredentialStore.cs
@@ -5317,6 +5322,7 @@ Meridian-main
 │   │   │   ├── ProviderRoutingEngine.cs
 │   │   │   ├── ProviderRoutingLogValues.cs
 │   │   │   ├── ProviderRoutingMapper.cs
+│   │   │   ├── ProviderRoutingPreviewConfig.cs
 │   │   │   ├── ProviderRuntimeCredentialApplication.cs
 │   │   │   ├── ProviderRuntimeCredentialService.cs
 │   │   │   └── ProviderSetupService.cs
@@ -5764,6 +5770,7 @@ Meridian-main
 │   │   │   └── CommodityDtos.cs
 │   │   ├── Configuration
 │   │   │   ├── AppConfigDto.cs
+│   │   │   ├── ConfigurationChangeStatus.cs
 │   │   │   ├── ConnectivityProbeOptions.cs
 │   │   │   ├── DemoWorkspaceLayout.cs
 │   │   │   ├── DerivativesConfigDto.cs
@@ -6264,6 +6271,7 @@ Meridian-main
 │   │   │   ├── AppConfig.cs
 │   │   │   ├── AppConfigJsonOptions.cs
 │   │   │   ├── BackfillConfig.cs
+│   │   │   ├── BackfillProviderCatalog.cs
 │   │   │   ├── CanonicalizationConfig.cs
 │   │   │   ├── ConfigEnvironmentOverride.cs
 │   │   │   ├── ConfigJsonSchemaGenerator.cs
@@ -6284,6 +6292,7 @@ Meridian-main
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── ProviderConnectionsConfig.cs
 │   │   │   ├── ProviderModulesConfig.cs
+│   │   │   ├── ProviderValidationProfile.cs
 │   │   │   ├── SensitiveKeyRegistry.cs
 │   │   │   ├── SensitiveValueMasker.cs
 │   │   │   ├── SyntheticMarketDataConfig.cs
@@ -7131,6 +7140,7 @@ Meridian-main
 │   │   │   │   │   └── ISymbolResolver.cs
 │   │   │   │   ├── BackfillBarValidation.cs
 │   │   │   │   ├── BackfillProgressTracker.cs
+│   │   │   │   ├── BackfillProviderRuntimeOptions.cs
 │   │   │   │   ├── BaseHistoricalDataProvider.cs
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
@@ -7148,6 +7158,7 @@ Meridian-main
 │   │   │   │   ├── ProviderFactory.cs
 │   │   │   │   ├── ProviderFactory.Runtime.cs
 │   │   │   │   ├── ProviderHealthTracker.cs
+│   │   │   │   ├── ProviderRateLimitHistory.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderRotationStrategy.cs
 │   │   │   │   ├── ProviderServiceExtensions.Catalog.cs
@@ -9376,6 +9387,7 @@ Meridian-main
 │   │   │   │   │   │   ├── statement-connectors.api.ts
 │   │   │   │   │   │   ├── statement-run-detail.api.ts
 │   │   │   │   │   │   ├── strategy-designer-quant.api.ts
+│   │   │   │   │   │   ├── symbol-mapping.api.ts
 │   │   │   │   │   │   ├── system-overview.api.ts
 │   │   │   │   │   │   ├── trading-strategy.api.ts
 │   │   │   │   │   │   └── workstation-settings.api.ts
@@ -9482,6 +9494,7 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.trading-risk.ts
 │   │   │   │   │   ├── dev-fixtures.ts
+│   │   │   │   │   ├── failover-api.ts
 │   │   │   │   │   ├── fixed-income-capabilities.test.ts
 │   │   │   │   │   ├── fixed-income-capabilities.ts
 │   │   │   │   │   ├── fixed-income-navigation.ts
@@ -9837,6 +9850,8 @@ Meridian-main
 │   │   │   │   │   ├── data-screen-navigation-panels.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.test.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.tsx
+│   │   │   │   │   ├── data-screen.backfill-provider-editor.test.tsx
+│   │   │   │   │   ├── data-screen.backfill-provider-editor.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.test.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.view-model.test.ts
@@ -9855,6 +9870,8 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.data-quality.view-model.ts
 │   │   │   │   │   ├── data-screen.data-regions.tsx
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
+│   │   │   │   │   ├── data-screen.failover.test.tsx
+│   │   │   │   │   ├── data-screen.failover.tsx
 │   │   │   │   │   ├── data-screen.fixed-income-capabilities.test.tsx
 │   │   │   │   │   ├── data-screen.fixed-income-capabilities.tsx
 │   │   │   │   │   ├── data-screen.linked-context.ts
@@ -9866,10 +9883,18 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.provider-accounting.view-model.test.ts
 │   │   │   │   │   ├── data-screen.provider-accounting.view-model.ts
 │   │   │   │   │   ├── data-screen.provider-setup.types.ts
+│   │   │   │   │   ├── data-screen.provider-validation.test.tsx
+│   │   │   │   │   ├── data-screen.provider-validation.tsx
 │   │   │   │   │   ├── data-screen.query-panel.view-model.test.ts
 │   │   │   │   │   ├── data-screen.query-panel.view-model.ts
+│   │   │   │   │   ├── data-screen.rate-limit-history.test.tsx
+│   │   │   │   │   ├── data-screen.rate-limit-history.tsx
 │   │   │   │   │   ├── data-screen.route-state.ts
+│   │   │   │   │   ├── data-screen.routing-preview.test.tsx
+│   │   │   │   │   ├── data-screen.routing-preview.tsx
 │   │   │   │   │   ├── data-screen.security-master.ts
+│   │   │   │   │   ├── data-screen.symbol-mapping-editor.test.tsx
+│   │   │   │   │   ├── data-screen.symbol-mapping-editor.tsx
 │   │   │   │   │   ├── data-screen.test.tsx
 │   │   │   │   │   ├── data-screen.tone-styles.ts
 │   │   │   │   │   ├── data-screen.tsx
@@ -10050,6 +10075,8 @@ Meridian-main
 │   │   │   │   │   ├── security-master-authoritative-detail.ts
 │   │   │   │   │   ├── security-master-policy-evidence.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.ts
+│   │   │   │   │   ├── settings-change-impact.test.tsx
+│   │   │   │   │   ├── settings-change-impact.tsx
 │   │   │   │   │   ├── settings-mutation-confirm-dialog.tsx
 │   │   │   │   │   ├── settings-owned-provider-credentials.test.tsx
 │   │   │   │   │   ├── settings-owned-provider-credentials.tsx
@@ -10533,6 +10560,7 @@ Meridian-main
 │   │   │   ├── ExecutionEndpoints.Sessions.cs
 │   │   │   ├── ExecutionEndpoints.Workflows.cs
 │   │   │   ├── ExportEndpoints.cs
+│   │   │   ├── FailoverControlOperations.cs
 │   │   │   ├── FailoverEndpoints.cs
 │   │   │   ├── FirstRunEndpoints.cs
 │   │   │   ├── FixedIncomeHttpJson.cs
@@ -10618,6 +10646,7 @@ Meridian-main
 │   │   │   ├── ProviderExtendedEndpoints.cs
 │   │   │   ├── ProviderModuleEndpoints.cs
 │   │   │   ├── ProviderRoutingEndpoints.cs
+│   │   │   ├── ProviderValidationEndpoints.cs
 │   │   │   ├── QuantLabEndpoints.cs
 │   │   │   ├── RegistryFundProfileTenantGuard.cs
 │   │   │   ├── ReplayEndpoints.cs
@@ -10646,6 +10675,7 @@ Meridian-main
 │   │   │   ├── SwapReferenceEndpoints.cs
 │   │   │   ├── SymbolEndpoints.cs
 │   │   │   ├── SymbolMappingEndpoints.cs
+│   │   │   ├── SymbolMappingEndpoints.Rollout.cs
 │   │   │   ├── UiEndpoints.cs
 │   │   │   ├── WorkstationEndpoints.AccountingCashFlow.cs
 │   │   │   ├── WorkstationEndpoints.AccountingWorkspace.cs
@@ -11056,6 +11086,7 @@ Meridian-main
 │   │   │   ├── TradingOperatorReadinessService.BrokerageRecovery.cs
 │   │   │   ├── TradingOperatorReadinessService.cs
 │   │   │   ├── TradingOperatorReadinessService.Strategy.cs
+│   │   │   ├── UiConfigurationSaveGuard.cs
 │   │   │   ├── WorkstationServiceCollectionExtensions.cs
 │   │   │   ├── WorkstationWorkflowReadScope.cs
 │   │   │   └── WorkstationWorkflowSummaryService.cs
@@ -11193,6 +11224,8 @@ Meridian-main
 │   │   │   ├── AutomationLeafBorder.cs
 │   │   │   ├── CashDividendAttestationPanel.xaml
 │   │   │   ├── CashDividendAttestationPanel.xaml.cs
+│   │   │   ├── ConfigurationChangeBanner.xaml
+│   │   │   ├── ConfigurationChangeBanner.xaml.cs
 │   │   │   ├── DataConfidenceExplanationButton.cs
 │   │   │   ├── DataConfidenceIndicator.xaml
 │   │   │   ├── DataConfidenceIndicator.xaml.cs
@@ -11554,6 +11587,7 @@ Meridian-main
 │   │   │   ├── ChartingPageViewModel.cs
 │   │   │   ├── ClusterStatusViewModel.cs
 │   │   │   ├── CollectionSessionViewModel.cs
+│   │   │   ├── ConfigurationChangeStatusViewModel.cs
 │   │   │   ├── CredentialManagementViewModel.cs
 │   │   │   ├── DashboardViewModel.cs
 │   │   │   ├── DataBrowserViewModel.cs
@@ -12564,7 +12598,9 @@ Meridian-main
 │   │   │   │   ├── ProviderRuntimeCredentialServiceTests.cs
 │   │   │   │   ├── ProviderSetupOwnershipTests.cs
 │   │   │   │   ├── ProviderSetupRuntimeBindingTests.cs
-│   │   │   │   └── ProviderTrustScoringServiceTests.cs
+│   │   │   │   ├── ProviderTrustScoringServiceTests.cs
+│   │   │   │   ├── RoutingPreviewTests.cs
+│   │   │   │   └── SyntheticRoutingProvenanceTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   ├── BusinessDayAccountingCalendarTests.cs
 │   │   │   │   ├── CanonicalReconciliationMatchingEngineTests.cs
@@ -12614,6 +12650,7 @@ Meridian-main
 │   │   │   │   └── SubscriptionStoreQuarantineTests.cs
 │   │   │   ├── Ui
 │   │   │   │   ├── ConfigStoreTests.cs
+│   │   │   │   ├── ConfigurationChangeTrackingTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
 │   │   │   │   ├── ProviderModuleCredentialSelectionTests.cs
 │   │   │   │   └── ProviderModuleSetupServiceTests.cs
@@ -13251,10 +13288,12 @@ Meridian-main
 │   │   │   │   ├── ProviderFactoryCredentialIsolationTests.cs
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
+│   │   │   │   ├── ProviderRateLimitHistoryTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
 │   │   │   │   ├── ProviderRegistryCapabilityFactoryTests.cs
 │   │   │   │   ├── ProviderResilienceTests.cs
 │   │   │   │   ├── ProviderTemplateFactoryCredentialTests.cs
+│   │   │   │   ├── ProviderValidationProfileTests.cs
 │   │   │   │   ├── RequestBudgetTimeProvider.cs
 │   │   │   │   ├── RobinhoodBrokerageGatewayTests.cs
 │   │   │   │   ├── RobinhoodHistoricalDataProviderTests.cs
@@ -14301,6 +14340,7 @@ Meridian-main
 │   │   │   ├── AutomatedJournalScheduleTests.cs
 │   │   │   ├── BackfillAuditEndpointsTests.cs
 │   │   │   ├── BackfillExecutionContractProjectionTests.cs
+│   │   │   ├── BackfillProviderEditorTests.cs
 │   │   │   ├── BankFeedTransportServiceTests.cs
 │   │   │   ├── BankStatementCsvImportAuthorityTests.cs
 │   │   │   ├── BondAnalyticsEndpointsTests.cs
@@ -14466,6 +14506,7 @@ Meridian-main
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.Logging.cs
 │   │   │   ├── ProviderReadinessEndpointTests.cs
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
+│   │   │   ├── ProviderValidationProfileMutationTests.cs
 │   │   │   ├── QuantLabParameterExtractionEndpointTests.cs
 │   │   │   ├── QuantLabParameterSetTests.cs
 │   │   │   ├── ReconciliationApiServiceTests.cs
@@ -14556,12 +14597,14 @@ Meridian-main
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── StrategyLifecycleEndpointsTests.cs
 │   │   │   ├── SupportedPostureStartupIntegrationTests.cs
+│   │   │   ├── SymbolMappingRolloutEndpointTests.cs
 │   │   │   ├── TenantScopeRefusalProblemDetailsTests.cs
 │   │   │   ├── TradeFillLedgerPostingHostCompositionTests.cs
 │   │   │   ├── TradingBrokerageRecoveryEndpointTests.cs
 │   │   │   ├── TradingOperatorLiveOrderReadinessGateTests.cs
 │   │   │   ├── TradingOperatorReadinessAggregationTests.cs
 │   │   │   ├── TradingOperatorReadinessServiceTests.cs
+│   │   │   ├── UiConfigurationSaveGuardTests.cs
 │   │   │   ├── UiServerLoggingTests.cs
 │   │   │   ├── Wave2OperatorInboxAcceptanceTests.cs
 │   │   │   ├── Wave2PaperTradingCockpitAcceptanceTests.cs
@@ -14712,12 +14755,14 @@ Meridian-main
 │   │   │   ├── FixtureModeDetectorTests.cs
 │   │   │   ├── FormatHelpersTests.cs
 │   │   │   ├── FormValidationServiceTests.cs
+│   │   │   ├── GuardedSharedConfigServiceTests.cs
 │   │   │   ├── IntegrityEventsServiceTests.cs
 │   │   │   ├── IntercompanyAgreementWorkspaceTests.cs
 │   │   │   ├── LeanIntegrationServiceTests.cs
 │   │   │   ├── LiveDataServiceTests.cs
 │   │   │   ├── LoggingServiceBaseTests.cs
 │   │   │   ├── ManifestServiceTests.cs
+│   │   │   ├── NestedConfigurationRoundTripTests.cs
 │   │   │   ├── NotificationServiceBaseTests.cs
 │   │   │   ├── NotificationServiceTests.cs
 │   │   │   ├── OAuthRefreshServiceTests.cs
@@ -14895,6 +14940,7 @@ Meridian-main
 │   │   │   ├── ChartingPageViewModelTests.cs
 │   │   │   ├── ClusterStatusViewModelTests.cs
 │   │   │   ├── CollectionSessionViewModelTests.cs
+│   │   │   ├── ConfigurationChangeStatusViewModelTests.cs
 │   │   │   ├── ContractualCashFlowScenarioViewModelTests.cs
 │   │   │   ├── CredentialManagementViewModelTests.cs
 │   │   │   ├── DataBrowserViewModelTests.cs

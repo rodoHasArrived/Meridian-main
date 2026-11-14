@@ -6,6 +6,185 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ManagementFeeAccrualCalculation
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ManagementFeeAccrualCalculation</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:205](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L205).
+
+Day-weighted management fee on the net assets the ledger held at the close of the day before the accrual window. Terms: annualRate, yearBasisDays.
+
+```csharp
+public sealed class ManagementFeeAccrualCalculation(IRecurringJournalCalculationInputs inputs) : IRecurringJournalCalculation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CalculationKind = &quot;management-fee-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:207](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L207) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:209](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L209) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:211](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L211) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:213](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L213) |  |
+
+## ManualJournalEntryWorkbenchService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ManualJournalEntryWorkbenchService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs:14](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AccountingCloseReceipts.cs#L14).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs:6](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetAccounting.cs#L6).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetApproval.cs:11](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetApproval.cs#L11).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetApprovalEvidence.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetApprovalEvidence.cs#L8).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetCapabilities.cs:5](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetCapabilities.cs#L5).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetPosting.cs:10](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.AssetPosting.cs#L10).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs:5](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs#L5).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.ControlledClose.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.ControlledClose.cs#L8).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ControlledCloseAuthorizationDto&gt; AuthorizeControlledCloseAsync(ControlledCloseAuthorizationRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.ControlledClose.cs:11](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.ControlledClose.cs#L11) | Reviewer attests the exact approved economics settle or close retained obligations. |
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:21](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L21).
+
+Coordinates manual journal draft editing, validation, evidence, approval submission, and lifecycle actions.
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService, IManualJournalEntryLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ManualJournalEntryWorkbenchService(IManualJournalEntryDraftStore draftStore, IAccountingConfigurationService configurationService, IAccountingActionAuditStore auditStore, ISecurityMasterQueryService? securityMasterQueryService = null, ILedgerJournalStore? journalStore = null, ReportPackWorkflowService? reportPackWorkflowService = null, IBankTransactionSource? bankTransactionSource = null, IGovernedLedgerPostingTarget? postingTarget = null, IManualJournalMutationRecoveryStore? mutationRecovery = null, IRecurringJournalStore? recurringStore = null, IConsolidationDraftGuard? consolidationGuard = null, Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore? evidenceArtifacts = null, Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService? assetCandidatePosting = null, Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService? assetAccountingSource = null, Func&lt;Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService?&gt;? assetCandidatePostingFactory = null, Func&lt;Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService?&gt;? assetAccountingSourceFactory = null, IPrivateCapitalStore? privateCapitalStore = null, IControlledCloseAuthorizationStore? controlledCloseAuthorizations = null, Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority? lifecycleCloseAuthority = null, Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority? intercompanyPostingAuthority = null, IConsolidationFxAuthority? intercompanyFxAuthority = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:40](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L40) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ListFundProfileIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:84](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L84) |  |
+| <code>public async Task&lt;ManualJournalEntryWorkbenchDto&gt; GetWorkbenchAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:117](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L117) |  |
+| <code>public async Task&lt;PrivateCapitalActivityProjectionDto&gt; GetPrivateCapitalActivityAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:155](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L155) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SaveDraftAsync(SaveManualJournalEntryDraftRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:284](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L284) |  |
+| <code>public async Task&lt;ManualJournalEntryDraftDto&gt; ValidateDraftAsync(ValidateManualJournalEntryDraftRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:472](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L472) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:522](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L522) |  |
+| <code>public Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:599](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L599) |  |
+| <code>public Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs:672](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs#L672) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Intercompany.cs:7](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Intercompany.cs#L7).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.IntercompanyAgreements.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.IntercompanyAgreements.cs#L8).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.IntercompanyLinkage.cs:5](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.IntercompanyLinkage.cs#L5).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task WithIntercompanyDraftLinkAuthorityAsync(string fund, string tenant, string? company, Guid bookId, Guid journalId, Guid proposalId, string sourceDigest, bool requireExisting, Func&lt;RejectedIntercompanyDraftEvidenceDto?, Task&gt; retainLink, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.IntercompanyLinkage.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.IntercompanyLinkage.cs#L8) | Retains the existing journal-command lock through the reviewed replacement receipt. |
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs:18](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs#L18).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.MutationRecovery.cs:10](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.MutationRecovery.cs#L10).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.OpeningBalances.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.OpeningBalances.cs#L8).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.PeriodAdjustments.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.PeriodAdjustments.cs#L8).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.PrivateCapital.cs:6](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.PrivateCapital.cs#L6).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Recurring.cs:8](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Recurring.cs#L8).
+
+```csharp
+public sealed partial class ManualJournalEntryWorkbenchService
+```
+
+## ManualJournalMutationIntent
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ManualJournalMutationIntent</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L13).
+
+A complete command receipt, retained before any draft or journal write.
+
+```csharp
+public sealed record ManualJournalMutationIntent(string CommandKey, string RequestHash, string ScopeKey, Guid JournalEntryId, IReadOnlyList<ManualJournalEntryDraftDto?> Before, IReadOnlyList<ManualJournalEntryDraftDto> After, IReadOnlyList<AccountingActionAuditEventDto> AuditEvents, LedgerJournalEntryWrite? Posting, JsonElement Result, bool Completed = false, DateTimeOffset? CompletedAtUtc = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AssetPostPlanForCommandKey { get; init; }</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:27](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L27) |  |
+
 ## ManualJournalMutationRecoveryOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ManualJournalMutationRecoveryOptions</code>. Kind: `record`.
@@ -821,84 +1000,4 @@ Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:25](../
 
 ```csharp
 public sealed record ProviderCalendarReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderCalendarEvent Item);
-```
-
-## ProviderConnectionLifecycleService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderConnectionLifecycleService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L18).
-
-Manages tenant-visible provider connections, credential mutations, and live verification requests.
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:33](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L33) |  |
-| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:65](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L65) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
-| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:82](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L82) | Reads one authorized connection without borrowing provider-wide health or credentials. |
-| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L101) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:133](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L133) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:187](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L187) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:203](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L203) |  |
-| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:224](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L224) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:332](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L332) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L6).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs#L6).
-
-```csharp
-public sealed partial class ProviderConnectionLifecycleService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;ProviderVerificationHistoryDto&gt; GetVerificationHistoryForTenantAsync(string connectionId, string tenantId, int limit = 100, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.VerificationHistory.cs#L8) |  |
-
-## ProviderCredentialStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderCredentialStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L11).
-
-Compatibility adapter from provider-module setup to the Data Integration-owned encrypted vault. On first access it migrates the historical plaintext sidecar atomically into the vault and then removes the plaintext source. Unknown provider ids fail on writes and never create a sidecar.
-
-```csharp
-public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderCredentialStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderCredentialStore(string dataRoot) : this(new FileProviderCredentialStore(dataRoot), dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:19](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L19) |  |
-| <code>public ProviderCredentialStore(IProviderCredentialStore vault, string dataRoot);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:24](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L24) |  |
-| <code>public async Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:31](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L31) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L53) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:59](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L59) |  |
-| <code>public async Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:74](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L74) |  |
-| <code>public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs:85](../../../../src/Meridian.Ui.Shared/Services/ProviderCredentialStore.cs#L85) |  |
-
-## ProviderDataProjectionSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderDataProjectionSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:30](../../../../src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs#L30).
-
-Shared, typed snapshot consumed unchanged by browser endpoints and WPF view models.
-
-```csharp
-public sealed record ProviderDataProjectionSnapshot(IReadOnlyList<ProviderNewsReadModel> News, IReadOnlyList<ProviderScannerReadModel> ScannerResults, IReadOnlyList<ProviderPnlReadModel> PnlStreams, IReadOnlyList<ProviderCalendarReadModel> Calendars, IReadOnlyList<ProviderMarketRuleReadModel> MarketRules, IReadOnlyList<ProviderInstrumentDiscoveryReadModel> Instruments);
 ```

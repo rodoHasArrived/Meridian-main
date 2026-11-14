@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyActionResult
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyActionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:522](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L522).
+
+Result of a lifecycle control action (pause/stop).
+
+```csharp
+public sealed record StrategyActionResult(string StrategyId, string Action, bool Success, string? Reason);
+```
+
+## StrategyLifecycleEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyLifecycleEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L22).
+
+REST endpoints for querying and controlling the lifecycle of registered live strategies. Exposes pause, explicit resume, stop, and status operations. Resume uses the engine&#x27;s retained execution context and does not accept replacement execution settings.
+
+```csharp
+public static class StrategyLifecycleEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapStrategyLifecycleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L24) |  |
+
 ## StrategyRunComparisonService
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyRunComparisonService</code>. Kind: `class`.
@@ -104,7 +134,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:17](../../..
 Registry-backed symbol mapping endpoints shared by browser and desktop hosts. Legacy configuration remains a migration/rollback input but is not a second write model.
 
 ```csharp
-public static class SymbolMappingEndpoints
+public static partial class SymbolMappingEndpoints
 ```
 
 Declared public members:
@@ -112,6 +142,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L21) |  |
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L15).
+
+```csharp
+public static partial class SymbolMappingEndpoints
+```
+
+## SymbolMappingRolloutRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolMappingRolloutRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs:115](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L115).
+
+```csharp
+public sealed record SymbolMappingRolloutRequest(SymbolResolutionMode Mode, SymbolResolutionMode ExpectedMode, long ReviewedMismatchCount, bool EvidenceReviewed = false, bool ConfirmArchivesNotRewritten = false, bool ConfirmSeriesRemainSeparate = false, string? Reason = null);
+```
 
 ## TradingActionResult
 
@@ -1213,59 +1259,3 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;EvidenceVaultDocumentEntryDto&gt;&gt; ListDocumentsAsync(EvidenceVaultDocumentQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:92](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L92) |  |
 | <code>[Obsolete(&quot;Use ReviewDocumentAsync(..., tenantId, scope, request, ct); Evidence Vault reviews require authenticated scope.&quot;)] Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:98](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L98) | Legacy unscoped review mutation retained as a fail-closed compatibility shim. |
 | <code>Task&lt;EvidenceVaultDocumentReviewResponseDto?&gt; ReviewDocumentAsync(string vaultId, string documentId, string tenantId, string scope, EvidenceVaultDocumentReviewRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs:105](../../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs#L105) |  |
-
-## IEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.IEvidenceContributor</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L19).
-
-Contributes evidence nodes and relationships for supported workflow subjects.
-
-```csharp
-public interface IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>string ContributorId { get; }</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L21) |  |
-| <code>bool Supports(EvidenceSubjectDto subject);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L23) |  |
-| <code>Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs:25](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContribution.cs#L25) |  |
-
-## IEvidenceDocumentExtractor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.IEvidenceDocumentExtractor</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L8).
-
-Extracts reviewable fields and metadata from an Evidence Vault document.
-
-```csharp
-public interface IEvidenceDocumentExtractor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EvidenceDocumentExtractionResultDto&gt; ExtractAsync(EvidenceDocumentExtractionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceDocumentExtraction.cs#L10) |  |
-
-## IStatementImportEvidenceRetainer
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.IStatementImportEvidenceRetainer</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:22](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L22).
-
-Retains statement-import content as evidence for later verification and review.
-
-```csharp
-public interface IStatementImportEvidenceRetainer
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L24) |  |

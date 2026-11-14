@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileAccountingMigrationRunArtifactStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingMigrationRunArtifactStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:91](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L91).
+
+Persists accounting migration-run artifacts and their evidence references to a snapshot file.
+
+```csharp
+public sealed class FileAccountingMigrationRunArtifactStore : JsonFileSnapshotStore<FileAccountingMigrationRunArtifactStore.AccountingMigrationRunArtifactSnapshot>, IAccountingMigrationRunArtifactStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountingMigrationRunArtifactStore(string snapshotPath, ILogger&lt;FileAccountingMigrationRunArtifactStore&gt; logger) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting migration run artifact snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:102](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L102) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingMigrationRunArtifactDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:122](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L122) |  |
+| <code>public async Task&lt;AccountingMigrationRunArtifactDto&gt; UpsertAsync(AccountingMigrationRunArtifactUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:141](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L141) |  |
+
+## AccountingMigrationRunArtifactSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingMigrationRunArtifactStore.AccountingMigrationRunArtifactSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs:468](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunArtifactStore.cs#L468).
+
+```csharp
+public sealed record AccountingMigrationRunArtifactSnapshot(IReadOnlyList<AccountingMigrationRunArtifactDto> Artifacts);
+```
+
+## FileAccountingMigrationRunWorkerPlanStore
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingMigrationRunWorkerPlanStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:139](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L139).
+
+Persists accounting migration worker plans to a snapshot file.
+
+```csharp
+public sealed class FileAccountingMigrationRunWorkerPlanStore : JsonFileSnapshotStore<AccountingMigrationRunWorkerPlanSnapshot>, IAccountingMigrationRunWorkerPlanWriter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FileAccountingMigrationRunWorkerPlanStore(string snapshotPath, ILogger&lt;FileAccountingMigrationRunWorkerPlanStore&gt; logger) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting migration worker plan snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:150](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L150) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AccountingMigrationRunWorkerPlanDto&gt;&gt; ListAsync(string? fundProfileId = null, Guid? ledgerBookId = null, AccountingMigrationRunKindDto? kind = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:170](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L170) |  |
+| <code>public async Task&lt;AccountingMigrationRunWorkerPlanDto?&gt; GetAsync(string planId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:195](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L195) |  |
+| <code>public async Task&lt;AccountingMigrationRunWorkerPlanDto&gt; UpsertAsync(AccountingMigrationRunWorkerPlanDto plan, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs:211](../../../../src/Meridian.Ui.Shared/Services/AccountingMigrationRunWorkerPlanStore.cs#L211) |  |
+
 ## FileAccountingProductionCertificationProfileStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingProductionCertificationProfileStore</code>. Kind: `class`.
@@ -944,58 +995,3 @@ Declared public members:
 | <code>public HmacReportingProviderReceiptAuthenticator(ReadOnlySpan&lt;byte&gt; secret, TimeProvider? timeProvider = null, TimeSpan? maximumClockSkew = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:51](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L51) |  |
 | <code>public ValueTask&lt;bool&gt; AuthenticateAsync(ReportingProviderReceiptAuthenticationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:70](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L70) |  |
 | <code>public static string CreateSignature(ReadOnlySpan&lt;byte&gt; secret, ReportingProviderReceiptAuthenticationRequest request, long unixSeconds);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs:110](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionProviderReceipts.cs#L110) |  |
-
-## HostStartupEscalation
-
-Qualified name: <code>Meridian.Ui.Shared.Services.HostStartupEscalation</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/HostStartupEscalation.cs:21](../../../../src/Meridian.Ui.Shared/Services/HostStartupEscalation.cs#L21).
-
-Decides whether a fault raised while starting hosted services must take the application down or may be degraded past.
-
-```csharp
-public static class HostStartupEscalation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool IsRefusal(Exception? exception) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/HostStartupEscalation.cs:32](../../../../src/Meridian.Ui.Shared/Services/HostStartupEscalation.cs#L32) | Whether exception is a guard&#x27;s refusal rather than a component&#x27;s failure. |
-| <code>public static StartupRefusedException? TryFindRefusal(Exception? exception) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/HostStartupEscalation.cs:44](../../../../src/Meridian.Ui.Shared/Services/HostStartupEscalation.cs#L44) | The refusal within exception, or null when it is not one. |
-
-## HttpContextEntityTimelineAccessAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.HttpContextEntityTimelineAccessAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/EntityTimelineAccessAuthority.cs:16](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineAccessAuthority.cs#L16).
-
-Uses the accounting reader&#x27;s actual legal-entity grants without granting legal-registry access.
-
-```csharp
-public sealed class HttpContextEntityTimelineAccessAuthority(IHttpContextAccessor accessor) : IEntityTimelineAccessAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;bool&gt; CanAccessEntitiesAsync(IntercompanyAgreementCallContext caller, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/EntityTimelineAccessAuthority.cs:18](../../../../src/Meridian.Ui.Shared/Services/EntityTimelineAccessAuthority.cs#L18) |  |
-
-## HttpContextIntercompanyAgreementAccessAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.HttpContextIntercompanyAgreementAccessAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:13](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L13).
-
-Checks both legal entities against current tenant ownership and retained operator grants.
-
-```csharp
-public sealed class HttpContextIntercompanyAgreementAccessAuthority(IHttpContextAccessor accessor, IFundStructureStore structure) : IIntercompanyAgreementAccessAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;bool&gt; CanAccessEntitiesAsync(IntercompanyAgreementCallContext context, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs:18](../../../../src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs#L18) |  |

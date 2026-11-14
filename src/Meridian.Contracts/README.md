@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+Backfill provider metadata includes vendor-tier presets and the selected tier ID without credentials.
+Shared settings responses expose saved-change impacts independently of active runtime confirmation.
+Nested backfill, provider, source and symbol-mapping DTO extension data retains host-owned validation
+profiles, audit histories, failover rules/timing and other unmodeled fields during settings roundtrips.
+
 
 `Ledger/CanonicalAmortizationPreparationDtos.cs` defines browser preparation and governed draft
 handoff over the existing canonical lot engine. Requests supply retained lot/evidence identities,

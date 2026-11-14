@@ -6,6 +6,41 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationCommandMapper
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationCommandMapper</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:190](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L190).
+
+Projects workspace command metadata and availability into workstation command presentation models.
+
+```csharp
+public static class WorkstationCommandMapper
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static WorkstationCommandModel FromWorkspaceCommand(WorkspaceCommandItem command);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:192](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L192) |  |
+| <code>public static WorkstationCommandGroupModel FromWorkspaceCommandGroup(WorkspaceCommandGroup commandGroup);</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:226](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L226) |  |
+
+## WorkstationCommandModel
+
+Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationCommandModel</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:158](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L158).
+
+```csharp
+public sealed record WorkstationCommandModel(string Id, string Label, string Description, string Glyph = "", string Tone = WorkspaceTone.Secondary, bool IsEnabled = true, string DisabledReason = "", bool IsBusy = false, string ConfirmationText = "", string ShortcutHint = "", WorkstationActionPostureModel? Posture = null, string EvidenceSourceText = "", string TargetText = "", string GroupLabel = "")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string AutomationId =&gt; …;</code> | [src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs:174](../../../../src/Meridian.Wpf/Workstation/Models/WorkstationPresentationModels.cs#L174) |  |
+
 ## WorkstationEvidenceLinkModel
 
 Qualified name: <code>Meridian.Wpf.Workstation.Models.WorkstationEvidenceLinkModel</code>. Kind: `record`.

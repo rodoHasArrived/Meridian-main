@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RunLedgerExportRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:13](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L13).
+
+```csharp
+public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null);
+```
+
+## W4AcceptanceFilter
+
+Qualified name: <code>Meridian.Ui.Shared.Services.Acceptance.W4AcceptanceFilter</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:8](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L8).
+
+Separates W4 acceptance evidence from supporting manifest/export evidence for pilot readiness artifacts.
+
+```csharp
+public sealed class W4AcceptanceFilter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly IReadOnlyList&lt;PilotAcceptanceEvidenceCategoryDto&gt; RequiredAcceptanceCategories = [PilotAcceptanceEvidenceCategoryDto.ReconciliationCasework, PilotAcceptanceEvidenceCategoryDto.AccountingCloseChecklist, PilotAcceptanceEvidenceCategoryDto.ReportingReviewApproval, PilotAcceptanceEvidenceCategoryDto.GovernedReportPackPublication, PilotAcceptanceEvidenceCategoryDto.RestatementReadiness];</code> | [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:10](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L10) |  |
+| <code>public static readonly IReadOnlyList&lt;PilotAcceptanceEvidenceCategoryDto&gt; RequiredSupportCategories = [PilotAcceptanceEvidenceCategoryDto.EvidenceVaultManifestExportSupport];</code> | [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:19](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L19) |  |
+| <code>public PilotW4AcceptanceEvaluationDto Evaluate(PilotReadinessArtifactDto artifact);</code> | [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:24](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L24) |  |
+| <code>public PilotW4AcceptanceEvaluationDto Evaluate(IReadOnlyList&lt;PilotAcceptanceEvidenceDto&gt;? evidence);</code> | [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:30](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L30) |  |
+| <code>public PilotReadinessArtifactDto ApplyToArtifact(PilotReadinessArtifactDto artifact);</code> | [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:59](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L59) |  |
+| <code>public PilotReadinessStageGateDto ApplyToGovernedReportPackGate(PilotReadinessStageGateDto gate, PilotW4AcceptanceEvaluationDto evaluation);</code> | [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:71](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L71) |  |
+| <code>public IReadOnlyList&lt;PilotReadinessStageGateDto&gt; ApplyToGovernedReportPackGate(IReadOnlyList&lt;PilotReadinessStageGateDto&gt; gates, PilotW4AcceptanceEvaluationDto evaluation) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs:98](../../../../src/Meridian.Ui.Shared/Services/Acceptance/W4AcceptanceFilter.cs#L98) |  |
+
+## AccessContext
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AccessContext</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:18](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L18).
+
+```csharp
+public sealed record AccessContext(string Actor, UserRole Role, string Team, string Entity, string SourceIp, string DeviceId, string CorrelationId, bool MfaSatisfied, IReadOnlyCollection<string>? SecondaryApprovers = null);
+```
+
 ## AccountingAuditChainAnchorException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AccountingAuditChainAnchorException</code>. Kind: `class`.
@@ -887,47 +931,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static LedgerExportRequest Build(BacktestResult result, DateTimeOffset periodStart, DateTimeOffset asOf, string outputDirectory, ExportFormat format, string? financialAccountId = null);</code> | [src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs:15](../../../../src/Meridian.Ui.Shared/Services/BacktestLedgerExportMapper.cs#L15) |  |
-
-## BankFeedScheduleDefinition
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedScheduleDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:20](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L20).
-
-```csharp
-public sealed record BankFeedScheduleDefinition(string ScheduleId, BankFeedTransportKind TransportKind, TimeSpan Interval, DateTimeOffset? LastRunAtUtc, Guid? AccountId = null, string? BankName = null, EtlSourceDefinition? Source = null, string? PlaidItemId = null, DateOnly? StatementDate = null, string? Notes = null, bool IsBackfill = false, string RequestedBy = "bank-feed-scheduler");
-```
-
-## BankFeedTransportKind
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedTransportKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:13](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L13).
-
-```csharp
-public enum BankFeedTransportKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LocalFile = 0</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:15](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L15) |  |
-| <code>Sftp = 1</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L16) |  |
-| <code>PlaidApi = 2</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:17](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L17) |  |
-
-## BankFeedTransportRunResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedTransportRunResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:34](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L34).
-
-```csharp
-public sealed record BankFeedTransportRunResult(string ScheduleId, BankFeedTransportKind TransportKind, bool Ran, bool Success, DateTimeOffset EvaluatedAtUtc, int FilesProcessed, int BankStatementLinesImported, int ApiItemsSynced, IReadOnlyList<Guid> ImportedBatchIds, IReadOnlyList<string> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static BankFeedTransportRunResult Skipped(BankFeedScheduleDefinition schedule, DateTimeOffset evaluatedAtUtc, string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:46](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L46) |  |

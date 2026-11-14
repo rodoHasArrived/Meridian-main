@@ -138,7 +138,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L20).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22).
 
 Extension methods for registering extended provider API endpoints (failover, rate limits, capabilities, switching).
 
@@ -150,7 +150,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22) |  |
+| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L24) |  |
 
 ## ProviderModuleEndpoints
 
@@ -174,7 +174,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderRoutingEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L17).
 
 Endpoint mapping for the relationship-aware provider routing layer.
 
@@ -186,7 +186,36 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L16) |  |
+| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L19) |  |
+
+## ProviderValidationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L13).
+
+Non-secret provider-boundary validation settings and before/after change evidence.
+
+```csharp
+public static class ProviderValidationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L15) |  |
+| <code>public static (AppConfig Config, ProviderValidationProfileAudit Result) ApplyProfile(AppConfig config, string provider, ProviderValidationProfileRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L70) |  |
+
+## ProviderValidationProfileRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationProfileRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:97](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L97).
+
+```csharp
+public sealed record ProviderValidationProfileRequest(ProviderValidationProfile Profile, string? Reason = null);
+```
 
 ## QuantDiagnosticDto
 
@@ -772,33 +801,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapStorageQualityEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs#L20) |  |
 | <code>public static void MapQualityDropsEndpoints(this WebApplication app, DroppedEventAuditTrail? auditTrail, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs:285](../../../../src/Meridian.Ui.Shared/Endpoints/StorageQualityEndpoints.cs#L285) | Maps the /api/quality/drops endpoints exposing dropped event statistics from the pipeline&#x27;s audit trail. |
-
-## StrategyActionResult
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyActionResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:522](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L522).
-
-Result of a lifecycle control action (pause/stop).
-
-```csharp
-public sealed record StrategyActionResult(string StrategyId, string Action, bool Success, string? Reason);
-```
-
-## StrategyLifecycleEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyLifecycleEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L22).
-
-REST endpoints for querying and controlling the lifecycle of registered live strategies. Exposes pause, explicit resume, stop, and status operations. Resume uses the engine&#x27;s retained execution context and does not accept replacement execution settings.
-
-```csharp
-public static class StrategyLifecycleEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapStrategyLifecycleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L24) |  |

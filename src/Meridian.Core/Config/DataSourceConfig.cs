@@ -238,8 +238,22 @@ public sealed record DataSourcesConfig(
     // <summary>
     // Symbol mappings configuration.
     // </summary>
-    SymbolMappingsConfig? SymbolMappings = null
+    SymbolMappingsConfig? SymbolMappings = null,
+
+    // Server-owned history of relaxed rule thresholds, persisted atomically with the rule.
+    FailoverRuleThresholdAudit[]? FailoverRuleAudit = null
 );
+
+/// <summary>Immutable operator evidence for a failover validation-threshold relaxation.</summary>
+public sealed record FailoverRuleThresholdAudit(
+    string RuleId, string Actor, string Reason, DateTimeOffset ChangedAtUtc,
+    double PreviousDataQualityThreshold, double DataQualityThreshold,
+    double PreviousMaxLatencyMs, double MaxLatencyMs,
+    int PreviousFailoverThreshold, int FailoverThreshold,
+    int PreviousRecoveryThreshold, int RecoveryThreshold,
+    string Operation = "ThresholdRelaxation",
+    string? PrimaryProviderId = null,
+    string[]? BackupProviderIds = null);
 
 /// <summary>
 /// Configuration for a failover rule.
@@ -304,7 +318,10 @@ public sealed record SymbolMappingsConfig(
     // <summary>
     // Emit structured disagreement diagnostics while running in comparison mode.
     // </summary>
-    bool ReportMismatches = true
+    bool ReportMismatches = true,
+
+    // Provider-scoped rollout overrides. Applied when the host reconstructs its resolver.
+    IReadOnlyDictionary<string, SymbolResolutionMode>? ProviderResolutionModes = null
 );
 
 /// <summary>

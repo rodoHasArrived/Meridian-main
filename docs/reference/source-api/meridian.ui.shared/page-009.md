@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BankFeedScheduleDefinition
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedScheduleDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:20](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L20).
+
+```csharp
+public sealed record BankFeedScheduleDefinition(string ScheduleId, BankFeedTransportKind TransportKind, TimeSpan Interval, DateTimeOffset? LastRunAtUtc, Guid? AccountId = null, string? BankName = null, EtlSourceDefinition? Source = null, string? PlaidItemId = null, DateOnly? StatementDate = null, string? Notes = null, bool IsBackfill = false, string RequestedBy = "bank-feed-scheduler");
+```
+
+## BankFeedTransportKind
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedTransportKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:13](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L13).
+
+```csharp
+public enum BankFeedTransportKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>LocalFile = 0</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:15](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L15) |  |
+| <code>Sftp = 1</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:16](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L16) |  |
+| <code>PlaidApi = 2</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:17](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L17) |  |
+
+## BankFeedTransportRunResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedTransportRunResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:34](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L34).
+
+```csharp
+public sealed record BankFeedTransportRunResult(string ScheduleId, BankFeedTransportKind TransportKind, bool Ran, bool Success, DateTimeOffset EvaluatedAtUtc, int FilesProcessed, int BankStatementLinesImported, int ApiItemsSynced, IReadOnlyList<Guid> ImportedBatchIds, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static BankFeedTransportRunResult Skipped(BankFeedScheduleDefinition schedule, DateTimeOffset evaluatedAtUtc, string reason) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs:46](../../../../src/Meridian.Ui.Shared/Services/BankFeedTransportService.cs#L46) |  |
+
 ## BankFeedTransportService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BankFeedTransportService</code>. Kind: `class`.
@@ -653,21 +697,23 @@ Declared public members:
 | <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:23](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L23) |  |
 | <code>public static Meridian.Core.Config.AppConfig LoadConfig(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:25](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L25) |  |
 | <code>public Meridian.Core.Config.AppConfig Load() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:28](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L28) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L30) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L33) |  |
-| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L39) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L45) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:50](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L50) |  |
-| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L53) |  |
-| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:55](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L55) |  |
-| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L58) |  |
-| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:61](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L61) |  |
+| <code>public Meridian.Contracts.Configuration.ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L30) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:32](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L32) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L35) |  |
+| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L45) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateWithConfirmationAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, bool confirmDataSemantics, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:51](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L51) | Explicit confirmation is required for edits changing the meaning of newly stored data. |
+| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:63](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L63) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:68](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L68) |  |
+| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L71) |  |
+| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:73](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L73) |  |
+| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:76](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L76) |  |
+| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:79](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L79) |  |
 
 ## ConfigStoreExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L71).
+Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:89](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L89).
 
 Configures the core ConfigStore default path resolver for web dashboard hosting.
 
@@ -679,7 +725,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:73](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L73) |  |
+| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:91](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L91) |  |
 
 ## ConfiguredReportingHttpRelayClient
 
@@ -891,73 +937,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;DateOnly&gt; LoadedExpirations { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:42](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L42) |  |
 | <code>public IReadOnlyList&lt;DateTimeOffset&gt; SnapshotTimes { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:43](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L43) |  |
 | <code>public int? MaxStrikesPerExpiration { get; init; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:44](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L44) |  |
-
-## CoveredCallChainProviderAdapter
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallChainProviderAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:13](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L13).
-
-Adapts an eagerly-materialised set of option chain snapshots into the synchronous IOptionChainProvider contract that CoveredCallOverwriteStrategy expects. One instance per backtest run.
-
-```csharp
-public sealed class CoveredCallChainProviderAdapter : IOptionChainProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalCandidates { get; }</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:19](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L19) | Total candidates across all snapshot dates (for diagnostics). |
-| <code>public IReadOnlyCollection&lt;DateOnly&gt; KnownDates =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:22](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L22) | Snapshot dates the adapter knows about. |
-| <code>public CoveredCallChainProviderAdapter(IReadOnlyDictionary&lt;DateOnly, IReadOnlyList&lt;OptionCandidateInfo&gt;&gt; snapshotsByDate, ILogger&lt;CoveredCallChainProviderAdapter&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L25) | Creates a new adapter from a pre-built map of scan-date → call candidates. |
-| <code>public IReadOnlyList&lt;OptionCandidateInfo&gt; GetCalls(string underlyingSymbol, DateOnly asOf, decimal underlyingPrice);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs:36](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderAdapter.cs#L36) |  |
-
-## CoveredCallChainProviderFactory
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallChainProviderFactory</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:18](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L18).
-
-Default implementation of ICoveredCallChainProviderFactory. Fetches expirations and chain snapshots through the existing OptionsChainService (which already aggregates across IOptionsChainProvider implementations) and converts them to OptionCandidateInfo instances.
-
-```csharp
-public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderFactory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CoveredCallChainProviderFactory(OptionsChainService chainService, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, ILoggerFactory loggerFactory);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L25) |  |
-| <code>public async ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L37) |  |
-| <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:161](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L161) |  |
-| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:239](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L239) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
-
-## ICoveredCallBacktestService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.ICoveredCallBacktestService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:10](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L10).
-
-Orchestrates covered-call backtests for the browser workstation: starts runs asynchronously, reports progress, persists completed runs through IStrategyRepository, and projects results into UI DTOs.
-
-```csharp
-public interface ICoveredCallBacktestService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[Obsolete(&quot;Use StartAsync(request, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:17](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L17) | Legacy unscoped entry point retained for source compatibility. Unscoped execution is no longer supported because it cannot establish tenant and company ownership. |
-| <code>ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:23](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L23) | Starts a new backtest run. Returns immediately with the assigned RunId. |
-| <code>[Obsolete(&quot;Use GetStatusAsync(runId, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L31) | Legacy unscoped status lookup retained as a fail-closed compatibility shim. |
-| <code>ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L37) | Returns the current status of the run, or null if unknown. |
-| <code>[Obsolete(&quot;Use GetResultAsync(runId, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:45](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L45) | Legacy unscoped result lookup retained as a fail-closed compatibility shim. |
-| <code>ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:51](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L51) | Returns the completed result, or null if the run is not yet finished or unknown. |
-| <code>[Obsolete(&quot;Use ListRunsAsync(scope, limit, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(int limit = 50, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:59](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L59) | Legacy unscoped run listing retained as a fail-closed compatibility shim. |
-| <code>ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:65](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L65) | Lists prior covered-call runs (most recent first). |
-| <code>[Obsolete(&quot;Use CancelAsync(runId, scope, ct); an authenticated tenant/company scope is required.&quot;)] ValueTask CancelAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:73](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L73) | Legacy unscoped cancellation retained as a fail-closed compatibility shim. |
-| <code>ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:79](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L79) | Cancels a queued or running backtest. Idempotent. |
-| <code>ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs:86](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs#L86) | Returns the chain snapshot that would be evaluated for scanDate — for the configure-form preview. |

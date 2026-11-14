@@ -6,11 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuotesResponse
+
+Qualified name: <code>Meridian.Contracts.Api.QuotesResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/LiveDataModels.cs:69](../../../../src/Meridian.Contracts/Api/LiveDataModels.cs#L69).
+
+Response DTO wrapping quotes for one or more symbols.
+
+```csharp
+public sealed record QuotesResponse(string Symbol, QuoteDataResponse? Quote, DateTimeOffset Timestamp);
+```
+
+## QuotesSnapshotItem
+
+Qualified name: <code>Meridian.Contracts.Api.QuotesSnapshotItem</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/LiveDataModels.cs:81](../../../../src/Meridian.Contracts/Api/LiveDataModels.cs#L81).
+
+One row in the multi-symbol quotes snapshot — the latest BBO plus the last trade (if any) so a watchlist can render bid / ask / last / spread for every symbol from a single request. Session carries the intraday day-statistics for the symbol when at least one trade has been observed since the session anchor.
+
+```csharp
+public sealed record QuotesSnapshotItem(string Symbol, DateTimeOffset Timestamp, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal? MidPrice, decimal? Spread, decimal? LastPrice, long? LastSize, DateTimeOffset? LastTradeTimestamp, long SequenceNumber, string? StreamId, string? Venue, SessionStatsDto? Session = null);
+```
+
+## QuotesSnapshotResponse
+
+Qualified name: <code>Meridian.Contracts.Api.QuotesSnapshotResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/LiveDataModels.cs:103](../../../../src/Meridian.Contracts/Api/LiveDataModels.cs#L103).
+
+Multi-symbol quotes snapshot response. Used by the watchlist screen to refresh prices for every subscribed symbol from a single endpoint.
+
+```csharp
+public sealed record QuotesSnapshotResponse(DateTimeOffset Timestamp, int Count, IReadOnlyList<QuotesSnapshotItem> Quotes);
+```
+
+## RateLimitInfo
+
+Qualified name: <code>Meridian.Contracts.Api.RateLimitInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/ProviderCatalog.cs:736](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L736).
+
+Rate limit information for UI display and validation.
+
+```csharp
+public sealed class RateLimitInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;maxRequestsPerWindow&quot;)] public int MaxRequestsPerWindow { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:742](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L742) | Gets the maximum requests allowed per time window. |
+| <code>[JsonPropertyName(&quot;windowSeconds&quot;)] public int WindowSeconds { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:748](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L748) | Gets the length of the rate-limit window in seconds. |
+| <code>[JsonPropertyName(&quot;minDelayMs&quot;)] public int MinDelayMs { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:754](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L754) | Gets the minimum delay between requests in milliseconds. |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:760](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L760) | Gets the rate-limit description for display purposes. |
+
 ## RoutePreviewCandidateDto
 
 Qualified name: <code>Meridian.Contracts.Api.RoutePreviewCandidateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:152](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L152).
+Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:169](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L169).
 
 Candidate item in a route preview.
 
@@ -27,26 +84,26 @@ Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:41](../../../../
 Request for a route preview.
 
 ```csharp
-public sealed record RoutePreviewRequest(string Capability, string? Workspace = null, string? FundProfileId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? AccountId = null, Guid? SecurityId = null, string? Symbol = null, string? Market = null, string? AssetClass = null, bool RequireProductionReady = false);
+public sealed record RoutePreviewRequest(string Capability, string? Workspace = null, string? FundProfileId = null, Guid? EntityId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? AccountId = null, Guid? SecurityId = null, string? Symbol = null, string? Market = null, string? AssetClass = null, bool RequireProductionReady = false, ProviderRoutingProposedConfig? ProposedConfig = null, bool PreviewBackfill = false, string Granularity = "daily", DateOnly? From = null, DateOnly? To = null);
 ```
 
 ## RoutePreviewResponse
 
 Qualified name: <code>Meridian.Contracts.Api.RoutePreviewResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:171](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L171).
+Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:188](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L188).
 
 Route preview response.
 
 ```csharp
-public sealed record RoutePreviewResponse(string Capability, bool IsRoutable, string? SelectedConnectionId, string? SelectedProviderFamilyId, string SafetyMode, bool RequiresManualApproval, string[] ReasonCodes, string[] SkippedCandidates, string[] FallbackConnectionIds, string? PolicyGate, RoutePreviewCandidateDto[] Candidates, RoutePreviewCandidateDto[]? RankedAlternatives = null);
+public sealed record RoutePreviewResponse(string Capability, bool IsRoutable, string? SelectedConnectionId, string? SelectedProviderFamilyId, string SafetyMode, bool RequiresManualApproval, string[] ReasonCodes, string[] SkippedCandidates, string[] FallbackConnectionIds, string? PolicyGate, RoutePreviewCandidateDto[] Candidates, RoutePreviewCandidateDto[]? RankedAlternatives = null, string[]? Warnings = null, bool IsProposed = false);
 ```
 
 ## RunCertificationRequest
 
 Qualified name: <code>Meridian.Contracts.Api.RunCertificationRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:58](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L58).
+Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:75](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L75).
 
 Request to run certification for a connection.
 
@@ -243,7 +300,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.StorageProfileResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:284](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L284).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:289](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L289).
 
 Response for setting storage profiles.
 
@@ -324,7 +381,7 @@ public sealed record SymbolDataHealthDto(string Symbol, bool HasQuotes, bool Has
 
 Qualified name: <code>Meridian.Contracts.Api.SymbolMappingRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:75](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L75).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:79](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L79).
 
 Request to create or update a symbol mapping.
 
@@ -336,7 +393,7 @@ public record SymbolMappingRequest(string CanonicalSymbol, string? IbSymbol = nu
 
 Qualified name: <code>Meridian.Contracts.Api.SymbolMappingResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:207](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L207).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:212](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L212).
 
 Response containing a symbol mapping.
 
@@ -1939,59 +1996,4 @@ Exact operational scope; fund scope is deliberately not required.
 
 ```csharp
 public sealed record AccountCashForecastScopeDto(string TenantId, string CompanyId, string AccountId, string BookId, string BaseCurrency);
-```
-
-## AccountCashForecastSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashForecastSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:101](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L101).
-
-Immutable forecast evidence. Certification is cash reconciliation, never payment authority.
-
-```csharp
-public sealed record AccountCashForecastSnapshotDto(string SnapshotId, string EvidenceHash, string EngineVersion, AccountCashForecastRequestDto Inputs, decimal? OpeningBaseCash, decimal? ActualNetBaseFlow, decimal? ReconciledClosingBaseCash, decimal? ObservedClosingBaseCash, decimal? ClosingVariance, bool IsCertified, PortfolioCashLadderDto ForecastLadder, IReadOnlyList<AccountCashForecastIssueDto> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;PortfolioCashLadderDto&gt;? CurrencyLadders { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:116](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L116) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountCashResidualDto&gt;? Residuals { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:118](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L118) |  |
-
-## AccountCashFxConversionDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashFxConversionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:53](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L53).
-
-Declared dated conversion: multiply native Currency units by BaseUnitsPerCurrencyUnit to obtain BaseCurrency units. An inverse pair or another date never substitutes for this declaration.
-
-```csharp
-public sealed record AccountCashFxConversionDto(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit, AccountCashProvenanceDto Provenance);
-```
-
-## AccountCashPaymentAllocationDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashPaymentAllocationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:86](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L86).
-
-Signed cash in the obligation currency. Gross = net + nonnegative evidenced tax and fee cash costs.
-
-```csharp
-public sealed record AccountCashPaymentAllocationDto(string AllocationId, string ExpectedFlowId, string ActualVersionId, decimal NetAmount, decimal GrossAmount, decimal WithholdingTax = 0m, decimal Fees = 0m, AccountCashProvenanceDto? DeductionEvidence = null);
-```
-
-## AccountCashProvenanceDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.AccountCashProvenanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs:13](../../../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs#L13).
-
-Source bytes and accepted retained review used for one forecast input.
-
-```csharp
-public sealed record AccountCashProvenanceDto(string SourceDomain, string SourceEntityId, string SourceContentHash, AccountCashEvidenceRole Role, RetainedEvidenceIdentityDto Evidence);
 ```
