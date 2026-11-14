@@ -562,6 +562,12 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:13](
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Authorization.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Authorization.cs#L23).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs#L20).
 
 ```csharp
@@ -730,7 +736,19 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Reporting.cs:15](../..
 public static partial class LedgerEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ReportProjections.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ReportProjections.cs#L23).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RunningBalance.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RunningBalance.cs#L17).
+
+```csharp
+public static partial class LedgerEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ServiceResolution.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ServiceResolution.cs#L23).
 
 ```csharp
 public static partial class LedgerEndpoints

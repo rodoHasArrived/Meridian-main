@@ -471,8 +471,8 @@ read models; unavailable owners stay unavailable rather than borrowing a differe
 workspace's summary. Feature-local, non-headline presentation uses `MetricTile` or
 `SnapshotMetricTile`; these are not substitutes for registry-owned workspace KPIs.
 
-`portfolio.open-positions` counts the Portfolio projection's positions on Portfolio,
-Settings and Today. Live total exposure sums the same holdings' supplied exposure
+`portfolio.open-positions` counts the Portfolio projection's positions on Portfolio
+and Today. Live total exposure sums the same holdings' supplied exposure
 amounts. Missing or mixed denominations withhold the aggregate; no FX rate, market
 value, or missing component is invented. The current Portfolio read model is an
 all-holdings projection: retained account/run/symbol URL scope is not claimed as an
@@ -3039,6 +3039,11 @@ specimen document is not a conformance verdict: some specimens retain their Desi
 external-runtime requirements. Package conformance and browser regression harnesses remain separate.
 
 ## Validation
+
+TypeScript is pinned to 5.9.3 in the package manifest and lockfile. This stays within the
+`typescript-eslint` supported compiler range while updating the previous 5.7 baseline.
+After compiler updates, run `npx tsc --noEmit` from this directory and the focused Vite
+configuration tests before rebuilding the workstation assets.
 
 Launcher/process ownership coverage runs from the repository root with
 `node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in

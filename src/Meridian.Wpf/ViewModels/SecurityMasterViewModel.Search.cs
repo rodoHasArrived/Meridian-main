@@ -253,7 +253,8 @@ public sealed partial class SecurityMasterViewModel
                 return;
             }
 
-            _loggingService.LogError($"Security Master trust snapshot load failed for {securityId}", ex);
+            _loggingService.LogError("Security Master trust snapshot load failed for {SecurityId}", ex,
+                ("SecurityId", securityId.ToString()));
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 if (!CanCommitSelectedSecurityLoad(securityId, loadRevision, loadToken))
