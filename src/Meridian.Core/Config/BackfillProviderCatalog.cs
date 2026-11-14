@@ -98,7 +98,7 @@ public static class BackfillProviderCatalog
             "finnhub" => new(config.Finnhub?.Enabled ?? true, config.Finnhub?.Priority ?? d.DefaultPriority, config.Finnhub?.TierId ?? "free", config.Finnhub?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
             "stooq" => new(config.Stooq?.Enabled ?? true, config.Stooq?.Priority ?? d.DefaultPriority),
             "yahoo" => new(config.Yahoo?.Enabled ?? true, config.Yahoo?.Priority ?? d.DefaultPriority, config.Yahoo?.TierId ?? "free", RateLimitPerHour: config.Yahoo?.RateLimitPerHour ?? d.Tiers[0].RateLimitPerHour),
-            "alphavantage" => new(config.AlphaVantage?.Enabled ?? false, config.AlphaVantage?.Priority ?? d.DefaultPriority, RateLimitPerMinute: config.AlphaVantage?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
+            "alphavantage" => new(config.AlphaVantage?.Enabled ?? new AlphaVantageConfig().Enabled, config.AlphaVantage?.Priority ?? d.DefaultPriority, RateLimitPerMinute: config.AlphaVantage?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
             "nasdaqdatalink" => new(config.Nasdaq?.Enabled ?? true, config.Nasdaq?.Priority ?? d.DefaultPriority),
             "twelvedata" => new(config.TwelveData?.Enabled ?? true, config.TwelveData?.Priority ?? d.DefaultPriority, config.TwelveData?.TierId ?? "free", config.TwelveData?.RateLimitPerMinute ?? d.Tiers[0].RateLimitPerMinute),
             "openfigi" => new(config.OpenFigi?.Enabled ?? true, d.DefaultPriority, config.OpenFigi?.TierId ?? "free", config.OpenFigi?.RateLimitPerMinute ?? GetTier("openfigi", config.OpenFigi?.TierId ?? "free").RateLimitPerMinute),

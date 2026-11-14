@@ -227,13 +227,16 @@ public static class BackfillEndpoints
         // Get provider statuses from the effective host configuration.
         group.MapGet(UiApiRoutes.BackfillProviderStatuses, (HttpContext context, [FromServices] ConfigStore store) =>
         {
-            var providerConfig = store.Load().Backfill?.Providers ?? new BackfillProvidersConfig();
+            var providerConfig = store.Load().Backfill?.Providers;
+            if (providerConfig is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill provider configuration");
+
             var metadata = GetKnownProviderMetadata();
             var statuses = BuildProviderStatuses(metadata, providerConfig);
             return Results.Json(statuses, jsonOptions);
         })
         .WithName("GetBackfillProviderStatuses")
-        .WithDescription("Returns configured and catalog-default provider options without implying runtime activation.")
+        .WithDescription("Returns provider options from available host configuration; missing provider configuration fails closed.")
         .Produces<Meridian.Contracts.Configuration.BackfillProviderStatusDto[]>(200)
         .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.ManageProviders);

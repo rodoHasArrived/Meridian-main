@@ -15,6 +15,9 @@ last_reviewed: 2026-10-02
 request ceilings and pure option edits. Provider records retain the declared tier; editor updates
 preserve stored credentials and archive adjustment semantics. Unknown providers (including IB and
 synthetic provenance controls), unknown tiers and rate increases beyond the declared tier cap refuse.
+Catalog options retain each configuration record's defaults. Alpha Vantage runtime construction
+still requires an explicitly enabled provider configuration and a resolved credential; a catalog
+preset alone does not activate it.
 
 `Meridian.Core.Currency.CurrencyMinorUnits.GetPrecision` delegates to `Meridian.Contracts.Ledger.CurrencyMinorUnits`, so the ISO 4217 minor-unit table is maintained in one place.
 

@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui.Shared
 
+Backfill provider status, fallback-chain and dry-run reads require an available
+`Backfill.Providers` section and return HTTP 503 when it is missing. The separate metadata route
+continues to expose catalog presets without presenting them as configured runtime state.
+
 Symbol mappings expose provider-scoped rollout at `/api/symbols/mappings/rollout`. Reads return
 saved versus active modes and retained comparison evidence. Canonical promotion requires active
 and saved Compare mode, the reviewed mismatch count, a reason and archive/series acknowledgements.
