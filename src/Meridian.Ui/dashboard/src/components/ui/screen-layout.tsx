@@ -97,6 +97,8 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   description?: ReactNode;
   /** Remember static introductory copy per operator and reveal it from an info button on return. */
   descriptionHelpId?: string;
+  /** Remember standalone instructional copy using the shared description preference. */
+  descriptionKey?: string;
   /**
    * The 1–3 primary actions for this screen. Always rendered top-right. Keep this
    * to the screen's primary verbs — secondary controls belong in the work zone.
@@ -189,6 +191,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     scope,
     description,
     descriptionHelpId,
+    descriptionKey,
     actions,
     focus,
     focusLabel = "Focus",
@@ -245,13 +248,17 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
             <SectionHeading id={titleId} title={title} description={description} helpId={descriptionHelpId}
               headingClassName="truncate text-base font-semibold leading-snug tracking-normal text-foreground"
               descriptionClassName="mt-1 max-w-prose text-xs leading-5 text-muted-foreground" />
-          ) : (
-            <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
-              {title}
-            </h2>
-          )}
+          ) : <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
+                {title}
+              </h2>
+              {description ? descriptionKey ? (
+                <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this screen"}`}>
+                  {description}
+                </SectionDescription>
+              ) : <p className="basis-full max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
+            </div>}
           {scope ? <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div> : null}
-          {description && !(descriptionHelpId && typeof description === "string") ? <p className="mt-1 max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
         </div>
         {actions ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">{actions}</div>

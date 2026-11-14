@@ -1,4 +1,4 @@
-import { act, render, screen, within, waitFor } from "@testing-library/react";
+import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
@@ -17,6 +17,17 @@ const columns: TableWorkbenchColumn<Row>[] = [
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(getJson).mockResolvedValue([]); });
 
 describe("TableWorkbench", () => {
+  it("keeps unavailable saved views as an inline compact notice", async () => {
+    vi.mocked(getJson).mockRejectedValueOnce(new Error("Unavailable"));
+    render(<TableWorkbench compactToolbar workbenchId="views-unavailable" columns={columns}
+      rows={[{ id: "a", amount: 1 }]} getRowId={row => row.id} completePopulation
+      sourceDescription="Complete snapshot" emptyText="No matches" ariaLabel="Records" />);
+    const notice = await screen.findByRole("status");
+    expect(notice).toHaveTextContent("Views unavailable");
+    expect(notice).toHaveAttribute("title", "Saved views unavailable. You can continue reviewing this table.");
+    expect(notice.closest(".table-workbench-toolbar--compact")).not.toBeNull();
+  });
+
   it("keeps search and filters exposed while compact table tools preserve column, density, export and save behavior", async () => {
     const user = userEvent.setup();
     vi.mocked(postJson).mockResolvedValue({ viewId: "personal", label: "Review A", searchText: "a", columnIds: ["id"], density: "comfortable" });

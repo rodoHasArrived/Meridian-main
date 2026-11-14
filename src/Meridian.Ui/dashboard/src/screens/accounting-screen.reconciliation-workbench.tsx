@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { SectionDescription } from "@/components/ui/section-description";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DetailRail } from "@/components/meridian/detail-rail";

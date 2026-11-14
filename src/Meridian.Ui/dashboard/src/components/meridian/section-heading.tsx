@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { SectionDescriptionPreferences } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import "@/styles/section-heading.css";
 
@@ -8,7 +9,7 @@ const STORAGE_PREFIX = "meridian.workstation.sectionHelp.v1";
 
 /** Scope remembered explanatory text to the current operator; unknown operators do not persist. */
 export function SectionHelpProvider({ userKey, children }: { userKey: string | null; children: ReactNode }) {
-  return <SectionHelpUserContext.Provider value={userKey}>{children}</SectionHelpUserContext.Provider>;
+  return <SectionDescriptionPreferences operatorKey={userKey}><SectionHelpUserContext.Provider value={userKey}>{children}</SectionHelpUserContext.Provider></SectionDescriptionPreferences>;
 }
 
 export interface SectionHeadingProps {

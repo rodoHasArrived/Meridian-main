@@ -184,6 +184,10 @@ describe("DailyControlTowerScreen", () => {
     expect(warning.closest("details")).not.toHaveAttribute("open");
     await user.click(warning);
     expect(screen.getByText("Inbox is read-only. Use a configured shared host for durable triage actions.")).toBeVisible();
+    warning.focus();
+    await user.keyboard("{Escape}");
+    expect(warning.closest("details")).not.toHaveAttribute("open");
+    expect(warning).toHaveFocus();
     expect(screen.queryByText(/^Seeded read-only inbox/)).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
   });
@@ -323,6 +327,8 @@ describe("DailyControlTowerScreen", () => {
     const { container, unmount } = renderScreen();
     const failure = await screen.findByRole("alert");
     expect(failure).toHaveTextContent("Inbox triage is unavailable. Workspace signals in this queue are unaffected");
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Retry inbox" })).toHaveLength(1);
     expect(gridRowKeys()).toHaveLength(3);
     expect(container.querySelector("[data-today-inbox-state]")).toHaveAttribute("data-today-inbox-state", "unavailable");
     expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Shared inbox unavailable");

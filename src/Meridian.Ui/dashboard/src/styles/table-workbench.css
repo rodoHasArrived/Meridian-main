@@ -50,9 +50,6 @@
 .table-workbench .dense-data-table tbody td:first-child,.table-workbench .dense-data-table tbody th:first-child { background:inherit; }
 
 /* Dense review queues keep query controls in the row; presentation tools stay inspectable. */
-.table-workbench-toolbar--compact { gap:.4rem; margin-bottom:.35rem; }
-.table-workbench-toolbar--compact .table-workbench-search { flex:1 1 10rem; min-width:8rem; max-width:22rem; }
-.table-workbench-toolbar--compact .table-workbench-search input { flex:1; width:100%; min-width:0; }
 .table-workbench-options { width:min(21rem,calc(100vw - 2rem)); min-width:0; }
 .table-workbench-options fieldset { min-width:0; display:grid; gap:.4rem; border:0; padding:0; margin:0; }
 .table-workbench-options legend { margin-bottom:.4rem; font-weight:600; font-size:.75rem; }

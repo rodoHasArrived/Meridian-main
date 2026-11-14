@@ -9,7 +9,6 @@ import type {
 import { SectionHeading } from "@/components/meridian/section-heading";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { SectionDescription } from "@/components/ui/section-description";
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
@@ -276,18 +275,32 @@ export function DailyControlTowerScreen({
             ]}
           />
           {showsInbox && triage.inbox ? (
-            <div role="group" aria-label="Inbox filters">
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Inbox filters" aria-busy={triage.loading || triage.busy}>
+              {!triage.inbox.persistenceAvailable ? (
+                /^Seeded read-only inbox\./i.test(triage.inbox.unavailableReason ?? "") ? (
+                  <details className="relative" onKeyDown={(event) => {
+                    if (event.key === "Escape" && event.currentTarget.open) {
+                      event.preventDefault();
+                      event.currentTarget.open = false;
+                      event.currentTarget.querySelector("summary")?.focus();
+                    }
+                  }}>
+                    <summary className="cursor-pointer text-xs text-warning underline underline-offset-2">Read-only inbox</summary>
+                    <p className="absolute right-0 top-full z-30 w-72 rounded-sm border border-border bg-card p-3 text-xs text-foreground shadow-md">
+                      {triage.inbox.unavailableReason?.replace(/^Seeded read-only inbox\.\s*/i, "Inbox is read-only. ")}
+                    </p>
+                  </details>
+                ) : (
+                  <span role="alert" className="text-xs text-warning">
+                    {triage.inbox.unavailableReason ?? "Durable triage is unavailable. Actions are disabled."}
+                  </span>
+                )
+              ) : null}
               <OperatorTriageInboxActions triage={triage} />
             </div>
           ) : null}
         </div>
 
-        {showsInbox && (triage.loading || triage.error) ? (
-          <div className="space-y-2" aria-busy={triage.loading || triage.busy}>
-            {triage.loading ? <p role="status" className="text-xs text-muted-foreground">Refreshing authorized inbox…</p> : null}
-            {triage.error ? <OperatorTriageInboxError triage={triage} unaffectedText="Workspace signals in this queue are unaffected" /> : null}
-          </div>
-        ) : null}
         {/* Command outcome and unconfirmed-command recovery stay visible under every Source filter. */}
         <OperatorTriageNotices triage={triage} showPersistence={false} />
 

@@ -4,7 +4,6 @@ import type {
   AccountingWorkstream
 } from "@/screens/accounting-screen.task-mode-view-model";
 import type { WorkspaceSummary } from "@/types";
-import { SectionDescription } from "@/components/ui/section-description";
 
 export interface AccountingChipViewModel {
   label: string;

@@ -1,4 +1,3 @@
-import { SectionDescription } from "@/components/ui/section-description";
 import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";

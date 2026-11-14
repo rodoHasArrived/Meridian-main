@@ -41,7 +41,6 @@ import { WorkflowContextDisclosure } from "@/components/meridian/workflow-contex
 import { OperatingScopeBar } from "@/components/meridian/operating-scope-bar";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
-import { SectionDescriptionPreferences } from "@/components/ui/section-description";
 import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
 import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
 import { SectionHelpProvider } from "@/components/meridian/section-heading";

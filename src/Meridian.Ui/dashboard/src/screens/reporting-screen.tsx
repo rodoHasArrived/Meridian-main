@@ -854,33 +854,6 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     );
   }
 
-  const reportingConfidence = (
-    <OperationalTrustSummary
-      source={{ value: "Governed Reporting service", tone: "ready" }}
-      scope={{ value: vm.taskMode.label, detail: vm.taskMode.description, tone: "ready" }}
-      freshness={{
-        value: latestRetainedAsOfDate ? presentReportingAsOfDate(latestRetainedAsOfDate) : "No as-of date retained",
-        detail: latestRetainedAsOfDate
-          ? "Latest retained reporting period"
-          : vm.runStatusRows.length > 0
-            ? "Loaded runs do not retain an as-of date; confirm the reporting period before release"
-            : "Generate a report to establish freshness",
-        tone: latestRetainedAsOfDate ? "ready" : "review"
-      }}
-      completeness={{
-        value: `${pluralizeCount(vm.templateRows.length, "template")} · ${pluralizeCount(vm.runStatusRows.length, "run")}`,
-        detail: "Reporting records you can access",
-        tone: vm.templateRows.length > 0 ? "ready" : "review"
-      }}
-      blocker={governanceScopeUnavailable ? {
-        value: "Access scope unavailable",
-        detail: "Template lifecycle decisions are disabled until caller scope can be verified.",
-        tone: "blocked"
-      } : undefined}
-      label="Reporting data confidence"
-    />
-  );
-
   return (
     <div className={isDailyReportingCockpitLanding ? "space-y-2" : "space-y-5"}>
       <div className="space-y-1">

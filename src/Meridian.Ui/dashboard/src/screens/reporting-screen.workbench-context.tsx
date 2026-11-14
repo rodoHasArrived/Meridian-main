@@ -24,10 +24,13 @@ export function ReportingWorkbenchContext({ taskMode, actions, compact = false, 
       aria-label="Reporting workbench context"
       className="flex flex-wrap items-end justify-between gap-3"
     >
-      <div className={cn("min-w-0", compact && "sr-only")}>
+      <div className="min-w-0">
+        <div className={cn("min-w-0", compact && "sr-only")}>
         {compact ? <h2>{taskMode.title}</h2> : (
           <SectionHeading title={taskMode.title} description={taskMode.description} helpId={`reporting-${taskMode.label}`} as="h2" headingClassName="font-display text-lg font-semibold leading-tight text-foreground" />
         )}
+        </div>
+        {context}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2">
         {actions.map((action) => (

@@ -36,6 +36,8 @@ export interface WorkspaceSectionProps {
   summary?: ReactNode;
   /** Opt static introductory copy into remembered help. Keep live status summaries visible. */
   helpId?: string;
+  /** Remember standalone introductory copy; omit for changing operational summaries. */
+  descriptionKey?: string;
   /** Jump affordance label (omit to hide). */
   jump?: ReactNode;
   /** Jump click handler (button mode). */
@@ -65,6 +67,7 @@ export function WorkspaceSection({
   title,
   summary,
   helpId,
+  descriptionKey,
   jump,
   onJump,
   jumpHref,
@@ -75,12 +78,12 @@ export function WorkspaceSection({
   return (
     <section id={id} className={`mds-wsection${className ? " " + className : ""}`}>
       <div className="mds-wsection__head">
-        <div className="mds-wsection__heading">
+        <div className="mds-wsection__heading flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           {helpId && typeof summary === "string" ? (
             <SectionHeading title={title} description={summary} helpId={helpId} as="h3" headingClassName="mds-wsection__title" descriptionClassName="mds-wsection__summary" />
           ) : <>
             {title && <h3 className="mds-wsection__title">{title}</h3>}
-            {summary && <p className="mds-wsection__summary">{summary}</p>}
+            {summary && (descriptionKey ? <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this section"}`}>{summary}</SectionDescription> : <p className="mds-wsection__summary basis-full">{summary}</p>)}
           </>}
         </div>
         {jump &&

@@ -30,8 +30,6 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
   onSearchTextChange?: (value: string) => void;
   getSearchText?: (row: T) => string;
   filters?: ReactNode;
-  /** Keep query controls visible; disclose column, density, export and saved-view tools. */
-  compactToolbar?: boolean;
   filterState?: Record<string, string>;
   onRestoreFilters?: (filters: Record<string, string>) => void;
   onRestoreView?: (view: TableView) => void;
@@ -213,6 +211,7 @@ export function TableWorkbench<T>({ workbenchId, compactToolbar = false, sourceK
     } catch (cause) { if (current === session.current && !signal?.aborted) setError(cause instanceof Error ? cause.message : "Export failed. No complete export was produced."); }
     finally { if (current === session.current) setExporting(false); }
   }
+  const unavailableViews = compactToolbar && notice === "Saved views unavailable. You can continue reviewing this table.";
   const secondaryControls = <>
         <details className="table-workbench-disclosure"><summary>Columns</summary><div className="table-workbench-menu">
           {hideableColumns.map(column => <label key={column.id}><input type="checkbox" checked={effectiveVisibleIds.includes(column.id)}

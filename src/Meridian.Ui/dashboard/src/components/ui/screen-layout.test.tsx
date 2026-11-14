@@ -4,6 +4,15 @@ import { describe, expect, it, vi } from "vitest";
 import { FOCUS_SIGNAL_LIMIT, ScreenLayout, type FocusSignal } from "@/components/ui/screen-layout";
 
 describe("ScreenLayout", () => {
+  it("supports standalone description preferences and renders only one help mechanism when both keys are provided", () => {
+    const { rerender } = render(<ScreenLayout title="Review queue" description="Inspect evidence." descriptionKey="main-queue">Work</ScreenLayout>);
+    expect(screen.getByRole("button", { name: "Hide description: About Review queue" })).toBeVisible();
+    rerender(<ScreenLayout title="Review queue" description="Inspect evidence." descriptionKey="main-queue" descriptionHelpId="queue-heading">Work</ScreenLayout>);
+    expect(screen.getAllByText("Inspect evidence.")).toHaveLength(1);
+    expect(screen.queryByRole("button", { name: "Hide description: About Review queue" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "Review queue" })).toHaveLength(1);
+  });
+
   it("renders the header zone with title, scope, and top-right actions", () => {
     render(
       <ScreenLayout
