@@ -377,6 +377,18 @@ human approval workflows retain their existing guards. Grants are never activate
 Focused proof is `AutomatedPostingGrantTests`, including PostgreSQL-backed activation, revocation,
 restart, tenant isolation, stale mapping, and replay scenarios.
 
+### Direct-lending outbox dispatch
+
+The Direct Lending store source under `DirectLending/` compiles through `Meridian.Storage.Accounting`.
+Direct-lending outbox polling claims pending messages with a PostgreSQL `FOR UPDATE SKIP LOCKED`
+update and moves `visible_after` forward as a short lease before returning work to a dispatcher.
+That keeps multiple hosted workers from processing the same message concurrently while still
+allowing abandoned messages to become visible again after the lease window. Outbox inserts are
+idempotent on `(topic, message_key)` so retried loan saves do not enqueue duplicate dispatcher work
+for the same domain event. The Application-owned dispatcher also bounds configured batch size and
+poll interval values before calling this store so bad environment overrides cannot make the
+database-backed worker ineffective or spin in a tight retry loop.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP`, `DIA-STORAGE-TOPOLOGY` in the [diagram index](../../docs/source/data/diagram-index.yml).
