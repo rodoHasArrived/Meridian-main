@@ -47,7 +47,7 @@ public sealed class SymbolSearchProviderLifetimeTests
         clock.Advance(TimeSpan.FromDays(1));
         Assert.Equal(0, budget.GetBudgetStatus().DailyUnitsUsed);
         using var replacement = CreateProvider(alphaVantage, handler, registry);
-        Assert.Empty(await replacement.SearchAsync("MSFT").WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.Empty(await replacement.SearchAsync("MSFT", 20, null, null, CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5)));
         Assert.Equal(1, handler.CallCount);
         Assert.Equal(1, budget.GetBudgetStatus().DailyUnitsUsed);
         Assert.Same(budget, registry.GetOrCreate(providerName, ApiKey, "api-requests", profile));
@@ -87,7 +87,7 @@ public sealed class SymbolSearchProviderLifetimeTests
     private static Task StartLookup(BaseSymbolSearchProvider provider, string operation)
         => operation switch
         {
-            "search" => provider.SearchAsync("MSFT"),
+            "search" => provider.SearchAsync("MSFT", 20, null, null, CancellationToken.None),
             "authoritative" => provider.SearchAuthoritativeAsync("MSFT"),
             "details" => provider.GetDetailsAsync(new SymbolId("MSFT")),
             _ => throw new ArgumentOutOfRangeException(nameof(operation))
