@@ -211,6 +211,86 @@ public sealed class BondSecurityTermsDigestTests
         OpenLotAmortization.SameSecurityHash(untagged, Projection(StampedJsonbTerms.Replace("\"flat\"", "\"economic\""))).Should().BeFalse();
     }
 
+    [Fact]
+    public void LotAmortizationProjection_AcceptsUntaggedEraEvidence_ForTheStampedProjection_AndRefusesChangedTerms()
+    {
+        // The worked instruction's projection is read stamped; its evidence was hashed when the terms were untagged.
+        var current = Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.AmortPureInstruction(110m, 10m, BondAmortizationMethod.StraightLine, null);
+        var stamped = current.Security;
+        SecurityTermsEnvelope.GetDeclaredFormat(stamped.AssetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);
+        var untagged = stamped with { AssetSpecificTerms = SecurityTermsEnvelope.WithoutRedundantDeclaredFormat(stamped.AssetSpecificTerms) };
+        SecurityTermsEnvelope.GetDeclaredFormat(untagged.AssetSpecificTerms).Should().BeNull();
+        var untaggedEra = current with
+        {
+            SecurityEvidence = current.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(untagged) }
+        };
+        untaggedEra.SecurityEvidence.ContentHashSha256.Should().NotBe(current.SecurityEvidence.ContentHashSha256);
+
+        OpenLotAmortization.Project(untaggedEra).Should().Be(OpenLotAmortization.Project(current));
+
+        var changed = untagged with { DisplayName = untagged.DisplayName + " (amended)" };
+        var changedEvidence = current with
+        {
+            SecurityEvidence = current.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(changed) }
+        };
+        var project = () => OpenLotAmortization.Project(changedEvidence);
+        project.Should().Throw<ArgumentException>().WithMessage("*hash-bound versioned Security Master projection evidence*");
+    }
+
+    // ── Bond workflow replay ──────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task WorkflowReplay_OfAnAlreadyTaggedResultRetainingTheRawTextHash_SerializesEqualToTheRetainedResult()
+    {
+        var tagged = Bond(SecurityTermsEnvelope.StampDeclaredFormat(UntaggedTerms));
+        var service = Workflow(tagged);
+        var current = (await service.CalculateAsync(new BondWorkflowRequest(SecurityId, Context, CleanPricePer100: 99m)))!;
+        current.IsBlocked.Should().BeFalse(string.Join("; ", current.Issues.Select(issue => issue.Reason)));
+        current.Inputs.Single(input => input.Kind == "SecurityTerms").ContentSha256
+            .Should().Be(BondSecurityTermsDigest.Compute(tagged.CommonTerms, tagged.AssetSpecificTerms));
+
+        // A flat writer stamped these terms before this rule, so the retained result hashed the raw text with the tag.
+        var legacyHash = BondSecurityTermsDigest.ComputeRawText(tagged.CommonTerms, tagged.AssetSpecificTerms);
+        legacyHash.Should().NotBe(BondSecurityTermsDigest.Compute(tagged.CommonTerms, tagged.AssetSpecificTerms));
+        var legacy = current with
+        {
+            Inputs = current.Inputs.Select(input => input.Kind == "SecurityTerms" ? input with { ContentSha256 = legacyHash } : input).ToArray()
+        };
+
+        JsonSerializer.Serialize(await service.ReplayAsync(legacy)).Should().Be(JsonSerializer.Serialize(legacy));
+        JsonSerializer.Serialize(await service.ReplayAsync(current)).Should().Be(JsonSerializer.Serialize(current));
+
+        // The same retained result over changed terms replays to the canonical hash of those terms, not the retained one.
+        var changed = Bond(SecurityTermsEnvelope.StampDeclaredFormat(
+            UntaggedTerms.Replace("\"isCallable\":false", "\"isCallable\":false,\"issuerNote\":\"amended\"")));
+        var replayedChanged = (await Workflow(changed).ReplayAsync(legacy))!;
+        replayedChanged.Inputs.Single(input => input.Kind == "SecurityTerms").ContentSha256
+            .Should().Be(BondSecurityTermsDigest.Compute(changed.CommonTerms, changed.AssetSpecificTerms))
+            .And.NotBe(legacyHash);
+        JsonSerializer.Serialize(replayedChanged).Should().NotBe(JsonSerializer.Serialize(legacy));
+    }
+
+    [Fact]
+    public async Task WorkflowReplay_OfAnUntaggedEraResult_SerializesEqualAfterTheStamp()
+    {
+        var untagged = Bond(UntaggedJsonbTerms);
+        var retained = (await Workflow(untagged).CalculateAsync(new BondWorkflowRequest(SecurityId, Context, CleanPricePer100: 99m)))!;
+        retained.IsBlocked.Should().BeFalse(string.Join("; ", retained.Issues.Select(issue => issue.Reason)));
+        retained.Inputs.Single(input => input.Kind == "SecurityTerms").ContentSha256
+            .Should().Be(BondSecurityTermsDigest.ComputeRawText(untagged.CommonTerms, untagged.AssetSpecificTerms));
+
+        JsonSerializer.Serialize(await Workflow(Bond(StampedJsonbTerms)).ReplayAsync(retained))
+            .Should().Be(JsonSerializer.Serialize(retained));
+    }
+
+    private static BondWorkflowService Workflow(SecurityDetailDto security)
+    {
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(security);
+        query.GetRecordedByIdAsOfAsync(SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(security);
+        return new(query, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]));
+    }
+
     private static async Task<BondSettlementConsiderationDto> PrepareAsync(SecurityDetailDto security)
     {
         var result = await new BondSettlementConsiderationService(Analytics(security)).PrepareAsync(new(
