@@ -9427,7 +9427,6 @@ Meridian-main
 │   │   │   │   │   │   ├── account-balance-history.api.ts
 │   │   │   │   │   │   ├── account-oversight.api.test.ts
 │   │   │   │   │   │   ├── account-oversight.api.ts
-│   │   │   │   │   │   ├── accounting-integration.api.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── accounting-workspace.api.ts
@@ -9811,8 +9810,6 @@ Meridian-main
 │   │   │   │   │   └── types.ts
 │   │   │   │   ├── screens
 │   │   │   │   │   ├── accounting-calibration-summary.view-model.ts
-│   │   │   │   │   ├── accounting-integration.scope.tsx
-│   │   │   │   │   ├── accounting-integrations.test.tsx
 │   │   │   │   │   ├── accounting-period-comparison.test.tsx
 │   │   │   │   │   ├── accounting-period-comparison.tsx
 │   │   │   │   │   ├── accounting-screen.account-cash-cases.test.tsx
@@ -9834,7 +9831,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.audit-integrity.tsx
 │   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.ts
-│   │   │   │   │   ├── accounting-screen.automation-grant.tsx
 │   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
 │   │   │   │   │   ├── accounting-screen.bond-cutover.test.tsx
 │   │   │   │   │   ├── accounting-screen.bond-cutover.tsx
@@ -9955,8 +9951,6 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.task-mode-view-model.ts
 │   │   │   │   │   ├── accounting-screen.test.tsx
-│   │   │   │   │   ├── accounting-screen.three-way-adjustment.tsx
-│   │   │   │   │   ├── accounting-screen.three-way.tsx
 │   │   │   │   │   ├── accounting-screen.tsx
 │   │   │   │   │   ├── accounting-screen.view-model.shared.test.ts
 │   │   │   │   │   ├── accounting-screen.view-model.shared.ts
@@ -10170,7 +10164,6 @@ Meridian-main
 │   │   │   │   │   ├── private-capital-presenters.test.ts
 │   │   │   │   │   ├── private-capital-presenters.tsx
 │   │   │   │   │   ├── private-capital.test-fixtures.ts
-│   │   │   │   │   ├── quant-lab-corporate-actions.tsx
 │   │   │   │   │   ├── quant-lab-screen.formulas-tab.test.tsx
 │   │   │   │   │   ├── quant-lab-screen.test.tsx
 │   │   │   │   │   ├── quant-lab-screen.tsx
@@ -10205,7 +10198,6 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.delivery-history.tsx
 │   │   │   │   │   ├── reporting-screen.exports-runner.request.test.ts
 │   │   │   │   │   ├── reporting-screen.exports-runner.tsx
-│   │   │   │   │   ├── reporting-screen.general-ledger-export.tsx
 │   │   │   │   │   ├── reporting-screen.linked-context.ts
 │   │   │   │   │   ├── reporting-screen.new-custom-report.tsx
 │   │   │   │   │   ├── reporting-screen.operator-focus.ts
@@ -10396,7 +10388,6 @@ Meridian-main
 │   │   │   │   │   └── verified-operation-outcome.ts
 │   │   │   │   ├── types
 │   │   │   │   │   ├── account-oversight.ts
-│   │   │   │   │   ├── accounting-integration.ts
 │   │   │   │   │   ├── accounting-onboarding.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
 │   │   │   │   │   ├── asset-accounting-workflow.ts
