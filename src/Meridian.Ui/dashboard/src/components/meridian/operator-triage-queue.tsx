@@ -7,7 +7,8 @@ import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { DesignSystemStatus } from "@/design-system/status";
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
-import { pluralizeCount } from "@/lib/format";
+import { TimeText } from "@/components/ui/time-text";
+import { formatRelativeTime, pluralizeCount } from "@/lib/format";
 import { isActiveTriageSnooze, routeForTriageItem, type OperatorTriageItem } from "@/lib/operator-inbox-triage";
 import { triageSearchText, useOperatorTriageInbox, type OperatorTriageInboxState } from "@/components/meridian/use-operator-triage-inbox";
 
@@ -31,7 +32,7 @@ export function OperatorTriageQueue({ fundAccountId, fallback, refreshKey = fals
     { id: "severity", exportValue: (item) => item.tone, label: "Severity", render: (item) => <TriageSeverityStatus item={item} /> },
     { id: "workspace", exportValue: (item) => item.workspace, label: "Workspace", render: (item) => item.workspace ?? "Unspecified" },
     { id: "owner", exportValue: (item) => item.ownerId, label: "Owner", render: (item) => item.ownerId ?? "Unassigned" },
-    { id: "age", exportValue: (item) => triageAgeLabel(item.createdAt), label: "Age", className: "whitespace-nowrap tabular-nums", render: (item) => triageAgeLabel(item.createdAt) },
+    { id: "age", exportValue: (item) => triageAgeLabel(item.createdAt), label: "Age", className: "whitespace-nowrap tabular-nums", render: (item) => <TriageAge value={item.createdAt} /> },
     { id: "due", exportValue: (item) => item.dueAt, label: "Due · UTC", className: "whitespace-nowrap tabular-nums", render: (item) => item.dueAt ? triageDateLabel(item.dueAt) : "No due time" },
     { id: "state", exportValue: triageStateExportValue, label: "Triage", render: triageStateLabel }
   ];
@@ -165,12 +166,18 @@ export function triageDateLabel(value: string | null | undefined): string {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "UTC" }).format(timestamp);
 }
 
-export function triageAgeLabel(value: string | null | undefined, now = Date.now()): string {
+function hasTriageAge(value: string | null | undefined, now: number): value is string {
   const timestamp = Date.parse(value ?? "");
-  if (!Number.isFinite(timestamp) || timestamp > now) return "Age unavailable";
-  const minutes = Math.floor((now - timestamp) / 60_000);
-  if (minutes < 1) return "<1m";
-  if (minutes < 60) return `${minutes}m`;
-  if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
-  return `${Math.floor(minutes / 1440)}d`;
+  // A future instant (clock skew) has no truthful age.
+  return Number.isFinite(timestamp) && timestamp <= now;
+}
+
+/** Age of a triage item as text, e.g. "5m ago" (`formatRelativeTime`); "Age unavailable" when absent, invalid or in the future. */
+export function triageAgeLabel(value: string | null | undefined, now = Date.now()): string {
+  return hasTriageAge(value, now) ? formatRelativeTime(value, now) : "Age unavailable";
+}
+
+/** The triage age cell: "5m ago" with the absolute timestamp in the display zone on hover. */
+export function TriageAge({ value, now = Date.now() }: { value: string | null | undefined; now?: number }) {
+  return hasTriageAge(value, now) ? <TimeText value={value} display="relative" now={now} /> : <span>Age unavailable</span>;
 }

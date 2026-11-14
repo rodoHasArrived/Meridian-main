@@ -322,7 +322,7 @@ public sealed record OperatorInboxTriageDto(DateTimeOffset AsOf, string ActorId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L21).
+Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L25).
 
 The signed-in operator&#x27;s default operating scope (C1): applied when a session opens with no scope in its link or browser, so the operator does not set it up again on every machine.
 
@@ -334,7 +334,7 @@ public sealed record OperatorScopePreferenceDto(OperatingScopeValuesDto? Default
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperatorScopePreferenceSaveRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L26).
+Source: [src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs#L30).
 
 Sets (or, with a null or empty scope, clears) the signed-in operator&#x27;s default scope.
 

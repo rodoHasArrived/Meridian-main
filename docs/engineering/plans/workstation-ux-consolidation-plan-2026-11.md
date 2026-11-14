@@ -149,9 +149,64 @@ items, which is a follow-up.
   Trading routes. Live, unknown and failed states still block. Applying an account sets only that
   dimension, through the same path as the scope picker, so it lands in the URL and links carry it.
   Picking a scope already updated the URL; tests now prove links carry it.
-- Not done: an entity/fund dimension in the scope model; a period picker (the window is still set by
-  the originating workflow). Today's own "Scope …" line was left as is: it already reads
-  "All authorized scopes".
+- Today's own "Scope …" line was left as is: it already reads "All authorized scopes".
+
+**P4 entity, fund and period (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- The scope model gains Entity and Fund dimensions (`entityId`, `fundId` URL parameters). The bar
+  now reads `Scope  Entity … › Fund … › Account … › Period …`, with Subject, Run and Provider
+  inserted before Period when set. Unset Entity, Fund and Account read "All authorized"; an unset
+  Period reads "All periods".
+- Entity and fund travel on every route's URL and in browser storage, recent scopes, saved
+  layouts, Copy link and the operator's default scope. They apply only where a screen reads them:
+  Accounting reads `entityId`; no screen filters by fund yet, so a set fund shows as retained
+  everywhere. No payload is filtered by entity or fund on the client.
+- Option source: the existing organization read model, `GET /api/fund-structure/graph`
+  (`OrganizationStructureGraphDto`). It lists entities, funds with the entities they hold, and
+  accounts with their fund and entity, filtered server-side. No endpoint was added. An entity
+  narrows the funds and accounts; a fund narrows the accounts; an account whose fund or entity the
+  data does not state is hidden from a narrowed list and counted. The graph is gated to
+  fund-structure permissions; without it the picker takes typed ids and narrows nothing.
+- A period control in the scope picker: All periods, Today, MTD, QTD, YTD, Last month, Custom range
+  (shared `DateRangePicker`) and As of. Presets use the operator's calendar day (`LocalDate`).
+- Shared contract: `OperatingScopeValuesDto` gained optional `EntityId` and `FundId` (additive,
+  appended last) so a saved default keeps them.
+- Gaps at that point (both closed below): no screen narrowed by fund, and operators without
+  fund-structure permissions got no entity or fund lists.
+
+**P4 scope-option read for every operator (landed 2026-11-14, source; host bundle not yet rebuilt):**
+- `GET /api/workstation/scope-options` (`WorkstationScopeOptionsDto`, additive) is open to any
+  authenticated operator with tenant and company scope. It lists only the entities, funds and
+  accounts the caller could already read elsewhere: `AdminMaintenance` sees all; otherwise a node
+  needs a globally held permission plus a scoped grant at that node or an ancestor, with
+  `ManageFundStructure` covering entities, funds and accounts, `ManageDirectLending` and
+  `ViewTrades` accounts, and `ViewLedgerReports`/`ManageLedgerReports` entities.
+  Relationships pointing outside the visible set are null. Tenant isolation is the fund-structure
+  service's.
+- The picker prefers it and falls back to `/api/fund-structure/graph` on a 404 (older hosts). A
+  trading-only operator now gets its accounts; the picker says "No entities or funds are visible to
+  you" instead of naming fund-structure access, and "could not be loaded" when the read fails.
+
+**P4 screens narrow by fund (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- Shared rule (`lib/operating-scope/fund-scope-narrowing.ts`): a fund-account row is kept when the
+  organization graph places its account under the chosen fund (or, with only an entity chosen,
+  booked to that entity or held by a fund that holds it). This is the scope picker's
+  `constrainScopeOptions` rule. Rows whose account the graph does not place are left out of the
+  narrowed list and counted in a note ("… 2 with no recorded fund not shown."), never hidden
+  silently. Without the structure read (loading, or the read failed) nothing is narrowed and the
+  note says so. No server payload changed; the narrowing is client-side.
+- Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): the household's accounts and positions
+  are narrowed, and the household totals are re-summed over the accounts kept. Other Portfolio
+  routes keep the whole household.
+- Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue, its counts
+  and references are narrowed.
+- Scope bar: `operatingScopeDimensionsForRoute(route, { fundStructureReady })` adds Entity and Fund
+  to the dimensions in effect on `FUND_SCOPE_NARROWED_ROUTES` only when the graph has loaded. The
+  bar, the picker's "Applied on this screen" hints and the figures-strip scope follow it. Without
+  the graph both stay "retained".
+- Trading's inline account picker narrows its suggestions exactly as the scope picker does
+  (accounts with no recorded fund or entity are left out and counted), and flags a typed or
+  scoped account the graph places outside the chosen fund or entity. It still lets the operator
+  use it. Trading has no other per-account list to narrow.
 
 **P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
 money formatter.
@@ -183,19 +238,37 @@ money formatter.
 - Tests cover UTC, a New York spring-forward and fall-back transition, and the relative and
   absolute forms.
 
+**P3 remaining time formatters migrated (landed 2026-11-14):**
+- `formatTimestamp` gained `precision: "minute" | "second" | "millisecond"` (default `"minute"`,
+  byte-identical to before). `formatUtcTimestamp` and `<TimeText>` take the same option. All
+  outputs below are at the UTC default; in a picked zone they render in that zone.
+- Live-quote times: "15:00:00.123 UTC" → "May 8, 2026, 15:00:00.123 UTC" (millisecond).
+- Price-alert times: "May 12, 14:02:37 UTC" → "May 12, 2026, 14:02:37 UTC" (second).
+- Journal tax-result times: unchanged text at UTC ("May 12, 2026, 14:02:37 UTC"), now zone-aware.
+- Brokerage recovery: "2026-10-05 15:30:02 UTC" → "Oct 5, 2026, 15:30:02 UTC" (second).
+- Reporting schedule, last-run and publication times: "May 17, 8:15 PM UTC" →
+  "May 17, 2026, 20:15 UTC". The Reporting tests were updated to pin the new form.
+- Close checklist: the column is a retained record time, not a UTC-defined cut-off, so it moved to
+  the display zone. The header is now "Recorded at" (each cell carries its zone label) and the
+  CSV export keeps the ISO UTC instant. `formatDateTimeUtc` in `lib/time.ts` had no other caller
+  and was removed.
+- Triage queue and Today queue ages: "<1m"/"5m"/"3h"/"2d" (floored) → "20s ago"/"5m ago"/"3h ago"/
+  "2d ago" (`formatRelativeTime`, rounded), rendered by `TriageAge` as `<TimeText>` with the
+  absolute time on hover. A missing or future instant still reads "Age unavailable".
+- `WorkflowContinuityDock` was deleted. `WorkflowContextDisclosure` moved to
+  `components/meridian/workflow-context-disclosure.tsx` with its own stylesheet.
+
 **Remaining in Phase 1:**
-- P4: entity and fund scope dimensions (needs a shared scope seam), a period picker, and inline
-  account pickers on other single-account screens as they are identified.
-- Time formatters kept on purpose, because their precision differs or a test pins their
-  format:
-  - Live-quote times with milliseconds.
-  - Price-alert and journal tax-result times with seconds.
-  - The brokerage-recovery "2026-10-05 15:30:02 UTC" label.
-  - Reporting schedule times, which stay 12-hour ("May 17, 8:15 PM UTC") because the Reporting
-    tests pin that format. Moving them to `formatTimestamp` is a follow-up that needs those
-    tests updated.
-  - The close-checklist "Recorded at UTC" column.
-  - Today queue and triage-queue age labels, which can now move to `formatRelativeTime`.
+- P4: fund narrowing on more screens with fund-account rows. Candidates: the Operations Continuity
+  workflow list, the reporting delivery history and the statement fetch schedules. Each route is
+  added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
+  the host bundle for the scope-option read, a WPF consumer of the same seam, inline account pickers
+  on other single-account screens as they are identified, and (if wanted) letting a trading,
+  direct-lending or accounting grant at fund level disclose that fund's name, which no existing read
+  does today.
+- The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
+  `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
+  display zone needs the headers renamed.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the

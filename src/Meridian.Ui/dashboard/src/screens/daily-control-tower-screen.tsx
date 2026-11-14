@@ -15,7 +15,7 @@ import { StatusRow } from "@/components/meridian/status-row";
 import type { OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import {
   OperatorTriageActionDialog, OperatorTriageDetailRail, OperatorTriageInboxActions, OperatorTriageInboxError,
-  OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAssignCheckbox, triageAgeLabel,
+  OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAge, TriageAssignCheckbox,
   triageDateLabel, TriageSeverityStatus, triageStateExportValue, triageStateLabel
 } from "@/components/meridian/operator-triage-queue";
 import { useOperatorTriageInbox } from "@/components/meridian/use-operator-triage-inbox";
@@ -139,7 +139,7 @@ export function DailyControlTowerScreen({
       label: "Age",
       className: "whitespace-nowrap tabular-nums",
       exportValue: (row) => row.observedAt,
-      render: (row) => triageAgeLabel(row.observedAt)
+      render: (row) => <TriageAge value={row.observedAt} />
     },
     {
       id: "due",

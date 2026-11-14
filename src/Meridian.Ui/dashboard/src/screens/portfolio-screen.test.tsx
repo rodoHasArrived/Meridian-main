@@ -5,6 +5,8 @@ import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import { formatUtcTimestamp } from "@/lib/format";
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
+import { collectScopeStructureOptions, UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import * as api from "@/lib/api";
 import type {
   BrokerageConnectionStatus,
@@ -416,6 +418,54 @@ describe("PortfolioScreen", () => {
 
     expect(screen.getAllByText(/live brokerage portfolio/i).length).toBeGreaterThan(0);
     expect(screen.queryByRole("treegrid", { name: /run-linked equity/i })).toBeNull();
+  });
+
+  describe("brokerage household fund narrowing", () => {
+    // fund-roth sits in F-1, fund-taxable in F-2 (both under E-A).
+    const structure = collectScopeStructureOptions({
+      entities: [{ entityId: "E-A", name: "Entity A" }],
+      funds: [{ fundId: "F-1", name: "Retirement Fund", entityIds: ["E-A"] }, { fundId: "F-2", name: "Taxable Fund", entityIds: ["E-A"] }],
+      accounts: [
+        { accountId: "fund-roth", displayName: "Roth", fundId: "F-1", entityId: "E-A" },
+        { accountId: "fund-taxable", displayName: "Taxable", fundId: "F-2", entityId: "E-A" }
+      ]
+    });
+    const renderNarrowed = (value: FundScopeNarrowingContextValue, route = "/portfolio/brokerage-sync") =>
+      renderPortfolioScreen(
+        <FundScopeNarrowingProvider value={value}>
+          <PortfolioScreen
+            trading={trading}
+            strategy={strategy}
+            accounting={accounting}
+            brokerageConnection={brokerageConnection}
+            brokeragePortfolio={brokeragePortfolio}
+          />
+        </FundScopeNarrowingProvider>,
+        { initialEntries: [route] }
+      );
+
+    it("shows only the chosen fund's brokerage accounts and positions", async () => {
+      await renderNarrowed({ structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Retirement Fund" } });
+
+      expect(screen.getByRole("status", { name: "Brokerage fund scope" })).toHaveTextContent(
+        "Narrowed to fund Retirement Fund: showing 1 of 2 brokerage accounts."
+      );
+      const accounts = screen.getByRole("treegrid", { name: /alpaca paper brokerage accounts/i });
+      expect(within(accounts).getByText("Alpaca Roth IRA")).toBeInTheDocument();
+      expect(within(accounts).queryByText("Alpaca Brokerage")).toBeNull();
+      const positions = screen.getByRole("treegrid", { name: /alpaca paper current positions/i });
+      expect(within(positions).getByText("AAPL")).toBeInTheDocument();
+      expect(within(positions).queryByText("MSFT")).toBeNull();
+    });
+
+    it("shows the whole household, with an honest note, when the organization graph is unavailable", async () => {
+      await renderNarrowed({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });
+
+      expect(screen.getByRole("status", { name: "Brokerage fund scope" })).toHaveTextContent(/^Not narrowed by entity or fund/);
+      const accounts = screen.getByRole("treegrid", { name: /alpaca paper brokerage accounts/i });
+      expect(within(accounts).getByText("Alpaca Roth IRA")).toBeInTheDocument();
+      expect(within(accounts).getByText("Alpaca Brokerage")).toBeInTheDocument();
+    });
   });
 
   it("renders position table with trading data", async () => {

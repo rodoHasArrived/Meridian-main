@@ -492,15 +492,24 @@ function toDate(value: TimestampInput): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
+/**
+ * The finest clock unit a timestamp shows. "minute" is the default ("18:05"); "second" ("18:05:07")
+ * is for audit and alert evidence; "millisecond" ("18:05:07.123") is for market-data ticks.
+ */
+export type TimestampPrecision = "minute" | "second" | "millisecond";
+
 export interface TimestampFormatOptions {
   /** IANA zone to render in, overriding the operator's display zone, e.g. "UTC" for a UTC-defined label. */
   timeZone?: string;
+  /** Finest clock unit shown; defaults to "minute". */
+  precision?: TimestampPrecision;
 }
 
 const timestampFormatters = new Map<string, Intl.DateTimeFormat>();
 
-function timestampFormatter(timeZone: string): Intl.DateTimeFormat {
-  let formatter = timestampFormatters.get(timeZone);
+function timestampFormatter(timeZone: string, precision: TimestampPrecision): Intl.DateTimeFormat {
+  const key = `${timeZone}|${precision}`;
+  let formatter = timestampFormatters.get(key);
   if (!formatter) {
     try {
       formatter = new Intl.DateTimeFormat(FORMAT_LOCALE, {
@@ -510,14 +519,16 @@ function timestampFormatter(timeZone: string): Intl.DateTimeFormat {
         day: "numeric",
         hour: "2-digit",
         minute: "2-digit",
+        ...(precision === "minute" ? {} : { second: "2-digit" as const }),
+        ...(precision === "millisecond" ? { fractionalSecondDigits: 3 as const } : {}),
         hourCycle: "h23",
         timeZoneName: "short"
       });
     } catch {
       // An unknown zone (a stale preference from another runtime) reads in UTC rather than failing.
-      return timestampFormatter(DEFAULT_DISPLAY_TIME_ZONE);
+      return timestampFormatter(DEFAULT_DISPLAY_TIME_ZONE, precision);
     }
-    timestampFormatters.set(timeZone, formatter);
+    timestampFormatters.set(key, formatter);
   }
   return formatter;
 }
@@ -527,7 +538,8 @@ function timestampFormatter(timeZone: string): Intl.DateTimeFormat {
  * "Jun 30, 2026, 14:05 EDT" for America/New_York or "Jul 1, 2026, 03:05 GMT+9" for Asia/Tokyo.
  * The clock is always 24-hour and the year is never dropped: a ledger or evidence timestamp has to
  * be unambiguous. The zone label is the runtime's short name (an abbreviation where en-US has one,
- * else a GMT offset). An invalid date renders "Invalid Date", as `toLocaleString` does.
+ * else a GMT offset). `precision` adds seconds ("18:05:07 UTC") or milliseconds ("18:05:07.123 UTC")
+ * to the same layout. An invalid date renders "Invalid Date", as `toLocaleString` does.
  */
 export function formatTimestamp(value: TimestampInput, options: TimestampFormatOptions = {}): string {
   const date = toDate(value);
@@ -535,10 +547,13 @@ export function formatTimestamp(value: TimestampInput, options: TimestampFormatO
     return "Invalid Date";
   }
   const fields: Partial<Record<Intl.DateTimeFormatPartTypes, string>> = {};
-  for (const part of timestampFormatter(options.timeZone ?? getDisplayTimeZone()).formatToParts(date)) {
+  const precision = options.precision ?? "minute";
+  for (const part of timestampFormatter(options.timeZone ?? getDisplayTimeZone(), precision).formatToParts(date)) {
     fields[part.type] = part.value;
   }
-  return `${fields.month} ${fields.day}, ${fields.year}, ${fields.hour}:${fields.minute} ${fields.timeZoneName}`;
+  const seconds = precision === "minute" ? "" : `:${fields.second}`;
+  const fraction = precision === "millisecond" ? `.${fields.fractionalSecond}` : "";
+  return `${fields.month} ${fields.day}, ${fields.year}, ${fields.hour}:${fields.minute}${seconds}${fraction} ${fields.timeZoneName}`;
 }
 
 /**
@@ -546,8 +561,8 @@ export function formatTimestamp(value: TimestampInput, options: TimestampFormatO
  * Only for labels defined on the UTC clock (a UTC cut-off, a column headed "UTC"); an
  * operator-facing time goes through `formatTimestamp`.
  */
-export function formatUtcTimestamp(date: Date): string {
-  return formatTimestamp(date, { timeZone: DEFAULT_DISPLAY_TIME_ZONE });
+export function formatUtcTimestamp(date: Date, options: Pick<TimestampFormatOptions, "precision"> = {}): string {
+  return formatTimestamp(date, { ...options, timeZone: DEFAULT_DISPLAY_TIME_ZONE });
 }
 
 /**

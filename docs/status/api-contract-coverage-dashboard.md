@@ -15,7 +15,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
 | Endpoints documented | 828 / 828 |
-| Workstation contracts documented | 1046 / 1046 |
+| Workstation contracts documented | 1051 / 1051 |
 
 ## Endpoint Coverage
 
@@ -815,8 +815,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/strategies/covered-call/runs/{runId}/cancel` | Documented | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:167` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/result` | Documented | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:118` |
 | `GET` | `/api/strategies/covered-call/runs/{runId}/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/CoveredCallEndpoints.cs:88` |
-| `GET` | `/api/strategies/runs/compare` | Documented | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:1115` |
-| `GET` | `/api/strategies/{strategyId}/runs` | Documented | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:974` |
+| `GET` | `/api/strategies/runs/compare` | Documented | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:1116` |
+| `GET` | `/api/strategies/{strategyId}/runs` | Documented | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:975` |
 | `GET` | `/api/subscriptions/active` | Documented | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:22` |
 | `POST` | `/api/subscriptions/subscribe` | Documented | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:44` |
 | `POST` | `/api/subscriptions/unsubscribe/{symbol}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SubscriptionEndpoints.cs:74` |
@@ -1200,7 +1200,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `OnboardingSourceSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:43` |
 | `OnboardingWorkspaceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:124` |
 | `OpenLotSummary` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1139` |
-| `OperatingScopeValuesDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:7` |
+| `OperatingScopeValuesDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:9` |
 | `OperationsAccountingRecordEvidenceCategoryDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1160` |
 | `OperationsAccountingRecordSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1150` |
 | `OperationsActionOriginDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:467` |
@@ -1282,8 +1282,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `OperationsWorkflowStatusDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:12` |
 | `OperatorInboxDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:94` |
 | `OperatorInboxTriageDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:35` |
-| `OperatorScopePreferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:21` |
-| `OperatorScopePreferenceSaveRequest` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:26` |
+| `OperatorScopePreferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:25` |
+| `OperatorScopePreferenceSaveRequest` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:30` |
 | `OperatorSurfaceVisitDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorSurfaceVisitDtos.cs:10` |
 | `OperatorTriageAction` | Documented | `src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:6` |
 | `OperatorTriageActivity` | Documented | `src/Meridian.Contracts/Workstation/OperatorTriageDtos.cs:22` |
@@ -1877,6 +1877,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `WorkstationRiskGuardrail` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:388` |
 | `WorkstationRunDigest` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115` |
 | `WorkstationRunDrillInLinks` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:34` |
+| `WorkstationScopeAccountOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41` |
+| `WorkstationScopeEntityOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:23` |
+| `WorkstationScopeFundOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:31` |
+| `WorkstationScopeOptionsDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:17` |
+| `WorkstationScopeOptionsJsonContext` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58` |
 | `WorkstationSecurityCoverageGapPayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:59` |
 | `WorkstationSecurityCoveragePayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:65` |
 | `WorkstationSecurityCoverageReferencePayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:42` |

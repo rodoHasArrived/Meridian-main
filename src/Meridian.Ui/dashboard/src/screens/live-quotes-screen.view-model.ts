@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatTimestamp, pluralizeCount } from "@/lib/format";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import type { ApiRequestOptions } from "@/lib/api";
@@ -1072,7 +1072,7 @@ export function buildLiveQuotesMarketViewModel({
       : `No recent trades for ${symbol}.`,
     venueLabel: quoteRow?.venue ?? orderbook.data?.venue ?? null,
     stale: orderbook.data?.isStale === true,
-    lastUpdateLabel: formatMarketTimestamp(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null),
+    lastUpdateLabel: formatMarketTime(quoteRow?.timestamp ?? orderbook.data?.timestamp ?? null),
     quoteState: buildPanelState({
       loading: refreshing && !quote.data && !quote.error,
       error: quote.error,
@@ -1551,11 +1551,12 @@ function formatPriceSize(price: number | null | undefined, size: number | null |
   return `${priceLabel} x ${sizeLabel}`;
 }
 
+/** A market-data instant to the millisecond in the display zone, e.g. "May 8, 2026, 15:00:00.123 UTC". */
 export function formatMarketTime(iso: string | null | undefined): string {
   if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return LIVE_QUOTES_EMPTY_VALUE;
-  return formatUtcTimeWithMilliseconds(date);
+  return formatTimestamp(date, { precision: "millisecond" });
 }
 
 function formatRelativeAge(iso: string | null | undefined): string {
@@ -1638,7 +1639,7 @@ export function buildLiveQuotesSessionStatsViewModel(
     id: "live-quotes-session-stats",
     ariaLabel: `${symbol} session statistics`,
     descriptionId: "live-quotes-session-stats-description",
-    description: `Session ${session.sessionDate} quote evidence from ${formatMarketTimestamp(session.firstTradeAt)} to ${formatMarketTimestamp(session.lastTradeAt)}.`,
+    description: `Session ${session.sessionDate} quote evidence from ${formatMarketTime(session.firstTradeAt)} to ${formatMarketTime(session.lastTradeAt)}.`,
     periodLabel: "Today",
     dateLabel: `Session ${session.sessionDate}`,
     changeLabel,
@@ -1688,7 +1689,7 @@ function buildDepthLevelDetail(
   const venueLabel = orderbook?.venue ?? "Unreported";
   const streamLabel = orderbook?.streamId ?? "Unreported";
   const sequenceLabel = orderbook ? formatMarketSize(orderbook.sequenceNumber) : LIVE_QUOTES_EMPTY_VALUE;
-  const timestampLabel = formatMarketTimestamp(orderbook?.timestamp ?? null);
+  const timestampLabel = formatMarketTime(orderbook?.timestamp ?? null);
   const marketStateLabel = orderbook?.marketState ?? "Unreported";
   const imbalanceLabel = orderbook?.imbalance === null || orderbook?.imbalance === undefined
     ? LIVE_QUOTES_EMPTY_VALUE
@@ -1773,7 +1774,7 @@ function buildTradeDetail(trade: TradeDataResponse): LiveQuotesTradeDetailViewMo
       { label: "Sequence", value: String(trade.sequenceNumber) },
       { label: "Stream", value: streamLabel },
       { label: "Venue", value: venueLabel },
-      { label: "Timestamp", value: formatMarketTimestamp(trade.timestamp) }
+      { label: "Timestamp", value: formatMarketTime(trade.timestamp) }
     ]
   };
 }
@@ -1948,21 +1949,6 @@ function buildPanelState({
     toneClass: "border-success/30 bg-success/10 text-success",
     showData: true
   };
-}
-
-function formatMarketTimestamp(iso: string | null | undefined): string {
-  if (!iso) return LIVE_QUOTES_EMPTY_VALUE;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return LIVE_QUOTES_EMPTY_VALUE;
-  return formatUtcTimeWithMilliseconds(date);
-}
-
-function formatUtcTimeWithMilliseconds(date: Date): string {
-  return [
-    String(date.getUTCHours()).padStart(2, "0"),
-    String(date.getUTCMinutes()).padStart(2, "0"),
-    String(date.getUTCSeconds()).padStart(2, "0")
-  ].join(":") + `.${String(date.getUTCMilliseconds()).padStart(3, "0")} UTC`;
 }
 
 function formatChange(value: number | null): string {

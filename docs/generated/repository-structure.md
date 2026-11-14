@@ -6266,6 +6266,7 @@ Meridian-main
 │   │   │   ├── WorkflowLibraryDtos.cs
 │   │   │   ├── WorkflowSummaryDtos.cs
 │   │   │   ├── WorkstationBootstrapDtos.cs
+│   │   │   ├── WorkstationScopeOptionsDtos.cs
 │   │   │   ├── WorkstationTableViewDtos.cs
 │   │   │   └── WorkstationWorkspaceCatalog.cs
 │   │   ├── Meridian.Contracts.csproj
@@ -8989,6 +8990,7 @@ Meridian-main
 │   │   │   │   │   │   ├── historical-chart.view-model.test.ts
 │   │   │   │   │   │   ├── historical-chart.view-model.ts
 │   │   │   │   │   │   ├── income-movement-waterfall.tsx
+│   │   │   │   │   │   ├── inline-fund-account-picker.test.tsx
 │   │   │   │   │   │   ├── inline-fund-account-picker.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.test.tsx
 │   │   │   │   │   │   ├── keyboard-shortcuts-sheet.tsx
@@ -9060,6 +9062,7 @@ Meridian-main
 │   │   │   │   │   │   ├── save-view-dialog.tsx
 │   │   │   │   │   │   ├── scenario-prepayment-inputs.test.ts
 │   │   │   │   │   │   ├── scenario-prepayment-inputs.tsx
+│   │   │   │   │   │   ├── scope-period-field.tsx
 │   │   │   │   │   │   ├── scope-picker.test.tsx
 │   │   │   │   │   │   ├── scope-picker.tsx
 │   │   │   │   │   │   ├── security-curve-valuation-panel.test.tsx
@@ -9099,11 +9102,9 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
 │   │   │   │   │   │   ├── use-operator-triage-inbox.ts
 │   │   │   │   │   │   ├── use-workspace-expansion.ts
-│   │   │   │   │   │   ├── workflow-continuity-dock.combined.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.route-mode.combined.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.route-mode.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.tsx
+│   │   │   │   │   │   ├── workflow-context-disclosure.route-mode.test.tsx
+│   │   │   │   │   │   ├── workflow-context-disclosure.test.tsx
+│   │   │   │   │   │   ├── workflow-context-disclosure.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
 │   │   │   │   │   │   ├── workspace-header.view-model.test.ts
@@ -9453,12 +9454,21 @@ Meridian-main
 │   │   │   │   │   │   ├── figure-scope.ts
 │   │   │   │   │   │   ├── fund-accounts.test.ts
 │   │   │   │   │   │   ├── fund-accounts.ts
+│   │   │   │   │   │   ├── fund-scope-context.tsx
+│   │   │   │   │   │   ├── fund-scope-narrowing.test.ts
+│   │   │   │   │   │   ├── fund-scope-narrowing.ts
+│   │   │   │   │   │   ├── period.test.ts
+│   │   │   │   │   │   ├── period.ts
 │   │   │   │   │   │   ├── persistence.test.ts
 │   │   │   │   │   │   ├── persistence.ts
 │   │   │   │   │   │   ├── recent-scopes.test.ts
 │   │   │   │   │   │   ├── recent-scopes.ts
 │   │   │   │   │   │   ├── scope-label-context.tsx
-│   │   │   │   │   │   └── scope-picker-context.tsx
+│   │   │   │   │   │   ├── scope-picker-context.tsx
+│   │   │   │   │   │   ├── structure-options.test.ts
+│   │   │   │   │   │   ├── structure-options.ts
+│   │   │   │   │   │   ├── use-scope-structure.test.ts
+│   │   │   │   │   │   └── use-scope-structure.ts
 │   │   │   │   │   ├── perf
 │   │   │   │   │   │   ├── off-thread-compute.test.tsx
 │   │   │   │   │   │   └── off-thread-compute.ts
@@ -10233,7 +10243,7 @@ Meridian-main
 │   │   │   │   │   ├── status-badge.css
 │   │   │   │   │   ├── table-workbench.css
 │   │   │   │   │   ├── ui-kit-primitives.css
-│   │   │   │   │   ├── workflow-continuity-dock.css
+│   │   │   │   │   ├── workflow-context-disclosure.css
 │   │   │   │   │   ├── workspace-nav.css
 │   │   │   │   │   ├── workspace-primitives.css
 │   │   │   │   │   ├── workspace-surface.css
@@ -10739,6 +10749,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.ReconciliationRegistration.cs
 │   │   │   ├── WorkstationEndpoints.ReportingAuthority.cs
 │   │   │   ├── WorkstationEndpoints.Routing.cs
+│   │   │   ├── WorkstationEndpoints.ScopeOptions.cs
 │   │   │   ├── WorkstationEndpoints.SecurityCoverage.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterMapping.cs
 │   │   │   ├── WorkstationEndpoints.SecurityMasterWorkbench.cs
@@ -14694,6 +14705,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.ReportAuthority.cs
 │   │   │   ├── WorkstationEndpointsTests.RunComparison.cs
 │   │   │   ├── WorkstationEndpointsTests.RunLedgerQueries.cs
+│   │   │   ├── WorkstationEndpointsTests.ScopeOptions.cs
 │   │   │   ├── WorkstationEndpointsTests.SecurityMaster.cs
 │   │   │   ├── WorkstationEndpointsTests.StrategyTenantScope.cs
 │   │   │   ├── WorkstationEndpointsTests.TermsCapabilityRefusal.cs

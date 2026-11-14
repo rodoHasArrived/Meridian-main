@@ -29,6 +29,8 @@ export const MAX_LAYOUT_DESCRIPTION_LENGTH = 200;
 const MAX_LAYOUT_ROUTE_LENGTH = 4096;
 
 const OPERATING_SCOPE_KEYS = [
+  "entityId",
+  "fundId",
   "symbol",
   "fundAccountId",
   "runId",
