@@ -341,6 +341,12 @@ scope fails before any provider rows are read.
 
 ## Important workflows
 
+Desktop diagnostic logging uses named placeholders and string tuple properties through the
+shared `LoggingServiceBase` formatter. `LogWritten.Message` remains rendered for the Activity Log,
+while structured properties and exception objects remain available to subscribers. The focused
+cross-platform `LoggingServiceBaseTests` in `Meridian.Ui.Tests` cover that contract; native desktop
+compilation and interaction checks still require the Windows validation lane.
+
 Desktop startup asynchronously initializes `ConfigService` before constructing the host.
 Synchronous Strategy and Accounting DI factories consume its `ConfiguredDataRoot` snapshot;
 they must not reload configuration from disk or block on an async read. Embedded desktop hosts

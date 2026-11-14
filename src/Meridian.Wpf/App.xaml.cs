@@ -141,7 +141,7 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogError(
-                $"Desktop launch ticket redemption failed: {ex.Message}");
+                "Desktop launch ticket redemption failed: {Error}", ex, ("Error", ex.Message));
             _launchArgs = e.Args
                 .Where(arg => !arg.StartsWith("--launch-ticket=", StringComparison.OrdinalIgnoreCase) &&
                               !arg.StartsWith("--host=", StringComparison.OrdinalIgnoreCase))
@@ -1083,8 +1083,8 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             WpfServices.LoggingService.Instance.LogError(
-                $"WPF shutdown service failed: {serviceName}",
-                ex);
+                "WPF shutdown service failed: {Service}",
+                ex, ("Service", serviceName));
         }
     }
 
@@ -1109,8 +1109,8 @@ public partial class App : System.Windows.Application
             catch (Exception ex)
             {
                 WpfServices.LoggingService.Instance.LogError(
-                    $"WPF shutdown service failed: {serviceName}",
-                    ex);
+                    "WPF shutdown service failed: {Service}",
+                    ex, ("Service", serviceName));
             }
         }, ct).ConfigureAwait(false);
     }

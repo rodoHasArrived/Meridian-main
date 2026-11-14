@@ -609,9 +609,20 @@ Declared public members:
 | <code>public async Task&lt;FinancialRecordExplorerSelectedRecordDto?&gt; GetRecordAsync(string explorerId, string recordId, string tenantId, string? companyId, FinancialRecordExplorerReadScope scope, ReportAccessQueryContext? reportAccess = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:151](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L151) |  |
 | <code>public async Task&lt;FinancialRecordExplorerSavedViewDto?&gt; SaveViewAsync(string explorerId, FinancialRecordExplorerSavedViewSaveRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:172](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L172) |  |
 | <code>public async Task&lt;FinancialRecordExplorerSavedViewDto?&gt; SaveViewAsync(string explorerId, string tenantId, FinancialRecordExplorerSavedViewSaveRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:178](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L178) |  |
-| <code>public static FinancialRecordExplorerDto BuildReportLineProvenanceExplorer(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; workflowRecords, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null, IReadOnlyList&lt;FinancialRecordExplorerSavedViewDto&gt;? savedViews = null, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs:562](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs#L562) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.DimensionMatching.cs:5](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.DimensionMatching.cs#L5).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.Formatting.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.Formatting.cs#L15).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.Graphs.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.Graphs.cs#L15).
 
 ```csharp
 public sealed partial class FinancialRecordExplorerReadService
@@ -623,7 +634,49 @@ Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.Inst
 public sealed partial class FinancialRecordExplorerReadService
 ```
 
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.LedgerAndPortfolio.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.LedgerAndPortfolio.cs#L15).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
 Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.PreparerAttestation.cs:10](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.PreparerAttestation.cs#L10).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.Querying.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.Querying.cs#L15).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.ReportLineProvenance.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.ReportLineProvenance.cs#L15).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FinancialRecordExplorerDto BuildReportLineProvenanceExplorer(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; workflowRecords, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null, IReadOnlyList&lt;FinancialRecordExplorerSavedViewDto&gt;? savedViews = null, ReportAccessQueryContext? accessContext = null);</code> | [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.ReportLineProvenance.cs:46](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.ReportLineProvenance.cs#L46) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.RunSources.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.RunSources.cs#L15).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.SecurityEvidence.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.SecurityEvidence.cs#L15).
+
+```csharp
+public sealed partial class FinancialRecordExplorerReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.SecurityInstrument.cs:15](../../../../src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.SecurityInstrument.cs#L15).
 
 ```csharp
 public sealed partial class FinancialRecordExplorerReadService
@@ -764,6 +817,12 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FundOperationsWorkspaceReadService</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Accounts.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Accounts.cs#L26).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:30](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L30).
 
 Builds the shared Accounting and fund-operations workspace projection used by the local API and future cross-workspace surfaces.
@@ -776,19 +835,41 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FundOperationsWorkspaceReadService(IFundAccountService fundAccountService, IStrategyRepository strategyRepository, PortfolioReadService portfolioReadService, NavAttributionService navAttributionService, ReportGenerationService reportGenerationService, ISecurityReferenceLookup? securityReferenceLookup = null, IReconciliationRunService? strategyReconciliationService = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IGovernanceReportPackRepository? reportPackRepository = null, ReportPackValidationService? reportPackValidationService = null, ISecurityValidationGateService? securityValidationGate = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, ReportPackWorkflowService? reportPackWorkflowService = null, ReportPackDeliveryService? reportPackDeliveryService = null, ReportingScheduleService? reportingScheduleService = null, ReportPackRunReadService? reportPackRunReadService = null, DirectLendingOperationsReadService? directLendingOperationsReadService = null, ILedgerJournalStore? ledgerJournalStore = null);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:186](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L186) |  |
-| <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:226](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L226) |  |
-| <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:231](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L231) |  |
-| <code>public async Task&lt;StructuredReportingExportPayloadDto&gt; GetStructuredReportingExportAsync(StructuredReportingExportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:362](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L362) |  |
-| <code>public async Task&lt;StructuredReportingExportPayloadDto&gt; GetStructuredReportingExportAsync(StructuredReportingExportRequestDto request, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:367](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L367) |  |
-| <code>public async Task&lt;FundReportPackPreviewDto&gt; PreviewReportPackAsync(FundReportPackPreviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:413](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L413) |  |
-| <code>public async Task&lt;FundReportPackSnapshotDto&gt; GenerateReportPackAsync(FundReportPackGenerateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:458](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L458) |  |
-| <code>public Task&lt;IReadOnlyList&lt;FundReportPackHistoryItemDto&gt;&gt; GetReportPackHistoryAsync(string fundProfileId, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:609](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L609) |  |
-| <code>public Task&lt;FundReportPackSnapshotDto?&gt; GetReportPackAsync(Guid reportId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:620](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L620) |  |
-| <code>public async Task&lt;FundReportPackEvidenceBundleDto?&gt; ExportReportPackEvidenceBundleAsync(Guid reportId, string? auditActor = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:629](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L629) |  |
-| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:1274](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L1274) |  |
+| <code>public FundOperationsWorkspaceReadService(IFundAccountService fundAccountService, IStrategyRepository strategyRepository, PortfolioReadService portfolioReadService, NavAttributionService navAttributionService, ReportGenerationService reportGenerationService, ISecurityReferenceLookup? securityReferenceLookup = null, IReconciliationRunService? strategyReconciliationService = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IGovernanceReportPackRepository? reportPackRepository = null, ReportPackValidationService? reportPackValidationService = null, ISecurityValidationGateService? securityValidationGate = null, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null, ReportPackWorkflowService? reportPackWorkflowService = null, ReportPackDeliveryService? reportPackDeliveryService = null, ReportingScheduleService? reportingScheduleService = null, ReportPackRunReadService? reportPackRunReadService = null, DirectLendingOperationsReadService? directLendingOperationsReadService = null, ILedgerJournalStore? ledgerJournalStore = null);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:52](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L52) |  |
+| <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:92](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L92) |  |
+| <code>public async Task&lt;FundOperationsWorkspaceDto&gt; GetWorkspaceAsync(FundOperationsWorkspaceQuery query, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs:97](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs#L97) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L26).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FundLedgerReconciliationSnapshot ProjectReconciliationSnapshot(FundLedgerSnapshot snapshot);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs:98](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs#L98) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.LiveViews.cs#L26).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
 
 Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Models.cs:6](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Models.cs#L6).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.PortfolioReporting.cs#L26).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Reconciliation.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Reconciliation.cs#L26).
 
 ```csharp
 public sealed partial class FundOperationsWorkspaceReadService
@@ -799,6 +880,35 @@ Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Reco
 ```csharp
 public sealed partial class FundOperationsWorkspaceReadService
 ```
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs#L26).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;FundReportPackPreviewDto&gt; PreviewReportPackAsync(FundReportPackPreviewRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs:29](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs#L29) |  |
+| <code>public async Task&lt;FundReportPackSnapshotDto&gt; GenerateReportPackAsync(FundReportPackGenerateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs:74](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs#L74) |  |
+| <code>public Task&lt;IReadOnlyList&lt;FundReportPackHistoryItemDto&gt;&gt; GetReportPackHistoryAsync(string fundProfileId, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs:225](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs#L225) |  |
+| <code>public Task&lt;FundReportPackSnapshotDto?&gt; GetReportPackAsync(Guid reportId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs:236](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs#L236) |  |
+| <code>public async Task&lt;FundReportPackEvidenceBundleDto?&gt; ExportReportPackEvidenceBundleAsync(Guid reportId, string? auditActor = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs:245](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.ReportPacks.cs#L245) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.StructuredExports.cs:26](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.StructuredExports.cs#L26).
+
+```csharp
+public sealed partial class FundOperationsWorkspaceReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StructuredReportingExportPayloadDto&gt; GetStructuredReportingExportAsync(StructuredReportingExportRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.StructuredExports.cs:161](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.StructuredExports.cs#L161) |  |
+| <code>public async Task&lt;StructuredReportingExportPayloadDto&gt; GetStructuredReportingExportAsync(StructuredReportingExportRequestDto request, ReportAccessQueryContext? accessContext, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.StructuredExports.cs:166](../../../../src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.StructuredExports.cs#L166) |  |
 
 ## FundStructureSetupWorkflowService
 

@@ -311,7 +311,7 @@ Resources for AI agents working in this repository.
    - Use `# Example:` or `// Example:` for inline examples
 
 3. **Links:**
-   - Use relative links for internal documentation: `[text](../operations/file.md) or [text](../development/file.md)`
+   - Use relative links for internal documentation, for example [Operator documentation](../../docs/operators/README.md) and [Engineering documentation](../../docs/engineering/README.md).
    - Use descriptive link text (not "click here")
    - Verify all links work after updates
 

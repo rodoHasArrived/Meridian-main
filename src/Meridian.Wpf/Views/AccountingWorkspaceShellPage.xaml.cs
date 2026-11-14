@@ -227,7 +227,8 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[AccountingWorkspaceShell] Refresh failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[AccountingWorkspaceShell] Refresh failed: {Error}", ex,
+                ("Error", ex.Message));
         }
     }
 

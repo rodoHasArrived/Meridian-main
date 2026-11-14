@@ -531,8 +531,11 @@ public class ExportPresetServiceBase
         => AtomicFileWriter.WriteAsync(_presetsFilePath, json, cancellationToken);
 
     protected virtual void LogLoadFailure(Exception exception)
-        => Meridian.Ui.Services.LoggingService.Instance.LogWarning($"Failed to load export presets from '{_presetsFilePath}'. Using built-in fallbacks.", exception);
+        => Meridian.Ui.Services.LoggingService.Instance.LogWarning(
+            "Failed to load export presets from '{Path}'. Using built-in fallbacks.", exception,
+            ("Path", _presetsFilePath));
 
     protected virtual void LogSaveFailure(Exception exception)
-        => Meridian.Ui.Services.LoggingService.Instance.LogWarning($"Failed to save export presets to '{_presetsFilePath}'.", exception);
+        => Meridian.Ui.Services.LoggingService.Instance.LogWarning(
+            "Failed to save export presets to '{Path}'.", exception, ("Path", _presetsFilePath));
 }

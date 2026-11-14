@@ -101,7 +101,7 @@ def build_tree(
         guard.CANONICAL_SOURCE: canonical,
         Path("src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs"): dto,
         Path("src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Serialization.cs"): containment,
-        Path("src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs"): explorer,
+        Path("src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.LedgerAndPortfolio.cs"): explorer,
     }
     for relative, content in files.items():
         path = root / relative
@@ -131,7 +131,7 @@ class CheckLedgerDimensionCoverageTests(unittest.TestCase):
 
         self.assertEqual(len(gaps), 1)
         path, member, missing, _ = gaps[0]
-        self.assertEqual(path, "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs")
+        self.assertEqual(path, "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.LedgerAndPortfolio.cs")
         self.assertEqual(member, "AddDimensionFilters")
         self.assertEqual(missing, ["ProjectId"])
 
