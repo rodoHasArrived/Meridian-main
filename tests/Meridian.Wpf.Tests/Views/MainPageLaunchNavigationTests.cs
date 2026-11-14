@@ -18,6 +18,7 @@ public sealed class MainPageLaunchNavigationTests
     [InlineData("DataShell")]
     [InlineData("SettingsShell")]
     [InlineData("ResearchShell")]
+    [InlineData("HomeWorkspace")]
     public void WorkspaceHomeLaunch_ShouldRenderTheRequestedPageInTheVisiblePane(string pageTag)
     {
         WpfTestThread.Run(() =>

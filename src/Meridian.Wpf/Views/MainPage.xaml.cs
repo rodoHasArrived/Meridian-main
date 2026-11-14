@@ -105,12 +105,14 @@ public partial class MainPage : Page
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(pageTag);
         var targetFrame = ContentFrame;
-        if (ShellNavigationCatalog.IsWorkspaceShellPageTag(pageTag))
+        var canonicalPageTag = ShellNavigationCatalog.GetCanonicalPageTag(pageTag);
+        if (ShellNavigationCatalog.IsWorkspaceShellPageTag(canonicalPageTag) ||
+            string.Equals(canonicalPageTag, "HomeWorkspace", StringComparison.OrdinalIgnoreCase))
         {
             // Workspace homes are displayed by the split-pane surface, while leaf workflows use ContentFrame.
             // Retain the assignment as well as the visible content so a later layout refresh cannot restore an old page.
             _splitPaneHost ??= SplitPaneHost;
-            _viewModel.PaneHost.AssignPageToPane(pageTag, _viewModel.PaneHost.ActivePaneIndex);
+            _viewModel.PaneHost.AssignPageToPane(canonicalPageTag, _viewModel.PaneHost.ActivePaneIndex);
             SyncSplitPaneContent();
             targetFrame = _splitPaneHost.GetPaneFrame(_viewModel.PaneHost.ActivePaneIndex);
             if (targetFrame is null)

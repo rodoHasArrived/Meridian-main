@@ -287,6 +287,19 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void MainWindow_ShouldUseVisibleShellNavigationForImmediateAndDeferredRestore()
+    {
+        var mainWindow = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\MainWindow.xaml.cs"));
+
+        mainWindow.Should().Contain("NavigateToShellPage(restorePlan.DeferredPageTag)");
+        mainWindow.Should().Contain("NavigateToShellPage(restorePlan.TargetPageTag)");
+        mainWindow.Should().Contain("private bool NavigateToShellPage(string pageTag)");
+        mainWindow.Should().Contain("=> RootFrame.Content is MainPage mainPage");
+        mainWindow.Should().Contain("? mainPage.NavigateToLaunchPage(pageTag)");
+        mainWindow.Should().Contain(": _navigationService.NavigateTo(pageTag)");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldPruneWorkflowArtifactsBeforeCreatingRunDirectory()
     {
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));

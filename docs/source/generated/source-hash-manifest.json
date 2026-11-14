@@ -303,8 +303,8 @@
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "d4e98b3dc995d047822482e3da89273a8f2094fea41b1780562dacd42786a609",
-      "source_hash": "48266eab7512cbca66faa30dd1d5f60503a9a7dc72ff33af57827cdeb8bc1bd0"
+      "readme_hash": "e1021ef3e4c3b8b21b36b4d8f4c2cffa1703623091462e9f5fe5eea5eb2327f6",
+      "source_hash": "c2b56c28a44e12b4a68262b2bf0c325c34caa1cae9901bae9d3326374cbb0ade"
     }
   ],
   "schema": {
