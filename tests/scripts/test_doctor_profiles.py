@@ -566,14 +566,27 @@ exit 99
         self.assert_no_restore_or_install(calls)
 
     def test_passing_preflight_precedes_first_restore_or_install(self) -> None:
-        for lane, operation in (("quality-gate", "dotnet restore"), ("verify-browser", "npm --prefix")):
-            with self.subTest(lane=lane):
+        # Browser-first generation is the first mutating operation in an
+        # aggregate gate. Exercise both a failed install and a successful
+        # browser lane followed by the .NET restore boundary.
+        cases = (
+            ("quality-gate", "npm --prefix", {}),
+            ("quality-gate", "dotnet restore", {"DOCTOR_TEST_NPM_EXIT": "0"}),
+            ("verify-browser", "npm --prefix", {}),
+        )
+        for lane, operation, updates in cases:
+            with self.subTest(lane=lane, operation=operation):
                 self.log.unlink(missing_ok=True)
-                result, calls = self.run_ci(lane)
+                result, calls = self.run_ci(lane, **updates)
                 self.assertEqual(result.returncode, 42, result.stdout + result.stderr)
                 preflight = next(index for index, line in enumerate(calls) if line.startswith("preflight "))
                 write = next(index for index, line in enumerate(calls) if line.startswith(operation))
                 self.assertLess(preflight, write, calls)
+                if lane == "quality-gate" and operation == "npm --prefix":
+                    self.assertFalse(any(line.startswith("dotnet restore") for line in calls), calls)
+                elif lane == "quality-gate":
+                    install = next(index for index, line in enumerate(calls) if line.startswith("npm --prefix"))
+                    self.assertLess(install, write, calls)
 
     def test_setup_skip_node_does_not_require_node_or_python_extras(self) -> None:
         result, calls = self.run_setup("--skip-node", DOCTOR_TEST_MISSING_TOOLS="node,npm", DOCTOR_TEST_MISSING_PACKAGE="Pillow", DOCTOR_TEST_RESTORE_EXIT="0")

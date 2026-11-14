@@ -26,7 +26,7 @@ checker = load('delivery_checker', 'build/scripts/ci/check-generated-output.py')
 
 class GeneratedDeliveryTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.policy = {'whole_files': ['docs/status/tracker.json'], 'whole_trees': ['web/build'],

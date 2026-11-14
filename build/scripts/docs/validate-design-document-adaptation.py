@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import ast
 import re
 from pathlib import Path
 
@@ -398,10 +399,29 @@ def _validate_source_evidence(findings: list[Finding], root: Path, data: dict, m
             if path.exists() and label not in read_text(path):
                 findings.append(Finding("error", repo_path(path, root), f"workspace catalog is missing root workspace {label}"))
 
-    dashboard_text = read_text(dashboard_catalog_path) if dashboard_catalog_path.exists() else ""
-    dashboard_labels = re.findall(r'label:\s*"([^"]+)"', dashboard_text)
-    if dashboard_labels and dashboard_labels != EXPECTED_ROOT_WORKSPACES:
-        findings.append(Finding("error", repo_path(dashboard_catalog_path, root), f"dashboard root workspace order drifted: {dashboard_labels}"))
+    if dashboard_catalog_path.exists():
+        dashboard_text = read_text(dashboard_catalog_path)
+        if dashboard_catalog_path.suffix == ".py":
+            # Browser mirrors are CI outputs. Inspect the authored generator's
+            # literal order without requiring a build or executing source code.
+            try:
+                definitions = [node.value for node in ast.parse(dashboard_text).body
+                               if isinstance(node, ast.Assign)
+                               and any(isinstance(target, ast.Name) and target.id == "WORKSPACE_NAMES"
+                                       for target in node.targets)]
+                if len(definitions) != 1:
+                    raise ValueError("expected one literal WORKSPACE_NAMES definition")
+                dashboard_labels = ast.literal_eval(definitions[0])
+                if not isinstance(dashboard_labels, list):
+                    raise ValueError("WORKSPACE_NAMES must be a list")
+            except (SyntaxError, ValueError, TypeError) as error:
+                findings.append(Finding("error", repo_path(dashboard_catalog_path, root), f"cannot inspect dashboard root workspace order: {error}"))
+                return
+        else:
+            dashboard_labels = re.findall(r'label:\s*"([^\"]+)"', dashboard_text)
+        if dashboard_labels != EXPECTED_ROOT_WORKSPACES:
+            findings.append(Finding("error", repo_path(dashboard_catalog_path, root), f"dashboard root workspace order drifted: {dashboard_labels}"))
+
 
 
 def validate(root: Path) -> list[Finding]:

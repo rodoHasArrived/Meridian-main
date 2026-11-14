@@ -24,7 +24,7 @@ from tools.schema_control.cli import (
 
 class SchemaControlCliTests(unittest.TestCase):
     def test_verify_accepts_ci_contract_inventory_and_still_rejects_reviewed_drift(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             for relative, value in (
                 ("database/schema-control.json", {"contract_sets": []}),
@@ -63,7 +63,7 @@ class SchemaControlCliTests(unittest.TestCase):
                 self.assertEqual(1, main(args))
 
     def test_promote_retains_raw_inventory_only_in_candidate_artifact(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             candidate = root / "candidate"
             (candidate / "manifest").mkdir(parents=True)

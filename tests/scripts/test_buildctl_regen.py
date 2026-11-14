@@ -57,7 +57,7 @@ class RegenCommandTests(unittest.TestCase):
 class MergeRegenerationTests(unittest.TestCase):
     def test_concurrent_review_snapshots_conflict_instead_of_text_merging(self):
         for snapshot in ("docs/generated/workflow-command-reference.md", "docs/source/generated/source-hash-manifest.json"):
-            with self.subTest(snapshot=snapshot), tempfile.TemporaryDirectory() as temporary:
+            with self.subTest(snapshot=snapshot), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
                 root = Path(temporary)
                 environment = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
 
@@ -89,7 +89,7 @@ class MergeRegenerationTests(unittest.TestCase):
                 self.assertEqual(git("diff", "--name-only", "--diff-filter=U").stdout.decode().strip(), snapshot)
 
     def test_fast_forward_merge_regenerates_without_staging_or_replacing_user_prose(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             root = Path(temporary)
             environment = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")
 
@@ -135,7 +135,7 @@ class MergeRegenerationTests(unittest.TestCase):
             self.assertEqual(set(git("diff", "--name-only").decode().splitlines()), {"human.md", "reviewed.md"})
 
     def test_failed_hook_reports_completed_merge_and_recovery_command(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             root = Path(temporary)
             subprocess.run(["git", "init", "--template="], cwd=root, check=True, capture_output=True)
             cli = root / "build/python/cli/buildctl.py"

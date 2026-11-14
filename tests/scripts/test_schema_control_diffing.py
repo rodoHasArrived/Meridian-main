@@ -58,7 +58,7 @@ class SchemaDiffTests(unittest.TestCase):
             self.assertEqual(["changed.md"], first["changed"])
 
     def test_machine_inventory_exclusion_does_not_hide_other_manifest_drift(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             expected, candidate = Path(directory) / "expected", Path(directory) / "candidate"
             expected.mkdir()
             candidate.mkdir()
