@@ -17,7 +17,7 @@ SPEC.loader.exec_module(generation)
 
 class ContractGenerationTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.write_json("database/schema-control.json", {
@@ -86,7 +86,7 @@ class ContractGenerationTests(unittest.TestCase):
 
     def test_symlink_output_is_rejected_without_writing_outside_checkout(self) -> None:
         generation.generate(self.root)
-        with tempfile.TemporaryDirectory() as outside:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as outside:
             target = Path(outside) / "reviewed.txt"
             target.write_text("unchanged")
             path = self.root / "docs/generated/database/data-object-catalog.md"

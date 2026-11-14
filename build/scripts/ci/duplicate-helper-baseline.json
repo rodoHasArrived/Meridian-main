@@ -56,7 +56,7 @@
     "src/Meridian.Ui.Shared/Services/DailyValuationBatchLifecycleService.cs": 1,
     "src/Meridian.Ui.Shared/Services/DailyValuationPositionService.cs": 1,
     "src/Meridian.Ui.Shared/Services/DailyValuationScheduler.cs": 1,
-    "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs": 1,
+    "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.Ledger.cs": 1,
     "src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs": 2,
     "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs": 1,
     "src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs": 1,
