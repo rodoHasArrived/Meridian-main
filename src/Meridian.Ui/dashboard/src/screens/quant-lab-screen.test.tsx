@@ -143,6 +143,20 @@ describe("QuantLabScreen", () => {
     expect(editor.value).toContain("Print(\"hi\");");
   });
 
+  it("executes the visible corporate-action mode edit and offers the retained run ledger explorer", async () => {
+    const runSpy = vi.spyOn(api, "runQuantScript").mockResolvedValue(successfulRun);
+    const user = userEvent.setup();
+    renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+    await user.selectOptions(screen.getByLabelText("Backtest corporate actions"), "RawPricesWithCanonicalEvents");
+    const editor = screen.getByLabelText("Script source") as HTMLTextAreaElement;
+    expect(editor.value).toContain('Backtest.WithCorporateActionMode("RawPricesWithCanonicalEvents");');
+    await user.click(await getEnabledRunButton());
+    await waitFor(() => expect(runSpy).toHaveBeenCalledTimes(1));
+    expect(runSpy.mock.calls[0][0].source).toBe(editor.value);
+    expect(screen.getByRole("link", { name: "Open run ledger explorer" })).toHaveAttribute("href", "/strategy/run-ledger");
+  });
+
   it("runs a script and renders metrics, console output, and plot", async () => {
     const runSpy = vi.spyOn(api, "runQuantScript").mockResolvedValue(successfulRun);
 

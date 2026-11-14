@@ -203,9 +203,6 @@ off a case, and does not remove close blockers.
 
 ## Ledger, OMS and broker comparison
 
-For this backend stage, use the comparison and draft-preparation APIs below. Browser controls
-follow in a separate change.
-
 The bounded three-way workflow compares posted journal cash and canonical lot quantities/basis,
 independent per-account `PaperTradingPortfolio` observations, and normalized retained broker
 observations. It does not use the broker-backed `BrokeragePortfolioState` as independent OMS
@@ -262,7 +259,8 @@ residual produce `InsufficientEvidence`; the system does not invent a balancing 
 Configure `Reconciliation:ThreeWay:CashAccountPath` and `FeeExpenseAccountPath` with active chart
 paths in the selected tenant/company/book. Cash and expense mappings must have the correct types,
 no instrument symbol, and no conflicting financial-account binding. A ready proposal identifies
-its source fee, retained evidence hash, and reviewed accounting-period version. Prepare a draft using
+its source fee, retained evidence hash, and reviewed accounting-period version. The browser's
+**Prepare draft** command calls
 `POST /api/fund-accounts/{accountId}/brokerage-sync/three-way-reconciliation/adjustments/prepare`
 with the retained `ledgerBookId`, `accountingPeriodId`, `operationId`, `checkId`,
 `expectedPeriodVersion`, and `evidenceHash`. Changed current journal, cash, broker or period evidence

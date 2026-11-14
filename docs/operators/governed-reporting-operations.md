@@ -22,9 +22,8 @@ retired, and fixture or caller-supplied rows are not a production recovery mecha
 
 ## Frozen general-ledger interchange export
 
-Use the backend API
-`GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/exports/general-ledger` to download the
-package. Browser download controls follow in a separate change. The authorized
+The Reporting export surface can download
+`GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/exports/general-ledger`. The authorized
 download captures one ledger population and returns CSV, XLSX and Parquet journal detail together
 with an agreement/evidence manifest and symbol P&L evidence. Amounts preserve decimal precision;
 the neutral `general-ledger.v1` layout claims no accounting-vendor import compatibility.

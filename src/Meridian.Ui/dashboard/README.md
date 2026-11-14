@@ -410,6 +410,27 @@ missing snapshots or workflow-version gaps. Legacy histories and one-point obser
 explicit. Metric payloads may carry a version-1 Number Passport reference to the existing
 subject-addressed evidence API; missing references remain unverified, and this additive contract
 does not grant W10/W11 roadmap acceptance.
+Accounting Reconciliation includes an explicit account/book/period three-way comparison of
+ledger, OMS and broker evidence. Source timestamps, age at cutoff, coverage failures, cash,
+position/basis operands and tolerances stay inspectable; missing values display as unavailable.
+Stable break links select the original retained case so its first-seen age and correction workflow
+remain available across later comparison runs. Only a server-supported, independently evidenced
+fee explanation offers explicit draft preparation. The request retains the frozen comparison,
+period version and evidence hash across uncertain retries; the returned draft opens in the existing
+journal workbench. Insufficient evidence offers no preparation command, and this surface never
+approves or posts an adjustment. Source and comparison provenance remain visible separately from
+the workstation's demo status. Configure exposes synthetic-only automatic fill
+posting grants: authenticated operators inspect, activate and revoke exact scoped authority against
+the current retained policy/mapping. Grant identities survive uncertain responses for inspection
+and retry; tenant, company and actor are server-owned. These reads never use development fallback.
+
+Reporting Exports downloads the server's single-snapshot general-ledger ZIP for the selected
+book/period with the session's explicit ExportData permission, without rebuilding financial rows in JavaScript. Quant Lab's corporate-action selector
+edits the visible executed source with `Backtest.WithCorporateActionMode(...)`; Legacy preserves current automatic stored-action behavior; custom/multiple mode overrides require
+explicit source editing. Raw mode's restrictions
+are enforced by the engine. The run-ledger link opens the existing Strategy simulation explorer;
+it does not claim that a script execution has been retained as a fund journal. Focused integration
+coverage is in `accounting-integrations.test.tsx` and `quant-lab-screen.test.tsx`.
 
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
