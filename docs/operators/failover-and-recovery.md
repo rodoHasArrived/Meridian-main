@@ -217,6 +217,26 @@ archives without their key. Protect the original receipt and its retained artifa
 Earlier schema-2 receipts without authenticated-manifest evidence cannot be upgraded by adding
 those fields in completion JSON; run a new authenticated drill.
 
+For the one-commit `Desktop Installer Release` train, the recovery-acceptance job waits behind
+the protected `desktop-release-signing` environment after the archive drill. Download the exact
+`production-recovery-drill-<run id>-<attempt>` artifact and complete the reconciliation and
+acceptance procedure above. Set the environment variable `MDC_RECOVERY_COMPLETION_JSON` to the
+resulting completion JSON before approving that waiting job. Its bytes are retained in the
+release audit artifact in this public repository. Use only non-secret evidence references,
+without credentials or private operator data. The automated source drill uses synthetic fixtures;
+the owner's reconciliation and acceptance must identify that scope and cannot claim production
+account or business-dataset validation. Environment
+approval authorizes the evaluator to run; it cannot replace the named operator's acceptance or
+its evidence. The job independently validates the immutable source receipt and completion JSON,
+then retains `production-recovery-objectives-<run id>-<attempt>` with a separate evaluated receipt.
+
+The completion JSON must match this run's exact backup, manifest, source and loss milestones.
+Remove stale completion input after use. A rerun with a new drill requires new completion
+evidence. The two-hour RTO remains measured from actual declared loss to actual acceptance,
+including reconciliation time; do not substitute job-approval time, backdate acceptance or extend
+the budget to accommodate the workflow. Missing, mismatched, invalid or breached evidence keeps
+`PRD-015` blocked and prevents release promotion.
+
 A workflow definition or green archive job is not accepted recovery-objective evidence. Retain
 the release-commit run URL, its `production-recovery-drill-*` artifact, original receipt,
 completion-evidence JSON, evaluated receipt with `objectiveStatus: proven`, referenced verification/

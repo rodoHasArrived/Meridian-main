@@ -3,6 +3,10 @@ name: Production Certification
 on:
   workflow_call:
     inputs:
+      require-recovery-acceptance:
+        description: Require same-run, owner-supplied recovery completion and independently evaluated objectives.
+        type: boolean
+        default: false
       integration-artifact-id:
         description: Validated integration artifact from a successful coordinator dependency.
         type: string
@@ -299,6 +303,73 @@ jobs:
         with:
           name: production-recovery-drill-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/recovery/
+          if-no-files-found: error
+          retention-days: 90
+
+  recovery-acceptance:
+    name: validate owner recovery completion and objectives
+    needs: recovery-drill
+    if: inputs.require-recovery-acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The owner must review the immutable drill artifact, perform reconciliation,
+    # set MDC_RECOVERY_COMPLETION_JSON in this environment, and approve this job.
+    # Environment approval alone is never treated as recovery acceptance. The
+    # completion must bind the exact fresh backup/loss milestones; stale values fail.
+    environment: desktop-release-signing
+    steps:
+      - name: Check out exact release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Download this attempt's immutable recovery evidence
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: production-recovery-drill-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/recovery-source
+
+      - name: Independently validate bound operator completion and recovery budgets
+        shell: pwsh
+        env:
+          RECOVERY_COMPLETION_JSON: ${{ vars.MDC_RECOVERY_COMPLETION_JSON }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          . ./build/scripts/recovery/recovery-evidence.ps1
+          $sourcePath = 'artifacts/recovery-source/recovery-drill-receipt.json'
+          $source = Read-RecoveryJson $sourcePath
+          if ($source.sourceCommit -cne $env:GITHUB_SHA -or $source.drillSourceCommit -cne $env:GITHUB_SHA) {
+            throw 'Recovery source and drill must belong to this exact release commit.'
+          }
+          New-Item -ItemType Directory -Path artifacts/recovery-objectives -Force | Out-Null
+          $retainedPath = 'artifacts/recovery-objectives/recovery-drill-receipt.json'
+          Copy-Item -LiteralPath $sourcePath -Destination $retainedPath -ErrorAction Stop
+          $originalHash = (Get-FileHash -LiteralPath $sourcePath -Algorithm SHA256).Hash
+          if ([string]::IsNullOrWhiteSpace($env:RECOVERY_COMPLETION_JSON)) {
+            throw 'MDC_RECOVERY_COMPLETION_JSON is required. Supply genuine reconciliation and operator acceptance for this drill; environment approval is insufficient.'
+          }
+          $completionPath = 'artifacts/recovery-objectives/recovery-completion.json'
+          [IO.File]::WriteAllText($completionPath, $env:RECOVERY_COMPLETION_JSON, [Text.UTF8Encoding]::new($false))
+          pwsh ./build/scripts/recovery/validate-recovery-receipt.ps1 `
+            -ReceiptPath $retainedPath `
+            -RecoveryEvidencePath $completionPath `
+            -OutputPath artifacts/recovery-objectives/recovery-objective-evaluation.json `
+            -MaximumRpoSeconds 3600 `
+            -MaximumRtoSeconds 7200
+          if ($LASTEXITCODE -ne 0) { throw 'Recovery objectives are unproven or breached; inspect the separate evaluated receipt.' }
+          if ((Get-FileHash -LiteralPath $sourcePath -Algorithm SHA256).Hash -cne $originalHash -or
+              (Get-FileHash -LiteralPath $retainedPath -Algorithm SHA256).Hash -cne $originalHash) {
+            throw 'Immutable recovery source receipt changed during objective validation.'
+          }
+
+      - name: Retain original, completion and separate objective evaluation
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: production-recovery-objectives-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/recovery-objectives/
           if-no-files-found: error
           retention-days: 90
 

@@ -4,6 +4,7 @@
 **Date:** 2026-07-12
 **Owner:** core-team
 **Reviewed:** 2026-10-20
+**First-release scope amendment:** 2026-11-14 (`DEC-PRD014-FIRST-ENVELOPE-001`; Windows x64 only for v0.1.0 and its release candidates)
 **Deciders:** core-team
 **Supersedes:** —
 **Superseded by:** —
@@ -46,7 +47,7 @@ remote multi-node topology is close to certifiable.
 | Dimension | Supported in the v1 production envelope | Explicitly experimental (fail closed / not production) |
 |-----------|------------------------------------------|--------------------------------------------------------|
 | Topology | Single-operator, single-company, single-node **local workstation**: one unelevated per-user lifecycle supervisor owns one Meridian host process and, when configured, one dedicated local PostgreSQL instance per operator machine | Remote/browser-hosted `ProductionApi`, multi-node, shared multi-tenant hosting, machine-wide lifecycle services |
-| OS / runtime | Windows 11 (x64 and ARM64), .NET 10, installed via the desktop-installer lane | Linux container (`deploy/docker/`, `deploy/k8s/`), `deploy/systemd/` service, any non-Windows host |
+| OS / runtime | Windows 11 **x64** for v0.1.0 and its release candidates, .NET 10, installed via the desktop-installer lane; later envelopes retain the x64 and ARM64 certification requirement | ARM64 for v0.1.0; Linux container (`deploy/docker/`, `deploy/k8s/`), `deploy/systemd/` service, any non-Windows host |
 | UI | Browser workstation served over loopback by the local host, plus the WPF desktop shell (co-equal lanes over shared contracts) | Any remotely served workstation origin |
 | Auth / tenancy | `AuthenticationMode.Required` (packaged/customer builds already default to it); one company per isolated deployment | `Optional` auth outside dev/test; cross-tenant shared deployments (until `PRD-001` tenant partitioning completes) |
 | Storage | Local WAL / atomic-file stores under the resolved `DataRoot`; supervisor-managed dedicated **local** PostgreSQL for the domains that require it (fund accounts, fund structure, security master, direct lending). An explicitly configured `external` local PostgreSQL mode is supported as a non-owning compatibility posture. | Remote/managed database topologies; any in-memory, null, or no-op store in a production posture |
@@ -61,6 +62,22 @@ Under this decision the `PRD-000` completion evidence item "a `ProductionApi` in
 that starts successfully" is re-scoped to: the **supported local-workstation posture composes and
 starts**, and every experimental posture **fails closed with a diagnostic naming the prohibited
 bindings**. Sign-off on this ADR ratifies that amendment.
+
+#### First-release architecture scope (2026-11-14)
+
+The v0.1.0 release train, including `v0.1.0-rc.2`, certifies and distributes **Windows x64 only**.
+The owner requested either a secured native ARM64 runner or a formal first-envelope scope-out;
+this change selects the scope-out (`DEC-PRD014-FIRST-ENVELOPE-001`). Historical native ARM64
+rehearsal successes remain valid within their original scope, but do not certify a new commit.
+An ARM64 payload, emulated lifecycle, or x64 packaging run cannot be advertised as a supported
+v0.1.0 ARM64 installation.
+
+The release policy derives this bounded exception from the numeric version `0.1.0`; it is not a
+dispatch switch that can remove an architecture from arbitrary later releases. Later versions
+retain native x64 and ARM64 lifecycle requirements. Supporting ARM64 requires a declared later
+envelope, an available native Windows ARM64 runner, protected signing, and fresh same-commit
+installed lifecycle receipts. This amendment changes no authentication, credential, recovery,
+documentation, or signed-installation gate, and records no release or operator acceptance.
 
 ### 1.1. Supported process and database ownership
 
@@ -111,8 +128,9 @@ format are governed by [ADR-020](020-lifecycle-control-plane.md).
   selected production), the detected OS and architecture, this ADR, and the platform-bound bindings
   that would otherwise silently degrade: provider credential vault protection falling from
   `dpapi-current-user` to the adjacent-AES-key `local-aes-gcm`, and the lifecycle protected secret
-  store. Architecture is reported but not refused, because `PRD-014` certifies both x64 and ARM64
-  installer receipts. The Windows version is likewise reported, not refused: the code gate is the
+  store. Architecture is reported but not refused by this OS-family guard; the release policy and
+  distributed artifacts enforce the architecture envelope above. The Windows version is likewise
+  reported, not refused: the code gate is the
   operating-system family, which is the boundary that changes the credential-protection path; the
   Windows 11 row of the matrix is enforced by the installer lane and certification receipts, not by
   this guard. Unflagged `LocalWorkstation` and unspecified postures are never platform-gated, so
@@ -196,9 +214,10 @@ default environment stays unvalidated.
   other non-production postures do not run the production factory check.
 - `deploy/docker/`, `deploy/k8s/`, and `deploy/systemd/` remain in-tree as experimental material
   pending `PRD-013` disposition.
-- The consumer `Meridian-Setup.exe` ships both architectures plus a full PostgreSQL distribution
-  (~1 GB). Core-team accepted that size for the `v0.1.0-rc` line on 2026-10-20; splitting by
-  architecture is a later product decision, not a condition of this matrix.
+- The 2026-10-20 decision accepted the historical dual-architecture consumer package's ~1 GB
+  download size. The amended v0.1.0 envelope ships an x64 consumer `Meridian-Setup.exe` with
+  its PostgreSQL payload; the historical size acceptance does not claim an ARM64 payload or
+  installation is supported by that first envelope.
 
 ## Compliance
 
