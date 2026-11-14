@@ -87,6 +87,38 @@ public sealed class IntercompanyAccrualDraftServiceTests
         Assert.Contains("open source period", unavailable.Message);
     }
 
+    [Fact]
+    public async Task RetainedSliceAuthority_IsReResolvedBeforeTheDraftAdvances()
+    {
+        var evidence = (await Service().PreviewAsync("tenant-a", "company-a", "preparer", Request())).Evidence!;
+        var interest = Profile(Interest, IntercompanyAccountingTemplateKindDto.LoanInterest,
+            [new(Data.EntityA, Data.BookA, "a-int-recv", "a-int-pay", null, "a-int-income", "a-int-expense"),
+             new(Data.EntityB, Data.BookB, "b-int-recv", "b-int-pay", null, "b-int-income", "b-int-expense")], structured: true);
+        interest = interest with { Arrangement = interest.Arrangement with { RevisionId = evidence.PostingArrangementRevisionId } };
+        var retired = interest.Arrangement with { RetiredAt = new DateTimeOffset(2026, 6, 10, 0, 0, 0, TimeSpan.Zero) };
+        var retiredHistory = new IntercompanyAccountingArrangementHistoryDto([.. History(interest).Events,
+            new(Guid.NewGuid(), "digest", IntercompanyAccountingArrangementActionDto.Retire, "mapping-reviewer", Data.Now, "Retired", retired)]);
+
+        await Authority(History(interest), interest).VerifyAccrualAuthorityAsync("tenant-a", evidence);
+        var afterRetirement = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            Authority(retiredHistory, interest).VerifyAccrualAuthorityAsync("tenant-a", evidence));
+        var changedLegal = await Assert.ThrowsAsync<InvalidOperationException>(() => Authority(History(interest),
+            interest with { LegalRevision = interest.LegalRevision with { PayloadHash = new string('b', 64) } })
+            .VerifyAccrualAuthorityAsync("tenant-a", evidence));
+
+        Assert.Contains("2026-06-30", afterRetirement.Message);
+        Assert.Contains("legal revision", changedLegal.Message);
+    }
+
+    private static Meridian.FinancialOperations.Intercompany.IntercompanyLedgerPostingAuthority Authority(
+        IntercompanyAccountingArrangementHistoryDto history, ResolvedIntercompanyAccountingArrangementDto resolved)
+    {
+        var store = new Mock<IIntercompanyAccountingArrangementStore>();
+        store.Setup(x => x.GetAsync("tenant-a", Interest, It.IsAny<CancellationToken>())).ReturnsAsync(history);
+        return new(store.Object, IntercompanyArrangementTestData.Service(store.Object, resolved), Mock.Of<IIntercompanyAccountBindingStore>(),
+            null!, Mock.Of<ILedgerJournalStore>(), null!);
+    }
+
     private static IntercompanyAccrualRequestDto Request() => new(Data.BookA, Interest, Principal, From, To);
 
     private static IntercompanyAccrualDraftService Service(bool openPeriod = true,

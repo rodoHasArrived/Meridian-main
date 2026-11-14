@@ -97,7 +97,12 @@ public sealed partial class ManualJournalEntryWorkbenchService
     {
         // A reversal or rebook clones the original's provenance and window; it corrects the posted accrual
         // rather than accruing the window again, so only the original draft is checked.
-        if (!IntercompanyAccrualEvidenceGuard.IsOriginalAccrualDraft(draft)
+        // An incoming counterpart recognizes the window in this book too: if this entity already accrued
+        // overlapping days itself, both cannot post. A counterpart reversal is a verified exact inverse, not a new accrual.
+        var original = IntercompanyAccrualEvidenceGuard.IsOriginalAccrualDraft(draft);
+        var counterpart = !original && draft.IntercompanyProposalId is not null
+            && draft.EntryType != ManualJournalEntryTypeDto.Reversal && draft.ReversalOfJournalEntryId is null;
+        if (!(original || counterpart)
             || draft.Status is not (ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix
                 or ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Rejected))
             return;
@@ -114,9 +119,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
         if (Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.FindPostedOverlap(posted, arrangementId,
             from, to) is { } overlap)
             throw new InvalidOperationException($"Posted accrual {overlap} already covers part of this window. Reverse it or discard this draft; the same days are never accrued twice.");
-        // The amount was computed from posted principal; a later backdated movement makes it stale.
-        if (IntercompanyAccrualEvidenceGuard.Deserialize(draft.IntercompanyAccrualEvidenceJson!) is { } evidence)
+        // The amount was computed from posted principal and per-day authority; either can change after drafting.
+        if (original && IntercompanyAccrualEvidenceGuard.Deserialize(draft.IntercompanyAccrualEvidenceJson!) is { } evidence)
         {
+            await _intercompanyPostingAuthority!.VerifyAccrualAuthorityAsync(draft.TenantId ?? evidence.TenantId, evidence, ct).ConfigureAwait(false);
             var principal = await _journalStore.QueryAsync(new(LedgerBookId: bookId,
                 LineDimensions: new() { AccountingArrangementId = evidence.Principal.PrincipalArrangementId.ToString("D") }), ct).ConfigureAwait(false);
             if (Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, principal) is { } stale)

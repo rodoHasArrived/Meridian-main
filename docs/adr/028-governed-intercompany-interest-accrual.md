@@ -192,6 +192,10 @@ the terms do not declare inside the same evidence chain.
 - Before an accrual draft is submitted, approved or posted, posted principal is read again and must
   match what the draft retained. A backdated repayment or correction makes the draft stale until
   it is recomputed.
+- The same recheck re-resolves the profile and legal revision retained for every slice, so a
+  revision retired or re-pinned after drafting stops the draft, and it applies the overlap check to
+  an incoming counterpart draft, so two entities that each accrued overlapping days cannot both
+  post the other's counterpart.
 - A reversal or rebook of a posted accrual gets its own posting identity.
 - The evidence guard binds the debit and credit direction to the retained lending direction, so a
   balanced draft with both sides swapped is refused.

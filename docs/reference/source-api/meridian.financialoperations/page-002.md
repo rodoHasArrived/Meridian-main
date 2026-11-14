@@ -679,9 +679,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:19](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L19) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:21](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L21) |  |
-| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:194](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L194) |  |
+| <code>public async Task VerifyAccrualAuthorityAsync(string tenantId, IntercompanyAccrualEvidenceDto evidence, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:24](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L24) | Re-resolves every retained accrual slice under current profile and legal authority. The posted lines carry only the revision of the posting date, so an earlier slice whose revision was since retired, superseded or re-pinned would otherwise post on authority that no longer covers its days. |
+| <code>public string ControlName =&gt; …;</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:48](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L48) |  |
+| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAsync(IReadOnlyList&lt;LedgerPostingAuthorityContext&gt; contexts, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:50](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L50) |  |
+| <code>public async Task&lt;LedgerBookControlPreflightLease&gt; CheckAsync(LedgerBookRecord book, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs:223](../../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyLedgerPostingAuthority.cs#L223) |  |
 
 ## IntercompanyObligationMonitorService
 
