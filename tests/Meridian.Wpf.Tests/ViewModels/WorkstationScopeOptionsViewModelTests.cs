@@ -110,6 +110,33 @@ public sealed class WorkstationScopeOptionsViewModelTests
     }
 
     [Fact]
+    public void AccountConflictsWithScope_NeverTreatsAWithheldPlacementAsAConflict()
+    {
+        var hiddenFund = Guid.Parse("00000000-0000-0000-0000-0000000000c3");
+        var hiddenEntity = Guid.Parse("00000000-0000-0000-0000-0000000000c4");
+        var source = Options();
+        var options = source with
+        {
+            Accounts =
+            [
+                .. source.Accounts,
+                new WorkstationScopeAccountOptionDto(hiddenFund, "Fund not visible", FundId: null, EntityId: EntityA, FundWithheld: true),
+                new WorkstationScopeAccountOptionDto(hiddenEntity, "Entity not visible", FundId: FundOne, EntityId: null, EntityWithheld: true)
+            ]
+        };
+
+        // The withheld fund could be the chosen one, and so could the withheld entity.
+        WorkstationScopeOptionsNarrowing.AccountConflictsWithScope(options, optionsAvailable: true, hiddenFund, entityId: null, FundTwo)
+            .Should().BeFalse();
+        WorkstationScopeOptionsNarrowing.AccountConflictsWithScope(options, optionsAvailable: true, hiddenEntity, EntityB, fundId: null)
+            .Should().BeFalse();
+
+        // A proven conflict is still one.
+        WorkstationScopeOptionsNarrowing.AccountConflictsWithScope(options, optionsAvailable: true, HeldByFundTwo, entityId: null, FundOne)
+            .Should().BeTrue();
+    }
+
+    [Fact]
     public void Constrain_WhenOptionsUnavailable_NarrowsNothing()
     {
         var narrowed = WorkstationScopeOptionsNarrowing.Constrain(Options(), optionsAvailable: false, EntityA, FundOne);

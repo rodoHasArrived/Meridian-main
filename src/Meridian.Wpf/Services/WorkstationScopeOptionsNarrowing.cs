@@ -211,9 +211,52 @@ public static class WorkstationScopeOptionsNarrowing
             return false;
         }
 
+        // A withheld fund or entity might be the chosen one, so an account placed only through a
+        // withheld relationship is left out of the narrowed list but is never a proven conflict
+        // (the browser's accountConflictsWithScope does the same).
+        if (IsPlacementWithheld(account, Normalize(entityId), Normalize(fundId)))
+        {
+            return false;
+        }
+
         return !Constrain(options, optionsAvailable, entityId, fundId)
             .Accounts
             .Any(candidate => candidate.AccountId == id.Value);
+    }
+
+    /// <summary>
+    /// Whether <see cref="Constrain"/> leaves this account out only because a relationship it would
+    /// need is withheld (it counts it in <see cref="WorkstationScopeNarrowedOptions.AccountsWithWithheldRelationship"/>).
+    /// </summary>
+    private static bool IsPlacementWithheld(WorkstationScopeAccountOptionDto account, Guid? entity, Guid? fund)
+    {
+        var accountFund = Normalize(account.FundId);
+        var accountEntity = Normalize(account.EntityId);
+
+        if (fund is { } chosenFund)
+        {
+            if (accountFund is null)
+            {
+                return account.FundWithheld;
+            }
+
+            if (accountFund.Value != chosenFund)
+            {
+                return false;
+            }
+        }
+
+        if (entity is not null && accountEntity is null)
+        {
+            if (account.EntityWithheld)
+            {
+                return true;
+            }
+
+            return accountFund is null && account.FundWithheld;
+        }
+
+        return false;
     }
 
     private static HashSet<Guid> FundIdsForEntity(WorkstationScopeOptionsDto options, Guid entityId)
