@@ -9,4 +9,5 @@ SPEC = importlib.util.spec_from_file_location(
 cases = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = cases
 SPEC.loader.exec_module(cases)
-GenerateStructureDocsTests = cases.GenerateStructureDocsTests
+class GenerateStructureDocsTests(cases.GenerateStructureDocsTests):
+    """Keep the canonical runner module identity while reusing the regressions."""
