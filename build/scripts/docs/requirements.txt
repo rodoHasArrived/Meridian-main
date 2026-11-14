@@ -4,3 +4,4 @@
 # YAML parsing with PyYAML. The pin matches tools/source_docs/requirements-render.txt
 # so the repository resolves one PyYAML version.
 PyYAML==6.0.3
+jsonschema==4.26.0

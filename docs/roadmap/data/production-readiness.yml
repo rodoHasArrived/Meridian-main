@@ -1,0 +1,626 @@
+schema:
+  id: meridian.production-readiness
+  version: 1.0.0
+  minimum_renderer_version: 1.0.0
+registry:
+  reviewed: '2026-10-31'
+  migration_snapshot: docs/product/history/production-readiness-2026-11-14.md
+  baseline_commit: e0ecd952d24b1e8d09a8de282ed90c98cffe1bb3
+  release_status: blocked
+  release_commit: null
+items:
+- id: PRD-000
+  priority: P0
+  owner: Runtime Host + Architecture + domain owners
+  title: Declare one supported production envelope and make its final dependency graph valid.
+  status: evidence_gated
+  release_status: open
+  remaining_gate: Obtain clean installed publish/start/upgrade/rollback receipts from the corrected signed candidate on a green main head; ADR-019/ADR-020 sign-off is already recorded.
+  decision_ids:
+  - DEC-PRD000-SUPPORT-MATRIX-001
+  evidence_links:
+  - docs/adr/019-production-support-matrix-and-deployment-posture.md
+  - docs/adr/020-lifecycle-control-plane.md
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-001
+  priority: P0
+  owner: Identity + Security + Storage
+  title: Make authentication, sessions, authorization, and tenancy fail closed.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain same-release-commit certification for authentication, sessions and tenancy. Shared-store evidence does not expand the supported single-node envelope.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-002
+  priority: P0
+  owner: Platform Security + Data Integration
+  title: Eliminate plaintext provider credential persistence and unify credential ownership.
+  status: in_progress
+  release_status: open
+  remaining_gate: Finish browser and remaining WPF/setup/default-runtime credential ownership; prove legacy ownership/verification migration and rollback, then retain same-release-commit certification and operator evidence.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-003
+  priority: P0
+  owner: Ledger + Storage + Financial Operations
+  title: Close the ledger append boundary.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain PostgreSQL integration evidence for the governed append boundary on the release commit.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-004
+  priority: P0
+  owner: Ledger + Accounting Close
+  title: Make hard-close final and race-safe.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain same-release-commit production certification for hard-close and late-write rejection.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-005
+  priority: P0
+  owner: Reporting + Portfolio + Security Master + WPF
+  title: Remove non-authoritative financial outputs.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain browser/WPF acceptance of authoritative financial outputs on the release candidate.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-006
+  priority: P0
+  owner: Execution + Risk + Storage
+  title: Unify order truth and enforce pre-trade risk.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain release-host integration and reconnect/execution-report evidence on the release commit.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-007
+  priority: P0
+  owner: Audit + Compliance + Strategy + Workflow + Storage
+  title: Make production evidence durable and authoritative.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain retention/access-revocation exercises and same-commit hosted durability evidence.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-008
+  priority: P0
+  owner: Data Integration + Storage
+  title: Enforce single ETL ownership and safe commit ordering.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain concurrent service-backed ETL ownership and safe-commit proof in release certification.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-009
+  priority: P0
+  owner: Storage + Audit
+  title: Honor durability promises under concurrency and low volume.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain process-termination and multi-process storage artifacts from release certification.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-010
+  priority: P0
+  owner: Provider Platform + Security + Reconciliation
+  title: Harden provider and statement ingress.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Preserve the recorded bounded implementation grade and Alpaca pre-scan qualifications; bounded converters remain open. Retain ingress certification for the release commit.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-011
+  priority: P0
+  owner: Direct Lending + Shared API + Security
+  title: Close mutation abuse and post-commit ambiguity.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain PostgreSQL crash/retry integration evidence for rate-limited mutation and outbox effects.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-012
+  priority: P0
+  owner: Strategy Analytics + Runtime Security
+  title: Keep QuantLab disabled in production until scripts run in a real isolation boundary.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Retain production-host rejection evidence on the release commit; development worker controls do not authorize production script execution.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-013
+  priority: P0
+  owner: Release Engineering + Browser + SRE
+  title: Make the selected deployment start securely with the current browser bundle.
+  status: evidence_gated
+  release_status: open
+  remaining_gate: Repeat the proven installed-artifact smoke on the frozen release commit.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-014
+  priority: P0
+  owner: Release Engineering + Security
+  title: Certify every shipped artifact and its supply chain.
+  status: evidence_gated
+  release_status: open
+  remaining_gate: Provision protected signing secrets, native Windows ARM64 capacity and prior artifacts; obtain a green corrected tag run with complete clean-environment lifecycle receipts. The failed rc.1 tag cannot certify.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-015
+  priority: P0
+  owner: Storage + SRE/Operations
+  title: Implement and drill backup, restore, migration rollback, replay, and disaster recovery for every supported store.
+  status: evidence_gated
+  release_status: open
+  remaining_gate: Retain release-commit recovery, verification, reconciliation and named operator-acceptance evidence plus evaluated objectiveStatus=proven under RPO 3600s/RTO 7200s. Archive speed alone is insufficient.
+  decision_ids: []
+  evidence_links:
+  - docs/engineering/production-certification-evidence-chain.md#prd-015-recovery-drill-operator-review
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-016
+  priority: P0
+  owner: Test Architecture + DevEx + domain owners
+  title: Create a deterministic production-certification lane.
+  status: evidence_gated
+  release_status: open
+  remaining_gate: Repeat the full zero-skip service-backed certification on the frozen release commit; repository-administrator required-check activation remains separate.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-017
+  priority: P0
+  owner: Documentation + Roadmap + module owners
+  title: Restore one trustworthy product/operations evidence chain.
+  status: evidence_gated
+  release_status: open
+  remaining_gate: Keep local validators and hosted same-commit documentation evidence green on the final candidate.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-018
+  priority: P0
+  owner: Release Engineering + Documentation + Browser
+  title: Make the demo/quickstart serve one verified workstation asset tree.
+  status: open
+  release_status: open
+  remaining_gate: Prove clean-clone demo behavior regardless of launch directory and asset freshness against the same dashboard source commit.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-019
+  priority: P0
+  owner: SRE/Operations + Runtime Host
+  title: Certify sanitized readiness and monitoring deployment
+  status: open
+  release_status: open
+  remaining_gate: Retain ADR-019 acceptance and same-commit hosted compose/running-host proof of sanitized readiness, authenticated health and loopback-only scraping.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-020
+  priority: P0
+  owner: Strategy + Execution + Product
+  title: Close the designer-strategy activation gap and retire fabricated strategy lifecycles.
+  status: open
+  release_status: open
+  remaining_gate: Complete the promoted Designer-to-paper path with actual fills or explicit fail-closed reasons, visible catalog-resolution failure and genuine lifecycle state/results.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p0--release-blockers
+- id: PRD-100
+  priority: P1
+  owner: Product + owning lanes
+  title: Finish or explicitly remove active roadmap work from the supported release envelope.
+  status: open
+  release_status: open
+  remaining_gate: Reconcile included WPF/browser work against current exit criteria; name excluded capability in the signed support matrix without false parity claims.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-101
+  priority: P1
+  owner: Financial Operations + Platform Persistence
+  title: Make reconciliation and projections deterministic and real.
+  status: open
+  release_status: open
+  remaining_gate: Prove duplicate/out-of-order deterministic replay and seeded projection drift detection through genuine reconciliation/checkpoint behavior.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-102
+  priority: P1
+  owner: Storage + Provider Platform
+  title: Open — make catalogs, lineage, and provider manifests immutable/versioned.
+  status: open
+  release_status: open
+  remaining_gate: Finish immutable versioned catalog/lineage/provider-manifest ownership beyond the bounded provider slice; preserve complete remaining boundaries in the migration snapshot.
+  decision_ids: []
+  evidence_links:
+  - https://github.com/rodoHasArrived/Meridian-main/pull/3072
+  - docs/architecture/provider-integration-manifest-runtime.md#immutable-manifest-revisions-and-replay-provenance
+  pr_references:
+  - 3072
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-103
+  priority: P1
+  owner: Provider Platform
+  title: Make provider failover subscription-complete and lifecycle-safe.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Preserve the recorded source closure and retain release-candidate failover/subscription/disposal verification; source closure is not release certification.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-104
+  priority: P1
+  owner: Data Integration + Release
+  title: Decide and certify the SFTP capability.
+  status: open
+  release_status: open
+  remaining_gate: Keep SFTP rejected in the v1 production envelope; package and certify the real adapter only if the signed support matrix explicitly admits it.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-105
+  priority: P1
+  owner: Documents + Evidence + Storage
+  title: Bound Evidence Vault resource use and finish document-runtime ownership.
+  status: open
+  release_status: open
+  remaining_gate: Finish cross-store retention/recovery and remaining document-runtime ownership; bounded export retention and quota slices do not close the parent row.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-106
+  priority: P1
+  owner: Backtesting + Strategy Analytics
+  title: Unify and harden backtest orchestration.
+  status: open
+  release_status: open
+  remaining_gate: Unify browser/WPF orchestration with durable intent, bounded ordered batches, cancellation, terminal outbox/retry and crash/restart recovery.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-107
+  priority: P1
+  owner: Runtime + Workflow
+  title: Use full host lifecycles and honest runbooks.
+  status: open
+  release_status: open
+  remaining_gate: Adopt full IHost lifecycles and authorized idempotent runbook execution; prove initialization, coordination, shutdown, crash/retry and audit behavior.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-108
+  priority: P1
+  owner: Architecture + DevEx
+  title: Open — repair the physical dependency graph and its enforcement.
+  status: open
+  release_status: open
+  remaining_gate: Remove remaining forbidden Execution, Backtesting, QuantScript and Strategies references and complete module-kind/direct-reference rules. The Infrastructure-to-Storage correction is bounded.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-109
+  priority: P1
+  owner: Browser Workstation + Contracts
+  title: Consolidate TypeScript contracts and make dense explorers accessible.
+  status: implementation_complete
+  release_status: open
+  remaining_gate: Preserve bounded structural-contract/explorer-accessibility closure. The 34 recorded divergences, unregistered pairs and exhaustive runtime values remain outside it; certify the release separately.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-110
+  priority: P1
+  owner: WPF + Shared UI Services
+  title: Remove polling/lifecycle hazards and reconcile the parity inventory.
+  status: open
+  release_status: open
+  remaining_gate: Assign one polling owner, await cancellation/disposal, remove UI-thread blocking composition and reconcile every WPF route classification with current acceptance evidence.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-111
+  priority: P1
+  owner: SRE + Support + Observability
+  title: Create executable service objectives and incident operations.
+  status: open
+  release_status: open
+  remaining_gate: Retain dated alert, incident and diagnostics evidence and complete accepted release-commit recovery proof with objectiveStatus=proven. Freshness/SLA guards remain until their periodic writer is wired.
+  decision_ids: []
+  evidence_links:
+  - docs/operators/operator-runbook.md
+  - docs/operators/service-level-objectives.md
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-112
+  priority: P1
+  owner: Performance + Test Architecture
+  title: Restore resource, soak, and test-inventory gates.
+  status: open
+  release_status: open
+  remaining_gate: Obtain authoritative hosted acceptance, long-term stable-host baselines, sustained-load soak and Python skip inventory; bounded stage measurements do not close those slices.
+  decision_ids: []
+  evidence_links:
+  - docs/engineering/pipeline-benchmark.md
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-113
+  priority: P1
+  owner: Security + Compliance
+  title: Refresh the security register and complete an evidence-backed SOC 2 readiness assessment.
+  status: open
+  release_status: open
+  remaining_gate: Complete the evidence-backed SOC 2 readiness assessment, control owner roster, evidence calendar and residual-risk approvals.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-114
+  priority: P1
+  owner: Documentation + DevEx
+  title: Repair repository audit and generated-status tooling.
+  status: open
+  release_status: open
+  remaining_gate: Finish deterministic budgeted audit traversal, source-backed generated-status tooling and separate parsed code-coverage evidence.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-115
+  priority: P1
+  owner: Direct Lending + Ledger
+  title: Open — apply payment excess according to the loan's terms and track unapplied cash.
+  status: open
+  release_status: open
+  remaining_gate: Implement term-driven excess allocation, durable unapplied/prepaid balances and journal/projection/reconciliation support; explicitly decide compatibility for existing terms hashes.
+  decision_ids: []
+  evidence_links:
+  - docs/engineering/blueprints/direct-lending-excess-payment-application.md
+  pr_references:
+  - 3380
+  detail_anchor: p1--required-hardening-and-acceptance
+- id: PRD-200
+  priority: P2
+  owner: Financial Operations
+  title: Retire independent FundWorkflowCommandHandler policy
+  status: open
+  release_status: open
+  remaining_gate: Prove no production consumers or keep a thin adapter; remove the independent post-before-approval policy.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p2--cleanup-after-critical-migrations
+- id: PRD-201
+  priority: P2
+  owner: Contracts + Domain
+  title: Migrate the legacy MarketEventPayload hierarchy
+  status: open
+  release_status: open
+  remaining_gate: Inventory consumers and prove serializer round-trip compatibility before migrating or archiving the legacy market-event hierarchy.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p2--cleanup-after-critical-migrations
+- id: PRD-202
+  priority: P2
+  owner: Provider Platform
+  title: Stop legacy DataSources dual writes
+  status: open
+  release_status: open
+  remaining_gate: Migrate every reader, prove migration/rollback and stop legacy dual writes; exclude the template gateway from production compilation.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p2--cleanup-after-critical-migrations
+- id: PRD-203
+  priority: P2
+  owner: UI owners
+  title: Resolve unused dashboard and maintenance surfaces
+  status: open
+  release_status: open
+  remaining_gate: Prove reference/startup graphs before archiving the inline dashboard or wiring/archiving unused health/maintenance services.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p2--cleanup-after-critical-migrations
+- id: PRD-204
+  priority: P2
+  owner: Execution + Strategy
+  title: Remove obsolete execution and strategy lifecycle surfaces
+  status: open
+  release_status: open
+  remaining_gate: After canonical execution/backtest orchestration, migrate all callers and prove contracts before removing lifecycle/gateway/promotion compatibility surfaces.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p2--cleanup-after-critical-migrations
+- id: PRD-205
+  priority: P2
+  owner: AI/DevEx
+  title: Remove stale active retired-MCP invocations
+  status: open
+  release_status: open
+  remaining_gate: Remove stale active retired-MCP invocations and prove bounded help/handshake and child-process termination; retain its tombstone.
+  decision_ids: []
+  evidence_links: []
+  pr_references: []
+  detail_anchor: p2--cleanup-after-critical-migrations
+detail_sections:
+- heading: Latest merged-source follow-up (2026-10-28)
+  level: 3
+  anchor: latest-merged-source-follow-up-2026-10-28
+- heading: Development Readiness Versus Production Readiness
+  level: 2
+  anchor: development-readiness-versus-production-readiness
+- heading: Production Definition
+  level: 2
+  anchor: production-definition
+- heading: Current Release-Gate Snapshot
+  level: 3
+  anchor: current-release-gate-snapshot
+- heading: Current Roadmap Inventory
+  level: 3
+  anchor: current-roadmap-inventory
+- heading: 2026-10-28 Bounded Source Reconciliation
+  level: 3
+  anchor: 2026-10-28-bounded-source-reconciliation
+- heading: Next-work continuation — 2026-10-29
+  level: 3
+  anchor: next-work-continuation--2026-10-29
+- heading: Next-work implementation — 2026-10-28
+  level: 3
+  anchor: next-work-implementation--2026-10-28
+- heading: Historical Implementation and Release Evidence
+  level: 3
+  anchor: historical-implementation-and-release-evidence
+- heading: 2026-08-19 P1 Band Survey
+  level: 3
+  anchor: 2026-08-19-p1-band-survey
+- heading: 2026-08-19 Evidence Refresh
+  level: 3
+  anchor: 2026-08-19-evidence-refresh
+- heading: Progress Since the 2026-07-11 Production Audit
+  level: 3
+  anchor: progress-since-the-2026-07-11-production-audit
+- heading: 2026-07-19 P0 Closure Candidate
+  level: 3
+  anchor: 2026-07-19-p0-closure-candidate
+- heading: Master Backlog
+  level: 2
+  anchor: master-backlog
+- heading: P0 — Release Blockers
+  level: 3
+  anchor: p0--release-blockers
+- heading: P1 — Required Hardening and Acceptance
+  level: 3
+  anchor: p1--required-hardening-and-acceptance
+- heading: P2 — Cleanup After Critical Migrations
+  level: 3
+  anchor: p2--cleanup-after-critical-migrations
+- heading: Duplicate and Deprecation Register
+  level: 2
+  anchor: duplicate-and-deprecation-register
+- heading: Removed in this audit
+  level: 3
+  anchor: removed-in-this-audit
+- heading: Consolidate through migration
+  level: 3
+  anchor: consolidate-through-migration
+- heading: Retain intentionally
+  level: 3
+  anchor: retain-intentionally
+- heading: Investigate before deletion
+  level: 3
+  anchor: investigate-before-deletion
+- heading: Roadmap and Scope Reconciliation
+  level: 2
+  anchor: roadmap-and-scope-reconciliation
+- heading: Expanded Strategy and Order-Management Objectives
+  level: 2
+  anchor: expanded-strategy-and-order-management-objectives
+- heading: W13-STRAT-001 — Formulation, Validation, and Governed Execution
+  level: 3
+  anchor: w13-strat-001--formulation-validation-and-governed-execution
+- heading: W13-OMS-001 — Order Intent, Broker State, and Financial Continuity
+  level: 3
+  anchor: w13-oms-001--order-intent-broker-state-and-financial-continuity
+- heading: Shared Operator and Release Acceptance
+  level: 3
+  anchor: shared-operator-and-release-acceptance
+- heading: Recommended Execution Order
+  level: 2
+  anchor: recommended-execution-order
+- heading: Completion Rules
+  level: 2
+  anchor: completion-rules
+- heading: Verification Snapshot
+  level: 2
+  anchor: verification-snapshot
+- heading: Verified Complete Items
+  level: 2
+  anchor: verified-complete-items
+- heading: Evidence-Backed Foundations Not Marked Complete
+  level: 2
+  anchor: evidence-backed-foundations-not-marked-complete
+- heading: 'W5X-FREX-001 Complete: Shared Financial Record Explorers'
+  level: 2
+  anchor: w5x-frex-001-complete-shared-financial-record-explorers
+- heading: 'Multi-Asset Reference-Data Workbench Complete: Security Master Detail/Passport Flow'
+  level: 2
+  anchor: multi-asset-reference-data-workbench-complete-security-master-detailpassport-flow
+- heading: 'W5X-FINOPS-001 TODOs: Financial Operations Control Center'
+  level: 2
+  anchor: w5x-finops-001-todos-financial-operations-control-center
+- heading: 'ACCT-CHECKLIST-06: External GL provider depth'
+  level: 2
+  anchor: acct-checklist-06-external-gl-provider-depth
+- heading: 'W9-ASSET-010 Complete: Asset Accounting Event Spine'
+  level: 2
+  anchor: w9-asset-010-complete-asset-accounting-event-spine
+- heading: 'W6 TODOs: Bounded Covered Call Evidence and Paper Promotion'
+  level: 2
+  anchor: w6-todos-bounded-covered-call-evidence-and-paper-promotion
+- heading: 'W7 TODOs: Live-Readiness Governance'
+  level: 2
+  anchor: w7-todos-live-readiness-governance
+- heading: 'Codex Memory Inventory Pass: 2026-06-22'
+  level: 2
+  anchor: codex-memory-inventory-pass-2026-06-22
+- heading: Deferred Expansion TODOs
+  level: 2
+  anchor: deferred-expansion-todos
+- heading: Partial PRD-105 export retention - 2026-10-02
+  level: 3
+  anchor: partial-prd-105-export-retention---2026-10-02
+- heading: Partial PRD-105 storage quotas - 2026-10-05
+  level: 3
+  anchor: partial-prd-105-storage-quotas---2026-10-05

@@ -107,6 +107,8 @@ class MaintainedGenerationTests(unittest.TestCase):
             "render-source-docs.py", "render-roadmap-diagrams.py", "render-source-diagrams.py",
             "npm run generate-diagrams", "generate-structure-docs.py --workflows-only",
             "run-docs-automation.py --profile core",
+            "generate-contract-manifest.py", "render-production-readiness.py",
+            "scripts/generate_program_state_summary.py",
         ):
             with self.subTest(producer=producer):
                 self.assertIn(producer, flattened)

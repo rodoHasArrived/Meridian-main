@@ -1,6 +1,8 @@
 {
   "schema_version": 1,
   "whole_files": [
+    "database/manifest/contracts.json",
+    "database/manifest/dependencies.json",
     "docs/architecture/diagrams/meridian-development-roadmap.mmd",
     "docs/architecture/diagrams/meridian-source-layer-map.mmd",
     "docs/diagrams/ui-implementation-flow.dot",
@@ -65,6 +67,7 @@
     "docs/generated/repository-structure.md",
     "docs/generated/workflow-command-reference.md",
     "docs/generated/workflows-overview.md",
+    "docs/product/implementation-todo-list.md",
     "docs/roadmap/generated/MANIFEST.json",
     "docs/roadmap/generated/ROADMAP_SUMMARY.md",
     "docs/roadmap/generated/roadmap-register.md",
@@ -95,6 +98,8 @@
     "docs/status/governance-readiness-dashboard.md",
     "docs/status/paper-replay-reliability-dashboard.json",
     "docs/status/paper-replay-reliability-dashboard.md",
+    "docs/status/program-state-summary.json",
+    "docs/status/program-state-summary.md",
     "docs/status/prompt-route-lint-report.json",
     "docs/status/todo-scan-results.json",
     "docs/status/workflow-drift-report.md",
@@ -105,8 +110,9 @@
     "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts"
   ],
   "whole_trees": [
-    "src/Meridian.Ui/wwwroot/workstation",
-    "docs/reference/source-api"
+    "docs/generated/database",
+    "docs/reference/source-api",
+    "src/Meridian.Ui/wwwroot/workstation"
   ],
   "protected_suffixes": {
     "docs/status/coverage-report.md": "<!-- auto-sync:coverage -->"
@@ -350,6 +356,31 @@
       "docs/reference/api-reference.md": {
         "strategy": "manual",
         "reason": "Resolve handwritten API guidance before regenerating the declared HTTP reference block."
+      },
+      "database/manifest/contracts.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/generate-contract-manifest.py",
+        "required": true
+      },
+      "database/manifest/dependencies.json": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/generate-contract-manifest.py",
+        "required": true
+      },
+      "docs/product/implementation-todo-list.md": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/docs/render-production-readiness.py",
+        "required": true
+      },
+      "docs/status/program-state-summary.json": {
+        "strategy": "regenerate",
+        "generator": "scripts/generate_program_state_summary.py",
+        "required": true
+      },
+      "docs/status/program-state-summary.md": {
+        "strategy": "regenerate",
+        "generator": "scripts/generate_program_state_summary.py",
+        "required": true
       }
     },
     "trees": {
@@ -361,6 +392,11 @@
       "docs/reference/source-api": {
         "strategy": "regenerate",
         "generator": "build/scripts/docs/render-public-type-reference.py",
+        "required": true
+      },
+      "docs/generated/database": {
+        "strategy": "regenerate",
+        "generator": "build/scripts/generate-contract-manifest.py",
         "required": true
       }
     }

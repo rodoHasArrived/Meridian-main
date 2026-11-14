@@ -47,6 +47,14 @@ stale evidence after either revision changes. Fork contributors use this same lo
 
 ## Hosted PR repair
 
+Use hosted repair as the default owner of deterministic generated chores on eligible PRs:
+commit the authored inputs, then let the bot rebuild the workstation and regenerate maintained
+documentation together in one repair commit. The shared catalog in
+`build/scripts/run-maintained-generation.py` also owns the source-derived contract manifest and
+its dependent documentation. It uses the retained physical database catalog; it does not inspect
+or certify a new database schema. SQL changes still require the schema-control snapshot/review path.
+Required freshness checks run against the resulting commit and remain merge requirements.
+
 `Generated Repair` accepts read-only requests on PR open, synchronize and reopen, including
 conflicted PRs. With the repository App variable configured, an eligible same-repository request
 is handed to the publisher for a default-branch generation dispatch. The publisher accepts a
@@ -77,6 +85,13 @@ candidate. A moving head or base invalidates the candidate and allows at most tw
 requeues. A repair commit suppresses its own synchronize loop only while it already includes the
 current base; a new base can trigger another repair. No repair job approves or merges the PR,
 bypasses freshness checks, or changes protected `main`.
+
+Reviewed module hashes are evidence that a README was reviewed against its module. Repair can
+reuse an existing parent attestation when it matches the merged module; it cannot create a new
+review by hashing changed source. A combined source/README change that matches neither parent
+therefore still needs an explicit review. Likewise, `update-claude-md.py` rewrites handwritten
+guide sections and is not an unattended catalog producer. Change the maintained inputs or bounded
+generators instead of running a blanket guide refresh on every branch.
 
 ## Complete an explicit merge, then regenerate
 
