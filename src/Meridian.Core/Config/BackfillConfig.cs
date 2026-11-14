@@ -39,7 +39,9 @@ public sealed record BackfillConfig(
     BackfillJobsConfig? Jobs = null,
     BackfillProvidersConfig? Providers = null,
     SymbolResolutionMode SymbolResolutionMode = SymbolResolutionMode.Compare,
-    AutoGapRemediationConfig? AutoRemediation = null
+    AutoGapRemediationConfig? AutoRemediation = null,
+    IReadOnlyDictionary<string, ProviderValidationProfile>? ValidationProfiles = null,
+    ProviderValidationProfileAudit[]? ValidationProfileAudit = null
 );
 
 /// <summary>
@@ -141,7 +143,8 @@ public sealed record BackfillProvidersConfig(
     FinnhubConfig? Finnhub = null,
     FredConfig? Fred = null,
     SyntheticMarketDataConfig? Synthetic = null,
-    RobinhoodConfig? Robinhood = null
+    RobinhoodConfig? Robinhood = null,
+    TwelveDataConfig? TwelveData = null
 );
 
 /// <summary>
@@ -152,8 +155,9 @@ public sealed record BackfillProvidersConfig(
 /// <param name="RateLimitPerHour">Maximum requests per hour.</param>
 public sealed record YahooFinanceConfig(
     bool Enabled = true,
-    int Priority = 10,
-    int RateLimitPerHour = 2000
+    int Priority = BackfillProviderCatalog.YahooPriority,
+    int RateLimitPerHour = BackfillProviderCatalog.YahooPerHour,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -167,7 +171,7 @@ public sealed record NasdaqDataLinkConfig(
     bool Enabled = true,
     string? ApiKey = null,
     string Database = "WIKI",
-    int Priority = 30
+    int Priority = BackfillProviderCatalog.NasdaqPriority
 );
 
 /// <summary>
@@ -178,7 +182,7 @@ public sealed record NasdaqDataLinkConfig(
 /// <param name="DefaultMarket">Default market suffix (e.g., "us" for US equities).</param>
 public sealed record StooqConfig(
     bool Enabled = true,
-    int Priority = 20,
+    int Priority = BackfillProviderCatalog.StooqPriority,
     string DefaultMarket = "us"
 );
 
@@ -191,7 +195,9 @@ public sealed record StooqConfig(
 public sealed record OpenFigiConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    bool CacheResults = true
+    bool CacheResults = true,
+    string TierId = "free",
+    int? RateLimitPerMinute = null
 );
 
 /// <summary>
@@ -210,8 +216,9 @@ public sealed record AlpacaBackfillConfig(
     string? SecretKey = null,
     string Feed = "iex",
     string Adjustment = "all",
-    int Priority = 5,
-    int RateLimitPerMinute = 200
+    int Priority = BackfillProviderCatalog.AlpacaPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.AlpacaPerMinute,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -226,8 +233,9 @@ public sealed record AlpacaBackfillConfig(
 public sealed record TiingoConfig(
     bool Enabled = true,
     string? ApiToken = null,
-    int Priority = 15,
-    int RateLimitPerHour = 50
+    int Priority = BackfillProviderCatalog.TiingoPriority,
+    int RateLimitPerHour = BackfillProviderCatalog.TiingoPerHour,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -242,8 +250,9 @@ public sealed record TiingoConfig(
 public sealed record PolygonConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    int Priority = 12,
-    int RateLimitPerMinute = 5
+    int Priority = BackfillProviderCatalog.PolygonPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.PolygonPerMinute,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -259,8 +268,8 @@ public sealed record PolygonConfig(
 public sealed record AlphaVantageConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    int Priority = 25,
-    int RateLimitPerMinute = 5,
+    int Priority = BackfillProviderCatalog.AlphaVantagePriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute,
     int RateLimitPerDay = 25
 );
 
@@ -276,8 +285,9 @@ public sealed record AlphaVantageConfig(
 public sealed record FinnhubConfig(
     bool Enabled = true,
     string? ApiKey = null,
-    int Priority = 18,
-    int RateLimitPerMinute = 60
+    int Priority = BackfillProviderCatalog.FinnhubPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.FinnhubPerMinute,
+    string TierId = "free"
 );
 
 /// <summary>
@@ -307,4 +317,12 @@ public sealed record RobinhoodConfig(
     bool Enabled = false,
     int Priority = 35,
     int RateLimitPerHour = 100
+);
+
+/// <summary>Twelve Data options; credentials are resolved separately from the provider settings UI.</summary>
+public sealed record TwelveDataConfig(
+    bool Enabled = true,
+    int Priority = BackfillProviderCatalog.TwelveDataPriority,
+    int RateLimitPerMinute = BackfillProviderCatalog.TwelveDataPerMinute,
+    string TierId = "free"
 );

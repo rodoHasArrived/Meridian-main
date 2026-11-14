@@ -30,6 +30,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider, IDisposable
 {
+    protected readonly BackfillProviderRuntimeOptions? RuntimeOptions;
     protected readonly HttpClient Http;
     protected readonly RateLimiter RateLimiter;
     protected virtual RateLimiter RequestRateLimiter => RateLimiter;
@@ -114,8 +115,9 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// <param name="apiKey">Optional API key (loads from environment if not provided).</param>
     /// <param name="httpClient">Optional HTTP client (uses factory if not provided).</param>
     /// <param name="log">Optional logger.</param>
-    protected BaseSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null)
+    protected BaseSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, TimeProvider? timeProvider = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
+        RuntimeOptions = runtimeOptions;
         Log = log ?? LoggingSetup.ForContext(GetType());
         _timeProvider = timeProvider ?? TimeProvider.System;
 
@@ -234,7 +236,7 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
         if (!HasValidCredentials())
         {
             if (failOnProviderError)
-                throw new InvalidOperationException("Provider credentials are unavailable.");
+                throw new ProviderSearchException(ProviderSearchFailure.CredentialsUnavailable, "Provider credentials are unavailable.");
             return Array.Empty<SymbolSearchResult>();
         }
 
@@ -260,6 +262,11 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
                     response.EnsureSuccessStatusCode();
                 return Array.Empty<SymbolSearchResult>();
             }
+
+            if (failOnProviderError && (response.StatusCode is HttpStatusCode.PartialContent or HttpStatusCode.Accepted
+                || response.Content.Headers.ContentRange is not null))
+                throw new ProviderSearchException(ProviderSearchFailure.IncompleteResponse,
+                    "Provider search returned a partial response.");
 
             var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             if (CreateQuotaLimitException(json, query) is { } quotaLimit)
@@ -381,7 +388,8 @@ public abstract class BaseSymbolSearchProvider : IFilterableSymbolSearchProvider
     /// invalid responses override this hook so decoding failures remain unavailable evidence.
     /// </summary>
     protected virtual IEnumerable<SymbolSearchResult> DeserializeAuthoritativeSearchResults(string json, string query)
-        => DeserializeSearchResults(json, query);
+        => throw new ProviderSearchException(ProviderSearchFailure.Unavailable,
+            "This provider does not support authoritative response decoding.");
 
     /// <summary>
     /// Deserialize the details response JSON into a SymbolDetails object.

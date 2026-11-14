@@ -49,19 +49,19 @@ function modePresentation(mode: SymbolResolutionMode): Pick<
       return {
         modeTone: "success",
         modeTitle: "Canonical resolution active",
-        modeDetail: "Provider requests use registry identity and provider-scoped aliases, with legacy fallback only for unknown securities."
+        modeDetail: "The default mode uses registry identity and provider-scoped aliases, with legacy fallback for unknown securities. Inspect each provider’s active and saved rollout override in the mapping editor."
       };
     case "Legacy":
       return {
         modeTone: "danger",
         modeTitle: "Legacy resolution active",
-        modeDetail: "Provider requests bypass canonical registry decisions. Use Compare mode before promoting this environment to Canonical."
+        modeDetail: "The default mode bypasses canonical registry decisions. Use Compare mode before promotion and inspect provider overrides in the mapping editor."
       };
     default:
       return {
         modeTone: "warning",
         modeTitle: "Compare mode preserves legacy output",
-        modeDetail: "Each provider translation evaluates both paths, records disagreements, and still returns the legacy result."
+        modeDetail: "The default mode evaluates both paths, records disagreements, and returns the legacy result. Provider overrides can differ; inspect active and saved rollout modes in the mapping editor."
       };
   }
 }

@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CredentialKeyStatusDto
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CredentialKeyStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L23).
+
+Indicates whether a specific credential key has a stored value. The actual value is NEVER returned to the browser.
+
+```csharp
+public sealed record CredentialKeyStatusDto(string Key, bool HasValue);
+```
+
+## CrossScreenCountDefinitions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CrossScreenCountDefinitions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:12](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L12).
+
+The one definition of each count that more than one workstation screen shows. The Trading, Data and Accounting workspace metric cards and the cross-screen counts endpoint (which WPF reads) all count with these, and the browser&#x27;s lib/cross-screen-counts.ts mirrors them; tests/Shared/cross-screen-counts.fixture.json holds both implementations to the same expected values.
+
+```csharp
+public static class CrossScreenCountDefinitions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string OpenOrdersDefinition = &quot;Orders the order manager reports open (working, partially filled or pending routing) for the fund account in scope.&quot;;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:14](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L14) |  |
+| <code>public const string ProvidersDefinition = &quot;Providers whose status is Healthy, out of every provider the Data workspace lists.&quot;;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:17](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L17) |  |
+| <code>public const string OpenBreaksDefinition = &quot;Break-queue items not yet resolved, dismissed or signed off.&quot;;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:20](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L20) |  |
+| <code>public static bool IsHealthyProviderStatus(string? status) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:26](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L26) | A provider row counts as healthy only when its status is exactly Healthy. |
+| <code>public static (int Healthy, int Total) CountProviderHealth(IEnumerable&lt;string?&gt; providerStatuses);</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:30](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L30) | Healthy providers out of every listed provider. |
+| <code>public static bool IsOpenBreak(ReconciliationBreakQueueStatus status) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:51](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L51) | A break is open until it is resolved, dismissed or signed off. Written as the exclusion so a status added later is counted as work still to do rather than silently dropped. |
+| <code>public static int CountOpenBreaks(IEnumerable&lt;ReconciliationBreakQueueItem&gt; items);</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:57](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L57) | Open breaks in a break-queue read, each item counted once. |
+
+## DailyMarkToMarketIntakeRunResult
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DailyMarkToMarketIntakeRunResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:123](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L123).
+
+Valuation evidence and workbench intake outcome for one daily-close run.
+
+```csharp
+public sealed record DailyMarkToMarketIntakeRunResult(DailyMarkToMarketRun Valuation, AutomatedJournalDraftIntakeResult Intake, string? BatchCorrelationId = null);
+```
+
 ## DailyValuationBatchLifecycleService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DailyValuationBatchLifecycleService</code>. Kind: `class`.
@@ -871,43 +919,3 @@ Declared public members:
 | <code>public FileAccountingProductionCertificationProfileStore(string snapshotPath, ILogger&lt;FileAccountingProductionCertificationProfileStore&gt; logger) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting production certification profile snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:75](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L75) |  |
 | <code>public async Task&lt;AccountingProductionCertificationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, string? fundProfileId, Guid? ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:95](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L95) |  |
 | <code>public async Task&lt;AccountingProductionCertificationProfileDto&gt; UpsertAsync(AccountingProductionCertificationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:114](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L114) |  |
-
-## AccountingProductionCertificationProfileSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingProductionCertificationProfileStore.AccountingProductionCertificationProfileSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs:490](../../../../src/Meridian.Ui.Shared/Services/AccountingProductionCertificationProfileStore.cs#L490).
-
-```csharp
-public sealed record AccountingProductionCertificationProfileSnapshot(IReadOnlyList<AccountingProductionCertificationProfileDto> Profiles);
-```
-
-## FileAccountingTenantAdministrationProfileStore
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingTenantAdministrationProfileStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:60](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L60).
-
-Persists tenant accounting administration profiles and validates their retained evidence.
-
-```csharp
-public sealed class FileAccountingTenantAdministrationProfileStore : JsonFileSnapshotStore<FileAccountingTenantAdministrationProfileStore.AccountingTenantAdministrationProfileSnapshot>, IAccountingTenantAdministrationProfileStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileAccountingTenantAdministrationProfileStore(string snapshotPath, ILogger&lt;FileAccountingTenantAdministrationProfileStore&gt; logger) : base(string.IsNullOrWhiteSpace(snapshotPath)? throw new ArgumentException(&quot;Accounting tenant administration profile snapshot path is required.&quot;, nameof(snapshotPath)) : snapshotPath, JsonOptions);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:96](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L96) |  |
-| <code>public async Task&lt;AccountingTenantAdministrationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:116](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L116) |  |
-| <code>public async Task&lt;AccountingTenantAdministrationProfileDto&gt; UpsertAsync(AccountingTenantAdministrationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:133](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L133) |  |
-
-## AccountingTenantAdministrationProfileSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileAccountingTenantAdministrationProfileStore.AccountingTenantAdministrationProfileSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:485](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L485).
-
-```csharp
-public sealed record AccountingTenantAdministrationProfileSnapshot(IReadOnlyList<AccountingTenantAdministrationProfileDto> Profiles);
-```

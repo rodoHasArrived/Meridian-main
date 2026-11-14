@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExecutionSimulationRequest
+
+Qualified name: <code>Meridian.Application.Services.ExecutionSimulationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:7](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L7).
+
+```csharp
+public sealed record ExecutionSimulationRequest(IReadOnlyList<string> Symbols, DateOnly? FromDate, DateOnly? ToDate, TimeOnly? WindowStart, TimeOnly? WindowEnd, bool DryRun, string OutputDirectory);
+```
+
+## ExecutionSimulationResult
+
+Qualified name: <code>Meridian.Application.Services.ExecutionSimulationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs:16](../../../../src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs#L16).
+
+```csharp
+public sealed record ExecutionSimulationResult(string OutputDirectory, int SymbolsProcessed, int EventCount, bool DryRun);
+```
+
+## FirstTimeConfigOptions
+
+Qualified name: <code>Meridian.Application.Services.FirstTimeConfigOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:955](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L955).
+
+Options for first-time configuration generation.
+
+```csharp
+public sealed record FirstTimeConfigOptions(UseCase UseCase = UseCase.Development, SymbolPreset SymbolPreset = SymbolPreset.USMajorIndices, bool EnableBackfill = true, bool EnableCompression = true);
+```
+
 ## GcStats
 
 Qualified name: <code>Meridian.Application.Services.GcStats</code>. Kind: `class`.
@@ -672,7 +704,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ProviderStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:581](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L581).
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:608](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L608).
 
 Provider availability status.
 
@@ -786,7 +818,7 @@ public sealed record SymbolOperationResult(bool Success, string Message, string[
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolSearchService</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:18](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L18).
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:20](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L20).
 
 Service for searching and autocompleting symbols across multiple providers. Aggregates results from Finnhub, Polygon, Alpaca, and OpenFIGI.
 
@@ -798,16 +830,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:31](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L31) | Creates a new symbol search service with default provider configuration. |
-| <code>public SymbolSearchService(IEnumerable&lt;ISymbolSearchProvider&gt; providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:49](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L49) | Creates a symbol search service with custom providers. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderStatus&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:83](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L83) | Get available providers and their status. |
-| <code>public Task&lt;SymbolSearchResponse&gt; SearchAsync(SymbolSearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:130](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L130) | Search for symbols with autocomplete support. |
-| <code>public Task&lt;SymbolSearchResponse&gt; SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:137](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L137) | Explicit provider lookup that distinguishes provider failure from a successful empty search. Intended for candidate-review workflows where a swallowed failure would misstate availability. |
-| <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:355](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L355) | Get detailed information about a specific symbol. |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; LookupFigiAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:449](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L449) | Lookup FIGI identifiers for symbols. |
-| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:470](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L470) | Search OpenFIGI directly. |
-| <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:549](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L549) | Clear the search and details cache. |
-| <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:556](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L556) |  |
+| <code>public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:33](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L33) | Creates a new symbol search service with default provider configuration. |
+| <code>public SymbolSearchService(IEnumerable&lt;ISymbolSearchProvider&gt; providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:51](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L51) | Creates a symbol search service with custom providers. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderStatus&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:85](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L85) | Get available providers and their status. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAsync(SymbolSearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:132](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L132) | Search for symbols with autocomplete support. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:139](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L139) | Explicit provider lookup that distinguishes provider failure from a successful empty search. Intended for candidate-review workflows where a swallowed failure would misstate availability. |
+| <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:382](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L382) | Get detailed information about a specific symbol. |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; LookupFigiAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:476](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L476) | Lookup FIGI identifiers for symbols. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:497](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L497) | Search OpenFIGI directly. |
+| <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:576](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L576) | Clear the search and details cache. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:583](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L583) |  |
 
 ## SymbolStatusReport
 
@@ -941,85 +973,3 @@ Declared public members:
 | <code>public FundAccountHoldingScopeAssignmentProvider(IFundAccountStore? accounts, IFundProfileTenancyRegistry? tenancy, ILogger&lt;FundAccountHoldingScopeAssignmentProvider&gt; logger);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:34](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L34) |  |
 | <code>public string AuthorityId =&gt; …;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:45](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L45) |  |
 | <code>public async Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:48](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L48) |  |
-
-## LocalTenantMigrationGate
-
-Qualified name: <code>Meridian.Application.Tenancy.LocalTenantMigrationGate</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:7](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L7).
-
-Refuses unpartitioned local snapshots until their ownership is explicitly migrated.
-
-```csharp
-public sealed class LocalTenantMigrationGate(TenantScopeEnforcementOptions options)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool EnforcesStrictTenancy =&gt; …;</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:9](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L9) |  |
-| <code>public const string RefusalMessage = &quot;Local fund records have no retained tenant attribution and cannot be accessed under strict tenant enforcement. &quot; + &quot;Existing files are retained. Use the supported durable host and reviewed tenant backfill, or explicitly select &quot; + &quot;TenantScopeEnforcement=deployment-boundary only for isolated single-company migration or demo access.&quot;;</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:11](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L11) |  |
-| <code>public Task&lt;T&gt; ExecuteAsync&lt;T&gt;(Func&lt;Task&lt;T&gt;&gt; operation);</code> | [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:16](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L16) |  |
-
-## LocalTenantMigrationRequiredException
-
-Qualified name: <code>Meridian.Application.Tenancy.LocalTenantMigrationRequiredException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs:25](../../../../src/Meridian.Application/Tenancy/LocalTenantMigrationGate.cs#L25).
-
-A retained local capability is unavailable until its tenant migration is reviewed.
-
-```csharp
-public sealed class LocalTenantMigrationRequiredException() : MeridianException(LocalTenantMigrationGate.RefusalMessage);
-```
-
-## TenantGuardedLocalFundAccountService
-
-Qualified name: <code>Meridian.Application.Tenancy.TenantGuardedLocalFundAccountService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:9](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L9).
-
-Guards every local fund operation before reading or mutating retained snapshots.
-
-```csharp
-public sealed class TenantGuardedLocalFundAccountService(InMemoryFundAccountService inner, LocalTenantMigrationGate gate) : INonProductionOnlyService, IFundAccountService, IAccountManagementService, IAccountQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task&lt;AccountSummaryDto&gt; CreateAccountAsync(CreateAccountRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:12](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L12) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; GetAccountAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:15](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L15) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSummaryDto&gt;&gt; QueryAccountsAsync(AccountStructureQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:18](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L18) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; UpdateCustodianDetailsAsync(Guid accountId, UpdateCustodianAccountDetailsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:21](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L21) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; UpdateBankDetailsAsync(Guid accountId, UpdateBankAccountDetailsRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:24](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L24) |  |
-| <code>public Task&lt;AccountSummaryDto?&gt; DeactivateAccountAsync(Guid accountId, string deactivatedBy, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:27](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L27) |  |
-| <code>public Task&lt;FundAccountsDto&gt; GetFundAccountsAsync(Guid fundId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:30](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L30) |  |
-| <code>public Task&lt;AccountBalanceSnapshotDto&gt; RecordBalanceSnapshotAsync(RecordAccountBalanceSnapshotRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:33](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L33) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountBalanceSnapshotDto&gt;&gt; GetBalanceHistoryAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:36](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L36) |  |
-| <code>public Task&lt;AccountBalanceSnapshotDto?&gt; GetLatestBalanceSnapshotAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:39](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L39) |  |
-| <code>public Task&lt;CustodianStatementBatchDto&gt; IngestCustodianStatementAsync(IngestCustodianStatementRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:42](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L42) |  |
-| <code>public Task&lt;BankStatementBatchDto&gt; IngestBankStatementAsync(IngestBankStatementRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:45](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L45) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CustodianPositionLineDto&gt;&gt; GetCustodianPositionsAsync(Guid accountId, DateOnly asOfDate, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:48](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L48) |  |
-| <code>public Task&lt;CustodianHoldingSnapshotDto?&gt; GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:51](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L51) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BankStatementLineDto&gt;&gt; GetBankStatementLinesAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:55](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L55) |  |
-| <code>public Task&lt;AccountReconciliationRunDto&gt; ReconcileAccountAsync(ReconcileAccountRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:58](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L58) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationRunDto&gt;&gt; GetReconciliationRunsAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:61](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L61) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationResultDto&gt;&gt; GetReconciliationResultsForAccountsAsync(IReadOnlyCollection&lt;Guid&gt; accountIds, bool openOnly = false, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:64](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L64) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationResultDto&gt;&gt; GetReconciliationResultsAsync(Guid reconciliationRunId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:67](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L67) |  |
-| <code>public Task&lt;IReadOnlyList&lt;PositionReconciliationBreakDto&gt;&gt; GetOpenPositionBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:70](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L70) |  |
-| <code>public Task&lt;IReadOnlyList&lt;CashReconciliationBreakDto&gt;&gt; GetOpenCashBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:73](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L73) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountReconciliationBreakDto&gt;&gt; GetOpenBreaksAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:76](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L76) |  |
-| <code>public Task&lt;AccountSyncHistoryEntryDto&gt; RecordSyncHistoryAsync(RecordAccountSyncHistoryRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:79](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L79) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:82](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L82) |  |
-| <code>public Task&lt;AccountSyncHistoryEntryDto?&gt; GetLatestSyncHistoryAsync(Guid accountId, string? capability = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:85](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L85) |  |
-| <code>public Task&lt;AccountReadinessSnapshotDto?&gt; GetReadinessAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:88](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L88) |  |
-| <code>public Task&lt;MarginSnapshotDto&gt; RecordMarginSnapshotAsync(RecordMarginSnapshotRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:91](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L91) |  |
-| <code>public Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:94](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L94) |  |
-| <code>public Task&lt;MarginSnapshotDto?&gt; GetLatestMarginSnapshotAsync(Guid accountId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:97](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L97) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSummaryDto&gt;&gt; ListAccountsAsync(AccountTypeDto? accountType, bool? isActive, string? currency, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:100](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L100) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountSettlementInstructionView&gt;&gt; ListSettlementInstructionsAsync(Guid? accountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:103](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L103) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountBalanceSnapshotDto&gt;&gt; GetBalanceTimelineAsync(Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:106](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L106) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AccountOpenBreakView&gt;&gt; ListOpenBreaksAsync(Guid? accountId = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs:109](../../../../src/Meridian.Application/Tenancy/TenantGuardedLocalFundAccountService.cs#L109) |  |

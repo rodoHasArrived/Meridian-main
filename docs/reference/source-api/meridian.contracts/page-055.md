@@ -6,6 +6,110 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BiasDisclosureItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:264](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L264).
+
+One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
+
+```csharp
+public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
+```
+
+## BookOfRecordStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L128).
+
+Whether a ledger book may act as the book of record (publish, release, hard-close).
+
+```csharp
+public sealed record BookOfRecordStatusDto(Guid LedgerBookId, bool IsBookOfRecord, string? ShadowState, string? ShadowWorkspaceId, string Reason, int? CleanPeriodCount = null, int? RequiredPeriodCount = null, int? UnexplainedDifferenceCount = null);
+```
+
+## BooksBeforeBrokerReadinessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L63).
+
+```csharp
+public sealed record BooksBeforeBrokerReadinessDto(bool IsBooksBeforeBrokerMode, bool CanStageBrokerAction, string ExpectedBrokerAction, string BrokerInstructionSummary, IReadOnlyList<string> RequiredApprovals, IReadOnlyList<string> Blockers, IReadOnlyList<string> EvidenceIds);
+```
+
+## BrokerageAccountKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L18).
+
+```csharp
+public enum BrokerageAccountKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L20) |  |
+| <code>TaxableBrokerage = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L21) |  |
+| <code>RothIra = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L22) |  |
+| <code>TraditionalIra = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L23) |  |
+
+## BrokerageAccountLinkRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L62).
+
+```csharp
+public sealed record BrokerageAccountLinkRequestDto(string ProviderId, string ExternalAccountId, string? DisplayName = null, string? LinkedBy = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
+```
+
+## BrokerageCashFlowEntryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:131](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L131).
+
+```csharp
+public sealed record BrokerageCashFlowEntryDto(string TransactionId, string TransactionType, string Category, decimal Amount, string Currency, DateTimeOffset PostedAt, string? Symbol = null, string? Description = null);
+```
+
+## BrokerageCashFlowSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageCashFlowSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L141).
+
+```csharp
+public sealed record BrokerageCashFlowSummaryDto(Guid FundAccountId, string? ProviderId, string? ExternalAccountId, BrokerageAccountKindDto AccountKind, DateOnly? From, DateOnly? To, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, string Currency, int TransactionCount, IReadOnlyList<BrokerageCashFlowEntryDto> Entries, IReadOnlyList<string> Warnings);
+```
+
+## BrokerageConnectionStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L27).
+
+```csharp
+public enum BrokerageConnectionStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L29) |  |
+| <code>Disconnected = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:30](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L30) |  |
+| <code>AuthorizationPending = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L31) |  |
+| <code>Connected = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L32) |  |
+| <code>ReauthorizationRequired = 4</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L33) |  |
+| <code>Degraded = 5</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:34](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L34) |  |
+
 ## BrokerageConnectionStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.BrokerageConnectionStatusDto</code>. Kind: `record`.
@@ -513,96 +617,4 @@ Bounded upload preview result. The result retains evidence and validation output
 
 ```csharp
 public sealed record DataUploadPreviewResultDto(string UploadId, string TemplateId, string TemplateLabel, string FileName, long FileSizeBytes, string ContentType, string UploadedBy, DateTimeOffset UploadedAtUtc, string RetainedPath, int ParsedRowCount, int PreviewRowCount, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## DataUploadTemplateCatalogDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateCatalogDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L12).
-
-Upload-template catalog surfaced by the Data workspace before source files are accepted.
-
-```csharp
-public sealed record DataUploadTemplateCatalogDto(IReadOnlyList<DataUploadTemplateDto> Templates, IReadOnlyList<string> AcceptedFileExtensions, int MaxPreviewRows, long MaxFileBytes, string? WorkbookFileName = null, IReadOnlyList<string>? WorkbookAcceptedFileExtensions = null, long WorkbookMaxFileBytes = 0);
-```
-
-## DataUploadTemplateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L24).
-
-A governed source-data template that operators can download and use for upload preview.
-
-```csharp
-public sealed record DataUploadTemplateDto(string TemplateId, string Label, string Description, string DataDomain, string TargetWorkflow, string FileName, string ContentType, string HeaderLine, IReadOnlyList<DataUploadTemplateFieldDto> Fields, IReadOnlyList<string> SampleRows, IReadOnlyList<string> ValidationNotes, IReadOnlyList<string>? SourceKinds = null, IReadOnlyList<string>? SetupChecklist = null, IReadOnlyList<string>? MappingGuidance = null);
-```
-
-## DataUploadTemplateFieldDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadTemplateFieldDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L43).
-
-Template-field metadata used by the browser and desktop shells for source-file preparation.
-
-```csharp
-public sealed record DataUploadTemplateFieldDto(string Name, string Label, bool Required, string Example, string Description);
-```
-
-## DataUploadValidationIssueDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadValidationIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:134](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L134).
-
-Validation issue returned from a source upload preview.
-
-```csharp
-public sealed record DataUploadValidationIssueDto(string Severity, string Field, string Message, int? RowNumber, string? SheetName = null, string? CellReference = null);
-```
-
-## DataUploadWorkbookPreviewResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadWorkbookPreviewResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:111](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L111).
-
-Bounded, multi-sheet preview result for an uploaded onboarding workbook. Like the CSV preview it retains the raw workbook as evidence and returns validation output only; no rows are committed to governed stores.
-
-```csharp
-public sealed record DataUploadWorkbookPreviewResultDto(string UploadId, string FileName, long FileSizeBytes, string ContentType, string UploadedBy, DateTimeOffset UploadedAtUtc, string RetainedPath, int SheetCount, int TotalParsedRowCount, IReadOnlyList<DataUploadWorkbookSheetPreviewDto> Sheets, IReadOnlyList<DataUploadValidationIssueDto> CrossSheetIssues, string Status, string NextAction);
-```
-
-## DataUploadWorkbookSheetPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DataUploadWorkbookSheetPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L94).
-
-Per-sheet preview returned for one worksheet of an uploaded onboarding workbook.
-
-```csharp
-public sealed record DataUploadWorkbookSheetPreviewDto(string SheetName, string? TemplateId, string? TemplateLabel, string? DataDomain, int ParsedRowCount, int PreviewRowCount, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status);
-```
-
-## DeltaOutlierResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.DeltaOutlierResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L15).
-
-```csharp
-public sealed record DeltaOutlierResult(Guid AccountId, string MetricName, decimal PriorDayValue, decimal CurrentValue, decimal Delta, decimal DeltaRatio, bool IsOutlier, string Detail);
-```
-
-## DesignateShadowBookRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.DesignateShadowBookRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L40).
-
-```csharp
-public sealed record DesignateShadowBookRequestDto(int ExpectedVersion, string Rationale);
 ```

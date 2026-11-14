@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingAuthoritativeSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingAuthoritativeSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:45](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L45).
+
+Durable, server-owned source boundary used by certification. Implementations must return the exact rows represented by the checkpoint hash; callers cannot contribute or replace rows.
+
+```csharp
+public interface IReportingAuthoritativeSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:47](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L47) |  |
+| <code>ValueTask&lt;ReportingAuthoritativeSourceCapture&gt; CaptureAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext accessContext, ReportingAuthoritativeSourceCaptureIntent intent, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs:57](../../../../src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs#L57) | Captures the same template-neutral authoritative checkpoint while also retaining any explicitly required template presentation evidence. Existing sources that do not provide template-specific presentations retain their normal capture behavior. |
+
+## IReportingCertifiedArtifactProducer
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedArtifactProducer</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:134](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L134).
+
+Narrow bridge to the renderer that owns the exact output bytes. Implementations must return the bytes actually rendered for the supplied manifest; callers and HTTP payloads are never an artifact source.
+
+```csharp
+public interface IReportingCertifiedArtifactProducer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingGovernedArtifactProduction&gt; ProduceAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:136](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L136) |  |
+
+## IReportingCertifiedLedgerPresentationSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingCertifiedLedgerPresentationSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:94](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L94).
+
+Resolves the canonical ledger report pack whose accounting presentation was certified for an exact reporting checkpoint. Returning null means that no authoritative presentation is available and callers that require it must fail closed.
+
+```csharp
+public interface IReportingCertifiedLedgerPresentationSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingCertifiedLedgerPresentationInput?&gt; ResolveExactAsync(ReportingOutputManifest manifest, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs:96](../../../../src/Meridian.Ui.Shared/Services/ReportingPrimaryDocumentRenderer.cs#L96) |  |
+
 ## IReportingDeliveryGrantCredentialDeriver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingDeliveryGrantCredentialDeriver</code>. Kind: `interface`.
@@ -992,60 +1047,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyList&lt;OnboardingSourceSelectionDto&gt;&gt; GetSelectionAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L36) |  |
 | <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:46](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L46) |  |
-
-## OnboardingOpeningStateSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingOpeningStateSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs:14](../../../../src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs#L14).
-
-Reads Meridian&#x27;s own retained account records for the workspace start date: the latest balance snapshot (cash and NAV components) and the retained position lines. It never imports, posts, or substitutes zero for an absent component.
-
-```csharp
-public sealed class OnboardingOpeningStateSource(IAccountQueryService? accounts = null) : IOnboardingOpeningStateProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureOpeningAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs:18](../../../../src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs#L18) |  |
-
-## OperationsContinuityReconciliationBridge
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OperationsContinuityReconciliationBridge</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:28](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L28).
-
-Connects reconciliation execution and retained break evidence to Operations Continuity transitions.
-
-```csharp
-public sealed class OperationsContinuityReconciliationBridge : IOperationsContinuityReconciliationBridge
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsContinuityReconciliationBridge(IOperationsContinuityWorkflowService workflowService, IReconciliationRunService? reconciliationRunService = null, IReconciliationBreakQueueRepository? breakQueueRepository = null, IReconciliationApiService? statementReconciliation = null);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:76](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L76) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:88](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L88) |  |
-| <code>public async Task&lt;OperationsTransitionResultDto&gt; RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, ReconciliationBreakQueueScope accessScope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs:95](../../../../src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs#L95) |  |
-
-## OperationsReportPackAuthority
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OperationsReportPackAuthority</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:22](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L22).
-
-Resolves pre-close report support from retained packages, never a caller readiness flag.
-
-```csharp
-public sealed class OperationsReportPackAuthority(IAccountingReportPackageService? packages = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? ownership = null, ILedgerJournalStore? journals = null) : IOperationsReportPackAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool MatchesRetainedRevision(OperationsReportPackReadinessDto retained, OperationsReportPackReadinessDto current);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:30](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L30) |  |
-| <code>public async Task&lt;OperationsReportPackReadinessDto&gt; ResolveAsync(OperationsContinuityWorkflowDto workflow, string? packageId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs:41](../../../../src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs#L41) |  |

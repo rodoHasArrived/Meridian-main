@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondCollectionCaseworkProjection
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondCollectionCaseworkProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs:16](../../../../src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs#L16).
+
+Projects retained collection observations into the existing scoped reconciliation queue. Source clearing is evidence; governed resolution, signoff and reopening remain queue operations.
+
+```csharp
+public sealed class BondCollectionCaseworkProjection(IReconciliationBreakQueueRepository queue, IBondMonitoringService monitoring)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;string&gt;&gt; ProjectAsync(BondMonitoringSnapshotDto captured, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs:21](../../../../src/Meridian.Ui.Shared/Services/BondCollectionCaseworkProjection.cs#L21) |  |
+
+## BondExerciseNoticeReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondExerciseNoticeReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:12](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L12).
+
+Workstation read model for upcoming exercise notice windows on one retained Bond row. It loads the security as analytics does (current, or recorded as of an explicit knowledge cutoff) and delegates to BondExerciseNoticeWatch, after the retained IBondCalculationPolicy cutover gate. Read-only: no terms are written and no notice is recorded.
+
+```csharp
+public sealed class BondExerciseNoticeReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BondExerciseNoticeReadService(ISecurityMasterQueryService query, IBusinessDayCalendarSource? calendars = null, IBondCalculationPolicy? policy = null);</code> | [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L18) |  |
+| <code>public async Task&lt;BondExerciseNoticeWatchResult?&gt; GetAsync(Guid securityId, DateTimeOffset asOf, int horizonDays, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs:27](../../../../src/Meridian.Ui.Shared/Services/BondExerciseNoticeReadService.cs#L27) | Returns null when no security is retained under the id (or none is eligible at knownAt and none exists now). |
+
+## BondPerformanceSourceVerifier
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BondPerformanceSourceVerifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:9](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L9).
+
+Cached calculation receipts do not replace current source-byte and accepted-review authority.
+
+```csharp
+public sealed class BondPerformanceSourceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondPerformanceSourceVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:14](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L14) |  |
+| <code>public Task VerifyFxAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;AccountCashFxConversionDto&gt; conversions, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs:24](../../../../src/Meridian.Ui.Shared/Services/BondPerformanceSourceVerifier.cs#L24) |  |
+
 ## BondPerformanceTransactionSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BondPerformanceTransactionSource</code>. Kind: `class`.
@@ -577,21 +633,23 @@ Declared public members:
 | <code>public string ConfigPath =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:23](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L23) |  |
 | <code>public static Meridian.Core.Config.AppConfig LoadConfig(string path) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:25](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L25) |  |
 | <code>public Meridian.Core.Config.AppConfig Load() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:28](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L28) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L30) |  |
-| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L33) |  |
-| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:39](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L39) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L45) | Read-modify-write under the configuration lock; see the core store for the contract. |
-| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:50](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L50) |  |
-| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:53](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L53) |  |
-| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:55](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L55) |  |
-| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:58](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L58) |  |
-| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:61](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L61) |  |
+| <code>public Meridian.Contracts.Configuration.ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L30) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:32](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L32) |  |
+| <code>public System.Threading.Tasks.Task SaveAsync(Meridian.Core.Config.AppConfig cfg, CancellationToken ct) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:35](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L35) |  |
+| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:45](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L45) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public System.Threading.Tasks.Task&lt;T&gt; UpdateWithConfirmationAsync&lt;T&gt;(Func&lt;Meridian.Core.Config.AppConfig, (Meridian.Core.Config.AppConfig Config, T Result)&gt; update, bool confirmDataSemantics, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:51](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L51) | Explicit confirmation is required for edits changing the meaning of newly stored data. |
+| <code>public System.Threading.Tasks.Task UpdateAsync(Func&lt;Meridian.Core.Config.AppConfig, Meridian.Core.Config.AppConfig&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:63](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L63) | Read-modify-write under the configuration lock; see the core store for the contract. |
+| <code>public Meridian.DataIntegration.Monitoring.ProviderMetricsStatus? TryLoadProviderMetrics() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:68](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L68) |  |
+| <code>public string? TryLoadStatusJson() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L71) |  |
+| <code>public string GetDataRoot(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:73](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L73) |  |
+| <code>public string GetStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:76](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L76) |  |
+| <code>public string GetBackfillStatusPath(Meridian.Core.Config.AppConfig? cfg = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:79](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L79) |  |
 
 ## ConfigStoreExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConfigStoreExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:71](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L71).
+Source: [src/Meridian.Ui.Shared/Services/ConfigStore.cs:89](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L89).
 
 Configures the core ConfigStore default path resolver for web dashboard hosting.
 
@@ -603,7 +661,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:73](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L73) |  |
+| <code>public static void UseWebDefaultPath();</code> | [src/Meridian.Ui.Shared/Services/ConfigStore.cs:91](../../../../src/Meridian.Ui.Shared/Services/ConfigStore.cs#L91) |  |
 
 ## ConfiguredReportingHttpRelayClient
 
@@ -904,51 +962,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:18](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L18) | Materialises a chain provider that supplies call-option candidates for each scan date in &#91;from, to&#93;. The factory may consult any registered IOptionsChainProvider implementations to gather chain snapshots. |
 | <code>ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs:29](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallChainProviderFactory.cs#L29) | Materialises a single-date chain (for the configure-form preview). Underlying price is resolved from the latest available snapshot. Returns a tuple of (underlyingPrice, candidates). |
-
-## CredentialKeyStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CredentialKeyStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:23](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L23).
-
-Indicates whether a specific credential key has a stored value. The actual value is NEVER returned to the browser.
-
-```csharp
-public sealed record CredentialKeyStatusDto(string Key, bool HasValue);
-```
-
-## CrossScreenCountDefinitions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CrossScreenCountDefinitions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:12](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L12).
-
-The one definition of each count that more than one workstation screen shows. The Trading, Data and Accounting workspace metric cards and the cross-screen counts endpoint (which WPF reads) all count with these, and the browser&#x27;s lib/cross-screen-counts.ts mirrors them; tests/Shared/cross-screen-counts.fixture.json holds both implementations to the same expected values.
-
-```csharp
-public static class CrossScreenCountDefinitions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string OpenOrdersDefinition = &quot;Orders the order manager reports open (working, partially filled or pending routing) for the fund account in scope.&quot;;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:14](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L14) |  |
-| <code>public const string ProvidersDefinition = &quot;Providers whose status is Healthy, out of every provider the Data workspace lists.&quot;;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:17](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L17) |  |
-| <code>public const string OpenBreaksDefinition = &quot;Break-queue items not yet resolved, dismissed or signed off.&quot;;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:20](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L20) |  |
-| <code>public static bool IsHealthyProviderStatus(string? status) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:26](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L26) | A provider row counts as healthy only when its status is exactly Healthy. |
-| <code>public static (int Healthy, int Total) CountProviderHealth(IEnumerable&lt;string?&gt; providerStatuses);</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:30](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L30) | Healthy providers out of every listed provider. |
-| <code>public static bool IsOpenBreak(ReconciliationBreakQueueStatus status) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:51](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L51) | A break is open until it is resolved, dismissed or signed off. Written as the exclusion so a status added later is counted as work still to do rather than silently dropped. |
-| <code>public static int CountOpenBreaks(IEnumerable&lt;ReconciliationBreakQueueItem&gt; items);</code> | [src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs:57](../../../../src/Meridian.Ui.Shared/Services/CrossScreenCountDefinitions.cs#L57) | Open breaks in a break-queue read, each item counted once. |
-
-## DailyMarkToMarketIntakeRunResult
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DailyMarkToMarketIntakeRunResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs:123](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs#L123).
-
-Valuation evidence and workbench intake outcome for one daily-close run.
-
-```csharp
-public sealed record DailyMarkToMarketIntakeRunResult(DailyMarkToMarketRun Valuation, AutomatedJournalDraftIntakeResult Intake, string? BatchCorrelationId = null);
-```

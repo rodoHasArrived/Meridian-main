@@ -6,10 +6,38 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Ui.Shared
+
+Backfill provider status, fallback-chain and dry-run reads require an available
+`Backfill.Providers` section and return HTTP 503 when it is missing. The separate metadata route
+continues to expose catalog presets without presenting them as configured runtime state.
+
+Symbol mappings expose provider-scoped rollout at `/api/symbols/mappings/rollout`. Reads return
+saved versus active modes and retained comparison evidence. Canonical promotion requires active
+and saved Compare mode, the reviewed mismatch count, a reason and archive/series acknowledgements.
+Changes use the configuration lock and atomic writer and do not activate a running resolver;
+responses explicitly report `RestartHost`. Unacknowledged or stale promotions leave config intact.
+Focused coverage: `SymbolMappingRolloutEndpointTests` and `CanonicalRegistrySymbolResolverTests`.
+
+Streaming failover compatibility trigger/reset controls await the live runtime hand-off and refuse
+unavailable or rejected transitions. Config reads with `configurationOnly=true` remain available
+while streaming is stopped and report unknown active providers explicitly. Rule quality, latency,
+failure and recovery threshold relaxations require an operator reason; the rule and immutable audit
+entry persist together. Saves return the shared setting-change impact; failover timing diagnostics
+report retained `DataSourcesConfig` values rather than placeholder thresholds.
+Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
+provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.
+
+Configuration saves validate under the shared write lease before atomic persistence. Ordinary UI
+saves refuse tenant-posture changes, plaintext credential edits and live brokerage activation;
+changes to price adjustment or Canonical resolution require an explicit archive/series confirmation.
+`GET /api/config/changes` and configuration-save responses expose field names and `Live`,
+`ReconnectProvider` or `RestartHost` impact. Pending state lasts for the host lifetime; a saved
+change is never presented as an applied provider rebuild. Browser Settings and Data use the same
+status.
 
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
@@ -37,6 +65,16 @@ Alpaca's fixed-income filter and authoritative error propagation, and exposes mo
 separately for candidate staging. The browser stages the reviewed identity through the existing
 retained asset-information upload; discovery never supplies approved economic terms. Tests use
 synthetic fixtures; live provider behavior remains untested.
+Completed empty bond lookups return `available: true`; failed lookups return HTTP 503 with
+`available: false`, no candidates and a stable `failureReason` describing unavailable credentials,
+transport, malformed payload, incomplete response or throttling.
+Discovery holds the retained configuration lease through dispatch and requires an applied Alpaca
+runtime binding owned by the authenticated tenant. Missing, deleted, inconsistent or pending
+bindings refuse before HTTP; a different tenant cannot use the host's selected provider credentials.
+Null configuration documents and noncanonical credential environments also report unavailable
+credentials and release the configuration lease before returning.
+The complete lookup has a 20-second deadline and preserves caller cancellation. Expiry reports
+`lookupTimedOut` and releases the configuration lease; blank queries refuse before provider probes.
 Visualization services are registered through the existing workstation composition and endpoint
 map. Private-capital observation and broker-assessment imports use dedicated permissions and
 authenticated tenant/company plus entity/account checks. The former verifies retained source

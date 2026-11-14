@@ -6,6 +6,96 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportLedgerAmountBindingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L6).
+
+An exact account balance and its retained journal-line population in a generated report.
+
+```csharp
+public sealed record ReportLedgerAmountBindingDto(string AmountId, string Label, decimal Amount, string Currency, LedgerAmountScopeDto Scope, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<Guid> LedgerEntryIds)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SubjectId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L16) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceSnapshotHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L19) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? ProofAvailable { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L26) | Server-owned answer to whether the current caller may open this amount&#x27;s proof. Set only on API responses; retained bindings leave it null, and clients treat an absent value as denied. |
+
+## ReportPackAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1756](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1756).
+
+```csharp
+public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
+```
+
+## ReportPackChangedLineDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackChangedLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1758](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1758).
+
+```csharp
+public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+```
+
+## ReportPackCreateRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackCreateRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1808](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1808).
+
+```csharp
+public sealed record ReportPackCreateRequestDto(string FundProfileId, string FundAccountId, string Period, VersionedReportTemplateIdDto TemplateId, IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null, ReportAccessPolicyDto? AccessPolicy = null);
+```
+
+## ReportPackDeliveryAccessLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryAccessLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:883](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L883).
+
+```csharp
+public sealed record ReportPackDeliveryAccessLinkDto(string Kind, string Label, string Href, bool RequiresToken, DateTimeOffset? ExpiresAtUtc = null, string? Description = null);
+```
+
+## ReportPackDeliveryApprovalStepDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryApprovalStepDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:911](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L911).
+
+```csharp
+public sealed record ReportPackDeliveryApprovalStepDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
+```
+
+## ReportPackDeliveryArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:872](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L872).
+
+```csharp
+public sealed record ReportPackDeliveryArtifactDto(GovernanceReportArtifactFormatDto Format, string ArtifactName, string ContentType, string RetainedPath, long ByteSize, string EvidenceId, string ChecksumSha256 = "", string VersionStamp = "", string? DownloadRoute = null);
+```
+
+## ReportPackDeliveryAttemptDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryAttemptDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:994](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L994).
+
+```csharp
+public sealed record ReportPackDeliveryAttemptDto(Guid AttemptId, Guid ReportId, string DistributionId, string Recipient, string RecipientRole, string Channel, ReportPackDeliveryStateDto State, DateTimeOffset AttemptedAtUtc, string Actor, int AttemptNumber, string DeliveryReference, string? Note = null, string? FailureReason = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, ReportPackDeliveryPackageDto? Package = null);
+```
+
 ## ReportPackDeliveryEvidencePacketDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryEvidencePacketDto</code>. Kind: `record`.
@@ -542,93 +632,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1544]
 
 ```csharp
 public sealed record ReportWriterGridColumnDto(string Key, string Label, string Role);
-```
-
-## ReportWriterGridDataDictionaryFieldDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDataDictionaryFieldDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1570](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1570).
-
-```csharp
-public sealed record ReportWriterGridDataDictionaryFieldDto(string Key, string Label, string Role, string SourceField, string DataType, bool IsGenerated, string Description);
-```
-
-## ReportWriterGridDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1483](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1483).
-
-```csharp
-public sealed record ReportWriterGridDefinitionDto(string GridId, string Title, ReportWriterGridKindDto Kind, IReadOnlyList<string>? RowFields = null, IReadOnlyList<string>? ColumnFields = null, IReadOnlyList<ReportWriterMetricDefinitionDto>? Metrics = null, IReadOnlyList<ReportWriterFormulaDefinitionDto>? Formulas = null, int? TopN = null, string? SortBy = null, bool SortDescending = true, IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null, IReadOnlyList<ReportWriterFormatRuleDto>? FormatRules = null, ReportWriterChartDefinitionDto? Chart = null);
-```
-
-## ReportWriterGridDiffCellDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffCellDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1622](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1622).
-
-```csharp
-public sealed record ReportWriterGridDiffCellDto(string Column, string? PriorValue, string? CurrentValue, string? Delta, ReportWriterDiffDirectionDto Direction);
-```
-
-## ReportWriterGridDiffDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1636](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1636).
-
-```csharp
-public sealed record ReportWriterGridDiffDto(string GridId, string Title, IReadOnlyList<ReportWriterGridColumnDto> Columns, IReadOnlyList<ReportWriterGridDiffRowDto> Rows, IReadOnlyList<string> Warnings, int AddedRowCount, int RemovedRowCount, int ChangedRowCount, int UnchangedRowCount);
-```
-
-## ReportWriterGridDiffRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1629](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1629).
-
-```csharp
-public sealed record ReportWriterGridDiffRowDto(string RowKey, ReportWriterDiffRowStateDto State, IReadOnlyDictionary<string, string> PriorValues, IReadOnlyDictionary<string, string> CurrentValues, IReadOnlyList<ReportWriterGridDiffCellDto> Cells);
-```
-
-## ReportWriterGridKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1432](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1432).
-
-```csharp
-public enum ReportWriterGridKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Detail = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1434](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1434) |  |
-| <code>Pivot = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1435](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1435) |  |
-| <code>TopN = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1436](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1436) |  |
-| <code>Contribution = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1437](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1437) |  |
-
-## ReportWriterGridLineageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridLineageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1584](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1584).
-
-```csharp
-public sealed record ReportWriterGridLineageDto(int InputRowCount, int OutputRowCount, IReadOnlyList<string> SourceFields, IReadOnlyList<ReportWriterMetricLineageDto> Metrics, IReadOnlyList<ReportWriterFormulaLineageDto> Formulas, int? FilteredInputRowCount = null, IReadOnlyList<ReportWriterFilterLineageDto>? Filters = null);
-```
-
-## ReportWriterGridRenderDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridRenderDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1593](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1593).
-
-```csharp
-public sealed record ReportWriterGridRenderDto(string GridId, string Title, ReportWriterGridKindDto Kind, IReadOnlyList<ReportWriterGridColumnDto> Columns, IReadOnlyList<ReportWriterGridRowDto> Rows, IReadOnlyList<string> Warnings, ReportWriterGridLineageDto? Lineage = null, IReadOnlyList<ReportWriterGridDataDictionaryFieldDto>? DataDictionary = null, IReadOnlyList<ReportWriterGridValidationCheckDto>? ValidationChecks = null, ReportWriterChartRenderDto? Chart = null);
 ```

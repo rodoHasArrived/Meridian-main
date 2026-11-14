@@ -6,8 +6,8 @@
   "endpoint_coverage_percent": 100.0,
   "contract_coverage_percent": 100.0,
   "summary": {
-    "endpoint_count": 821,
-    "documented_endpoint_count": 821,
+    "endpoint_count": 823,
+    "documented_endpoint_count": 823,
     "undocumented_endpoint_count": 0,
     "workstation_contract_count": 1045,
     "documented_workstation_contract_count": 1045,
@@ -569,19 +569,19 @@
     {
       "method": "GET",
       "path": "/api/backfill/providers/fallback-chain",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:245",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:284",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/backfill/providers/dry-run-plan",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:263",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:302",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/backfill/providers/audit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:293",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BackfillEndpoints.cs:332",
       "documented": true
     },
     {
@@ -725,7 +725,7 @@
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/discovery",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:19",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondDiscoveryEndpoints.cs:22",
       "documented": true
     },
     {
@@ -1042,50 +1042,56 @@
     },
     {
       "method": "GET",
+      "path": "/api/config/changes",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:44",
+      "documented": true
+    },
+    {
+      "method": "GET",
       "path": "/api/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:36",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:50",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/config/effective",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:63",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:77",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/datasource",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:120",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:134",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/alpaca",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:149",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/storage",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:147",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:161",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/symbols",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:174",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:188",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/config/derivatives",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:215",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:229",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/config/derivatives",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:224",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:238",
       "documented": true
     },
     {
@@ -1739,19 +1745,25 @@
     {
       "method": "POST",
       "path": "/api/failover/config",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:65",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:86",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/failover/rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:114",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:136",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/failover/rules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:135",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:157",
+      "documented": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/failover/force/{ruleId}",
+      "source": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs:324",
       "documented": true
     },
     {
@@ -3563,73 +3575,73 @@
     {
       "method": "GET",
       "path": "/api/providers/{providerName}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:27",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:30",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/failover",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:57",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:60",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/failover/trigger",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:85",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:88",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/failover/reset",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:102",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:101",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/rate-limits",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:115",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/{providerName}/rate-limit-history",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:131",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:128",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/capabilities",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:148",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:145",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/switch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:167",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:164",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/providers/{providerName}/test",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:193",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:190",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/failover-thresholds",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:230",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:227",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/health",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:247",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:253",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/providers/dashboard",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:305",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:311",
       "documented": true
     },
     {
@@ -3689,25 +3701,25 @@
     {
       "method": "GET",
       "path": "/api/provider-routing/connections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:22",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:25",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/provider-routing/bindings",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:41",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:44",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/provider-routing/trust-snapshots",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:60",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:63",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/provider-routing/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:79",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:82",
       "documented": true
     },
     {
@@ -4913,19 +4925,19 @@
     {
       "method": "GET",
       "path": "/api/symbols/registry",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:29",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:30",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/symbols/mappings",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:70",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:71",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/symbols/mappings",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:77",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:78",
       "documented": true
     },
     {

@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HealthCheckConfig
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.HealthCheckConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:177](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L177).
+
+Health check configuration.
+
+```csharp
+public sealed record HealthCheckConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int IntervalSeconds { get; init; } = 30;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:182](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L182) | Interval between health checks in seconds. |
+| <code>public int TimeoutSeconds { get; init; } = 10;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:187](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L187) | Timeout for health check requests in seconds. |
+| <code>public int UnhealthyThreshold { get; init; } = 3;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:192](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L192) | Number of consecutive failures before marking unhealthy. |
+| <code>public HealthCheckOptions ToOptions() =&gt; …;</code> | [src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs:197](../../../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs#L197) | Converts to internal options format. |
+
+## HealthCheckOptions
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.HealthCheckOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/DataSources/DataSourceBase.cs:643](../../../../src/Meridian.Infrastructure/DataSources/DataSourceBase.cs#L643).
+
+Health check configuration.
+
+```csharp
+public sealed record HealthCheckOptions(int IntervalSeconds = 30, int TimeoutSeconds = 10, int UnhealthyThreshold = 3);
+```
+
 ## PluginInstanceConfig
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.PluginInstanceConfig</code>. Kind: `record`.
@@ -1096,37 +1129,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void ObserveException(this Task task, ILogger? logger = null, string? operation = null);</code> | [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:24](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L24) | Observes a fire-and-forget task, ensuring any exception is logged rather than silently swallowed. Use this when a task cannot be awaited (e.g., called from a synchronous method or event handler) but failures must not go unnoticed. |
 | <code>public static void ObserveException(this ValueTask valueTask, ILogger? logger = null, string? operation = null);</code> | [src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs:44](../../../../src/Meridian.Infrastructure/Shared/TaskSafetyExtensions.cs#L44) | Observes a fire-and-forget ValueTask, ensuring any exception is logged. |
-
-## HttpResponseHandler
-
-Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseHandler</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:14](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L14).
-
-Centralized HTTP response handling to eliminate duplicate error handling code across providers. Handles common HTTP status codes (429, 403, 404, etc.) consistently.
-
-```csharp
-public sealed class HttpResponseHandler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public HttpResponseHandler(string providerName, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:19](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L19) |  |
-| <code>public async Task&lt;HttpResponseResult&gt; HandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action&lt;RateLimitEventArgs&gt;? onRateLimitHit = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:30](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L30) | Handle HTTP response and throw appropriate exceptions for error status codes. Returns result if successful, throws on error (except 404 which returns IsNotFound). |
-| <code>public Task&lt;HttpHandleResult&gt; TryHandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action&lt;RateLimitInfo&gt;? onRateLimitHit = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:65](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L65) | Handle HTTP response without throwing exceptions. Returns a result object with categorized error information. This is the preferred method for use in base provider classes that need to return results rather than throw. |
-| <code>public HttpResponseResult HandleResponse(HttpStatusCode statusCode, string symbol, string dataType, string? errorContent = null);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:125](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L125) | Synchronous version for responses already read. |
-| <code>public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response);</code> | [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:211](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L211) | Extract Retry-After header value from response. |
-
-## HttpResponseResult
-
-Qualified name: <code>Meridian.Infrastructure.Utilities.HttpResponseResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs:241](../../../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs#L241).
-
-Result of HTTP response handling.
-
-```csharp
-public readonly record struct HttpResponseResult(bool IsSuccess, HttpStatusCode StatusCode, bool IsNotFound = false, string? ErrorMessage = null);
-```

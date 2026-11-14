@@ -628,7 +628,8 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                             futureDropped, request.Symbol, providerName);
                     }
 
-                    if (BackfillBarValidation.EvaluateDailyRecency(bars, request.ToDate) is { } staleVerdict)
+                    if (BackfillBarValidation.EvaluateDailyRecency(bars, request.ToDate,
+                        staleToleranceDays: ProviderValidationProfile.Resolve(_appConfig.Backfill, bars.FirstOrDefault()?.Source ?? providerName).StaleToleranceDays) is { } staleVerdict)
                     {
                         scopedLog.Warning(
                             "Stale backfill persisted for {Symbol} via {Provider}: {StaleReason}. The provider's dataset may be frozen or paywalled.",
@@ -1296,7 +1297,8 @@ public sealed class BackfillServiceFactory
             config.EnableSymbolResolution ? _symbolResolver : null,
             enableRateLimitRotation: config.EnableRateLimitRotation,
             rateLimitRotationThreshold: config.RateLimitRotationThreshold,
-            log: _log);
+            log: _log,
+            validationProfiles: config.ValidationProfiles);
 
         // Create gap analyzer
         var gapAnalyzer = new DataGapAnalyzer(dataRoot, _log);

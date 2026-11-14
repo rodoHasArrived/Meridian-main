@@ -28,12 +28,15 @@ public sealed class YahooFinanceProviderModuleCompositionTests : IDisposable
 
         var registry = provider.GetRequiredService<ProviderRegistry>();
         var historical = registry.GetCapability<IHistoricalDataProvider>(" YAHOO ");
+        var defaults = new YahooFinanceConfig();
         historical.Should().BeOfType<YahooFinanceHistoricalDataProvider>();
         historical.Should().BeSameAs(provider.GetRequiredService<YahooFinanceHistoricalDataProvider>());
         registry.GetProviders<IHistoricalDataProvider>().Should().ContainSingle(item => item.Name == "yahoo");
         historical.Should().BeAssignableTo<IHistoricalAggregateBarProvider>();
-        historical!.Priority.Should().Be(22);
-        historical.MaxRequestsPerWindow.Should().Be(2000);
+        historical!.Priority.Should().Be(defaults.Priority);
+        historical.MaxRequestsPerWindow.Should().Be(defaults.RateLimitPerHour);
+        ((YahooFinanceHistoricalDataProvider)historical).GetRateLimitInfo().MaxRequests
+            .Should().Be(defaults.RateLimitPerHour);
         historical.SupportsIntraday.Should().BeTrue();
         historical.SupportedMarkets.Should().Contain(["US", "UK", "DE", "JP", "CA", "AU", "HK", "SG"]);
         var inventory = provider.GetRequiredService<DataSourceRegistry>().ModuleCapabilityRegistrations
@@ -103,7 +106,12 @@ public sealed class YahooFinanceProviderModuleCompositionTests : IDisposable
         var historical = provider.GetRequiredService<ProviderRegistry>().GetCapability<IHistoricalDataProvider>("yahoo");
 
         if (runtimeEnabled)
+        {
             historical.Should().BeSameAs(provider.GetRequiredService<YahooFinanceHistoricalDataProvider>());
+            historical!.Priority.Should().Be(99);
+            historical.MaxRequestsPerWindow.Should().Be(42);
+            ((YahooFinanceHistoricalDataProvider)historical).GetRateLimitInfo().MaxRequests.Should().Be(42);
+        }
         else
             historical.Should().BeNull();
     }
@@ -125,8 +133,13 @@ public sealed class YahooFinanceProviderModuleCompositionTests : IDisposable
             if (expected)
             {
                 yahoo[0].Should().BeOfType<YahooFinanceHistoricalDataProvider>();
-                yahoo[0].Priority.Should().Be(22);
-                yahoo[0].MaxRequestsPerWindow.Should().Be(2000);
+                var defaults = new YahooFinanceConfig();
+                var expectedPriority = scenario == "configured" ? 99 : defaults.Priority;
+                var expectedHourlyLimit = scenario == "configured" ? 42 : defaults.RateLimitPerHour;
+                yahoo[0].Priority.Should().Be(expectedPriority);
+                yahoo[0].MaxRequestsPerWindow.Should().Be(expectedHourlyLimit);
+                ((YahooFinanceHistoricalDataProvider)yahoo[0]).GetRateLimitInfo().MaxRequests
+                    .Should().Be(expectedHourlyLimit);
                 yahoo[0].Should().BeAssignableTo<IHistoricalAggregateBarProvider>();
             }
         }
