@@ -200,15 +200,17 @@ Declared public members:
 | <code>public const string CalendarModelVersion = ModelVersion;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:65](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L65) | Frozen regular-calendar model retained for immutable instruction replay. |
 | <code>public static bool IsCurrentVersion(string? version) =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:67](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L67) |  |
 | <code>public static string SecurityHash(SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:70](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L70) |  |
-| <code>public static OpenLotAmortizationProjectionDto Project(OpenLotAmortizationInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:81](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L81) |  |
-| <code>public static bool SameLot(OpenLotDto left, OpenLotDto right) =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:245](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L245) |  |
-| <code>public static bool SameInstruction(OpenLotAmortizationInstructionDto? left, OpenLotAmortizationInstructionDto? right) =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:250](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L250) |  |
+| <code>public static IReadOnlyList&lt;string&gt; AcceptedSecurityHashes(SecurityProjectionRecord security);</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:90](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L90) | The SecurityHash values that identify these Security Master terms: the hash of the projection as read and, when its asset-specific terms carry a declared SecurityTermsEnvelope.FormatKey that only restates the family the frozen shape rule infers (SecurityTermsEnvelope.RemoveRedundantDeclaredFormat), the hash of the same projection without it. That declaration is the only key a write, a replay or migration 068 adds to unchanged terms (ADR-024 amendment 2026-11-13), so evidence retained over the untagged terms keeps matching after they are stamped; every other byte stays bound, so changed terms never match. |
+| <code>public static bool SameSecurityHash(SecurityProjectionRecord left, SecurityProjectionRecord right);</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:111](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L111) | Whether two projections hash to the same SecurityHash once a declared SecurityTermsEnvelope.FormatKey that only restates the inferred family is set aside (see AcceptedSecurityHashes): a retained untagged projection and the same terms read back stamped are the same security; any other difference is not. |
+| <code>public static OpenLotAmortizationProjectionDto Project(OpenLotAmortizationInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:122](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L122) |  |
+| <code>public static bool SameLot(OpenLotDto left, OpenLotDto right) =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:286](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L286) |  |
+| <code>public static bool SameInstruction(OpenLotAmortizationInstructionDto? left, OpenLotAmortizationInstructionDto? right) =&gt; …;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs:291](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortization.cs#L291) |  |
 
 ## OpenLotAmortizationContinuation
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuation</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:14](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L14).
+Source: [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:15](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L15).
 
 Continues matching versioned economics only across an unchanged one-for-one Reg S/144A exchange.
 
@@ -220,14 +222,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string ModelVersion = &quot;canonical-lot-exchange-continuation-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:16](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L16) |  |
-| <code>public static OpenLotDto Validate(OpenLotAmortizationInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:19](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L19) |  |
+| <code>public const string ModelVersion = &quot;canonical-lot-exchange-continuation-v1&quot;;</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:17](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L17) |  |
+| <code>public static OpenLotDto Validate(OpenLotAmortizationInstructionDto instruction);</code> | [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:20](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L20) |  |
 
 ## OpenLotAmortizationContinuationDto
 
 Qualified name: <code>Meridian.Contracts.Accounting.Lots.OpenLotAmortizationContinuationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:7](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L7).
+Source: [src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs:8](../../../../src/Meridian.Contracts/Accounting/Lots/OpenLotAmortizationContinuation.cs#L8).
 
 Reviewed assertion; Storage binds it to both immutable posting receipts before any write.
 

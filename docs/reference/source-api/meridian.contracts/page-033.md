@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ClosePreparationIssueDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:51](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L51).
+
+```csharp
+public sealed record ClosePreparationIssueDto(string Code, string Message, bool IsBlocking, string? TaskId = null);
+```
+
 ## ClosePreparationOwnerMappingDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationOwnerMappingDto</code>. Kind: `record`.
@@ -665,16 +675,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:64](../
 
 ```csharp
 public sealed record CreatePreparedClosePlanRequestDto(Guid PreviewId, string IdempotencyKey, string? Actor = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## CreatePrivateCapitalCommitmentRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.CreatePrivateCapitalCommitmentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:124](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L124).
-
-Create a new draft revision; expected revision zero creates a new commitment.
-
-```csharp
-public sealed record CreatePrivateCapitalCommitmentRequest(string CommitmentId, string InvestorId, string CapitalAccountId, decimal TotalCommitment, DateOnly CommitmentDate, DateOnly EffectiveFrom, DateOnly? InvestmentPeriodEndDate, IReadOnlyList<string> EvidenceLinks, int ExpectedRevision = 0, bool IsActive = true);
 ```

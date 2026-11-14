@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PersistedLedgerLineDto
+
+Qualified name: <code>Meridian.Execution.Services.PersistedLedgerLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:42](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L42).
+
+Lightweight serialisation DTO for a single debit/credit line in a journal entry.
+
+```csharp
+public sealed record PersistedLedgerLineDto(Guid EntryId, Guid JournalEntryId, DateTimeOffset Timestamp, PersistedLedgerAccountDto Account, decimal Debit, decimal Credit, string Description);
+```
+
 ## PersistedSessionRecord
 
 Qualified name: <code>Meridian.Execution.Services.PersistedSessionRecord</code>. Kind: `record`.

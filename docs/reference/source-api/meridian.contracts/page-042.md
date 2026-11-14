@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AssetPackSharedCoverage
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackSharedCoverage</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.SharedCoverage.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.SharedCoverage.cs#L117).
+
+One asset class that several built-in packs cover on purpose, claimed or planned, and why.
+
+```csharp
+public sealed record AssetPackSharedCoverage(string AssetClass, IReadOnlyList<string> PackIds, string Reason);
+```
+
+## AssetPackValidationRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetPackValidationRules</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs:917](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.cs#L917).
+
+Descriptive metadata: one shared set of phrases for every pack, shown on the readiness surface. Nothing evaluates these as rules; executable validation lives in the terms schema and validators.
+
+```csharp
+public sealed record AssetPackValidationRules(IReadOnlyList<string> RequiredFields, IReadOnlyList<string> ExpectedSchedules, IReadOnlyList<string> ToleranceChecks, IReadOnlyList<string> IncompatibleCombinations);
+```
+
 ## AssetSpecificTermsSchema
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.AssetSpecificTermsSchema</code>. Kind: `class`.
@@ -23,12 +47,11 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public const int Legacy = 1;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L15) | Flat per-asset-class term payloads (the original, pre-versioning shape). |
-| <code>public const int ReservedForEconomicTerms = 2;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L34) | Reserved — never a flat asset-specific-terms version. The asset-specific-terms slot holds one schemaVersion key but two payload families, and SecurityAssetSpecificTermsUpcasterChain dispatches on the bare integer: a payload stamped with this number is routed into the cross-family economic-terms → v1 bridge (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster). Declaring a genuine flat v2 would send every such payload through that bridge, which reads nested module objects a flat document does not have and would emit an empty terms object stamped as valid legacy — total loss of the record&#x27;s economics with no diagnostic. The next flat evolution must skip this number; the guard test in SecurityAssetSpecificTermsUpcasterChainTests enforces that no accepted flat version ever equals EconomicTermsSchema.Current. Payloads now declare their family in SecurityTermsEnvelope.FormatKey, and a tagged payload is dispatched on that declaration alone. The reservation still protects the untagged payloads stored before the tag existed, which can only be classified by shape. New per-class evolution belongs in SecurityAssetClassDescriptor.TermsVersion, not in this codec number. |
-| <code>public const int CustomAssetProfile = 3;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L37) | Custom-asset profile-backed term payloads (profileFields + customProfileId). |
-| <code>public const int Default = Legacy;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L43) | The version stamped on legacy payloads that predate explicit versioning. A payload with no schemaVersion is treated as this version on read (migrate-on-read). |
-| <code>public static bool IsAccepted(int schemaVersion, bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L50) | Single source of truth for whether an asset-specific-terms schemaVersion is accepted by the current compatibility adapter. Legacy terms are always accepted; the custom-asset-profile family is accepted only for profile-backed records. |
-| <code>public static IReadOnlyList&lt;int&gt; Accepted(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L55) | The accepted versions for the given record shape, ascending. |
-| <code>public static string DescribeAccepted(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L61) | Human-readable accepted-version list for validation messages (e.g. &quot;1&quot; or &quot;1 or 3&quot;). |
+| <code>public const int CustomAssetProfile = 3;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L25) | Custom-asset profile-backed term payloads (profileFields + customProfileId). |
+| <code>public const int Default = Legacy;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L31) | The version stamped on legacy payloads that predate explicit versioning. A payload with no schemaVersion is treated as this version on read (migrate-on-read). |
+| <code>public static bool IsAccepted(int schemaVersion, bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L38) | Single source of truth for whether an asset-specific-terms schemaVersion is accepted by the current compatibility adapter. Legacy terms are always accepted; the custom-asset-profile family is accepted only for profile-backed records. |
+| <code>public static IReadOnlyList&lt;int&gt; Accepted(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L43) | The accepted versions for the given record shape, ascending. |
+| <code>public static string DescribeAccepted(bool isProfileBacked) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs#L49) | Human-readable accepted-version list for validation messages (e.g. &quot;1&quot; or &quot;1 or 3&quot;). |
 
 ## AttachCorporateActionAccountingProjectionRequestDto
 
@@ -719,28 +742,4 @@ Server-resolved complete-book entitlement, retained independently of a client am
 
 ```csharp
 public sealed record CorporateActionCashDividendEligibilityDto(Guid SecurityId, DateOnly ExDate, string RelatedEventKey, string ProviderId, string SourceEventId, string SourceEventVersion, string SourceEvidenceHash, decimal DividendPerShare, decimal GrossImpactUsd, decimal WholeEventGrossUsd, DateOnly BudgetMonth, string EntitlementSnapshotHash, string EntitlementSnapshotJson, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] CashDividendAccountRoleBindingDto? AccountRoleBinding = null);
-```
-
-## CorporateActionCashDividendPostedProofDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostedProofDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L154).
-
-Original posting proof; later declaration withdrawal does not rewrite its decision.
-
-```csharp
-public sealed record CorporateActionCashDividendPostedProofDto(CorporateActionCashDividendPostingDto Posting, CorporateActionCashDividendAttestationDto Attestation, CashDividendAttestationDeclarationDto Declaration, CorporateActionCaseAccountingProjectionDto Projection);
-```
-
-## CorporateActionCashDividendPostingDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCashDividendPostingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L124).
-
-A posting bound to a preparer decision; deliberately contains no ordinary ApprovalId.
-
-```csharp
-public sealed record CorporateActionCashDividendPostingDto(Guid PostingId, Guid CaseId, Guid ProjectionId, Guid AttestationId, Guid JournalEntryId, Guid LedgerBookId, Guid PeriodId, string AccountingBasis, string Currency, decimal TotalDebits, decimal TotalCredits, string PostingStatus, Guid? TaxLotMutationBatchId, string PostedBy, DateTimeOffset PostedAtUtc);
 ```

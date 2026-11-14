@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GovernanceCashFlowBucketDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:576](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L576).
+
+```csharp
+public sealed record GovernanceCashFlowBucketDto(int BucketIndex, DateTimeOffset BucketStart, DateTimeOffset BucketEnd, decimal ProjectedInflows, decimal ProjectedOutflows, decimal NetFlow, string Currency, int EventCount);
+```
+
 ## GovernanceCashFlowEntryDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.GovernanceCashFlowEntryDto</code>. Kind: `record`.
@@ -677,14 +687,4 @@ Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementD
 
 ```csharp
 public sealed record IntercompanyCanonicalAgreementReferenceDto(Guid AgreementId, int AgreementVersion, string PayloadHash);
-```
-
-## IntercompanyEntityLifecycleReferenceDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.IntercompanyEntityLifecycleReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs:15](../../../../src/Meridian.Contracts/FundStructure/IntercompanyAccountingArrangementDtos.cs#L15).
-
-```csharp
-public sealed record IntercompanyEntityLifecycleReferenceDto(Guid EntityId, long Revision, string ContentHash);
 ```

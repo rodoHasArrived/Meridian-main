@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ISecurityUnderlyingGraphStore
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:100](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L100).
+
+The underlying graph store: declared links are written through it, derived links are written by the projection store on every security write, and both are read from it. Declared links are operator-entered state, so every declaration, amendment and removal is recorded in the Security Master governance event log with its actor, in the same transaction as the change.
+
+```csharp
+public interface ISecurityUnderlyingGraphStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetUnderlyingsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L103) | The links from securityId to its underlyings, derived and declared. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityUnderlyingLinkDto&gt;&gt; GetDependentsAsync(Guid underlyingSecurityId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:106](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L106) | The links from every instrument that names underlyingSecurityId as a target. |
+| <code>Task&lt;SecurityUnderlyingLinkDto&gt; DeclareAsync(DeclareSecurityUnderlyingLinkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:114](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L114) | Declares (or re-declares) a link; the returned link carries the stored id and timestamps. A new edge, or a change to an existing one&#x27;s weight, window or notes, is recorded as a governance event naming DeclareSecurityUnderlyingLinkRequest.CreatedBy with the state it replaced. Re-declaring an edge unchanged writes nothing and returns it as stored. |
+| <code>Task&lt;bool&gt; RemoveDeclaredAsync(Guid securityId, Guid linkId, string removedBy, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:121](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L121) | Removes a declared link and records the removal, with the removed link and removedBy, as a governance event. Derived links cannot be removed; they follow the terms. |
+
+## ISecurityValuationModel
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationModel</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L122).
+
+One valuation model. The service dispatches to the registered model whose Kind the request or catalog names.
+
+```csharp
+public interface ISecurityValuationModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SecurityValuationModelKind Kind { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L124) |  |
+| <code>string ModelKey { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:127](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L127) | A stable key such as quoted-price or discounted-cash-flow. |
+| <code>string ModelVersion { get; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L130) | The model&#x27;s version, such as v1; changes when the arithmetic changes. |
+| <code>Task&lt;SecurityValuationResult&gt; ValueAsync(SecurityValuationRequest request, SecurityDetailDto security, CancellationToken ct);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L132) |  |
+
+## ISecurityValuationService
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ISecurityValuationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L136).
+
+Values a security with the model its request or asset class names.
+
+```csharp
+public interface ISecurityValuationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityValuationResult?&gt; ValueAsync(SecurityValuationRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs:139](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValuation.cs#L139) | Null when the security is unknown; a blocked result otherwise, never an exception for missing inputs. |
+
 ## IssueOtcMarginCallRequest
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest</code>. Kind: `record`.
@@ -774,56 +834,3 @@ A market data record for a security a snapshot valued that was recorded after th
 ```csharp
 public sealed record OtcMarketDataRecordDto(Guid SecurityId, string Record, DateTimeOffset EffectiveAt, DateTimeOffset RecordedAt);
 ```
-
-## OtcMasterAgreementDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L59).
-
-A master agreement (ISDA, GMRA, GMSLA) between one of the fund&#x27;s legal entities and a counterparty. Every bilateral contract hangs off one through its netting set, so close-out netting and collateral terms are facts about the relationship, not copied onto each trade.
-
-```csharp
-public sealed record OtcMasterAgreementDto(Guid AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
-```
-
-## OtcMasterAgreementType
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L8).
-
-The form of master agreement a counterparty relationship is documented under.
-
-```csharp
-public enum OtcMasterAgreementType
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Isda1992</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L11) | ISDA 1992 Master Agreement. |
-| <code>Isda2002</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L14) | ISDA 2002 Master Agreement. |
-| <code>Gmra</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L17) | Global Master Repurchase Agreement (repo). |
-| <code>Gmsla</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L20) | Global Master Securities Lending Agreement. |
-| <code>Other</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L23) | Any other bilateral master or long-form confirmation. |
-
-## OtcMovementKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMovementKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L28).
-
-Whether a movement adds collateral to what the Secured Party holds or gives some back.
-
-```csharp
-public enum OtcMovementKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Delivery</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L30) |  |
-| <code>Return</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L31) |  |

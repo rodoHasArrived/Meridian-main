@@ -6,6 +6,98 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterAggregateRebuilder
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.SecurityMasterAggregateRebuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs:9](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs#L9).
+
+Reconstructs security economic definitions and corporate actions from retained events.
+
+```csharp
+public sealed class SecurityMasterAggregateRebuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs:18](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs#L18) | Returns all corporate action events for a security in ascending ex-date order, folding the separate CorpActEvent stream into the aggregate view for a security. |
+| <code>public SecurityMasterAggregateRebuilder(ISecurityMasterEventStore eventStore, ISecurityMasterSnapshotStore snapshotStore);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs:23](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs#L23) |  |
+| <code>public async Task&lt;SecurityEconomicDefinitionRecord?&gt; RebuildEconomicDefinitionAsync(Guid securityId, SecurityProjectionRecord? projectionWithAliases, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs:31](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs#L31) |  |
+| <code>public async Task&lt;SecurityProjectionRecord?&gt; RebuildAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, SecurityProjectionRecord? projectionWithAliases, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs:64](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs#L64) | Rebuilds from the last retained stream version whose stored event timestamp is at or before asOfUtc. Every payload carries the full definition. Returns null when the stream has no timestamp-eligible event; projection-only securities fall back to the supplied current projection. Event timestamps may precede lock waits and commit, so this selects eligible rows read now and does not reconstruct historical transaction visibility. |
+| <code>public async Task&lt;SecurityProjectionRecord?&gt; RebuildRecordedAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, SecurityProjectionRecord? projectionWithAliases, CancellationToken ct = default, IReadOnlyList&lt;SecurityAliasDto&gt;? aliasesRecordedAtCutoff = null);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs:97](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs#L97) | Rebuilds only from retained events with stored timestamps at or before asOfUtc, returning null when no eligible event is read. Projection-only current definitions are never substituted. Aliases must satisfy their stored recording and valid-time cutoffs; their enabled state is preserved for downstream resolution policy. Callers supply the aliases as recorded at the cutoff (ISecurityMasterStore.GetAliasesRecordedAsOfAsync) so current alias rows cannot replace the retained revisions. These timestamps are not commit receipts: later commits can change repeated results for the same cutoff, and the event/alias reads do not share a single historical transaction snapshot. |
+| <code>public async Task&lt;SecurityProjectionRecord?&gt; RebuildAsync(Guid securityId, SecurityProjectionRecord? projectionWithAliases, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs:122](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterAggregateRebuilder.cs#L122) |  |
+
+## SecurityMasterRebuildOrchestrator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.SecurityMasterRebuildOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs:10](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs#L10).
+
+Coordinates rebuilding Security Master projections across the universe or one asset class.
+
+```csharp
+public sealed class SecurityMasterRebuildOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterRebuildOrchestrator(ISecurityMasterEventStore eventStore, ISecurityMasterStore store, SecurityMasterProjectionCache cache, SecurityMasterAggregateRebuilder rebuilder, SecurityMasterProjectionService projectionService, SecurityMasterOptions options, ILogger&lt;SecurityMasterRebuildOrchestrator&gt; logger, ISecurityMasterConflictService? conflictService = null, ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs:28](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs#L28) |  |
+| <code>public async Task RebuildAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs:52](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs#L52) |  |
+| <code>public async Task&lt;int&gt; RebuildAssetClassAsync(string assetClass, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs:185](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterRebuildOrchestrator.cs#L185) | Rebuilds ONLY the securities whose stored projection carries assetClass, bounding the rebuild cost to that class&#x27;s population instead of a full shared replay. The shared replay checkpoint is deliberately untouched — the scoped rebuild is a repair/refresh of one class&#x27;s projections (event-stream fold, store upsert, cache upsert), not a stream-cursor advance, so it can never mark unrelated classes&#x27; events as replayed. Returns the number of projections rebuilt. |
+
+## SecurityMasterSnapshotRegenerationResult
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.SecurityMasterSnapshotRegenerationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs:31](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs#L31).
+
+Counts reported by one ISecurityMasterSnapshotRegenerationService.RegenerateAsync run.
+
+```csharp
+public sealed record SecurityMasterSnapshotRegenerationResult(int Scanned, int Regenerated, int Unchanged, int Skipped);
+```
+
+## SecurityMasterSnapshotRegenerationService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.SecurityMasterSnapshotRegenerationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs:34](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs#L34).
+
+```csharp
+public sealed class SecurityMasterSnapshotRegenerationService : ISecurityMasterSnapshotRegenerationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterSnapshotRegenerationService(ISecurityMasterSnapshotStore snapshotStore, ILogger&lt;SecurityMasterSnapshotRegenerationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs:39](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs#L39) |  |
+| <code>public async Task&lt;SecurityMasterSnapshotRegenerationResult&gt; RegenerateAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs:47](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityMasterSnapshotRegenerationService.cs#L47) |  |
+
+## SecurityProjectionRebuildHandler
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.SecurityProjectionRebuildHandler</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:21](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L21).
+
+Published-revision side effect (Order = 10, runs first): refreshes the edited security&#x27;s cached economic projection from the durable event stream so reads taken after the publish are coherent with the persisted stream. Rebuilds only the edited security — SecurityMasterAggregateRebuilder.RebuildAsync folds the snapshot plus the tail events for that single stream (the per-edit hot path) and upserts the result into the shared SecurityMasterProjectionCache. It deliberately does NOT trigger a full multi-asset / UFL replay, which is reserved for ingest/maintenance. Idempotent: a retried publish rebuilds and upserts the same cache key. The rebuilder and cache are optional dependencies (registered only when the Security Master backend is configured); with no backend there is no projection cache to refresh and the handler is a no-op.
+
+```csharp
+public sealed class SecurityProjectionRebuildHandler : ISecurityMasterRevisionPublishedHandler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityProjectionRebuildHandler(ILogger&lt;SecurityProjectionRebuildHandler&gt; logger, SecurityMasterAggregateRebuilder? rebuilder = null, SecurityMasterProjectionCache? cache = null);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:27](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L27) |  |
+| <code>public int Order =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:37](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L37) |  |
+| <code>public async Task HandleAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs:39](../../../../src/Meridian.Application/SecurityMaster/Rebuild/SecurityProjectionRebuildHandler.cs#L39) |  |
+
 ## UflProjectionRebuilder
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Rebuild.UflProjectionRebuilder</code>. Kind: `class`.
@@ -695,6 +787,25 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;SecurityPriceGoldenCopyDto&gt;&gt; GetObservationSelectionsAsync(Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:118](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L118) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;SecurityComparisonPriceDto&gt;&gt; GetComparisonPricesAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs:161](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterPricingService.cs#L161) |  |
 
+## SecurityMasterProfilePromotionService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProfilePromotionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L27).
+
+Builds the report-first promotion inventory for one reclassifying profile (ADR-022): every active CustomAsset record pinned to the profile, with the result of a dry run under the profile&#x27;s target class. The dry run applies the main checks an envelope amendment applies on the write path: the classification-metadata check, the target decode, the target kind&#x27;s domain invariants, the profile catalog validation and asset-pack admission (schema write validation and the schedule-terms write rules). It is not full write-path parity: it decodes with the read-tolerant mapping rather than the strict write-mode command mapping and does not run the re-serialization round-trip guards, so a Ready candidate can still be refused when it is amended. Nothing is written. Promotion itself is any write that carries the pinned envelope as its terms patch: an envelope amendment, an approved workbench field edit or a term-block patch (both rebuild a full envelope patch from the stored terms). A write without a terms patch, and a deactivation, keep the stored CustomAsset class.
+
+```csharp
+public sealed class SecurityMasterProfilePromotionService : ISecurityMasterProfilePromotionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityMasterProfilePromotionService(ISecurityMasterStore securityStore, ILogger&lt;SecurityMasterProfilePromotionService&gt; logger, ISecurityAssetProfileCatalog? assetProfileCatalog = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L38) |  |
+| <code>public async Task&lt;SecurityMasterProfilePromotionReportDto&gt; BuildReportAsync(string profileId, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs:48](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterProfilePromotionService.cs#L48) |  |
+
 ## SecurityMasterProjectionChangeHandler
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterProjectionChangeHandler</code>. Kind: `class`.
@@ -864,167 +975,3 @@ The exact overlay VALUE a field-edit revision governs — null models a staged C
 ```csharp
 public sealed record SecurityMasterRevisionFieldValue(string? Value);
 ```
-
-## SecurityMasterRevisionRecord
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:93](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L93).
-
-Durable record of a passport revision&#x27;s governed lifecycle state.
-
-```csharp
-public sealed record SecurityMasterRevisionRecord(Guid RevisionId, Guid SecurityId, SecurityMasterRevisionStateDto State, string Actor, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, Guid? WorkflowId = null, string? FieldPath = null, DateTimeOffset? FieldEffectiveFrom = null, string? FieldJustification = null, string? FundProfileId = null, string? FieldValue = null, bool FieldValueRecorded = false, long? BaseVersion = null, string? FieldBaseSnapshot = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool FieldBaseRecorded =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:113](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L113) | True when the revision recorded the canonical base its proposal was drafted against. |
-
-## SecurityMasterRevisionStateException
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterRevisionStateException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:120](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L120).
-
-Raised when a revision lifecycle transition is attempted out of order — e.g. publishing a revision that was never approved, or approving one that was never submitted. Endpoints map this to HTTP 409.
-
-```csharp
-public sealed class SecurityMasterRevisionStateException : Exception
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterRevisionStateException(Guid revisionId, string detail) : base($&quot;Security Master revision &#x27;{revisionId:D}&#x27; cannot transition: {detail}&quot;);</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:122](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L122) |  |
-| <code>public Guid RevisionId { get; }</code> | [src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs:128](../../../../src/Meridian.Application/SecurityMaster/ISecurityMasterRevisionStore.cs#L128) |  |
-
-## SecurityMasterService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.AheadOfWriteTerms.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.AheadOfWriteTerms.cs#L12).
-
-The round-trip guard for rows stamped above their class&#x27;s S2 document floor (ADR-024): a deactivation or patch-less amend re-serializes such a row only when every versioned term survives.
-
-```csharp
-public sealed partial class SecurityMasterService
-```
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.ClassificationText.cs#L18).
-
-Keeps newly written classification text unambiguous for ClassificationLabelReader.
-
-```csharp
-public sealed partial class SecurityMasterService
-```
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.Creation.cs#L8).
-
-```csharp
-public sealed partial class SecurityMasterService
-```
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:10](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L10).
-
-```csharp
-public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IGovernedPublicationAmender, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterService(ISecurityMasterEventStore eventStore, ISecurityMasterSnapshotStore snapshotStore, ISecurityMasterStore store, SecurityMasterAggregateRebuilder rebuilder, SecurityMasterOptions options, ILogger&lt;SecurityMasterService&gt; logger, ISecurityMasterConflictService? conflictService = null, IPolygonCorporateActionFetcher? corporateActionFetcher = null, SecurityMasterProjectionCache? projectionCache = null, SecurityMasterCanonicalSymbolSeedService? seedService = null, Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null, ISecurityFieldProvenanceStore? fieldProvenance = null, ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null, ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null, IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null, ISecurityMasterRevisionStore? revisionStore = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L46) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; CreateAsync(CreateSecurityRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:82](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L82) |  |
-| <code>public Task&lt;SecurityDetailDto&gt; AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:90](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L90) | The operator-direct amendment. Refused with GovernedTermAmendmentRequiredException while SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments is on; see IGovernedPublicationAmender for the other two typed write paths. |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:115](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L115) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:342](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L342) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:365](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L365) |  |
-| <code>public async Task&lt;SecurityDetailDto&gt; AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:388](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L388) |  |
-| <code>public Task&lt;SecurityAliasDto&gt; UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:437](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L437) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.cs:925](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.cs#L925) |  |
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.Deactivation.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.Deactivation.cs#L7).
-
-```csharp
-public sealed partial class SecurityMasterService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterService.Deactivation.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.Deactivation.cs#L9) |  |
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.RateUnitGovernance.cs:6](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.RateUnitGovernance.cs#L6).
-
-```csharp
-public sealed partial class SecurityMasterService
-```
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterService.WriteRefusals.cs:7](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterService.WriteRefusals.cs#L7).
-
-```csharp
-public sealed partial class SecurityMasterService
-```
-
-## SecurityMasterStructuredCreditReclassificationService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterStructuredCreditReclassificationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs#L22).
-
-Builds the report-first StructuredCredit reclassification inventory (ADR-022): every active Bond in a securitised subclass and every CustomAsset whose category names a securitised product, with the StructuredCredit terms the domain can carry over and the blockers it cannot resolve without operator input. The proposal logic is SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification; this service only loads records, maps them through the read-tolerant mapper and shapes the DTO. Nothing is written.
-
-```csharp
-public sealed class SecurityMasterStructuredCreditReclassificationService : ISecurityMasterStructuredCreditReclassificationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterStructuredCreditReclassificationService(ISecurityMasterStore securityStore, ILogger&lt;SecurityMasterStructuredCreditReclassificationService&gt; logger);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs:27](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs#L27) |  |
-| <code>public async Task&lt;StructuredCreditReclassificationReportDto&gt; BuildReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs:35](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterStructuredCreditReclassificationService.cs#L35) |  |
-
-## SecurityMasterTermsCapabilityRefusedException
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterTermsCapabilityRefusedException</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityRefusedException.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityRefusedException.cs#L12).
-
-The Security Master terms capability floor refused this node: the floor could not be read, is missing while this build writes declared terms, or names a capability this build does not hold (SecurityMasterTermsCapabilityVerifier). At host start it refuses startup like any StartupRefusedException; on a request it is a temporary refusal of this node, which the API answers with 503 and RefusalMessage rather than a 500.
-
-```csharp
-public sealed class SecurityMasterTermsCapabilityRefusedException : StartupRefusedException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string RefusalMessage = &quot;Security Master terms writes are unavailable on this node: its minimum terms capability floor could not be verified &quot; + &quot;or does not match this build. An operator must verify the floor (migration 057 and the activated floor row) before retrying.&quot;;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityRefusedException.cs:18](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityRefusedException.cs#L18) | The operator-facing reason a refused request is answered with. It names no connection, credential or floor token; the specific cause is in this node&#x27;s log and the exception message. |
-| <code>public SecurityMasterTermsCapabilityRefusedException(string message) : base(message);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityRefusedException.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityRefusedException.cs#L22) |  |
-
-## SecurityMasterTermsCapabilityVerifier
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterTermsCapabilityVerifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:22](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L22).
-
-The shared startup and command-boundary verifier. Desktop windows can be visible before hosted services start, so startup verification alone is not authority for a later canonical write.
-
-```csharp
-public sealed class SecurityMasterTermsCapabilityVerifier : ISecurityMasterTermsCapabilityVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterTermsCapabilityVerifier(IServiceProvider services, ILogger? logger = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L29) | Uses the configured shared/server or desktop graph, resolving persistence lazily. |
-| <code>public async Task VerifyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs:47](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterTermsCapabilityVerifier.cs#L47) |  |

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreatePrivateCapitalCommitmentRequest
+
+Qualified name: <code>Meridian.Contracts.Ledger.CreatePrivateCapitalCommitmentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:124](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L124).
+
+Create a new draft revision; expected revision zero creates a new commitment.
+
+```csharp
+public sealed record CreatePrivateCapitalCommitmentRequest(string CommitmentId, string InvestorId, string CapitalAccountId, decimal TotalCommitment, DateOnly CommitmentDate, DateOnly EffectiveFrom, DateOnly? InvestmentPeriodEndDate, IReadOnlyList<string> EvidenceLinks, int ExpectedRevision = 0, bool IsActive = true);
+```
+
 ## CurrencyMinorUnits
 
 Qualified name: <code>Meridian.Contracts.Ledger.CurrencyMinorUnits</code>. Kind: `class`.
@@ -832,19 +844,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; GeneratedJournalEntries { get; init; } = GeneratedJournalEntries??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1257](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1257) |  |
-
-## JournalEntryLifecycleTransitionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.JournalEntryLifecycleTransitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1181](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1181).
-
-```csharp
-public sealed record JournalEntryLifecycleTransitionDto(string TransitionId, ManualJournalEntryStatusDto FromStatus, ManualJournalEntryStatusDto ToStatus, JournalEntryLifecycleActionDto Action, string Actor, DateTimeOffset RecordedAtUtc, string? Notes = null, string? CorrelationId = null, IReadOnlyList<string>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1192](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1192) |  |

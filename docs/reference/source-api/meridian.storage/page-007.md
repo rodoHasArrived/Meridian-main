@@ -565,7 +565,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Migrations.MigrationDriftPolicy</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:87](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L87).
+Source: [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:89](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L89).
 
 Behavior when an applied migration script&#x27;s content no longer matches its checksum.
 
@@ -577,8 +577,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Throw</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:90](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L90) | Fail startup: applied scripts are immutable (append-only convention). |
-| <code>Reapply</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:97](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L97) | Re-apply a changed script and update the ledger checksum. Unchanged scripts run again only when their filename is listed in PostgresMigrationRunnerOptions.RepeatableMigrationFileNames. |
+| <code>Throw</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:92](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L92) | Fail startup: applied scripts are immutable (append-only convention). |
+| <code>Reapply</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:99](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L99) | Re-apply a changed script and update the ledger checksum. Unchanged scripts run again only when their filename is listed in PostgresMigrationRunnerOptions.RepeatableMigrationFileNames. |
 
 ## PostgresMigrationRunner
 
@@ -598,7 +598,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PostgresMigrationRunner(PostgresMigrationRunnerOptions options);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:20](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L20) |  |
 | <code>public async Task EnsureMigratedAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:29](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L29) |  |
-| <code>public async Task ResetSchemaAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:100](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L100) |  |
+| <code>public async Task ResetSchemaAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs:113](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunner.cs#L113) |  |
 
 ## PostgresMigrationRunnerOptions
 
@@ -624,12 +624,12 @@ Declared public members:
 | <code>public required string ConnectionStringSettingName { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:44](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L44) | Setting name reported when ConnectionString is missing (for example BankingStoreOptions.ConnectionString). |
 | <code>public string LedgerTableName { get; init; } = &quot;schema_migrations&quot;;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:47](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L47) | Migration ledger table name inside Schema. |
 | <code>public string LedgerKeyColumn { get; init; } = &quot;filename&quot;;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:50](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L50) | Primary-key column of the migration ledger. |
-| <code>public bool TrackOrdinals { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:56](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L56) | When true, script filenames must begin with a unique numeric ordinal prefix that is stored alongside the filename (Security Master convention). |
-| <code>public bool QuoteSchemaInScripts { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:63](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L63) | When true, __SCHEMA__ renders as a quoted identifier; otherwise the raw validated schema name is used. Existing schemas must keep their historical quoting so identifier case-folding does not change. |
-| <code>public bool ChecksumRequired { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:69](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L69) | When true, a freshly created ledger declares its checksum column not null (Asset Operations convention). |
-| <code>public bool ThrowWhenScriptsDirectoryMissing { get; init; } = true;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:72](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L72) | Whether a missing scripts directory is an error or an empty migration set. |
-| <code>public IReadOnlySet&lt;string&gt; RepeatableMigrationFileNames { get; init; } = new HashSet&lt;string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:79](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L79) | Applied script filenames that must run again on every startup. These scripts must be idempotent and are typically used for guarded backfills that can repair legacy rows after new ownership data becomes available. |
-| <code>public MigrationDriftPolicy DriftPolicy { get; init; } = MigrationDriftPolicy.Throw;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:83](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L83) | How a checksum mismatch on an already-applied script is handled. |
+| <code>public bool TrackOrdinals { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:58](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L58) | When true, script filenames must begin with a unique numeric ordinal prefix that is stored alongside the filename (Security Master convention). Ordinal-tracked sets are append-only: the runner refuses to start when an unapplied script&#x27;s ordinal is below the highest applied ordinal, so a retired or skipped number can never be filled in after later migrations ran. |
+| <code>public bool QuoteSchemaInScripts { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:65](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L65) | When true, __SCHEMA__ renders as a quoted identifier; otherwise the raw validated schema name is used. Existing schemas must keep their historical quoting so identifier case-folding does not change. |
+| <code>public bool ChecksumRequired { get; init; }</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:71](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L71) | When true, a freshly created ledger declares its checksum column not null (Asset Operations convention). |
+| <code>public bool ThrowWhenScriptsDirectoryMissing { get; init; } = true;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:74](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L74) | Whether a missing scripts directory is an error or an empty migration set. |
+| <code>public IReadOnlySet&lt;string&gt; RepeatableMigrationFileNames { get; init; } = new HashSet&lt;string&gt;(StringComparer.Ordinal);</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:81](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L81) | Applied script filenames that must run again on every startup. These scripts must be idempotent and are typically used for guarded backfills that can repair legacy rows after new ownership data becomes available. |
+| <code>public MigrationDriftPolicy DriftPolicy { get; init; } = MigrationDriftPolicy.Throw;</code> | [src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs:85](../../../../src/Meridian.Storage/Migrations/PostgresMigrationRunnerOptions.cs#L85) | How a checksum mismatch on an already-applied script is handled. |
 
 ## IMoneyMarketFundAuxStore
 

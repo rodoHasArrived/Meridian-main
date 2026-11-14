@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidIdentitySnapshot
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidIdentitySnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:227](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L227).
+
+```csharp
+public sealed record PlaidIdentitySnapshot(string PlaidAccountId, string? OwnerName, string? OwnerEmail, string? OwnerPhone, string VerificationStatus, DateTimeOffset VerifiedAt);
+```
+
 ## PlaidInstitutionDto
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidInstitutionDto</code>. Kind: `record`.
@@ -567,14 +577,4 @@ Human approval rationale plus the required optimistic concurrency token.
 
 ```csharp
 public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote);
-```
-
-## ReportingGovernanceArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:97](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L97).
-
-```csharp
-public sealed record ReportingGovernanceArtifactDto(string ArtifactId, string ArtifactHash, long ByteLength);
 ```

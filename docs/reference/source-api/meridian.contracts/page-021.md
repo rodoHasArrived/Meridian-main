@@ -825,7 +825,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsBlocker</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:35](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L35).
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:44](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L44).
 
 ```csharp
 public sealed record BondAnalyticsBlocker(string Code, string Reason);
@@ -835,7 +835,7 @@ public sealed record BondAnalyticsBlocker(string Code, string Reason);
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsCashFlow</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:38](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L38).
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:47](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L47).
 
 Cash per 100 face; identity depends on unadjusted contractual period dates.
 
@@ -847,13 +847,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondAnalyticsFloatingCoupon? FloatingCoupon { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:49](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L49) | Resolved floating-coupon inputs. Omitted for fixed and zero-coupon models. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondAnalyticsFloatingCoupon? FloatingCoupon { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:58](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L58) | Resolved floating-coupon inputs. Omitted for fixed and zero-coupon models. |
 
 ## BondAnalyticsFloatingCoupon
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsFloatingCoupon</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:59](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L59).
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:68](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L68).
 
 Inputs used for one floating coupon, not a separate pricing model. Index and coupon rates are annual fractions; spread is in basis points. CouponRate includes the retained cap and floor. IsObserved follows the economic cutoff, while settlement governs cash-flow entitlement. Source names the retained reset schedule, sourced current fixing, or forward curve; the result&#x27;s Inputs identify the exact retained security and curve versions or content hashes.
 
@@ -880,12 +880,13 @@ Declared public members:
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? CalculationVersion { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:26](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L26) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Guid? SelectionReceiptId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:29](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L29) |  |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? PriceAccountId { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:32](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L32) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? RetainedSecurityTermsSha256 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:41](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L41) | The SecurityTerms content hash a retained receipt recorded, supplied when replaying it. It is reported only when it equals the pre-invariant raw-text hash of exactly the terms resolved now (BondSecurityTermsDigest.Resolve); otherwise the canonical hash is reported, so it can never make changed terms verify. |
 
 ## BondAnalyticsResult
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondAnalyticsResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:86](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L86).
+Source: [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:95](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L95).
 
 All prices, accrued interest and DV01 are per 100 face; yields are annual fractions and durations are years. Blocked results contain no calculated metrics.
 
@@ -897,9 +898,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;BondExerciseYield&gt; RedemptionScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:110](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L110) | Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield. |
-| <code>public IReadOnlyList&lt;BondExerciseYield&gt; YieldToWorstScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:111](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L111) |  |
-| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:112](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L112) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? MaturityDate { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:115](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L115) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BondGoverningYieldScenario&gt;? GoverningYieldScenarios { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:118](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L118) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? SpreadDv01 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:125](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L125) | Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models. |
+| <code>public IReadOnlyList&lt;BondExerciseYield&gt; RedemptionScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:119](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L119) | Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield. |
+| <code>public IReadOnlyList&lt;BondExerciseYield&gt; YieldToWorstScenarios { get; init; } = [];</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:120](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L120) |  |
+| <code>public bool IsBlocked =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:121](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L121) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? MaturityDate { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:124](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L124) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BondGoverningYieldScenario&gt;? GoverningYieldScenarios { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:127](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L127) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? SpreadDv01 { get; init; }</code> | [src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs:134](../../../../src/Meridian.Contracts/FixedIncome/BondAnalyticsDtos.cs#L134) | Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models. |

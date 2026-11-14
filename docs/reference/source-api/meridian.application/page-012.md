@@ -6,6 +6,139 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolStatusReport
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolStatusReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:764](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L764).
+
+Combined status report for a single symbol.
+
+```csharp
+public sealed record SymbolStatusReport(string Symbol, bool IsMonitored, bool HasArchivedData, SymbolConfig? MonitoredConfig, ArchivedSymbolInfo? ArchivedInfo);
+```
+
+## TemplateService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.TemplateService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:15](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L15).
+
+Service for managing subscription templates (equity groups, sectors, indices).
+
+```csharp
+public sealed class TemplateService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TemplateService(ConfigStore configStore, string? templatesPath = null);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:22](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L22) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SymbolTemplate&gt;&gt; GetAllTemplatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:34](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L34) | Get all available templates (built-in + custom). |
+| <code>public async Task&lt;SymbolTemplate?&gt; GetTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:45](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L45) | Get a specific template by ID. |
+| <code>public async Task&lt;ApplyTemplateResult&gt; ApplyTemplateAsync(ApplyTemplateRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:57](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L57) | Apply a template to the current subscriptions. |
+| <code>public async Task&lt;SymbolTemplate&gt; CreateTemplateAsync(string name, string description, TemplateCategory category, string[] symbols, TemplateSubscriptionDefaults? defaults = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:113](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L113) | Create a custom template. |
+| <code>public async Task&lt;bool&gt; DeleteTemplateAsync(string templateId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:142](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L142) | Delete a custom template. |
+| <code>public async Task&lt;SymbolTemplate&gt; CreateFromCurrentAsync(string name, string description, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:162](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L162) | Create a template from current subscriptions. |
+
+## WatchlistService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.WatchlistService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:14](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L14).
+
+Service for managing symbol watchlists (groups of symbols for organization and bulk operations).
+
+```csharp
+public sealed class WatchlistService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WatchlistService(ConfigStore configStore, string? watchlistsPath = null);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:20](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L20) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetAllWatchlistsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:31](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L31) | Get all watchlists. |
+| <code>public async Task&lt;IReadOnlyList&lt;WatchlistSummary&gt;&gt; GetWatchlistSummariesAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:39](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L39) | Get watchlist summaries with subscription counts. |
+| <code>public async Task&lt;Watchlist?&gt; GetWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:69](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L69) | Get a specific watchlist by ID. |
+| <code>public async Task&lt;Watchlist&gt; CreateWatchlistAsync(CreateWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:78](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L78) | Create a new watchlist. |
+| <code>public async Task&lt;Watchlist?&gt; UpdateWatchlistAsync(string watchlistId, UpdateWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:106](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L106) | Update an existing watchlist. |
+| <code>public async Task&lt;bool&gt; DeleteWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:135](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L135) | Delete a watchlist. |
+| <code>public async Task&lt;WatchlistOperationResult&gt; AddSymbolsAsync(AddSymbolsToWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:152](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L152) | Add symbols to a watchlist. |
+| <code>public async Task&lt;WatchlistOperationResult&gt; RemoveSymbolsAsync(RemoveSymbolsFromWatchlistRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:195](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L195) | Remove symbols from a watchlist. |
+| <code>public async Task&lt;WatchlistOperationResult&gt; SubscribeWatchlistAsync(WatchlistSubscriptionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:241](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L241) | Subscribe to all symbols in a watchlist. |
+| <code>public async Task&lt;WatchlistOperationResult&gt; UnsubscribeWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:267](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L267) | Unsubscribe from all symbols in a watchlist. |
+| <code>public async Task&lt;IReadOnlyList&lt;Watchlist&gt;&gt; GetWatchlistsForSymbolAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:284](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L284) | Get all watchlists that contain a specific symbol. |
+| <code>public async Task&lt;Watchlist?&gt; ImportWatchlistAsync(string json, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:293](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L293) | Import watchlist from JSON. |
+| <code>public async Task&lt;string?&gt; ExportWatchlistAsync(string watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:329](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L329) | Export watchlist to JSON. |
+| <code>public async Task ReorderWatchlistsAsync(string[] watchlistIds, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/WatchlistService.cs:345](../../../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs#L345) | Reorder watchlists. |
+
+## SubscriptionOrchestrator
+
+Qualified name: <code>Meridian.Application.Subscriptions.SubscriptionOrchestrator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:24](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L24).
+
+Applies AppConfig symbol changes at runtime (hot reload). Responsible for: - registering symbols with collectors (domain) - subscribing/unsubscribing market depth (infrastructure) via IMarketDataClient - tracking option contract subscriptions for equity and index options Trades are currently always accepted by TradeDataCollector, but this class is future-proofed to support explicit per-symbol trade subscriptions once you wire them in (tick-by-tick reqs).
+
+```csharp
+public sealed class SubscriptionOrchestrator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SubscriptionOrchestrator(MarketDepthCollector depthCollector, TradeDataCollector tradeCollector, IMarketDataClient ibClient, string providerId, ISubscriptionOwnershipService? ownershipService = null, ILogger? log = null, OptionDataCollector? optionCollector = null, ISecurityMasterQueryService? securityMasterQuery = null, DataFreshnessSlaMonitor? freshness = null);</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:43](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L43) |  |
+| <code>public IReadOnlyDictionary&lt;string, int&gt; DepthSubscriptions =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:68](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L68) |  |
+| <code>public IReadOnlyDictionary&lt;string, int&gt; TradeSubscriptions =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:69](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L69) |  |
+| <code>public IReadOnlyDictionary&lt;string, int&gt; OptionSubscriptions =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:70](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L70) |  |
+| <code>public int ActiveSubscriptionCount =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:75](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L75) | Gets the total number of active subscriptions (trades + depth + options). |
+| <code>public static bool IsOptionSymbol(SymbolConfig sc) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:80](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L80) | Returns true if the given symbol config represents an option contract. |
+| <code>public async Task ApplyAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs:84](../../../../src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs#L84) |  |
+
+## AuthoritativeScopeFanOutService
+
+Qualified name: <code>Meridian.Application.Tenancy.AuthoritativeScopeFanOutService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:20](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L20).
+
+Composes the registered IScopeAssignmentProvider authorities into one fan-out answer. The composition rule is unanimity, not union: the result is authoritative only when every registered provider reported that it saw the whole of its own slice. A union over &quot;whichever authorities happened to answer&quot; is precisely the failure this service exists to prevent — it yields a confident-looking affected set that silently omits the scopes the unavailable authority owned, and a caller acting on it would apply a decision to some affected tenants and not others. Composing zero providers is likewise not an empty affected set. It is an unanswerable question, and is reported as such.
+
+```csharp
+public sealed class AuthoritativeScopeFanOutService : IAuthoritativeScopeFanOutService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AuthoritativeScopeFanOutService(IEnumerable&lt;IScopeAssignmentProvider&gt; providers, ILogger&lt;AuthoritativeScopeFanOutService&gt; logger);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:31](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L31) |  |
+| <code>public async Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:41](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L41) |  |
+| <code>public async Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs:105](../../../../src/Meridian.Application/Tenancy/AuthoritativeScopeFanOutService.cs#L105) |  |
+
+## FundAccountHoldingScopeAssignmentProvider
+
+Qualified name: <code>Meridian.Application.Tenancy.FundAccountHoldingScopeAssignmentProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:25](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L25).
+
+Resolves affected accounting scopes from custodied holdings: an account that held the security on the effective date is a scope the fact reaches. Custodian position lines are the authoritative holdings record here because they are externally sourced and account-keyed — they say who actually held the security, rather than who was configured to. The account row supplies the narrow scope (fund, portfolio, custody sub-account, ledger reference, functional currency), and IFundProfileTenancyRegistry supplies the owning tenant/company. Attribution is all-or-nothing. A holding this provider can see but cannot key to an owning tenant — an account with no fund, or a fund the registry has never bound — makes the whole slice non-authoritative. Dropping such a holding would under-report the affected set, and guessing an owner for it is exactly the defaulting that fail-closed tenancy forbids.
+
+```csharp
+public sealed class FundAccountHoldingScopeAssignmentProvider : IScopeAssignmentProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Authority = &quot;fund-account-custodied-holdings&quot;;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:28](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L28) | Stable authority id stamped onto every assignment this provider asserts. |
+| <code>public FundAccountHoldingScopeAssignmentProvider(IFundAccountStore? accounts, IFundProfileTenancyRegistry? tenancy, ILogger&lt;FundAccountHoldingScopeAssignmentProvider&gt; logger);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:34](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L34) |  |
+| <code>public string AuthorityId =&gt; …;</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:45](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L45) |  |
+| <code>public async Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs:48](../../../../src/Meridian.Application/Tenancy/FundAccountHoldingScopeAssignmentProvider.cs#L48) |  |
+
 ## LocalTenantMigrationGate
 
 Qualified name: <code>Meridian.Application.Tenancy.LocalTenantMigrationGate</code>. Kind: `class`.

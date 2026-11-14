@@ -865,7 +865,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SettingsAssetProfileFieldInput</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:928](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L928).
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:929](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L929).
 
 Exposes asset-profile field metadata, allowed values, and editable input state.
 
@@ -877,29 +877,29 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SettingsAssetProfileFieldInput(SecurityAssetProfileFieldDefinitionDto definition, Action changed);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:933](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L933) |  |
-| <code>public SecurityAssetProfileFieldDefinitionDto Definition { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:939](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L939) |  |
-| <code>public string Key =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:940](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L940) |  |
-| <code>public string Label =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L941) |  |
-| <code>public SecurityAssetProfileFieldTypeDto FieldType =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:942](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L942) |  |
-| <code>public bool IsRequired =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:943](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L943) |  |
-| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:944](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L944) |  |
-| <code>public IReadOnlyList&lt;string&gt; AllowedValues =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:945](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L945) |  |
-| <code>public string AllowedValuesLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:946](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L946) |  |
-| <code>public bool IsBooleanField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:950](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L950) |  |
-| <code>public bool IsEnumField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:951](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L951) |  |
-| <code>public bool IsDateField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:953](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L953) |  |
-| <code>public bool IsTextEntryField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:954](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L954) |  |
-| <code>public string InputHint =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:956](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L956) |  |
-| <code>public string Value { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:967](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L967) |  |
-| <code>public bool BoolValue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:982](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L982) | Typed checkbox surface over Value for Boolean profile fields. |
-| <code>public DateTime? DateValue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:991](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L991) | Typed date-picker surface over Value for Date profile fields. |
+| <code>public SettingsAssetProfileFieldInput(SecurityAssetProfileFieldDefinitionDto definition, Action changed);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:934](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L934) |  |
+| <code>public SecurityAssetProfileFieldDefinitionDto Definition { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:940](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L940) |  |
+| <code>public string Key =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:941](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L941) |  |
+| <code>public string Label =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:942](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L942) |  |
+| <code>public SecurityAssetProfileFieldTypeDto FieldType =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:943](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L943) |  |
+| <code>public bool IsRequired =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:944](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L944) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:945](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L945) |  |
+| <code>public IReadOnlyList&lt;string&gt; AllowedValues =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:946](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L946) |  |
+| <code>public string AllowedValuesLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:947](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L947) |  |
+| <code>public bool IsBooleanField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:951](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L951) |  |
+| <code>public bool IsEnumField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:952](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L952) |  |
+| <code>public bool IsDateField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:954](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L954) |  |
+| <code>public bool IsTextEntryField =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:955](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L955) |  |
+| <code>public string InputHint =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:957](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L957) |  |
+| <code>public string Value { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:968](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L968) |  |
+| <code>public bool BoolValue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:983](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L983) | Typed checkbox surface over Value for Boolean profile fields. |
+| <code>public DateTime? DateValue { get; set; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:992](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L992) | Typed date-picker surface over Value for Date profile fields. |
 
 ## SettingsAssetProfileRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.SettingsAssetProfileRow</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:885](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L885).
+Source: [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:886](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L886).
 
 Presents an asset profile&#x27;s identity, version, status, category, and field count.
 
@@ -911,19 +911,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SettingsAssetProfileRow(SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:887](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L887) |  |
-| <code>public SecurityAssetProfileDefinitionDto Profile { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:892](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L892) |  |
-| <code>public string ProfileId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:893](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L893) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:894](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L894) |  |
-| <code>public string VersionLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:895](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L895) |  |
-| <code>public string StatusLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:896](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L896) |  |
-| <code>public string CategoryLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:897](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L897) |  |
-| <code>public string FieldCountLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:900](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L900) |  |
-| <code>public int ProjectedFieldCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:901](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L901) |  |
-| <code>public string ProjectedFieldCountLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:903](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L903) |  |
-| <code>public string RequiredIdentifierKindsLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:904](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L904) |  |
-| <code>public string AccountingHintsLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:916](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L916) |  |
-| <code>public string EffectiveLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:920](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L920) |  |
+| <code>public SettingsAssetProfileRow(SecurityAssetProfileDefinitionDto profile);</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:888](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L888) |  |
+| <code>public SecurityAssetProfileDefinitionDto Profile { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:893](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L893) |  |
+| <code>public string ProfileId =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:894](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L894) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:895](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L895) |  |
+| <code>public string VersionLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:896](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L896) |  |
+| <code>public string StatusLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:897](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L897) |  |
+| <code>public string CategoryLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:898](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L898) |  |
+| <code>public string FieldCountLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:901](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L901) |  |
+| <code>public int ProjectedFieldCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:902](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L902) |  |
+| <code>public string ProjectedFieldCountLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:904](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L904) |  |
+| <code>public string RequiredIdentifierKindsLabel { get; }</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:905](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L905) |  |
+| <code>public string AccountingHintsLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:917](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L917) |  |
+| <code>public string EffectiveLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs:921](../../../../src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs#L921) |  |
 
 ## SettingsOperationsApprovalPolicyRow
 

@@ -795,7 +795,7 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Audit.cs:13](../../
 public static partial class ExecutionEndpoints
 ```
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L23).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L24).
 
 REST endpoints for the paper-trading cockpit and execution dashboard. Exposes positions, orders, portfolio state, and gateway controls.
 
@@ -807,7 +807,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L27) |  |
+| <code>public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs:28](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs#L28) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs:7](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Metadata.cs#L7).
 

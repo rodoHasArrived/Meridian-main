@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderIntegrationQuarantineReplayResultDto
+
+Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineReplayResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs:401](../../../../src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs#L401).
+
+```csharp
+public sealed record ProviderIntegrationQuarantineReplayResultDto(string ReplaySyncRunId, string RawPayloadId, ProviderCapabilityKindDto Capability, int RecordsReplayed, int RecordsAccepted, int RecordsRequarantined, ProviderIntegrationProcessingStatusDto Status, IReadOnlyList<ValidationIssueDto> Issues);
+```
+
 ## ProviderIntegrationQuarantineResolutionActionDto
 
 Qualified name: <code>Meridian.Contracts.Integrations.ProviderIntegrationQuarantineResolutionActionDto</code>. Kind: `enum`.
@@ -675,22 +685,3 @@ A declared-but-unconfirmed audit append: the event a mutation is about to be aud
 ```csharp
 public sealed record AccountingAuditPendingMarker(AccountingActionAuditEventDto AuditEvent, DateTimeOffset DeclaredAtUtc, bool BeforeStateRetained = true, AccountingAuditPendingMarkerPhase Phase = AccountingAuditPendingMarkerPhase.Declared);
 ```
-
-## AccountingAuditPendingMarkerPhase
-
-Qualified name: <code>Meridian.Contracts.Ledger.AccountingAuditPendingMarkerPhase</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:57](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L57).
-
-How far an interrupted mutation-and-audit cycle had progressed.
-
-```csharp
-public enum AccountingAuditPendingMarkerPhase
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Declared</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:63](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L63) | The intent was recorded and the mutation had not been observed to complete. A crash here may have preceded the save entirely. |
-| <code>Saved</code> | [src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs:70](../../../../src/Meridian.Contracts/Ledger/AccountingAuditPendingMarker.cs#L70) | The store reported the mutation saved; only the audit append is unconfirmed. Retained state existing is therefore expected, and its absence is a loss rather than a mutation that never happened. |

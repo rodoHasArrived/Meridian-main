@@ -6,6 +6,185 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleDirection
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L8).
+
+Which end of the schedule the regular grid is generated from.
+
+```csharp
+public enum ScheduleDirection
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
+| <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |
+
+## ScheduleFailure
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L64).
+
+A refusal from the schedule kernel.
+
+```csharp
+public sealed record ScheduleFailure(ScheduleFailureCode Code, string Message, DateOnly? Date = null);
+```
+
+## ScheduleFailureCode
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L6).
+
+Why the schedule kernel refused a ScheduleSpec.
+
+```csharp
+public enum ScheduleFailureCode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>InvalidPeriodLimit</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L9) | ScheduleSpec.MaxPeriods is set below 1. |
+| <code>NegativePaymentLag</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L12) | ScheduleSpec.PaymentLagBusinessDays is negative. |
+| <code>TermTenorDisallowsRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L15) | A term tenor was given explicit regular dates. |
+| <code>TenorNotAllowedForDirection</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L18) | A day or week tenor was asked to generate backward. |
+| <code>RollNotAllowedForTenor</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L21) | A day or week tenor was given a roll other than the anchor day. |
+| <code>CompoundedModeRestricted</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L24) | Compounded mode was combined with backward generation, a roll, explicit regular dates or a non-short stub policy. |
+| <code>RegularDateOutOfRange</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L27) | An explicit regular date lies outside the schedule span or out of order. |
+| <code>DirectionConflictsWithRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L30) | The generation direction conflicts with the explicit regular dates given. |
+| <code>AdjustmentRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L33) | A business-day convention other than unadjusted has no calendar. |
+| <code>PaymentLagRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L36) | A payment lag was set without a payment calendar. |
+| <code>AnchorNotOnRollDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L39) | The generation anchor does not satisfy the roll convention. |
+| <code>RegularDatesNotOnGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L42) | The last regular date is not on the grid generated from the first regular date. |
+| <code>DoesNotFitRegularGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L45) | The stub policy requires a regular grid and the span does not fit one. |
+| <code>PeriodLimitExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L48) | The schedule would exceed ScheduleSpec.MaxPeriods. |
+| <code>AdjustedPeriodCollapsed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L51) | Business-day adjustment made a period&#x27;s accrual end fall on or before its start. |
+| <code>InvalidSpecification</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L54) | The spec is structurally invalid: a default tenor or an undefined enum value. |
+| <code>BusinessDayAdjustmentFailed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L57) | A business-day adjustment or payment lag could not be applied: the calendar is degenerate or the walk leaves the supported date range. |
+
+## ScheduleGenerationResult
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L111).
+
+The output of ScheduleGenerator.Generate: the periods on success, or a failure, plus the diagnostics and calendar evidence of the run.
+
+```csharp
+public sealed record ScheduleGenerationResult(ScheduleSpec Spec, IReadOnlyList<SchedulePeriod> Periods, ScheduleFailure? Failure, IReadOnlyList<ScheduleDiagnostic> Diagnostics, IReadOnlyList<ScheduleCalendarUsage> CalendarsUsed)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[MemberNotNullWhen(false, nameof(Failure))] public bool Succeeded =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L120) | Whether generation succeeded; when false, Failure is set. |
+| <code>public string KernelVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L123) | The kernel version that produced the schedule. |
+
+## ScheduleGenerator
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs#L7).
+
+```csharp
+public static partial class ScheduleGenerator
+```
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L29).
+
+The contractual schedule kernel: one pure, deterministic generator of period dates for every Meridian schedule consumer. It owns date and period arithmetic, business-day adjustment and the reference periods day counts are measured against; economic interpretation stays with its owners.
+
+```csharp
+public static partial class ScheduleGenerator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string KernelVersion = &quot;contractual-schedule-kernel-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L32) | The version of the kernel&#x27;s generation semantics, stamped on every result. |
+| <code>public static ScheduleGenerationResult Generate(ScheduleSpec spec);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L36) | Generates the schedule spec describes, or the reason it cannot be generated. |
+| <code>public static IEnumerable&lt;DateOnly&gt; RollDates(DateOnly anchor, ScheduleTenor tenor, ScheduleAnchorMode mode, ScheduleRoll roll = default);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L68) | The grid dates from anchor, lazily: k = 0, 1, 2, … until the next date would leave the DateOnly range. The anchored grid rolls each date with roll; the compounded grid steps from the previous date. |
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs#L7).
+
+```csharp
+public static partial class ScheduleGenerator
+```
+
+## SchedulePeriod
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L46).
+
+One period of a contractual schedule: its unadjusted dates (its identity and its ICMA reference frame), its adjusted accrual dates, its payment date, and its notional reference periods.
+
+```csharp
+public sealed record SchedulePeriod(int Sequence, DateOnly UnadjustedStart, DateOnly UnadjustedEnd, DateOnly AccrualStart, DateOnly AccrualEnd, DateOnly PaymentDate, SchedulePeriodKind Kind, IReadOnlyList<DayCountReferencePeriod> ReferencePeriods, bool IsFinal)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsStub =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L58) | Whether the period is an initial or final stub, short or long. |
+| <code>public bool Equals(SchedulePeriod? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L71) | Value equality over every member, comparing ReferencePeriods element by element. The generated record equality would compare the list by reference, so the same period from two generations of the same spec would be unequal; schedules are regenerated rather than stored, so a period must equal its regenerated twin. |
+| <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L85) | A hash consistent with Equals(SchedulePeriod?). |
+
+## SchedulePeriodId
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L24).
+
+Deterministic identity for a schedule period, keyed on its unadjusted dates within a consumer-chosen scope and stream, so a calendar, business-day convention or payment-lag change never re-identifies a period.
+
+```csharp
+public static class SchedulePeriodId
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static Guid Derive(Guid scopeId, string streamKey, SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L34) | The id of period within scopeId and streamKey. |
+| <code>public static Guid Derive(Guid scopeId, string streamKey, DateOnly unadjustedStart, DateOnly unadjustedEnd);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L42) | The id of the period &#91;unadjustedStart, unadjustedEnd&#93; within scopeId and streamKey. |
+| <code>public static string PeriodKey(SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:63](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L63) | The period&#x27;s unadjusted dates as yyyy-MM-dd/yyyy-MM-dd. |
+
+## SchedulePeriodKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L7).
+
+The shape of a schedule period relative to the regular grid.
+
+```csharp
+public enum SchedulePeriodKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Regular</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L10) | A full regular period on the grid. |
+| <code>Term</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L13) | The single period of a term tenor. |
+| <code>ShortInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L16) | An initial period shorter than a regular period. |
+| <code>LongInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L19) | An initial period longer than a regular period. |
+| <code>ShortFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L22) | A final period shorter than a regular period. |
+| <code>LongFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L25) | A final period longer than a regular period. |
+
 ## ScheduleRoll
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll</code>. Kind: `record struct`.
@@ -207,7 +386,7 @@ public static partial class ScheduleTermsWriteRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingDisposition</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1494](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1494).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1498](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1498).
 
 Whether, and how, an asset class takes part in the Security Master accounting slice.
 
@@ -219,15 +398,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1497](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1497) | No disposition is declared: a missing mapping, not a decision. |
-| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1500](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1500) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
-| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1503](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1503) | The class is intentionally outside the slice and must not reach any posting by fallback. |
+| <code>Undeclared</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1501](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1501) | No disposition is declared: a missing mapping, not a decision. |
+| <code>InSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1504](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1504) | The class posts as its declared SecurityAssetClassDescriptor.AccountingInstrumentClass. |
+| <code>OutsideSlice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1507](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1507) | The class is intentionally outside the slice and must not reach any posting by fallback. |
 
 ## SecurityAccountingInstrumentClasses
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1518](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1518).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1522](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1522).
 
 The closed vocabulary of accounting-slice instrument classes a Security Master record can post as. These are the values the Security Master accounting event slice gates on; keeping them here stops producers and that gate drifting on spelling.
 
@@ -239,8 +418,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1521](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1521) | Coupon-bearing and discount fixed income booked against par. |
-| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1524](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1524) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
+| <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1525](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1525) | Coupon-bearing and discount fixed income booked against par. |
+| <code>public const string AssetBackedSecurity = &quot;AssetBackedSecurity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1528](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1528) | Securitized credit tranches whose principal amortizes by pool factor (ADR-022). |
 
 ## SecurityAliasDto
 
@@ -295,7 +474,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L17).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L21).
 
 Shared Security Master asset-class metadata used by edit workflows, projections, and workstation capability summaries so asset support does not drift across surfaces.
 
@@ -307,29 +486,29 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;SecurityAssetClassDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:850](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L850) |  |
-| <code>public static IReadOnlyList&lt;string&gt; AssetClasses { get; } = Descriptors.Select(descriptor =&gt; descriptor.AssetClass).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:852](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L852) |  |
-| <code>public static SecurityAssetClassDescriptor GetOrDefault(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:860](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L860) | Resolves the descriptor for a canonical asset-class name or a registered alias (case-insensitive, whitespace-trimmed). Unknown or blank input returns the non-throwing Unknown descriptor so read paths degrade instead of failing. |
-| <code>public static bool TryGet(string? assetClass, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:871](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L871) | Resolves a canonical asset-class name or registered alias exactly (case-insensitive, whitespace-trimmed). Unlike GetOrDefault, input that names no catalog class returns false instead of the Unknown descriptor, so a caller can tell &quot;not a catalog class&quot; apart from &quot;a class with no declared facts&quot;. |
-| <code>public static string Canonicalize(string assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:883](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L883) | The canonical class name for a catalog name or registered alias, in any casing (&quot;Loan&quot; and &quot;directloan&quot; are DirectLoan); any other spelling is returned unchanged so callers that refuse or tolerate unknown classes still see what was submitted. The F# codec switches on the canonical name, so a class must pass through here before it is mapped. |
-| <code>public static bool TryResolveLabel(string? label, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:897](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L897) | Resolves a free-text asset-class label — the kind a brokerage or custodian stamps on a position (&quot;us_equity&quot;, &quot;Treasury Bond&quot;, &quot;Private Credit Loan&quot;) — to the one catalog class it names. The label is tried as declared, then with separators removed (&quot;Treasury Bill&quot; is the TreasuryBill class), then token by token against the canonical names and aliases (&quot;Private Credit Loan&quot; names DirectLoan through its Loan alias). A label whose tokens name more than one class (&quot;Equity Option&quot;) does not resolve: the vocabulary is the catalog&#x27;s, and there is deliberately no substring heuristic to break the tie, so callers treat the position as unclassified rather than guess. Matching whole tokens, not substrings, is what keeps &quot;Structured Credit Loan&quot; from reading as a loan and &quot;stockbroker&quot; from reading as stock. |
-| <code>public static SecurityAssetClassLabelResolution ResolveLabel(string? label, out SecurityAssetClassDescriptor? descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:908](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L908) | TryResolveLabel with the reason a label did not resolve kept apart: a label that names no catalog class at all (SecurityAssetClassLabelResolution.Unresolved) says nothing about the position, and a caller may classify it another way; a label whose tokens name more than one class (SecurityAssetClassLabelResolution.Ambiguous, &quot;Equity Option&quot;) does say something — that the catalog cannot pick — and a caller must not fall back to a looser source that would pick one of them. |
-| <code>public static IReadOnlyList&lt;SecurityIdentifierKind&gt; GetPreferredIdentifierKinds(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:959](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L959) |  |
-| <code>public static bool IsAssetClassRestrictedIdentifierKind(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:989](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L989) | True when kind has an asset-class restriction (the regulatory derivatives kinds). |
-| <code>public static bool MayCarryIdentifierKind(string? assetClass, SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:996](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L996) | Whether a record of assetClass may carry an identifier of kind. Every kind without a declared restriction is allowed everywhere. |
-| <code>public static IReadOnlySet&lt;string&gt;? GetPermittedAssetClasses(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1001](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1001) | The asset classes permitted to carry kind, or null when it is unrestricted. |
-| <code>public static IReadOnlyList&lt;string&gt; GetAssetOperationsCapabilities(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1004](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1004) |  |
-| <code>public static int GetTermsVersion(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1008](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1008) | The highest asset-class terms version this node admits on write; a document&#x27;s S2 stamp may be lower. |
-| <code>public static bool MatchesRoutingKey(string? value, string routingKey);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1015](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1015) | Whether value is the routing key routingKey: equal once both are reduced to their letters and digits, ignoring case. &quot;Real Estate&quot;, &quot;real-estate&quot; and &quot;RealEstate&quot; are one key; &quot;RealEstateFund&quot; is not. |
-| <code>public static IReadOnlyList&lt;(SecurityAssetClassDescriptor Descriptor, string RoutingKey)&gt; ClassesOwningRoutingKey(string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1027](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1027) | The catalogued classes that own a routing key equal to value (SecurityAssetClassDescriptor.RoutingKeys), in catalog order, each with the key that matched. Empty when no class owns it. |
-| <code>public static int GetStampFloor(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1047](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1047) | The S2 stamp floor of a document with no versioned declarations, including any later transform target. |
-| <code>public static int GetStampFloor(SecurityAssetClassDescriptor descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1050](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1050) | The declared floor, raised to the target of every transform step this descriptor writes. |
-| <code>public static int GetReadsTermsThrough(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1070](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1070) | The newest asset-class terms version a node accepts on read for the class: the descriptor&#x27;s SecurityAssetClassDescriptor.ReadsTermsThrough, or 1 for an unknown or blank class. SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms refuses a stamp above it; a stamp above GetTermsVersion and at or below it is readable but not writable (ADR-024, readable before writable). |
-| <code>public static IReadOnlyList&lt;string&gt; AssetOperationsCapableAssetClasses { get; } = Descriptors.Where(static descriptor =&gt; descriptor.AssetOperationsCapabilities is not null).Select(static descriptor =&gt; descriptor.AssetClass).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1083](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1083) | The asset classes that declare an Asset Operations capability set of their own, rather than falling through to AssetOperationsCapabilitySet.IdentityOnly. Every declared set adds LifecycleState, ProjectedCashFlows, ActualActivity, Reconciliation, LedgerProjection and WorkflowAudit on top of identity, so declaring one is what makes a class ops-capable. Naming the set once lets surfaces that owe these classes more than identity — relational term projections, readiness reporting, coverage guards — agree on which classes those are, instead of each re-deriving it from a null check or a capability-string match. |
-| <code>public static string? ResolveAccountingInstrumentClass(params string?[] declaredClassNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1114](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1114) | Resolves the accounting-slice instrument class a record posts as, from the class names it declares — most specific first (canonical asset class, then type name, then sub-type), with the coarse classification taxonomy last. Returns null when no declared name names a class the accounting slice covers, which callers should treat as &quot;outside the slice&quot; rather than as a failure. This is a lookup over declared values, deliberately: the classification a record posts under must come from what it says it IS. Deriving it by substring-matching classification prose put cash sweeps into the securitized fixed-income slice, because CashSweep and StructuredCredit once shared an asset-family label. Precedence (review D10, slice 4): (1) any declared name whose catalog class is in the slice wins, exactly as before; (2) otherwise a declared name the catalog models with an explicit SecurityAccountingDisposition.OutsideSlice disposition (StructuredNote, Deposit, DirectLoan and the other non-slice classes) returns null before any taxonomy fallback; (3) only when no declared name is catalogued does the coarse taxonomy map apply (FixedIncome to Bond), for external names the catalog does not model. |
-| <code>public static IReadOnlyList&lt;string&gt; AssetClassesInPack(string packId) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1155](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1155) | The asset classes the named asset pack covers today, in catalog order. Pack membership is a fact about the class (SecurityAssetClassDescriptor.AssetPackIds), so SecurityAssetPackRegistry reads it from here rather than keeping a second list. |
-| <code>public static IReadOnlyList&lt;string&gt; IdentifierOnlyImportableAssetClasses { get; } = Descriptors.Where(static descriptor =&gt; descriptor.SupportsIdentifierOnlyImport).Select(static descriptor =&gt; descriptor.AssetClass).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1166](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1166) | The asset classes a bulk import carrying only identity columns may create. See SecurityAssetClassDescriptor.SupportsIdentifierOnlyImport. |
-| <code>public static string? ResolveIdentifierOnlyImportableAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1177](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1177) | Resolves assetClass (canonical name or registered alias) to the canonical asset class an identity-only import may create, or null when the class is unknown or needs asset-specific terms the import cannot supply. |
+| <code>public static IReadOnlyList&lt;SecurityAssetClassDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:854](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L854) |  |
+| <code>public static IReadOnlyList&lt;string&gt; AssetClasses { get; } = Descriptors.Select(descriptor =&gt; descriptor.AssetClass).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:856](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L856) |  |
+| <code>public static SecurityAssetClassDescriptor GetOrDefault(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:864](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L864) | Resolves the descriptor for a canonical asset-class name or a registered alias (case-insensitive, whitespace-trimmed). Unknown or blank input returns the non-throwing Unknown descriptor so read paths degrade instead of failing. |
+| <code>public static bool TryGet(string? assetClass, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:875](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L875) | Resolves a canonical asset-class name or registered alias exactly (case-insensitive, whitespace-trimmed). Unlike GetOrDefault, input that names no catalog class returns false instead of the Unknown descriptor, so a caller can tell &quot;not a catalog class&quot; apart from &quot;a class with no declared facts&quot;. |
+| <code>public static string Canonicalize(string assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:887](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L887) | The canonical class name for a catalog name or registered alias, in any casing (&quot;Loan&quot; and &quot;directloan&quot; are DirectLoan); any other spelling is returned unchanged so callers that refuse or tolerate unknown classes still see what was submitted. The F# codec switches on the canonical name, so a class must pass through here before it is mapped. |
+| <code>public static bool TryResolveLabel(string? label, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:901](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L901) | Resolves a free-text asset-class label — the kind a brokerage or custodian stamps on a position (&quot;us_equity&quot;, &quot;Treasury Bond&quot;, &quot;Private Credit Loan&quot;) — to the one catalog class it names. The label is tried as declared, then with separators removed (&quot;Treasury Bill&quot; is the TreasuryBill class), then token by token against the canonical names and aliases (&quot;Private Credit Loan&quot; names DirectLoan through its Loan alias). A label whose tokens name more than one class (&quot;Equity Option&quot;) does not resolve: the vocabulary is the catalog&#x27;s, and there is deliberately no substring heuristic to break the tie, so callers treat the position as unclassified rather than guess. Matching whole tokens, not substrings, is what keeps &quot;Structured Credit Loan&quot; from reading as a loan and &quot;stockbroker&quot; from reading as stock. |
+| <code>public static SecurityAssetClassLabelResolution ResolveLabel(string? label, out SecurityAssetClassDescriptor? descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:912](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L912) | TryResolveLabel with the reason a label did not resolve kept apart: a label that names no catalog class at all (SecurityAssetClassLabelResolution.Unresolved) says nothing about the position, and a caller may classify it another way; a label whose tokens name more than one class (SecurityAssetClassLabelResolution.Ambiguous, &quot;Equity Option&quot;) does say something — that the catalog cannot pick — and a caller must not fall back to a looser source that would pick one of them. |
+| <code>public static IReadOnlyList&lt;SecurityIdentifierKind&gt; GetPreferredIdentifierKinds(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:963](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L963) |  |
+| <code>public static bool IsAssetClassRestrictedIdentifierKind(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:993](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L993) | True when kind has an asset-class restriction (the regulatory derivatives kinds). |
+| <code>public static bool MayCarryIdentifierKind(string? assetClass, SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1000](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1000) | Whether a record of assetClass may carry an identifier of kind. Every kind without a declared restriction is allowed everywhere. |
+| <code>public static IReadOnlySet&lt;string&gt;? GetPermittedAssetClasses(SecurityIdentifierKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1005](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1005) | The asset classes permitted to carry kind, or null when it is unrestricted. |
+| <code>public static IReadOnlyList&lt;string&gt; GetAssetOperationsCapabilities(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1008](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1008) |  |
+| <code>public static int GetTermsVersion(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1012](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1012) | The highest asset-class terms version this node admits on write; a document&#x27;s S2 stamp may be lower. |
+| <code>public static bool MatchesRoutingKey(string? value, string routingKey);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1019](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1019) | Whether value is the routing key routingKey: equal once both are reduced to their letters and digits, ignoring case. &quot;Real Estate&quot;, &quot;real-estate&quot; and &quot;RealEstate&quot; are one key; &quot;RealEstateFund&quot; is not. |
+| <code>public static IReadOnlyList&lt;(SecurityAssetClassDescriptor Descriptor, string RoutingKey)&gt; ClassesOwningRoutingKey(string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1031](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1031) | The catalogued classes that own a routing key equal to value (SecurityAssetClassDescriptor.RoutingKeys), in catalog order, each with the key that matched. Empty when no class owns it. |
+| <code>public static int GetStampFloor(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1051](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1051) | The S2 stamp floor of a document with no versioned declarations, including any later transform target. |
+| <code>public static int GetStampFloor(SecurityAssetClassDescriptor descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1054](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1054) | The declared floor, raised to the target of every transform step this descriptor writes. |
+| <code>public static int GetReadsTermsThrough(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1074](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1074) | The newest asset-class terms version a node accepts on read for the class: the descriptor&#x27;s SecurityAssetClassDescriptor.ReadsTermsThrough, or 1 for an unknown or blank class. SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms refuses a stamp above it; a stamp above GetTermsVersion and at or below it is readable but not writable (ADR-024, readable before writable). |
+| <code>public static IReadOnlyList&lt;string&gt; AssetOperationsCapableAssetClasses { get; } = Descriptors.Where(static descriptor =&gt; descriptor.AssetOperationsCapabilities is not null).Select(static descriptor =&gt; descriptor.AssetClass).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1087](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1087) | The asset classes that declare an Asset Operations capability set of their own, rather than falling through to AssetOperationsCapabilitySet.IdentityOnly. Every declared set adds LifecycleState, ProjectedCashFlows, ActualActivity, Reconciliation, LedgerProjection and WorkflowAudit on top of identity, so declaring one is what makes a class ops-capable. Naming the set once lets surfaces that owe these classes more than identity — relational term projections, readiness reporting, coverage guards — agree on which classes those are, instead of each re-deriving it from a null check or a capability-string match. |
+| <code>public static string? ResolveAccountingInstrumentClass(params string?[] declaredClassNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1118) | Resolves the accounting-slice instrument class a record posts as, from the class names it declares — most specific first (canonical asset class, then type name, then sub-type), with the coarse classification taxonomy last. Returns null when no declared name names a class the accounting slice covers, which callers should treat as &quot;outside the slice&quot; rather than as a failure. This is a lookup over declared values, deliberately: the classification a record posts under must come from what it says it IS. Deriving it by substring-matching classification prose put cash sweeps into the securitized fixed-income slice, because CashSweep and StructuredCredit once shared an asset-family label. Precedence (review D10, slice 4): (1) any declared name whose catalog class is in the slice wins, exactly as before; (2) otherwise a declared name the catalog models with an explicit SecurityAccountingDisposition.OutsideSlice disposition (StructuredNote, Deposit, DirectLoan and the other non-slice classes) returns null before any taxonomy fallback; (3) only when no declared name is catalogued does the coarse taxonomy map apply (FixedIncome to Bond), for external names the catalog does not model. |
+| <code>public static IReadOnlyList&lt;string&gt; AssetClassesInPack(string packId) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1159](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1159) | The asset classes the named asset pack covers today, in catalog order. Pack membership is a fact about the class (SecurityAssetClassDescriptor.AssetPackIds), so SecurityAssetPackRegistry reads it from here rather than keeping a second list. |
+| <code>public static IReadOnlyList&lt;string&gt; IdentifierOnlyImportableAssetClasses { get; } = Descriptors.Where(static descriptor =&gt; descriptor.SupportsIdentifierOnlyImport).Select(static descriptor =&gt; descriptor.AssetClass).ToArray();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1170](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1170) | The asset classes a bulk import carrying only identity columns may create. See SecurityAssetClassDescriptor.SupportsIdentifierOnlyImport. |
+| <code>public static string? ResolveIdentifierOnlyImportableAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1181](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1181) | Resolves assetClass (canonical name or registered alias) to the canonical asset class an identity-only import may create, or null when the class is unknown or needs asset-specific terms the import cannot supply. |
 
 ## SecurityAssetClassDefinition
 
@@ -369,7 +548,7 @@ public sealed record SecurityAssetClassDefinitionDto(string AssetClass, int Term
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1316](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1316).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1320](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1320).
 
 ```csharp
 public sealed record SecurityAssetClassDescriptor(string AssetClass, SecurityLotUnitKind LotUnit, SecurityCashFlowBehavior CashFlowBehavior, SecurityTermsProjectionKind ProjectionKind, bool SupportsBasicCreateWorkflow, IReadOnlyList<SecurityIdentifierKind> PreferredIdentifierKinds, IReadOnlyList<string>? AssetOperationsCapabilities = null, bool AmortizesTowardPar = false, bool RequiresMaturity = false, bool SupportsProfileBackedTerms = false, IReadOnlyList<string>? Aliases = null, string? AccountingInstrumentClass = null, bool SupportsIdentifierOnlyImport = false, int TermsVersion = SecurityTermsEnvelope.DefaultAssetClassTermsVersion, string? LotMultiplierTermKey = null, IReadOnlyList<InstrumentType>? InstrumentTypes = null, IReadOnlyList<string>? AssetPackIds = null, bool SupportsCanonicalBulletAmortization = false, bool RequiresGovernedProfile = false, bool RequiresProfileReference = false, bool SupportsEquityClassification = false, bool CarriesBondCouponStructure = false, bool UsesOccOptionSymbols = false, bool QuotesRatesAsFractions = false, bool TradesAsBilateralContract = false, IReadOnlyList<SecurityAssetClassTermsUpgrade>? TermsUpgrades = null, int? ReadableTermsVersion = null, SecurityValuationModelKind DefaultValuationModel = SecurityValuationModelKind.QuotedPrice)
@@ -379,30 +558,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int ReadsTermsThrough =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1352](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1352) | The newest asset-class terms version a node reads for this class: ReadableTermsVersion when it is above TermsVersion, and TermsVersion otherwise. Payloads stamped above it are refused on read; payloads stamped above TermsVersion and at or below it are readable but not writable (ADR-024 decision 3). |
-| <code>public int StampFloor { get; init; } = TermsVersion;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1358](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1358) | The pre-contract document stamp retained under ADR-024 S2 when no newer terms are held. SecurityAssetClassCatalog.GetStampFloor(SecurityAssetClassDescriptor) also accounts for later transform targets. |
-| <code>public IReadOnlyList&lt;string&gt; ClassificationLabels { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1366](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1366) | Labels, beyond the canonical name and Aliases, that name this class in a record&#x27;s classification metadata (category, subType, accountingClassification). They are not aliases: a record cannot be created under one. They exist so metadata that names this class is recognized as such when a profile resolves the record to a different class. |
-| <code>public IReadOnlyList&lt;string&gt; ReclassifyingProfileIds { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1372](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1372) | The registered custom-profile ids whose records resolve to this class instead of staying a profile-backed CustomAsset. Only a profile id listed by exactly one class reclassifies. |
-| <code>public IReadOnlyList&lt;SecurityCashFlowTermBinding&gt; CashFlowTermRoles { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1379](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1379) | Which of this class&#x27;s schema keys play which role in a calculated cash-flow projection (review D9). The projection reads them with the shared spellings (SecurityCashFlowTermRoles.Spellings). |
-| <code>public bool PaysNoContractualCoupon { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1385](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1385) | Whether the class pays no contractual coupon: its rate is a discount yield, which belongs to the carrying-value accretion rather than to coupon accrual, so the projection pays principal only. |
-| <code>public IReadOnlyList&lt;string&gt; RoutingKeys =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1392](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1392) | The routing keys this class owns: its canonical name, its Aliases and its ClassificationLabels. Compared whole, ignoring case and punctuation (SecurityAssetClassCatalog.MatchesRoutingKey); never by substring. |
-| <code>public bool SupportsCreditLifecycle { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1395](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1395) | Whether retained contracts support credit determination and linked auction settlement. |
-| <code>public bool SettlesDailyVariationMargin { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1402](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1402) | Whether positions settle the daily price change in cash (variation margin) instead of exchanging the contract&#x27;s notional. Opening such a position moves no premium; each day&#x27;s change, and the move since the last settlement on a close, is paid or received. |
-| <code>public bool SupportsRecurringFixedIncomeAccrual { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1409](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1409) | Whether the class is admitted to recurring coupon-accrual and premium/discount journals. Admission is explicit and independent of coupon structure, valuation treatment, or lot unit; source freshness, supported accrual intervals and held-lot evidence must still pass their gates. |
-| <code>public bool SupportsPrivateCapitalRecords { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1415](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1415) | Whether the class admits holder-side private-capital commitment records and reported lifecycle observations. Commitment lot units alone do not grant this capability. |
-| <code>public bool AccountingOutsideSlice { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1422](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1422) | Declares the class intentionally outside the Security Master accounting slice. Every catalogued class states its accounting disposition, an AccountingInstrumentClass or this marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping. |
-| <code>public SecurityValuationAccountingTreatment ValuationAccountingTreatment { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1428](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1428) | Explicit valuation treatment, separate from admission to the coupon/accrual event slice. The daily valuation projector consumes this declaration when selecting a mark template. |
-| <code>public SecurityAccountingDisposition AccountingDisposition =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1436](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1436) | The declared accounting disposition: SecurityAccountingDisposition.InSlice when the class names an AccountingInstrumentClass, SecurityAccountingDisposition.OutsideSlice when it carries AccountingOutsideSlice, and SecurityAccountingDisposition.Undeclared otherwise (only the uncatalogued Unknown descriptor; a coverage test fails for any catalogued class). |
-| <code>public bool HasDeclaredBehaviorFacts =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1460](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1460) | The catalog facts below replace per-site asset-class name checks. Each is a declared behaviour one or more classes opt into, so a consumer asks the descriptor instead of spelling a class name: RequiresProfileReference (the record must pin an approved custom profile), SupportsEquityClassification (terms carry the equity classification discriminant with preferred and convertible blocks), CarriesBondCouponStructure (terms carry the bond coupon structure and bullet amortization conventions), UsesOccOptionSymbols (OCC option symbols are a valid identifier) and QuotesRatesAsFractions (the class quotes rates as fractions; per-field units live in SecurityRateFieldUnits), TradesAsBilateralContract (positions are bilateral contracts against a counterparty under a master agreement, so the instrument carries OtcContractDto records rather than exchange-traded lots), SettlesDailyVariationMargin (positions settle the daily price change in cash rather than exchanging notional), SupportsRecurringFixedIncomeAccrual (the class is admitted to governed recurring accrual journals), SupportsPrivateCapitalRecords (holder-side private-capital records) and a DefaultValuationModel other than the quoted price (the class is valued from its projected cash flows and a stored discount curve unless a request names another model). |
-| <code>public bool UsesFaceValueLots =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1469](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1469) | Whether positions are held as face-value lots (par-denominated quantity). Derived from LotUnit; there is no separately maintained flag to drift from it. |
-| <code>public SecurityQuoteConvention QuoteConvention { get; init; } = LotUnit == SecurityLotUnitKind.FaceValue? SecurityQuoteConvention.PercentOfPar : SecurityQuoteConvention.PerUnit;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1479](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1479) | How this class&#x27;s raw quotes scale into money (remediation slice 8). The default derives from LotUnit — face-value lots quote as a percentage of par, everything else per unit — so nothing drifts while every catalogued class follows that rule; a class that quotes differently overrides it here, and SecurityQuoteConventionCoverageTests pins each class&#x27;s declared value against the legacy unit-kind conversion so a divergence is a visible decision, never a silent repricing. |
-| <code>public bool SupportsCashflowScheduleByDefault =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1490](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1490) | Whether a calculated cash-flow schedule projection is expected by default. Derived from CashFlowBehavior: contractual, factor-amortizing, swap-leg and financing behaviour are calculated from terms; dividends, fund distributions and provider-supplied flows are not. |
+| <code>public int ReadsTermsThrough =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1356](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1356) | The newest asset-class terms version a node reads for this class: ReadableTermsVersion when it is above TermsVersion, and TermsVersion otherwise. Payloads stamped above it are refused on read; payloads stamped above TermsVersion and at or below it are readable but not writable (ADR-024 decision 3). |
+| <code>public int StampFloor { get; init; } = TermsVersion;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1362](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1362) | The pre-contract document stamp retained under ADR-024 S2 when no newer terms are held. SecurityAssetClassCatalog.GetStampFloor(SecurityAssetClassDescriptor) also accounts for later transform targets. |
+| <code>public IReadOnlyList&lt;string&gt; ClassificationLabels { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1370](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1370) | Labels, beyond the canonical name and Aliases, that name this class in a record&#x27;s classification metadata (category, subType, accountingClassification). They are not aliases: a record cannot be created under one. They exist so metadata that names this class is recognized as such when a profile resolves the record to a different class. |
+| <code>public IReadOnlyList&lt;string&gt; ReclassifyingProfileIds { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1376](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1376) | The registered custom-profile ids whose records resolve to this class instead of staying a profile-backed CustomAsset. Only a profile id listed by exactly one class reclassifies. |
+| <code>public IReadOnlyList&lt;SecurityCashFlowTermBinding&gt; CashFlowTermRoles { get; init; } = [];</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1383](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1383) | Which of this class&#x27;s schema keys play which role in a calculated cash-flow projection (review D9). The projection reads them with the shared spellings (SecurityCashFlowTermRoles.Spellings). |
+| <code>public bool PaysNoContractualCoupon { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1389](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1389) | Whether the class pays no contractual coupon: its rate is a discount yield, which belongs to the carrying-value accretion rather than to coupon accrual, so the projection pays principal only. |
+| <code>public IReadOnlyList&lt;string&gt; RoutingKeys =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1396](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1396) | The routing keys this class owns: its canonical name, its Aliases and its ClassificationLabels. Compared whole, ignoring case and punctuation (SecurityAssetClassCatalog.MatchesRoutingKey); never by substring. |
+| <code>public bool SupportsCreditLifecycle { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1399](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1399) | Whether retained contracts support credit determination and linked auction settlement. |
+| <code>public bool SettlesDailyVariationMargin { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1406](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1406) | Whether positions settle the daily price change in cash (variation margin) instead of exchanging the contract&#x27;s notional. Opening such a position moves no premium; each day&#x27;s change, and the move since the last settlement on a close, is paid or received. |
+| <code>public bool SupportsRecurringFixedIncomeAccrual { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1413](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1413) | Whether the class is admitted to recurring coupon-accrual and premium/discount journals. Admission is explicit and independent of coupon structure, valuation treatment, or lot unit; source freshness, supported accrual intervals and held-lot evidence must still pass their gates. |
+| <code>public bool SupportsPrivateCapitalRecords { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1419](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1419) | Whether the class admits holder-side private-capital commitment records and reported lifecycle observations. Commitment lot units alone do not grant this capability. |
+| <code>public bool AccountingOutsideSlice { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1426](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1426) | Declares the class intentionally outside the Security Master accounting slice. Every catalogued class states its accounting disposition, an AccountingInstrumentClass or this marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping. |
+| <code>public SecurityValuationAccountingTreatment ValuationAccountingTreatment { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1432](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1432) | Explicit valuation treatment, separate from admission to the coupon/accrual event slice. The daily valuation projector consumes this declaration when selecting a mark template. |
+| <code>public SecurityAccountingDisposition AccountingDisposition =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1440](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1440) | The declared accounting disposition: SecurityAccountingDisposition.InSlice when the class names an AccountingInstrumentClass, SecurityAccountingDisposition.OutsideSlice when it carries AccountingOutsideSlice, and SecurityAccountingDisposition.Undeclared otherwise (only the uncatalogued Unknown descriptor; a coverage test fails for any catalogued class). |
+| <code>public bool HasDeclaredBehaviorFacts =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1464](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1464) | The catalog facts below replace per-site asset-class name checks. Each is a declared behaviour one or more classes opt into, so a consumer asks the descriptor instead of spelling a class name: RequiresProfileReference (the record must pin an approved custom profile), SupportsEquityClassification (terms carry the equity classification discriminant with preferred and convertible blocks), CarriesBondCouponStructure (terms carry the bond coupon structure and bullet amortization conventions), UsesOccOptionSymbols (OCC option symbols are a valid identifier) and QuotesRatesAsFractions (the class quotes rates as fractions; per-field units live in SecurityRateFieldUnits), TradesAsBilateralContract (positions are bilateral contracts against a counterparty under a master agreement, so the instrument carries OtcContractDto records rather than exchange-traded lots), SettlesDailyVariationMargin (positions settle the daily price change in cash rather than exchanging notional), SupportsRecurringFixedIncomeAccrual (the class is admitted to governed recurring accrual journals), SupportsPrivateCapitalRecords (holder-side private-capital records) and a DefaultValuationModel other than the quoted price (the class is valued from its projected cash flows and a stored discount curve unless a request names another model). |
+| <code>public bool UsesFaceValueLots =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1473](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1473) | Whether positions are held as face-value lots (par-denominated quantity). Derived from LotUnit; there is no separately maintained flag to drift from it. |
+| <code>public SecurityQuoteConvention QuoteConvention { get; init; } = LotUnit == SecurityLotUnitKind.FaceValue? SecurityQuoteConvention.PercentOfPar : SecurityQuoteConvention.PerUnit;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1483](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1483) | How this class&#x27;s raw quotes scale into money (remediation slice 8). The default derives from LotUnit — face-value lots quote as a percentage of par, everything else per unit — so nothing drifts while every catalogued class follows that rule; a class that quotes differently overrides it here, and SecurityQuoteConventionCoverageTests pins each class&#x27;s declared value against the legacy unit-kind conversion so a divergence is a visible decision, never a silent repricing. |
+| <code>public bool SupportsCashflowScheduleByDefault =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1494](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1494) | Whether a calculated cash-flow schedule projection is expected by default. Derived from CashFlowBehavior: contractual, factor-amortizing, swap-leg and financing behaviour are calculated from terms; dividends, fund distributions and provider-supplied flows are not. |
 
 ## SecurityAssetClassLabelResolution
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1188](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1188).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1192](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1192).
 
 Outcome of SecurityAssetClassCatalog.ResolveLabel: the label named one catalog class, named none, or named more than one and so cannot be classified by the catalog.
 
@@ -414,9 +593,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unresolved</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1190](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1190) |  |
-| <code>Resolved</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1191](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1191) |  |
-| <code>Ambiguous</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1192](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1192) |  |
+| <code>Unresolved</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1194](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1194) |  |
+| <code>Resolved</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1195](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1195) |  |
+| <code>Ambiguous</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1196](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1196) |  |
 
 ## SecurityAssetClassNames
 
@@ -436,6 +615,10 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string Equity = &quot;Equity&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L9) |  |
 | <code>public const string Bond = &quot;Bond&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L10) |  |
+| <code>public const string Option = &quot;Option&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L11) |  |
+| <code>public const string Future = &quot;Future&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L12) |  |
+| <code>public const string FxSpot = &quot;FxSpot&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L13) |  |
+| <code>public const string CryptoCurrency = &quot;CryptoCurrency&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L14) |  |
 
 ## SecurityAssetClassRegistry
 
@@ -491,7 +674,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrader</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L30).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L31).
 
 The per-asset-class terms upgrade hook (ADR-024 decision 3). Reads a flat asset-specific-terms payload stamped with an older SecurityTermsEnvelope.AssetClassTermsVersionKey at its class&#x27;s current SecurityAssetClassDescriptor.TermsVersion by running the class&#x27;s SecurityAssetClassDescriptor.TermsUpgrades.
 
@@ -503,12 +686,12 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static JsonElement UpgradeForRead(string? assetClass, JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:38](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L38) | The payload read at the class&#x27;s current terms version: payload itself unless a transform step applies. The class is resolved through SecurityAssetClassCatalog.GetOrDefault, so an alias reads as its class and an unknown or blank class reads as version 1, which passes everything through. |
-| <code>public static JsonElement UpgradeForRead(SecurityAssetClassDescriptor descriptor, JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L42) | UpgradeForRead(string?, JsonElement) for a descriptor already in hand. |
-| <code>public static bool TryUpgradeForRead(string? assetClass, JsonElement payload, out JsonElement upgraded) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L51) | True, with a new payload stamped at the class&#x27;s S2 transform floor, only when at least one transform step applies. Otherwise false, with upgraded set to payload itself, so a caller can branch without comparing JsonElement values. |
-| <code>public static bool TryUpgradeForRead(SecurityAssetClassDescriptor descriptor, JsonElement payload, out JsonElement upgraded);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L55) | TryUpgradeForRead(string?, JsonElement, out JsonElement) for a descriptor already in hand. |
-| <code>public static bool TryGetPendingUpgrade(string? assetClass, JsonElement payload, out int declaredVersion, out int currentVersion) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L89) | Whether payload is inside the hook&#x27;s domain and is stamped (or, when the stamp is absent or not an integer, reads as) below its class&#x27;s current terms version. This is the single predicate the runner and the SM_ASSET_CLASS_TERMS_VERSION_BEHIND validation notice share. declaredVersion is the version the payload reads as (1 when unstamped) and currentVersion the class&#x27;s current version. |
-| <code>public static bool TryGetPendingUpgrade(SecurityAssetClassDescriptor descriptor, JsonElement payload, out int declaredVersion, out int currentVersion);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L97) | TryGetPendingUpgrade(string?, JsonElement, out int, out int) for a descriptor already in hand. |
+| <code>public static JsonElement UpgradeForRead(string? assetClass, JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L39) | The payload read at the class&#x27;s current terms version: payload itself unless a transform step applies. The class is resolved through SecurityAssetClassCatalog.GetOrDefault, so an alias reads as its class and an unknown or blank class reads as version 1, which passes everything through. |
+| <code>public static JsonElement UpgradeForRead(SecurityAssetClassDescriptor descriptor, JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L43) | UpgradeForRead(string?, JsonElement) for a descriptor already in hand. |
+| <code>public static bool TryUpgradeForRead(string? assetClass, JsonElement payload, out JsonElement upgraded) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L52) | True, with a new payload stamped at the class&#x27;s S2 transform floor, only when at least one transform step applies. Otherwise false, with upgraded set to payload itself, so a caller can branch without comparing JsonElement values. |
+| <code>public static bool TryUpgradeForRead(SecurityAssetClassDescriptor descriptor, JsonElement payload, out JsonElement upgraded);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L56) | TryUpgradeForRead(string?, JsonElement, out JsonElement) for a descriptor already in hand. |
+| <code>public static bool TryGetPendingUpgrade(string? assetClass, JsonElement payload, out int declaredVersion, out int currentVersion) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L90) | Whether payload is inside the hook&#x27;s domain and is stamped (or, when the stamp is absent or not an integer, reads as) below its class&#x27;s current terms version. This is the single predicate the runner and the SM_ASSET_CLASS_TERMS_VERSION_BEHIND validation notice share. declaredVersion is the version the payload reads as (1 when unstamped) and currentVersion the class&#x27;s current version. |
+| <code>public static bool TryGetPendingUpgrade(SecurityAssetClassDescriptor descriptor, JsonElement payload, out int declaredVersion, out int currentVersion);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs#L98) | TryGetPendingUpgrade(string?, JsonElement, out int, out int) for a descriptor already in hand. |
 
 ## SecurityAssetPackDescriptor
 
@@ -824,162 +1007,3 @@ Enum declarations:
 | <code>Approved</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L10) |  |
 | <code>Superseded</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L11) |  |
 | <code>Retired</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L12) |  |
-
-## SecurityAssetProfileTermsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetProfileTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs#L104).
-
-```csharp
-public sealed record SecurityAssetProfileTermsDto(string CustomProfileId, int ProfileVersion, IReadOnlyDictionary<string, JsonElement> ProfileFields, SecurityAssetProfileApprovalMetadataDto ProfileApproval, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
-```
-
-## SecurityAssetSpecificTerms
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L13).
-
-An asset-specific-terms payload paired with the schema version it resolves to. Produced by SecurityAssetSpecificTermsV0ToCurrentUpcaster so callers get both the normalized (explicitly versioned) JSON and the version to persist into the queryable schema_version column in one step.
-
-```csharp
-public sealed record SecurityAssetSpecificTerms(JsonElement Payload, int SchemaVersion);
-```
-
-## SecurityAssetSpecificTermsUpcasterChain
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1657](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1657).
-
-The composed migrate-on-read chain for asset-specific-terms payloads — the single entry point that turns &quot;whatever version is stored&quot; into a payload current readers accept: unstamped (version 0) → stamped AssetSpecificTermsSchema.Legacy via SecurityAssetSpecificTermsV0ToCurrentUpcaster; a cross-family economic-terms document (stamped EconomicTermsSchema.Current and carrying economic-terms module keys) → flattened v1 via the lossy SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster; accepted versions pass through unchanged; unknown future versions — including a payload stamped with the reserved AssetSpecificTermsSchema.ReservedForEconomicTerms that does not have the economic-terms shape — pass through with their version preserved, so acceptance stays the guard&#x27;s decision and newer or misrouted payloads degrade with a precise diagnostic instead of being silently emptied in the chain.
-
-```csharp
-public static class SecurityAssetSpecificTermsUpcasterChain
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityAssetSpecificTerms Normalize(JsonElement payload) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1660](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1660) | Normalizes a stored asset-specific-terms payload to the newest readable form. |
-| <code>public static SecurityAssetSpecificTerms Normalize(JsonElement payload, string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1671](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1671) | Class-aware variant: a cross-family economic-terms document is flattened onto the flat keys assetClass declares (see SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(JsonElement, string?)). Every other payload normalizes exactly as Normalize(JsonElement). |
-| <code>public static SecurityAssetSpecificTerms? Normalize(string json);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1677](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1677) | Text-input variant; returns null when the text is not JSON. |
-
-## SecurityAssetSpecificTermsUpcasterPipeline
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1709](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1709).
-
-The registered ISchemaUpcaster{T} form of SecurityAssetSpecificTermsUpcasterChain: a single injectable choke point that composes the full asset-specific-terms migrate-on-read chain (v0 stamping plus cross-family economic-terms v2 → v1 flattening) for callers that resolve upcasters through the ISchemaUpcaster{T} seam. Unknown future versions pass through with their version preserved, keeping acceptance the guard&#x27;s decision. ToSchemaVersion names the version accepted flat payloads normalize to. It is a property of the pipeline, not of any one result: a profile-backed payload passes through as AssetSpecificTermsSchema.CustomAssetProfile, and callers must read the version off the returned SecurityAssetSpecificTerms.SchemaVersion, never off this declaration.
-
-```csharp
-public sealed class SecurityAssetSpecificTermsUpcasterPipeline : ISchemaUpcaster<SecurityAssetSpecificTerms>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityAssetSpecificTermsUpcasterPipeline Instance { get; } = new ();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1712](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1712) | Shared stateless instance for callers that resolve the pipeline outside DI. |
-| <code>public int FromSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1715](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1715) | The oldest (unstamped legacy) payload family this pipeline reads from. |
-| <code>public int ToSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1718](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1718) | The normalized asset-specific-terms version the pipeline resolves accepted flat payloads to. |
-| <code>public SecurityAssetSpecificTerms? Upcast(string json) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs:1721](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs#L1721) | Normalizes a stored asset-specific-terms payload through the full chain. |
-
-## SecurityAssetSpecificTermsV0ToCurrentUpcaster
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsV0ToCurrentUpcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L22).
-
-Migrate-on-read upcaster for Security Master asset-specific-terms payloads. Legacy payloads were persisted before explicit versioning and carry no schemaVersion; on read they are treated as SecurityMasterSchemaVersions.LegacyAssetSpecificTerms and stamped so every downstream consumer — validation, projection, and the promoted schema_version column — sees an explicitly versioned payload without a bulk data migration.
-
-```csharp
-public sealed class SecurityAssetSpecificTermsV0ToCurrentUpcaster : ISchemaUpcaster<SecurityAssetSpecificTerms>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static SecurityAssetSpecificTermsV0ToCurrentUpcaster Instance { get; } = new ();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L25) | Shared stateless instance for callers that resolve the upcaster outside DI. |
-| <code>public int FromSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L28) | The unstamped legacy payload family (no schemaVersion property). |
-| <code>public int ToSchemaVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L31) | The version an unstamped payload is normalized to. |
-| <code>public SecurityAssetSpecificTerms? Upcast(string json);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L37) | Reads a stored asset-specific-terms JSON document and returns its normalized form, or null when the text cannot be parsed as JSON. |
-| <code>public static int ResolveSchemaVersion(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L60) | Returns the schema version stamped on the payload, or SecurityMasterSchemaVersions.DefaultAssetSpecificTerms when the payload predates explicit versioning. This is the single place &quot;what version is this payload?&quot; is decided. |
-| <code>public static SecurityAssetSpecificTerms Normalize(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcaster.cs#L79) | Stamps a missing schemaVersion onto an object payload so downstream code never has to re-derive the legacy default. Payloads that already carry a numeric schemaVersion, and non-object payloads, are returned unchanged. The returned JsonElement is cloned so it is safe to use after the source document is disposed. |
-
-## SecurityAssetTermEditorKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermEditorKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:89](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L89).
-
-The editor a form should render for one term field.
-
-```csharp
-public enum SecurityAssetTermEditorKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Text</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L91) |  |
-| <code>Decimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:92](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L92) |  |
-| <code>Integer</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:93](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L93) |  |
-| <code>Toggle</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:94](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L94) |  |
-| <code>Date</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:95](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L95) |  |
-| <code>Identifier</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L96) |  |
-| <code>Choice</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L97) |  |
-| <code>Convention</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L103) | A typed convention (day count, settlement method): free text the convention&#x27;s parser must recognize, with SecurityAssetTermUiHint.Choices offering the canonical spellings. |
-| <code>Json</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:104](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L104) |  |
-
-## SecurityAssetTermField
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermField</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:86](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L86).
-
-```csharp
-public sealed record SecurityAssetTermField(string Key, SecurityAssetTermFieldType Type, bool Required, IReadOnlyList<string> Aliases, IReadOnlyList<string> AllowedValues, SecurityAssetTermVocabularyEscape? Escape = null, bool CarriesUndeclaredValueVerbatim = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool AuthoringEnabled { get; init; } = true;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L96) | False for readable calculation companions whose authoring has not been activated. |
-| <code>public SecurityAssetTermField ReadOnly() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:98](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L98) |  |
-| <code>public bool IsDiscriminant =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L107) | True when the field carries a CLOSED vocabulary: its value selects a domain case, and a value outside AllowedValues cannot be decoded back into the one it names. Fields whose domain type has an open &quot;other&quot; case (a bond subclass, a paymentFrequency) are deliberately not discriminants — they round-trip any label losslessly, so constraining them would reject values the domain accepts today. |
-| <code>public bool Allows(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L115) | True when value is one of the declared vocabulary members, or the field declares no vocabulary at all. The comparison is ORDINAL and case-sensitive because the codecs are: the serializer emits one exact spelling per case and the deserializer switches on it, so &quot;fixed&quot; is as undecodable as &quot;Variable&quot;. |
-| <code>public string DescribeUndeclaredValue(string assetClass, string? value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L124) | The shared rejection reason for a value outside this field&#x27;s vocabulary, naming the declared members and the escape when one exists. Both the operator edit surface and the write-mode codec reject through this text so a rejected value reads the same wherever it is caught. |
-| <code>public static SecurityAssetTermField Req(string key, SecurityAssetTermFieldType type, params string[] aliases) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L136) | A field the serialize side always emits (a non-optional domain field). |
-| <code>public static SecurityAssetTermField Opt(string key, SecurityAssetTermFieldType type, params string[] aliases) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L140) | A field emitted only when its optional domain value is present. |
-| <code>public static SecurityAssetTermField ReqOneOf(string key, params string[] allowedValues) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L144) | A required discriminant string constrained to a closed vocabulary. |
-| <code>public static SecurityAssetTermField OptOneOf(string key, params string[] allowedValues) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:148](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L148) | An optional discriminant string constrained to a closed vocabulary. |
-| <code>public SecurityAssetTermField WithEscape(string value, string labelKey, params string[] dependentKeys) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L156) | Declares the vocabulary member that absorbs an out-of-vocabulary label, the key carrying that raw label, and the keys the escape decode cannot reattach. See SecurityAssetTermVocabularyEscape. |
-| <code>public SecurityAssetTermField WithVerbatimUndeclaredValue() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:164](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L164) | Declares that the codec carries an out-of-vocabulary value VERBATIM in this same key, so the vocabulary is a write-time constraint only and never a reason to refuse re-serializing a record that already holds one. See CarriesUndeclaredValueVerbatim. |
-| <code>public SecurityTermConventionKind Convention { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:173](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L173) | The typed convention this string field carries, or SecurityTermConventionKind.None. Unlike a closed vocabulary, a convention accepts every spelling its parser recognizes and preserves its meaning; day counts serialize as canonical market labels, while other conventions retain their original spelling. It rejects values the parser cannot type. |
-| <code>public SecurityAssetTermField WithConvention(SecurityTermConventionKind convention) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L176) | Declares the typed convention this string field carries. |
-| <code>public SecurityAssetTermRole Role { get; init; } = SecurityAssetTermRole.Economic;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L184) | Whether the field is part of the instrument&#x27;s economics or an operational reference (a pricing source, a vendor feed). Operational fields are kept beside the economics for compatibility but never feed cash-flow, accounting or economic-definition math. |
-| <code>public SecurityAssetTermField AsOperational() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L187) | Declares the field an operational reference rather than an economic term. |
-| <code>public SecurityUnderlyingRole? UnderlyingRole { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:196](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L196) | The role the field&#x27;s value plays in the underlying graph, or null when the field names nothing the instrument depends on. SecurityUnderlyingLinkDeriver builds the derived graph from these declarations alone: a value that is a security id links to that record, any other text is recorded as an unresolved reference. |
-| <code>public SecurityAssetTermField LinksUnderlying(SecurityUnderlyingRole role) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:199](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L199) | Declares the field a reference the underlying graph links in role. |
-| <code>public int SinceTermsVersion { get; init; } = SecurityTermsEnvelope.DefaultAssetClassTermsVersion;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:215](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L215) | The asset-class terms version (SecurityAssetClassDescriptor.TermsVersion) that introduced this field; 1 for every field the class carried before per-class versioning. A payload stamped with an earlier version never carries it. The committed manifests under tests/fixtures/security-master/terms-versions are checked against it: a field must first appear in the manifest of this version. A field above the class&#x27;s write version is readable but not writable (SecurityAssetClassDescriptor.ReadsTermsThrough): a node decodes it from payloads stamped at or above this version and refuses it on every write path. A class may read several versions ahead of what it writes, each introduced by its own top-level fields (Bond: scheduleConventions at 2, callSchedule and putSchedule at 3). The members of a container introduced above version 1 are frozen with it: a later member needs a new container key. |
-| <code>public SecurityAssetTermField Since(int termsVersion);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:222](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L222) | Declares the terms version that introduced the field. Like WithConvention and AsOperational it is a single-member with, so it composes with every other modifier in any order. |
-| <code>public bool SatisfiesConvention(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:232](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L232) | True when value satisfies this field&#x27;s convention (or it declares none). Blank values are left to the required/optional rules. |
-
-## SecurityAssetTermFieldDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:162](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L162).
-
-Wire form of one term field with its UI hint, for schema-driven forms.
-
-```csharp
-public sealed record SecurityAssetTermFieldDefinitionDto(string Key, string FieldPath, string Label, string Type, SecurityAssetTermEditorKind Editor, string Group, int Order, bool Required, bool ScalarEditable, IReadOnlyList<string> Choices, IReadOnlyList<string> Aliases, SecurityAssetTermRole Role = SecurityAssetTermRole.Economic);
-```

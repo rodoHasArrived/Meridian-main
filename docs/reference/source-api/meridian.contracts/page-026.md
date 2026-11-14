@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CreateInvestmentPortfolioRequest
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureCommands.cs:99](../../../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs#L99).
+
+```csharp
+public sealed record CreateInvestmentPortfolioRequest(Guid InvestmentPortfolioId, Guid BusinessId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? ClientId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? EntityId = null, string? Description = null);
+```
+
 ## CreateLegalEntityRequest
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CreateLegalEntityRequest</code>. Kind: `record`.
@@ -574,14 +584,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:544](../../..
 
 ```csharp
 public sealed record GovernanceCashFlowAccountViewDto(Guid AccountId, string AccountCode, string DisplayName, string BaseCurrency, string? LedgerReference, decimal? CurrentCashBalance, decimal RealizedNetFlow, decimal ProjectedNetFlow, int RealizedEntryCount, int ProjectedEntryCount, DateOnly? LatestSnapshotDate, bool UsedTrendFallback, int SecurityProjectedEntryCount = 0, bool UsedSecurityMasterRules = false, FundStructureSharedDataAccessDto? SharedDataAccess = null);
-```
-
-## GovernanceCashFlowBucketDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.GovernanceCashFlowBucketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:576](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L576).
-
-```csharp
-public sealed record GovernanceCashFlowBucketDto(int BucketIndex, DateTimeOffset BucketStart, DateTimeOffset BucketEnd, decimal ProjectedInflows, decimal ProjectedOutflows, decimal NetFlow, string Currency, int EventCount);
 ```

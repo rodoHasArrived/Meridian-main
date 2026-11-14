@@ -331,6 +331,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public decimal CashBalance =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1926](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1926) | Alias for Cash using the naming used in operator-facing surfaces. |
 
+## ExecutionReportingAssetClasses
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionReportingAssetClasses</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs:7](../../../../src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs#L7).
+
+Reporting asset-class tags stamped on ExecutionJournalEntry.ReportingAssetClass. The values are persisted in the execution journal, so they must never change.
+
+```csharp
+public static class ExecutionReportingAssetClasses
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UsdUsEquity = &quot;USD_US_EQUITY&quot;;</code> | [src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs:10](../../../../src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs#L10) | A USD-denominated US equity order whose economics the journal reports. |
+
 ## FileBrokerageOrderRecoveryStore
 
 Qualified name: <code>Meridian.Execution.Services.FileBrokerageOrderRecoveryStore</code>. Kind: `class`.
@@ -911,16 +929,4 @@ Lightweight serialisation DTO for a Meridian.Ledger.LedgerAccount.
 
 ```csharp
 public sealed record PersistedLedgerAccountDto(string Name, string AccountType, string? Symbol, string? FinancialAccountId);
-```
-
-## PersistedLedgerLineDto
-
-Qualified name: <code>Meridian.Execution.Services.PersistedLedgerLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:42](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L42).
-
-Lightweight serialisation DTO for a single debit/credit line in a journal entry.
-
-```csharp
-public sealed record PersistedLedgerLineDto(Guid EntryId, Guid JournalEntryId, DateTimeOffset Timestamp, PersistedLedgerAccountDto Account, decimal Debit, decimal Credit, string Description);
 ```

@@ -717,6 +717,24 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;DateOnly&gt;&gt; GetExpiryLadderAsync(string underlyingSymbol, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L13) |  |
 | <code>Task UpsertChainSnapshotAsync(OptionChainSnapshot snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:14](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L14) |  |
 
+## IRegistryProjectionReadService
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.IRegistryProjectionReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:14](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L14).
+
+Reads any SecurityTermsProjectionRegistry projection as column→value data, driven by the class&#x27;s descriptor rather than a typed row. This is the read path for the registry classes that never had a typed reader (CommercialPaper through CommitmentGuarantee, the OTC derivatives, the rate options and linked notes); the typed I*ReferenceProjectionStore readers remain the path for the classes that have one.
+
+```csharp
+public interface IRegistryProjectionReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;SecurityTermsProjectionReadDto?&gt; GetAsync(string assetClass, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs:23](../../../../src/Meridian.Storage/SecurityMaster/RegistryProjectionReadService.cs#L23) | The projection of securityId read as assetClass, or null when the class has no registry descriptor, the security does not exist, its current asset class is a different class, or it has no projection row (a gating term is absent). assetClass accepts a catalog name or alias in any casing. |
+
 ## ISecurityFieldProvenanceStore
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityFieldProvenanceStore</code>. Kind: `interface`.
@@ -847,21 +865,3 @@ Declared public members:
 | <code>Task AppendCorporateActionAsync(CorporateActionDto action, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L51) | Appends one or more corporate action events for a security. |
 | <code>Task&lt;IReadOnlyList&lt;CorporateActionDto&gt;&gt; LoadCorporateActionsAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L56) | Returns all corporate action events for a security in ascending ex-date order. |
 | <code>Task&lt;CorporateActionEventTypeNormalizationResult&gt; NormalizeCorporateActionEventTypesAsync(bool apply, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterEventStore.cs#L65) | Reports — and when apply is true, rewrites in one transaction — stored corporate-action EventType values that are non-canonical aliases of the catalog vocabulary (e.g. legacy &quot;Split&quot; rows becoming &quot;StockSplit&quot;). Values that do not normalize are reported and left untouched. Stores without rewrite support (the default) report an empty result. |
-
-## ISecurityMasterMutationParticipant
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISecurityMasterMutationParticipant</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L8).
-
-Participants in the same database-backed workbench mutation boundary.
-
-```csharp
-public interface ISecurityMasterMutationParticipant
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>SecurityMasterOptions MutationOptions { get; }</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:10](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L10) |  |

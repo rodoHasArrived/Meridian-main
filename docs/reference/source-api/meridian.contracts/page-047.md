@@ -6,6 +6,59 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcMasterAgreementDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L59).
+
+A master agreement (ISDA, GMRA, GMSLA) between one of the fund&#x27;s legal entities and a counterparty. Every bilateral contract hangs off one through its netting set, so close-out netting and collateral terms are facts about the relationship, not copied onto each trade.
+
+```csharp
+public sealed record OtcMasterAgreementDto(Guid AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
+## OtcMasterAgreementType
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMasterAgreementType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L8).
+
+The form of master agreement a counterparty relationship is documented under.
+
+```csharp
+public enum OtcMasterAgreementType
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Isda1992</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L11) | ISDA 1992 Master Agreement. |
+| <code>Isda2002</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L14) | ISDA 2002 Master Agreement. |
+| <code>Gmra</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L17) | Global Master Repurchase Agreement (repo). |
+| <code>Gmsla</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L20) | Global Master Securities Lending Agreement. |
+| <code>Other</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L23) | Any other bilateral master or long-form confirmation. |
+
+## OtcMovementKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMovementKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L28).
+
+Whether a movement adds collateral to what the Secured Party holds or gives some back.
+
+```csharp
+public enum OtcMovementKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Delivery</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L30) |  |
+| <code>Return</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L31) |  |
+
 ## OtcMovementParty
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcMovementParty</code>. Kind: `enum`.
@@ -250,6 +303,116 @@ Principal returned on a factor-amortizing instrument.
 ```csharp
 public sealed record PrincipalPaydownCorporateActionTerms(string EventType, decimal? PaydownRatio, decimal? PrincipalAmount, decimal? PostPaydownFactor) : CorporateActionTerms(EventType);
 ```
+
+## ProviderAssetClassCode
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCode</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L44).
+
+One provider spelling of an asset class: the code the provider uses, the Security Master catalog class it names, the extra input spellings accepted for it, and its roles and traits.
+
+```csharp
+public sealed record ProviderAssetClassCode(string Provider, string Code, string CatalogAssetClass, IReadOnlyList<string> InputAliases, ProviderAssetClassCodeRoles Roles, ProviderAssetClassCodeTraits Traits = ProviderAssetClassCodeTraits.None)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool HasTrait(ProviderAssetClassCodeTraits trait) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L52) |  |
+
+## ProviderAssetClassCodeCatalog
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:94](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L94).
+
+The one table of brokerage asset-class codes. Each provider&#x27;s codes are matched exactly (no token or substring heuristics), which is why this table exists instead of SecurityAssetClassCatalog.ResolveLabel: that resolver reads none of &quot;crypto&quot;, &quot;treasury&quot; or &quot;corporate&quot;. Every helper here reproduces the comparison the call site used before it moved onto the table (ordinal, ordinal-ignore-case, or trimmed lower-invariant), so routing a site through the table does not change what it accepts. The table is checked when the type loads: every provider is known, every catalog class is a canonical SecurityAssetClassCatalog name, no code or alias is declared twice for one provider, and every IB code has a Meridian report code to translate to.
+
+```csharp
+public static class ProviderAssetClassCodeCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderAssetClassCode&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L161) |  |
+| <code>public static IReadOnlyList&lt;ProviderAssetClassCode&gt; ForProvider(string provider) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L163) |  |
+| <code>public static bool TryResolveExact(string provider, string? code, [NotNullWhen(true)] out ProviderAssetClassCode? entry);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:170](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L170) | Resolves a provider code compared ordinally and untrimmed — the comparison a site that wrote value == &quot;us_option&quot; made. Aliases do not resolve here. |
+| <code>public static bool TryResolveCodeIgnoreCase(string provider, string? code, [NotNullWhen(true)] out ProviderAssetClassCode? entry);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L184) | Resolves a provider code compared with StringComparison.OrdinalIgnoreCase and untrimmed. Aliases do not resolve here. |
+| <code>public static bool TryResolveInput(string provider, string? input, [NotNullWhen(true)] out ProviderAssetClassCode? entry);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:198](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L198) | Resolves caller input — a code or one of its input aliases — after Trim().ToLowerInvariant(), the normalization order builders apply to metadata. |
+| <code>public static string NormalizeInput(string provider, string input);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:210](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L210) | The provider code for caller input; input that names no code is returned trimmed and lower-cased so the provider sees (and refuses) what was submitted. |
+| <code>public static bool IsExactCode(string provider, string? code, string catalogAssetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:217](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L217) | Whether code is, ordinally, the provider&#x27;s code for the catalog class. |
+| <code>public static bool IsCodeIgnoreCase(string? code, string catalogAssetClass, params string[] providers);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:225](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L225) | Whether code is, ignoring case, one of the named providers&#x27; codes for the catalog class. |
+| <code>public static bool IsFaceValueFixedIncomeInput(string provider, string? input) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:244](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L244) | Whether caller input (a code or alias, trimmed and lower-cased) names a face-value fixed-income class for the provider. The live Alpaca gateway and the paper gateway both size face-value orders off this answer. |
+| <code>public static bool IsBookableFromReportAlone(string? code);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:254](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L254) | Whether a fill stamped with this asset-class code can be booked from the report alone. The code is trimmed and lower-cased and must equal a code (not an alias) of any provider declared ProviderAssetClassCodeTraits.BookableFromReportAlone; an absent class is unknown, not equity. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; InteractiveBrokersReportCodes =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:267](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L267) | IB secType → Meridian report code (&quot;STK&quot; → &quot;equity&quot;), matched ignoring case like the mapper&#x27;s other vocabularies. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; BuildTranslation(string fromProvider, string toProvider);</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:273](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L273) | Translates every code of fromProvider to the toProvider position-report code for the same catalog class. |
+
+## ProviderAssetClassCodeProviders
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeProviders</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L56).
+
+Provider keys used by ProviderAssetClassCodeCatalog.
+
+```csharp
+public static class ProviderAssetClassCodeProviders
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Alpaca = &quot;alpaca&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L58) |  |
+| <code>public const string Robinhood = &quot;robinhood&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L59) |  |
+| <code>public const string InteractiveBrokers = &quot;ib&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:60](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L60) |  |
+| <code>public const string Meridian = &quot;meridian&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L66) | Meridian&#x27;s own lowercase execution vocabulary (&quot;equity&quot;, &quot;option&quot;, ...): what the IB mapper reports and what execution metadata carries for brokers without a vendor spelling. |
+| <code>public static IReadOnlyList&lt;string&gt; All { get; } = [Alpaca, Robinhood, InteractiveBrokers, Meridian];</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L68) |  |
+
+## ProviderAssetClassCodeRoles
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeRoles</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L7).
+
+Where a provider asset-class code appears on the wire.
+
+```csharp
+public enum ProviderAssetClassCodeRoles
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L9) |  |
+| <code>OrderPayload = 1</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L12) | The code is sent to (or read back from) the provider on an order. |
+| <code>PositionReport = 2</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L15) | The code is stamped on positions, fills, or execution reports. |
+| <code>Search = 4</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L18) | The code is a symbol-search asset type. |
+
+## ProviderAssetClassCodeTraits
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ProviderAssetClassCodeTraits</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L23).
+
+Behaviour that execution and booking read from a provider asset-class code.
+
+```csharp
+public enum ProviderAssetClassCodeTraits
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L25) |  |
+| <code>FaceValueFixedIncome = 1</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L31) | Orders in this class are sized in face value and priced as a percentage of par (Alpaca treasury and corporate). |
+| <code>BookableFromReportAlone = 2</code> | [src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/ProviderAssetClassCodeCatalog.cs#L37) | A fill in this class can be booked from the execution report alone: unit quantity at the reported price, no contract multiplier and no percentage-of-par scaling. |
 
 ## PublishSecurityCurveVersionRequest
 
@@ -621,182 +784,3 @@ Enum declarations:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>CalendarCoverageExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L70) | A calendar was asked about a date outside its declared coverage. |
-
-## ScheduleDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L8).
-
-Which end of the schedule the regular grid is generated from.
-
-```csharp
-public enum ScheduleDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Forward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L11) | Generate from the effective date (or first regular date) towards termination; any stub is at the end. |
-| <code>Backward</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs#L14) | Generate from the termination date (or last regular date) towards the effective date; any stub is at the start. |
-
-## ScheduleFailure
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L64).
-
-A refusal from the schedule kernel.
-
-```csharp
-public sealed record ScheduleFailure(ScheduleFailureCode Code, string Message, DateOnly? Date = null);
-```
-
-## ScheduleFailureCode
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L6).
-
-Why the schedule kernel refused a ScheduleSpec.
-
-```csharp
-public enum ScheduleFailureCode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>InvalidPeriodLimit</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L9) | ScheduleSpec.MaxPeriods is set below 1. |
-| <code>NegativePaymentLag</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L12) | ScheduleSpec.PaymentLagBusinessDays is negative. |
-| <code>TermTenorDisallowsRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L15) | A term tenor was given explicit regular dates. |
-| <code>TenorNotAllowedForDirection</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L18) | A day or week tenor was asked to generate backward. |
-| <code>RollNotAllowedForTenor</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L21) | A day or week tenor was given a roll other than the anchor day. |
-| <code>CompoundedModeRestricted</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L24) | Compounded mode was combined with backward generation, a roll, explicit regular dates or a non-short stub policy. |
-| <code>RegularDateOutOfRange</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L27) | An explicit regular date lies outside the schedule span or out of order. |
-| <code>DirectionConflictsWithRegularDates</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L30) | The generation direction conflicts with the explicit regular dates given. |
-| <code>AdjustmentRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L33) | A business-day convention other than unadjusted has no calendar. |
-| <code>PaymentLagRequiresCalendar</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L36) | A payment lag was set without a payment calendar. |
-| <code>AnchorNotOnRollDay</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:39](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L39) | The generation anchor does not satisfy the roll convention. |
-| <code>RegularDatesNotOnGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L42) | The last regular date is not on the grid generated from the first regular date. |
-| <code>DoesNotFitRegularGrid</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L45) | The stub policy requires a regular grid and the span does not fit one. |
-| <code>PeriodLimitExceeded</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L48) | The schedule would exceed ScheduleSpec.MaxPeriods. |
-| <code>AdjustedPeriodCollapsed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:51](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L51) | Business-day adjustment made a period&#x27;s accrual end fall on or before its start. |
-| <code>InvalidSpecification</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L54) | The spec is structurally invalid: a default tenor or an undefined enum value. |
-| <code>BusinessDayAdjustmentFailed</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L57) | A business-day adjustment or payment lag could not be applied: the calendar is degenerate or the walk leaves the supported date range. |
-
-## ScheduleGenerationResult
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L111).
-
-The output of ScheduleGenerator.Generate: the periods on success, or a failure, plus the diagnostics and calendar evidence of the run.
-
-```csharp
-public sealed record ScheduleGenerationResult(ScheduleSpec Spec, IReadOnlyList<SchedulePeriod> Periods, ScheduleFailure? Failure, IReadOnlyList<ScheduleDiagnostic> Diagnostics, IReadOnlyList<ScheduleCalendarUsage> CalendarsUsed)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[MemberNotNullWhen(false, nameof(Failure))] public bool Succeeded =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:120](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L120) | Whether generation succeeded; when false, Failure is set. |
-| <code>public string KernelVersion =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs#L123) | The kernel version that produced the schedule. |
-
-## ScheduleGenerator
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs#L7).
-
-```csharp
-public static partial class ScheduleGenerator
-```
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:29](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L29).
-
-The contractual schedule kernel: one pure, deterministic generator of period dates for every Meridian schedule consumer. It owns date and period arithmetic, business-day adjustment and the reference periods day counts are measured against; economic interpretation stays with its owners.
-
-```csharp
-public static partial class ScheduleGenerator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string KernelVersion = &quot;contractual-schedule-kernel-v1&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L32) | The version of the kernel&#x27;s generation semantics, stamped on every result. |
-| <code>public static ScheduleGenerationResult Generate(ScheduleSpec spec);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L36) | Generates the schedule spec describes, or the reason it cannot be generated. |
-| <code>public static IEnumerable&lt;DateOnly&gt; RollDates(DateOnly anchor, ScheduleTenor tenor, ScheduleAnchorMode mode, ScheduleRoll roll = default);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs#L68) | The grid dates from anchor, lazily: k = 0, 1, 2, … until the next date would leave the DateOnly range. The anchored grid rolls each date with roll; the compounded grid steps from the previous date. |
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs#L7).
-
-```csharp
-public static partial class ScheduleGenerator
-```
-
-## SchedulePeriod
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L46).
-
-One period of a contractual schedule: its unadjusted dates (its identity and its ICMA reference frame), its adjusted accrual dates, its payment date, and its notional reference periods.
-
-```csharp
-public sealed record SchedulePeriod(int Sequence, DateOnly UnadjustedStart, DateOnly UnadjustedEnd, DateOnly AccrualStart, DateOnly AccrualEnd, DateOnly PaymentDate, SchedulePeriodKind Kind, IReadOnlyList<DayCountReferencePeriod> ReferencePeriods, bool IsFinal)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsStub =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L58) | Whether the period is an initial or final stub, short or long. |
-| <code>public bool Equals(SchedulePeriod? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L71) | Value equality over every member, comparing ReferencePeriods element by element. The generated record equality would compare the list by reference, so the same period from two generations of the same spec would be unequal; schedules are regenerated rather than stored, so a period must equal its regenerated twin. |
-| <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:85](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L85) | A hash consistent with Equals(SchedulePeriod?). |
-
-## SchedulePeriodId
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L24).
-
-Deterministic identity for a schedule period, keyed on its unadjusted dates within a consumer-chosen scope and stream, so a calendar, business-day convention or payment-lag change never re-identifies a period.
-
-```csharp
-public static class SchedulePeriodId
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static Guid Derive(Guid scopeId, string streamKey, SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L34) | The id of period within scopeId and streamKey. |
-| <code>public static Guid Derive(Guid scopeId, string streamKey, DateOnly unadjustedStart, DateOnly unadjustedEnd);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:42](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L42) | The id of the period &#91;unadjustedStart, unadjustedEnd&#93; within scopeId and streamKey. |
-| <code>public static string PeriodKey(SchedulePeriod period);</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs:63](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs#L63) | The period&#x27;s unadjusted dates as yyyy-MM-dd/yyyy-MM-dd. |
-
-## SchedulePeriodKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L7).
-
-The shape of a schedule period relative to the regular grid.
-
-```csharp
-public enum SchedulePeriodKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Regular</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L10) | A full regular period on the grid. |
-| <code>Term</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L13) | The single period of a term tenor. |
-| <code>ShortInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L16) | An initial period shorter than a regular period. |
-| <code>LongInitialStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L19) | An initial period longer than a regular period. |
-| <code>ShortFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L22) | A final period shorter than a regular period. |
-| <code>LongFinalStub</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs#L25) | A final period longer than a regular period. |

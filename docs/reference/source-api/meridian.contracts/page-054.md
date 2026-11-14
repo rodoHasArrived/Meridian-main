@@ -6,6 +6,298 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyEngineDataAvailability
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataAvailability</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:171](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L171).
+
+```csharp
+public sealed record StrategyEngineDataAvailability(string DependencyId, bool IsAvailable, DateTimeOffset? AvailableFrom = null, DateTimeOffset? AvailableTo = null, DateTimeOffset? LastUpdatedAt = null, string? SourceReference = null, IReadOnlyList<string>? MissingFields = null, string? DegradationReason = null);
+```
+
+## StrategyEngineDataDependency
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependency</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:129](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L129).
+
+```csharp
+public sealed record StrategyEngineDataDependency(string DependencyId, StrategyEngineDataDependencyKind Kind, string Description, string? AssetClass = null, string? Granularity = null, DateTimeOffset? RequiredFrom = null, DateTimeOffset? RequiredTo = null, TimeSpan? FreshnessWindow = null, StrategyEngineMissingDataPolicy MissingDataPolicy = StrategyEngineMissingDataPolicy.Block, IReadOnlyList<string>? RequiredFields = null);
+```
+
+## StrategyEngineDataDependencyKind
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDataDependencyKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:60](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L60).
+
+Declared data input class for a strategy.
+
+```csharp
+public enum StrategyEngineDataDependencyKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>PriceBars</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:62](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L62) |  |
+| <code>LiveQuotes</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:63](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L63) |  |
+| <code>Fundamentals</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:64](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L64) |  |
+| <code>ReferenceData</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:65](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L65) |  |
+| <code>SecurityMaster</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:66](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L66) |  |
+| <code>OptionsChain</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:67](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L67) |  |
+| <code>Positions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:68](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L68) |  |
+| <code>OpenLots</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:69](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L69) |  |
+| <code>Portfolio</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:70](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L70) |  |
+| <code>Ledger</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:71](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L71) |  |
+| <code>CorporateActions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:72](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L72) |  |
+| <code>ProviderBackfill</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:73](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L73) |  |
+| <code>Custom</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:74](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L74) |  |
+
+## StrategyEngineDefinition
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:141](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L141).
+
+```csharp
+public sealed record StrategyEngineDefinition(string StrategyId, string Version, string Name, StrategyEngineStrategyType Type, string Description, IReadOnlyList<string> AssetUniverse, IReadOnlyList<StrategyEngineDataDependency> RequiredDataInputs, IReadOnlyList<StrategyEngineParameterDefinition> ParameterSchema, IReadOnlyList<StrategyEngineRunMode> SupportedModes, string Owner, string Source, IReadOnlyDictionary<string, string>? UiMetadata = null, IReadOnlyDictionary<string, string>? Extensions = null);
+```
+
+## StrategyEngineMissingDataPolicy
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineMissingDataPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:81](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L81).
+
+How a strategy may proceed when a declared data dependency is incomplete.
+
+```csharp
+public enum StrategyEngineMissingDataPolicy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Block</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:83](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L83) |  |
+| <code>AllowDegradedWithEvidence</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:84](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L84) |  |
+| <code>Optional</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:85](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L85) |  |
+
+## StrategyEngineParameterDefinition
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineParameterDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:115](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L115).
+
+```csharp
+public sealed record StrategyEngineParameterDefinition(string Name, StrategyEngineParameterType Type, string? DefaultValue, string? Description, string? DisplayLabel = null, string? CurrentValue = null, string? MinValue = null, string? MaxValue = null, IReadOnlyList<string>? AllowedValues = null, string? ValidationRule = null, string? SweepHint = null, bool IsRequired = true);
+```
+
+## StrategyEngineParameterType
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineParameterType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:44](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L44).
+
+Strategy parameter value type used for validation and browser rendering.
+
+```csharp
+public enum StrategyEngineParameterType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>String</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:46](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L46) |  |
+| <code>Decimal</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:47](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L47) |  |
+| <code>Integer</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:48](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L48) |  |
+| <code>Boolean</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:49](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L49) |  |
+| <code>Date</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:50](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L50) |  |
+| <code>Enum</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:51](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L51) |  |
+| <code>Symbol</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:52](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L52) |  |
+| <code>SymbolList</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:53](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L53) |  |
+
+## StrategyEnginePromotionRequest
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEnginePromotionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:207](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L207).
+
+```csharp
+public sealed record StrategyEnginePromotionRequest(string SourceRunId, StrategyEnginePromotionTarget Target, string? OperatorAcknowledgement, IReadOnlyList<string> ReadinessChecks, IReadOnlyList<string> RiskChecks, string EvidencePacket, string? Rationale = null);
+```
+
+## StrategyEnginePromotionTarget
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEnginePromotionTarget</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:92](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L92).
+
+Promotion target used by Strategy Engine handoffs.
+
+```csharp
+public enum StrategyEnginePromotionTarget : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Review</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:94](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L94) |  |
+| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:95](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L95) |  |
+| <code>Paper</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:96](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L96) |  |
+| <code>ReportPack</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:97](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L97) |  |
+| <code>EvidenceWorkbench</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:98](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L98) |  |
+| <code>TradingReadiness</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:99](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L99) |  |
+| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:100](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L100) |  |
+
+## StrategyEngineRunEvidence
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:193](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L193).
+
+```csharp
+public sealed record StrategyEngineRunEvidence(string EvidenceId, string StrategyId, string StrategyVersion, string InputHash, string? OutputHash, string DataSource, DateTimeOffset CapturedAt, IReadOnlyList<string> DataSourceReferences, IReadOnlyList<string> Warnings, string ReviewRoute, string EvidenceRoute, string? ReportPackRoute = null);
+```
+
+## StrategyEngineRunMode
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:30](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L30).
+
+Execution mode requested for a strategy run.
+
+```csharp
+public enum StrategyEngineRunMode : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Backtest</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:32](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L32) |  |
+| <code>Replay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:33](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L33) |  |
+| <code>Simulation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:34](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L34) |  |
+| <code>PaperValidation</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:35](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L35) |  |
+| <code>ReviewOnly</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:36](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L36) |  |
+| <code>LiveDisabled</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:37](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L37) |  |
+
+## StrategyEngineRunRequest
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:156](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L156).
+
+```csharp
+public sealed record StrategyEngineRunRequest(string StrategyId, string StrategyVersion, IReadOnlyDictionary<string, string> Parameters, IReadOnlyList<string> Universe, DateTimeOffset From, DateTimeOffset To, string DataSource, StrategyEngineRunMode Mode, string? CostModel = null, string? SlippageModel = null, IReadOnlyDictionary<string, string>? RiskConstraints = null, string? RunReason = null, string? OperatorId = null);
+```
+
+## StrategyEngineSignal
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineSignal</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:181](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L181).
+
+```csharp
+public sealed record StrategyEngineSignal(string Symbol, string SignalType, string Direction, decimal? Strength, decimal? Confidence, DateTimeOffset Timestamp, string Horizon, string Rationale, string SourceRunId, string? RequiredFollowUpAction = null);
+```
+
+## StrategyEngineStrategyType
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineStrategyType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:9](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L9).
+
+Stable strategy category used by the Strategy Engine registry and browser workstation.
+
+```csharp
+public enum StrategyEngineStrategyType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>CoveredCall</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:11](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L11) |  |
+| <code>Momentum</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:12](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L12) |  |
+| <code>MeanReversion</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:13](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L13) |  |
+| <code>FactorScreen</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:14](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L14) |  |
+| <code>FixedIncomeCarry</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:15](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L15) |  |
+| <code>DirectLendingScreen</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:16](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L16) |  |
+| <code>RebalancingRule</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:17](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L17) |  |
+| <code>RiskOverlay</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:18](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L18) |  |
+| <code>PortfolioConstruction</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:19](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L19) |  |
+| <code>CashDeployment</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:20](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L20) |  |
+| <code>QuantScript</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:21](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L21) |  |
+| <code>VisualDesigner</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:22](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L22) |  |
+| <code>Custom</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:23](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L23) |  |
+
+## StrategyEngineValidationFinding
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineValidationFinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:216](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L216).
+
+```csharp
+public sealed record StrategyEngineValidationFinding(string Code, StrategyEngineValidationSeverity Severity, string Target, string Message, string? HandoffRoute = null);
+```
+
+## StrategyEngineValidationResult
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:223](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L223).
+
+```csharp
+public sealed record StrategyEngineValidationResult(bool IsValid, bool IsDegraded, string InputHash, IReadOnlyList<StrategyEngineValidationFinding> Findings, StrategyEngineRunEvidence Evidence);
+```
+
+## StrategyEngineValidationSeverity
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineValidationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:107](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L107).
+
+Operator-facing validation severity for strategy definitions, requests, data, risk, and promotion checks.
+
+```csharp
+public enum StrategyEngineValidationSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:109](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L109) |  |
+| <code>Warning</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:110](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L110) |  |
+| <code>Error</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:111](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L111) |  |
+| <code>Blocker</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:112](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L112) |  |
+
+## AuthoritativeScopeAssignment
+
+Qualified name: <code>Meridian.Contracts.Tenancy.AuthoritativeScopeAssignment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:16](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L16).
+
+One authoritative scope assignment: the exact tenant, company, and narrow accounting scope that a registered authority asserts is affected by a security-level fact. An assignment is a statement of record, not a caller-supplied hint. Every field beyond TenantId/CompanyId is populated only when the asserting authority can name it from durable assignment data; a field it cannot attribute stays null rather than being defaulted, so a consumer can tell &quot;not applicable&quot; from &quot;not resolved&quot;.
+
+```csharp
+public sealed record AuthoritativeScopeAssignment(string TenantId, string CompanyId, string AuthorityId, DateTimeOffset ResolvedAsOfUtc, string? StructureNodeId = null, string? FundProfileId = null, string? FinancialAccountId = null, string? PortfolioId = null, string? CustodyAccountId = null, string? LedgerBookId = null, string? PeriodId = null, string? AccountingBasis = null, string? FunctionalCurrency = null, string? Jurisdiction = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ScopeKey =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:37](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L37) | Identity of the scope this assignment names, ignoring which authority asserted it and when. Two authorities that resolve the same accounting scope must produce the same key so the fan-out set is a set of scopes rather than a set of assertions. |
+| <code>public bool IsOwnedBy(string? tenantId, string? companyId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:53](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L53) | Whether this assignment is owned by the supplied tenant/company pair. |
+
 ## FundProfileOwnership
 
 Qualified name: <code>Meridian.Contracts.Tenancy.FundProfileOwnership</code>. Kind: `record`.
@@ -523,251 +815,4 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:31](../../../.
 
 ```csharp
 public sealed record ApprovalDecision(string Queue, bool DualControlRequired, IReadOnlyList<string> Reasons);
-```
-
-## ApprovalPolicy
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L23).
-
-```csharp
-public sealed record ApprovalPolicy(decimal? MinimumAmount, decimal? HighValueThreshold, IReadOnlySet<string>? AllowedCurrencies, IReadOnlySet<Guid>? RoutedAccountIds, IReadOnlySet<string>? RoutedRiskBuckets, bool RequireDualControl);
-```
-
-## ApprovalStep
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApprovalStep</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L21).
-
-```csharp
-public sealed record ApprovalStep(int Sequence, string RoleOrQueue, bool DualControlRequired, decimal? AmountThreshold, string? Currency, Guid? AccountId, string? RiskBucket);
-```
-
-## ApproveSecurityMasterOverrides
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterOverrides</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:22](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L22).
-
-```csharp
-public sealed record ApproveSecurityMasterOverrides(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## ApproveSecurityMasterRevisionRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveSecurityMasterRevisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L98).
-
-Approves a submitted revision through the operations-continuity approval gate.
-
-```csharp
-public sealed record ApproveSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Reviewer, string Rationale, string ReportPackId, string? CorrelationId = null);
-```
-
-## ApproveWorkflow
-
-Qualified name: <code>Meridian.Contracts.Workstation.ApproveWorkflow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:29](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L29).
-
-```csharp
-public sealed record ApproveWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## AssignOnboardingDifferenceRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AssignOnboardingDifferenceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L32).
-
-```csharp
-public sealed record AssignOnboardingDifferenceRequestDto(int ExpectedVersion, string OwnerId, string Notes, IReadOnlyList<string> EvidenceIds);
-```
-
-## AuditTrailExplorerQueryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailExplorerQueryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L8).
-
-Query contract for cross-object audit trail exploration.
-
-```csharp
-public sealed record AuditTrailExplorerQueryDto(string? SearchText = null, string? RunId = null, string? Category = null, string? Action = null, string? Outcome = null, string? Actor = null, string? Symbol = null, string? CorrelationId = null, string? ObjectKind = null, string? ObjectId = null, string? RelatedObjectId = null, DateTimeOffset? FromUtc = null, DateTimeOffset? ToUtc = null, int Limit = 100, string? OrderId = null);
-```
-
-## AuditTrailExplorerResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailExplorerResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L57).
-
-Result contract for cross-object audit trail search.
-
-```csharp
-public sealed record AuditTrailExplorerResultDto(DateTimeOffset AsOf, int TotalMatched, int Returned, IReadOnlyList<AuditTrailTimelineEntryDto> Entries, AuditTrailSourceAvailabilityDto? SourceAvailability = null, IReadOnlyList<AuditTrailSourceStatusDto>? Sources = null, string? CoverageNote = null, string? OrderIdentityStatus = null);
-```
-
-## AuditTrailObjectKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailObjectKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:79](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L79).
-
-Stable object-kind vocabulary for audit explorer rows.
-
-```csharp
-public enum AuditTrailObjectKindDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Audit</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L81) |  |
-| <code>Order</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L82) |  |
-| <code>ExecutionControl</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:83](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L83) |  |
-| <code>OperatorAction</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L84) |  |
-| <code>Promotion</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L85) |  |
-| <code>Run</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L86) |  |
-| <code>Reconciliation</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L87) |  |
-| <code>Report</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L88) |  |
-| <code>Evidence</code> | [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L89) |  |
-
-## AuditTrailSourceAvailabilityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L68).
-
-Distinguishes an empty retained trail from a source that is not configured.
-
-```csharp
-public sealed record AuditTrailSourceAvailabilityDto(bool ExecutionAudit, bool OperationsContinuity);
-```
-
-## AuditTrailSourceStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73).
-
-Source availability is independent of the number of matching records.
-
-```csharp
-public sealed record AuditTrailSourceStatusDto(string Source, string State);
-```
-
-## AuditTrailTimelineEntryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailTimelineEntryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L28).
-
-Normalized timeline row used by shared audit explorer surfaces.
-
-```csharp
-public sealed record AuditTrailTimelineEntryDto(string AuditId, DateTimeOffset OccurredAt, string ObjectKind, string ObjectId, string Category, string Action, string Outcome, string? Actor = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Reason = null, string? Scope = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null, IReadOnlyList<string>? RelatedObjectIds = null, string? EvidenceRoute = null, string? ActionLedgerSource = null, int? ActionLedgerSequence = null, string? PreviousActionHash = null, string? CurrentActionHash = null, string? ActionLedgerStatus = null, string? OrderId = null, string? BrokerName = null);
-```
-
-## AutomatedJournalCapitalAccountReconciliationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalCapitalAccountReconciliationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L25).
-
-Reviewed capital-account tie-out for the NAV and high-water-mark inputs used by one monthly fee-accrual cycle. The scheduler verifies the retained values, variance, confidence, reviewer, source version, and evidence before it can create a draft.
-
-```csharp
-public sealed record AutomatedJournalCapitalAccountReconciliationDto(string ReconciliationId, string PeriodId, string Currency, decimal ReconciledBeginningNav, decimal ReconciledEndingNavBeforeFees, decimal ReconciledHighWaterMark, decimal CapitalAccountOpeningBalance, decimal CapitalAccountEndingBalanceBeforeFees, decimal CapitalAccountHighWaterMark, decimal MaximumVarianceTolerance, decimal ConfidenceScore, bool IsReconciled, string SourceVersion, string ReviewedBy, DateTimeOffset ReviewedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L43) |  |
-
-## AutomatedJournalScheduleStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L8).
-
-Operator-visible state of scheduled fee-accrual and dividend-capture work.
-
-```csharp
-public enum AutomatedJournalScheduleStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L10) |  |
-| <code>Scheduled = 1</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L11) |  |
-| <code>Running = 2</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L12) |  |
-| <code>DraftReady = 3</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L13) |  |
-| <code>NeedsInvestigation = 4</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L14) |  |
-| <code>NoDraftRequired = 5</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L15) |  |
-| <code>Blocked = 6</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L16) |  |
-| <code>Failed = 7</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L17) |  |
-
-## AutomatedJournalScheduleStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L51).
-
-Close-cockpit projection for the explicitly scoped monthly automated-journal work. Counts are schedule-run counts, not posted-journal counts; every produced item remains in the existing manual workbench for human approval and posting.
-
-```csharp
-public sealed record AutomatedJournalScheduleStatusDto(string? FundProfileId, Guid? LedgerBookId, string? PeriodId, int ConfiguredCount, int EnabledCount, int FeeScheduleCount, int DividendScheduleCount, int DraftReadyCount, int NeedsInvestigationCount, int BlockedCount, AutomatedJournalScheduleStateDto State, string Summary, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<Guid>? JournalEntryIds = null, decimal? MinimumEvidenceConfidence = null, AutomatedJournalEvidenceQualityDto? LowestEvidenceQuality = null, int HumanReviewQueueCount = 0, string? EntityId = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L74) |  |
-| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L76) |  |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L78) |  |
-
-## BankAccountSnapshot
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankAccountSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L102).
-
-Banking-focused projection for statement and balance review tabs.
-
-```csharp
-public sealed record BankAccountSnapshot(Guid AccountId, string DisplayName, string AccountCode, string BankName, string Currency, decimal? CurrentBalance, decimal PendingSettlement, DateOnly? LastStatementDate, int StatementLineCount, string? LatestTransactionType, decimal? LatestTransactionAmount);
-```
-
-## BankStatementImportResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankStatementImportResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L74).
-
-Result returned after a retained bank-statement source file is applied as account evidence.
-
-```csharp
-public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId, Guid AccountId, string AccountCode, string BankName, DateOnly StatementDate, string FileName, long FileSizeBytes, string ImportedBy, DateTimeOffset ImportedAtUtc, string RetainedPath, int LineCount, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## BiasDisclosureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:275](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L275).
-
-Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
-
-```csharp
-public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
 ```

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ActivateLedgerBookControlsRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ActivateLedgerBookControlsRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs:36](../../../../src/Meridian.Contracts/Ledger/LedgerBookControlDtos.cs#L36).
+
+```csharp
+public sealed record ActivateLedgerBookControlsRequestDto(long ExpectedVersion, string PreflightDigest, string Reason, string EvidenceReference);
+```
+
 ## AllocationRuleBasisDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AllocationRuleBasisDto</code>. Kind: `enum`.
@@ -702,14 +712,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:29](../
 
 ```csharp
 public sealed record ClosePreparationHistoryDto(string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Description);
-```
-
-## ClosePreparationIssueDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.ClosePreparationIssueDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs:51](../../../../src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs#L51).
-
-```csharp
-public sealed record ClosePreparationIssueDto(string Code, string Message, bool IsBlocking, string? TaskId = null);
 ```
