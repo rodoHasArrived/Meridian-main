@@ -362,11 +362,16 @@ function placeAccount(
     if (accountEntity) {
       return accountEntity === entityId ? "inside" : "outside";
     }
+    // Booked to an entity the caller cannot see: its fund says nothing about which entity, so it
+    // is not placed under the chosen one through the fund.
+    if (account.entityWithheld === true) {
+      return "withheld";
+    }
     if (accountFund) {
       return fundsForEntity?.has(accountFund) ? "inside" : "outside";
     }
     // Only reachable without a chosen fund: a chosen fund already returned for a fundless account.
-    return account.entityWithheld === true || account.fundWithheld === true ? "withheld" : "unrecorded";
+    return account.fundWithheld === true ? "withheld" : "unrecorded";
   }
   return "inside";
 }

@@ -129,6 +129,24 @@ describe("constrainScopeOptions", () => {
     expect(result.accountsWithoutKnownRelationship).toBe(2);
   });
 
+  it("does not place an account under an entity through its fund when its own entity is withheld", () => {
+    const structure = collectScopeStructureOptions({
+      entities: [{ entityId: "E-A", name: "Entity A" }],
+      funds: [{ fundId: "F-1", name: "Fund One", entityIds: ["E-A"] }],
+      accounts: [
+        { accountId: "A-1", displayName: "Held, no entity", fundId: "F-1", entityId: null },
+        { accountId: "A-2", displayName: "Booked to a hidden entity", fundId: "F-1", entityId: null, entityWithheld: true }
+      ]
+    });
+
+    const byEntity = constrainScopeOptions(structure, structure.accounts, { entityId: "E-A" });
+    expect(byEntity.accounts.map((account) => account.id)).toEqual(["A-1"]);
+    expect(byEntity.accountsWithWithheldRelationship).toBe(1);
+    // A chosen fund alone still keeps it: the fund is visible and is its own.
+    expect(constrainScopeOptions(structure, structure.accounts, { fundId: "F-1" }).accounts.map((account) => account.id))
+      .toEqual(["A-2", "A-1"]);
+  });
+
   it("counts accounts whose fund or entity is withheld apart from ones with none, and never calls them conflicts", () => {
     const withheld = collectScopeStructureOptions({
       entities: [{ entityId: "E-A", name: "Entity A" }],

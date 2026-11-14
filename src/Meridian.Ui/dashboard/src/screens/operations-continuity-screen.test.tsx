@@ -2180,6 +2180,18 @@ describe("OperationsContinuityScreen fund narrowing", () => {
     expect(screen.queryByText("2026-05 close workflow")).not.toBeInTheDocument();
   });
 
+  it("makes no unscoped close-calendar or cockpit read when the chosen fund keeps no workflow", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, unfiled]);
+    renderWithFundScope({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } });
+
+    const note = await screen.findByRole("status", { name: "Operations continuity fund scope" });
+    expect(note).toHaveTextContent("Narrowed to fund Fund Two: showing 0 of 2 close workflows.");
+    await waitFor(() => expect(screen.getByText("0 workflows")).toBeInTheDocument());
+    expect(getOperationsCloseCalendar).not.toHaveBeenCalled();
+    expect(getPrivateCapitalCloseCockpit).not.toHaveBeenCalled();
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+  });
+
   it("lists every workflow, with an honest note, when the organization graph is unavailable", async () => {
     vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
     renderWithFundScope({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });

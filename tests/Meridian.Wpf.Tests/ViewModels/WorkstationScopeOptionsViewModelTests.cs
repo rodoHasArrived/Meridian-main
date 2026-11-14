@@ -88,6 +88,28 @@ public sealed class WorkstationScopeOptionsViewModelTests
     }
 
     [Fact]
+    public void Constrain_ByEntity_DoesNotPlaceAnAccountThroughItsFundWhenItsEntityIsWithheld()
+    {
+        var bookedToHiddenEntity = Guid.Parse("00000000-0000-0000-0000-0000000000c2");
+        var source = Options();
+        var options = source with
+        {
+            Accounts =
+            [
+                .. source.Accounts,
+                new WorkstationScopeAccountOptionDto(bookedToHiddenEntity, "Booked to a hidden entity", FundId: FundOne, EntityId: null, EntityWithheld: true)
+            ]
+        };
+
+        var byEntity = WorkstationScopeOptionsNarrowing.Constrain(options, optionsAvailable: true, EntityA, fundId: null);
+        byEntity.Accounts.Select(account => account.AccountId).Should().NotContain(bookedToHiddenEntity);
+        byEntity.AccountsWithWithheldRelationship.Should().Be(1);
+
+        var byFund = WorkstationScopeOptionsNarrowing.Constrain(options, optionsAvailable: true, entityId: null, FundOne);
+        byFund.Accounts.Select(account => account.AccountId).Should().Contain(bookedToHiddenEntity, "the fund is visible and is its own");
+    }
+
+    [Fact]
     public void Constrain_WhenOptionsUnavailable_NarrowsNothing()
     {
         var narrowed = WorkstationScopeOptionsNarrowing.Constrain(Options(), optionsAvailable: false, EntityA, FundOne);

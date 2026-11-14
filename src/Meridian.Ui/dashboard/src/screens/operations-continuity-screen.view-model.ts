@@ -758,6 +758,9 @@ export function useOperationsContinuityScreenViewModel(
     [fundScope, loadedWorkflows]
   );
   const workflows = workflowsFundScope.rows;
+  // An applied fund/entity narrowing that keeps no workflow leaves no scope to read the close
+  // calendar or cockpit for; an unscoped read would show other funds' items, so none is made.
+  const narrowedToNoWorkflow = workflowsFundScope.status === "applied" && workflows.length === 0;
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -943,6 +946,16 @@ export function useOperationsContinuityScreenViewModel(
       return;
     }
 
+    if (narrowedToNoWorkflow) {
+      closeCalendarRevisionRef.current += 1;
+      closeCalendarAbortRef.current?.abort();
+      closeCalendarAbortRef.current = null;
+      setCloseCalendar(null);
+      setCloseCalendarError(null);
+      setCloseCalendarLoading(false);
+      return;
+    }
+
     const revision = closeCalendarRevisionRef.current + 1;
     closeCalendarRevisionRef.current = revision;
     closeCalendarAbortRef.current?.abort();
@@ -977,10 +990,21 @@ export function useOperationsContinuityScreenViewModel(
           closeCalendarAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   useEffect(() => {
     if (loading || selectionError) {
+      return;
+    }
+
+    if (narrowedToNoWorkflow) {
+      closeCockpitRevisionRef.current += 1;
+      closeCockpitAbortRef.current?.abort();
+      closeCockpitAbortRef.current = null;
+      setCloseCockpit(null);
+      setCommandCenter(null);
+      setCloseCockpitError(null);
+      setCloseCockpitLoading(false);
       return;
     }
 
@@ -1023,7 +1047,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, closeScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, closeScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);

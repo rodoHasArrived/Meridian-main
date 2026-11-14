@@ -113,6 +113,14 @@ public static class WorkstationScopeOptionsNarrowing
                     continue;
                 }
 
+                // Booked to an entity the caller cannot see: its fund says nothing about which
+                // entity, so it is not placed under the chosen one through the fund.
+                if (account.EntityWithheld)
+                {
+                    withheldRelationship++;
+                    continue;
+                }
+
                 if (accountFund is { } heldBy)
                 {
                     if (fundsForEntity!.Contains(heldBy))
