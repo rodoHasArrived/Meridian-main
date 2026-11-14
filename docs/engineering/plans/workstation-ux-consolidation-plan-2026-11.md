@@ -173,6 +173,19 @@ items, which is a follow-up.
 - Gaps: no screen narrows by fund yet. Operators without fund-structure permissions get no entity or
   fund lists. A scope-option read open to every operator would need a new authorized seam.
 
+**P4 scope-option read for every operator (landed 2026-11-14, source; host bundle not yet rebuilt):**
+- `GET /api/workstation/scope-options` (`WorkstationScopeOptionsDto`, additive) is open to any
+  authenticated operator with tenant and company scope. It lists only the entities, funds and
+  accounts the caller could already read elsewhere: `AdminMaintenance` sees all; otherwise a node
+  needs a globally held permission plus a scoped grant at that node or an ancestor, with
+  `ManageFundStructure` covering entities, funds and accounts, `ManageDirectLending` and
+  `ViewTrades` accounts, and `ViewLedgerReports`/`ManageLedgerReports` entities.
+  Relationships pointing outside the visible set are null. Tenant isolation is the fund-structure
+  service's.
+- The picker prefers it and falls back to `/api/fund-structure/graph` on a 404 (older hosts). A
+  trading-only operator now gets its accounts; the picker says "No entities or funds are visible to
+  you" instead of naming fund-structure access, and "could not be loaded" when the read fails.
+
 **P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
 money formatter.
 - It accepts a number or a decimal string. Both are read by the exact-decimal core in
@@ -224,8 +237,11 @@ money formatter.
   `components/meridian/workflow-context-disclosure.tsx` with its own stylesheet.
 
 **Remaining in Phase 1:**
-- P4: screens that narrow by fund, a scope-option read for operators without fund-structure
-  access, and inline account pickers on other single-account screens as they are identified.
+- P4: screens that narrow by fund, and inline account pickers on other single-account screens as
+  they are identified. The scope-option read landed; still open there: rebuilding the host bundle,
+  regenerating the schema contract manifest and API reference for `WorkstationScopeOptionsDto`, a
+  WPF consumer of the same seam, and (if wanted) letting a trading, direct-lending or accounting
+  grant at fund level disclose that fund's name, which no existing read does today.
 - The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
   `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
   display zone needs the headers renamed.

@@ -347,12 +347,28 @@ describe("ScopePicker entity, fund and period", () => {
   it("takes typed entity and fund ids, and narrows nothing, without the organization read model", () => {
     const { onApply } = renderPicker({ fundAccounts: HOUSEHOLD });
 
-    expect(screen.getByText(/Entity and fund lists need fund-structure access/)).toBeInTheDocument();
+    expect(screen.getByText(/Entity and fund lists could not be loaded, so enter an id/)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Entity"), { target: { value: "entity-x" } });
     fireEvent.change(screen.getByLabelText("Fund"), { target: { value: "fund-x" } });
     expect(accountOptionValues()).toEqual(["acct-household"]);
     fireEvent.click(screen.getByRole("button", { name: "Apply scope" }));
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ entityId: "entity-x", fundId: "fund-x" }));
+  });
+
+  it("offers a permission-limited operator its accounts and says no entities or funds are visible", () => {
+    // What /api/workstation/scope-options returns to a trading-only operator: its accounts, with
+    // the fund and entity it may not see withheld.
+    const limited: ScopeStructureOptions = {
+      status: "ready",
+      entities: [],
+      funds: [],
+      accounts: [{ id: "acct-a-1", label: "A1 brokerage", fundId: null, entityId: null }]
+    };
+    renderPicker({ structure: limited, fundAccounts: [] });
+
+    expect(screen.getByText("No entities or funds are visible to you, so enter an id.")).toBeInTheDocument();
+    expect(screen.queryByText(/could not be loaded/)).not.toBeInTheDocument();
+    expect(accountOptionValues()).toEqual(["acct-a-1"]);
   });
 
   it("keeps an entity id that is not in the operator's list visible instead of dropping it", () => {

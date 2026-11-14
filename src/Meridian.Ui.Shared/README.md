@@ -1134,6 +1134,29 @@ through the snapshot store's atomic replace; values are trimmed, capped at 128 p
 and an empty scope clears the default (an entity or fund alone is a scope). Both routes require an
 authenticated session and only ever read or write the caller's own record.
 
+## Operating-scope options
+
+`GET /api/workstation/scope-options` (`Endpoints/WorkstationEndpoints.ScopeOptions.cs`) lists the
+entities, funds and fund accounts the caller may scope to, for the browser scope picker and the
+scope bar's names. The route is open to any authenticated workstation session with tenant and
+company scope (`RequireAuthenticatedSessionOrScopedLocalOperatorRead`, tenant + company filter),
+but the payload carries only nodes the caller could already read on an existing route:
+
+- It reads the active organization structure from `IFundStructureService`, which serves only the
+  caller's tenant snapshot and refuses an unresolvable tenant (403 through the API exception handler).
+- `AdminMaintenance` sees every node, as on `/api/fund-structure/graph`.
+- Otherwise a node is visible only when the caller holds a permission globally **and** a scoped
+  assignment grants that permission at the node or an ancestor (`EndpointAuthorization.AuthorizeScopedManyAsync`,
+  one batched decision per permission and node kind). Permissions map to the kinds existing reads
+  already authorize: `ManageFundStructure` → entities, funds and accounts (graph response guard);
+  `ManageDirectLending` → accounts (`FundAccountEndpoints`, which never return the fund record);
+  `ViewTrades` → accounts
+  (brokerage household and portfolio aggregation); `ViewLedgerReports` / `ManageLedgerReports` →
+  entities (entity timeline).
+- A fund's entity ids and an account's fund and entity ids are dropped when they point outside the
+  visible set. A caller holding none of those permissions gets empty lists without the structure
+  being read. A host without `IFundStructureService` answers 503.
+
 ## Operator surface visits
 
 `GET`/`POST /api/workstation/operator/visits/{surface}` read and record the signed-in operator's

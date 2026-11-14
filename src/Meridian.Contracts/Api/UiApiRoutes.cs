@@ -829,6 +829,12 @@ public static class UiApiRoutes
     /// <summary>The signed-in operator's default operating scope (C1).</summary>
     public const string WorkstationOperatorScopePreference = "/api/workstation/operator/scope-preference";
 
+    /// <summary>
+    /// The entities, funds and fund accounts the calling operator may scope to (P4): read-only, open
+    /// to any authenticated workstation operator, filtered to the caller's own scoped grants.
+    /// </summary>
+    public const string WorkstationScopeOptions = "/api/workstation/scope-options";
+
     /// <summary>The signed-in operator's last visit to a workstation surface, for "since last visit" markers (C3).</summary>
     public const string WorkstationOperatorSurfaceVisit = "/api/workstation/operator/visits/{surface}";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";
