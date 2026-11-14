@@ -183,19 +183,32 @@ money formatter.
 - Tests cover UTC, a New York spring-forward and fall-back transition, and the relative and
   absolute forms.
 
+**P3 remaining time formatters migrated (landed 2026-11-14):**
+- `formatTimestamp` gained `precision: "minute" | "second" | "millisecond"` (default `"minute"`,
+  byte-identical to before). `formatUtcTimestamp` and `<TimeText>` take the same option. All
+  outputs below are at the UTC default; in a picked zone they render in that zone.
+- Live-quote times: "15:00:00.123 UTC" → "May 8, 2026, 15:00:00.123 UTC" (millisecond).
+- Price-alert times: "May 12, 14:02:37 UTC" → "May 12, 2026, 14:02:37 UTC" (second).
+- Journal tax-result times: unchanged text at UTC ("May 12, 2026, 14:02:37 UTC"), now zone-aware.
+- Brokerage recovery: "2026-10-05 15:30:02 UTC" → "Oct 5, 2026, 15:30:02 UTC" (second).
+- Reporting schedule, last-run and publication times: "May 17, 8:15 PM UTC" →
+  "May 17, 2026, 20:15 UTC". The Reporting tests were updated to pin the new form.
+- Close checklist: the column is a retained record time, not a UTC-defined cut-off, so it moved to
+  the display zone. The header is now "Recorded at" (each cell carries its zone label) and the
+  CSV export keeps the ISO UTC instant. `formatDateTimeUtc` in `lib/time.ts` had no other caller
+  and was removed.
+- Triage queue and Today queue ages: "<1m"/"5m"/"3h"/"2d" (floored) → "20s ago"/"5m ago"/"3h ago"/
+  "2d ago" (`formatRelativeTime`, rounded), rendered by `TriageAge` as `<TimeText>` with the
+  absolute time on hover. A missing or future instant still reads "Age unavailable".
+- `WorkflowContinuityDock` was deleted. `WorkflowContextDisclosure` moved to
+  `components/meridian/workflow-context-disclosure.tsx` with its own stylesheet.
+
 **Remaining in Phase 1:**
 - P4: entity and fund scope dimensions (needs a shared scope seam), a period picker, and inline
   account pickers on other single-account screens as they are identified.
-- Time formatters kept on purpose, because their precision differs or a test pins their
-  format:
-  - Live-quote times with milliseconds.
-  - Price-alert and journal tax-result times with seconds.
-  - The brokerage-recovery "2026-10-05 15:30:02 UTC" label.
-  - Reporting schedule times, which stay 12-hour ("May 17, 8:15 PM UTC") because the Reporting
-    tests pin that format. Moving them to `formatTimestamp` is a follow-up that needs those
-    tests updated.
-  - The close-checklist "Recorded at UTC" column.
-  - Today queue and triage-queue age labels, which can now move to `formatRelativeTime`.
+- The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
+  `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
+  display zone needs the headers renamed.
 
 Acceptance criteria:
 - Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the

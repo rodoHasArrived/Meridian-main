@@ -575,7 +575,7 @@ account" empty state in a non-live environment, on the overview and in the one-l
 and the other Trading routes. Live, unknown and failed brokerage states keep blocking.
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
-`workspace-views-menu.test.tsx`, `workflow-continuity-dock.test.tsx`, `scope-picker.test.tsx`,
+`workspace-views-menu.test.tsx`, `workflow-context-disclosure.test.tsx`, `scope-picker.test.tsx`,
 `workspace-nav.test.tsx`, and `layout-switcher.test.tsx`.
 
 React, React DOM, and their type packages are upgraded together. Runtime support uses the floating
@@ -776,13 +776,20 @@ not been recorded.
   Preferences > Appearance (`getDisplayTimeZone`/`setDisplayTimeZone`, persisted per browser in
   localStorage; an unknown or blocked value falls back to UTC). In a picked zone the label is the
   runtime's short name, e.g. `Jun 30, 2026, 14:05 EDT` or `Jul 1, 2026, 03:05 GMT+9`.
-  - `formatRelativeTime(value, now)` gives `30s ago`, `5m ago`, `3d ago` or `in 2h`.
-  - `<TimeText value display="absolute|relative">` from `@/components/ui/time-text` renders one
-    form inside `<time dateTime>` with the other in `title`, and re-renders when the zone changes.
-    Plain-string call sites pick up a new zone on their next render.
-  - `formatUtcTimestamp`, `formatUtcDate` and `formatUtcMonthYear` stay fixed to UTC for labels
-    defined on the UTC clock (a column headed "UTC", a UTC cut-off). An operator-facing time
-    uses `formatTimestamp`.
+  - `precision: "second" | "millisecond"` adds to the same layout:
+    `formatTimestamp(value, { precision: "second" })` gives `Jun 30, 2026, 18:05:07 UTC` (price
+    alerts, journal tax results, brokerage recovery) and `"millisecond"` gives
+    `Jun 30, 2026, 18:05:07.042 UTC` (live-quote ticks). The default is `"minute"`. There are no
+    screen-local time formatters left; reporting schedule times use the default form too.
+  - `formatRelativeTime(value, now)` gives `30s ago`, `5m ago`, `3d ago` or `in 2h`. Triage and
+    Today queue ages use it through `TriageAge` (`components/meridian/operator-triage-queue.tsx`).
+  - `<TimeText value display="absolute|relative" precision>` from `@/components/ui/time-text`
+    renders one form inside `<time dateTime>` with the other in `title`, and re-renders when the
+    zone changes. Plain-string call sites pick up a new zone on their next render.
+  - `formatUtcTimestamp` (which takes the same `precision`), `formatUtcDate` and
+    `formatUtcMonthYear` stay fixed to UTC for labels defined on the UTC clock (a UTC cut-off). An
+    operator-facing time, including a retained record time such as the close-checklist "Recorded
+    at" column, uses `formatTimestamp` or `<TimeText>`; its zone label keeps the header honest.
 - **Calendar dates.** A trade, ex-, due, effective, or period date is carried as a `YYYY-MM-DD`
   string through `@/lib/local-date` (`LocalDate`, the native port of the Design System 4.3 carrier)
   and rendered with `LocalDateText` from `@/components/ui/local-date-text`, which emits
@@ -973,8 +980,8 @@ not been recorded.
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the
   operator's default scope from `/api/workstation/operator/scope-preference`; choosing either only
   loads the draft, and Apply stays the one action that changes scope. The default is applied only
-  when a session opens with no scope in its link or browser. The continuity dock shows each
-  dimension as a chip on every workspace, marked applied or retained.
+  when a session opens with no scope in its link or browser. The header `OperatingScopeBar` shows
+  each dimension as a segment on every workspace, marked applied or retained.
 - **Saved views.** The positions, break queue and ledger tables keep their filters, sort and
   hidden columns in the URL: positions in the `view` envelope, breaks in `reconciliationSearch`,
   `reconciliationStatus`, `reconciliationSort` and `reconciliationColumns`, the ledger in
@@ -2308,12 +2315,13 @@ command-center source, then enriches rows with existing provider connection, rou
 workspace evidence. React renders provider health, broken credential state, degradation/fallback
 evidence, credential field metadata, allowed environments, and the next recovery action from that
 shared model instead of recalculating provider readiness locally.
-The app shell workflow-continuity dock now also projects the design-document primary operator
-workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
-`Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,
-while the primary strip anchors every workspace to the financial-operations flow.
-Accounting Closeout keeps the design-document Financial Operations lane in the app-shell continuity
-dock with Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
+The app shell workflow-continuity view model, shown by `WorkflowContextDisclosure`, also projects
+the design-document primary operator workflow as a browser-wide strip: `Import`, `Validate`,
+`Reconcile`, `Investigate`, `Approve`, and `Report`. Route-specific trails such as Market Data To
+Paper, Research To Paper, or Accounting Closeout remain intact, while the primary strip anchors
+every workspace to the financial-operations flow.
+Accounting Closeout keeps the design-document Financial Operations lane in the app-shell workflow
+context with Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support while the browser `AccountingScreen` focuses on the owned ledger, reconciliation,
 approvals, exceptions, security coverage, and reporting evidence panels. Retained `Governance*` view-model, DTO,
 endpoint, and test fixture names are compatibility seams only; new browser component routing should
@@ -2509,13 +2517,12 @@ panel, and trust strip live in `app-shell.command-palette.ts`, `app-shell.route-
 evidence-path steps, bootstrap recovery copy, failed-workspace items, build/mode posture, source
 posture, and provider posture out of the route coordinator while preserving the same app-shell
 view-state contract for React.
-The rendered workflow-continuity dock lives in
-`components/meridian/workflow-continuity-dock.tsx` with its stylesheet in
-`src/styles/workflow-continuity-dock.css`, leaving `app.tsx` to compose routes, shell chrome, route
-recovery, and the global workstation stylesheet while the dock owns its accessible links,
-operating-scope chips, and primary-operator-flow disclosure. The shell header no longer mounts the
-dock: it shows `OperatingScopeBar`, and the scope picker shows `WorkflowContextDisclosure` from
-the same module.
+The shell header shows the operating scope as `OperatingScopeBar`; the on-demand workflow detail
+(current workflow, decision and step links) is `WorkflowContextDisclosure` in
+`components/meridian/workflow-context-disclosure.tsx`, styled by
+`src/styles/workflow-context-disclosure.css` and shown inside the scope picker. The former
+`WorkflowContinuityDock`, which combined scope chips and that disclosure in one header control, was
+removed once the scope bar replaced it.
 Workspace navigation rail and drawer styles live in `src/styles/workspace-nav.css`, imported by
 `components/meridian/workspace-nav.tsx`, so root-workspace routing, preserved operating-scope chips,
 expand/collapse controls, status badges, and responsive drawer variants stay with the navigation
