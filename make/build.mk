@@ -23,8 +23,8 @@ build-web-workstation: ## Fast isolated browser workstation host build (Debug, n
 
 bootstrap: setup-dev ## Canonical lane: bootstrap local development prerequisites and quick validation
 
-verify-fast: pre-pr ## Canonical lane: format + fast unit checks
-	@echo "$(GREEN)verify-fast lane complete$(NC)"
+verify-fast: ## Run the canonical .NET and browser validation lanes
+	bash scripts/ci.sh --lane verify-fast
 
 verify-full: pre-pr-full ## Canonical lane: full pre-PR validation with coverage
 	@echo "$(GREEN)verify-full lane complete$(NC)"
@@ -127,7 +127,7 @@ publish-windows: ## Publish for Windows x64
 publish-macos: ## Publish for macOS x64
 	./build/scripts/publish/publish.sh osx-x64
 
-pre-pr: lint test ## Run pre-PR checks (format + tests) — run before pushing
+pre-pr: lint test ## Run formatting and the CI .NET test roster before pushing
 	@echo ""
 	@echo "$(GREEN)All pre-PR checks passed!$(NC)"
 	@echo "Ready to push and open a pull request."

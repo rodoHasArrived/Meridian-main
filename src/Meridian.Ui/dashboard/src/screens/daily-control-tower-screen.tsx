@@ -9,6 +9,7 @@ import type {
 import { SectionHeading } from "@/components/meridian/section-heading";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { DetailRail } from "@/components/meridian/detail-rail";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
@@ -224,7 +225,7 @@ export function DailyControlTowerScreen({
                   variant="outline"
                   size="sm"
                   disabled={refreshing}
-                  aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
+                  aria-label={refreshing ? "Refreshing: control tower evidence" : "Refresh evidence: control tower"}
                   onClick={onRefresh}
                 >
                   {refreshing ? "Refreshing" : "Refresh evidence"}
@@ -250,6 +251,8 @@ export function DailyControlTowerScreen({
             </Button>
           ) : null}
         </div>
+        {showsInbox && triage.loading ? <p role="status" className="text-xs text-muted-foreground">Refreshing authorized inbox…</p> : null}
+        {showsInbox && triage.error ? <OperatorTriageInboxError triage={triage} unaffectedText="Workspace signals in this queue are unaffected" /> : null}
       </section>
 
       {/* One queue grid, two sources (UX consolidation P1). Workspace signals are exactly what the
@@ -286,7 +289,7 @@ export function DailyControlTowerScreen({
           </div>
         ) : null}
         {/* Command outcome and unconfirmed-command recovery stay visible under every Source filter. */}
-        <OperatorTriageNotices triage={triage} showPersistence={showsInbox} />
+        <OperatorTriageNotices triage={triage} showPersistence={false} />
 
         <div onKeyDownCapture={queueKeyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <TableWorkbench

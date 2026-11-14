@@ -164,6 +164,9 @@ describe("ReportingHub", () => {
     const emptyQueue = screen.getByRole("region", { name: "Daily reporting triage queue" });
     expect(organizer.compareDocumentPosition(emptyQueue) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByText(/No due packages, approvals/i)).not.toBeInTheDocument();
+    const organizer = screen.getByRole("region", { name: "Report family organizer" });
+    const emptyQueue = screen.getByRole("region", { name: "Daily reporting triage queue" });
+    expect(organizer.compareDocumentPosition(emptyQueue) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("selects any work item and exposes all of its retained support and actions", async () => {

@@ -6,6 +6,7 @@ import {
   type HTMLAttributes,
   type ReactNode
 } from "react";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import { SectionHeading } from "@/components/meridian/section-heading";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";

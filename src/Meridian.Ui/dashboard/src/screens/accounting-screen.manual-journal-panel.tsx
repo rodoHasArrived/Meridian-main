@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import { focusManualJournalCell, handleManualJournalCellKeyDown, ManualJournalDimensionsInspector, ManualJournalHealthBar, ManualJournalValidationNavigator } from "@/screens/accounting-screen.journal-entry-enhancements";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";

@@ -3,6 +3,7 @@
 // A sticky section header (title + summary on the left, optional jump affordance on the
 // right) over a content body. Used to band an operator workspace into labelled,
 // jump-to-able regions that keep their heading pinned while the region scrolls.
+import { SectionDescription } from "@/components/ui/section-description";
 import type { ReactNode } from "react";
 import { SectionHeading } from "@/components/meridian/section-heading";
 import { injectStyle } from "./inject-style";

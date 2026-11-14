@@ -4621,6 +4621,7 @@ describe("AccountingScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
+    expect(screen.queryByLabelText("Accounting headline metrics")).not.toBeInTheDocument();
     const comparison = screen.getByRole("region", { name: "Cash reconciliation broker statement versus ledger comparison" });
     expect(comparison).toHaveTextContent("Cash reconciliation - broker statement vs. ledger");
     expect(comparison).toHaveTextContent("Statement balance");

@@ -30,6 +30,8 @@ export interface TableWorkbenchProps<T> extends Omit<DenseDataTableProps<T>, "co
   onSearchTextChange?: (value: string) => void;
   getSearchText?: (row: T) => string;
   filters?: ReactNode;
+  /** Keep query controls visible; disclose column, density, export and saved-view tools. */
+  compactToolbar?: boolean;
   filterState?: Record<string, string>;
   onRestoreFilters?: (filters: Record<string, string>) => void;
   onRestoreView?: (view: TableView) => void;
@@ -248,9 +250,10 @@ export function TableWorkbench<T>({ workbenchId, compactToolbar = false, sourceK
           </details>
         ) : secondaryControls}
         <span className="table-workbench-count">{pluralizeCount(filteredRows.length, "match", { plural: "matches" })}</span>
+        {unavailableViews ? <span role="status" title={notice} className="table-workbench-view-notice">Views unavailable</span> : null}
       </div>
       {error ? <p role="alert" className="text-danger text-sm">{error}</p> : null}
-      {notice ? <p role="status" className="text-muted-foreground text-xs">{notice}</p> : null}
+      {notice && !unavailableViews ? <p role="status" className="text-muted-foreground text-xs">{notice}</p> : null}
       <div ref={frame} className="table-workbench-frame" data-scroll-left={scrollEdges.left} data-scroll-right={scrollEdges.right}>
         <DenseDataTable {...tableProps} columns={tableColumns} rows={filteredRows} sort={effectiveSort} onToggleSort={toggleSort} />
       </div>

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Network } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,10 @@ export interface ReportingWorkbenchContextProps {
   taskMode: ReportingTaskModeViewModel;
   actions: ReportingWorkbenchAction[];
   compact?: boolean;
+  context?: ReactNode;
 }
 
-export function ReportingWorkbenchContext({ taskMode, actions, compact = false }: ReportingWorkbenchContextProps) {
+export function ReportingWorkbenchContext({ taskMode, actions, compact = false, context }: ReportingWorkbenchContextProps) {
   return (
     <section
       role="region"

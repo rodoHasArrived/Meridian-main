@@ -916,10 +916,6 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showExternalGl ? (
-      <AccountingOnboardingPanel />
-      ) : null}
-
-      {sectionVisibility.showExternalGl ? (
       <AccountingSystemReconciliationPanel
         providers={accountingSystemProviders}
         importDetail={accountingSystemImport}
@@ -938,6 +934,10 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
         onCreateExportPackage={() => void createExternalGlExportPackage()}
         onCertifyExportPackage={() => void certifyExternalGlExportPackage()}
       />
+      ) : null}
+
+      {sectionVisibility.showExternalGl ? (
+      <AccountingOnboardingPanel />
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
@@ -1483,6 +1483,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {sectionVisibility.showSecurityMaster && (
         <FinancialRecordExplorerShell
+          compact
           explorerLabel="Financial Record Explorer"
           title="Security & Instrument Explorer"
           titleId="accounting-security-master-explorer-title"

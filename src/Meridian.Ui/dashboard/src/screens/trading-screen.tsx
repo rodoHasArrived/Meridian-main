@@ -1,3 +1,4 @@
+import { SectionDescription } from "@/components/ui/section-description";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React, { type ReactNode } from "react";
@@ -647,7 +648,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   );
 
   return (
-    <div className={showOverview ? "space-y-5" : "space-y-2"}>
+    <div className={showOverview ? "space-y-3" : showOrders ? "space-y-1.5" : "space-y-2"}>
       {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
           navigation is the sidebar's job alone (no in-page tab strip). */}
       <section

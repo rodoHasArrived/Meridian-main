@@ -170,6 +170,24 @@ describe("DailyControlTowerScreen", () => {
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
   });
 
+  it("keeps read-only inbox capability visible with its reason behind a compact disclosure", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue({
+      ...inboxResponse,
+      persistenceAvailable: false,
+      unavailableReason: "Seeded read-only inbox. Use a configured shared host for durable triage actions."
+    });
+    await renderLoaded();
+
+    const warning = screen.getByText("Read-only inbox");
+    expect(warning).toBeVisible();
+    expect(warning.closest("details")).not.toHaveAttribute("open");
+    await user.click(warning);
+    expect(screen.getByText("Inbox is read-only. Use a configured shared host for durable triage actions.")).toBeVisible();
+    expect(screen.queryByText(/^Seeded read-only inbox/)).not.toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
+  });
+
   it("interleaves workspace signals and shared-inbox items in one grid with a Source column", async () => {
     const shell = buildAppShellViewState({
       pathname: "/",
@@ -371,7 +389,7 @@ describe("DailyControlTowerScreen", () => {
       .toHaveAttribute("href", "/data/providers");
 
     await user.click(screen.getByRole("button", { name: "Set operating scope" }));
-    await user.click(within(status).getByRole("button", { name: "Refresh control tower evidence" }));
+    await user.click(within(status).getByRole("button", { name: "Refresh evidence: control tower" }));
 
     expect(onEditOperatingScope).toHaveBeenCalledTimes(1);
     expect(onRefresh).toHaveBeenCalledTimes(1);

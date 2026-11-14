@@ -95,8 +95,9 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
 
         self.assertIn("- language: csharp", workflow)
         self.assertIn("build-mode: manual", workflow)
-        self.assertIn("DOTNET_VERSION: '10.0.x'", workflow)
-        self.assertIn("dotnet-version: ${{ env.DOTNET_VERSION }}", workflow)
+        self.assertIn("global-json-file: global.json", workflow)
+        self.assertNotIn("DOTNET_VERSION:", workflow)
+        self.assertNotIn("dotnet-version:", workflow)
         self.assertNotIn("dotnet-version: '9.0.x'", workflow)
         self.assertIn("Restore C# solution", workflow)
         self.assertIn("Build C# solution", workflow)
