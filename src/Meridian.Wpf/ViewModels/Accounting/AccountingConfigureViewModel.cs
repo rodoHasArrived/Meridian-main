@@ -475,7 +475,8 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         IAccountingAuditIntegrityApiClient? auditIntegrityClient = null,
         IFactorPaydownApiClient? factorPaydownClient = null,
         IWorkstationEntityConsolidationApiClient? entityConsolidationClient = null,
-        IWorkstationManualJournalApiClient? manualJournalApiClient = null)
+        IWorkstationManualJournalApiClient? manualJournalApiClient = null,
+        IWorkstationOnboardingApiClient? onboardingClient = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _authenticationSession = authenticationSession;
@@ -484,6 +485,8 @@ public sealed partial class AccountingConfigureViewModel : Meridian.Wpf.ViewMode
         FactorPaydown = new FactorPaydownViewModel(factorPaydownClient);
         EntityConsolidation = new EntityConsolidationViewModel(entityConsolidationClient);
         AttachEntityConsolidationSessionReset();
+        ShadowOnboarding = new OnboardingShadowWorkspace(onboardingClient);
+        AttachShadowOnboardingSessionReset();
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalApiClient ?? manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
         _capitalAccountWorkbenchService = capitalAccountWorkbenchService;

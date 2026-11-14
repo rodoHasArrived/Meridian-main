@@ -537,6 +537,11 @@ function localCommandCenterRoute(route: string | null | undefined, sourceKind: s
 
 function commandCenterFallbackRoute(sourceKind: string): string | null {
   const normalized = sourceKind.trim().toLowerCase();
+  // Shadow-mode agreement is resolved in the onboarding workspace, which lives under External GL evidence.
+  if (normalized.includes("shadow")) {
+    return WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation;
+  }
+
   if (normalized.includes("break") || normalized.includes("reconciliation")) {
     return WORKSTATION_ROUTE_CATALOG.accountingReconciliation;
   }

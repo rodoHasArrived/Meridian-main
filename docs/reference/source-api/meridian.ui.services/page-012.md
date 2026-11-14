@@ -6,6 +6,79 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PostedLedgerPnlProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.PostedLedgerProjection.PostedLedgerPnlProjection</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:322](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L322).
+
+The P&amp;L figures for one accounting basis, and whether each of them could actually be attributed to that basis.
+
+```csharp
+public readonly record struct PostedLedgerPnlProjection(decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal? PeriodOnPeriodVariance, bool IsBasisScoped, bool IsVarianceBasisScoped);
+```
+
+## WorkstationAccountingCloseApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationAccountingCloseApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L14).
+
+Transports close commands and retained plans through the server&#x27;s accounting authority. Tenant, company, actor and controller authority are resolved by authenticated server middleware.
+
+```csharp
+public sealed class WorkstationAccountingCloseApiClient(ApiClientService apiClient) : IWorkstationAccountingCloseApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ClosePeriodPlanDto?&gt; GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L16) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; GetPeriodPlanScopedAsync(Guid workflowId, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:27](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L27) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; ConfigurePeriodPlanAsync(UpsertClosePeriodPlanConfigurationRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:31](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L31) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; RequestLateAdjustmentAsync(CreateLateAdjustmentRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:35](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L35) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; ReviewLateAdjustmentAsync(ReviewLateAdjustmentRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:39](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L39) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; SignOffCloseTaskAsync(SignOffCloseTaskRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L43) |  |
+| <code>public Task&lt;ClosePeriodPlanDto?&gt; ReviewCloseEvidenceAsync(ReviewCloseEvidenceRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L47) |  |
+| <code>public Task&lt;ClosePeriodLockResultDto?&gt; LockClosePeriodAsync(LockClosePeriodRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L51) |  |
+| <code>public Task&lt;ClosePeriodLockResultDto?&gt; LockClosePeriodScopedAsync(LockClosePeriodRequestDto request, string actor, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L55) |  |
+| <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodAsync(ReopenClosePeriodRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L59) |  |
+| <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodScopedAsync(ReopenClosePeriodRequestDto request, string actor, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L63) |  |
+
+## WorkstationEntityConsolidationApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationEntityConsolidationApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L18).
+
+```csharp
+public sealed partial class WorkstationEntityConsolidationApiClient(ApiClientService api) : IWorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetStructureAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L20) |  |
+| <code>public async Task&lt;EntityTimelineDto&gt; GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L23) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; GetPeriodsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L32) |  |
+| <code>public async Task&lt;ConsolidationViewDto&gt; PreviewAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L40) |  |
+| <code>public async Task&lt;ConsolidationViewDto&gt; CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:46](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L46) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L15).
+
+```csharp
+public sealed partial class WorkstationEntityConsolidationApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L17) |  |
+| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L19) |  |
+
 ## WorkstationIntercompanyAgreementApiClient
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationIntercompanyAgreementApiClient</code>. Kind: `class`.
@@ -76,6 +149,33 @@ Declared public members:
 | <code>public Task&lt;ManualJournalEntryDraftDto&gt; SubmitApprovalAsync(SubmitManualJournalEntryApprovalRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L44) |  |
 | <code>public Task&lt;ManualJournalEntryDraftDto&gt; AttachEvidenceAsync(AttachManualJournalEntryEvidenceRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L48) |  |
 | <code>public Task&lt;JournalEntryLifecycleActionResultDto&gt; ApplyLifecycleActionAsync(JournalEntryLifecycleActionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationManualJournalApiClient.cs#L52) |  |
+
+## WorkstationOnboardingApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationOnboardingApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:27](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L27).
+
+```csharp
+public sealed class WorkstationOnboardingApiClient(ApiClientService apiClient) : IWorkstationOnboardingApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ApiResponse&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt;&gt; ListWorkspacesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:29](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L29) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; GetWorkspaceAsync(string workspaceId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:37](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L37) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; DesignateShadowAsync(string workspaceId, DesignateShadowBookRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:41](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L41) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; WithdrawShadowAsync(string workspaceId, WithdrawShadowBookRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:46](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L46) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; ImportOpeningBalancesAsync(string workspaceId, ImportOnboardingOpeningBalancesRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L51) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingOpeningBalanceReportDto&gt;&gt; GetOpeningReportAsync(string workspaceId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L56) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; ExplainDifferenceAsync(string workspaceId, string differenceKey, ExplainOnboardingDifferenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:60](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L60) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingParallelRunCertificateDto&gt;&gt; IssueCertificateAsync(string workspaceId, IssueParallelRunCertificateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L67) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingParallelRunCertificateDto&gt;&gt; GetCertificateAsync(string workspaceId, string certificateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:77](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L77) |  |
+| <code>public async Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; PromoteAsync(string workspaceId, PromoteShadowBookRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:87](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L87) |  |
+| <code>public async Task&lt;ApiResponse&lt;BookOfRecordStatusDto&gt;&gt; GetBookOfRecordStatusAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:92](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L92) |  |
+| <code>public static string? ReadErrorMessage(string? body);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:102](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L102) | Onboarding refusals carry { &quot;error&quot;: &quot;...&quot; }; surface that sentence instead of the raw body. |
 
 ## AcknowledgeResponse
 
@@ -1121,90 +1221,3 @@ Declared public members:
 | <code>public void ClearHistory();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:282](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L282) |  |
 | <code>public void MarkAsRead(int index);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:293](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L293) |  |
 | <code>public int GetUnreadCount();</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:302](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L302) |  |
-
-## NotificationSettings
-
-Qualified name: <code>Meridian.Ui.Services.Services.NotificationSettings</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L12).
-
-Notification settings.
-
-```csharp
-public sealed class NotificationSettings
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L14) |  |
-| <code>public bool NotifyConnectionStatus { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L15) |  |
-| <code>public bool NotifyErrors { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L16) |  |
-| <code>public bool NotifyBackfillComplete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L17) |  |
-| <code>public bool NotifyDataGaps { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L18) |  |
-| <code>public bool NotifyStorageWarnings { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L19) |  |
-| <code>public string SoundType { get; set; } = &quot;Default&quot;;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L20) |  |
-| <code>public bool QuietHoursEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L21) |  |
-| <code>public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L22) |  |
-| <code>public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L23) |  |
-
-## OnboardingTip
-
-Qualified name: <code>Meridian.Ui.Services.Services.OnboardingTip</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:20](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L20).
-
-An onboarding tip to show new users. Shared across desktop platforms.
-
-```csharp
-public sealed class OnboardingTip
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:22](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L22) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:23](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L23) |  |
-| <code>public string Content { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:24](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L24) |  |
-| <code>public string TargetElement { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:25](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L25) |  |
-| <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:26](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L26) |  |
-
-## PeriodicRefreshScheduler
-
-Qualified name: <code>Meridian.Ui.Services.Services.PeriodicRefreshScheduler</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:11](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L11).
-
-Cross-platform recurring refresh scheduler backed by PeriodicTimer.
-
-```csharp
-public sealed class PeriodicRefreshScheduler : IRefreshScheduler
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public void Start(TimeSpan interval, Func&lt;CancellationToken, Task&gt; callback, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:17](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L17) |  |
-| <code>public void Stop();</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:34](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L34) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:42](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L42) |  |
-
-## ProviderCatalogEntry
-
-Qualified name: <code>Meridian.Ui.Services.Services.ProviderCatalogEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:622](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L622).
-
-Provider catalog entry for the provider marketplace display.
-
-```csharp
-public sealed record ProviderCatalogEntry(string Id, string DisplayName, ProviderTier Tier, bool SupportsStreaming, bool SupportsHistorical, bool SupportsSymbolSearch, string Description, int RateLimitPerMinute, CredentialFieldInfo[] CredentialFields, bool SupportsOptions = false, bool SupportsBrokerage = false)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string[] RequiredEnvVars =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:635](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L635) |  |

@@ -62,7 +62,7 @@ Bounded roadmap acceptance does not certify a release. Current item statuses app
 | W11-PASSPORT-001 | W11 | Number Passport contract across amount surfaces | Accounting; Reporting; Portfolio | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-10-16 |
 | W11-COVER-001 | W11 | Verified Coverage measurement and operator surface | Accounting; Reporting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-10-16 |
 | W11-STAKE-001 | W11 | Governed stakeholder verification access on delivered packages | Reporting; Settings | planned | green | medium | Platform Security and Governance | planned_evidence | 2026-10-16 |
-| W11-SHADOW-001 | W11 | Shadow-mode onboarding with opening-balance reconciliation | Data; Accounting | in_progress | green | medium | Data Confidence and Validation | in_progress | 2026-11-13 |
+| W11-SHADOW-001 | W11 | Shadow-mode onboarding with opening-balance reconciliation | Data; Accounting | in_progress | green | medium | Data Confidence and Validation | in_progress | 2026-11-14 |
 | W11-PACK-001 | W11 | Governed contract-pack lifecycle on the Security Master asset-class registry | Data; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-16 |
 | W11-EXEC-001 | W11 | Trading and Execution bounded-context ownership | Trading; Strategy | planned | green | low | Execution and Fund Accounts | planned_evidence | 2026-10-16 |
 | W12-BOOK-001 | W12 | Accounting book, basis, and FX control workbench | Accounting; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |

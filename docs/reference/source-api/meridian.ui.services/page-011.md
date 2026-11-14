@@ -1181,6 +1181,127 @@ The existing journal workbench through the authenticated server&#x27;s authority
 public interface IWorkstationManualJournalApiClient : IManualJournalEntryWorkbenchService, IManualJournalEntryLifecycleService;
 ```
 
+## IWorkstationOnboardingApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationOnboardingApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L12).
+
+Desktop transport for bounded onboarding workspaces and their shadow-mode parallel run (W11-SHADOW-001). It uses the same routes and contracts as the browser workstation. The server derives tenant, company and actor from the authenticated session; mutations also need a human-operator session.
+
+```csharp
+public interface IWorkstationOnboardingApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;IReadOnlyList&lt;OnboardingWorkspaceDto&gt;&gt;&gt; ListWorkspacesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L14) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; GetWorkspaceAsync(string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L15) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; DesignateShadowAsync(string workspaceId, DesignateShadowBookRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L16) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; WithdrawShadowAsync(string workspaceId, WithdrawShadowBookRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L17) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; ImportOpeningBalancesAsync(string workspaceId, ImportOnboardingOpeningBalancesRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L18) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingOpeningBalanceReportDto&gt;&gt; GetOpeningReportAsync(string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L19) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; ExplainDifferenceAsync(string workspaceId, string differenceKey, ExplainOnboardingDifferenceRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L20) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingParallelRunCertificateDto&gt;&gt; IssueCertificateAsync(string workspaceId, IssueParallelRunCertificateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:21](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L21) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingParallelRunCertificateDto&gt;&gt; GetCertificateAsync(string workspaceId, string certificateId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L22) |  |
+| <code>Task&lt;ApiResponse&lt;OnboardingWorkspaceDto&gt;&gt; PromoteAsync(string workspaceId, PromoteShadowBookRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L23) |  |
+| <code>Task&lt;ApiResponse&lt;BookOfRecordStatusDto&gt;&gt; GetBookOfRecordStatusAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs:24](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationOnboardingApiClient.cs#L24) |  |
+
+## OnboardingExplainableDifference
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.OnboardingExplainableDifference</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L11).
+
+One opening break or period difference an operator can classify with retained evidence.
+
+```csharp
+public sealed record OnboardingExplainableDifference(string ComparisonId, string DifferenceKey, string Label, string Kind, string AccountId, string? InstrumentId, decimal? MeridianAmount, decimal? ExternalAmount, string? SourceKind)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Summary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L15) |  |
+
+## OnboardingShadowWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.OnboardingShadowWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:27](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L27).
+
+Desktop presentation state for the shadow-mode parallel run of one bounded onboarding workspace. It mirrors the browser shadow panel over the same API: designation, opening-balance import and report, difference explanations, the parallel-run certificate, promotion and withdrawal. All decisions stay on the server; every mutation carries the workspace version it was made against, and late responses from an earlier selection are discarded.
+
+```csharp
+public sealed class OnboardingShadowWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public OnboardingShadowWorkspace(IWorkstationOnboardingApiClient? client);</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:44](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L44) |  |
+| <code>public IReadOnlyList&lt;string&gt; OpeningSourceKinds { get; } = Meridian.Contracts.Workstation.OnboardingOpeningSourceKinds.All;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L63) |  |
+| <code>public IReadOnlyList&lt;string&gt; Classifications { get; } = OnboardingDifferenceClassifications.All;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L64) |  |
+| <code>public ObservableCollection&lt;OnboardingWorkspaceDto&gt; Workspaces { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:65](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L65) |  |
+| <code>public ObservableCollection&lt;OnboardingOpeningBalanceLineDto&gt; OpeningLines { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:66](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L66) |  |
+| <code>public ObservableCollection&lt;string&gt; OpeningSources { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L67) |  |
+| <code>public ObservableCollection&lt;OnboardingPeriodSummaryDto&gt; Periods { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L68) |  |
+| <code>public ObservableCollection&lt;OnboardingExplainableDifference&gt; Explainable { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L69) |  |
+| <code>public ObservableCollection&lt;OnboardingParallelRunCertificateDto&gt; Certificates { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:70](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L70) |  |
+| <code>public ObservableCollection&lt;OnboardingShadowAuditEntryDto&gt; AuditEntries { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:71](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L71) |  |
+| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:73](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L73) |  |
+| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:74](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L74) |  |
+| <code>public IAsyncRelayCommand DesignateCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:75](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L75) |  |
+| <code>public IAsyncRelayCommand WithdrawCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:76](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L76) |  |
+| <code>public IAsyncRelayCommand ImportOpeningCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:77](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L77) |  |
+| <code>public IAsyncRelayCommand ExplainCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:78](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L78) |  |
+| <code>public IAsyncRelayCommand IssueCertificateCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:79](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L79) |  |
+| <code>public IAsyncRelayCommand PromoteCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:80](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L80) |  |
+| <code>public bool IsAvailable =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:82](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L82) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:83](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L83) |  |
+| <code>public string Status { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:84](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L84) |  |
+| <code>public OnboardingWorkspaceDto? SelectedWorkspace { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:86](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L86) |  |
+| <code>public OnboardingWorkspaceDto? Workspace { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:102](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L102) | The server&#x27;s current copy of the selected workspace; every mutation is made against its version. |
+| <code>public string? DesignationState =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:104](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L104) |  |
+| <code>public bool IsNotDesignated =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:105](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L105) |  |
+| <code>public bool IsInShadow =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:106](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L106) |  |
+| <code>public bool HasCertificates =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:107](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L107) |  |
+| <code>public string DesignationTitle =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:109](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L109) |  |
+| <code>public string DesignationDetail =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:118](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L118) |  |
+| <code>public string OpeningSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:130](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L130) |  |
+| <code>public string UncoveredKindsMessage =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:135](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L135) |  |
+| <code>public bool HasUncoveredKinds =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:140](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L140) |  |
+| <code>public string ReadinessSummary =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:142](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L142) |  |
+| <code>public string OpeningSourceKind { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:147](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L147) |  |
+| <code>public bool IsGlTrialBalance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:153](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L153) |  |
+| <code>public string OpeningFileName { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:154](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L154) |  |
+| <code>public string ShadowRationale { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:155](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L155) |  |
+| <code>public string WithdrawalReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:156](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L156) |  |
+| <code>public string OpeningProviderId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:157](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L157) |  |
+| <code>public string OpeningImportId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:158](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L158) |  |
+| <code>public string MappingProfileId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:159](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L159) |  |
+| <code>public string MappingVersion { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:160](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L160) |  |
+| <code>public string AccountMappings { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:161](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L161) |  |
+| <code>public string OpeningNotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:162](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L162) |  |
+| <code>public OnboardingExplainableDifference? SelectedDifference { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:163](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L163) |  |
+| <code>public string Classification { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:164](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L164) |  |
+| <code>public string ExpectedReversalDate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:165](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L165) |  |
+| <code>public string ExplanationNotes { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:166](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L166) |  |
+| <code>public string ExplanationEvidence { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:167](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L167) |  |
+| <code>public string PromotionRationale { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:168](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L168) |  |
+| <code>public string PromotionEvidence { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:169](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L169) |  |
+| <code>public OnboardingParallelRunCertificateDto? SelectedCertificate { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:171](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L171) |  |
+| <code>public string CertificateDetail =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:177](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L177) |  |
+| <code>public void SetOpeningFile(string fileName, byte[] content);</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:184](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L184) | Attaches the incumbent opening file; its bytes travel base64-encoded like the browser upload. |
+| <code>public static IReadOnlyList&lt;OnboardingOpeningAccountMappingDto&gt; ParseAccountMappings(string? value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:194](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L194) | Parses EXTERNAL=account-id entries, one per line or comma-separated. |
+| <code>public void Cancel();</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:206](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L206) | Discards in-flight responses, for example when the hosting page unloads. |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:216](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L216) | Forgets every workspace read under the previous session, for example after sign-out. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs:226](../../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs#L226) |  |
+
 ## PostedLedgerProjection
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.PostedLedgerProjection</code>. Kind: `class`.
@@ -1218,76 +1339,3 @@ Declared public members:
 | <code>public static AccountingBasisKindDto ResolveDefaultBasis(IEnumerable&lt;LedgerPeriodTrialBalanceLineDto&gt;? lines);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:276](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L276) | The basis a freshly loaded period should show: Primary when present, else the first available. Defaulting to Primary unconditionally would render a GAAP-only period empty. |
 | <code>public static string DescribeBasis(AccountingBasisKindDto basis) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:291](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L291) | Human-readable basis name for a picker. |
 | <code>public static PostedLedgerPnlProjection ProjectPnl(LedgerPeriodPnlSummaryDto summary, AccountingBasisKindDto basis, int availableBasisCount);</code> | [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:347](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L347) | Scopes a period&#x27;s P&amp;L to one accounting basis. The endpoint&#x27;s TotalRevenue and TotalExpenses are plain sums of the lines it returns, across every basis the period holds, so a GAAP trial balance sat beside a P&amp;L that added Primary and GAAP together. Summing the same lines filtered to one basis reproduces the endpoint&#x27;s figures exactly for a single-basis period and scopes them correctly for a mixed one. Net income is derived as revenue less expenses, the way the server derives its own realized figures, because the endpoint&#x27;s NetIncome is a period-level value that cannot be attributed to one basis. This is the desktop and browser workstations&#x27; shared definition of those figures: the two clients showing different revenue for the same period and basis is the conflation this exists to prevent. |
-
-## PostedLedgerPnlProjection
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.PostedLedgerProjection.PostedLedgerPnlProjection</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs:322](../../../../src/Meridian.Ui.Services/Services/Accounting/PostedLedgerProjection.cs#L322).
-
-The P&amp;L figures for one accounting basis, and whether each of them could actually be attributed to that basis.
-
-```csharp
-public readonly record struct PostedLedgerPnlProjection(decimal TotalRevenue, decimal TotalExpenses, decimal NetIncome, decimal? PeriodOnPeriodVariance, bool IsBasisScoped, bool IsVarianceBasisScoped);
-```
-
-## WorkstationAccountingCloseApiClient
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationAccountingCloseApiClient</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L14).
-
-Transports close commands and retained plans through the server&#x27;s accounting authority. Tenant, company, actor and controller authority are resolved by authenticated server middleware.
-
-```csharp
-public sealed class WorkstationAccountingCloseApiClient(ApiClientService apiClient) : IWorkstationAccountingCloseApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;ClosePeriodPlanDto?&gt; GetPeriodPlanAsync(Guid workflowId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L16) |  |
-| <code>public Task&lt;ClosePeriodPlanDto?&gt; GetPeriodPlanScopedAsync(Guid workflowId, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:27](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L27) |  |
-| <code>public Task&lt;ClosePeriodPlanDto?&gt; ConfigurePeriodPlanAsync(UpsertClosePeriodPlanConfigurationRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:31](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L31) |  |
-| <code>public Task&lt;ClosePeriodPlanDto?&gt; RequestLateAdjustmentAsync(CreateLateAdjustmentRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:35](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L35) |  |
-| <code>public Task&lt;ClosePeriodPlanDto?&gt; ReviewLateAdjustmentAsync(ReviewLateAdjustmentRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:39](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L39) |  |
-| <code>public Task&lt;ClosePeriodPlanDto?&gt; SignOffCloseTaskAsync(SignOffCloseTaskRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:43](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L43) |  |
-| <code>public Task&lt;ClosePeriodPlanDto?&gt; ReviewCloseEvidenceAsync(ReviewCloseEvidenceRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L47) |  |
-| <code>public Task&lt;ClosePeriodLockResultDto?&gt; LockClosePeriodAsync(LockClosePeriodRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L51) |  |
-| <code>public Task&lt;ClosePeriodLockResultDto?&gt; LockClosePeriodScopedAsync(LockClosePeriodRequestDto request, string actor, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L55) |  |
-| <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodAsync(ReopenClosePeriodRequestDto request, string actor, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:59](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L59) |  |
-| <code>public Task&lt;ClosePeriodReopenResultDto?&gt; ReopenClosePeriodScopedAsync(ReopenClosePeriodRequestDto request, string actor, string? tenantId, string? companyId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationAccountingCloseApiClient.cs#L63) |  |
-
-## WorkstationEntityConsolidationApiClient
-
-Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationEntityConsolidationApiClient</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L18).
-
-```csharp
-public sealed partial class WorkstationEntityConsolidationApiClient(ApiClientService api) : IWorkstationEntityConsolidationApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;OrganizationStructureGraphDto&gt; GetStructureAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L20) |  |
-| <code>public async Task&lt;EntityTimelineDto&gt; GetTimelineAsync(Guid organizationId, Guid entityId, DateTimeOffset asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:23](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L23) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; GetPeriodsAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L32) |  |
-| <code>public async Task&lt;ConsolidationViewDto&gt; PreviewAsync(ConsolidationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:40](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L40) |  |
-| <code>public async Task&lt;ConsolidationViewDto&gt; CreateDraftsAsync(ConsolidationRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs:46](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.cs#L46) |  |
-
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:15](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L15).
-
-```csharp
-public sealed partial class WorkstationEntityConsolidationApiClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;EntityLifecycleReviewPreviewDto&gt; PreviewLifecycleReviewAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L17) |  |
-| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendLifecycleRevisionAsync(AppendEntityLifecycleRevisionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs:19](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationEntityConsolidationApiClient.Lifecycle.cs#L19) |  |

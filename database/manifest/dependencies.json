@@ -60295,6 +60295,42 @@
       "target": "database:ledger.legacy_intercompany_attributions.tenant_id"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.onboarding_workspaces_company_id_check on ledger.onboarding_workspaces",
+      "target": "database:ledger.onboarding_workspaces.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.onboarding_workspaces_payload_json_check on ledger.onboarding_workspaces",
+      "target": "database:ledger.onboarding_workspaces.payload_json"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.onboarding_workspaces_shadow_state_check on ledger.onboarding_workspaces",
+      "target": "database:ledger.onboarding_workspaces.shadow_state"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.onboarding_workspaces_tenant_id_check on ledger.onboarding_workspaces",
+      "target": "database:ledger.onboarding_workspaces.tenant_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.onboarding_workspaces_version_check on ledger.onboarding_workspaces",
+      "target": "database:ledger.onboarding_workspaces.version"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:ledger.onboarding_workspaces_workspace_id_check on ledger.onboarding_workspaces",
+      "target": "database:ledger.onboarding_workspaces.workspace_id"
+    },
+    {
       "constraint": "open_lot_backfill_evidence_ledger_book_id_fkey",
       "kind": "foreign-key",
       "label": "ledger_book_id",
@@ -66263,6 +66299,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:ledger",
+      "target": "database:ledger.onboarding_workspaces"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:ledger",
       "target": "database:ledger.open_lot_backfill_evidence"
     },
     {
@@ -67405,7 +67447,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "faeba3e0c03087fcfb543b092b55c354d21631b26336d469c2e13f9e8ddfc3dc",
+  "fingerprint": "23b95b99e201c35d2a6120289e49c0e2532b2fc2f073c1b5e2ac0473b36be2f5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -93227,6 +93269,72 @@
       "label": "ledger.legacy_intercompany_attributions_tenant_id_check on ledger.legacy_intercompany_attributions"
     },
     {
+      "id": "database:ledger.onboarding_workspaces",
+      "kind": "database-table",
+      "label": "ledger.onboarding_workspaces",
+      "schema": "ledger"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces.company_id",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces.company_id"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces.payload_json",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces.payload_json"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces.shadow_state",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces.shadow_state"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces.tenant_id",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces.tenant_id"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces.version",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces.version"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces.workspace_id",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces.workspace_id"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces_company_id_check on ledger.onboarding_workspaces",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces_company_id_check on ledger.onboarding_workspaces"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces_payload_json_check on ledger.onboarding_workspaces",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces_payload_json_check on ledger.onboarding_workspaces"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces_shadow_state_check on ledger.onboarding_workspaces",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces_shadow_state_check on ledger.onboarding_workspaces"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces_tenant_id_check on ledger.onboarding_workspaces",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces_tenant_id_check on ledger.onboarding_workspaces"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces_version_check on ledger.onboarding_workspaces",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces_version_check on ledger.onboarding_workspaces"
+    },
+    {
+      "id": "database:ledger.onboarding_workspaces_workspace_id_check on ledger.onboarding_workspaces",
+      "kind": "database-object",
+      "label": "ledger.onboarding_workspaces_workspace_id_check on ledger.onboarding_workspaces"
+    },
+    {
       "id": "database:ledger.open_lot_backfill_evidence",
       "kind": "database-table",
       "label": "ledger.open_lot_backfill_evidence",
@@ -98939,9 +99047,9 @@
   "summary": {
     "contract_references": 4178,
     "contract_set_memberships": 5393,
-    "edges": 11197,
+    "edges": 11204,
     "foreign_keys": 206,
     "logical_references": 6,
-    "nodes": 5481
+    "nodes": 5494
   }
 }

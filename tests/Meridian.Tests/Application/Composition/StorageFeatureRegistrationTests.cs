@@ -698,6 +698,42 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IOperationsContinuityTransactionalCommitStore));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Register_SelectsThePostgresOnboardingStore_WhenLedgerConnectionStringIsConfigured(bool fileFallbackFirst)
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(LedgerStartup.ConnectionStringVariable, "Host=ledger-db;Port=5432;Database=ledger;Username=postgres;Password=secret");
+        var services = new ServiceCollection();
+        // The workstation composition adds the file store with TryAdd, before or after storage registration.
+        void AddFileFallback() => services.TryAddSingleton<Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore>(_ =>
+            new Meridian.Ui.Shared.Services.FileOnboardingWorkspaceStore(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json")));
+
+        if (fileFallbackFirst)
+            AddFileFallback();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+        if (!fileFallbackFirst)
+            AddFileFallback();
+
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore>()
+            .Should().BeOfType<Meridian.FinancialOperations.Onboarding.PostgresOnboardingWorkspaceStore>();
+    }
+
+    [Fact]
+    public void Register_LeavesTheOnboardingStoreToTheWorkstation_WithoutALedgerDatabase()
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        services.Should().NotContain(sd => sd.ServiceType == typeof(Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore));
+    }
+
     private static void ConfigureInMemoryGovernanceFixture()
     {
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");

@@ -478,6 +478,17 @@ erDiagram
         text company_id
         jsonb payload
     }
+    ledger_onboarding_workspaces {
+        text workspace_id PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        integer version
+        text shadow_state
+        timestamp_with_time_zone created_at
+        timestamp_with_time_zone updated_at
+        text payload_json
+    }
     ledger_open_lot_backfill_evidence {
         uuid evidence_record_id PK
         uuid ledger_book_id FK

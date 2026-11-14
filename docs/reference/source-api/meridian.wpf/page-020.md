@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RoutingMatrixControl
+
+Qualified name: <code>Meridian.Wpf.Workstation.Controls.RoutingMatrixControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:10](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L10).
+
+Displays workflow routing rows in a workstation matrix.
+
+```csharp
+public partial class RoutingMatrixControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static readonly DependencyProperty MatrixProperty = DependencyProperty.Register(nameof(Matrix), typeof(RoutingMatrixModel), typeof(RoutingMatrixControl), new PropertyMetadata(null));</code> | [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:12](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L12) |  |
+| <code>public RoutingMatrixControl();</code> | [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:19](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L19) |  |
+| <code>public RoutingMatrixModel? Matrix { get; set; }</code> | [src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs:24](../../../../src/Meridian.Wpf/Workstation/Controls/RoutingMatrixControl.xaml.cs#L24) |  |
+
 ## WorkstationCommandBarControl
 
 Qualified name: <code>Meridian.Wpf.Workstation.Controls.WorkstationCommandBarControl</code>. Kind: `class`.
@@ -784,14 +804,4 @@ Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentatio
 
 ```csharp
 public sealed record OperatorReadinessGateRowModel(string GateId, string Label, string StatusText, WorkstationReadinessTone ReadinessTone, string Tone, string Detail, string? RequiredNextAction);
-```
-
-## OperatorReadinessPanelRowModel
-
-Qualified name: <code>Meridian.Wpf.Workstation.Models.OperatorReadinessPanelRowModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs:21](../../../../src/Meridian.Wpf/Workstation/Models/OperatorReadinessConsolePresentationModels.cs#L21).
-
-```csharp
-public sealed record OperatorReadinessPanelRowModel(string Id, string Label, string Value, string Detail, string Meta, WorkstationReadinessTone ReadinessTone, string Tone);
 ```

@@ -2606,7 +2606,7 @@ items:
     health: green
     priority: medium
     evidence_posture: in_progress
-    status_note: Shadow onboarding extends the existing read-only workspace and book-of-record guard; retained activation and acceptance gates remain open.
+    status_note: Shadow onboarding extends the existing read-only workspace and book-of-record guard, reports agreement in close readiness, retains workspaces in the ledger database and has WPF parity; retained activation and acceptance gates remain open.
     decision_ids:
     - DEC-CHARTER-DIRECTION-001
     pr_references: []
@@ -2652,9 +2652,25 @@ items:
         path: tests/Meridian.Tests/Reconciliation/Connectors/StatementOpeningBalanceRoleTests.cs
       - type: test
         path: src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-shadow-panel.test.tsx
+      - type: source
+        path: src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs
+      - type: source
+        path: src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs
+      - type: source
+        path: src/Meridian.Storage/Ledger/Migrations/V_ledger_069__onboarding_workspaces.sql
+      - type: source
+        path: src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs
+      - type: source
+        path: src/Meridian.Wpf/Views/OnboardingShadowControl.xaml
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ShadowAgreementTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/OnboardingWorkspacePostgresTests.cs
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/OnboardingShadowWorkspaceTests.cs
       - type: doc
         path: docs/operators/shadow-mode-onboarding.md
-    last_reviewed: 2026-11-13
+    last_reviewed: 2026-11-14
 
   - id: W11-PACK-001
     title: Governed contract-pack lifecycle on the Security Master asset-class registry

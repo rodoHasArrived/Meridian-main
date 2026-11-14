@@ -2257,11 +2257,11 @@ W11-STAKE-001: planned; health green; evidence planned_evidence. Planned read-on
 | Priority | medium |
 | Owner lane | Data Confidence and Validation |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-11-13 |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboarding extends the existing read-only workspace and book-of-record guard; retained activation and acceptance gates remain open.
+W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboarding extends the existing read-only workspace and book-of-record guard, reports agreement in close readiness, retains workspaces in the ledger database and has WPF parity; retained activation and acceptance gates remain open.
 
 ### Status References
 
@@ -2281,6 +2281,14 @@ W11-SHADOW-001: in_progress; health green; evidence in_progress. Shadow onboardi
 - Evidence: [tests/Meridian.Tests/Reporting/ReportingGovernanceCanonicalValidationTests.cs](../../../tests/Meridian.Tests/Reporting/ReportingGovernanceCanonicalValidationTests.cs)
 - Evidence: [tests/Meridian.Tests/Reconciliation/Connectors/StatementOpeningBalanceRoleTests.cs](../../../tests/Meridian.Tests/Reconciliation/Connectors/StatementOpeningBalanceRoleTests.cs)
 - Evidence: [src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-shadow-panel.test.tsx](../../../src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-shadow-panel.test.tsx)
+- Evidence: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs](../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.CloseInputs.cs)
+- Evidence: [src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs](../../../src/Meridian.FinancialOperations/Onboarding/PostgresOnboardingWorkspaceStore.cs)
+- Evidence: [src/Meridian.Storage/Ledger/Migrations/V_ledger_069__onboarding_workspaces.sql](../../../src/Meridian.Storage/Ledger/Migrations/V_ledger_069__onboarding_workspaces.sql)
+- Evidence: [src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs](../../../src/Meridian.Ui.Services/Services/Accounting/OnboardingShadowWorkspace.cs)
+- Evidence: [src/Meridian.Wpf/Views/OnboardingShadowControl.xaml](../../../src/Meridian.Wpf/Views/OnboardingShadowControl.xaml)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ShadowAgreementTests.cs](../../../tests/Meridian.Tests/FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.ShadowAgreementTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/OnboardingWorkspacePostgresTests.cs](../../../tests/Meridian.Tests/Storage/OnboardingWorkspacePostgresTests.cs)
+- Evidence: [tests/Meridian.Ui.Tests/Services/OnboardingShadowWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/OnboardingShadowWorkspaceTests.cs)
 - Evidence: [docs/operators/shadow-mode-onboarding.md](../../operators/shadow-mode-onboarding.md)
 
 

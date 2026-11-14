@@ -284,6 +284,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IOperationsContinuityRepository>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
             services.AddSingleton<IOperationsWorkflowAuditStore>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
             services.AddSingleton<IOperationsContinuityTransactionalCommitStore>(sp => sp.GetRequiredService<PostgresOperationsContinuityStore>());
+            // Onboarding workspaces (and shadow-mode designations) live beside the ledger they shadow, so book
+            // exclusivity is enforced by the database rather than by one process's file lease.
+            services.AddSingleton<Meridian.FinancialOperations.Onboarding.IOnboardingWorkspaceStore>(sp =>
+                new Meridian.FinancialOperations.Onboarding.PostgresOnboardingWorkspaceStore(
+                    sp.GetRequiredService<LedgerJournalStoreOptions>()));
             services.AddSingleton<ILedgerBookService>(sp =>
                 new PostgresLedgerBookService(
                     sp.GetRequiredService<ILedgerJournalStore>(),
