@@ -44,11 +44,22 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         return RouteCoreAsync(context, tenantId.Trim(), ct);
     }
 
-    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct)
+    /// <summary>Evaluates a cloned, restricted config without publishing a runtime snapshot or route history.</summary>
+    public ValueTask<ProviderRouteResult> PreviewForTenantAsync(ProviderRouteContext context, string tenantId,
+        ProviderRoutingProposedConfig proposed, CancellationToken ct = default)
+    {
+        var config = ProviderRoutingPreviewConfig.ApplyBindings(_store.LoadRequired(), tenantId, proposed);
+        return RouteCoreAsync(context, tenantId, ct, config);
+    }
+
+    private async ValueTask<ProviderRouteResult> RouteCoreAsync(ProviderRouteContext context, string? tenantId, CancellationToken ct,
+        AppConfig? proposedConfig = null)
     {
         var executionScope = _kernelObservability.BeginExecution(context);
-        var snapshot = tenantId is null ? GetSnapshot() :
-            ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
+        var snapshot = proposedConfig is not null
+            ? ProviderRoutingSnapshot.Build(proposedConfig, ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath))
+            : tenantId is null ? GetSnapshot() :
+                ProviderRoutingSnapshot.Build(_store.Load(), ProviderRoutingSnapshotStamp.ForPath(_store.ConfigPath));
         var connections = tenantId is null ? snapshot.ConnectionsById : snapshot.ConnectionsById
             .Where(pair => pair.Value.TenantId == tenantId).ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         var bindings = snapshot.GetBindings(context.Capability);

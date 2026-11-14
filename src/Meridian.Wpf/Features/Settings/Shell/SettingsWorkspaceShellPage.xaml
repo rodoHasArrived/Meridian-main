@@ -102,6 +102,8 @@
                         </StackPanel>
                     </StackPanel>
 
+                    <controls:ConfigurationChangeBanner Margin="0,14,0,0" />
+
                     <TextBlock Text="{Binding HeroSummaryText}"
                                Margin="0,18,0,0"
                                FontSize="14"

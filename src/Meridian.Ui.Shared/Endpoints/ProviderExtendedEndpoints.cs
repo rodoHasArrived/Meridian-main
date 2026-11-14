@@ -5,12 +5,14 @@ using Meridian.Contracts.Api;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -21,6 +23,7 @@ public static class ProviderExtendedEndpoints
 {
     public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        app.MapProviderValidationEndpoints(jsonOptions);
         var group = app.MapGroup("").WithTags("Providers");
 
         // Get provider by name
@@ -81,37 +84,31 @@ public static class ProviderExtendedEndpoints
         .WithDescription("Returns current failover configuration including priority chain and timeout settings.")
         .Produces(200);
 
-        // Trigger failover
-        group.MapPost(UiApiRoutes.ProviderFailoverTrigger, (FailoverTriggerRequest? req) =>
-        {
-            return Results.Json(new
-            {
-                triggered = true,
-                targetProvider = req?.TargetProvider,
-                message = "Failover request has been processed",
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        // Both compatibility controls await the same committed runtime hand-off as /api/failover/force.
+        group.MapPost(UiApiRoutes.ProviderFailoverTrigger, (
+            HttpContext context, [FromServices] ConfigStore store,
+            [FromServices] StreamingFailoverRegistry? registry, [FromServices] ILoggerFactory loggerFactory,
+            FailoverTriggerRequest? req, CancellationToken ct) =>
+            FailoverControlOperations.ExecuteAsync(context, store, registry, loggerFactory, jsonOptions,
+                req?.RuleId, req?.TargetProvider, reset: false, ct))
         .WithName("TriggerProviderFailover").RequirePermission(UserPermission.ManageProviders)
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
-        .WithDescription("Manually triggers a failover to a specified target provider.")
-        .Produces(200)
+        .RequireWorkstationTenantScope()
+        .WithDescription("Switches the live streaming provider and returns only after the hand-off commits.")
+        .Produces(200).ProducesValidationProblem().ProducesProblem(404).ProducesProblem(409).ProducesProblem(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Reset failover
-        group.MapPost(UiApiRoutes.ProviderFailoverReset, () =>
-        {
-            return Results.Json(new
-            {
-                reset = true,
-                message = "Failover state has been reset to defaults",
-                timestamp = DateTimeOffset.UtcNow
-            }, jsonOptions);
-        })
+        group.MapPost(UiApiRoutes.ProviderFailoverReset, (
+            HttpContext context, [FromServices] ConfigStore store,
+            [FromServices] StreamingFailoverRegistry? registry, [FromServices] ILoggerFactory loggerFactory,
+            FailoverTriggerRequest? req, CancellationToken ct) =>
+            FailoverControlOperations.ExecuteAsync(context, store, registry, loggerFactory, jsonOptions,
+                req?.RuleId, null, reset: true, ct))
         .WithName("ResetProviderFailover").RequirePermission(UserPermission.ManageProviders)
         .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageProviders))
-        .WithDescription("Resets the failover state to defaults, clearing any manual overrides.")
-        .Produces(200)
+        .RequireWorkstationTenantScope()
+        .WithDescription("Returns the selected live failover rule to its configured primary provider.")
+        .Produces(200).ProducesProblem(404).ProducesProblem(409).ProducesProblem(503)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Rate limits
@@ -133,15 +130,15 @@ public static class ProviderExtendedEndpoints
             return Results.Json(
                 new ProviderRateLimitHistoryResponse(
                     providerName,
-                    hours ?? 24,
-                    Array.Empty<ProviderRateLimitEventDto>(),
+                    Math.Clamp(hours ?? 24, 1, 168),
+                    ProviderRateLimitHistory.Shared.Read(providerName, hours ?? 24),
                     DateTimeOffset.UtcNow,
-                    IsAvailable: false,
-                    Message: "Runtime rate-limit history is not retained. Use /api/providers/rate-limits for the current snapshot."),
+                    IsAvailable: true,
+                    Message: "Process-lifetime history, bounded to the latest 1024 observations across providers. Cleared on host restart; older observations may be evicted."),
                 jsonOptions);
         })
         .WithName("GetProviderRateLimitHistory").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
-        .WithDescription("Legacy route retained for compatibility; rate-limit event history is not retained.")
+        .WithDescription("Returns bounded process-lifetime rate-limit and provider-rotation observations.")
         .Produces<ProviderRateLimitHistoryResponse>(200);
 
         // Provider capabilities
@@ -226,21 +223,30 @@ public static class ProviderExtendedEndpoints
         .Produces(200)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
-        // Failover thresholds
+        // Report retained configuration rather than invented global failure/cooldown thresholds.
         group.MapGet(UiApiRoutes.ProviderFailoverThresholds, ([FromServices] ConfigStore store) =>
         {
-            var cfg = store.Load();
+            var settings = store.Load().DataSources ?? new DataSourcesConfig();
+            var rules = settings.FailoverRules ?? [];
             return Results.Json(new
             {
-                maxConsecutiveFailures = 3,
-                timeoutSeconds = cfg.DataSources?.FailoverTimeoutSeconds ?? 30,
-                healthCheckIntervalSeconds = 60,
-                cooldownSeconds = 300,
+                maxConsecutiveFailures = rules.Length == 1 ? (int?)rules[0].FailoverThreshold : null,
+                timeoutSeconds = settings.FailoverTimeoutSeconds,
+                healthCheckIntervalSeconds = settings.HealthCheckIntervalSeconds,
+                autoRecover = settings.AutoRecover,
+                rules = rules.Select(rule => new
+                {
+                    rule.Id,
+                    rule.FailoverThreshold,
+                    rule.RecoveryThreshold,
+                    rule.DataQualityThreshold,
+                    rule.MaxLatencyMs
+                }).ToArray(),
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
         .WithName("GetProviderFailoverThresholds").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
-        .WithDescription("Returns failover threshold values including max failures, cooldown, and health check intervals.")
+        .WithDescription("Returns configured failover timing and each rule's actual failure, recovery, quality and latency thresholds.")
         .Produces(200);
 
         // Provider health
@@ -562,6 +568,6 @@ public static class ProviderExtendedEndpoints
         capabilities.SupportsHistoricalAuctions,
         capabilities.SupportedMarkets.ToArray());
 
-    private sealed record FailoverTriggerRequest(string? TargetProvider);
+    private sealed record FailoverTriggerRequest(string? TargetProvider = null, string? RuleId = null);
     private sealed record ProviderSwitchRequest(string? ProviderName, bool SaveAsDefault);
 }

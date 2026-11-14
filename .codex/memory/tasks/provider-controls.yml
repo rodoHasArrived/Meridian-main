@@ -1,0 +1,22 @@
+version: 1
+task_id: provider-controls
+intent: implementation
+selected_skill: meridian-web-ui-ux-architect
+work_mode: implementation
+branch: codex/provider-controls
+planned_paths:
+  - src/Meridian.Application/**
+  - src/Meridian.Contracts/**
+  - src/Meridian.Core/Config/**
+  - src/Meridian.Infrastructure/**
+  - src/Meridian.Ui.Shared/**
+  - src/Meridian.Ui/dashboard/**
+  - tests/**
+memory_tags:
+  - validation
+success_criteria:
+  - Real failover operations and browser controls report actual runtime outcomes.
+  - Provider tiers, priorities, validation profiles and routing previews preserve provenance and vendor ceilings.
+  - Configuration saves are validated and atomic with explicit pending impact and guarded data semantics.
+  - Symbol mapping rollout and bounded rate-limit history are inspectable in the browser.
+promotion_candidates: []

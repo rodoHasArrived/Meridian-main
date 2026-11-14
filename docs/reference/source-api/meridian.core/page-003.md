@@ -6,6 +6,144 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SyntheticScenarioConfig
+
+Qualified name: <code>Meridian.Core.Config.SyntheticScenarioConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/SyntheticMarketDataConfig.cs:23](../../../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs#L23).
+
+```csharp
+public sealed record SyntheticScenarioConfig(bool Enabled = false, int ThrottleEveryNCalls = 0, int TimeoutEveryNCalls = 0, int DegradeEveryNEvents = 0, int ReplayBarsLimit = 0, int BackfillBarsLimit = 0, int ThrottleDelayMs = 150, bool ApplyToHistorical = true, bool ApplyToStreaming = true);
+```
+
+## TiingoConfig
+
+Qualified name: <code>Meridian.Core.Config.TiingoConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:233](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L233).
+
+Tiingo provider configuration. Best for: High-quality dividend-adjusted OHLCV with corporate actions. Free tier: 1,000 requests/day, 50 requests/hour.
+
+```csharp
+public sealed record TiingoConfig(bool Enabled = true, string? ApiToken = null, int Priority = BackfillProviderCatalog.TiingoPriority, int RateLimitPerHour = BackfillProviderCatalog.TiingoPerHour, string TierId = "free");
+```
+
+## TracingConfig
+
+Qualified name: <code>Meridian.Core.Config.TracingConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/TracingConfig.cs:7](../../../../src/Meridian.Core/Config/TracingConfig.cs#L7).
+
+Restart-required, opt-in distributed tracing settings. Exporters remain disabled unless explicitly selected; an OTLP destination is required when OTLP export is enabled.
+
+```csharp
+public sealed record TracingConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Enabled { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:9](../../../../src/Meridian.Core/Config/TracingConfig.cs#L9) |  |
+| <code>public string ServiceName { get; init; } = &quot;Meridian&quot;;</code> | [src/Meridian.Core/Config/TracingConfig.cs:10](../../../../src/Meridian.Core/Config/TracingConfig.cs#L10) |  |
+| <code>public string ServiceVersion { get; init; } = &quot;1.0.0&quot;;</code> | [src/Meridian.Core/Config/TracingConfig.cs:11](../../../../src/Meridian.Core/Config/TracingConfig.cs#L11) |  |
+| <code>public string Environment { get; init; } = &quot;development&quot;;</code> | [src/Meridian.Core/Config/TracingConfig.cs:12](../../../../src/Meridian.Core/Config/TracingConfig.cs#L12) |  |
+| <code>public bool EnableConsoleExporter { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:13](../../../../src/Meridian.Core/Config/TracingConfig.cs#L13) |  |
+| <code>public bool EnableOtlpExporter { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:14](../../../../src/Meridian.Core/Config/TracingConfig.cs#L14) |  |
+| <code>public string? OtlpEndpoint { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:15](../../../../src/Meridian.Core/Config/TracingConfig.cs#L15) |  |
+| <code>public string? OtlpHeaders { get; init; }</code> | [src/Meridian.Core/Config/TracingConfig.cs:16](../../../../src/Meridian.Core/Config/TracingConfig.cs#L16) |  |
+| <code>public double SamplingRatio { get; init; } = 1.0;</code> | [src/Meridian.Core/Config/TracingConfig.cs:17](../../../../src/Meridian.Core/Config/TracingConfig.cs#L17) |  |
+| <code>public int FlushTimeoutMilliseconds { get; init; } = 5000;</code> | [src/Meridian.Core/Config/TracingConfig.cs:18](../../../../src/Meridian.Core/Config/TracingConfig.cs#L18) |  |
+
+## TwelveDataConfig
+
+Qualified name: <code>Meridian.Core.Config.TwelveDataConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:323](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L323).
+
+Twelve Data options; credentials are resolved separately from the provider settings UI.
+
+```csharp
+public sealed record TwelveDataConfig(bool Enabled = true, int Priority = BackfillProviderCatalog.TwelveDataPriority, int RateLimitPerMinute = BackfillProviderCatalog.TwelveDataPerMinute, string TierId = "free");
+```
+
+## ValidatedConfig
+
+Qualified name: <code>Meridian.Core.Config.ValidatedConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ValidatedConfig.cs:17](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L17).
+
+Represents a validated, normalized configuration that has passed through the full configuration pipeline. This is the single output type from all configuration entry points (wizard, auto-config, file load, hot reload).
+
+```csharp
+public sealed record ValidatedConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required AppConfig Config { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:22](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L22) | The normalized and validated configuration. |
+| <code>public required bool IsValid { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:27](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L27) | Whether the configuration passed validation. |
+| <code>public string? SourcePath { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:32](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L32) | The source path of the configuration file (if loaded from file). |
+| <code>public IReadOnlyList&lt;string&gt; ValidationErrors { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:37](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L37) | Validation errors, if any. |
+| <code>public IReadOnlyList&lt;string&gt; AppliedFixes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:42](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L42) | Self-healing fixes that were applied to the configuration. |
+| <code>public IReadOnlyList&lt;string&gt; BlockedFixes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:49](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L49) | Self-healing fixes that were not applied because production-strictness mode refused them (MDC_CONFIG_STRICTNESS=production). Each entry is an actionable description of the required manual correction. |
+| <code>public IReadOnlyList&lt;string&gt; Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:54](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L54) | Warnings that should be surfaced to the user but don&#x27;t prevent operation. |
+| <code>public string? EnvironmentName { get; init; }</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:59](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L59) | The environment name used for overlays (e.g., &quot;Production&quot;, &quot;Development&quot;). |
+| <code>public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:64](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L64) | When the configuration was loaded/validated. |
+| <code>public ConfigurationOrigin Source { get; init; } = ConfigurationOrigin.File;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:69](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L69) | How the configuration was sourced. |
+| <code>public static ValidatedConfig FromConfig(AppConfig config, bool isValid, string? sourcePath = null, IReadOnlyList&lt;string&gt;? validationErrors = null, IReadOnlyList&lt;string&gt;? appliedFixes = null, IReadOnlyList&lt;string&gt;? warnings = null, string? environmentName = null, ConfigurationOrigin source = ConfigurationOrigin.File, IReadOnlyList&lt;string&gt;? blockedFixes = null);</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:74](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L74) | Creates a validated config from a raw AppConfig after running it through validation. |
+| <code>public static ValidatedConfig Failed(AppConfig? config, IReadOnlyList&lt;string&gt; errors, string? sourcePath = null, ConfigurationOrigin source = ConfigurationOrigin.File);</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:103](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L103) | Creates a ValidatedConfig representing a failure state. |
+| <code>public static ValidatedConfig Default() =&gt; …;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:123](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L123) | Creates a ValidatedConfig with default/empty configuration. |
+| <code>public static implicit operator AppConfig(ValidatedConfig validated) =&gt; …;</code> | [src/Meridian.Core/Config/ValidatedConfig.cs:134](../../../../src/Meridian.Core/Config/ValidatedConfig.cs#L134) | Implicit conversion to AppConfig for backwards compatibility. |
+
+## ValidationPipelineConfig
+
+Qualified name: <code>Meridian.Core.Config.ValidationPipelineConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/AppConfig.cs:196](../../../../src/Meridian.Core/Config/AppConfig.cs#L196).
+
+Configuration for the F# validation pipeline stage. When enabled, every incoming Meridian.Domain.Events.MarketEvent is validated against the F# Railway-Oriented validators before it is persisted. Events that fail validation are written to the dead-letter sink instead of primary storage.
+
+```csharp
+public sealed record ValidationPipelineConfig(bool Enabled = false, bool UseRealTimeMode = false);
+```
+
+## YahooFinanceConfig
+
+Qualified name: <code>Meridian.Core.Config.YahooFinanceConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:156](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L156).
+
+Yahoo Finance provider configuration.
+
+```csharp
+public sealed record YahooFinanceConfig(bool Enabled = true, int Priority = BackfillProviderCatalog.YahooPriority, int RateLimitPerHour = BackfillProviderCatalog.YahooPerHour, string TierId = "free");
+```
+
+## IProviderCredentialStore
+
+Qualified name: <code>Meridian.Core.Contracts.IProviderCredentialStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:7](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L7).
+
+Compatibility contract for provider-module setup. Production implementations must delegate to the encrypted, audited credential vault; no implementation may persist plaintext sidecars.
+
+```csharp
+public interface IProviderCredentialStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task SaveCredentialsAsync(string moduleId, IReadOnlyDictionary&lt;string, string&gt; values, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:10](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L10) | Persists credential key/value pairs for a provider module. |
+| <code>Task&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; GetCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:13](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L13) | Returns all credential key/value pairs stored for a provider module. |
+| <code>async Task&lt;IReadOnlyDictionary&lt;string, string&gt;?&gt; ReadCredentialRecordAsync(string moduleId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:20](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L20) | Reads one selected record, preserving an empty retained record; null proves absence. Compatibility stores that cannot prove absence conservatively select their returned record, so missing fields cannot borrow ambient credentials. |
+| <code>Task&lt;IReadOnlySet&lt;string&gt;&gt; GetStoredKeyNamesAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:24](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L24) | Returns the set of credential key names that have stored (non-empty) values. |
+| <code>Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default);</code> | [src/Meridian.Core/Contracts/IProviderCredentialStore.cs:27](../../../../src/Meridian.Core/Contracts/IProviderCredentialStore.cs#L27) | Removes all stored credentials for a provider module. |
+
 ## CurrencyMinorUnits
 
 Qualified name: <code>Meridian.Core.Currency.CurrencyMinorUnits</code>. Kind: `class`.
@@ -862,186 +1000,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static readonly NullReconnectionMetrics Instance = new ();</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:26](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L26) |  |
 | <code>public void RecordAttempt(string provider, bool success);</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:28](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L28) |  |
-
-## ConnectionWarmUp
-
-Qualified name: <code>Meridian.Core.Performance.ConnectionWarmUp</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:12](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L12).
-
-Connection warm-up utilities for establishing and priming network connections before critical market hours to minimize latency variance.
-
-```csharp
-public sealed class ConnectionWarmUp
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WarmUpStatistics? LastWarmUpStats { get; private set; }</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:21](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L21) | Statistics from the last warm-up operation. |
-| <code>public ConnectionWarmUp(TimeSpan? warmUpInterval = null, int warmUpIterations = 10);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:23](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L23) |  |
-| <code>public bool ShouldWarmUp();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:32](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L32) | Determines if a warm-up cycle should be performed based on elapsed time. |
-| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Func&lt;CancellationToken, Task&gt; warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:47](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L47) | Executes a warm-up cycle using the provided action. Measures latency statistics for monitoring. |
-| <code>public async Task&lt;WarmUpStatistics&gt; ExecuteWarmUpAsync(Action warmUpAction, CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:103](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L103) | Executes a synchronous warm-up cycle using the provided action. The action is executed synchronously, but delays between iterations use async Task.Delay. |
-
-## ExponentialBackoffRetry
-
-Qualified name: <code>Meridian.Core.Performance.ExponentialBackoffRetry</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:182](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L182).
-
-Exponential backoff retry logic for connection management.
-
-```csharp
-public sealed class ExponentialBackoffRetry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int CurrentRetryCount =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:192](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L192) |  |
-| <code>public bool CanRetry =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:193](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L193) |  |
-| <code>public ExponentialBackoffRetry(TimeSpan? initialDelay = null, TimeSpan? maxDelay = null, int maxRetries = - 1, double multiplier = 2.0, double jitterFactor = 0.1);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:195](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L195) |  |
-| <code>public TimeSpan GetNextDelay();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:212](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L212) | Gets the next delay duration and increments the retry counter. |
-| <code>public async Task WaitAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:228](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L228) | Waits for the next retry delay. |
-| <code>public void Reset();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:237](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L237) | Resets the retry counter and delay to initial values. |
-
-## HeartbeatMonitor
-
-Qualified name: <code>Meridian.Core.Performance.HeartbeatMonitor</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:246](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L246).
-
-Heartbeat monitor for detecting connection health and latency issues.
-
-```csharp
-public sealed class HeartbeatMonitor : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsRunning =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:262](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L262) |  |
-| <code>public long ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:263](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L263) |  |
-| <code>public long TotalHeartbeats =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:264](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L264) |  |
-| <code>public long TotalFailures =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:265](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L265) |  |
-| <code>public double LastLatencyUs =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:266](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L266) |  |
-| <code>public TimeSpan TimeSinceLastSuccess { get; }</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:268](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L268) |  |
-| <code>public bool IsHealthy =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:280](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L280) |  |
-| <code>public event EventHandler&lt;HeartbeatResult&gt;? HeartbeatCompleted;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:282](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L282) |  |
-| <code>public event EventHandler? ConnectionUnhealthy;</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:283](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L283) |  |
-| <code>public HeartbeatMonitor(Func&lt;CancellationToken, Task&lt;bool&gt;&gt; heartbeatFunc, TimeSpan? interval = null, TimeSpan? timeout = null, Action&lt;HeartbeatResult&gt;? onHeartbeat = null);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:285](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L285) |  |
-| <code>public void Start();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:297](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L297) |  |
-| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:306](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L306) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:393](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L393) |  |
-
-## HeartbeatResult
-
-Qualified name: <code>Meridian.Core.Performance.HeartbeatResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs:403](../../../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs#L403).
-
-Result of a heartbeat check.
-
-```csharp
-public readonly record struct HeartbeatResult(bool Success, double LatencyUs, DateTimeOffset Timestamp);
-```
-
-## HighResolutionTimestamp
-
-Qualified name: <code>Meridian.Core.Performance.HighResolutionTimestamp</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:236](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L236).
-
-High-performance timestamp utilities.
-
-```csharp
-public static class HighResolutionTimestamp
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static long GetTimestamp() =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:246](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L246) | Gets a high-resolution timestamp in ticks. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static double GetElapsedMicroseconds(long startTimestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:252](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L252) | Gets elapsed time since the specified timestamp in microseconds. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static double GetElapsedNanoseconds(long startTimestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:262](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L262) | Gets elapsed time since the specified timestamp in nanoseconds. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static DateTimeOffset ToDateTimeOffset(long timestamp);</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:273](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L273) | Converts a high-resolution timestamp to a DateTimeOffset. More accurate than DateTimeOffset.UtcNow for relative timing. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static DateTimeOffset GetCurrentTime();</code> | [src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs:283](../../../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs#L283) | Gets the current time with high resolution. |
-
-## RawQuoteEvent
-
-Qualified name: <code>Meridian.Core.Performance.RawQuoteEvent</code>. Kind: `struct`.
-
-Source: [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:17](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L17).
-
-Zero-allocation struct representation of a Best-Bid/Offer quote event for the hot path. Uses LayoutKind.Sequential for predictable memory layout in the SpscRingBuffer{T} backing array.
-
-```csharp
-public readonly struct RawQuoteEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public readonly long TimestampTicks;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:25](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L25) | Timestamp as UTC ticks (100-nanosecond intervals since 0001-01-01 UTC, i.e. DateTimeOffset.UtcTicks). Reconstruct the wall-clock time with new DateTimeOffset(TimestampTicks, TimeSpan.Zero). |
-| <code>public readonly int SymbolHash;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:31](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L31) | Pre-computed symbol identifier assigned by SymbolTable.GetOrAdd. Resolve back to the symbol string with SymbolTable.TryGetSymbol. |
-| <code>public readonly decimal BidPrice;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:34](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L34) | Best bid price. |
-| <code>public readonly long BidSize;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:37](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L37) | Best bid size (shares or contracts). |
-| <code>public readonly decimal AskPrice;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:40](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L40) | Best ask price. |
-| <code>public readonly long AskSize;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:43](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L43) | Best ask size (shares or contracts). |
-| <code>public readonly long Sequence;</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:46](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L46) | Provider-assigned sequence number for ordering and gap detection. |
-| <code>public RawQuoteEvent(long timestampTicks, int symbolHash, decimal bidPrice, long bidSize, decimal askPrice, long askSize, long sequence);</code> | [src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs:58](../../../../src/Meridian.Core/Performance/Performance/RawQuoteEvent.cs#L58) | Creates a new RawQuoteEvent. |
-
-## RawTradeEvent
-
-Qualified name: <code>Meridian.Core.Performance.RawTradeEvent</code>. Kind: `struct`.
-
-Source: [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:16](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L16).
-
-Zero-allocation struct representation of a trade event for the hot path. Uses LayoutKind.Sequential for predictable memory layout in the SpscRingBuffer{T} backing array.
-
-```csharp
-public readonly struct RawTradeEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public readonly long TimestampTicks;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:24](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L24) | Timestamp as UTC ticks (100-nanosecond intervals since 0001-01-01 UTC, i.e. DateTimeOffset.UtcTicks). Reconstruct the wall-clock time with new DateTimeOffset(TimestampTicks, TimeSpan.Zero). |
-| <code>public readonly int SymbolHash;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:30](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L30) | Pre-computed symbol identifier assigned by SymbolTable.GetOrAdd. Resolve back to the symbol string with SymbolTable.TryGetSymbol. |
-| <code>public readonly decimal Price;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:33](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L33) | Execution price of the trade. |
-| <code>public readonly long Size;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:36](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L36) | Number of shares or contracts traded. |
-| <code>public readonly byte Aggressor;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:43](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L43) | Aggressor side encoded as the underlying byte value of Meridian.Contracts.Domain.Enums.AggressorSide: 0 = Unknown, 1 = Buy, 2 = Sell. |
-| <code>public readonly long Sequence;</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:46](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L46) | Provider-assigned sequence number for ordering and gap detection. |
-| <code>public RawTradeEvent(long timestampTicks, int symbolHash, decimal price, long size, byte aggressor, long sequence);</code> | [src/Meridian.Core/Performance/Performance/RawTradeEvent.cs:57](../../../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs#L57) | Creates a new RawTradeEvent. |
-
-## SpscRingBuffer (generic arity 1)
-
-Qualified name: <code>Meridian.Core.Performance.SpscRingBuffer</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:41](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L41).
-
-Lock-free, single-producer/single-consumer ring buffer backed by a pre-allocated array.
-
-```csharp
-public sealed class SpscRingBuffer<T> where T : struct
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SpscRingBuffer(int capacity);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:59](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L59) | Creates a new ring buffer with a capacity rounded up to the next power of two. |
-| <code>public int Capacity =&gt; …;</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:72](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L72) | Gets the actual buffer capacity (the next power of two ≥ the requested capacity). |
-| <code>public int Count { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:78](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L78) | Gets an approximate count of items currently available to read. The value may be stale by the time the caller acts on it. |
-| <code>public bool IsEmpty { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:85](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L85) | Gets whether the buffer currently has no items to read. |
-| <code>public bool IsFull { get; }</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:92](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L92) | Gets whether the buffer is currently full. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryWrite(in T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:111](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L111) | Tries to write item into the buffer. |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public bool TryRead(out T item);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:139](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L139) | Tries to read the next item from the buffer. |
-| <code>public int DrainTo(Span&lt;T&gt; destination, int maxItems = int.MaxValue);</code> | [src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs:162](../../../../src/Meridian.Core/Performance/Performance/SpscRingBuffer.cs#L162) | Drains up to maxItems items into destination. |

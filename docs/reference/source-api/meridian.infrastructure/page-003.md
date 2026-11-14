@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderRateLimitHistory
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L6).
+
+Bounded process-lifetime quota evidence, excluding symbols, credentials and request payloads.
+
+```csharp
+public sealed class ProviderRateLimitHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8) |  |
+| <code>public ProviderRateLimitHistory(int capacity = 1024);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:13](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L13) |  |
+| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L20) |  |
+| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L34) |  |
+
+## ProviderRateLimitProfile
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs#L39).
+
+Standardized rate limit profile for provider metadata.
+
+```csharp
+public sealed record ProviderRateLimitProfile(int MaxRequestsPerWindow, TimeSpan Window, TimeSpan? MinDelay = null);
+```
+
 ## ProviderRateLimitTracker
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker</code>. Kind: `class`.
@@ -563,12 +596,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CanonicalRegistrySymbolResolver(ICanonicalSymbolRegistry registry, ISymbolResolver? inner = null, ILogger? log = null, SymbolResolutionMode mode = SymbolResolutionMode.Canonical, Action&lt;SymbolResolutionMismatch&gt;? mismatchObserver = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:21](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L21) |  |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L35) |  |
-| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L37) |  |
-| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:59](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L59) |  |
-| <code>public Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:93](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L93) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:223](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L223) |  |
+| <code>public CanonicalRegistrySymbolResolver(ICanonicalSymbolRegistry registry, ISymbolResolver? inner = null, ILogger? log = null, SymbolResolutionMode mode = SymbolResolutionMode.Canonical, Action&lt;SymbolResolutionMismatch&gt;? mismatchObserver = null, IReadOnlyDictionary&lt;string, SymbolResolutionMode&gt;? providerModes = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L22) |  |
+| <code>public SymbolResolutionMode GetProviderMode(string provider) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L39) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L42) |  |
+| <code>public async Task&lt;SymbolResolution?&gt; ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L44) |  |
+| <code>public async Task&lt;string?&gt; MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L66) |  |
+| <code>public Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAsync(string query, int maxResults = 10, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:101](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L101) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs:234](../../../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/CanonicalRegistrySymbolResolver.cs#L234) |  |
 
 ## ISymbolResolver
 
@@ -938,7 +972,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:478](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L478).
+Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:480](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L480).
 
 Finnhub company profile data.
 
@@ -950,18 +984,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:481](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L481) |  |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:484](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L484) |  |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:487](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L487) |  |
-| <code>[JsonPropertyName(&quot;finnhubIndustry&quot;)] public string? Industry { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:490](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L490) |  |
-| <code>[JsonPropertyName(&quot;ipo&quot;)] public string? IpoDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:493](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L493) |  |
-| <code>[JsonPropertyName(&quot;logo&quot;)] public string? LogoUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:496](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L496) |  |
-| <code>[JsonPropertyName(&quot;marketCapitalization&quot;)] public decimal? MarketCap { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:499](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L499) |  |
-| <code>[JsonPropertyName(&quot;name&quot;)] public string? Name { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:502](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L502) |  |
-| <code>[JsonPropertyName(&quot;phone&quot;)] public string? Phone { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:505](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L505) |  |
-| <code>[JsonPropertyName(&quot;shareOutstanding&quot;)] public decimal? SharesOutstanding { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:508](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L508) |  |
-| <code>[JsonPropertyName(&quot;ticker&quot;)] public string? Ticker { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:511](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L511) |  |
-| <code>[JsonPropertyName(&quot;weburl&quot;)] public string? WebUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:514](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L514) |  |
+| <code>[JsonPropertyName(&quot;country&quot;)] public string? Country { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:483](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L483) |  |
+| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:486](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L486) |  |
+| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:489](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L489) |  |
+| <code>[JsonPropertyName(&quot;finnhubIndustry&quot;)] public string? Industry { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:492](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L492) |  |
+| <code>[JsonPropertyName(&quot;ipo&quot;)] public string? IpoDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:495](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L495) |  |
+| <code>[JsonPropertyName(&quot;logo&quot;)] public string? LogoUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:498](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L498) |  |
+| <code>[JsonPropertyName(&quot;marketCapitalization&quot;)] public decimal? MarketCap { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:501](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L501) |  |
+| <code>[JsonPropertyName(&quot;name&quot;)] public string? Name { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:504](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L504) |  |
+| <code>[JsonPropertyName(&quot;phone&quot;)] public string? Phone { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:507](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L507) |  |
+| <code>[JsonPropertyName(&quot;shareOutstanding&quot;)] public decimal? SharesOutstanding { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:510](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L510) |  |
+| <code>[JsonPropertyName(&quot;ticker&quot;)] public string? Ticker { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:513](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L513) |  |
+| <code>[JsonPropertyName(&quot;weburl&quot;)] public string? WebUrl { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:516](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L516) |  |
 
 ## FinnhubCorporateActionProvider
 
@@ -989,7 +1023,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:448](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L448).
+Source: [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:450](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L450).
 
 Finnhub earnings data.
 
@@ -1001,14 +1035,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;actual&quot;)] public decimal? Actual { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:451](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L451) |  |
-| <code>[JsonPropertyName(&quot;estimate&quot;)] public decimal? Estimate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:454](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L454) |  |
-| <code>[JsonPropertyName(&quot;period&quot;)] public string? Period { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:457](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L457) |  |
-| <code>[JsonPropertyName(&quot;quarter&quot;)] public int? Quarter { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:460](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L460) |  |
-| <code>[JsonPropertyName(&quot;surprise&quot;)] public decimal? Surprise { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:463](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L463) |  |
-| <code>[JsonPropertyName(&quot;surprisePercent&quot;)] public decimal? SurprisePercent { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:466](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L466) |  |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:469](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L469) |  |
-| <code>[JsonPropertyName(&quot;year&quot;)] public int? Year { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:472](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L472) |  |
+| <code>[JsonPropertyName(&quot;actual&quot;)] public decimal? Actual { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:453](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L453) |  |
+| <code>[JsonPropertyName(&quot;estimate&quot;)] public decimal? Estimate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:456](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L456) |  |
+| <code>[JsonPropertyName(&quot;period&quot;)] public string? Period { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:459](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L459) |  |
+| <code>[JsonPropertyName(&quot;quarter&quot;)] public int? Quarter { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:462](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L462) |  |
+| <code>[JsonPropertyName(&quot;surprise&quot;)] public decimal? Surprise { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:465](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L465) |  |
+| <code>[JsonPropertyName(&quot;surprisePercent&quot;)] public decimal? SurprisePercent { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:468](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L468) |  |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:471](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L471) |  |
+| <code>[JsonPropertyName(&quot;year&quot;)] public int? Year { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:474](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L474) |  |
 
 ## FinnhubHistoricalDataProvider
 
@@ -1031,17 +1065,17 @@ Declared public members:
 | <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L44) |  |
 | <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L49) |  |
 | <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L50) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L51) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L52) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = new () { Intraday = true, Dividends = true, Splits = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;JP&quot;, &quot;CN&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L58) | Finnhub supports intraday bars and corporate actions (raw prices, not adjusted). Wide market coverage: US, UK, DE, CA, AU, HK, JP, CN. |
-| <code>public static IReadOnlyList&lt;string&gt; SupportedResolutions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L70) | Supported candle resolutions. |
-| <code>public FinnhubHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:72](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L72) |  |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:86](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L86) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:107](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L107) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:113](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L113) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, string resolution, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:211](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L211) | Get intraday bars for a symbol. |
-| <code>public async Task&lt;IReadOnlyList&lt;FinnhubEarning&gt;&gt; GetEarningsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:302](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L302) | Get basic earnings data for a symbol. |
-| <code>public async Task&lt;FinnhubCompanyProfile?&gt; GetCompanyProfileAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:335](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L335) | Get company profile data. |
+| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L53) |  |
+| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L54) |  |
+| <code>public override HistoricalDataCapabilities Capabilities { get; } = new () { Intraday = true, Dividends = true, Splits = true, SupportedMarkets = [&quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;, &quot;CA&quot;, &quot;AU&quot;, &quot;HK&quot;, &quot;JP&quot;, &quot;CN&quot;]};</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:60](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L60) | Finnhub supports intraday bars and corporate actions (raw prices, not adjusted). Wide market coverage: US, UK, DE, CA, AU, HK, JP, CN. |
+| <code>public static IReadOnlyList&lt;string&gt; SupportedResolutions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:72](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L72) | Supported candle resolutions. |
+| <code>public FinnhubHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(httpClient, log, runtimeOptions : runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L74) |  |
+| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L88) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:109](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L109) |  |
+| <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:115](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L115) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, string resolution, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L213) | Get intraday bars for a symbol. |
+| <code>public async Task&lt;IReadOnlyList&lt;FinnhubEarning&gt;&gt; GetEarningsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:304](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L304) | Get basic earnings data for a symbol. |
+| <code>public async Task&lt;FinnhubCompanyProfile?&gt; GetCompanyProfileAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs#L337) | Get company profile data. |
 
 ## FinnhubSymbolSearchProvider
 
@@ -1089,68 +1123,3 @@ A reviewed mapping from a FRED series to an exact contractual index and explicit
 ```csharp
 public sealed record FredEconomicSeriesDefinition(string SeriesId, string IndexName, BondMarketObservationKind Kind, BondMarketValueUnit Unit, string SourceName, string? Currency = null);
 ```
-
-## FredHistoricalDataProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L31).
-
-Historical provider for FRED economic time series. Legacy chart clients can request explicitly synthetic bars. Fixed-income consumers use GetRateObservationsAsync, which preserves units and vintage evidence without OHLC conversion.
-
-```csharp
-public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISecurityRateObservationProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L36) |  |
-| <code>public override string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L37) |  |
-| <code>public override string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L38) |  |
-| <code>public override int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L41) |  |
-| <code>public override TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L42) |  |
-| <code>public override int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L43) |  |
-| <code>public override TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L44) |  |
-| <code>public override HistoricalDataCapabilities Capabilities { get; } = HistoricalDataCapabilities.BarsOnly.WithMarkets(&quot;US&quot;);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:46](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L46) |  |
-| <code>public FredHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null) : base(httpClient, log);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L49) |  |
-| <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L55) |  |
-| <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L74) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;SecurityRateObservationDto&gt;&gt; GetRateObservationsAsync(string seriesId, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs:137](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.cs#L137) | Dedicated rate/fixing ingress. FRED&#x27;s realtime dates are vintages, never fabricated publication timestamps. |
-
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:21](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L21).
-
-```csharp
-public sealed partial class FredHistoricalDataProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;FredEconomicObservationsResult&gt; GetEconomicObservationsAsync(FredEconomicSeriesDefinition definition, DateOnly from, DateOnly to, DateOnly vintageDate, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredHistoricalDataProvider.EconomicObservations.cs#L28) | Fetches typed, vintage-bound index observations independently of synthetic OHLC bars. Series mapping is explicit: benchmark yields are never turned into discount factors. FRED&#x27;s vintage date is retained as a date, not invented as a publication-time instant. |
-
-## FredProviderModule
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Fred.FredProviderModule</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L14).
-
-Owns FRED&#x27;s historical and series-search factories. Configuration is evaluated against the host&#x27;s final credential resolver without connecting to FRED during registration.
-
-```csharp
-public sealed class FredProviderModule : ConfigurableProviderModuleBase, IProviderModuleCapabilityAvailability, IProviderModuleCredentialHints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override string ModuleId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L17) |  |
-| <code>public override string ModuleDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:18](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L18) |  |
-| <code>public IReadOnlyList&lt;string&gt; CredentialKeyHints =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L19) |  |
-| <code>public override ProviderCapabilities[] Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:20](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L20) |  |
-| <code>public static ProviderCapabilityDescriptor Descriptor { get; } = new (&quot;fred&quot;, Historical : typeof(FredHistoricalDataProvider), Search : typeof(FredSymbolSearchProvider), InstrumentTypes :[InstrumentType.Index], HistoricalFactory : static factory =&gt; CreateHistorical(factory), SearchFactory : static factory =&gt; CreateSearch(factory), FactoryOwner : ProviderCapabilityFactoryOwner.Module);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L23) |  |
-| <code>public override void Register(IServiceCollection services, DataSourceRegistry registry);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L30) |  |
-| <code>public bool IsCapabilityConfigured(Type contract, IServiceProvider services);</code> | [src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Fred/FredProviderModule.cs#L41) |  |

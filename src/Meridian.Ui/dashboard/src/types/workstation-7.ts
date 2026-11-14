@@ -1074,6 +1074,11 @@ export interface ProviderIntegrationActivationResult {
   manifestReference?: ProviderIntegrationManifestReference | null;
 }
 
+export interface ProviderRoutingProposedConfig {
+  bindings?: { bindingId: string; priority?: number; enabled?: boolean }[];
+  backfillProviders?: { providerId: string; priority?: number; enabled?: boolean }[];
+}
+
 export interface ProviderRoutePreviewRequest {
   capability: string;
   workspace?: string | null;
@@ -1087,6 +1092,11 @@ export interface ProviderRoutePreviewRequest {
   market?: string | null;
   assetClass?: string | null;
   requireProductionReady?: boolean;
+  proposedConfig?: ProviderRoutingProposedConfig | null;
+  previewBackfill?: boolean;
+  granularity?: string;
+  from?: string | null;
+  to?: string | null;
 }
 
 export interface ProviderRoutePreviewCandidate {
@@ -1119,6 +1129,8 @@ export interface ProviderRoutePreviewResponse {
   policyGate: string | null;
   candidates: ProviderRoutePreviewCandidate[];
   rankedAlternatives?: ProviderRoutePreviewCandidate[] | null;
+  warnings?: string[] | null;
+  isProposed?: boolean;
 }
 
 // --- Backfill mutation types ---
