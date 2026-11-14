@@ -9065,11 +9065,9 @@ Meridian-main
 │   │   │   │   │   │   ├── ui-kit-primitives.virtualization.test.tsx
 │   │   │   │   │   │   ├── use-operator-triage-inbox.ts
 │   │   │   │   │   │   ├── use-workspace-expansion.ts
-│   │   │   │   │   │   ├── workflow-continuity-dock.combined.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.route-mode.combined.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.route-mode.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.test.tsx
-│   │   │   │   │   │   ├── workflow-continuity-dock.tsx
+│   │   │   │   │   │   ├── workflow-context-disclosure.route-mode.test.tsx
+│   │   │   │   │   │   ├── workflow-context-disclosure.test.tsx
+│   │   │   │   │   │   ├── workflow-context-disclosure.tsx
 │   │   │   │   │   │   ├── workspace-header.test.tsx
 │   │   │   │   │   │   ├── workspace-header.tsx
 │   │   │   │   │   │   ├── workspace-header.view-model.test.ts
@@ -10197,7 +10195,7 @@ Meridian-main
 │   │   │   │   │   ├── status-badge.css
 │   │   │   │   │   ├── table-workbench.css
 │   │   │   │   │   ├── ui-kit-primitives.css
-│   │   │   │   │   ├── workflow-continuity-dock.css
+│   │   │   │   │   ├── workflow-context-disclosure.css
 │   │   │   │   │   ├── workspace-nav.css
 │   │   │   │   │   ├── workspace-primitives.css
 │   │   │   │   │   ├── workspace-surface.css
