@@ -96,7 +96,7 @@ jobs:
 
       - name: Set up .NET SDK
         id: dotnet
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
@@ -117,7 +117,7 @@ jobs:
             ${{ runner.os }}-nuget-v1-
 
       # Each restore and test has an independent outcome. An earlier failure must not
-      # hide the other project; the job still fails if any command fails.
+      # hide the other projects; the job still fails if any command fails.
       - name: Restore Meridian integration project
         id: restore-meridian
         if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
@@ -127,6 +127,11 @@ jobs:
         id: restore-direct-lending
         if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
         run: dotnet restore tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj
+
+      - name: Restore Demo integration project
+        id: restore-demo
+        if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
+        run: dotnet restore tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj
 
       - name: Run Meridian service-backed integration tests
         id: test-meridian
@@ -154,6 +159,19 @@ jobs:
             --logger "trx;LogFilePrefix=direct-lending-integrations" \
             --filter "Category=Integration"
 
+      - name: Run Demo service-backed integration tests
+        id: test-demo
+        if: ${{ !cancelled() && steps.dotnet.outcome == 'success' }}
+        run: |
+          dotnet test tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj \
+            -c Release \
+            --no-restore \
+            --collect:"XPlat Code Coverage" \
+            --settings tests/coverlet.runsettings \
+            --results-directory artifacts/test-results/production-certification/demo-integrations \
+            --logger "trx;LogFilePrefix=demo-integrations" \
+            --filter "Category=Integration&Category!=LiveProvider"
+
       - name: Reject missing, failed, skipped or empty deterministic test evidence
         if: always()
         run: >-
@@ -162,6 +180,7 @@ jobs:
           --output artifacts/test-results/production-certification/skip-evidence.json
           --require-trx-prefix meridian-integrations
           --require-trx-prefix direct-lending-integrations
+          --require-trx-prefix demo-integrations
 
       # The runner image ships PostgreSQL 16 client tools and pg_dump refuses to dump the
       # newer postgres:17 service, so this job used to apt-install postgresql-client-17 from

@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Token Browser</title>
 <meta charset="utf-8">
-<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary);}
   .wrap{max-width:1140px;margin:0 auto;}
@@ -23,18 +25,18 @@
   .sw--dim{background:repeating-conic-gradient(#8882 0 25%, transparent 0 50%) 50%/8px 8px;}
   .tok__name{font-family:var(--font-data);font-size:12px;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
   .tok__val{font-family:var(--font-data);font-size:11px;color:var(--text-muted);white-space:nowrap;}
-  .copied{color:var(--green,#3A7A56);}
+  .copied{color:var(--green,#2E7655);}
   .empty{color:var(--text-muted);font-size:13px;padding:20px 0;}
 </style>
 </head>
-<body>
+<body class="mds-specimen">
 <div class="wrap">
   <div class="head"><h1>Token Browser</h1><span class="count" id="count"></span></div>
-  <input class="search" id="q" placeholder="Filter tokens — name or value…" autocomplete="off">
+  <input aria-label="Filter tokens" class="search" id="q" placeholder="Filter tokens — name or value…" autocomplete="off">
   <div id="out"></div>
 </div>
 <script>
-const FILES = ["colors","typography","elevation","base","theme"].map(n=>`../../tokens/${n}.css`);
+const FILES = ["colors","typography","elevation","base","theme"].map(n=>`./${n}.css`);
 const GROUPS = [
   ["Color", /color|bg|text|border|accent|green|red|orange|blue|amber|surface|shadow|focus|overlay|scrim|ring/i],
   ["Typography", /font|leading|tracking|weight|type/i],
@@ -49,7 +51,7 @@ function isColor(name,val){
   return false;
 }
 // Primary: read whatever actually cascaded from the loaded stylesheet closure
-// (../../styles.css @imports every token file). Path-independent — no fetch needed.
+// (../styles.css @imports every token file). Path-independent — no fetch needed.
 function fromStyleSheets(){
   const map=new Map();
   function walk(rules){

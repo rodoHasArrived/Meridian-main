@@ -13,7 +13,7 @@ SCRIPT = REPO_ROOT / "scripts/dev/summarize-web-screenshots.py"
 
 class SummarizeWebScreenshotsTests(unittest.TestCase):
     def run_summary(self, manifest, *, raw=False, environment=None):
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             manifest_path = root / "manifest.json"
             if manifest is not None:

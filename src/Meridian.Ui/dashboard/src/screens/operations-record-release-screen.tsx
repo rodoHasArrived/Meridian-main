@@ -9,12 +9,6 @@ import { cn } from "@/lib/utils";
 import { GateRail, SeverityBadge } from "@/components/operations";
 import { MetricCard } from "@/components/data/concrete";
 import {
-  badgeVariantToSeverityStatus,
-  readinessToneToPanelClass,
-  readinessToneToSeverityStatus,
-  semanticToneToMetricCardTone
-} from "@/lib/shared-tone-mappings";
-import {
   appendViewStateToRoute,
   readViewStateFromSearch,
   stripViewStateFromSearch
@@ -40,6 +34,8 @@ import {
   type OperationsRecordReleaseViewModel
 } from "@/screens/operations-record-release-screen.view-model";
 import type { DataWorkspaceResponse, ReportingWorkspaceResponse } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
+import { statusMetricTone, statusPanelClass, toSeverity } from "@/design-system/status-styles";
 
 interface OperationsRecordReleaseScreenProps {
   data: DataWorkspaceResponse | null;
@@ -130,7 +126,7 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
           gates={vm.steps.map((step) => ({
             key: step.id,
             label: step.label,
-            status: readinessToneToSeverityStatus(step.tone),
+            status: toSeverity(step.tone),
             statusLabel: step.statusLabel
           }))}
         />
@@ -144,14 +140,14 @@ export function OperationsRecordReleaseScreen({ data, reporting }: OperationsRec
                 onClick={() => handleStepSelect(step.id)}
                 className={cn(
                   "flex h-full w-full min-w-0 flex-col justify-between rounded-md border px-3 py-3 text-left text-sm transition-colors hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40",
-                  readinessToneToPanelClass(step.tone),
+                  statusPanelClass(step.tone),
                   step.id === selectedStep?.id && "ring-2 ring-primary/35"
                 )}
               >
                 <span className="min-w-0">
                   <span className="flex items-start justify-between gap-2">
                     <span className="font-mono text-[11px] text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
-                    <SeverityBadge status={readinessToneToSeverityStatus(step.tone)} label={step.statusLabel} />
+                    <SeverityBadge status={toSeverity(step.tone)} label={step.statusLabel} />
                   </span>
                   <span className="mt-2 block font-semibold text-foreground">{step.label}</span>
                   <span className="mt-2 block text-xs leading-5 text-muted-foreground">{step.detail}</span>
@@ -174,15 +170,15 @@ function OperationsRecordStatusBand({ vm }: { vm: OperationsRecordReleaseViewMod
     // The metrics track is clamped because an auto track would size to the
     // metric cards' max-content (their longest unwrapped delta line), which
     // can exceed the band width and collapse the minmax(0,1fr) title column.
-    <div className={cn("grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,33rem)]", readinessToneToPanelClass(vm.tone))}>
+    <div className={cn("grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,33rem)]", statusPanelClass(vm.tone))}>
       <div className="min-w-0 px-1 py-1">
-        <div className="eyebrow-label">{vm.eyebrow}</div>
+        <div className={eyebrowClassName(vm.eyebrow)}>{vm.eyebrow}</div>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="font-display text-[1.25rem] font-semibold leading-tight text-foreground">{vm.title}</h1>
+            <h2 className="font-display text-[1.25rem] font-semibold leading-tight text-foreground">{vm.title}</h2>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-muted-foreground">{vm.summary}</p>
           </div>
-          <SeverityBadge status={readinessToneToSeverityStatus(vm.tone)} label={vm.statusLabel} />
+          <SeverityBadge status={toSeverity(vm.tone)} label={vm.statusLabel} />
         </div>
         <p className="mt-3 rounded-md border border-border/70 bg-background/45 px-3 py-2 text-sm leading-6 text-foreground">
           {vm.statusDetail}
@@ -243,14 +239,14 @@ function SelectedReleaseStepInspector({
   const Icon = iconForReleaseStep(step.id);
   const blockerText = step.tone === "blocked" || step.tone === "review"
     ? step.detail
-    : "No blockers in the loaded payload for this release step.";
+    : "No blockers in the loaded data for this release step.";
 
   return (
     <WorkspaceInspectorHost
       label="Selected release step inspector"
       title={step.label}
       subtitle={step.routeLabel}
-      status={<SeverityBadge status={readinessToneToSeverityStatus(step.tone)} label={step.statusLabel} />}
+      status={<SeverityBadge status={toSeverity(step.tone)} label={step.statusLabel} />}
     >
       <div className="grid gap-3">
         <section className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label="Selected release step status">
@@ -282,7 +278,7 @@ function SelectedReleaseStepInspector({
         <section aria-label="Selected release step evidence">
           <div className="mb-2 flex items-center justify-between gap-2">
             <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Evidence</h3>
-            <SeverityBadge status={readinessToneToSeverityStatus(panel.tone)} label={panel.statusLabel} />
+            <SeverityBadge status={toSeverity(panel.tone)} label={panel.statusLabel} />
           </div>
           {panel.rows.length > 0 ? (
             <div role="list" aria-label={`${step.label} release evidence`} className="grid gap-2">
@@ -348,7 +344,7 @@ function OperationsRecordEvidenceDrawer({ vm }: { vm: OperationsRecordReleaseVie
             <div key={`${template.id}-${template.version}`} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-semibold text-foreground">{template.name}</span>
-                <SeverityBadge status={badgeVariantToSeverityStatus(template.statusVariant)} label={template.statusLabel} />
+                <SeverityBadge status={toSeverity(template.statusVariant)} label={template.statusLabel} />
               </div>
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
                 {template.family} - {template.version} - {template.sectionSummary}
@@ -401,7 +397,7 @@ function ReleaseMetric({ metric }: { metric: OperationsRecordReleaseMetric }) {
       label={metric.label}
       value={metric.value}
       delta={metric.detail}
-      tone={semanticToneToMetricCardTone(metric.tone)}
+      tone={statusMetricTone(metric.tone)}
       trend="flat"
     />
   );
@@ -415,7 +411,7 @@ function ReleaseEvidenceRow({ row }: { row: OperationsRecordReleaseEvidenceRow }
           <span className="block font-semibold text-foreground">{row.label}</span>
           <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
         </span>
-        <SeverityBadge status={readinessToneToSeverityStatus(row.tone)} label={row.value} />
+        <SeverityBadge status={toSeverity(row.tone)} label={row.value} />
       </span>
       <span className="mt-2 inline-flex items-center gap-1.5 font-mono text-[11px] text-primary">
         {row.routeLabel}
@@ -430,7 +426,7 @@ function ReleaseEvidenceRow({ row }: { row: OperationsRecordReleaseEvidenceRow }
         to={row.href}
         role="listitem"
         aria-label={row.ariaLabel}
-        className={cn("block rounded-md border px-3 py-2 hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40", readinessToneToPanelClass(row.tone))}
+        className={cn("block rounded-md border px-3 py-2 hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40", statusPanelClass(row.tone))}
       >
         {content}
       </Link>
@@ -441,7 +437,7 @@ function ReleaseEvidenceRow({ row }: { row: OperationsRecordReleaseEvidenceRow }
     <div
       role="listitem"
       aria-label={row.ariaLabel}
-      className={cn("rounded-md border px-3 py-2", readinessToneToPanelClass(row.tone))}
+      className={cn("rounded-md border px-3 py-2", statusPanelClass(row.tone))}
     >
       {content}
     </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronRight } from "lucide-react";
+import { CalendarCheck, ChevronRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import "@/styles/workspace-nav.css";
 import { useWorkspaceExpansion } from "@/components/meridian/use-workspace-expansion";
@@ -9,6 +9,8 @@ import { DesignSystemNavRail, designSystemNavRailClasses } from "@/design-system
 import { FOCUS_VISIBLE_RING_CLASS } from "@/lib/focus-classes";
 import { cn } from "@/lib/utils";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
+import type { WorkspaceAttentionCounts } from "@/lib/daily-control-tower";
+import type { AppShellOperatorFocusItem } from "@/app-shell.workflow-continuity-types";
 
 /**
  * Left-rail operator navigation sidebar. Renders as a fixed-width `<aside>` inside the
@@ -18,7 +20,9 @@ import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
  * host surfaces such as drawers to add wrapper classes and close after navigation.
  *
  * The rail intentionally avoids repeating the masthead brand or workspace header context. It keeps
- * one scannable list of the seven root workspaces, with the active item carrying `aria-current`.
+ * one scannable list of the seven root workspaces, with the active item carrying `aria-current`,
+ * under a pinned "Today" entry for the Daily Control Tower (a home page, not an eighth workspace).
+ * `attention` adds per-workspace counts from the same queue the Control Tower lists.
  *
  * Product maturity uses the canonical `Available`, `Preview`, and `Setup`
  * taxonomy, with matching `.operator-nav-status-*` visual modifiers.
@@ -28,16 +32,20 @@ interface WorkspaceNavProps {
   density?: "compact" | "detailed";
   onNavigate?: () => void;
   operatingContextScope?: AppShellOperatingScopeInput | null;
+  attention?: WorkspaceAttentionCounts | null;
+  attentionItems?: readonly AppShellOperatorFocusItem[];
 }
 
 export function WorkspaceNav({
   className,
   density = "detailed",
   onNavigate,
-  operatingContextScope = null
+  operatingContextScope = null,
+  attention = null,
+  attentionItems = []
 }: WorkspaceNavProps) {
   const location = useLocation();
-  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
+  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope, attention, attentionItems);
   const compact = density === "compact";
   const activeWorkspaceKey = viewModel.activeWorkspaceKey ?? undefined;
   const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey, location.pathname);
@@ -49,6 +57,31 @@ export function WorkspaceNav({
       ariaLabel={`${viewModel.brandTitle} navigation`}
       navAriaLabel="Workspaces"
     >
+      <div className={designSystemNavRailClasses.group}>
+        <div className={cn(designSystemNavRailClasses.row, "operator-nav-row--today")}>
+          <Link
+            to={viewModel.today.route}
+            aria-current={viewModel.today.ariaCurrent}
+            aria-label={viewModel.today.ariaLabel}
+            title={withAttentionTitle("Today: Daily Control Tower", viewModel.today.attentionTitle)}
+            // Today has no expand chevron, so its link spans the whole row. The badge is drawn
+            // at the row's end and lets pointer events through; spanning puts the link under it,
+            // so hovering the badge shows this title and clicking it opens Today.
+            className={cn(
+              designSystemNavRailClasses.item,
+              "operator-nav-today col-span-full",
+              FOCUS_VISIBLE_RING_CLASS,
+              viewModel.today.active && designSystemNavRailClasses.itemActive,
+              viewModel.today.attentionCount > 0 && "operator-nav-item--with-count"
+            )}
+            onClick={onNavigate}
+          >
+            <CalendarCheck className={designSystemNavRailClasses.itemIcon} width={16} height={16} aria-hidden="true" />
+            <span className="operator-nav-label truncate font-medium">{viewModel.today.label}</span>
+          </Link>
+          <AttentionCount count={viewModel.today.attentionCount} />
+        </div>
+      </div>
       <div className={designSystemNavRailClasses.section}>{viewModel.navEyebrow}</div>
       {!compact && viewModel.operatingScopeLabel ? (
         <div className={designSystemNavRailClasses.scope} aria-label={viewModel.operatingScopeAriaLabel ?? undefined}>
@@ -85,23 +118,27 @@ export function WorkspaceNav({
                   to={item.route}
                   aria-current={item.ariaCurrent}
                   aria-label={item.ariaLabel}
-                  title={item.label}
+                  // Product maturity moved from a rail pill into the tooltip; the link's name
+                  // already states it. The tooltip also names the badge's unit.
+                  title={withAttentionTitle(`${item.label} · ${item.maturity} product maturity`, item.attentionTitle)}
                   className={cn(
                     designSystemNavRailClasses.item,
                     FOCUS_VISIBLE_RING_CLASS,
-                    item.active && designSystemNavRailClasses.itemActive
+                    item.active && designSystemNavRailClasses.itemActive,
+                    item.attentionCount > 0 && "operator-nav-item--with-count"
                   )}
                   onClick={onNavigate}
                 >
-                  <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
+                  {/* External SVG images cannot inherit the link's currentColor. A mask
+                      keeps the canonical asset shape and follows every theme/state. */}
+                  <span
+                    className={cn(designSystemNavRailClasses.itemIcon, "operator-nav-item__asset")}
+                    style={{ maskImage: `url("${iconSrc}")` }}
+                    aria-hidden="true"
+                  />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
-                  {!compact ? (
-                    <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.maturityTone))}>
-                      <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
-                      {item.maturityLabel}
-                    </span>
-                  ) : null}
                 </Link>
+                <AttentionCount count={item.attentionCount} />
                 {item.subItems.length > 0 ? (
                   <button
                     type="button"
@@ -155,4 +192,31 @@ export function WorkspaceNav({
       })}
     </DesignSystemNavRail>
   );
+}
+
+/**
+ * Queue count badge. It sits beside the link, not inside it, and is hidden from assistive
+ * technology: the link's visible text stays exactly its label, so the accessible name (which
+ * carries "N items need attention") still contains the visible label (WCAG 2.5.3 Label in Name).
+ * The badge takes no pointer events (workspace-nav.css), so it carries no title of its own: the
+ * unit hint is in the title of the link underneath (see withAttentionTitle).
+ */
+function AttentionCount({ count }: { count: number }) {
+  if (count <= 0) {
+    return null;
+  }
+  return (
+    <span className="operator-nav-count" aria-hidden="true">
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
+/**
+ * The link tooltip, followed by the badge's unit when the row has a badge ("Today: Daily Control
+ * Tower · 6 items in Today's finance queue"). The hint lives on the link because the pointer lands
+ * there: the badge is drawn over the link and lets pointer events through.
+ */
+function withAttentionTitle(linkTitle: string, attentionTitle: string | null): string {
+  return attentionTitle ? `${linkTitle} · ${attentionTitle}` : linkTitle;
 }

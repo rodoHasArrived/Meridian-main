@@ -1,8 +1,8 @@
-# Intercompany consolidation — W10-CONSOL-001 first slice
+# Intercompany consolidation — versioned reviewed overlays
 
-**Status:** implemented slice, validation tracked with the change
+**Status:** implementation extended; current verification pending
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-11-12
 
 Consolidation is a reviewed overlay on immutable entity journals. A proposed elimination is not a
 posted balance. The shared consolidation view reports normal account balances as gross, proposed
@@ -10,7 +10,63 @@ incremental elimination, posted elimination, actual consolidated balance, and a 
 preview. Actual consolidated equals gross plus posted eliminations. Preview additionally includes
 the proposed increment. Unmatched receivable and payable amounts remain separate by direction.
 
-## Supported scope and setup
+## Governed extensions and retained v1 behavior
+
+The retained `w10-v1` behavior below remains unchanged for books configured with that exact policy.
+The staged extensions select their rule version from the elimination book's exact accounting
+policy; changing versions requires regenerated evidence and renewed review.
+
+| Rule version | Declared scope |
+| --- | --- |
+| `w10-v1` | Exactly two direct wholly owned entities; same functional currency; canonical account names. |
+| `w10-v2` | All direct wholly owned entities, at least two; same functional currency; stable chart-node roles and historical account aliases. |
+| `w10-v3` | V2 with governed whole-trial-balance reporting translation, retained historical/opening evidence and a translation reserve. |
+| `w10-v4` | V3 plus a separately enabled `consolidation.revenue-expense` policy rule and shared intercompany transaction identities. |
+
+Current bindings distinguish chart path from ledger account name. Historical/archived source
+identities still classify outstanding balances; output accounts must be currently eligible.
+Source and account revisions are retained in the evidence. Reviewed legacy-attribution sidecars
+supply agreement and transaction identity over exact immutable line digests without editing those
+lines. Agreement-specific adoption of earlier pair-only overlays creates reviewed reclassification
+adjustments rather than duplicating the net elimination.
+
+Matching remains directed and separates agreements, matching currency and income transaction
+identity. An agreement cannot have ambiguous original matching currencies. Balance mismatches use
+original transaction amounts; reporting conversion differences are retained separately. Income
+elimination requires both exact policy rules, with approval/evidence required and auto-posting off.
+Same-role expense reallocations already net in gross expense and need no income elimination.
+Their signed directional income residual rows may remain visible; the separate monetary schedule
+and counterpart breaks determine due-to/due-from readiness.
+
+V3/v4 pin approved immutable rate sets and book-owned translation policies. Assets/liabilities use
+closing rates, P&L uses transaction dates or explicitly declared periods, and equity uses supported
+historical/opening evidence. No inferred historical dates, future quotes or silent rate substitution.
+The whole translated gross trial balance includes an explicit reserve, with economic translation
+and rounding differences separately inspectable. Missing authority/rates blocks drafting and
+incomplete translation does not return a partial consolidated balance as complete.
+
+Posting retains the existing audit/ownership/policy guards and holds current chart/binding, FX and
+legacy-attribution authority leases through commit. All source books plus the overlay book remain
+in freshness evidence. Prior v1 records retain their original bytes; migration stales pending v1
+drafts. An ownership change cannot silently alter a used book's reporting members. An explicit retained
+transition preview compares old/new members and pins predecessor overlays plus the new source,
+policy, role and FX evidence. Independent approval opens a new empty dedicated reporting book at
+the cutover; its initial target rebuilds from new gross and never deducts predecessor overlays.
+Old books remain historical before cutover and are blocked at/after it. Separate transition receipt
+lineage is not correction lineage. Proven former-member exposures remain gross, explicitly marked
+`FormerPerimeterExternal`, and are never eliminated; unknown outside parties still block drafting.
+Indirect/partial ownership, minority interest and investment/equity elimination remain unsupported;
+lifecycle state does not silently drop residual balances.
+
+Shared browser and WPF entity/consolidation presentation consumes `ConsolidationViewDto` and the
+same preview/draft routes. The legacy summed view remains a gross view. Windows desktop execution,
+current PostgreSQL/endpoint/browser checks and hosted CI must be reported separately; source and
+new test presence alone do not prove them. W10-CONSOL-001 remains `planned` pending that evidence.
+See [agreements and lifecycle](intercompany-agreements-and-entity-lifecycle.md), the
+[implementation plan](../engineering/plans/intercompany-entity-controls.md) and
+[operator procedure](../operators/intercompany-entity-controls.md).
+
+## Retained v1 supported scope and setup
 
 - Exactly two direct legal-entity children of one authoritative fund ownership root, each with one
   effective `Owns` link at 100%. The organization/business/fund path is also verified. Ownership
@@ -107,8 +163,12 @@ Implementation: `ConsolidationPerimeterResolver`, `ConsolidationService`,
 `ConsolidationPostingGuardTests`, `ConsolidationSourcesPostgresTests`,
 `ConsolidationManualWorkflow` tests and the browser consolidation panel tests.
 
-The full roadmap item remains planned: governed FX translation and separate translation breaks,
-additional treatment families and full desktop presentation remain outside this first slice.
+The full roadmap item remains planned. Governed FX, separate translation breaks, additional
+treatments and shared desktop presentation now have staged implementation paths; acceptance needs
+the current change's concrete verification rather than the historical first-slice evidence alone.
+New targeted coverage includes `ConsolidationGovernedServiceTests`, `ConsolidationFxTests`,
+`LegacyIntercompanyAttributionTests`, account-binding rules/file/PostgreSQL tests, and the
+entity/intercompany workstation tests. Their current results are not asserted by this document.
 
 Validation covers actual policy, drafting, approval, posting and projection services, live PostgreSQL
 freshness and concurrency checks, authorization, and browser preview/draft flows. Chromium exercised

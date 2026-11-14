@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * LogTail — the evidence surface for raw process output (backfill jobs, quality scans,
  * strategy runs). Mono stream with UTC time-of-day per line, level-count filter chips, and a
@@ -35,4 +36,4 @@ export interface LogTailProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Show the per-level count filter chips. @default true */
   levelFilter?: boolean;
 }
-export declare function LogTail(props: LogTailProps): JSX.Element;
+export declare function LogTail(props: LogTailProps): React.JSX.Element;

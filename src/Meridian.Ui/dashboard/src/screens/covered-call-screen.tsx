@@ -18,7 +18,9 @@ import {
 } from "@/screens/covered-call-screen.view-model";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
+import { OptionScreeningMap } from "@/components/meridian/option-screening-map";
+import { formatDecimal, formatPrefixedCurrency, formatRatioAsPercent } from "@/lib/format";
+import { toSeverity } from "@/design-system/status-styles";
 
 const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewModel>[] = [
   {
@@ -61,7 +63,7 @@ const chainPreviewColumns: DenseDataTableColumn<CoveredCallChainPreviewRowViewMo
     label: "Status",
     render: (row) => (
       <SeverityBadge
-        status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)}
+        status={toSeverity(row.statusBadgeVariant)}
         label={row.statusLabel}
         aria-label={row.statusAriaLabel}
       />
@@ -89,7 +91,7 @@ const historyColumns: DenseDataTableColumn<CoveredCallHistoryRowViewModel>[] = [
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   },
   {
@@ -130,7 +132,7 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
   },
   {
     id: "pnl",
-    label: "PnL",
+    label: "P&L",
     align: "right",
     render: (row) => <span className={`font-mono ${row.pnlClassName}`}>{row.pnlLabel}</span>
   },
@@ -138,14 +140,14 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
     id: "reason",
     label: "Reason",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.exitReasonLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.exitReasonLabel} />
     )
   },
   {
     id: "status",
     label: "Status",
     render: (row) => (
-      <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusLabel} />
+      <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusLabel} />
     )
   }
 ];
@@ -154,7 +156,9 @@ export function CoveredCallScreen() {
   const vm = useCoveredCallScreenViewModel();
 
   useEffect(() => {
-    void vm.loadHistory();
+    const controller = new AbortController();
+    void vm.loadHistory(controller.signal);
+    return () => controller.abort();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -166,7 +170,7 @@ export function CoveredCallScreen() {
           Covered Call Backtest
         </span>
       }
-      scope="Strategy Lane"
+      scope="Strategy"
       description="Run the existing CoveredCallOverwriteStrategy against historical bars. Pick an underlying, configure filters, preview the live option chain, then evaluate equity curve, position timeline, and payoff."
     >
       <Card>
@@ -291,7 +295,7 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
   }, [hasAdvancedError]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
+    <div className="grid gap-4 xl:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Parameters</CardTitle>
@@ -381,6 +385,11 @@ function ConfigureStage({ vm }: { vm: CoveredCallScreenViewModel }) {
           <CardDescription>{vm.chainPreviewPanel.description}</CardDescription>
         </CardHeader>
         <CardContent>
+          {vm.chainPreview.status === "ready" && vm.chainPreview.data ? <OptionScreeningMap
+            preview={vm.chainPreview.data}
+            filters={{ minDte: Number(vm.form.minDte), maxDte: vm.form.maxDte.trim() ? Number(vm.form.maxDte) : null, maxDelta: Number(vm.form.maxDelta) }}
+            selectedIndex={vm.chainPreview.selectedIndex} onSelect={vm.selectChainRow}
+          /> : null}
           <ChainPreviewTable vm={vm} />
         </CardContent>
       </Card>
@@ -464,7 +473,7 @@ function ChainPreviewTable({ vm }: { vm: CoveredCallScreenViewModel }) {
             title={panel.selectedDetail.title}
             subtitle={panel.selectedDetail.subtitle}
             description={panel.selectedDetail.description}
-            status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+            status={<SeverityBadge status={toSeverity(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
             fields={panel.selectedDetail.fields}
             ariaLabel={panel.selectedDetail.ariaLabel}
           />
@@ -621,14 +630,14 @@ function ResultsActionPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewModel["run"]["result"]> }) {
   const rows: [string, string][] = [
     ["CAGR", fmtPct(result.metrics.cagr)],
-    ["Sharpe", result.metrics.sharpeRatio.toFixed(2)],
-    ["Sortino", result.metrics.sortinoRatio.toFixed(2)],
+    ["Sharpe", formatDecimal(result.metrics.sharpeRatio, 2)],
+    ["Sortino", formatDecimal(result.metrics.sortinoRatio, 2)],
     ["Max DD", fmtPct(result.metrics.maxDrawdownPct)],
     ["Win rate", fmtPct(result.metrics.winRate)],
     ["Assignment rate", fmtPct(result.metrics.assignmentRate)],
     ["Total trades", String(result.metrics.totalOptionTrades)],
-    ["Total premium", fmtMoney(result.metrics.totalPremiumCollected)],
-    ["Option PnL", fmtMoney(result.metrics.totalOptionPnl)],
+    ["Total premium", formatPrefixedCurrency(result.metrics.totalPremiumCollected)],
+    ["Option P&L", formatPrefixedCurrency(result.metrics.totalOptionPnl)],
     ["Up capture", fmtPct(result.metrics.upCapture)],
     ["Down capture", fmtPct(result.metrics.downCapture)]
   ];
@@ -639,16 +648,11 @@ function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewMod
         <CardDescription>{result.underlyingSymbol} · {result.from} → {result.to}</CardDescription>
       </CardHeader>
       <CardContent>
-        <table className="w-full text-sm">
-          <tbody>
-            {rows.map(([label, value]) => (
-              <tr key={label} className="border-b border-border/30">
-                <td className="py-1 pr-2 font-mono text-muted-foreground">{label}</td>
-                <td className="py-1 text-right font-mono">{value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <dl className="divide-y divide-border/30 text-sm" aria-label="Covered call run metrics">
+          {rows.map(([label, value]) => <div key={label} className="grid grid-cols-2 gap-2 py-1">
+            <dt className="text-muted-foreground">{label}</dt><dd className="text-right tabular-nums">{value}</dd>
+          </div>)}
+        </dl>
       </CardContent>
     </Card>
   );
@@ -674,18 +678,26 @@ function EquityCurve({ result }: { result: NonNullable<CoveredCallScreenViewMode
       title="Equity curve"
       subtitle="Strategy vs underlying-only buy-and-hold."
       readout={[
-        { label: "Strategy", value: fmtMoney(finalStrategy), color: "var(--chart-equity, #3A7A56)" },
-        { label: "Underlying", value: fmtMoney(finalUnderlying), color: "var(--chart-axis, #5E666F)" }
+        { label: "Strategy", value: formatPrefixedCurrency(finalStrategy), color: "var(--chart-equity, #2E7655)" },
+        { label: "Underlying", value: formatPrefixedCurrency(finalUnderlying), color: "var(--chart-axis, #606870)" }
       ]}
       height={220}
       style={{ flexShrink: 0 }}
     >
       <EquityCurveChart
+        ariaLabel="Covered-call strategy versus underlying equity curve"
+        ariaDescription={`${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final strategy equity ${formatPrefixedCurrency(
+          finalStrategy
+        )}, underlying buy-and-hold ${formatPrefixedCurrency(finalUnderlying)}.`}
+        accessibleData={{
+          columns: ["Date", "Strategy", "Underlying"],
+          rows: points.map((p) => [p.date, formatPrefixedCurrency(p.strategyEquity), formatPrefixedCurrency(p.underlyingEquity)])
+        }}
         series={[
-          { label: "Strategy", color: "var(--chart-equity, #3A7A56)", points: strategy },
-          { label: "Underlying", color: "var(--chart-axis, #5E666F)", points: underlying, dashed: true, area: false }
+          { label: "Strategy", color: "var(--chart-equity, #2E7655)", points: strategy },
+          { label: "Underlying", color: "var(--chart-axis, #606870)", points: underlying, dashed: true, area: false }
         ]}
-        valueFmt={fmtMoney}
+        valueFmt={(value) => formatPrefixedCurrency(value)}
       />
     </ChartCard>
   );
@@ -721,7 +733,7 @@ function PositionTimeline({ vm }: { vm: CoveredCallScreenViewModel }) {
               title={panel.selectedDetail.title}
               subtitle={panel.selectedDetail.subtitle}
               description={panel.selectedDetail.description}
-              status={<SeverityBadge status={categoricalVariantToSeverityStatus(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
+              status={<SeverityBadge status={toSeverity(panel.selectedDetail.statusBadgeVariant)} label={panel.selectedDetail.statusLabel} />}
               fields={panel.selectedDetail.fields}
               ariaLabel={panel.selectedDetail.ariaLabel}
             />
@@ -859,12 +871,5 @@ function HistoryPanel({ vm }: { vm: CoveredCallScreenViewModel }) {
 
 /** Input is a fraction of 1 (0.425 -> "42.50%"), not percent units. */
 function fmtPct(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `${(value * 100).toFixed(2)}%`;
-}
-
-function fmtMoney(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  const sign = value < 0 ? "-$" : "$";
-  return `${sign}${Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  return formatRatioAsPercent(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }

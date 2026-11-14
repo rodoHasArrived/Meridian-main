@@ -6,15 +6,24 @@ module_id: SRC-RISK
 path: src/Meridian.Risk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-08-11
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Risk
+
+`DrawdownCircuitBreaker` is not composed by any host; the enforced drawdown guardrail is `Meridian.Ui.Shared.Services.DrawdownGuardrailRule`.
+
+`PositionLimitRule` optionally measures the limit against the filled position plus same-side working orders (via an `IOrderManager` accessor), excluding the order being amended. A pending amendment counts as its larger-quantity outcome (`IOrderManager.GetUnitReservingOrders`).
 
 `BrokeragePortfolioStateRule` requires a current, complete and reconciled account snapshot before
 live admission, independently of configurable exposure ceilings. Scoped exposure uses broker
 holdings, cash, buying power and currency, with remaining working orders reserved in the same
 account. Local paper projections keep their existing aggregation behavior.
+
+Risk admission depends on `Meridian.Execution.Sdk` contracts, including explicit circuit-breaker,
+approval-queue and audit authorities. Concrete Execution services stay at the host composition
+boundary. Rebuild all host/plugin consumers after the constructor contract extraction described in
+[boundary extractions](../../docs/architecture/review-boundary-extractions.md).
 
 ## Purpose
 
@@ -112,9 +121,20 @@ trip the circuit breaker.
 
 ## Important workflows
 
+`CompositeRiskValidator.PreviewResolvedOrderAsync` observes the gateway-resolved order through
+non-reserving rule evaluation. It consumes no approval releases, enqueues no escalations, and
+neither trips the circuit breaker nor retries a pending trip. Refusals and warnings remain visible;
+an actual submission still enters the ordinary validation, reservation and approval path.
+
 Use this module for pre-trade checks, limits, safety gates, and execution-control evidence.
+`CompositeRiskValidator.PreviewResolvedOrderAsync` evaluates risk after gateway sizing without
+taking reservations, consuming approval tokens, parking escalations or tripping execution controls;
+a pending critical halt still rejects the preview. It can report required approval without creating
+a queue entry. Submission reruns admission and risk validation with the reservation and control
+behavior described below. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 Composite risk validation runs rules by priority and uses synchronous fast paths when a rule
-exposes one. Rule severity maps to a real outcome in `CompositeRiskValidator`:
+exposes one. During submission admission, rule severity maps to an outcome in `CompositeRiskValidator`:
 
 - `Info`/`Warning` - the breach becomes a warning flag on the result; evaluation continues.
 - `Error` - the order is rejected.
@@ -143,13 +163,20 @@ rule in priority order — the severity map above is unchanged — but the full 
 declared severity and a stable code. Evaluation is side-effect free by contract, which is what makes
 evaluating past a block safe.
 
-Rules that consume finite capacity (the order-rate window) implement `IReservingRiskRule` and
-reserve atomically during evaluation. The validator releases those reservations on every
-non-approved decision and on any exception, and otherwise transfers them to the caller on
+During admission, rules that consume finite capacity (the order-rate window) implement
+`IReservingRiskRule` and reserve atomically during evaluation. The validator releases those
+reservations on every non-approved decision and on any exception, and otherwise transfers them to the caller on
 `RiskValidationResult.Reservations`; the OMS commits only once the order has actually routed. A rule
 that throws or exceeds the per-rule timeout yields a fail-closed `RISK_RULE_EVALUATION_FAILED`
 refusal that is deliberately *unmeasurable* rather than a breach — the rule established nothing, so
 a flaky rule refuses its own orders without tripping the circuit breaker and halting the desk.
+
+`CompositeRiskValidator.PreviewResolvedOrderAsync` implements `IRiskPreviewValidator` through
+observation-only rule evaluation. It checks current capacity without reserving it, consumes no
+approval tokens, parks no escalations and never trips controls or retries a pending halt. A pending
+halt still refuses the preview; an escalation reports `RequiresApproval` with no `EscalationId`.
+Submission performs admission again and can reserve capacity, park approvals or trip controls.
+See [execution workflows](../../docs/engineering/execution-workflows.md) for the shared preview path.
 
 The per-rule timeout bounds *asynchronous* evaluation only. It does not bound `TryEvaluate`, nor any
 synchronous work a rule performs before returning its `Task`: both run on the calling thread, and a
@@ -162,6 +189,11 @@ Risk decisions are log evidence, so the gate renders caller-supplied text throug
 `LogSanitizer.Sanitize` before logging it. Both the symbol and a rule's reason can carry it — the
 F# position-limit rule embeds the symbol in its reason — and an unconstrained value containing a
 line break would otherwise render as a second log line that reads like a risk decision.
+
+**Position limit and bracket legs.** When `PositionLimitRule` sums same-side working orders,
+broker-side exit legs of one parent (`OrderState.ParentOrderId`) are one-cancels-other, so each
+parent contributes only its largest leg. A long protected by a take-profit and a stop-loss is not
+read as an oversized short.
 
 ## Diagrams
 
@@ -187,6 +219,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~Meridian.Tests.Execution.ExecutionWorkflowTests" --logger "console;verbosity=normal"
 ```
 
 ## Change rules

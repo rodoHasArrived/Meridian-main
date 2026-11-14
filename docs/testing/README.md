@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-31
+**Reviewed:** 2026-11-12
 
 Use [Engineering](../engineering/README.md#buildtestrun) for current build and test commands.
 This folder owns scenario-specific acceptance procedures and retained evidence.
@@ -11,8 +11,8 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 | --- | --- | --- |
 | Run the paper-cockpit regression slice | [Wave 2 acceptance tests](WAVE2_ACCEPTANCE_TESTS.md) | Automated checks and failure diagnosis. |
 | Capture paper-session continuity evidence | [Wave 2 reliability runbook](wave2-cockpit-reliability-evidence-runbook.md) | Automated and manual evidence sequence. |
-| Understand the original Wave 2 gates | [Wave 2 gate checklist](WAVE2_ACCEPTANCE_GATE_CHECKLIST.md) | Historical requirements and implementation snapshot. |
-| Validate Alpaca account synchronization and recovery | [Alpaca paper portfolio sandbox](alpaca-paper-portfolio-sandbox.md) | Opt-in broker evidence, deterministic fixtures, and validation limits. |
+| Understand the original Wave 2 gates | [Wave 2 gate checklist](../../archive/docs/summaries/WAVE2_ACCEPTANCE_GATE_CHECKLIST.md) | Historical requirements and implementation snapshot. |
+| Validate Alpaca account synchronization, orders, recovery, reference data and market data | [Alpaca paper sandbox](alpaca-paper-portfolio-sandbox.md) | Opt-in read-only, order-lifecycle, governed order-path, reference-data and market-data broker evidence, deterministic fixtures, and validation limits. |
 | Verify accounting trust corrections | [Accounting trust acceptance](accounting-trust-corrections.md) | Scenario checklist; operator decisions remain explicit. |
 | Verify posted amount provenance | [W10 amount provenance](w10-amount-provenance.md) | Scoped evidence selection, review regressions, and validation limits. |
 | Evaluate close readiness and mark freshness | [W10 operator acceptance](w10-mark-seam-operator-acceptance.md) | Current integration boundary, historical candidate evidence, population and pending operator decisions. |
@@ -25,6 +25,18 @@ This folder owns scenario-specific acceptance procedures and retained evidence.
 A procedure describes what to verify; a retained packet records what was actually observed. Keep
 packet dates, commits, and unresolved findings intact. Readiness and release acceptance remain in
 the [readiness tracker](../product/implementation-todo-list.md) and [roadmap registry](../roadmap/README.md).
+
+## Shared PostgreSQL fixtures
+
+Set `MERIDIAN_TEST_POSTGRES_CONNECTION_STRING` to use one synthetic PostgreSQL server across
+database fixtures. Each fixture retains its own schema, migrations, capability activation and
+cleanup. An explicit domain connection variable takes precedence over this test-only alias;
+the existing Docker fallback and disable-Docker policy remain unchanged.
+
+The alias is consumed by test infrastructure. Leave production connection variables unset when
+testing an unconfigured host, so fixture server selection does not change startup configuration.
+Linux containers running process-containment tests need an init or subreaper that collects exited
+orphan processes; the containment assertions still require every worker and descendant to stop.
 
 ## Synthetic scenario contract
 
@@ -50,3 +62,14 @@ Follow-ups:
 - Done: the index above; a python consistency check for the fund-economics worked examples (`tests/scripts/test_fund_economics_golden_consistency.py`).
 - Blocked on dotnet: a C# end-to-end test over the mixed-credit set with expected recon differences and close balances (no C# test loads it today); a bank/custodian/broker/administrator scenario with close balances; multi-account corporate-action and fund-close assertions.
 - Open, no tooling needed: a uniform seed and as-of convention for scenario manifests (many entries are "not recorded" in the index).
+
+## Retained upstream evidence links
+
+The [WAL checksum packet](evidence/wal-checksum-2026-10-07/README.md) retains third-party diagnostic
+source and original Markdown under a checksum-bound manifest. The copied
+`components/native/doc_benchmarks.md` contains an unresolved upstream-relative `../readme.md` link;
+it is historical source context, not navigation to a maintained Meridian guide. The link checker
+continues to report it rather than claiming it resolves. Use the packet's
+[third-party notices](evidence/wal-checksum-2026-10-07/third-party-notices/README.md) and
+[native component context](evidence/wal-checksum-2026-10-07/components/native/README.md) for provenance
+and navigation. Do not repair links inside that immutable snapshot by changing its original bytes.

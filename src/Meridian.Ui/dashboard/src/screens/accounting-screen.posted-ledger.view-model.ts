@@ -18,7 +18,6 @@ import type {
   LedgerPostedJournalEntry,
   LedgerTrialBalanceLine
 } from "@/types";
-import { formatCurrency, formatCurrencyForCode, formatSignedCurrency } from "./accounting-screen.formatting";
 import {
   countAvailableAccountingBases,
   DEFAULT_ACCOUNTING_BASIS,
@@ -30,6 +29,7 @@ import {
   type AccountingTrialBalanceViewState
 } from "./accounting-screen.view-model";
 import type { AccountingWorkstream } from "./accounting-screen.task-mode-view-model";
+import { formatCount, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
 
 /**
  * View model for the Accounting workstream's posted-journal ledger panel.
@@ -450,9 +450,9 @@ export function buildPostedLedgerPnlViewState({
   const netIncome = hasLineDetail ? totalRevenue - totalExpenses : pnl.netIncome;
 
   const money = (value: number) =>
-    baseCurrency ? formatCurrencyForCode(value, baseCurrency) : formatCurrency(value);
+    baseCurrency ? formatCurrency(value, { currency: baseCurrency, minimumFractionDigits: 0 }) : formatPrefixedCurrency(value);
   const signedMoney = (value: number) =>
-    baseCurrency ? `${value > 0 ? "+" : ""}${formatCurrencyForCode(value, baseCurrency)}` : formatSignedCurrency(value);
+    baseCurrency ? `${value > 0 ? "+" : ""}${formatCurrency(value, { currency: baseCurrency, minimumFractionDigits: 0 })}` : formatSignedCurrency(value, { minimumFractionDigits: 2, zeroLabel: "$0" });
 
   const items: PostedLedgerPnlItemViewModel[] = [
     { id: "revenue", label: "Total revenue", value: money(totalRevenue), tone: "default" },
@@ -479,7 +479,7 @@ export function buildPostedLedgerPnlViewState({
     {
       id: "open-breaks",
       label: "Open breaks",
-      value: pnl.openBreakCount.toLocaleString(),
+      value: formatCount(pnl.openBreakCount),
       tone: pnl.openBreakCount > 0 ? "warning" : "success"
     }
   ];

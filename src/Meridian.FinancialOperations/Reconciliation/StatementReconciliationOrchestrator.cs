@@ -179,6 +179,12 @@ public sealed class StatementReconciliationOrchestrator(
 
             return state;
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Caller cancellation is not a run failure. Leave the checkpoint at its last
+            // completed stage so the run resumes from there instead of being recorded "Failed".
+            throw;
+        }
         catch (Exception ex)
         {
             var failed = state with

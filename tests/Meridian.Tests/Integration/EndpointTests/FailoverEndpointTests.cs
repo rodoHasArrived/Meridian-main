@@ -25,7 +25,7 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
     public FailoverEndpointTests(EndpointTestFixture fixture)
     {
         _fixture = fixture;
-        _client = fixture.CreatePermittedClient(
+        _client = fixture.CreateSessionClient(
             UserPermission.ViewDiagnostics,
             UserPermission.ManageProviders);
     }
@@ -223,9 +223,37 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
         var ruleId = createJson["id"].GetString();
 
         // Delete it
-        var deleteResponse = await _client.DeleteAsync($"/api/failover/rules/{ruleId}");
+        var deleteResponse = await DeleteRuleAsync(ruleId!, "Retiring the test failover policy");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task DeletingStrictRule_RequiresReasonAndRetainsProtectionSnapshotAcrossRecreation()
+    {
+        var store = _fixture.Services.GetRequiredService<UiConfigStore>();
+        const string ruleId = "strict-deletion-audit";
+        var created = await PostJsonAsync("/api/failover/rules", new { Id = ruleId, PrimaryProviderId = "test-alpaca", BackupProviderIds = new[] { "test-backup" }, DataQualityThreshold = 90, MaxLatencyMs = 100 });
+        created.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var refused = await _client.DeleteAsync($"/api/failover/rules/{ruleId}");
+        refused.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        store.Load().DataSources!.FailoverRules!.Should().Contain(rule => rule.Id == ruleId);
+
+        var removed = await DeleteRuleAsync(ruleId, "Retiring obsolete validation policy");
+        removed.StatusCode.Should().Be(HttpStatusCode.OK);
+        store.Load().DataSources!.FailoverRules!.Should().NotContain(rule => rule.Id == ruleId);
+        var audit = store.Load().DataSources!.FailoverRuleAudit!.Single(entry => entry.RuleId == ruleId);
+        audit.Operation.Should().Be("RuleDeleted");
+        audit.Reason.Should().Be("Retiring obsolete validation policy");
+        audit.PreviousDataQualityThreshold.Should().Be(90);
+        audit.PreviousMaxLatencyMs.Should().Be(100);
+        audit.PrimaryProviderId.Should().Be("test-alpaca");
+        audit.BackupProviderIds.Should().Equal("test-backup");
+
+        var recreated = await PostJsonAsync("/api/failover/rules", new { Id = ruleId, PrimaryProviderId = "test-alpaca", BackupProviderIds = new[] { "test-backup" }, DataQualityThreshold = 0, MaxLatencyMs = 0 });
+        recreated.StatusCode.Should().Be(HttpStatusCode.OK);
+        store.Load().DataSources!.FailoverRuleAudit!.Should().Contain(entry => entry.RuleId == ruleId && entry.Operation == "RuleDeleted");
     }
 
     #endregion
@@ -274,6 +302,112 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
     #endregion
 
     #region POST /api/failover/force/{ruleId}
+
+    [Fact]
+    public async Task CompatibilityTriggerAndReset_CommitRealRuntimeTransitions()
+    {
+        var registry = _fixture.Services.GetRequiredService<StreamingFailoverRegistry>();
+        using var monitor = new ConnectionHealthMonitor();
+        using var service = CreateFailoverService(monitor);
+        using var registration = service.RegisterTransitionHandler("test-rule-1", static transition => transition.TryComplete());
+        registry.Service = service;
+        try
+        {
+            var triggered = await PostJsonAsync("/api/providers/failover/trigger", new { RuleId = "test-rule-1", TargetProvider = "test-backup" });
+            triggered.StatusCode.Should().Be(HttpStatusCode.OK);
+            service.GetActiveProviderId("test-rule-1").Should().Be("test-backup");
+
+            var reset = await PostJsonAsync("/api/providers/failover/reset", new { RuleId = "test-rule-1" });
+            reset.StatusCode.Should().Be(HttpStatusCode.OK);
+            service.GetActiveProviderId("test-rule-1").Should().Be("test-alpaca");
+        }
+        finally { registry.Service = null; }
+    }
+
+    [Theory]
+    [InlineData("/api/providers/failover/trigger")]
+    [InlineData("/api/providers/failover/reset")]
+    public async Task CompatibilityControls_WithoutRuntime_RefuseInsteadOfClaimingSuccess(string route)
+    {
+        var result = await PostJsonAsync(route, new { RuleId = "test-rule-1", TargetProvider = "test-backup" });
+        result.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+    }
+
+    [Fact]
+    public async Task ConfigurationOnlyRead_WithoutRuntime_PreservesEditingAndReportsUnknownActiveProvider()
+    {
+        var result = await _client.GetAsync("/api/failover/config?configurationOnly=true");
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await DeserializeAsync(result);
+        payload["runtimeAvailable"].GetBoolean().Should().BeFalse();
+        payload["rules"].EnumerateArray().Should().OnlyContain(rule => rule.GetProperty("currentActiveProviderId").ValueKind == JsonValueKind.Null);
+    }
+
+    [Fact]
+    public async Task ThresholdRead_ReportsRetainedRuleValuesAndHealthInterval()
+    {
+        var config = _fixture.Services.GetRequiredService<UiConfigStore>().Load().DataSources!;
+        var result = await _client.GetAsync("/api/providers/failover-thresholds");
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await DeserializeAsync(result);
+        payload["healthCheckIntervalSeconds"].GetInt32().Should().Be(config.HealthCheckIntervalSeconds);
+        payload["rules"].GetArrayLength().Should().Be(config.FailoverRules!.Length);
+    }
+
+    [Fact]
+    public async Task LooseningRuleThreshold_RequiresReasonAndRetainsAuditAtomically()
+    {
+        var store = _fixture.Services.GetRequiredService<UiConfigStore>();
+        const string ruleId = "audit-rule";
+        await PostJsonAsync("/api/failover/rules", new { Id = ruleId, PrimaryProviderId = "test-alpaca", BackupProviderIds = new[] { "test-backup" }, DataQualityThreshold = 90, MaxLatencyMs = 100 });
+        var refused = await PostJsonAsync("/api/failover/rules", new { Id = ruleId, PrimaryProviderId = "test-alpaca", BackupProviderIds = new[] { "test-backup" }, DataQualityThreshold = 70, MaxLatencyMs = 200 });
+        refused.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        store.Load().DataSources!.FailoverRules!.Single(rule => rule.Id == ruleId).DataQualityThreshold.Should().Be(90);
+
+        var accepted = await PostJsonAsync("/api/failover/rules", new { Id = ruleId, PrimaryProviderId = "test-alpaca", BackupProviderIds = new[] { "test-backup" }, DataQualityThreshold = 70, MaxLatencyMs = 200, Reason = "Reviewed thin-market latency" });
+        accepted.StatusCode.Should().Be(HttpStatusCode.OK);
+        var evidence = store.Load().DataSources!.FailoverRuleAudit!.Single(entry => entry.RuleId == ruleId);
+        evidence.Reason.Should().Be("Reviewed thin-market latency");
+        evidence.Actor.Should().Be("session-operator");
+        evidence.PreviousMaxLatencyMs.Should().Be(100);
+        evidence.MaxLatencyMs.Should().Be(200);
+    }
+
+    [Fact]
+    public async Task ReasonedRuleMutations_WithoutTrustedActor_RefuseWithoutChangingProtectionOrAudit()
+    {
+        const string ruleId = "actorless-rule-mutations";
+        var store = _fixture.Services.GetRequiredService<UiConfigStore>();
+        var created = await PostJsonAsync("/api/failover/rules", new
+        {
+            Id = ruleId,
+            PrimaryProviderId = "test-alpaca",
+            BackupProviderIds = new[] { "test-backup" },
+            DataQualityThreshold = 90,
+            MaxLatencyMs = 100
+        });
+        created.StatusCode.Should().Be(HttpStatusCode.OK);
+        var auditCount = store.Load().DataSources!.FailoverRuleAudit?.Length ?? 0;
+        using var actorless = _fixture.CreatePermittedClient(UserPermission.ViewDiagnostics, UserPermission.ManageProviders);
+        var lowered = await actorless.PostAsync("/api/failover/rules", new StringContent(JsonSerializer.Serialize(new
+        {
+            Id = ruleId,
+            PrimaryProviderId = "test-alpaca",
+            BackupProviderIds = new[] { "test-backup" },
+            DataQualityThreshold = 70,
+            MaxLatencyMs = 200,
+            Reason = "Caller claims a reason without an actor"
+        }), Encoding.UTF8, "application/json"));
+        lowered.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var removed = await actorless.SendAsync(new HttpRequestMessage(HttpMethod.Delete, $"/api/failover/rules/{ruleId}")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { Reason = "Unattributed deletion" }), Encoding.UTF8, "application/json")
+        });
+        removed.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var retained = store.Load().DataSources!;
+        retained.FailoverRules!.Single(rule => rule.Id == ruleId).DataQualityThreshold.Should().Be(90);
+        (retained.FailoverRuleAudit?.Length ?? 0).Should().Be(auditCount);
+    }
 
     [Fact]
     public async Task ForceFailover_WithNonexistentRule_ReturnsNotFound()
@@ -439,6 +573,15 @@ public sealed class FailoverEndpointTests : IDisposable, IClassFixture<EndpointT
         return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
     }
+
+    private Task<HttpResponseMessage> PostJsonAsync(string route, object payload)
+        => _client.PostAsync(route, new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json"));
+
+    private Task<HttpResponseMessage> DeleteRuleAsync(string ruleId, string reason)
+        => _client.SendAsync(new HttpRequestMessage(HttpMethod.Delete, $"/api/failover/rules/{ruleId}")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { Reason = reason }), Encoding.UTF8, "application/json")
+        });
 
     private static async Task<JsonElement> AssertProblemDetailsAsync(
         HttpResponseMessage response,

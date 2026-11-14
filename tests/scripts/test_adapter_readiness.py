@@ -38,7 +38,7 @@ def row(folder: str, provider_id: str | None, types: dict | None = None) -> dict
 
 class AdapterReadinessTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.write(readiness.CATALOG_PATH, '''

@@ -102,6 +102,8 @@ public sealed record OrderRequest
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
 }
 
 /// <summary>One leg in a multi-leg options order.</summary>
@@ -191,6 +193,26 @@ public sealed record ExecutionReport
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public decimal? LotMultiplier { get; init; }
 
+    /// <summary>
+    /// The money multiplier the paper book applied to this fill: quote × quantity × this value is
+    /// the cash it moved (the contract multiplier for listed premium contracts, 1 otherwise).
+    /// Stamped when the fill is booked so a session replay reproduces the same economics. Absent on
+    /// records written before paper books scaled contract premiums; those replay at 1×, as they
+    /// were booked. Omitted from serialized payloads when null so existing records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? BookedMoneyMultiplier { get; init; }
+
+    /// <summary>
+    /// Whether the paper book booked this fill under daily variation margin (futures): opening
+    /// moves no notional and a close settles only the change since the last settlement. Stamped
+    /// with <see cref="BookedMoneyMultiplier"/> so a replay books the fill the same way. Absent on
+    /// records written before paper futures settled variation margin; those replay on the 1×
+    /// notional model they were booked on. Omitted from serialized payloads when null.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public bool? BookedVariationMargin { get; init; }
+
     /// <summary>Regulatory/exchange fees for this fill, when the gateway models them.</summary>
     public decimal? Fees { get; init; }
 
@@ -274,6 +296,10 @@ public sealed record OrderResult
     public string? ErrorMessage { get; init; }
     public OrderState? OrderState { get; init; }
 
+    /// <summary>True when a failed submission may have routed and requires reconciliation before retrying.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RequiresOrderReconciliation { get; init; }
+
     /// <summary>
     /// Non-blocking risk flags raised while the order was approved (e.g. concentration
     /// observe-band or warning-severity rule breaches), surfaced so callers and operators
@@ -308,6 +334,12 @@ public sealed record OrderResult
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    /// <summary>The journal submission attempt associated with this tracked order incarnation.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? JournalAttemptId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
     public required string OrderId { get; init; }
     public required string Symbol { get; init; }
     public required OrderSide Side { get; init; }
@@ -328,6 +360,15 @@ public sealed record OrderState
     /// <summary>External account retained from the broker acknowledgement for exact restart recovery.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? BrokerAccountId { get; init; }
+
+    /// <summary>
+    /// The tracked order whose acknowledgement created this one, for a broker-side bracket/OCO
+    /// exit leg; <see langword="null"/> for an ordinary order. Sibling legs of one parent are
+    /// one-cancels-other, so at most one of them executes — a control that sums working orders
+    /// uses this to count the legs once rather than twice.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ParentOrderId { get; init; }
 
     /// <summary>Strategy run that authorized this retained order, when supplied.</summary>
     public string? RunId { get; init; }
@@ -375,8 +416,16 @@ public sealed record PositionState
     public decimal Quantity { get; init; }
     public decimal AverageCostBasis { get; init; }
     public decimal MarketPrice { get; init; }
-    public decimal UnrealizedPnl => (MarketPrice - AverageCostBasis) * Quantity;
+
+    /// <summary>
+    /// Multiplier that turns quantity × quote into money for this position (100 for a standard
+    /// equity option, 1 for outright instruments). <see cref="AverageCostBasis"/> and
+    /// <see cref="MarketPrice"/> stay per-unit quotes; the money fields below apply it.
+    /// </summary>
+    public decimal ContractMultiplier { get; init; } = 1m;
+
+    public decimal UnrealizedPnl => (MarketPrice - AverageCostBasis) * Quantity * ContractMultiplier;
     public decimal RealizedPnl { get; init; }
-    public decimal MarketValue => MarketPrice * Math.Abs(Quantity);
+    public decimal MarketValue => MarketPrice * Math.Abs(Quantity) * ContractMultiplier;
     public DateTimeOffset LastUpdated { get; init; }
 }

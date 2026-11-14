@@ -114,7 +114,8 @@ public enum EvidenceDocumentLinkKindDto
     CloseTask = 8,
     Fund = 9,
     StatementRun = 10,
-    StatementImport = 11
+    StatementImport = 11,
+    IntercompanyAgreement = 12
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<EvidenceDocumentReviewStatusDto>))]
@@ -667,6 +668,8 @@ public sealed record EvidencePacketDto(
     public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public LedgerAmountProofDto? LedgerAmount { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }
 }
 
 public sealed record EvidenceGraphDto(
@@ -677,6 +680,8 @@ public sealed record EvidenceGraphDto(
     IReadOnlyList<string> Warnings)
 {
     public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }
 }
 
 public sealed record EvidenceTemplateExportSettingsDto(

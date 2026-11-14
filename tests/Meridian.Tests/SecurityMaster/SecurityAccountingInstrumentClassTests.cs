@@ -88,6 +88,47 @@ public sealed class SecurityAccountingInstrumentClassTests
     }
 
     [Fact]
+    public void EveryCataloguedClass_DeclaresAnAccountingDisposition()
+    {
+        // Review D10, slice 4: a class is either in the slice with an accounting instrument class or
+        // explicitly outside it. A new class that declares neither is a missing mapping and fails here.
+        SecurityAssetClassCatalog.All
+            .Where(static descriptor => descriptor.AccountingDisposition == SecurityAccountingDisposition.Undeclared)
+            .Select(static descriptor => descriptor.AssetClass)
+            .Should().BeEmpty();
+        SecurityAssetClassCatalog.All
+            .Where(static descriptor => descriptor.AccountingInstrumentClass is not null && descriptor.AccountingOutsideSlice)
+            .Select(static descriptor => descriptor.AssetClass)
+            .Should().BeEmpty("a class cannot be both in and outside the slice");
+    }
+
+    [Fact]
+    public void StructuredNote_IsExplicitlyOutsideTheSlice()
+        => SecurityAssetClassCatalog.GetOrDefault("StructuredNote").AccountingDisposition
+            .Should().Be(SecurityAccountingDisposition.OutsideSlice);
+
+    [Theory]
+    [InlineData("StructuredNote", "StructuredNote", "FixedIncome")]
+    [InlineData("StructuredNote", null, "FixedIncome")]
+    [InlineData(null, "StructuredNote", "FixedIncome")]
+    public void AnOutsideSliceClass_DoesNotReachBondThroughItsFixedIncomeTaxonomy(string? typeName, string? subType, string taxonomy)
+    {
+        // Caller precedence pinned to SecurityMasterAccountingEventSourceAdapter: type name, sub-type,
+        // then the coarse taxonomy. Before slice 4 the taxonomy fallback posted StructuredNote as Bond.
+        SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(typeName, subType, taxonomy)
+            .Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("Bond", "CorporateBond", "FixedIncome", SecurityAccountingInstrumentClasses.Bond)]
+    [InlineData("TreasuryBill", "TreasuryBill", "FixedIncome", SecurityAccountingInstrumentClasses.Bond)]
+    [InlineData("CertificateOfDeposit", "CertificateOfDeposit", "CashEquivalent", SecurityAccountingInstrumentClasses.Bond)]
+    [InlineData("CommercialPaper", "CommercialPaper", "CashEquivalent", SecurityAccountingInstrumentClasses.Bond)]
+    [InlineData("StructuredCredit", "StructuredCredit", "FixedIncome", SecurityAccountingInstrumentClasses.AssetBackedSecurity)]
+    public void SupportedClasses_ResolveExactlyAsBefore_InCallerOrder(string typeName, string subType, string taxonomy, string expected)
+        => SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(typeName, subType, taxonomy).Should().Be(expected);
+
+    [Fact]
     public void BlankAndUnknownDeclaredNamesResolveToNothing()
     {
         SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(null, "", "   ").Should().BeNull();

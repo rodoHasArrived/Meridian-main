@@ -1,23 +1,40 @@
-import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
-import { useEffect, useMemo, useRef } from "react";
-import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Histogram } from "@/components/charts";
+import { CompareToggle } from "@/components/charts/SelectionCompare";
+import { Sparkline } from "@/components/charts/Sparkline";
+import { StrategyRunParityPanel } from "./strategy-screen.parity";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
-import { StatStrip } from "@/components/meridian/stat-strip";
-import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
+import { DetailFields } from "@/components/meridian/detail-pane";
+import { DetailRail } from "@/components/meridian/detail-rail";
+import { EntityLink } from "@/components/meridian/entity-inspector";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
-import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { Histogram } from "@/components/charts";
+import { StatStrip } from "@/components/meridian/stat-strip";
+import { StrategyRobustness } from "@/components/meridian/strategy-robustness";
+import { tableColumnsWithExport, TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { formatNumber } from "@/lib/format";
+import { exportTableQuery } from "@/lib/table-workbench";
 import { cn } from "@/lib/utils";
-import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
-import { useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
+import { StrategyRunEquityPathCompare } from "@/screens/strategy-screen.equity-paths";
 import type {
   StrategyComparisonTableRow,
   StrategyDiffChangeRow,
@@ -32,12 +49,25 @@ import type {
   StrategyPlotStudyItem,
   StrategyPlotWorkspaceState,
   StrategyPromotionHistoryRow,
-  StrategyRunLibraryState,
   StrategyRunTableRow
 } from "@/screens/strategy-screen.view-model";
+import { buildStrategyEquityPathCompareItem, useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
 import type { StrategyWorkspaceResponse } from "@/types";
+import {
+  BarChart3,
+  BookOpenText,
+  ChartScatter,
+  Network,
+  Sigma,
+  Sparkles
+} from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { StrategyOverviewHub } from "./strategy-overview-hub";
+import { toSeverity } from "@/design-system/status-styles";
 
 interface StrategyScreenProps {
+  fundAccountId?: string | null;
   data: StrategyWorkspaceResponse | null;
 }
 
@@ -196,17 +226,6 @@ const plotToolObservationColumns: DenseDataTableColumn<StrategyPlotSampleRow>[] 
 
 type StrategyRouteViewId = "overview" | "promotions" | "lab";
 
-/**
- * Route-scoped tabs: the catchall Strategy sub-routes share the sidebar
- * taxonomy. Designer, Formula Workbench, Covered call, and Quant Lab are
- * separate screens and stay sidebar-only.
- */
-const strategyRouteTabs: { id: StrategyRouteViewId; label: string; route: string }[] = [
-  { id: "overview", label: "Overview", route: "/strategy" },
-  { id: "promotions", label: "Promotions", route: "/strategy/promotions" },
-  { id: "lab", label: "Strategy Lab", route: "/strategy/lab" }
-];
-
 export function resolveStrategyRouteView(pathname: string): StrategyRouteViewId {
   // Match the segment right after /strategy so a dynamic parameter deeper in
   // the path can never collide with a view keyword.
@@ -228,7 +247,7 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
     description: "Review strategy posture, then open the focused builder, lab, run, and promotion workspaces."
   },
   promotions: {
-    title: "Promotions",
+    title: "Promotion review",
     description: "Retained runs, comparison evidence, and paper-promotion review."
   },
   lab: {
@@ -237,7 +256,7 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
   }
 };
 
-export function StrategyScreen({ data }: StrategyScreenProps) {
+export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -246,11 +265,6 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   const showLab = routeView === "lab";
   const showRuns = routeView === "promotions";
   const requestedRunId = new URLSearchParams(search).get("runId")?.trim() ?? "";
-  const routeTabs = strategyRouteTabs.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    selected: tab.id === routeView
-  }));
   const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const openedDeepLinkRunId = useRef<string | null>(null);
 
@@ -269,7 +283,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     vm.openRunDetailById(requestedRunId);
   }, [requestedRunId, showRuns, vm.openRunDetailById, vm.runs]);
 
-  const runColumns = useMemo<DenseDataTableColumn<StrategyRunTableRow>[]>(() => [
+  const runColumns = useMemo<TableWorkbenchColumn<StrategyRunTableRow>[]>(() => [
     {
       id: "compare",
       label: "",
@@ -287,26 +301,34 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "strategy",
       label: "Strategy",
-      render: (run) => <span className="font-semibold text-foreground">{run.strategyName}</span>
+      exportValue: run => run.strategyName,
+      render: (run) => <EntityLink record={{ kind: "run", id: run.id, label: run.strategyName,
+        workspaceHref: `/strategy/runs?runId=${encodeURIComponent(run.id)}`,
+        summary: [{ label: "Mode", value: run.modeLabel }, { label: "Status", value: run.statusText },
+          { label: "P&L", value: run.pnlText }, { label: "Sharpe", value: run.sharpeText }] }} />
     },
     {
       id: "mode",
       label: "Mode",
+      exportValue: run => run.mode,
       render: (run) => <Badge variant={run.modeBadgeVariant}>{run.modeLabel}</Badge>
     },
     {
       id: "engine",
       label: "Engine",
+      exportValue: run => run.engineText,
       render: (run) => run.engineText
     },
     {
       id: "status",
       label: "Status",
+      exportValue: run => run.statusText,
       render: (run) => <SeverityBadge status={strategyRunSeverityStatus(run.statusText)} label={run.statusText} />
     },
     {
       id: "pnl",
       label: "P&L",
+      exportValue: run => run.raw.netPnl,
       align: "right",
       className: "font-mono",
       render: (run) => run.pnlText
@@ -314,14 +336,49 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "sharpe",
       label: "Sharpe",
+      exportValue: run => run.sharpeText,
       align: "right",
       className: "font-mono",
       render: (run) => run.sharpeText
     },
     {
+      id: "drawdown", label: "Drawdown amount", align: "right",
+      exportValue: run => run.raw.maxDrawdown,
+      render: run => run.raw.maxDrawdown == null ? "Unavailable" : <span title="Retained maximum drawdown amount in the run's denomination; denomination is not supplied by this source.">{formatNumber(run.raw.maxDrawdown)}</span>
+    },
+    {
+      id: "trend", label: "Run equity trend",
+      render: run => {
+        const values = run.raw.trendValues;
+        const dates = run.raw.trendDates;
+        if (!values?.length || values.length !== dates?.length || values.some(value => !Number.isFinite(value))) return <span className="text-muted-foreground">History unavailable</span>;
+        return <div><Sparkline points={values} /><span className="text-xs">{dates[0]} – {dates.at(-1)}</span>
+          <details className="text-xs"><summary>Trend values</summary><dl>{values.map((value, index) => <div key={dates[index]}><dt>{dates[index]}</dt><dd>{formatNumber(value)}</dd></div>)}</dl></details></div>;
+      }
+    },
+    {
       id: "updated",
       label: "Updated",
+      exportValue: run => run.lastUpdatedText,
       render: (run) => <span className="font-mono text-xs text-muted-foreground">{run.lastUpdatedText}</span>
+    },
+    {
+      // A button with aria-pressed, never a checkbox: this set (up to six runs, chart only) is
+      // separate from the two-run compare / diff selection in the first column. The visible word
+      // stays "Chart" in both states, so the accessible name always contains it (label in name)
+      // and the name of a toggle does not change with its state; the glyph, the pressed styling
+      // and aria-pressed carry the state.
+      id: "equity-path",
+      label: "Equity path",
+      render: (run) => (
+        <CompareToggle
+          item={buildStrategyEquityPathCompareItem(run.raw, vm.runs)}
+          label="Chart"
+          pressedLabel="Chart"
+          actionLabel={(item) => `Chart equity path for ${item.title}`}
+          fullReason={(max) => `Equity path set is full (${max}). Remove a run to chart another.`}
+        />
+      )
     }
   ], [vm]);
 
@@ -372,7 +429,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "status",
       label: "Status",
-      render: (row) => <SeverityBadge status={categoricalVariantToSeverityStatus(row.statusBadgeVariant)} label={row.statusText} />
+      render: (row) => <SeverityBadge status={toSeverity(row.statusBadgeVariant)} label={row.statusText} />
     },
     {
       id: "net-pnl",
@@ -446,8 +503,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Strategy headline metrics" />
-
+      {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
+          sub-route navigation (no in-page tab strip). */}
       <section
         role="region"
         aria-label="Strategy workspace context"
@@ -461,19 +518,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             {routeCopy.description}
           </p>
         </div>
-        <WorkspaceTabStrip
-          label="Strategy routes"
-          tabs={routeTabs}
-          onSelect={(id) => {
-            const tab = strategyRouteTabs.find((candidate) => candidate.id === id);
-            if (tab) {
-              // Preserve the querystring: the operating scope is threaded
-              // through search params across the shell.
-              navigate({ pathname: tab.route, search });
-            }
-          }}
-        />
       </section>
+
+      <StatStrip metrics={data.metrics.map(metric => ({ ...metric, basis: metric.basis ?? "Retained strategy run summaries", source: metric.source ?? "Authorized Strategy workspace run population" }))} label="Strategy headline metrics" source="Strategy workspace" figureSource="strategy" />
+      {vm.plotTool.analyticsEvidenceStatus === "Illustrative" ? <p role="status" className="border-l-2 border-warning px-3 py-2 text-xs">Illustrative PlotTool analytics · simulated observations demonstrate the interface and are not retained market evidence.</p> : null}
 
       {routeView === "overview" ? <StrategyOverviewHub vm={vm} /> : null}
 
@@ -481,7 +529,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
       <Card>
         {showLab ? (
         <CardHeader>
-          <div className="eyebrow-label">{vm.plotTool.workspace.eyebrow}</div>
+          <div className={eyebrowClassName(vm.plotTool.workspace.eyebrow)}>{vm.plotTool.workspace.eyebrow}</div>
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="space-y-2">
               <CardTitle className="flex items-center gap-2">
@@ -612,7 +660,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               aria-label={vm.promotionPanel.panelLabel}
               className="space-y-3 rounded-lg border border-border/70 bg-secondary/15 p-4"
             >
-              <div className="eyebrow-label">{vm.promotionPanel.panelLabel}</div>
+              <div className={eyebrowClassName(vm.promotionPanel.panelLabel)}>{vm.promotionPanel.panelLabel}</div>
               {vm.promoteError && (
                 <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
                   {vm.promoteError}
@@ -753,7 +801,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               <div key={card.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="eyebrow-label">{card.label}</div>
+                    <div className={eyebrowClassName(card.label)}>{card.label}</div>
                     <div className="mt-2 font-mono text-lg font-semibold text-foreground">{card.value}</div>
                   </div>
                   <Badge variant={card.badgeVariant}>{card.badgeLabel}</Badge>
@@ -766,10 +814,16 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             <p className="sr-only">{vm.runHistorySummary.engineCoverageText}</p>
             <p className="sr-only">{vm.runHistorySummary.liveAdjacentText}</p>
           </section>
+          <StrategyRunEquityPathCompare runs={vm.runs}>
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-            <DenseDataTable
-              columns={runColumns}
+            <TableWorkbench
+              workbenchId="strategy-runs"
+              columns={[...runColumns].sort((left, right) => Number(right.id === "strategy") - Number(left.id === "strategy"))}
               rows={vm.runTable.rows}
+              getSearchText={run => run.raw.searchText ?? `${run.strategyName} ${run.mode} ${run.engineText} ${run.statusText}`}
+              sourceDescription="Retained run summaries. Export queries the complete authorized run history, including matches beyond the current workspace snapshot."
+              sourceKey={search}
+              onExportAll={(columns, search, currentSort, signal) => exportTableQuery("strategy-runs", columns, search, currentSort?.columnId, currentSort?.direction, signal)}
               getRowId={(run) => run.id}
               getRowAriaLabel={(run) => run.rowAriaLabel}
               getRowSelectAriaLabel={(run) => run.rowSelectAriaLabel}
@@ -782,12 +836,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               caption={vm.runTable.caption}
             />
             {vm.inspectedRunDetail ? (
-              <div id={vm.inspectedRunDetail.panelId} className="min-w-0 space-y-3">
-                <EntitySummary
-                  eyebrow={vm.inspectedRunDetail.eyebrow}
+              <div className="min-w-0 space-y-3">
+                <DetailRail
+                  id={vm.inspectedRunDetail.panelId}
                   title={vm.inspectedRunDetail.title}
-                  subtitle={vm.inspectedRunDetail.subtitle}
-                  description={vm.inspectedRunDetail.description}
                   fields={vm.inspectedRunDetail.fields}
                   ariaLabel={vm.inspectedRunDetail.ariaLabel}
                   status={<Badge variant={vm.inspectedRunDetail.statusVariant}>{vm.inspectedRunDetail.statusLabel}</Badge>}
@@ -834,8 +886,11 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               </div>
             )}
           </div>
+          </StrategyRunEquityPathCompare>
         </CardContent>
       </Card>
+
+      {showRuns ? <StrategyRobustness /> : null}
 
       {vm.showComparisonPanel && (
         <Card>
@@ -845,8 +900,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-              <DenseDataTable
-                columns={comparisonColumns}
+              <TableWorkbench workbenchId="strategy-comparison"
+                columns={tableColumnsWithExport(comparisonColumns, { strategy: row => row.strategyName, mode: row => row.modeText, status: row => row.statusText, "net-pnl": row => row.netPnlText, return: row => row.totalReturnText, drawdown: row => row.maxDrawdownText, sharpe: row => row.sharpeRatioText, fills: row => row.fillCountText })}
+                sourceDescription="Retained comparison for the explicitly selected run set; values preserve source units."
+                completePopulation
                 rows={vm.comparisonTable.rows}
                 getRowId={(row) => row.runId}
                 getRowAriaLabel={(row) => row.ariaLabel}
@@ -868,7 +925,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                     description={vm.selectedComparisonDetail.description}
                     fields={vm.selectedComparisonDetail.fields}
                     ariaLabel={vm.selectedComparisonDetail.ariaLabel}
-                    status={<SeverityBadge status={categoricalVariantToSeverityStatus(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
+                    status={<SeverityBadge status={toSeverity(vm.selectedComparisonDetail.statusVariant)} label={vm.selectedComparisonDetail.statusLabel} />}
                   />
                 </div>
               ) : (
@@ -896,14 +953,14 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               <section aria-label={vm.diffPanel.summaryLabel} className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
                 {vm.diffPanel.metrics.map((metric) => (
                   <div key={metric.id} role="group" aria-label={metric.ariaLabel} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
-                    <div className="eyebrow-label">{metric.label}</div>
+                    <div className={eyebrowClassName(metric.label)}>{metric.label}</div>
                     <div className={cn("mt-2 font-mono text-sm font-semibold", diffMetricToneClass[metric.tone])}>{metric.value}</div>
                   </div>
                 ))}
               </section>
             )}
             <section aria-label="Run diff artifact completeness" className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className="eyebrow-label">Version, engine, and artifact context</div>
+              <div className="eyebrow-label eyebrow-label--sentence">Version, engine, and artifact context</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.diffPanel.metadataSummary}</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.diffPanel.artifactCompletenessSummary}</p>
               {vm.diffPanel.compatibilityWarnings.length > 0 ? (
@@ -925,8 +982,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   </Badge>
                 </div>
                 <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
-                  <DenseDataTable
-                    columns={diffPositionColumns}
+                  <TableWorkbench workbenchId="strategy-position-diff"
+                columns={tableColumnsWithExport(diffPositionColumns, { symbol: row => row.symbolText, change: row => row.changeTypeText, quantity: row => row.quantityText, pnl: row => row.pnlText })}
+                sourceDescription="Complete position difference for the selected base and target runs; source units retained."
+                completePopulation
                     rows={vm.diffPanel.positionTable.rows}
                     getRowId={(row) => row.key}
                     getRowAriaLabel={(row) => row.ariaLabel}
@@ -954,8 +1013,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                   </Badge>
                 </div>
                 <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)]">
-                  <DenseDataTable
-                    columns={diffParameterColumns}
+                  <TableWorkbench workbenchId="strategy-parameter-diff"
+                columns={tableColumnsWithExport(diffParameterColumns, { parameter: row => row.key, base: row => row.baseValueText, target: row => row.targetValueText })}
+                sourceDescription="Complete parameter difference for the explicitly selected base and target runs."
+                completePopulation
                     rows={vm.diffPanel.parameterTable.rows}
                     getRowId={(row) => row.key}
                     getRowAriaLabel={(row) => row.ariaLabel}
@@ -988,8 +1049,10 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
-              <DenseDataTable
-                columns={promotionHistoryColumns}
+              <TableWorkbench workbenchId="strategy-promotion-history"
+                columns={tableColumnsWithExport(promotionHistoryColumns, { strategy: row => row.strategyName, route: row => row.routeText, decision: row => row.decisionText, sharpe: row => row.qualifyingSharpeText, promoted: row => row.promotedAtText })}
+                sourceDescription="Complete authorized retained promotion audit trail."
+                completePopulation
                 rows={vm.promotionHistoryTable.rows}
                 getRowId={(record) => record.promotionId}
                 getRowAriaLabel={(record) => record.ariaLabel}
@@ -1043,7 +1106,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           >
             <DialogHeader className="mb-5 flex flex-row items-start justify-between gap-4 space-y-0">
               <div className="min-w-0">
-                <div className="eyebrow-label">{vm.selectedRunDetail.eyebrow}</div>
+                <div className={eyebrowClassName(vm.selectedRunDetail.eyebrow)}>{vm.selectedRunDetail.eyebrow}</div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <DialogTitle id={vm.selectedRunDetail.dialogTitleId}>
                     {vm.selectedRunDetail.title}
@@ -1071,14 +1134,16 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             <section aria-label={vm.selectedRunDetail.summaryLabel} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {vm.selectedRunDetail.summaryRows.map((row) => (
                 <div key={row.id} className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3">
-                  <div className="eyebrow-label">{row.label}</div>
+                  <div className={eyebrowClassName(row.label)}>{row.label}</div>
                   <div className="mt-2 truncate font-mono text-sm text-foreground">{row.value}</div>
                 </div>
               ))}
             </section>
 
+            <StrategyRunParityPanel accountId={fundAccountId} runId={vm.selectedRunDetail.runId} />
+
             <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
-              <div className="eyebrow-label">{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>
+              <div className={eyebrowClassName(vm.selectedRunDetail.acceptanceCriteriaLabel)}>{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>
               {vm.selectedRunDetail.acceptanceCriteriaStatus === "ready" ? (
                 <>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -1106,7 +1171,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <div className="eyebrow-label">{vm.selectedRunDetail.acceptanceChecklistLabel}</div>
+                  <div className={eyebrowClassName(vm.selectedRunDetail.acceptanceChecklistLabel)}>{vm.selectedRunDetail.acceptanceChecklistLabel}</div>
                   <p id={`${vm.selectedRunDetail.dialogDescriptionId}-checklist`} className="mt-2 text-xs text-muted-foreground">
                     {vm.selectedRunDetail.acceptanceChecklistMessage}
                   </p>
@@ -1181,7 +1246,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
             </TechnicalDetails>
 
             <section className="mt-4 rounded-md border border-border/70 bg-background/45 px-4 py-3">
-              <div className="eyebrow-label">{vm.selectedRunDetail.notesLabel}</div>
+              <div className={eyebrowClassName(vm.selectedRunDetail.notesLabel)}>{vm.selectedRunDetail.notesLabel}</div>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.selectedRunDetail.notesText}</p>
             </section>
 
@@ -1348,8 +1413,10 @@ function PlotToolWorkspacePanel({
               items={vm.notebookToolbarItems}
             />
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.85fr)]">
-              <DenseDataTable
-                columns={studyColumns}
+              <TableWorkbench workbenchId="strategy-plot-studies"
+                columns={tableColumnsWithExport(studyColumns, { study: row => row.title, status: row => row.statusText, metric: row => row.metricText, note: row => row.noteText })}
+                sourceDescription="Retained study catalog in the current PlotTool snapshot."
+                completePopulation
                 rows={studies}
                 getRowId={(study) => study.id}
                 getRowAriaLabel={(study) => study.ariaLabel}
@@ -1400,7 +1467,7 @@ function PlotToolWorkspacePanel({
               }))}
             />
             <div className="space-y-2">
-              <div className="eyebrow-label">Scatter / residual view</div>
+              <div className="eyebrow-label eyebrow-label--sentence">Scatter / residual view</div>
               <CardTitle>{vm.title}</CardTitle>
               <CardDescription className="font-mono text-xs">{vm.metaItems.join(" · ")}</CardDescription>
             </div>
@@ -1417,24 +1484,16 @@ function PlotToolWorkspacePanel({
                   View observation table
                 </summary>
                 <div className="mt-3 overflow-x-auto">
-                  <table className="w-full text-left text-xs" aria-label="PlotTool scatter observations">
-                    <thead>
-                      <tr className="border-b border-border/60 text-muted-foreground">
-                        <th scope="col" className="px-2 py-2">Observation</th>
-                        <th scope="col" className="px-2 py-2">X position</th>
-                        <th scope="col" className="px-2 py-2">Y position</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {vm.scatterChart.points.map((point, index) => (
-                        <tr key={point.id} className="border-b border-border/40 last:border-0" aria-label={point.ariaLabel}>
-                          <th scope="row" className="px-2 py-2 font-medium">{index + 1}</th>
-                          <td className="px-2 py-2 font-mono">{point.x}</td>
-                          <td className="px-2 py-2 font-mono">{point.y}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <TableWorkbench workbenchId="strategy-scatter-mark-coordinates"
+                    rows={vm.scatterChart.points.map((point, index) => ({ ...point, ordinal: index + 1 }))}
+                    columns={[
+                      { id: "observation", label: "Observation", rowHeader: true, exportValue: point => point.ordinal, render: point => point.ordinal },
+                      { id: "x", label: "X position", exportValue: point => point.x, render: point => point.x },
+                      { id: "y", label: "Y position", exportValue: point => point.y, render: point => point.y }
+                    ]} getRowId={point => point.id} getRowAriaLabel={point => point.ariaLabel}
+                    getSearchText={point => `${point.ordinal} ${point.x} ${point.y}`} completePopulation
+                    sourceDescription="Displayed scatter marks in chart coordinates; positions are not underlying financial observations."
+                    emptyText="No scatter marks are available." ariaLabel="PlotTool scatter observations" />
                 </div>
               </details>
             ) : null}
@@ -1443,7 +1502,7 @@ function PlotToolWorkspacePanel({
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-secondary/15 px-3 py-3 text-xs text-muted-foreground">
               <div>
-                <div className="eyebrow-label">{vm.focusPoint.label}</div>
+                <div className={eyebrowClassName(vm.focusPoint.label)}>{vm.focusPoint.label}</div>
                 <div className="mt-1 font-mono text-sm text-foreground">
                   {vm.focusPoint.xValueText}
                   <span className="px-2 text-muted-foreground">/</span>
@@ -1468,7 +1527,7 @@ function PlotToolWorkspacePanel({
           </CardHeader>
           <CardContent className="grid gap-3">
             <div className="rounded-lg border border-border/70 bg-background/70 px-3 py-3">
-              <div className="eyebrow-label">{vm.focusPoint.label}</div>
+              <div className={eyebrowClassName(vm.focusPoint.label)}>{vm.focusPoint.label}</div>
               <div className="mt-2 flex items-baseline gap-2 font-mono text-lg text-foreground">
                 <span>{vm.focusPoint.xValueText}</span>
                 <span className="text-muted-foreground">/</span>
@@ -1478,7 +1537,7 @@ function PlotToolWorkspacePanel({
             </div>
             {vm.signalCards.map((card) => (
               <div key={card.id} className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-3">
-                <div className="eyebrow-label">{card.label}</div>
+                <div className={eyebrowClassName(card.label)}>{card.label}</div>
                 <div className={cn("mt-2 font-mono text-lg font-semibold", plotToneClass[card.tone])}>{card.value}</div>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">{card.detail}</p>
               </div>
@@ -1547,17 +1606,7 @@ function SelectedPlotStudyDetail({
         <h3 className="text-sm font-semibold text-foreground">{detail.title}</h3>
         <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{detail.subtitle}</p>
         <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.description}</p>
-        <dl className="mt-3 grid gap-2">
-          {detail.fields.map((field) => (
-            <div
-              key={field.label}
-              className="grid grid-cols-[minmax(0,0.4fr)_minmax(0,0.6fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-            >
-              <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-              <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <DetailFields fields={detail.fields} className="mt-3" />
       </div>
     </aside>
   );
@@ -1573,7 +1622,7 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
     >
       <Card className="border-border/70 bg-background/35">
         <CardHeader className="pb-3">
-          <div className="eyebrow-label">{vm.eyebrow}</div>
+          <div className={eyebrowClassName(vm.eyebrow)}>{vm.eyebrow}</div>
           <CardTitle className="flex items-center gap-2">
             <Sigma className="h-5 w-5 text-primary" />
             {vm.title}
@@ -1583,7 +1632,7 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
         <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {vm.summaryTiles.map((tile) => (
             <div key={tile.id} className="rounded-lg border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className="eyebrow-label">{tile.label}</div>
+              <div className={eyebrowClassName(tile.label)}>{tile.label}</div>
               <div className={cn("mt-2 font-mono text-lg font-semibold", plotToneClass[tile.tone])}>{tile.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{tile.detail}</div>
             </div>
@@ -1602,8 +1651,9 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               <div className="font-mono uppercase tracking-[0.14em] text-foreground">Residual distribution</div>
               <p className="mt-2 leading-5">{vm.distributionSummary}</p>
             </div>
-            <div className="h-[180px] w-full" role="img" aria-label={vm.distributionChart.ariaLabel}>
+            <div className="h-[180px] w-full">
               <Histogram
+                ariaLabel={vm.distributionChart.ariaLabel}
                 bins={vm.distributionChart.bars.map((bar, index) => ({
                   x0: index,
                   x1: index + 1,
@@ -1651,8 +1701,10 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
             <CardDescription>Meridian-ready statistical readout with promotion and evidence cues.</CardDescription>
           </CardHeader>
           <CardContent>
-            <DenseDataTable
-              columns={plotToolMomentColumns}
+            <TableWorkbench workbenchId="strategy-plot-moments"
+                columns={tableColumnsWithExport(plotToolMomentColumns, { metric: row => row.label, value: row => row.value, benchmark: row => row.benchmark })}
+                sourceDescription="Complete statistical moment set for the selected PlotTool study; source display units retained."
+                completePopulation
               rows={vm.momentsTable.rows}
               getRowId={(moment) => moment.id}
               getRowAriaLabel={(moment) => `${moment.label}: ${moment.value}. Benchmark ${moment.benchmark}.`}
@@ -1666,11 +1718,13 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
         <Card className="border-border/70 bg-background/35">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Observation sheet</CardTitle>
-            <CardDescription>Recent records packaged for analyst review without leaving the Strategy lane.</CardDescription>
+            <CardDescription>Recent records packaged for analyst review without leaving Strategy.</CardDescription>
           </CardHeader>
           <CardContent>
-            <DenseDataTable
-              columns={plotToolObservationColumns}
+            <TableWorkbench workbenchId="strategy-plot-observations"
+                columns={tableColumnsWithExport(plotToolObservationColumns, { date: row => row.timestamp, spread: row => row.spreadText, "implied-vol": row => row.impliedVolText, "z-score": row => row.zScoreText, signal: row => row.signalText })}
+                sourceDescription="Current recent-observation sample supplied by PlotTool; not complete market history."
+                completePopulation
               rows={vm.sampleTable.rows}
               getRowId={(row) => row.id}
               getRowAriaLabel={(row) => `${row.timestamp}: spread ${row.spreadText}, implied volatility ${row.impliedVolText}, z-score ${row.zScoreText}, signal ${row.signalText}.`}
@@ -1738,7 +1792,7 @@ function PlotToolScatterChart({
           />
         ))}
       </g>
-      <g fill="var(--fg-muted)" fontFamily="Cascadia Mono" fontSize="10">
+      <g fill="var(--fg-muted)" fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
         {chart.yTicks.map((tick) => (
           <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
             {tick.label}
@@ -1812,7 +1866,7 @@ function PlotToolScatterChart({
             fill={chart.marker.labelFill}
             stroke={chart.marker.labelStroke}
           />
-          <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="Cascadia Mono" fontSize="10">
+          <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)" fontSize="10">
             {chart.marker.labelText}
           </text>
         </>
@@ -1821,92 +1875,12 @@ function PlotToolScatterChart({
   );
 }
 
-const strategyHubRoutes = [
-  {
-    id: "designer",
-    title: "Design strategies",
-    description: "Compose cells, inspect field vocabulary, and review backtest proof.",
-    href: "/strategy/designer",
-    action: "Open Designer"
-  },
-  {
-    id: "lab",
-    title: "Inspect PlotTool",
-    description: "Review retained notebooks, scatter observations, and statistical evidence.",
-    href: "/strategy/lab",
-    action: "Open Strategy Lab"
-  },
-  {
-    id: "promotions",
-    title: "Review retained runs",
-    description: "Compare candidates and review paper-promotion evidence.",
-    href: "/strategy/promotions",
-    action: "Open Promotions"
-  },
-  {
-    id: "quant-lab",
-    title: "Run Quant Lab",
-    description: "Compile scripts against governed price, statistics, and backtest APIs.",
-    href: "/strategy/quant-lab",
-    action: "Open Quant Lab"
-  },
-  {
-    id: "covered-call",
-    title: "Model covered calls",
-    description: "Configure a chain preview and review backtest payoff evidence.",
-    href: "/strategy/covered-call",
-    action: "Open Covered Call"
-  }
-] as const;
-
-function StrategyOverviewHub({ vm }: { vm: StrategyRunLibraryState }) {
-  const plotToolConnected = vm.plotTool.workspace.statusBadgeLabel !== "NOT CONNECTED";
-  const runs = vm.runs.map((run) => ({
-    id: run.id,
-    title: run.strategyName,
-    description: `${run.engine} · ${run.mode} · ${run.dataset}`,
-    status: run.status,
-    href: `/strategy/promotions?runId=${encodeURIComponent(run.id)}`,
-    actionLabel: "Review run",
-    facts: [
-      { label: "Run", value: run.id },
-      { label: "Engine", value: run.engine },
-      { label: "Mode", value: run.mode },
-      { label: "Dataset", value: run.dataset },
-      { label: "Window", value: run.window },
-      { label: "P&L", value: run.pnl },
-      { label: "Sharpe", value: run.sharpe },
-      { label: "Updated", value: run.lastUpdated },
-      { label: "Notes", value: run.notes }
-    ]
-  }));
-  return (
-    <section className="space-y-3" aria-label="Strategy run workbench">
-      <WorkspaceTaskWorkbench title="Retained strategy runs" description="Select a run to inspect its source, results, and next review action. Comparison and promotion controls remain in the run library." items={runs} stateKey="strategyRun" emptyText="No retained runs are available yet. Open a focused lab to create or inspect strategy evidence." />
-      <div className="workspace-task-health" role="status">
-        <strong>PlotTool analytics</strong>
-        <Badge variant={vm.plotTool.workspace.statusBadgeVariant}>{vm.plotTool.workspace.statusBadgeLabel}</Badge>
-        {!plotToolConnected ? <Link to="/settings/providers" className="text-xs font-semibold text-primary underline" aria-label="Review provider connections for PlotTool analytics">Review provider connections</Link> : null}
-      </div>
-      <TechnicalDetails label="Run coverage and analytics posture">
-        <section aria-label={vm.runHistorySummary.ariaLabel} className="workspace-task-facts">
-          {vm.runHistorySummary.cards.map((card) => <div key={card.id}><strong>{card.label}: {card.value}</strong><p>{card.detail}</p></div>)}
-        </section>
-      </TechnicalDetails>
-      <details className="workspace-task-disclosure">
-        <summary>Strategy authoring and analysis tools</summary>
-        <WorkspaceTaskWorkbench title="Strategy tasks" description="Open the focused authoring, analytics, or promotion workflow." items={strategyHubRoutes.map((route) => ({ ...route, actionLabel: route.action }))} stateKey="strategyTask" />
-      </details>
-    </section>
-  );
-}
-
 function PlotToolLegendItem({ item }: { item: StrategyPlotLegendItem }) {
   return (
     <div className="plottool-legend-card">
       <div className="flex items-center gap-2 text-xs text-foreground">
         <span className={cn("h-2.5 w-2.5 rounded-full", plotLegendToneClass[item.tone])} aria-hidden="true" />
-        <span className="font-mono uppercase tracking-[0.14em]">{item.label}</span>
+        <span className={cn("", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</span>
       </div>
       <div className="mt-1 text-xs text-muted-foreground">{item.detail}</div>
     </div>

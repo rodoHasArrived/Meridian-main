@@ -13,4 +13,5 @@ namespace Meridian.Storage.Backfill;
 [JsonSerializable(typeof(BackfillResult))]
 [JsonSerializable(typeof(Dictionary<string, string>))]
 [JsonSerializable(typeof(Dictionary<string, long>))]
+[JsonSerializable(typeof(BackfillCoverageDocument))]
 internal sealed partial class BackfillStatusStoreJsonContext : JsonSerializerContext;

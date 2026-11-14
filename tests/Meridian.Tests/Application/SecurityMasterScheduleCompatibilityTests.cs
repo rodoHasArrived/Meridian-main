@@ -37,16 +37,6 @@ public sealed class SecurityMasterScheduleCompatibilityTests
         typeof(bool)
     ];
 
-    private static readonly Type[] ServiceParameterTypes =
-    [
-        typeof(ISecurityMasterCashFlowStore),
-        typeof(IEnumerable<IStructuredCashFlowProvider>),
-        typeof(SecurityMasterQueryContract),
-        typeof(ILogger<SecurityMasterCashFlowService>),
-        typeof(IStructuredCashFlowLedgerBridge),
-        typeof(ISecurityForwardCurveProvider)
-    ];
-
     [Fact]
     public void Projection_PreservesTheTwelveArgumentClrConstructorAndDeconstructor()
     {
@@ -108,44 +98,21 @@ public sealed class SecurityMasterScheduleCompatibilityTests
     }
 
     [Fact]
-    public async Task Service_PreservesTheSixArgumentClrConstructorAndLegacySourceCalls()
+    public async Task Service_CurrentConstructorsResolveSourcesWithAndWithoutCalendars()
     {
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         var query = Substitute.For<SecurityMasterQueryContract>();
-        var bridge = Substitute.For<IStructuredCashFlowLedgerBridge>();
         var curves = Substitute.For<ISecurityForwardCurveProvider>();
         var logger = NullLogger<SecurityMasterCashFlowService>.Instance;
         var retained = new SecurityCashFlowSourceDto(SecurityId, StructuredCashFlowSourceKind.CalculatedBullet,
             AsOf, false, null, null);
         store.GetSourceAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(retained);
-        var constructor = typeof(SecurityMasterCashFlowService).GetConstructor(ServiceParameterTypes);
-        constructor.Should().NotBeNull("compiled composition clients bind this exact six-argument signature");
-        var reflected = (SecurityMasterCashFlowService)constructor!.Invoke([store, Array.Empty<IStructuredCashFlowProvider>(), query, logger, bridge, curves]);
-
-        // Positional nulls are valid old calls and must not become ambiguous with the calendar overload.
-        SecurityMasterCashFlowService[] services =
-        [
-            reflected,
-            new(store, [], query, logger),
-            new(store, [], query, logger, null),
-            new(store, [], query, logger, null, null),
-            new(store, [], query, logger, bridge, curves)
-        ];
-        foreach (var service in services)
-        {
-            service.CalendarSource.Should().BeNull();
-            (await service.GetCashFlowSourceAsync(SecurityId)).Should().BeSameAs(retained);
-        }
+        var service = new SecurityMasterCashFlowService(store, [], query, logger, forwardCurves: curves);
+        service.CalendarSource.Should().BeNull();
+        (await service.GetCashFlowSourceAsync(SecurityId)).Should().BeSameAs(retained);
 
         var calendars = new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]);
-        var calendarConstructor = typeof(SecurityMasterCashFlowService).GetConstructor(
-            [typeof(IBusinessDayCalendarSource), .. ServiceParameterTypes]);
-        calendarConstructor.Should().NotBeNull("compiled calendar-aware hosts bind this exact seven-argument signature");
-        var reflectedCalendar = (SecurityMasterCashFlowService)calendarConstructor!.Invoke(
-            [calendars, store, Array.Empty<IStructuredCashFlowProvider>(), query, logger, bridge, curves]);
-        reflectedCalendar.CalendarSource.Should().BeSameAs(calendars);
-        (await reflectedCalendar.GetCashFlowSourceAsync(SecurityId)).Should().BeSameAs(retained);
-        var calendarAware = new SecurityMasterCashFlowService(calendars, store, [], query, logger);
+        var calendarAware = new SecurityMasterCashFlowService(calendars, store, [], query, logger, forwardCurves: curves);
         calendarAware.CalendarSource.Should().BeSameAs(calendars);
         (await calendarAware.GetCashFlowSourceAsync(SecurityId)).Should().BeSameAs(retained);
     }
@@ -175,7 +142,6 @@ public sealed class SecurityMasterScheduleCompatibilityTests
 
         if (registerOptionalPorts)
         {
-            services.AddSingleton(Substitute.For<IStructuredCashFlowLedgerBridge>());
             services.AddSingleton(Substitute.For<ISecurityForwardCurveProvider>());
         }
 

@@ -78,6 +78,117 @@ public sealed class BacktestMetricsEngineTests
     }
 
     [Fact]
+    public void Compute_Xirr_IgnoresInternalCashFlowsAlreadyReflectedInEquity()
+    {
+        // A one-year run that buys, pays commission and receives a dividend, ending 10% up.
+        // Those flows are internal to the portfolio and already inside terminal equity; treating
+        // them as investor flows previously reported this run as roughly -50% or NaN.
+        var startDate = new DateOnly(2023, 1, 2);
+        var snapshots = BuildSnapshots([100_000m, 110_000m], startDate)
+            .Select((snapshot, i) => snapshot with
+            {
+                Date = startDate.AddDays(365 * i),
+                Timestamp = new DateTimeOffset(startDate.AddDays(365 * i).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+            }).ToArray();
+        var ts = snapshots[0].Timestamp;
+        var cashFlows = new List<CashFlowEntry>
+        {
+            new TradeCashFlow(ts.AddDays(1), -50_000m, "AAPL", 500L, 100m),
+            new CommissionCashFlow(ts.AddDays(1), -10m, "AAPL", Guid.NewGuid()),
+            new DividendCashFlow(ts.AddDays(90), 250m, "AAPL", 500L, 0.5m),
+        };
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(365), InitialCash: 100_000m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, cashFlows, [], request);
+
+        metrics.Xirr.Should().BeApproximately(0.10, 0.001,
+            "only initial capital and terminal equity cross the portfolio boundary");
+    }
+
+    [Theory]
+    [InlineData(137, 0.28907973649159313)]
+    [InlineData(538, 0.06679850382265506)]
+    public void Compute_Xirr_AnnualizesIrregularDurationWithoutCountingInternalCashFlows(
+        int elapsedDays,
+        double expectedAnnualRate)
+    {
+        // A 10% holding-period gain annualizes to (1.1)^(365 / elapsedDays) - 1.
+        // Intermediate snapshots and internal cash movements are not investor contributions.
+        var startDate = new DateOnly(2023, 1, 3);
+        var offsets = new[] { 0, 17, 83, elapsedDays };
+        var snapshots = BuildSnapshots([100_000m, 99_000m, 104_000m, 110_000m], startDate)
+            .Select((snapshot, i) => snapshot with
+            {
+                Date = startDate.AddDays(offsets[i]),
+                Timestamp = new DateTimeOffset(
+                    startDate.AddDays(offsets[i]).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+            }).ToArray();
+        var ts = snapshots[0].Timestamp;
+        var cashFlows = new List<CashFlowEntry>
+        {
+            new TradeCashFlow(ts.AddDays(1), -50_000m, "AAPL", 500L, 100m),
+            new CommissionCashFlow(ts.AddDays(1), -10m, "AAPL",
+                Guid.Parse("11111111-1111-1111-1111-111111111111")),
+            new DividendCashFlow(ts.AddDays(83), 250m, "AAPL", 500L, 0.5m),
+            new MarginInterestCashFlow(ts.AddDays(100), -40m, MarginBalance: 20_000m, AnnualRate: 0.06),
+            new ShortRebateCashFlow(ts.AddDays(101), 15m, "SPY", ShortShares: 100, AnnualRebateRate: 0.01)
+        };
+        var request = new BacktestRequest(
+            From: startDate, To: startDate.AddDays(elapsedDays), InitialCash: 100_000m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, cashFlows, [], request);
+
+        metrics.Xirr.Should().BeApproximately(expectedAnnualRate, 1e-9,
+            "annualization uses actual elapsed days and terminal equity already includes internal cash flows");
+    }
+
+    [Fact]
+    public void Compute_LargeGainOverOneDay_CapsAnnualisedReturnInsteadOfOverflowing()
+    {
+        // 25% in one day compounds to roughly 2e35 a year, past decimal.MaxValue (~7.9e28). The
+        // unchecked decimal cast threw OverflowException and aborted the whole metrics build.
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 125m], startDate);
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(1), InitialCash: 100m);
+
+        var act = () => BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        act.Should().NotThrow();
+        act().TotalReturn.Should().Be(0.25m);
+        act().AnnualizedReturn.Should().Be((decimal)ReportedReturn.MaxMagnitude);
+    }
+
+    [Fact]
+    public void Compute_OrdinaryGain_AnnualisedReturnIsNotCapped()
+    {
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 110m], startDate).ToList();
+        // Stretch the two observations a full year apart: 10% over one year annualises to 10%.
+        snapshots[1] = snapshots[1] with { Date = startDate.AddDays(365) };
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(365), InitialCash: 100m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        metrics.AnnualizedReturn.Should().BeApproximately(0.10m, 0.0001m);
+    }
+
+    [Fact]
+    public void Compute_LossGreaterThanInitialCapital_ReportsTotalLossInsteadOfThrowing()
+    {
+        // Leverage or shorts can push equity below zero. Math.Pow of a negative base returned NaN
+        // and the decimal cast threw, aborting the whole metrics build.
+        var startDate = new DateOnly(2024, 1, 2);
+        var snapshots = BuildSnapshots([100m, 40m, -20m], startDate);
+        var request = new BacktestRequest(From: startDate, To: startDate.AddDays(2), InitialCash: 100m);
+
+        var act = () => BacktestMetricsEngine.Compute(snapshots, [], [], request);
+
+        act.Should().NotThrow();
+        act().AnnualizedReturn.Should().Be(-1m);
+        act().TotalReturn.Should().Be(-1.2m);
+    }
+
+    [Fact]
     public void Compute_ScalarRiskFreeRateFallback_UsesConstantDailyExcessReturns()
     {
         var startDate = new DateOnly(2024, 1, 2);
@@ -92,14 +203,14 @@ public sealed class BacktestMetricsEngineTests
         var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
 
         var returns = snapshots.Select(s => (double)s.DailyReturn).ToList();
-        var dailyRf = 0.05 / 252.0;
+        var dailyRf = 0.05 / 365.0;
         var excess = returns.Select(r => r - dailyRf).ToList();
         var mean = excess.Average();
         var std = SampleStdDev(excess);
         var downside = excess.Where(r => r < 0).ToList();
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
-        var expectedSharpe = mean / std * Math.Sqrt(252.0);
-        var expectedSortino = mean / downsideDev * Math.Sqrt(252.0);
+        var expectedSharpe = mean / std * Math.Sqrt(365.0);
+        var expectedSortino = mean / downsideDev * Math.Sqrt(365.0);
 
         metrics.SharpeRatio.Should().BeApproximately(expectedSharpe, 1e-10);
         metrics.SortinoRatio.Should().BeApproximately(expectedSortino, 1e-10);
@@ -114,8 +225,8 @@ public sealed class BacktestMetricsEngineTests
         var series = new Dictionary<DateOnly, double>
         {
             [startDate] = 0.00,
-            [startDate.AddDays(1)] = 0.252, // daily 0.1%
-            [startDate.AddDays(3)] = 0.126  // daily 0.05%
+            [startDate.AddDays(1)] = 0.365, // daily 0.1%
+            [startDate.AddDays(3)] = 0.1825 // daily 0.05%
         };
 
         var request = new BacktestRequest(
@@ -131,7 +242,7 @@ public sealed class BacktestMetricsEngineTests
             .Select(s =>
             {
                 var annual = series.TryGetValue(s.Date, out var rate) ? rate : 0.05;
-                return (double)s.DailyReturn - annual / 252.0;
+                return (double)s.DailyReturn - annual / 365.0;
             })
             .ToList();
         var mean = expectedExcess.Average();
@@ -139,8 +250,8 @@ public sealed class BacktestMetricsEngineTests
         var downside = expectedExcess.Where(r => r < 0).ToList();
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
 
-        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(252.0), 1e-10);
-        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(252.0), 1e-10);
+        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(365.0), 1e-10);
+        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(365.0), 1e-10);
     }
 
     // ------------------------------------------------------------------ //

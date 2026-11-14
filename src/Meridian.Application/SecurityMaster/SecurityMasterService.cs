@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
+public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IGovernedPublicationAmender, IDisposable
 {
     /// <summary>
     /// Per-security amendment serialization from the conflict pre-check (which reads per-field
@@ -34,6 +34,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? _assetProfileCatalog;
     private readonly ISecurityFieldProvenanceStore? _fieldProvenance;
     private readonly ISecurityMasterTermsCapabilityVerifier _termsCapabilityVerifier;
+    private readonly IGovernedTermAmendmentPolicy _governedTermAmendmentPolicy;
+    private readonly ISecurityMasterRevisionStore? _revisionStore;
 
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
@@ -55,8 +57,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
         ISecurityFieldProvenanceStore? fieldProvenance = null,
         ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null,
-        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null)
+        ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null,
+        IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null,
+        ISecurityMasterRevisionStore? revisionStore = null)
     {
+        _governedTermAmendmentPolicy = governedTermAmendmentPolicy ?? PermissiveGovernedTermAmendmentPolicy.Instance;
+        _revisionStore = revisionStore;
         _canonicalWriteScope = canonicalWriteScope ?? PassthroughSecurityMasterCanonicalWriteScope.Instance;
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
@@ -76,13 +82,94 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
         => ExecuteCreateAsync(request, ct);
 
+    /// <summary>
+    /// The operator-direct amendment. Refused with <see cref="GovernedTermAmendmentRequiredException"/>
+    /// while <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/> is on; see
+    /// <see cref="IGovernedPublicationAmender"/> for the other two typed write paths.
+    /// </summary>
     public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
-        => AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+    {
+        EnsureDirectAmendmentPermitted();
+        return AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+    }
+
+    /// <summary>
+    /// The system-ingest amendment (provider backfill, EDGAR ingest, ticker symbology). The governed
+    /// setting does not block it, but it refuses a request naming an operator source system, so an
+    /// operator edit cannot be routed around the governed lifecycle through it.
+    /// </summary>
+    Task<SecurityDetailDto> ISecurityMasterAmender.AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        if (SecurityMasterWriteAuthority.IsOperatorSourceSystem(request.SourceSystem))
+        {
+            throw new SecurityMasterWriteRefusedException(
+                $"Source system '{request.SourceSystem}' is an operator surface; operator term amendments use the "
+                + "direct amendment path or the governed workbench, not the system-ingest path.");
+        }
+
+        return AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+    }
+
+    /// <inheritdoc />
+    public async Task<SecurityDetailDto> AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        await EnsureApprovedRevisionAuthorityAsync(request, ct).ConfigureAwait(false);
+        return await AmendTermsInternalAsync(request, eventType: "TermsAmended", ct, approvedPublication: true).ConfigureAwait(false);
+    }
+
+    private void EnsureDirectAmendmentPermitted()
+    {
+        if (_governedTermAmendmentPolicy.RefusalReason is not null)
+        {
+            throw new GovernedTermAmendmentRequiredException();
+        }
+    }
+
+    /// <summary>
+    /// Governed publication must name, in <c>SourceRecordId</c>, a revision the durable store holds as
+    /// Approved (or Published, for a retried publish) for the same security. A host without a revision
+    /// store skips the check while governance is off (the store is what makes it checkable) and refuses
+    /// while governance is on, so turning the setting on fails closed.
+    /// </summary>
+    private async Task EnsureApprovedRevisionAuthorityAsync(AmendSecurityTermsRequest request, CancellationToken ct)
+    {
+        if (_revisionStore is null)
+        {
+            if (_governedTermAmendmentPolicy.RefusalReason is not null)
+            {
+                throw new SecurityMasterWriteRefusedException(
+                    "Governed publication cannot be verified: this host composes no revision store, so it cannot "
+                    + "confirm the amendment comes from an approved workbench revision.");
+            }
+
+            return;
+        }
+
+        if (!Guid.TryParse(request.SourceRecordId, out var revisionId))
+        {
+            throw new SecurityMasterWriteRefusedException(
+                "Governed publication must name the approved revision in SourceRecordId.");
+        }
+
+        var revision = await _revisionStore.GetAsync(revisionId, ct).ConfigureAwait(false);
+        if (revision is null
+            || revision.SecurityId != request.SecurityId
+            || revision.State is not (Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto.Approved
+                or Meridian.Contracts.Workstation.SecurityMasterRevisionStateDto.Published))
+        {
+            throw new SecurityMasterWriteRefusedException(
+                $"Revision '{revisionId:D}' is not an approved revision of security '{request.SecurityId:D}', "
+                + "so it cannot publish a term amendment.");
+        }
+    }
 
     private async Task<SecurityDetailDto> AmendTermsInternalAsync(
         AmendSecurityTermsRequest request,
         string eventType,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool approvedPublication = false)
     {
         await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
@@ -95,6 +182,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // they run after the decode; a row this node cannot decode is a fault, and no amendment can
         // succeed here.
         EnsureAssetClassIsRecognizedHere(currentProjection);
+        await EnsureRateUnitAmendmentAuthorizedAsync(request, currentProjection, approvedPublication, ct).ConfigureAwait(false);
+        EnsureClassificationTextIsUnambiguous(currentProjection.AssetClass, request.AssetSpecificTermsPatch);
         _ = MapRequestOrRefuse(() =>
         {
             ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(
@@ -135,7 +224,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
                 assetClassOverride,
                 assetTermsOverride));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
-        SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom);
+        SecurityAssetPackAdmission.EnsureAdmitted(projection, request.EffectiveFrom, currentProjection.AssetSpecificTerms);
 
         // The amend seam is the one place the pre-write golden copy and the incoming revision are
         // both in hand: record field-level cross-source conflicts (a different source disagreeing
@@ -151,7 +240,12 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // amendment must not read incumbents while this one sits between its committed projection
         // and its not-yet-written attribution — it would pair the previous source with this
         // amendment's value in a durably recorded conflict.
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+        // S2-B3: no override means the carried projection's terms are the codec serialization of
+        // the amend result's typed record (the retained carry adds only the reserved key the
+        // codec ignores), so the economic record derives from that record without re-decoding.
+        var economic = assetClassOverride is null && assetTermsOverride is null
+            ? SecurityEconomicDefinitionAdapter.ToEconomicRecord(result.Snapshot!.Record, projection)
+            : SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var amendmentGate = await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
         SecurityProjectionRecord? persistedProjection = null;
         try
@@ -247,6 +341,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     public async Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
     {
+        EnsureDirectAmendmentPermitted();
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
         EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
@@ -269,6 +364,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     public async Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
     {
+        EnsureDirectAmendmentPermitted();
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
         EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
@@ -291,6 +387,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     public async Task<SecurityDetailDto> AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default)
     {
+        EnsureDirectAmendmentPermitted();
         ArgumentNullException.ThrowIfNull(request);
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
@@ -336,44 +433,6 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         }
     }
 
-    public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
-    {
-        await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
-        var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
-        var current = await _rebuilder.RebuildEconomicDefinitionAsync(request.SecurityId, aliasProjection, ct).ConfigureAwait(false)
-            ?? throw new InvalidOperationException($"Security '{request.SecurityId}' was not found.");
-
-        var currentProjection = SecurityEconomicDefinitionAdapter.ToProjection(current, aliasProjection?.Aliases);
-        // Ordered as in an amendment: the class check, the decode, then the round-trip guards.
-        EnsureAssetClassIsRecognizedHere(currentProjection);
-        var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
-        EnsureAssetClassRoundTripsSafely(currentProjection);
-        var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
-        var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
-            currentProjection,
-            CreateProjectionFromResult(
-                result,
-                currentProjection.Aliases,
-                GetProfileBackedAssetClassOverride(currentProjection),
-                GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null)));
-        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
-        var envelope = SecurityMasterMapping.ToEventEnvelope(
-            economic,
-            "SecurityDeactivated",
-            request.UpdatedBy,
-            request.SourceSystem,
-            request.Reason,
-            projection.Version);
-
-        await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
-        {
-            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-            return true;
-        }, ct).ConfigureAwait(false);
-        await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
-    }
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
     {
@@ -895,6 +954,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         SecurityProjectionRecord projection,
         JsonElement? assetSpecificTermsPatch = null)
     {
+        EnsureRateUnitRoundTripsSafely(projection, assetSpecificTermsPatch);
         SecurityDayCountWriteGuard.EnsureRoundTrip(projection, assetSpecificTermsPatch);
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
@@ -1253,7 +1313,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <summary>
     /// The vocabulary walk inspects the FLAT discriminant keys the canonical serializer writes. A
     /// bond carrying the legacy nested <c>coupon</c> object instead has no flat <c>couponType</c>
-    /// for that walk to see, yet it is lossy in exactly the same way: <c>ToBondTerms</c> has no
+    /// for that walk to see, yet it is lossy in exactly the same way: <c>ToBondCouponStructure</c> has no
     /// nested-coupon fallback, so the record reads as <c>Fixed(couponRate ?? 0)</c> and
     /// re-serializing flattens it to <c>couponType: "Fixed"</c>, dropping the nested index, spread,
     /// and day count. Nothing in this repo writes that shape, but the projection store reads it
@@ -1336,7 +1396,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <summary>
     /// Every flat key that belongs to a coupon STRUCTURE rather than to the bond, in the order a
     /// refusal names them. Which of them survives a round trip is not a property of the key but of
-    /// the arm <c>ToBondTerms</c> selects — see <see cref="CouponArmReads"/> — so the whole set is
+    /// the arm <c>ToBondCouponStructure</c> selects — see <see cref="CouponArmReads"/> — so the whole set is
     /// checked and the arm decides.
     /// </summary>
     private static readonly string[] FlatCouponStructureKeys =
@@ -1346,7 +1406,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     ];
 
     /// <summary>
-    /// The arm <c>ToBondTerms</c> selects for this document. Anything the codec cannot read as a
+    /// The arm <c>ToBondCouponStructure</c> selects for this document. Anything the codec cannot read as a
     /// discriminant — absent, null, a case variant, a non-string token — lands on the same Fixed
     /// default the reader applies (<c>GetOptionalString(json, "couponType") ?? "Fixed"</c>), and so
     /// does an undeclared string, which the read-tolerant arm also decodes as Fixed.
@@ -1358,7 +1418,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     /// <summary>
     /// True when <paramref name="arm"/> reads <paramref name="key"/>, mirroring the arms of
-    /// <c>ToBondTerms</c> exactly. A key the selected arm does not read is not merely ignored: the
+    /// <c>ToBondCouponStructure</c> exactly. A key the selected arm does not read is not merely ignored: the
     /// F# serializer emits its OWN arm's fields and nulls the rest
     /// (<c>Interop.SecurityMaster.assetSpecificTermsJson</c>), so re-serializing deletes it — a
     /// <c>floatingIndex</c> beside <c>couponType: "Fixed"</c> is as gone as one with no discriminant
@@ -1476,7 +1536,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// True when the nested member says exactly what the codec's documented default for the absent
     /// flat key already produces, so re-serializing canonicalizes the JSON shape and loses nothing.
     /// <para>Two members qualify, each against its own type of default. <c>coupon.kind = "Fixed"</c>
-    /// qualifies through <see cref="MissingKeyDefaultFor"/>: <c>ToBondTerms</c> defaults an absent
+    /// qualifies through <see cref="MissingKeyDefaultFor"/>: <c>ToBondCouponStructure</c> defaults an absent
     /// <c>couponType</c> to <c>Fixed</c> and the projection store reads the nested kind as
     /// <c>Fixed</c>, so both codecs already agree. <c>coupon.rate = 0</c> qualifies because an
     /// absent flat rate reads as <c>0m</c> — but only under an arm that actually performs that
@@ -1519,7 +1579,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// True when the canonical codec can actually DECODE <paramref name="key"/> — present,
     /// populated, AND of the JSON kind its declared schema type requires. Presence is not the same
     /// question as readability, and conflating them loses data twice over: <c>couponType: null</c>
-    /// is a present property that <c>ToBondTerms</c> treats as the missing-value default, and
+    /// is a present property that <c>ToBondCouponStructure</c> treats as the missing-value default, and
     /// <c>spreadBps: "N/A"</c> is a populated value that <c>GetOptionalDecimal</c> cannot parse.
     /// Both are invisible to the codec, so neither can stand in for the value it would drop.
     /// </summary>
@@ -1618,7 +1678,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <para>The distinction is the codec's, not the schema's: an optional discriminant whose
     /// missing-key read is <c>None</c> (<c>ParseExerciseStyle</c>, <c>ToEquityClassificationOption</c>)
     /// serializes back as null, while one the codec SUBSTITUTES a declared value for is not cleared
-    /// at all — <c>ToBondTerms</c> reads a null <c>couponType</c> as <c>"Fixed"</c>, which is
+    /// at all — <c>ToBondCouponStructure</c> reads a null <c>couponType</c> as <c>"Fixed"</c>, which is
     /// precisely the rewrite these guards exist to stop. A required field is never clearable: its
     /// reader throws.</para>
     /// </summary>
@@ -1630,7 +1690,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     /// <c>ParseExerciseStyle</c> switches on <c>value?.Trim()</c>, so a stored <c>" American "</c>
     /// decodes to <c>American</c> and re-serializes as the canonical spelling: a lossless
     /// canonicalization, and refusing it would freeze a valid record over whitespace. Every other
-    /// discriminant switches on the raw string (<c>ToBondTerms</c>,
+    /// discriminant switches on the raw string (<c>ToBondCouponStructure</c>,
     /// <c>ToEquityClassificationOption</c>), where padding really does fall through to the
     /// missing-value default and really is lost.
     /// <para>This is a READ question and deliberately not a write one. <c>EnsureDeclaredVocabularies
@@ -1644,7 +1704,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
 
     /// <summary>
     /// The declared value the canonical codec SUBSTITUTES when a discriminant key is absent or null,
-    /// for the one field that substitutes anything: <c>ToBondTerms</c> reads
+    /// for the one field that substitutes anything: <c>ToBondCouponStructure</c> reads
     /// <c>GetOptionalString(json, "couponType") ?? "Fixed"</c>. This mirrors the codec rather than
     /// the schema — the schema declares what a value may BE, not what the reader invents when the
     /// key is gone — so it lives beside the guards that have to reason about the missing-key read.
@@ -1843,20 +1903,23 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
             classificationValues.Add(GetString(profileFields, "accountingClassification"));
         }
 
-        foreach (var (candidateClass, keywords) in SecurityAssetPackRegistry.ProfileClassificationKeywords)
+        // Each class owns its routing keys (name, aliases, classification labels); a metadata value
+        // that is another class's key contradicts the profile. Classes are asked in catalog order and
+        // a key is compared whole, never by substring.
+        foreach (var candidate in SecurityAssetClassCatalog.All)
         {
-            if (string.Equals(candidateClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(candidate.AssetClass, resolvedClass, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
 
-            var conflicting = keywords.FirstOrDefault(keyword => classificationValues.Any(value =>
-                SecurityAssetPackRegistry.MatchesProfileClassificationKeyword(value, keyword)));
+            var conflicting = candidate.RoutingKeys.FirstOrDefault(key => classificationValues.Any(value =>
+                SecurityAssetClassCatalog.MatchesRoutingKey(value, key)));
             if (conflicting is not null)
             {
                 throw new SecurityMasterWriteRefusedException(
                     $"Profile '{profileId}' resolves to asset class '{resolvedClass}', but the envelope's " +
-                    $"classification metadata ('{conflicting}') belongs to '{candidateClass}'. The profile is " +
+                    $"classification metadata ('{conflicting}') belongs to '{candidate.AssetClass}'. The profile is " +
                     "the identity of a profile-backed record — correct the category/subType/accountingClassification " +
                     "metadata (or the profile reference) so they agree before the write can proceed.");
             }

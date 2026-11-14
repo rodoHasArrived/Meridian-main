@@ -242,12 +242,43 @@ function Get-ShellAutomationState {
 
     $shellAutomation = Find-DescendantByAutomationId -Window $Window -AutomationId 'ShellAutomationState'
     $pageTitle = Find-DescendantByAutomationId -Window $Window -AutomationId 'PageTitleText'
+    $renderedPageTag = $null
+    $renderedFrameId = $null
+    foreach ($frameId in @('ContentFrame', 'WorkspacePane0', 'WorkspacePane1', 'WorkspacePane2')) {
+        $frame = Find-DescendantByAutomationId -Window $Window -AutomationId $frameId
+        if ($null -eq $frame) { continue }
+
+        try {
+            $frameState = $frame.Current
+            if ($frameState.IsOffscreen -or ($frameId -ne 'ContentFrame' -and $frameState.ItemType -ne 'ActiveWorkspacePane')) {
+                continue
+            }
+
+            # ItemStatus comes from the page content after Frame.Navigated, independently of shell labels.
+            $renderedPageTag = $frameState.ItemStatus
+            $renderedFrameId = $frameId
+            break
+        }
+        catch {
+            # A frame can be replaced while navigation is applying; the next poll must confirm its content.
+        }
+    }
 
     return [pscustomobject]@{
         Ready = ($null -ne $shellAutomation) -or ($null -ne $pageTitle)
         PageTag = if ($shellAutomation) { $shellAutomation.Current.Name } else { $null }
         PageTitle = if ($pageTitle) { $pageTitle.Current.Name } else { $null }
+        RenderedPageTag = $renderedPageTag
+        RenderedFrameId = $renderedFrameId
     }
+}
+
+function Test-ShellRenderedPageReady {
+    param([Parameter(Mandatory = $true)][object]$State)
+
+    return $State.Ready -and
+        -not [string]::IsNullOrWhiteSpace($State.PageTag) -and
+        [string]::Equals($State.RenderedPageTag, $State.PageTag, [System.StringComparison]::Ordinal)
 }
 
 function Find-AutomationElementById {
@@ -361,17 +392,19 @@ function Backup-FileState {
         [string]$Path,
 
         [Parameter(Mandatory = $true)]
-        [string]$BackupDirectory
+        [string]$BackupDirectory,
+
+        [switch]$TemporaryBackup
     )
 
     New-Item -ItemType Directory -Force -Path $BackupDirectory | Out-Null
     $backupPath = Join-Path $BackupDirectory ([System.IO.Path]::GetFileName($Path) + '.bak')
     if (Test-Path -LiteralPath $Path) {
         Copy-Item -LiteralPath $Path -Destination $backupPath -Force
-        return [pscustomobject]@{ Path = $Path; BackupPath = $backupPath; Existed = $true }
+        return [pscustomobject]@{ Path = $Path; BackupPath = $backupPath; Existed = $true; TemporaryBackup = [bool]$TemporaryBackup }
     }
 
-    return [pscustomobject]@{ Path = $Path; BackupPath = $backupPath; Existed = $false }
+    return [pscustomobject]@{ Path = $Path; BackupPath = $backupPath; Existed = $false; TemporaryBackup = [bool]$TemporaryBackup }
 }
 
 function Restore-FileState {
@@ -380,61 +413,104 @@ function Restore-FileState {
         [object[]]$States
     )
 
+    $failures = [System.Collections.Generic.List[string]]::new()
     foreach ($state in $States) {
         try {
-            if ($state.Existed -and (Test-Path -LiteralPath $state.BackupPath)) {
+            if ($state.Existed) {
+                if (-not (Test-Path -LiteralPath $state.BackupPath)) {
+                    throw "Expected fixture backup '$($state.BackupPath)' is missing; retained the current file."
+                }
                 Copy-Item -LiteralPath $state.BackupPath -Destination $state.Path -Force
             }
             elseif (Test-Path -LiteralPath $state.Path) {
                 Remove-Item -LiteralPath $state.Path -Force
             }
+            if ($state.TemporaryBackup -and (Test-Path -LiteralPath $state.BackupPath)) {
+                Remove-Item -LiteralPath $state.BackupPath -Force
+            }
         }
         catch {
-            Write-Warn "Failed to restore fixture state '$($state.Path)': $($_.Exception.Message)"
+            $failures.Add("Failed to restore fixture state '$($state.Path)': $($_.Exception.Message)")
         }
+    }
+    if ($failures.Count -gt 0) {
+        throw ($failures -join [Environment]::NewLine)
+    }
+}
+
+function Assert-FixtureProcessOwnership {
+    param([bool]$UseFixture, [switch]$KeepAppOpen, [switch]$ReuseExistingApp)
+
+    if (-not $UseFixture) { return }
+    if ($KeepAppOpen -or $ReuseExistingApp) {
+        throw 'Fixture workflows require an owned process that closes before configuration restoration. Use -NoFixture with a profile that permits it to retain or reuse an app.'
+    }
+    if (@(Get-Process -Name $script:DesktopProcessName -ErrorAction SilentlyContinue).Count -gt 0) {
+        throw 'Close the running Meridian.Desktop before starting a fixture workflow; its configuration will not be replaced while it is running.'
     }
 }
 
 function Initialize-FixtureOperatingContext {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$BackupDirectory
+        [string]$BackupDirectory,
+
+        [string]$LocalApplicationDataRoot = [Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData),
+        [string]$ConfigurationTemplate = (Join-Path $PSScriptRoot 'desktop-workflow-fixture-config.json'),
+        [string]$ConfigurationBackupDirectory = (Join-Path ([System.IO.Path]::GetTempPath()) ('meridian-desktop-fixture-' + [Guid]::NewGuid().ToString('N'))),
+        [string]$FixtureDataRoot
     )
 
-    $meridianLocalAppData = Join-Path ([Environment]::GetFolderPath([Environment+SpecialFolder]::LocalApplicationData)) 'Meridian'
+    $meridianLocalAppData = Join-Path $LocalApplicationDataRoot 'Meridian'
     New-Item -ItemType Directory -Force -Path $meridianLocalAppData | Out-Null
 
     $fundProfilesPath = Join-Path $meridianLocalAppData 'fund-profiles.json'
     $operatingContextPath = Join-Path $meridianLocalAppData 'workstation-operating-context.json'
+    $configurationPath = Join-Path $meridianLocalAppData 'appsettings.json'
+    # Configuration backups can contain operator secrets; keep them outside uploaded bundles.
     $states = @(
         (Backup-FileState -Path $fundProfilesPath -BackupDirectory $BackupDirectory),
-        (Backup-FileState -Path $operatingContextPath -BackupDirectory $BackupDirectory)
+        (Backup-FileState -Path $operatingContextPath -BackupDirectory $BackupDirectory),
+        (Backup-FileState -Path $configurationPath -BackupDirectory $ConfigurationBackupDirectory -TemporaryBackup),
+        (Backup-FileState -Path "$configurationPath.last-known-good" -BackupDirectory $ConfigurationBackupDirectory -TemporaryBackup)
     )
 
-    [ordered]@{
-        LastSelectedFundProfileId = 'alpha-credit'
-        Profiles = @(
-            [ordered]@{
-                FundProfileId = 'alpha-credit'
-                DisplayName = 'Alpha Credit'
-                LegalEntityName = 'Alpha Credit Master Fund LP'
-                BaseCurrency = 'USD'
-                DefaultWorkspaceId = 'accounting'
-                DefaultLandingPageTag = 'AccountingShell'
-                DefaultLedgerScope = 0
-                EntityIds = @()
-                SleeveIds = @()
-                VehicleIds = @()
-                IsDefault = $true
-            }
-        )
-    } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $fundProfilesPath -Encoding utf8
+    try {
+        $fixtureConfiguration = Get-Content -LiteralPath $ConfigurationTemplate -Raw | ConvertFrom-Json -AsHashtable
+        if (-not [string]::IsNullOrWhiteSpace($FixtureDataRoot)) {
+            $fixtureConfiguration.DataRoot = [System.IO.Path]::GetFullPath($FixtureDataRoot)
+        }
+        $fixtureConfiguration | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $configurationPath -Encoding utf8
 
-    [ordered]@{
-        LastSelectedOperatingContextKey = 'Fund:alpha-credit'
-        WindowMode = 1
-        CurrentLayoutPresetId = 'accounting-review'
-    } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $operatingContextPath -Encoding utf8
+        [ordered]@{
+            LastSelectedFundProfileId = 'alpha-credit'
+            Profiles = @(
+                [ordered]@{
+                    FundProfileId = 'alpha-credit'
+                    DisplayName = 'Alpha Credit'
+                    LegalEntityName = 'Alpha Credit Master Fund LP'
+                    BaseCurrency = 'USD'
+                    DefaultWorkspaceId = 'accounting'
+                    DefaultLandingPageTag = 'AccountingShell'
+                    DefaultLedgerScope = 0
+                    EntityIds = @()
+                    SleeveIds = @()
+                    VehicleIds = @()
+                    IsDefault = $true
+                }
+            )
+        } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $fundProfilesPath -Encoding utf8
+
+        [ordered]@{
+            LastSelectedOperatingContextKey = 'Fund:alpha-credit'
+            WindowMode = 1
+            CurrentLayoutPresetId = 'accounting-review'
+        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $operatingContextPath -Encoding utf8
+    }
+    catch {
+        Restore-FileState -States $states
+        throw
+    }
 
     return $states
 }
@@ -731,7 +807,7 @@ function Wait-ForShellPage {
         $window = Wait-MeridianWindow -TimeoutSec 5 -Process $Process
         $lastState = Get-ShellAutomationState -Window $window
 
-        if ($lastState.Ready -and (
+        if ((Test-ShellRenderedPageReady -State $lastState) -and (
                 [string]::IsNullOrWhiteSpace($expectedCanonicalPageTag) -or
                 [string]::Equals($lastState.PageTag, $expectedCanonicalPageTag, [System.StringComparison]::Ordinal))) {
             return [pscustomobject]@{
@@ -745,7 +821,8 @@ function Wait-ForShellPage {
 
     $observedPageTag = if ($lastState) { $lastState.PageTag } else { $null }
     $observedPageTitle = if ($lastState) { $lastState.PageTitle } else { $null }
-    throw "Requested page '$ExpectedPageTag' (canonical '$expectedCanonicalPageTag') was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'."
+    $observedRenderedPageTag = if ($lastState) { $lastState.RenderedPageTag } else { $null }
+    throw "Requested page '$ExpectedPageTag' (canonical '$expectedCanonicalPageTag') was not confirmed before capture. Last observed page tag: '$observedPageTag'. Last observed title: '$observedPageTitle'. Visible content tag: '$observedRenderedPageTag'."
 }
 
 function Wait-ForStableShellPage {
@@ -770,8 +847,8 @@ function Wait-ForStableShellPage {
         $lastWindow = Wait-MeridianWindow -TimeoutSec 5 -Process $Process
         $lastState = Get-ShellAutomationState -Window $lastWindow
 
-        if ($lastState.Ready -and -not [string]::IsNullOrWhiteSpace($lastState.PageTag)) {
-            $signature = "$($lastState.PageTag)|$($lastState.PageTitle)"
+        if (Test-ShellRenderedPageReady -State $lastState) {
+            $signature = "$($lastState.PageTag)|$($lastState.PageTitle)|$($lastState.RenderedFrameId)|$($lastState.RenderedPageTag)"
             if ($signature -ne $lastSignature) {
                 $lastSignature = $signature
                 $stableSince = Get-Date
@@ -782,6 +859,10 @@ function Wait-ForStableShellPage {
                     State = $lastState
                 }
             }
+        }
+        else {
+            $lastSignature = $null
+            $stableSince = $null
         }
 
         Start-Sleep -Milliseconds 250
@@ -1211,7 +1292,6 @@ $outputRootInput = if ($PSBoundParameters.ContainsKey('OutputRoot')) { $OutputRo
 $resolvedOutputRoot = Resolve-RepoPath $outputRootInput
 $retentionDays = [int](Get-MeridianWorkflowProfileValue -Table $profileRetention -Key 'maxAgeDays' -Fallback 14)
 $retentionLatest = [int](Get-MeridianWorkflowProfileValue -Table $profileRetention -Key 'retainLatest' -Fallback 10)
-Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot -MaxAgeDays $retentionDays -RetainLatest $retentionLatest
 $buildIsolationKey = if ($SkipBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix ("desktop-workflow-" + $Workflow) }
 $resolvedScreenshotDirectory = if ($PSBoundParameters.ContainsKey('ScreenshotDirectory')) {
     Resolve-RepoPath $ScreenshotDirectory
@@ -1233,6 +1313,9 @@ else {
         Get-ConfigBool -Table $workflowDefinition -Key 'fixtureMode' -Fallback (Get-ConfigBool -Table $defaults -Key 'fixtureMode' -Fallback $true)
     }
 }
+
+Assert-FixtureProcessOwnership -UseFixture:$useFixture -KeepAppOpen:$KeepAppOpen -ReuseExistingApp:$ReuseExistingApp
+Invoke-MeridianWorkflowArtifactRetention -OutputRoot $resolvedOutputRoot -MaxAgeDays $retentionDays -RetainLatest $retentionLatest
 
 if ([string]::IsNullOrWhiteSpace($CheckpointPath)) {
     $CheckpointPath = Join-Path $resolvedOutputRoot "checkpoints/$Workflow.checkpoint.json"
@@ -1348,6 +1431,7 @@ $workflowTranscriptActive = $false
 $stageStatusEntries = [System.Collections.Generic.List[object]]::new()
 $lastSuccessfulStep = $null
 $originalWorkflowEnv = @{
+    MDC_DATA_ROOT = [Environment]::GetEnvironmentVariable('MDC_DATA_ROOT', 'Process')
     MDC_FIXTURE_MODE = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
     DOTNET_ENVIRONMENT = [Environment]::GetEnvironmentVariable('DOTNET_ENVIRONMENT', 'Process')
     ASPNETCORE_ENVIRONMENT = [Environment]::GetEnvironmentVariable('ASPNETCORE_ENVIRONMENT', 'Process')
@@ -1416,8 +1500,11 @@ try {
     }
 
     if ($useFixture) {
-        $fixtureFileStates = @(Initialize-FixtureOperatingContext -BackupDirectory (Join-Path $bundleDirectory 'fixture-state-backup'))
-        Write-Info 'Prepared fixture operating context for desktop workflow startup.'
+        Assert-FixtureProcessOwnership -UseFixture:$useFixture -KeepAppOpen:$KeepAppOpen -ReuseExistingApp:$ReuseExistingApp
+        $fixtureFileStates = @(Initialize-FixtureOperatingContext `
+            -BackupDirectory (Join-Path $bundleDirectory 'fixture-state-backup') `
+            -FixtureDataRoot (Join-Path $runDirectory 'fixture-data'))
+        Write-Info 'Prepared fixture operating context and offline Synthetic configuration for desktop workflow startup.'
     }
 
     if ($stageStatuses['preflight'] -ne 'skipped-valid') {
@@ -1562,6 +1649,7 @@ try {
             }
             else {
                 if ($useFixture) {
+                    [Environment]::SetEnvironmentVariable('MDC_DATA_ROOT', (Join-Path $runDirectory 'fixture-data'), 'Process')
                     [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', '1', 'Process')
                     [Environment]::SetEnvironmentVariable('DOTNET_ENVIRONMENT', 'Development', 'Process')
                     [Environment]::SetEnvironmentVariable('ASPNETCORE_ENVIRONMENT', 'Development', 'Process')
@@ -1732,6 +1820,8 @@ try {
             $window = $pageReadiness.Window
             $stepResult.observedPageTag = $pageReadiness.State.PageTag
             $stepResult.observedPageTitle = $pageReadiness.State.PageTitle
+            $stepResult.observedRenderedPageTag = $pageReadiness.State.RenderedPageTag
+            $stepResult.observedRenderedFrameId = $pageReadiness.State.RenderedFrameId
 
             $captureRetry = Invoke-MeridianRetry `
                 -Name ("{0}/step-{1:D2}/{2}" -f $Workflow, $stepIndex, $captureName) `
@@ -1769,6 +1859,13 @@ try {
                         return [pscustomobject]@{
                             ready = $false
                             failure = (New-MeridianRetryFailure -Code 'desktop.automation.marker_missing' -Reason 'Shell automation readiness marker was not present.' -Data @{ pageTag = $shellState.PageTag; pageTitle = $shellState.PageTitle })
+                        }
+                    }
+
+                    if (-not (Test-ShellRenderedPageReady -State $shellState)) {
+                        return [pscustomobject]@{
+                            ready = $false
+                            failure = (New-MeridianRetryFailure -Code 'desktop.content.not_active' -Reason 'Visible page content does not match the shell navigation tag.' -Data @{ observedPageTag = $shellState.PageTag; observedRenderedPageTag = $shellState.RenderedPageTag; observedRenderedFrameId = $shellState.RenderedFrameId })
                         }
                     }
 
@@ -1829,6 +1926,8 @@ try {
             $stepResult.retryName = $captureRetry.Telemetry.name
             $stepResult.observedPageTag = $captureRetry.Value.state.PageTag
             $stepResult.observedPageTitle = $captureRetry.Value.state.PageTitle
+            $stepResult.observedRenderedPageTag = $captureRetry.Value.state.RenderedPageTag
+            $stepResult.observedRenderedFrameId = $captureRetry.Value.state.RenderedFrameId
 
             if ($shouldCapture -and $null -ne $capturePath) {
                 $savedPath = $captureRetry.Value.capturePath
@@ -1968,88 +2067,100 @@ catch {
     throw
 }
 finally {
-    $manifest.run.finishedAt = (Get-Date).ToString('o')
-    $manifest.retryTelemetry = @($retryTelemetry)
-    $manifest.retrySummary = [ordered]@{
-        total = $retryTelemetry.Count
-        failures = @(
-            $retryTelemetry |
-                Where-Object { $_.status -eq 'failed' -and $null -ne $_.failure } |
-                Group-Object { $_.failure.code } |
-                Sort-Object Count -Descending |
-                ForEach-Object {
-                    [ordered]@{
-                        code = $_.Name
-                        count = $_.Count
-                    }
-                }
-        )
-    }
-    $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
-    $stageStatusEntries | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
-    if ($null -ne $lastSuccessfulStep) {
-        $lastSuccessfulStep | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
-    }
-    else {
-        [ordered]@{
-            message = 'No successful workflow step was recorded.'
-            generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
-        } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
-    }
-
     try {
-        & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'summarize-desktop-workflow-bundle.ps1') `
-            -BundlePath $bundleDirectory `
-            -ManifestPath $manifestPath `
-            -WorkflowName $workflowDefinition.name `
-            -UseFixture:$useFixture `
-            -SkipBuild:$SkipBuild `
-            -ReuseExistingApp:$ReuseExistingApp | Out-Null
-    }
-    catch {
-        Write-Warn "Failed to summarize desktop workflow bundle: $($_.Exception.Message)"
-    }
-    $runSummary = [ordered]@{
-        workflow = $Workflow
-        runDirectory = $runDirectory
-        manifestPath = $manifestPath
-        generatedAt = (Get-Date).ToString('o')
-        lastSuccessfulStage = $lastSuccessfulStage
-        stages = $stageStatuses
-        totals = [ordered]@{
-            steps = @($manifest.steps).Count
-            succeeded = @($manifest.steps | Where-Object { $_.status -eq 'ok' }).Count
-            failed = @($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count
+        $manifest.run.finishedAt = (Get-Date).ToString('o')
+        $manifest.retryTelemetry = @($retryTelemetry)
+        $manifest.retrySummary = [ordered]@{
+            total = $retryTelemetry.Count
+            failures = @(
+                $retryTelemetry |
+                    Where-Object { $_.status -eq 'failed' -and $null -ne $_.failure } |
+                    Group-Object { $_.failure.code } |
+                    Sort-Object Count -Descending |
+                    ForEach-Object {
+                        [ordered]@{
+                            code = $_.Name
+                            count = $_.Count
+                        }
+                    }
+            )
         }
-        status = if (@($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count -gt 0) { 'partial' } else { [string]$manifest.run.status }
-    }
-    $runSummary | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $runSummaryPath -Encoding utf8
+        $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $manifestPath -Encoding utf8
+        $stageStatusEntries | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $bundleStageStatusPath -Encoding utf8
+        if ($null -ne $lastSuccessfulStep) {
+            $lastSuccessfulStep | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
+        }
+        else {
+            [ordered]@{
+                message = 'No successful workflow step was recorded.'
+                generatedAtUtc = (Get-Date).ToUniversalTime().ToString('O')
+            } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $bundleLastSuccessfulStepPath -Encoding utf8
+        }
 
-    if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
         try {
-            if (-not $ownedProcess.HasExited) {
-                Write-Info 'Stopping Meridian desktop...'
-                Stop-Process -Id $ownedProcess.Id -Force -ErrorAction SilentlyContinue
+            & pwsh -NoProfile -File (Join-Path $PSScriptRoot 'summarize-desktop-workflow-bundle.ps1') `
+                -BundlePath $bundleDirectory `
+                -ManifestPath $manifestPath `
+                -WorkflowName $workflowDefinition.name `
+                -UseFixture:$useFixture `
+                -SkipBuild:$SkipBuild `
+                -ReuseExistingApp:$ReuseExistingApp | Out-Null
+        }
+        catch {
+            Write-Warn "Failed to summarize desktop workflow bundle: $($_.Exception.Message)"
+        }
+        $runSummary = [ordered]@{
+            workflow = $Workflow
+            runDirectory = $runDirectory
+            manifestPath = $manifestPath
+            generatedAt = (Get-Date).ToString('o')
+            lastSuccessfulStage = $lastSuccessfulStage
+            stages = $stageStatuses
+            totals = [ordered]@{
+                steps = @($manifest.steps).Count
+                succeeded = @($manifest.steps | Where-Object { $_.status -eq 'ok' }).Count
+                failed = @($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count
+            }
+            status = if (@($manifest.steps | Where-Object { $_.status -eq 'failed' }).Count -gt 0) { 'partial' } else { [string]$manifest.run.status }
+        }
+        $runSummary | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $runSummaryPath -Encoding utf8
+    }
+    finally {
+        if (-not $KeepAppOpen -and $null -ne $ownedProcess) {
+            try {
+                if (-not $ownedProcess.HasExited) {
+                    Write-Info 'Stopping Meridian desktop...'
+                    Stop-Process -Id $ownedProcess.Id -Force -ErrorAction SilentlyContinue
+                }
+            }
+            catch {
+                Write-Warn "Failed to stop Meridian desktop cleanly: $($_.Exception.Message)"
             }
         }
-        catch {
-            Write-Warn "Failed to stop Meridian desktop cleanly: $($_.Exception.Message)"
-        }
-    }
 
-    if ($fixtureFileStates.Count -gt 0 -and (-not $KeepAppOpen -or $null -eq $ownedProcess -or $ownedProcess.HasExited)) {
-        Restore-FileState -States $fixtureFileStates
-    }
-
-    foreach ($entry in $originalWorkflowEnv.GetEnumerator()) {
-        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
-    }
-    if ($workflowTranscriptActive) {
-        try {
-            Stop-Transcript | Out-Null
+        $fixtureRestoreError = $null
+        if ($fixtureFileStates.Count -gt 0 -and (-not $KeepAppOpen -or $null -eq $ownedProcess -or $ownedProcess.HasExited)) {
+            try {
+                Restore-FileState -States $fixtureFileStates
+            }
+            catch {
+                $fixtureRestoreError = $_
+            }
         }
-        catch {
-            Write-Warn "Failed to stop workflow transcript: $($_.Exception.Message)"
+
+        foreach ($entry in $originalWorkflowEnv.GetEnumerator()) {
+            [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
+        }
+        if ($workflowTranscriptActive) {
+            try {
+                Stop-Transcript | Out-Null
+            }
+            catch {
+                Write-Warn "Failed to stop workflow transcript: $($_.Exception.Message)"
+            }
+        }
+        if ($null -ne $fixtureRestoreError) {
+            throw $fixtureRestoreError
         }
     }
 }

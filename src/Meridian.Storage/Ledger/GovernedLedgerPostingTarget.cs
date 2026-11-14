@@ -400,9 +400,11 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             ContainsTag(retained, AccountingPostingCommandValidator.PostingCommandFingerprintTag) &&
             ContainsTag(candidate, AccountingPostingCommandValidator.PostingCommandFingerprintTag);
         var retainedPairs = (retained ?? new Dictionary<string, string>())
+            .Where(pair => !string.Equals(pair.Key, "controls.eligibility", StringComparison.OrdinalIgnoreCase))
             .Where(pair => !ignoreLineDimensionCompatibilityTags || !IsLineDimensionCompatibilityTag(pair.Key))
             .ToArray();
         var candidatePairs = (candidate ?? new Dictionary<string, string>())
+            .Where(pair => !string.Equals(pair.Key, "controls.eligibility", StringComparison.OrdinalIgnoreCase))
             .Where(pair => !ignoreLineDimensionCompatibilityTags || !IsLineDimensionCompatibilityTag(pair.Key))
             .ToArray();
         if (retainedPairs.Length != candidatePairs.Length)
@@ -479,6 +481,8 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && TextEquals(retained.CapitalAccountId, candidate.CapitalAccountId)
             && retained.InstrumentId == candidate.InstrumentId
             && retained.PositionId == candidate.PositionId
+            && retained.IntercompanyAgreementId == candidate.IntercompanyAgreementId
+            && retained.IntercompanyAgreementVersion == candidate.IntercompanyAgreementVersion
             && TextEquals(retained.TaxLotId, candidate.TaxLotId)
             && TextEquals(retained.CostCenterId, candidate.CostCenterId)
             && TextEquals(retained.CounterpartyId, candidate.CounterpartyId)

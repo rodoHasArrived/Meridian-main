@@ -280,9 +280,23 @@
       "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
     },
     {
+      "path": "Directory.Build.props",
+      "bytes": 371,
+      "sha256": "506b4560b211562997851e20810de7e8701f78c1f578b2e0f4c84a1254cb4af3",
+      "encoding": "verbatim",
+      "source": "Repository build-isolation metadata introduced by main commit 01649c7a44; retained during cleanup integration, not a measured diagnostic source snapshot."
+    },
+    {
+      "path": "Directory.Packages.props",
+      "bytes": 296,
+      "sha256": "dcc15c754c6c43820a14ef0cf83f220f16f6cd59d7efd7b14838fa992f8e970d",
+      "encoding": "verbatim",
+      "source": "Repository build-isolation metadata introduced by main commit 01649c7a44; retained during cleanup integration, not a measured diagnostic source snapshot."
+    },
+    {
       "path": "README.md",
-      "bytes": 4803,
-      "sha256": "1ea6b2a1d10125991e7841715a41a8afe4d694bdc376cb674a405b192284a2f1",
+      "bytes": 5506,
+      "sha256": "d048d85d9e7bee26df7ccabb8ba7aa7782b0f7ad9fa8c29cc81d1fd5e6246134",
       "encoding": "verbatim",
       "source": "generated evidence landing page"
     },
@@ -637,10 +651,10 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/HexDedupLedger.original.cs"
     },
     {
-      "path": "component-profiles/dedup/Profile.csproj",
-      "bytes": 377,
-      "sha256": "cbabe02a5bc5ca6adace51bca85984f581077a142346d7a814ccc2a07fe8587b",
-      "encoding": "verbatim",
+      "path": "component-profiles/dedup/Profile.csproj.gz",
+      "bytes": 232,
+      "sha256": "f4898fd9f1056c7f94c9b85ca926d75901fa124bb8d978f95c603d3db21c3e59",
+      "encoding": "gzip",
       "originalBytes": 377,
       "originalSha256": "cbabe02a5bc5ca6adace51bca85984f581077a142346d7a814ccc2a07fe8587b",
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/Profile.csproj"
@@ -727,10 +741,10 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/dedup/summary.csv"
     },
     {
-      "path": "components/before/Profile.csproj",
-      "bytes": 254,
-      "sha256": "4ac0b929e0a1160d5313d3f65a90af589b5ce302dccde75a7041d961bb159c49",
-      "encoding": "verbatim",
+      "path": "components/before/Profile.csproj.gz",
+      "bytes": 173,
+      "sha256": "8237efd1d6a71efe4f02fcb8cb5cfacb69f6ca40900af20ed25e512c79f4c15f",
+      "encoding": "gzip",
       "originalBytes": 254,
       "originalSha256": "4ac0b929e0a1160d5313d3f65a90af589b5ce302dccde75a7041d961bb159c49",
       "source": "/workspace/wal-checksum-profile/Profile.csproj"
@@ -844,10 +858,10 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/managed-run.log"
     },
     {
-      "path": "components/candidates/managed/Profile.csproj",
-      "bytes": 504,
-      "sha256": "760edc17aefefd0b30e8a352180a67893d49b68196426db0e550ccba4585273c",
-      "encoding": "verbatim",
+      "path": "components/candidates/managed/Profile.csproj.gz",
+      "bytes": 296,
+      "sha256": "2abd0009d697ab78ace951ebbceace47b068fa5b6b59da221d1e872b708f69c0",
+      "encoding": "gzip",
       "originalBytes": 504,
       "originalSha256": "760edc17aefefd0b30e8a352180a67893d49b68196426db0e550ccba4585273c",
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/managed/Profile.csproj"
@@ -871,10 +885,10 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/native-run.log"
     },
     {
-      "path": "components/candidates/native/Profile.csproj",
-      "bytes": 438,
-      "sha256": "8d63bb7c5b07dbed96eef5e47d2dfb733ff31190ed1aa3c7b31bdc5c677da5f1",
-      "encoding": "verbatim",
+      "path": "components/candidates/native/Profile.csproj.gz",
+      "bytes": 264,
+      "sha256": "c1dd14d7e73f0b3beae0be12b8245c71655f99fb9e497e3c2a80852d7c2f70ba",
+      "encoding": "gzip",
       "originalBytes": 438,
       "originalSha256": "8d63bb7c5b07dbed96eef5e47d2dfb733ff31190ed1aa3c7b31bdc5c677da5f1",
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/native/Profile.csproj"
@@ -898,10 +912,10 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/candidates/summary.csv"
     },
     {
-      "path": "components/compression/Profile.csproj",
-      "bytes": 387,
-      "sha256": "4a53432e5083604389dcac7c48c0c2917f80ac8a993de81f7bcb206e5957d4e1",
-      "encoding": "verbatim",
+      "path": "components/compression/Profile.csproj.gz",
+      "bytes": 246,
+      "sha256": "9e88f19876630ff48a355be804459f90b6435814f78729213171ff265f528dca",
+      "encoding": "gzip",
       "originalBytes": 387,
       "originalSha256": "4a53432e5083604389dcac7c48c0c2917f80ac8a993de81f7bcb206e5957d4e1",
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/compression/Profile.csproj"
@@ -1070,10 +1084,10 @@
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/summary.csv"
     },
     {
-      "path": "components/packbits/Profile.csproj",
-      "bytes": 498,
-      "sha256": "ec01937301c0a26b3a5134dd6564eba1166b2895ee6aacfe05347b6a9c477ad4",
-      "encoding": "verbatim",
+      "path": "components/packbits/Profile.csproj.gz",
+      "bytes": 296,
+      "sha256": "da69422bf5570210b1fd74d6f2a9ee9791000e86bd1411daac9e074b0a6909a9",
+      "encoding": "gzip",
       "originalBytes": 498,
       "originalSha256": "ec01937301c0a26b3a5134dd6564eba1166b2895ee6aacfe05347b6a9c477ad4",
       "source": "/workspace/Meridian-main/artifacts/wal-checksum-profile/packbits/Profile.csproj"
@@ -1285,6 +1299,15 @@
       "path": "receipts/current-main-provider-integration.json",
       "bytes": 13858,
       "sha256": "dc8d44f469b3f49dcb59c05d83e69d09dc696fa49dac12eb287394fd69a22851"
+    },
+    {
+      "path": "receipts/diagnostic-project-packaging.json",
+      "bytes": 2933,
+      "sha256": "1d58df3f0ae35994898bc05b8180708cd40292c71ca6553a68a6ef3c7a3381a5",
+      "encoding": "verbatim",
+      "originalBytes": 2933,
+      "originalSha256": "1d58df3f0ae35994898bc05b8180708cd40292c71ca6553a68a6ef3c7a3381a5",
+      "source": "Repository maintenance: lossless diagnostic project packaging receipt"
     },
     {
       "path": "receipts/initial-committed-packet-verification.json",

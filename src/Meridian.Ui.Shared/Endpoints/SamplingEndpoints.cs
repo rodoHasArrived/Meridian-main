@@ -16,6 +16,15 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class SamplingEndpoints
 {
+    /// <summary>Largest sample a single request may ask for; larger requests are refused.</summary>
+    internal const int MaxSampleSize = 100_000;
+
+    /// <summary>
+    /// Saved samples are held in memory only. The oldest are evicted beyond this count so a
+    /// caller cannot grow the process without bound by creating samples repeatedly.
+    /// </summary>
+    internal const int MaxSavedSamples = 50;
+
     public static void MapSamplingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var savedSamples = new ConcurrentDictionary<string, SampleResult>(StringComparer.OrdinalIgnoreCase);
@@ -29,6 +38,16 @@ public static class SamplingEndpoints
             var strategy = req.Strategy ?? "random";
             var sampleSize = req.SampleSize ?? 1000;
             var symbol = req.Symbol;
+
+            // A zero size divided by zero in systematic sampling (a 500) and an unbounded size let
+            // one request hold the whole population in memory; both are refused up front.
+            if (sampleSize < 1 || sampleSize > MaxSampleSize)
+            {
+                return Results.BadRequest(new
+                {
+                    error = $"sampleSize must be between 1 and {MaxSampleSize}."
+                });
+            }
 
             // Find relevant JSONL files
             var files = FindDataFiles(rootPath, symbol);
@@ -46,7 +65,7 @@ public static class SamplingEndpoints
                     Events = Array.Empty<string>(),
                     CreatedAt = DateTimeOffset.UtcNow
                 };
-                savedSamples[sampleId] = result;
+                SaveSample(savedSamples, result);
 
                 return Results.Json(new
                 {
@@ -56,7 +75,8 @@ public static class SamplingEndpoints
                     sampleSize = 0,
                     populationSize = 0,
                     status = "no_data",
-                    message = $"No data files found{(symbol != null ? $" for symbol '{symbol}'" : "")} in {rootPath}",
+                    // The storage root is server layout and is not echoed to the caller.
+                    message = $"No data files found{(symbol != null ? $" for symbol '{symbol}'" : "")}.",
                     createdAt = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
@@ -90,7 +110,7 @@ public static class SamplingEndpoints
                 Events = sampledLines.ToArray(),
                 CreatedAt = DateTimeOffset.UtcNow
             };
-            savedSamples[sampleId] = sampleResult;
+            SaveSample(savedSamples, sampleResult);
 
             return Results.Json(new
             {
@@ -109,32 +129,50 @@ public static class SamplingEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // Estimate sample size - uses actual population size from storage
-        group.MapGet(UiApiRoutes.SamplingEstimate, (string? symbol, double? confidence, double? marginOfError, [FromServices] StorageOptions? storageOptions) =>
+        group.MapGet(UiApiRoutes.SamplingEstimate, (string? symbol, double? confidence, double? marginOfError, [FromServices] StorageOptions? storageOptions, CancellationToken ct) =>
         {
             var rootPath = storageOptions?.RootPath ?? "data";
             var conf = confidence ?? 0.95;
             var margin = marginOfError ?? 0.05;
 
-            // Count actual lines in data files for population estimate
+            // A margin of zero divides by zero in Cochran's formula; both inputs are fractions.
+            if (conf <= 0 || conf >= 1 || margin <= 0 || margin >= 1)
+            {
+                return Results.BadRequest(new
+                {
+                    error = "confidence and marginOfError must each be greater than 0 and less than 1."
+                });
+            }
+
+            // Count actual lines in data files for population estimate. The scan is synchronous
+            // per file, so cancellation is honoured between files.
             long populationSize = 0;
             var files = FindDataFiles(rootPath, symbol);
             foreach (var file in files)
             {
+                ct.ThrowIfCancellationRequested();
                 try
                 {
                     populationSize += CountLines(file);
                 }
-                catch { /* skip unreadable files */ }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                {
+                    // Skip unreadable files; they contribute nothing to the population.
+                }
             }
 
-            if (populationSize == 0)
-                populationSize = 100000; // Fallback estimate
-
-            // Cochran's formula for sample size estimation
-            var z = conf >= 0.99 ? 2.576 : conf >= 0.95 ? 1.96 : 1.645;
-            var p = 0.5;
-            var n0 = (z * z * p * (1 - p)) / (margin * margin);
-            var recommended = (int)Math.Ceiling(n0 / (1 + (n0 - 1) / populationSize));
+            // With no stored data there is no population to estimate from. The previous fallback
+            // invented a population of 100,000, which reported a recommendation for data that
+            // does not exist.
+            int recommended = 0;
+            if (populationSize > 0)
+            {
+                // Cochran's formula for sample size estimation
+                var z = conf >= 0.99 ? 2.576 : conf >= 0.95 ? 1.96 : 1.645;
+                var p = 0.5;
+                var n0 = (z * z * p * (1 - p)) / (margin * margin);
+                recommended = (int)Math.Ceiling(n0 / (1 + (n0 - 1) / populationSize));
+            }
 
             return Results.Json(new
             {
@@ -144,6 +182,7 @@ public static class SamplingEndpoints
                 estimatedPopulation = populationSize,
                 dataFilesFound = files.Count,
                 recommendedSampleSize = recommended,
+                status = populationSize > 0 ? "estimated" : "no_data",
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
@@ -196,6 +235,17 @@ public static class SamplingEndpoints
         .WithName("GetSampleById").RequirePermission(UserPermission.ViewHistoricalData)
         .Produces(200)
         .Produces(404);
+    }
+
+    private static void SaveSample(ConcurrentDictionary<string, SampleResult> savedSamples, SampleResult sample)
+    {
+        savedSamples[sample.SampleId] = sample;
+        while (savedSamples.Count > MaxSavedSamples)
+        {
+            var oldest = savedSamples.Values.MinBy(static s => s.CreatedAt);
+            if (oldest is null || !savedSamples.TryRemove(oldest.SampleId, out _))
+                break;
+        }
     }
 
     private static List<string> FindDataFiles(string rootPath, string? symbol)

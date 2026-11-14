@@ -27,7 +27,7 @@ public sealed partial class OrderManagementSystem
 
         // Cancel/expiry can arrive ahead of an already executed fill. Preserve terminal
         // state unless authoritative cumulative execution advances; never reopen or resize.
-        if (IsTerminal(current.Status))
+        if (OrderStatusFacts.IsTerminal(current.Status))
         {
             if (!string.Equals(current.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
                 || current.Side != report.Side)
@@ -92,12 +92,13 @@ public sealed partial class OrderManagementSystem
     // Serial admission keeps both from booking the same missing increment concurrently.
     private readonly SemaphoreSlim _brokerageRecoveryReportGate = new(1, 1);
 
-    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct, decimal? authorizedQuantity = null)
+    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct, decimal? authorizedQuantity = null,
+        bool completeAcceptedReport = false, bool cancellationAcknowledgement = false)
     {
-        await _brokerageRecoveryReportGate.WaitAsync(ct).ConfigureAwait(false);
+        await _brokerageRecoveryReportGate.WaitAsync(completeAcceptedReport ? CancellationToken.None : ct).ConfigureAwait(false);
         try
         {
-            await ProcessGatewayReportCoreAsync(report, ct, authorizedQuantity).ConfigureAwait(false);
+            await ProcessGatewayReportCoreAsync(report, ct, authorizedQuantity, cancellationAcknowledgement).ConfigureAwait(false);
         }
         finally
         {
@@ -190,6 +191,12 @@ public sealed partial class OrderManagementSystem
     public async Task ReconcileRecoveryOrderAsync(ExecutionReport report, CancellationToken ct = default)
     {
         using var operation = EnterOperation();
+        await ReconcileRecoveryOrderCoreAsync(report, ct).ConfigureAwait(false);
+    }
+
+    private async Task ReconcileRecoveryOrderCoreAsync(ExecutionReport report, CancellationToken ct,
+        bool cancellationAcknowledgement = false)
+    {
         EnsureBrokerageRecoveryScope();
         await _brokerageRecoveryReportGate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -224,7 +231,7 @@ public sealed partial class OrderManagementSystem
                     || report.FilledQuantity > maximumQuantity
                     || (report.FilledQuantity > pendingState.FilledQuantity && report.FillPrice is not > 0m))
                     throw new InvalidDataException("Broker recovery evidence does not match the retained order.");
-                await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
+                await ProcessGatewayReportCoreAsync(report, ct, cancellationAcknowledgement: cancellationAcknowledgement).ConfigureAwait(false);
                 MarkBrokerageRecoveryRequired(orderId);
                 return;
             }
@@ -243,8 +250,8 @@ public sealed partial class OrderManagementSystem
                 || report.FilledQuantity > confirmedQuantity
                 || (report.FilledQuantity > state.FilledQuantity && report.FillPrice is not > 0m)
                 || (report.OrderQuantity > 0m && report.OrderQuantity != confirmedQuantity && !rejectedSuccessor)
-                || (IsTerminalStatus(state.Status) && report.OrderStatus != state.Status
-                    && !(pending is not null && IsTerminalStatus(report.OrderStatus))
+                || (OrderStatusFacts.IsTerminal(state.Status) && report.OrderStatus != state.Status
+                    && !(pending is not null && OrderStatusFacts.IsTerminal(report.OrderStatus))
                     && !(report.FilledQuantity > state.FilledQuantity
                         && report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)))
                 throw new InvalidDataException("Broker recovery evidence does not match the retained order.");
@@ -262,13 +269,13 @@ public sealed partial class OrderManagementSystem
                 report = report with { FillPrice = incrementPrice, FillPriceIsCumulativeAverage = false };
             }
             var recoveryVersion = GetBrokerageRecoveryVersion(orderId);
-            var canResolveAmendment = !IsTerminal(state.Status) || IsTerminal(report.OrderStatus);
+            var canResolveAmendment = !OrderStatusFacts.IsTerminal(state.Status) || OrderStatusFacts.IsTerminal(report.OrderStatus);
             if (selectedTerms is not null)
             {
                 if (canResolveAmendment)
                 {
                     var confirmed = ApplyAmendmentTerms(state, selectedTerms);
-                    if (IsTerminal(state.Status) && IsTerminal(report.OrderStatus)
+                    if (OrderStatusFacts.IsTerminal(state.Status) && OrderStatusFacts.IsTerminal(report.OrderStatus)
                         && selectedTerms == pending?.Proposed
                         && !(report.ReportType is ExecutionReportType.ModificationRejected
                             && report.GatewayOrderId == pending?.OriginalBrokerOrderId))
@@ -282,7 +289,7 @@ public sealed partial class OrderManagementSystem
                     _brokerIdentities.Confirm(orderId, confirmedBrokerId);
                 }
             }
-            await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
+            await ProcessGatewayReportCoreAsync(report, ct, cancellationAcknowledgement: cancellationAcknowledgement).ConfigureAwait(false);
             if (canResolveAmendment && _amendmentBook.Remove(orderId))
                 RetainProcessedBrokerageOrder(orderId, report, recoveryVersion);
         }

@@ -49,6 +49,64 @@ function parseArgs(argv) {
   return { values, valueLists, flags };
 }
 
+export function parseCaptureWorkers(value = 1) {
+  const workers = Number(value);
+  if (!Number.isInteger(workers) || workers < 1 || workers > 8) {
+    throw new Error("--workers must be an integer between 1 and 8.");
+  }
+  return workers;
+}
+
+/** Run isolated captures with bounded concurrency and one manifest writer. */
+export async function runCaptureWorkers(captures, workers, capture, checkpoint) {
+  const workerCount = Math.min(parseCaptureWorkers(workers), captures.length);
+  const completed = new Array(captures.length);
+  let nextIndex = 0;
+  let fatalError = null;
+  let checkpointTail = Promise.resolve();
+  const shellMountFailureLimit = 3;
+  const isShellMountFailure = (result) => result?.status === "failed"
+    && /App shell failed to mount/.test(String(result.error));
+
+  async function worker() {
+    while (!fatalError && nextIndex < captures.length) {
+      const index = nextIndex++;
+      try {
+        completed[index] = await capture(captures[index], index);
+      } catch (error) {
+        fatalError ??= error;
+        return;
+      }
+
+      // Captures may finish out of order. Snapshot in catalog order and serialize
+      // writes so the manifest's shared temporary file never has competing owners.
+      checkpointTail = checkpointTail.then(async () => {
+        const results = completed.filter(Boolean);
+        await checkpoint(results);
+        if (
+          completed.slice(0, shellMountFailureLimit).length === shellMountFailureLimit
+          && Array.from({ length: shellMountFailureLimit }, (_, index) => completed[index]).every(isShellMountFailure)
+          && results.every(isShellMountFailure)
+        ) {
+          fatalError ??= new Error(
+            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
+            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
+            + "compile error), so every remaining route would fail the same way. See the manifest logs."
+          );
+        }
+      }).catch((error) => { fatalError ??= error; });
+      await checkpointTail;
+    }
+  }
+
+  // Drain every started capture before returning or throwing. Browser teardown
+  // must not race a worker that is still closing its context or writing evidence.
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  await checkpointTail;
+  if (fatalError) throw fatalError;
+  return completed.filter(Boolean);
+}
+
 async function pathExists(candidate) {
   try {
     await fs.access(candidate);
@@ -501,6 +559,194 @@ function collectCaptureWaitForAbsentTexts(capture) {
   )];
 }
 
+const OPAQUE_IDENTIFIER_PATTERN = /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi;
+// A count of exactly one directly followed by a plural noun that ends its phrase ("1 rows",
+// "1 TEMPLATES", "1 jobs · 2 packages"). The lookbehinds keep "11 rows", "0.1 rows", "$1 fees",
+// "2026-01-1 ..." and ratios ("1 of 1 breaks") out. The lookahead requires the plural to be the
+// last word of its phrase: a plural-form modifier is correct English ("1 operations continuity
+// workflow", "1 securities account"), and a verb after a singular subject reads on ("Slice 1 uses
+// the provider"). The price is that "1 rows parsed" is not caught; precision matters more for a
+// check that fails a capture.
+const SINGULAR_COUNT_PLURAL_NOUN_PATTERN = /(?<![\w.,:/$%+#-])(?<!\bof )1 ([a-z]{3,}s)(?![\w-])(?! [a-z(])/gi;
+// Words ending in "s" that are not plural nouns: third-person verbs that can end a sentence
+// ("Step 1 fails.") and singular nouns. Words ending in "ss", "us" or "is" (business, status,
+// basis) are skipped by rule.
+const NOT_PLURAL_NOUNS = new Set([
+  "always", "appears", "applies", "blocks", "contributes", "does", "exceeds", "exists", "fails",
+  "has", "holds", "needs", "passes", "remains", "requires", "series", "shows", "uses", "was"
+]);
+// Request paths belong in a collapsed technical-details disclosure (ErrorNotice in the dashboard),
+// never in the sentence an operator reads.
+const API_PATH_PATTERN = /\/api\/[\w\-/{}?=&.%]*/g;
+// Words from how the system is built, not how an operator works. "Lane" names an internal work
+// stream, "payload" and "mutation" describe requests, "caller-visible" describes authorization.
+const INTERNAL_TERM_PATTERN = /\b(lanes?|payloads?|mutations?|caller-visible)\b/gi;
+// A lowercase hyphenated token. Most are ordinary compounds ("as-of", "read-only"), so
+// isSlugIdentifier decides which ones are identifiers. The lookarounds leave out pieces of file
+// names, addresses and paths ("notes-2026.pdf", "ops-1@example.com").
+const HYPHENATED_TOKEN_PATTERN = /(?<![\w/.@#-])[a-z][a-z0-9]*(?:-[a-z0-9]+)+(?![\w-]|[.@/]\w)/g;
+const SLUG_RECORD_PREFIX = /^(?:entity|fund|account|acct|investor|ledger|portfolio|strategy|template|schedule|recon)-/;
+// Two-part compounds that legitimately end in a number ("tier-1 capital", "phase-2").
+const NUMBERED_COMPOUND_HEADS = new Set([
+  "class", "day", "form", "fy", "level", "mid", "phase", "post", "pre", "rule", "section", "series",
+  "step", "tier", "top", "type", "year"
+]);
+// A "Latency" term followed by a clock time or "Never": latency is a duration. Line-anchored, so
+// "Latency / Last Response", "P99 LATENCY" and "Latency statistics: …" pass.
+const LATENCY_NOT_DURATION_PATTERN = /^latency\n(?:never|[a-z]{3} \d{1,2}, \d{1,2}:\d{2}(?: [ap]m)?(?: utc)?)$/gim;
+// Placeholders standing in for optional context: an undeclared basis printed as a failure, or a
+// missing harness fixture behind the saved-views notice.
+const UNAVAILABLE_PLACEHOLDER_PATTERN = /\b(?:basis|saved views) unavailable\b/gi;
+export const CAPTURE_CONTENT_ISSUE_KINDS = [
+  "opaque-identifier",
+  "singular-count-plural-noun",
+  "api-path",
+  "internal-term",
+  "slug-identifier",
+  "latency-not-duration",
+  "unavailable-placeholder",
+  "disabled-primary-without-reason",
+  "status-contradiction",
+  "truncated-badge"
+];
+
+/**
+ * True for a hyphenated token that is a record identifier rather than an English compound. Tuned
+ * for precision, because a hit fails a capture:
+ *   - any part carries a digit ("run-dev-1", "sec-dev-001", "report-run-investor-202605");
+ *   - a placeholder scope ("default-fund");
+ *   - three or more parts led by a record kind ("entity-fund-alpha", "investor-anchor-lp").
+ */
+export function isSlugIdentifier(token) {
+  const parts = String(token ?? "").toLowerCase().split("-");
+  if (parts.length < 2) {
+    return false;
+  }
+
+  if (parts.some((part) => /\d/.test(part))) {
+    return !(parts.length === 2 && NUMBERED_COMPOUND_HEADS.has(parts[0]) && /^\d+[a-z]?$/.test(parts[1]));
+  }
+
+  return parts[0] === "default" || (parts.length >= 3 && SLUG_RECORD_PREFIX.test(parts.join("-")));
+}
+
+/**
+ * Operator-facing copy rules checked on each route's rendered main content:
+ *   - opaque-identifier: GUID/UUID-shaped text. Records are named by display name; identifiers
+ *     belong in a collapsed technical-details disclosure, a title attribute or a form field,
+ *     none of which is part of the rendered text.
+ *   - singular-count-plural-noun: "1 rows" style counts. Use pluralizeCount from the dashboard's
+ *     lib/format.
+ *   - api-path: a request path such as "/api/ledger/...". Failed requests go through ErrorNotice,
+ *     which keeps the path under "Technical details".
+ *   - internal-term: "lane", "payload", "mutation", "caller-visible".
+ *   - slug-identifier: a slug-shaped record identifier (see isSlugIdentifier).
+ *   - latency-not-duration: a line reading just "Latency" followed by a line holding a clock time
+ *     ("Jul 13, 06:55 PM UTC") or "Never". Latency is a duration; a last-response time belongs
+ *     under its own label. Recorded as "Latency: <value>".
+ *   - unavailable-placeholder: "Basis unavailable" or "Saved views unavailable". An undeclared
+ *     basis is left off the figures strip (the figure's passport states it); the saved-views
+ *     notice in a capture means the harness is missing a fixture.
+ *   - disabled-primary-without-reason: a disabled primary button with no title or description
+ *     saying why. Passed in by the caller, which reads it from the DOM.
+ *   - status-contradiction: the status bar says "up to date" while the page's posture strip says
+ *     its freshness needs review or is blocked. Also read from the DOM by the caller.
+ *   - truncated-badge: a visible status badge whose text is clipped ("OPE" for "Open"). Badges
+ *     never truncate; a long one wraps. Read from the DOM by the caller.
+ * Returns one entry per distinct offending excerpt.
+ */
+export function findCaptureContentIssues(text, { unexplainedDisabledActions = [], statusContradictions = [], truncatedBadges = [] } = {}) {
+  const issues = [];
+  const seen = new Set();
+  const record = (kind, excerpt) => {
+    const key = `${kind}:${excerpt.toLowerCase()}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      issues.push({ kind, excerpt });
+    }
+  };
+
+  const content = String(text ?? "");
+  for (const match of content.matchAll(OPAQUE_IDENTIFIER_PATTERN)) {
+    record("opaque-identifier", match[0]);
+  }
+  for (const match of content.matchAll(SINGULAR_COUNT_PLURAL_NOUN_PATTERN)) {
+    const noun = match[1].toLowerCase();
+    if (!NOT_PLURAL_NOUNS.has(noun) && !/(ss|us|is)$/.test(noun)) {
+      record("singular-count-plural-noun", match[0]);
+    }
+  }
+  for (const match of content.matchAll(API_PATH_PATTERN)) {
+    record("api-path", match[0]);
+  }
+  for (const match of content.matchAll(INTERNAL_TERM_PATTERN)) {
+    record("internal-term", match[0]);
+  }
+  for (const match of content.matchAll(HYPHENATED_TOKEN_PATTERN)) {
+    if (isSlugIdentifier(match[0])) {
+      record("slug-identifier", match[0]);
+    }
+  }
+  for (const match of content.matchAll(LATENCY_NOT_DURATION_PATTERN)) {
+    record("latency-not-duration", match[0].replace(/\n/g, ": "));
+  }
+  for (const match of content.matchAll(UNAVAILABLE_PLACEHOLDER_PATTERN)) {
+    record("unavailable-placeholder", match[0]);
+  }
+  for (const label of unexplainedDisabledActions) {
+    record("disabled-primary-without-reason", String(label || "(unlabelled button)"));
+  }
+  for (const contradiction of statusContradictions) {
+    record("status-contradiction", String(contradiction));
+  }
+  for (const badge of truncatedBadges) {
+    record("truncated-badge", String(badge || "(unlabelled badge)"));
+  }
+
+  return issues;
+}
+
+/**
+ * The content-issue kinds a capture is allowed to render, from its `allowedContentIssues` list of
+ * `{ kind, reason }` entries. An entry without a reason is ignored: an exception has to say why.
+ */
+export function collectAllowedContentIssueKinds(capture) {
+  if (!Array.isArray(capture?.allowedContentIssues)) {
+    return new Set();
+  }
+
+  return new Set(
+    capture.allowedContentIssues
+      .filter((entry) => entry
+        && CAPTURE_CONTENT_ISSUE_KINDS.includes(entry.kind)
+        && typeof entry.reason === "string"
+        && entry.reason.trim().length > 0)
+      .map((entry) => entry.kind)
+  );
+}
+
+/** Splits a capture's content issues into the ones that fail it and the ones it is allowed. */
+export function partitionCaptureContentIssues(text, capture, domFindings = {}) {
+  const allowedKinds = collectAllowedContentIssueKinds(capture);
+  const blocking = [];
+  const allowed = [];
+  for (const issue of findCaptureContentIssues(text, domFindings)) {
+    (allowedKinds.has(issue.kind) ? allowed : blocking).push(issue);
+  }
+  return { blocking, allowed };
+}
+
+export function describeCaptureContentIssues(captureName, issues) {
+  const shown = issues.slice(0, 5).map((issue) => `${issue.kind} "${issue.excerpt}"`).join("; ");
+  const more = issues.length > 5 ? `; and ${issues.length - 5} more` : "";
+  return `Capture ${captureName} renders ${issues.length} operator-copy issue(s) in its main content: ${shown}${more}. `
+    + "Name records by display name and keep identifiers and request paths in technical details; use pluralizeCount "
+    + "for counts; write for operators, not about the system; give a disabled primary button a disabledReason; "
+    + "show latency only as a duration; leave an undeclared basis off the strip; never clip a status badge; "
+    + "a 'Saved views unavailable' notice in a capture means a missing fixture. "
+    + "A route that cannot comply yet lists the kind with a reason under allowedContentIssues in the route catalog.";
+}
+
 function isActionableBrowserError(text) {
   return /Maximum update depth exceeded|Meridian workstation route failed to render|Unhandled error/i.test(text);
 }
@@ -589,7 +835,95 @@ function assertNoCaptureBrowserError(pageErrors, captureName) {
   }
 }
 
-async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs) {
+/** Track data requests independently of transport quiet periods and UI busy labels. */
+export function createCaptureApiTracker(page) {
+  const pending = new Set();
+  const waiters = new Set();
+  let revision = 0;
+  const onRequest = (request) => {
+    if (new URL(request.url()).pathname.startsWith("/api/")) {
+      pending.add(request);
+      revision += 1;
+    }
+  };
+  const onFinished = (request) => {
+    if (pending.delete(request)) {
+      revision += 1;
+      if (pending.size === 0) for (const finish of [...waiters]) finish();
+    }
+  };
+  page.on("request", onRequest);
+  page.on("requestfinished", onFinished);
+  page.on("requestfailed", onFinished);
+  return {
+    get revision() { return revision; },
+    get pendingCount() { return pending.size; },
+    waitForIdle(timeoutMs) {
+      if (pending.size === 0) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const finish = (error) => {
+          clearTimeout(timer);
+          waiters.delete(finish);
+          if (error) reject(error);
+          else resolve();
+        };
+        const timer = setTimeout(() => finish(new Error(
+          `Screenshot API requests did not finish within ${timeoutMs}ms.`
+        )), timeoutMs);
+        waiters.add(finish);
+      });
+    },
+    dispose() {
+      page.off("request", onRequest);
+      page.off("requestfinished", onFinished);
+      page.off("requestfailed", onFinished);
+      for (const finish of [...waiters]) finish(new Error("Screenshot API request tracker closed."));
+      pending.clear();
+    }
+  };
+}
+
+/** Wait for rendered content, not for an unrelated interval without network traffic. */
+export async function waitForCaptureReadiness(page, timeoutMs, apiTracker = null) {
+  const deadline = Date.now() + timeoutMs;
+  do {
+    await apiTracker?.waitForIdle(Math.max(1, deadline - Date.now()));
+    const revision = apiTracker?.revision;
+    await page.waitForFunction(async () => {
+      const snapshot = () => {
+        const root = document.querySelector("main") ?? document.body;
+        if (!root || document.fonts?.status === "loading") return null;
+        const visible = (element) => element.getClientRects().length > 0
+          && getComputedStyle(element).visibility !== "hidden";
+        if ((root.matches("[aria-busy='true']") && visible(root))
+          || Array.from(root.querySelectorAll("[aria-busy='true']")).some(visible)) return null;
+        if (Array.from(document.images).some((image) => visible(image) && !image.complete)) return null;
+        const elements = [root, ...root.querySelectorAll("*")].filter(visible);
+        return JSON.stringify([
+          root.innerText,
+          root.scrollWidth,
+          root.scrollHeight,
+          elements.map((element) => {
+            const bounds = element.getBoundingClientRect();
+            return [bounds.x, bounds.y, bounds.width, bounds.height];
+          })
+        ]);
+      };
+      const before = snapshot();
+      if (before === null) return false;
+      // Two painted frames expose font, grid and data-region layout changes without
+      // imposing networkidle's fixed 500ms quiet period on every route.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return snapshot() === before;
+    }, undefined, { timeout: Math.max(1, deadline - Date.now()) });
+    // Data can start loading while the DOM settles, even if its panel exposes no
+    // aria-busy marker. Recheck after those responses have painted their content.
+    if (!apiTracker || (apiTracker.pendingCount === 0 && apiTracker.revision === revision)) return;
+  } while (Date.now() < deadline);
+  throw new Error(`Screenshot content did not settle within ${timeoutMs}ms.`);
+}
+
+async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs, textDir = null, apiTracker = null) {
   pageErrors.reset();
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -646,7 +980,6 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       }
     }
   }
-  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
   for (const waitForAbsentText of collectCaptureWaitForAbsentTexts(capture)) {
     await waitForCaptureStep(
       page.getByText(waitForAbsentText, { exact: false })
@@ -658,11 +991,63 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       `waiting for transitional text '${waitForAbsentText}' to clear`
     );
   }
+  await waitForCaptureStep(
+    waitForCaptureReadiness(page, readinessTimeoutMs, apiTracker),
+    pageErrors,
+    capture.name,
+    "waiting for fonts, images and settled content layout"
+  );
   assertNoCaptureBrowserError(pageErrors, capture.name);
 
   const textLength = await page.evaluate(() => document.body.innerText.trim().length);
   if (textLength < minTextLength) {
     throw new Error(`Rendered body text length ${textLength} is below minimum ${minTextLength}`);
+  }
+
+  // Rendered text only: collapsed technical details, title attributes and form field values are
+  // not part of innerText, which is exactly where identifiers are meant to live.
+  const mainText = await page.evaluate(() => (document.querySelector("main") ?? document.body).innerText);
+  // Disabled primary actions are read from the DOM, not the text: the rule is about the reason a
+  // control carries, which is an attribute.
+  const disabledActionProbe = await page.evaluate(() =>
+    Array.from((document.querySelector("main") ?? document.body).querySelectorAll("button.mds-btn--primary:disabled"))
+      .filter((button) => button.getClientRects().length > 0)
+      .filter((button) => !["title", "aria-describedby", "aria-description"]
+        .some((attribute) => (button.getAttribute(attribute) ?? "").trim().length > 0))
+      .map((button) => (button.getAttribute("aria-label") ?? button.textContent ?? "").trim())
+  );
+  const unexplainedDisabledActions = Array.isArray(disabledActionProbe) ? disabledActionProbe : [];
+  // The status bar and the page's posture strip answer the same freshness question; the bar may
+  // not say "up to date" while a strip on the page says its freshness needs review or is blocked.
+  const statusProbe = await page.evaluate(() => {
+    const staleFact = Array.from(document.querySelectorAll(
+      "main [data-trust-fact='freshness'][data-trust-tone='review'], main [data-trust-fact='freshness'][data-trust-tone='blocked']"
+    )).find((element) => element.getClientRects().length > 0);
+    const footer = document.querySelector("footer.workstation-statusbar");
+    return {
+      pageFreshness: staleFact ? (staleFact.textContent ?? "").replace(/\s+/g, " ").trim() : null,
+      statusBar: footer ? (footer.textContent ?? "").replace(/\s+/g, " ").trim() : ""
+    };
+  });
+  const statusContradictions = statusProbe?.pageFreshness && /up to date/i.test(statusProbe.statusBar ?? "")
+    ? [`status bar "${statusProbe.statusBar}" vs page "${statusProbe.pageFreshness}"`]
+    : [];
+  // A clipped status badge ("OPE") reads as a different status. Badges are measured, not read:
+  // the text is all there in innerText even when the box cuts it off.
+  const truncatedBadgeProbe = await page.evaluate(() =>
+    Array.from(document.querySelectorAll(".mds-sev, .mds-badge"))
+      .filter((badge) => badge.getClientRects().length > 0)
+      .filter((badge) => badge.scrollWidth > badge.clientWidth + 1)
+      .map((badge) => (badge.textContent ?? "").replace(/\s+/g, " ").trim())
+  );
+  const truncatedBadges = Array.isArray(truncatedBadgeProbe) ? truncatedBadgeProbe : [];
+  if (textDir) {
+    await fs.mkdir(textDir, { recursive: true });
+    await fs.writeFile(path.join(textDir, `${capture.name}.txt`), `${mainText}\n`);
+  }
+  const contentIssues = partitionCaptureContentIssues(mainText, capture, { unexplainedDisabledActions, statusContradictions, truncatedBadges });
+  if (contentIssues.blocking.length > 0) {
+    throw new Error(describeCaptureContentIssues(capture.name, contentIssues.blocking));
   }
 
   const actualUrl = page.url();
@@ -704,6 +1089,8 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
     viewport,
     bytes: buffer.length,
     textLength,
+    // Exceptions the route catalog grants this capture, kept visible in the manifest.
+    ...(contentIssues.allowed.length > 0 ? { allowedContentIssues: contentIssues.allowed } : {}),
     durationSeconds: Number(((Date.now() - started) / 1000).toFixed(2)),
     status: "passed"
   };
@@ -721,7 +1108,8 @@ export async function captureRouteWithRetries(
   timeoutMs,
   readinessTimeoutMs,
   maxAttempts,
-  onTrackerChange
+  onTrackerChange,
+  { textDir = null } = {}
 ) {
   let lastError = null;
 
@@ -731,11 +1119,13 @@ export async function captureRouteWithRetries(
     // page from the attempt that just failed.
     let context = null;
     let tracker = null;
+    let apiTracker = null;
     let attemptError = null;
     try {
       context = await browser.newContext();
       const page = await context.newPage();
       tracker = createPageErrorTracker(page);
+      apiTracker = createCaptureApiTracker(page);
       onTrackerChange(tracker);
       const resolver = createApiResolver();
       await setupScenarioApiMocking(page, resolver, tracker.record);
@@ -749,7 +1139,9 @@ export async function captureRouteWithRetries(
         minBytes,
         minTextLength,
         timeoutMs,
-        readinessTimeoutMs
+        readinessTimeoutMs,
+        textDir,
+        apiTracker
       );
       resolver.assertNoUnexpectedRequests();
       result.attempts = attempt;
@@ -769,6 +1161,7 @@ export async function captureRouteWithRetries(
       }
     } finally {
       tracker?.dispose();
+      apiTracker?.dispose();
       onTrackerChange(null);
       try {
         if (context) await context.close();
@@ -830,6 +1223,8 @@ export async function finalizeCaptureRun(manifest, manifestPath, startedUtc, log
 
 async function main() {
   const { values, valueLists, flags } = parseArgs(process.argv.slice(2));
+  if (flags.has("workers")) throw new Error("--workers requires an integer between 1 and 8.");
+  const workers = parseCaptureWorkers(values.get("workers"));
   const repoRoot = values.has("repo-root")
     ? path.resolve(values.get("repo-root"))
     : await findRepoRoot(process.cwd());
@@ -875,6 +1270,9 @@ async function main() {
 
   const outputDir = resolveRepoPath(repoRoot, values.get("output-dir") ?? routeConfig.outputRoot ?? "docs/screenshots/web");
   const manifestPath = resolveRepoPath(repoRoot, values.get("manifest") ?? "artifacts/web-screenshots/manifest.json");
+  // Optional: write each route's rendered main text as <capture>.txt, for reviewing operator copy
+  // across the catalog or tuning the content rules below.
+  const textDir = values.has("text-dir") ? resolveRepoPath(repoRoot, values.get("text-dir")) : null;
   const fixturesPath = resolveRepoPath(
     repoRoot,
     values.get("fixtures") ?? routeConfig.fixturesPath ?? "scripts/dev/web-screenshot-fixtures.json"
@@ -897,7 +1295,7 @@ async function main() {
   const readinessTimeoutMs = Number(values.get("readiness-timeout-ms") ?? "30000");
   const minBytes = Number(values.get("min-bytes") ?? "12000");
   const minTextLength = Number(values.get("min-text-length") ?? "80");
-  // A transient render or network-idle hiccup on a single route should not fail
+  // A transient render or readiness hiccup on a single route should not fail
   // the whole catalog. Retry each capture a bounded number of times (fresh
   // context each attempt) before recording it as failed.
   const parsedCaptureRetries = Number(values.get("capture-retries") ?? "1");
@@ -909,7 +1307,7 @@ async function main() {
   const startedUtc = new Date();
   let server = null;
   let browser = null;
-  let pageErrors = null;
+  const activeTrackers = new Set();
   const results = [];
 
   const manifest = {
@@ -924,6 +1322,7 @@ async function main() {
     selectedCaptureCount: captures.length,
     totalCaptureCount: allCaptures.length,
     maxAttemptsPerCapture: captureAttempts,
+    workers: Math.min(workers, captures.length),
     scenario: selectedScenario?.id ?? null,
     accountingScenario: selectedScenario?.id ?? "accounting.normal",
     previewUrl: selectedScenario ? scenarioSource.module.scenarioPreviewUrl(selectedScenario) : null,
@@ -981,12 +1380,12 @@ async function main() {
     }
     browser = await chromium.launch(launchOptions);
 
-    for (const capture of captures) {
+    await runCaptureWorkers(captures, workers, async (capture) => {
       // Each capture renders in a fresh browser context so it shows the
       // route's default first-load state. The app shell persists
       // workflow-continuity, activity, and focus state across navigations,
       // so a shared context makes capture results depend on visit order.
-      let fatalError = null;
+      let activeTracker = null;
       try {
         const result = await captureRouteWithRetries(
           browser,
@@ -1001,11 +1400,14 @@ async function main() {
           readinessTimeoutMs,
           captureAttempts,
           (tracker) => {
-            pageErrors = tracker;
-          }
+            if (activeTracker) activeTrackers.delete(activeTracker);
+            activeTracker = tracker;
+            if (tracker) activeTrackers.add(tracker);
+          },
+          { textDir }
         );
-        results.push(result);
         console.log(`Captured ${capture.name} -> ${result.path}`);
+        return result;
       } catch (error) {
         // Fault isolation: a screen that still fails after its retries is
         // recorded with its error and skipped so the run continues through the
@@ -1025,32 +1427,15 @@ async function main() {
           attempts: captureAttempts,
           error: message
         };
-        results.push(failed);
         console.error(`::warning::Skipped ${capture.name} (${capture.path}): ${message.split(/\r?\n/)[0]}`);
-
-        // Systemic-failure circuit breaker: per-route fault isolation exists so one broken
-        // screen never blocks the rest of the catalog, but when the shared app shell itself
-        // never mounts, every remaining route is guaranteed to fail the same slow way
-        // (2 x timeoutMs each) until the CI job ceiling cancels the run. If the first few
-        // routes ALL failed to mount the shell, abort now with a pointed error instead.
-        const shellMountFailureLimit = 3;
-        if (
-          results.length >= shellMountFailureLimit
-          && results.every((result) => result.status === "failed"
-            && /App shell failed to mount/.test(String(result.error)))
-        ) {
-          fatalError = new Error(
-            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
-            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
-            + "compile error), so every remaining route would fail the same way. See the manifest logs."
-          );
-        }
+        return failed;
       }
+    }, async (completed) => {
       // Persist every completed route so a cancelled job still has a useful
       // partial manifest, including counts when the shell circuit breaker trips.
+      results.splice(0, results.length, ...completed);
       await writeCaptureManifest(manifest, manifestPath, logs);
-      if (fatalError) throw fatalError;
-    }
+    });
 
     const proxyErrors = logs.filter((line) => /http proxy error:\s*\/api\//i.test(line));
     const failedCaptures = results.filter((result) => result.status === "failed");
@@ -1102,7 +1487,7 @@ async function main() {
     throw error;
   } finally {
     await finalizeCaptureRun(manifest, manifestPath, startedUtc, logs, [
-      { name: "page error tracker", run: () => pageErrors?.dispose() },
+      { name: "page error trackers", run: () => { for (const tracker of activeTrackers) tracker.dispose(); } },
       { name: "browser", run: () => browser?.close() },
       { name: "dev server", run: () => stopProcess(server) },
       { name: "scenario module", run: () => scenarioSource.close() }

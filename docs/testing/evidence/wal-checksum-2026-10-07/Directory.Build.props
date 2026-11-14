@@ -1,0 +1,8 @@
+<Project>
+  <!-- Archived diagnostic project snapshots are not Meridian source projects.
+       Deliberately stop parent Directory.Build.props discovery here. -->
+  <PropertyGroup>
+    <!-- Historical profiles retain their recorded explicit dependency versions. -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

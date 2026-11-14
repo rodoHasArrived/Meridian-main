@@ -27,6 +27,23 @@ public sealed class DesktopConfigurationRecoveryServiceTests : IDisposable
     }
 
     [Fact]
+    public void FirstRunDefaults_AreValidForTheHostAndAnOrdinaryGuardedSave()
+    {
+        var configPath = Path.Combine(_tempRoot, "appsettings.json");
+        var service = new DesktopConfigurationRecoveryService(configPath);
+        service.EnsureReadableConfiguration();
+        var json = File.ReadAllText(configPath);
+
+        var host = JsonSerializer.Deserialize<Meridian.Core.Config.AppConfig>(json,
+            Meridian.Core.Config.AppConfigJsonOptions.Read)!;
+        host.DataSource.Should().Be(Meridian.Core.Config.DataSourceKind.Synthetic);
+        host.Storage!.Profile.Should().BeNull("first-run configuration must not select a storage preset");
+        new Meridian.Core.Config.AppConfigValidator().Validate(host).IsValid.Should().BeTrue();
+        Action validateSave = () => Meridian.Ui.Shared.Services.UiConfigurationSaveGuard.ValidateWholeDocumentJson(json, json);
+        validateSave.Should().NotThrow("the desktop's own first-run configuration must remain editable through the shared host guard");
+    }
+
+    [Fact]
     public void EnsureReadableConfiguration_WhenCurrentFileIsCorrupt_RestoresLastKnownGoodAndRetainsEvidence()
     {
         var configPath = Path.Combine(_tempRoot, "appsettings.json");
@@ -61,7 +78,7 @@ public sealed class DesktopConfigurationRecoveryServiceTests : IDisposable
         var result = service.EnsureReadableConfiguration();
 
         result.Outcome.Should().Be(ConfigurationProvisioningResult.RepairedInvalid);
-        ReadConfiguration(configPath).DataSource.Should().Be("NoOp");
+        ReadConfiguration(configPath).DataSource.Should().Be("Synthetic");
         File.Exists(result.InvalidConfigurationPath!).Should().BeTrue();
         File.Exists(result.RecoveryReceiptPath!).Should().BeTrue();
     }

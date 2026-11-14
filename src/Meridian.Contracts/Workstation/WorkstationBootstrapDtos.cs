@@ -21,8 +21,13 @@ public sealed record WorkstationMetricCard(
     string Id,
     string Label,
     string Value,
-    string Delta = "0%",
-    string Tone = "default");
+    string Delta = "",
+    string Tone = "default",
+    string? ComparisonPeriod = null,
+    string? Basis = null,
+    string? AsOf = null,
+    string? Source = null,
+    NumberPassportReferenceDto? NumberPassport = null);
 /// <summary>
 /// Shared drill-in links attached to strategy, trading, and accounting run records.
 /// </summary>
@@ -89,7 +94,11 @@ public sealed record WorkstationStrategyRunCard(
     decimal? FinalEquity,
     WorkstationSecurityCoveragePayload SecurityCoverage,
     WorkstationRunDrillInLinks DrillIn,
-    BiasDisclosureDto? BiasDisclosure = null);
+    BiasDisclosureDto? BiasDisclosure = null,
+    decimal? MaxDrawdown = null,
+    IReadOnlyList<decimal>? TrendValues = null,
+    IReadOnlyList<string>? TrendDates = null,
+    string? SearchText = null);
 
 public sealed record WorkstationModeComparisonRun(
     string RunId,
@@ -303,7 +312,8 @@ public sealed record WorkstationPlotToolPayload(
     WorkstationPlotToolStatisticsPayload Statistics,
     IReadOnlyList<WorkstationPlotToolStudyPayload> Studies,
     IReadOnlyList<WorkstationPlotToolTabState> Tabs,
-    string ActiveView = "workspace");
+    string ActiveView = "workspace",
+    string AnalyticsEvidenceStatus = "Unavailable");
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/strategy</c>.
@@ -333,7 +343,11 @@ public sealed record WorkstationTradingPositionRow(
     string DayPnl,
     string UnrealizedPnl,
     string Exposure,
-    MarkFreshnessAssessmentDto? MarkFreshness = null);
+    MarkFreshnessAssessmentDto? MarkFreshness = null,
+    string? MarketValue = null,
+    string? Currency = null,
+    string? Weight = null,
+    string? WeightBasis = null);
 
 /// <summary>
 /// A single open-order row shown in the trading workstation orders table.

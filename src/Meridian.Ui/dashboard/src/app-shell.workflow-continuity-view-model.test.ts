@@ -28,7 +28,6 @@ describe("workflow continuity view model route modes", () => {
         contextValue: `${workspaceLabel} / Choose a task`,
         routeLabel: pathname,
         stepsLabel: `${workspaceLabel} task workflow steps`,
-        ariaLabel: `${workspaceLabel} task choice`,
         nextActionLabel: "Choose a task",
         nextActionAriaLabel: `Choose a task in ${workspaceLabel}`,
         nextActionHref: pathname,

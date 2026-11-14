@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { AlertCircle, BookCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
@@ -15,6 +16,7 @@ import type {
   ReconciliationQueueRunTone,
   TradingParametersViewState,
 } from "./accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
   muted: "text-muted-foreground",
@@ -33,7 +35,7 @@ export const reconciliationQueueColumns: DenseDataTableColumn<ReconciliationQueu
       </span>
     )
   },
-  { id: "mode", label: "Mode", render: (row) => <span className="font-mono uppercase text-muted-foreground">{row.modeLabel}</span> },
+  { id: "mode", label: "Mode", render: (row) => <span className={cn("text-muted-foreground", usesTrackedCaps(row.modeLabel) && "font-mono uppercase")}>{row.modeLabel}</span> },
   { id: "status", label: "Status", render: (row) => row.runStatusLabel },
   { id: "breaks", label: "Breaks", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.breakCountLabel}</span> },
   { id: "open", label: "Open", align: "right", render: (row) => <span className="font-mono tabular-nums">{row.openBreakLabel}</span> },
@@ -239,9 +241,6 @@ export function OperationalExceptionWorkbenchPanel({ view }: { view: Operational
 
 function OperationalDetailValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-3">
-      <dt>{label}</dt>
-      <dd className="min-w-0 break-words text-right font-mono text-foreground">{value}</dd>
-    </div>
+    <DetailFieldItem label={label} value={value} />
   );
 }

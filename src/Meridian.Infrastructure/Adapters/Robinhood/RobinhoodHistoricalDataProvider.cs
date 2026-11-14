@@ -116,7 +116,7 @@ public sealed class RobinhoodHistoricalDataProvider : BaseHistoricalDataProvider
         try
         {
             var url = $"{BaseUrl}?symbols=AAPL&interval=day&span=week&bounds=regular";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)

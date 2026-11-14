@@ -32,6 +32,36 @@ public sealed class ExecutionGovernanceEndpointsTests
     private static readonly Guid LiveFundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
 
     [Fact]
+    public async Task Preview_RequiresAccountAccessBeforeCallingObservationService()
+    {
+        var preview = Substitute.For<IOrderPreviewService>();
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(preview);
+        });
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/preview", JsonContent(new
+        { fundAccountId = Guid.NewGuid(), symbol = "SPY", type = 1, side = 0, quantity = 1, clientOrderId = "preview-test" }));
+        response.IsSuccessStatusCode.Should().BeFalse();
+        await preview.DidNotReceive().PreviewAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+        var missingAccount = await app.GetTestClient().PostAsync("/api/execution/orders/preview", JsonContent(new
+        { symbol = "SPY", type = 1, side = 0, quantity = 1 }));
+        missingAccount.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData("/api/execution/journal/orders")]
+    [InlineData("/api/execution/journal/summary")]
+    [InlineData("/api/execution/notifications")]
+    public async Task WorkflowReads_RejectUnauthorizedAccountsBeforeResolvingJournal(string path)
+    {
+        await using var app = await CreateAppAsync(services => RegisterFundAccountScope(services, LiveFundAccountId));
+        var response = await app.GetTestClient().GetAsync($"{path}?accountId={Guid.NewGuid():D}");
+        response.IsSuccessStatusCode.Should().BeFalse();
+        response.StatusCode.Should().NotBe(HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
     public async Task ControlsEndpoints_UpdateCircuitBreakerAndExposeAuditTrail()
     {
         var tempRoot = CreateTempRoot();
@@ -550,6 +580,81 @@ public sealed class ExecutionGovernanceEndpointsTests
             JsonOptions());
         result.Should().NotBeNull();
         result!.Success.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(false, HttpStatusCode.BadRequest)]
+    [InlineData(true, HttpStatusCode.BadGateway)]
+    public async Task SubmitOrder_DistinguishesDefinitiveRefusalsFromReconciliation(bool requiresReconciliation, HttpStatusCode expectedStatus)
+    {
+        const string orderId = "client-order-1";
+        var oms = Substitute.For<IOrderManager>();
+        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>()).Returns(new OrderResult
+        {
+            Success = false,
+            OrderId = orderId,
+            RequiresOrderReconciliation = requiresReconciliation
+        });
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            clientOrderId = orderId,
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(expectedStatus);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("orderId").GetString().Should().Be(orderId);
+        body.RootElement.TryGetProperty("requiresOrderReconciliation", out var flag).Should().Be(requiresReconciliation);
+        if (requiresReconciliation)
+            flag.GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenOrderManagerThrows_ReturnsUnconfirmedOutcome()
+    {
+        var oms = Substitute.For<IOrderManager>();
+        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<OrderResult>(new ArgumentException("Could not retain the acknowledgement.")));
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
+    }
+
+    [Fact]
+    public async Task SubmitOrder_WhenOrderManagerHasStopped_ReturnsDefinitiveUnavailability()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
+            services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
+                sp.GetRequiredService<IExecutionGateway>(), NullLogger<OrderManagementSystem>.Instance));
+        });
+        await ((IOrderManagementLifecycle)app.Services.GetRequiredService<IOrderManager>()).StopAsync();
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
+        {
+            symbol = "AAPL",
+            side = 0,
+            type = 0,
+            quantity = 1
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("type").GetString().Should().Be("https://meridian.io/errors/execution-pre-dispatch-unavailable");
     }
 
     private static async Task<WebApplication> CreateAppAsync(

@@ -2,6 +2,7 @@ using Meridian.Execution.Logging;
 using System.Runtime.CompilerServices;
 using System.Collections.Concurrent;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
 using Meridian.Core.Pipeline;
@@ -12,8 +13,7 @@ namespace Meridian.Execution;
 /// <summary>
 /// Simulated execution gateway for paper trading. Orders are matched against observed
 /// market data under <see cref="PaperOrderMatchingPolicy"/>: market orders fill from the
-/// observed bid/ask/trade/bar in effect (callers may still supply a simulated mark via
-/// <see cref="OrderRequest.LimitPrice"/> on a market order, which becomes the observation),
+/// observed bid/ask/trade/bar in effect,
 /// limit orders fill only at or better than their limit price, stop orders trigger per the
 /// documented trade-preferred policy, and unmarketable limit/stop orders rest in this
 /// gateway and re-evaluate as new market data arrives — resting fills are delivered
@@ -182,14 +182,10 @@ public sealed class PaperTradingGateway :
         var orderId = request.ClientOrderId ?? $"PAPER-{fillSeq}";
         var gatewayOrderId = $"PAPER-{fillSeq}";
 
-        // Market-style orders evaluate immediately. Callers may set a simulated price via
-        // LimitPrice on a market order; it becomes the observation. Otherwise the observed
-        // live market data applies.
+        // Market orders use observed market data; a caller-supplied limit cannot set the fill price.
         if (request.Type is OrderType.Market)
         {
-            var observation = request.LimitPrice is { } callerPrice
-                ? PaperMarketObservation.FromCallerPrice(callerPrice)
-                : PaperMarketObservation.Capture(_liveFeed, request.Symbol);
+            var observation = PaperMarketObservation.Capture(_liveFeed, request.Symbol);
 
             var match = PaperOrderMatchingPolicy.Evaluate(
                 request.Side, OrderType.Market, limitPrice: null, stopPrice: null,
@@ -475,11 +471,17 @@ public sealed class PaperTradingGateway :
         fillPrice = await _tradingParameters.ResolveFillPriceAsync(request, fillPrice, observation, ct)
             .ConfigureAwait(false);
 
-        var costs = _costModel.Compute(request.Quantity, fillPrice, observation.MidPrice);
+        // Resolve the lot convention first so notional-based costs use the same multiplied
+        // principal the paper book will move. Face value keeps its existing raw sizing here;
+        // without a convention the OMS's own resolution (100 for an option) applies.
+        var lotConvention = await _tradingParameters.ResolveLotConventionAsync(request.Symbol, ct).ConfigureAwait(false);
+        var costMultiplier = lotConvention is { } resolved
+            ? (resolved.UnitKind == SecurityLotUnitKind.FaceValue ? 1m : resolved.Multiplier)
+            : OrderRiskSizingPolicy.ResolveContractMultiplier(request);
+        var costs = _costModel.Compute(request.Quantity, fillPrice, observation.MidPrice, costMultiplier);
 
         var report = BuildReport(request, orderId, gatewayOrderId, ExecutionReportType.Fill,
             OrderStatus.Filled, filledQuantity: request.Quantity, fillPrice, costs, rejectReason: null);
-        var lotConvention = await _tradingParameters.ResolveLotConventionAsync(request.Symbol, ct).ConfigureAwait(false);
         if (lotConvention is { } convention)
         {
             report = report with

@@ -1,3 +1,5 @@
+import { EXECUTION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+
 export interface ApiValidationIssue {
   field: string;
   label: string;
@@ -16,6 +18,8 @@ export class ApiError extends Error {
   readonly detail: string | null;
   readonly validationIssues: ApiValidationIssue[];
   readonly responseBody: string | null;
+  /** Server trace or correlation identifier, when the response carried one. Support quotes it; operators do not read it. */
+  readonly correlationId: string | null;
 
   constructor(input: {
     path: string;
@@ -24,11 +28,14 @@ export class ApiError extends Error {
     detail?: string | null;
     validationIssues?: ApiValidationIssue[];
     responseBody?: string | null;
+    correlationId?: string | null;
   }) {
     const validationDetail = formatValidationIssues(input.validationIssues ?? []);
     const detail = input.detail?.trim() || null;
-    const message = `Request failed for ${input.path} (${input.status})${buildMessageSuffix(detail, validationDetail)}`;
-    super(message);
+    // `message` is what most call sites render (`error instanceof Error ? error.message : ...`),
+    // so it has to be operator copy: the reason the service gave, or a plain sentence for the
+    // status. The request path and status stay on the error for the technical-details disclosure.
+    super(buildOperatorMessage(input.status, detail, validationDetail));
     this.name = "ApiError";
     this.path = input.path;
     this.status = input.status;
@@ -36,13 +43,35 @@ export class ApiError extends Error {
     this.detail = detail;
     this.validationIssues = input.validationIssues ?? [];
     this.responseBody = input.responseBody?.trim() || null;
+    this.correlationId = input.correlationId?.trim() || null;
   }
 }
 
-export function createApiErrorFromResponseBody(path: string, status: number, body: string): ApiError {
+/**
+ * A successful response whose body could not be read as JSON. The message is operator copy; the
+ * request path and the parser's complaint stay on the error for the technical-details disclosure.
+ */
+export class ApiResponseFormatError extends Error {
+  readonly path: string;
+  readonly parserDetail: string | null;
+
+  constructor(path: string, cause: unknown) {
+    super("Meridian returned a response the workstation could not read. Try again.", { cause });
+    this.name = "ApiResponseFormatError";
+    this.path = path;
+    this.parserDetail = cause instanceof Error && cause.message.trim() ? cause.message.trim() : null;
+  }
+}
+
+export function createApiErrorFromResponseBody(
+  path: string,
+  status: number,
+  body: string,
+  correlationId: string | null = null
+): ApiError {
   const trimmed = body.trim();
   if (!trimmed) {
-    return new ApiError({ path, status });
+    return new ApiError({ path, status, correlationId });
   }
 
   try {
@@ -54,14 +83,16 @@ export function createApiErrorFromResponseBody(path: string, status: number, bod
         title: readString(parsed.title),
         // `error` is the shape most workstation endpoints still return (`new { error = "..." }`)
         // rather than RFC-7807 problem details. Without it the operator sees only
-        // "Request failed (400)" instead of the reason the server actually gave.
+        // the generic status sentence instead of the reason the server actually gave.
         detail:
           readString(parsed.detail) ??
           readString(parsed.message) ??
           readString(parsed.error) ??
           readString(parsed.title),
         validationIssues: parseValidationIssues(parsed.errors),
-        responseBody: trimmed
+        responseBody: trimmed,
+        // ASP.NET problem details carry `traceId`; a response header wins when the caller read one.
+        correlationId: correlationId ?? readString(parsed.correlationId) ?? readString(parsed.traceId)
       });
     }
   } catch {
@@ -72,12 +103,42 @@ export function createApiErrorFromResponseBody(path: string, status: number, bod
     path,
     status,
     detail: trimmed,
-    responseBody: trimmed
+    responseBody: trimmed,
+    correlationId
   });
 }
 
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
+}
+
+export function readOrderSubmissionRefusal(error: unknown): string | null {
+  if (!isApiError(error) || error.path !== EXECUTION_API_ENDPOINTS.ordersSubmit) {
+    return null;
+  }
+
+  // The submit route reserves these responses for validation, authorization, rate limits,
+  // and confirmed rejections. Timeouts and unqualified server errors carry no such proof.
+  const refusalStatus = [400, 401, 403, 404, 405, 413, 415, 422, 429].includes(error.status);
+  if (!refusalStatus && error.status !== 503) {
+    return null;
+  }
+
+  let body: { type?: unknown; success?: unknown; errorMessage?: unknown; requiresOrderReconciliation?: unknown } | null = null;
+  try {
+    body = error.responseBody ? JSON.parse(error.responseBody) : null;
+  } catch {
+    // A definitive response can have a plain-text or empty body.
+  }
+  const unavailableBeforeDispatch = error.status === 503
+    && body?.type === "https://meridian.io/errors/execution-pre-dispatch-unavailable";
+  if ((!refusalStatus && !unavailableBeforeDispatch) || body?.requiresOrderReconciliation === true) {
+    return null;
+  }
+
+  return body?.success === false && typeof body.errorMessage === "string" && body.errorMessage.trim()
+    ? body.errorMessage.trim()
+    : error.message;
 }
 
 /**
@@ -96,6 +157,127 @@ export function isAbortError(error: unknown): boolean {
   return error instanceof DOMException
     ? error.name === "AbortError"
     : error instanceof Error && error.name === "AbortError";
+}
+
+/** Request facts for the collapsed "Technical details" disclosure. Never part of the default reading path. */
+export interface ApiErrorTechnicalDetail {
+  label: string;
+  value: string;
+}
+
+export interface ApiErrorPresentation {
+  /** One plain sentence: what did not happen. */
+  summary: string;
+  /** Supporting operator copy: validation messages and the service's own explanation. */
+  details: string[];
+  /** Whether repeating the same request can succeed without the operator changing anything first. */
+  retryable: boolean;
+  /** Status, request path and correlation identifier, for support. */
+  technicalDetails: ApiErrorTechnicalDetail[];
+}
+
+/**
+ * Turns a failed request into what an operator needs: a plain sentence, whether Retry is worth
+ * offering, and the request facts kept apart for a collapsed technical-details disclosure.
+ *
+ * `fallback` names the task that failed ("The recurring queue could not be loaded.") and is used
+ * when the service gave no usable reason of its own.
+ */
+export function presentApiError(error: unknown, fallback: string): ApiErrorPresentation {
+  if (!isApiError(error)) {
+    const display = describeApiError(error, fallback);
+    const technicalDetails: ApiErrorTechnicalDetail[] = [];
+    if (error instanceof ApiResponseFormatError) {
+      technicalDetails.push({ label: "Request", value: error.path });
+      if (error.parserDetail) {
+        technicalDetails.push({ label: "Parser", value: error.parserDetail });
+      }
+    }
+    return {
+      summary: display.summary,
+      details: display.details.filter((detail) => !isDiagnosticsPointer(detail)),
+      // A non-HTTP failure is a dropped connection, a timeout or a malformed response: all transient.
+      retryable: true,
+      technicalDetails
+    };
+  }
+
+  const rawBody = hasRawTechnicalBody(error);
+  const summary = error.status === 401 || error.status === 403 || rawBody || !error.detail
+    ? summarizeStatus(error.status, fallback)
+    : error.detail;
+  const details: string[] = [];
+  if (!rawBody) {
+    if (error.title && error.title !== summary && error.title !== error.detail) {
+      details.push(error.title);
+    }
+    for (const issue of error.validationIssues) {
+      for (const message of issue.messages) {
+        details.push(`${issue.label}: ${message}`);
+      }
+    }
+  }
+
+  const technicalDetails: ApiErrorTechnicalDetail[] = [
+    { label: "Status", value: String(error.status) },
+    { label: "Request", value: error.path }
+  ];
+  if (error.correlationId) {
+    technicalDetails.push({ label: "Correlation ID", value: error.correlationId });
+  }
+
+  return {
+    summary,
+    details,
+    retryable: isRetryableStatus(error.status),
+    technicalDetails
+  };
+}
+
+/** A plain sentence for an HTTP status, for the cases where the service gave no usable reason. */
+export function summarizeStatus(status: number, fallback: string): string {
+  if (status === 401) {
+    return "Session expired or Meridian sign-in is required.";
+  }
+  if (status === 403) {
+    return "Permission denied for this Meridian role.";
+  }
+  if (status === 404) {
+    return "The requested Meridian data is unavailable.";
+  }
+  if (status === 408 || status === 504) {
+    return "Meridian took too long to respond. Try again.";
+  }
+  if (status === 409) {
+    return "This record changed since it was loaded. Refresh and try again.";
+  }
+  if (status === 429) {
+    return "Too many requests were sent at once. Wait a moment and try again.";
+  }
+  // A server fault or an unexplained rejection says nothing the task-specific fallback does not.
+  return fallback;
+}
+
+/** Retrying helps when the service was busy, slow or briefly down; it does not fix a rejected request. */
+function isRetryableStatus(status: number): boolean {
+  return status === 408 || status === 429 || status >= 500;
+}
+
+function isDiagnosticsPointer(detail: string): boolean {
+  return /open diagnostics/i.test(detail);
+}
+
+function buildOperatorMessage(status: number, detail: string | null, validationDetail: string): string {
+  if (detail && !looksLikeRawTechnicalResponse(detail)) {
+    return validationDetail ? `${detail} ${validationDetail}` : detail;
+  }
+  if (validationDetail) {
+    return validationDetail;
+  }
+  return summarizeStatus(
+    status,
+    status >= 500 ? "Meridian could not complete this request. Try again." : "Meridian did not accept this request."
+  );
 }
 
 export function describeApiError(error: unknown, fallback: string): ApiErrorDisplay {
@@ -201,22 +383,6 @@ function looksLikeRawTechnicalResponse(value: string | null | undefined): boolea
     || /\bfile not found\b/i.test(trimmed)
     || /^404(?:\s|$|:|-)/i.test(trimmed)
     || /\bhttp\s+error\s+404\b/i.test(trimmed);
-}
-
-function buildMessageSuffix(detail: string | null, validationDetail: string): string {
-  if (detail && validationDetail) {
-    return ` - ${detail} ${validationDetail}`;
-  }
-
-  if (validationDetail) {
-    return ` - ${validationDetail}`;
-  }
-
-  if (detail) {
-    return ` - ${detail}`;
-  }
-
-  return "";
 }
 
 function parseValidationIssues(value: unknown): ApiValidationIssue[] {

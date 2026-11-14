@@ -1,0 +1,129 @@
+<!-- @dsCard group="Documentation" viewport="1280x1240" name="Template eligibility" subtitle="Which primitives each of the 27 screens actually owes — 270 cells, 152 eligible, and the adoption figure recomputed from its own rows" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Template eligibility</title><link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css"><style>
+body{margin:0;padding:22px 24px 44px;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px}
+h1{font:600 20px/28px var(--font-display,var(--font-body));color:var(--text-primary);margin:0 0 6px}
+p.lede{margin:0 0 16px;max-width:96ch;text-wrap:pretty}
+h2{font:600 14px/20px var(--font-display,var(--font-body));color:var(--text-primary);margin:26px 0 8px;padding-top:14px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+h2 em{font:400 11px var(--font-data);color:var(--text-muted);font-style:normal}
+.tiles{display:flex;flex-wrap:wrap;border:1px solid var(--border);background:var(--bg-light)}
+.tiles div{flex:1 1 118px;padding:11px 13px;border-right:1px solid var(--border-divider)}
+.tiles div:last-child{border-right:0}
+.tiles .v{font:600 21px var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums}
+.tiles .l{font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+.tiles div[data-tone="good"] .v{color:var(--severity-ready-fg,#225840)}
+.tiles div[data-tone="warn"] .v{color:var(--severity-review-fg,#944A32)}
+.check{display:flex;gap:10px;align-items:baseline;padding:9px 12px;border:1px solid var(--border-strong);background:var(--bg-medium);font:11px var(--font-data);color:var(--text-secondary);margin-top:8px}
+.check b{font-weight:600;color:var(--text-primary)}
+.tag{display:inline-block;font:600 9px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;padding:1px 6px;border:1px solid var(--border);border-radius:2px;white-space:nowrap}
+.tag[data-s="clean"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,rgba(46, 118, 85, 0.36));background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
+.tag[data-s="review"]{color:var(--severity-review-fg,#944A32);border-color:var(--severity-review-bd,rgba(197, 99, 67, 0.36));background:var(--severity-review-bg,rgba(197, 99, 67, 0.1))}
+table{border-collapse:collapse;width:100%;border:1px solid var(--border);background:var(--bg-light);font-size:12.5px}
+th{text-align:left;font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);background:var(--bg-medium);padding:6px 9px;border-bottom:1px solid var(--border-strong)}
+td{padding:5px 9px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:18px}
+td.n,th.n{text-align:right;font-family:var(--font-data);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.tot td{border-top:1px solid var(--border-strong);font-weight:600;color:var(--text-primary);background:var(--bg-medium)}
+code{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)}
+table.mx{font:11px var(--font-data)}
+table.mx th.p{writing-mode:vertical-rl;transform:rotate(180deg);padding:7px 3px;font:600 9px var(--font-body);letter-spacing:.04em;text-align:left}
+table.mx td{padding:0;text-align:center;border-left:1px solid var(--border-divider)}
+table.mx td.name{padding:4px 9px;text-align:left;font:12px var(--font-body);color:var(--text-primary);border-left:0;white-space:nowrap}
+table.mx td.arch{padding:4px 9px;text-align:left;font:10px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+table.mx td i{display:block;width:100%;height:22px;line-height:22px;font-style:normal;font-size:12px}
+table.mx td[data-c="conforming"] i{color:var(--severity-ready-fg,#225840);background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
+table.mx td[data-c="unmigrated"] i{color:var(--severity-review-fg,#944A32);background:var(--severity-review-bg,rgba(197, 99, 67, 0.1))}
+table.mx td[data-c="exempt"] i{color:var(--text-disabled,#A4ABB2)}
+table.mx td.n{padding:4px 9px;text-align:right;color:var(--text-secondary)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 22px;margin:8px 0 0;font:11px var(--font-body);color:var(--text-muted)}
+.legend span i{font-style:normal;font-family:var(--font-data);margin-right:5px}
+dl.rz{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:0;font-size:12.5px;line-height:18px}
+dl.rz dt{font:600 11px var(--font-data);color:var(--text-primary);white-space:nowrap}
+dl.rz dd{margin:0;text-wrap:pretty}
+.note{border-left:3px solid var(--brand-signal);background:var(--bg-medium);padding:11px 14px;margin-top:22px;max-width:96ch;line-height:19px;text-wrap:pretty}
+.two{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start}
+@media(max-width:1000px){.two{grid-template-columns:1fr}}
+</style></head><body class="mds-specimen">
+<h1>Template eligibility</h1>
+<p class="lede">Requiring every operating-language primitive on every screen would be consistency theater, so adoption is measured against the cells that carry a design judgment: <b>eligible templates conforming ÷ templates eligible</b>. Every one of the 27 templates is on the record — <code>C-16</code> in the static gate fails the release if a new screen ships unclassified, because an unclassified template is absent from both terms and would move the printed percentage without anything having been migrated. Judgment: <code>guidelines/TEMPLATE_CONTRACT.md</code>. Record: <code>api/template-eligibility.json</code>. Gate: <code>scripts/check_template_eligibility.py</code>.</p>
+<div class="tiles" id="tiles"></div>
+<div class="check" id="check"></div>
+
+<h2><span>Adoption by primitive</span><em id="idx-p">…</em></h2>
+<div class="two">
+<div><table id="prims"><thead><tr><th style="width:34%">Primitive</th><th class="n">Eligible</th><th class="n">Conforming</th><th class="n">Adoption</th></tr></thead><tbody></tbody></table></div>
+<div>
+<h2 style="margin-top:0;padding-top:0;border-top:0"><span>Why a cell is exempt</span><em id="idx-r">…</em></h2>
+<dl class="rz" id="reasons"></dl>
+</div>
+</div>
+
+<h2><span>The record, screen by screen</span><em id="idx-m">…</em></h2>
+<table class="mx" id="matrix"><thead><tr><th style="width:20%">Template</th><th style="width:88px">Archetype</th></tr></thead><tbody></tbody></table>
+<div class="legend">
+<span><i>●</i>conforming — eligible and the primitive is mounted</span>
+<span><i>○</i>eligible, not yet migrated — the per-cell worklist</span>
+<span><i>·</i>exempt, with a declared reason (hover the cell)</span>
+</div>
+
+<div class="note"><b>Two figures deliberately absent: a target, and a trend.</b> A percentage here is a diagnosis of where local state still lives, not a number to move — and the arithmetic on this page is recomputed from the rows at load, never typed, so the card cannot drift from the record the way the 284/118 census outlived two releases. <code>Capsule</code> reads low on its eligible screens because its use condition requires working move/resize affordances; the restrictive rule in the contract is the intended answer, not a gap.</div>
+<script>
+const esc = (s) => String(s).replace(/[<>&"']/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" }[c]));
+const pct = (c, e) => (e ? Math.round((c / e) * 1000) / 10 : 0);
+fetch("../api/template-eligibility.json").then((r) => r.json()).then((mf) => {
+  // Published so the dynamic gate's `eligibility` assertion can recompute this page against its own rows.
+  window.__eligibility = mf;
+  const prims = Object.keys(mf.primitives), tpls = mf.templates, slugs = Object.keys(tpls).sort();
+  const rows = {};
+  let elig = 0, conf = 0;
+  for (const p of prims) {
+    const e = slugs.filter((s) => tpls[s].eligible.includes(p));
+    const c = e.filter((s) => (tpls[s].conforming || []).includes(p));
+    rows[p] = [e.length, c.length]; elig += e.length; conf += c.length;
+  }
+  const entries = slugs.reduce((n, s) => n + tpls[s].entries.length, 0);
+  const cells = slugs.length * prims.length;
+  const zero = slugs.filter((s) => !tpls[s].eligible.length);
+  const overall = pct(conf, elig);
+
+  document.getElementById("tiles").innerHTML = [
+    ["Templates", slugs.length], ["`.dc.html` entries", entries], ["Cells", cells],
+    ["Eligible", elig], ["Exempt", cells - elig], ["Conforming", conf, "good"],
+    ["Adoption", overall + "%", "warn"], ["Eligible for none", zero.length],
+  ].map(([l, v, tone]) => `<div${tone ? ` data-tone="${tone}"` : ""}><div class="v">${v}</div><div class="l">${esc(String(l).replace(/`/g, ""))}</div></div>`).join("");
+
+  const declared = mf.totals || {};
+  const ok = declared.eligibleCells === elig && declared.conformingCells === conf && declared.adoptionPct === overall;
+  document.getElementById("check").innerHTML = `<span class="tag" data-s="${ok ? "clean" : "review"}">${ok ? "reconciles" : "drift"}</span>`
+    + `<span>rows recompute <b>${elig}</b> eligible / <b>${conf}</b> conforming / <b>${overall}%</b>${ok ? " — matching the declared totals" : ` — record declares ${declared.eligibleCells}/${declared.conformingCells}/${declared.adoptionPct}%`}`
+    + ` · classified ${esc(mf.classifiedOn)} against ${esc(mf.release)} · unit: ${esc(mf.unit)}</span>`;
+
+  document.querySelector("#prims tbody").innerHTML = prims.map((p) => {
+    const [e, c] = rows[p];
+    return `<tr><td><code>${esc(mf.primitives[p].split(" / ")[0])}</code></td><td class="n">${e}</td><td class="n">${c}</td><td class="n">${e ? pct(c, e) + "%" : "—"}</td></tr>`;
+  }).join("") + `<tr class="tot"><td>total</td><td class="n">${elig}</td><td class="n">${conf}</td><td class="n">${overall}%</td></tr>`;
+  document.getElementById("idx-p").textContent = `${prims.length} primitives · ${cells} cells`;
+
+  document.getElementById("reasons").innerHTML = Object.entries(mf.exemptionReasons)
+    .map(([code, why]) => `<dt>${esc(code)}</dt><dd>${esc(why)}</dd>`).join("");
+  document.getElementById("idx-r").textContent = `${Object.keys(mf.exemptionReasons).length} declared codes · ${cells - elig} exempt cells`;
+
+  const head = document.querySelector("#matrix thead tr");
+  head.insertAdjacentHTML("beforeend", prims.map((p) => `<th class="p" title="${esc(mf.primitives[p])}">${esc(mf.primitives[p].split(" / ")[0])}</th>`).join("")
+    + `<th class="n" style="width:64px">Conf.</th>`);
+  document.querySelector("#matrix tbody").innerHTML = slugs.map((s) => {
+    const t = tpls[s];
+    const cellsHtml = prims.map((p) => {
+      const isE = t.eligible.includes(p), isC = (t.conforming || []).includes(p);
+      const state = isC ? "conforming" : isE ? "unmigrated" : "exempt";
+      const glyph = isC ? "●" : isE ? "○" : "·";
+      const title = isE ? `${p} — eligible, ${isC ? "conforming" : "not yet migrated"}` : `${p} — exempt: ${t.exempt[p] || ""}`;
+      return `<td data-c="${state}" title="${esc(title)}"><i>${glyph}</i></td>`;
+    }).join("");
+    return `<tr><td class="name">${esc(s)}</td><td class="arch">${esc(t.archetype)}</td>${cellsHtml}<td class="n">${(t.conforming || []).length}/${t.eligible.length}</td></tr>`;
+  }).join("");
+  document.getElementById("idx-m").textContent = `${slugs.length} templates · ${zero.length} eligible for no primitive (${zero.join(", ")})`;
+}).catch((e) => {
+  document.getElementById("check").innerHTML = `<span class="tag" data-s="review">unavailable</span><span>api/template-eligibility.json could not be read — ${esc(e.message || e)}</span>`;
+});
+</script>
+</body></html>

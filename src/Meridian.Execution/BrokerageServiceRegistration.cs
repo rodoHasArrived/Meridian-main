@@ -52,30 +52,20 @@ public static class BrokerageServiceRegistration
             return ResolveBrokerageGateway(sp, brokerageConfig.Gateway);
         });
 
-        // Register the DI-resolvable IOrderGateway. In paper mode this is the fully functional
-        // PaperTradingGateway (paper sessions have no live broker and no gate stack to bypass).
-        // In live mode the raw BrokerageGatewayAdapter is an internal detail owned by the OMS;
-        // the resolvable gateway is a read-only view whose submit/cancel members are blocked, so
-        // live order placement cannot bypass the OMS pre-trade gate stack via IOrderGateway.
+        // Register the DI-resolvable IOrderGateway. Both modes expose a read-only view whose
+        // submit/cancel members are blocked, so order placement cannot bypass the OMS pre-trade
+        // gate stack via IOrderGateway. In paper mode the view sits over the OMS's own paper
+        // IExecutionGateway, so there is one paper book rather than a second simulator whose
+        // orders the OMS, portfolio and risk rules never see. In live mode the raw
+        // BrokerageGatewayAdapter is an internal detail owned by the OMS.
         services.TryAddSingleton<IOrderGateway>(sp =>
         {
             var brokerageConfig = sp.GetRequiredService<BrokerageConfiguration>();
 
-            // If live execution is not enabled, always use the adapter-layer PaperTradingGateway
             if (!brokerageConfig.LiveExecutionEnabled || brokerageConfig.Gateway == "paper")
-            {
-                var paperLogger = sp.GetRequiredService<ILogger<Adapters.PaperTradingGateway>>();
-                var secMaster = sp.GetService<ISecurityTradingParametersQueryService>()
-                    ?? sp.GetService<ISecurityMasterQueryService>();
-                return new Adapters.PaperTradingGateway(
-                    paperLogger,
-                    secMaster,
-                    sp.GetService<Adapters.PaperTradingGatewayOptions>(),
-                    liveFeed: sp.GetService<Interfaces.ILiveFeedAdapter>(),
-                    costOptions: sp.GetService<PaperMatching.PaperTradingCostOptions>(),
-                    securityIdentity: sp.GetService<ISecurityIdentityQueryService>()
-                        ?? sp.GetService<ISecurityMasterQueryService>());
-            }
+                return new OmsGovernedExecutionOrderGateway(
+                    sp.GetRequiredService<IExecutionGateway>(),
+                    () => sp.GetService<IOrderManager>());
 
             // Resolve the named brokerage gateway via keyed registration, then expose it as an
             // OMS-governed read-only view rather than a directly submittable gateway.
@@ -115,7 +105,11 @@ public static class BrokerageServiceRegistration
                 escalationQueue: sp.GetService<RiskEscalationQueueService>(),
                 // Every brokerage-backed OMS must retain dispatch identities before routing,
                 // including a broker's sandbox. In-process paper execution needs no broker recovery file.
-                recoveryStore: gateway is IBrokerageGateway ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null);
+                recoveryStore: gateway is IBrokerageGateway ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null,
+                sessionPolicy: sp.GetService<IOrderSessionPolicy>(),
+                journal: sp.GetService<ExecutionJournal>(),
+                marketReferences: sp.GetService<IOrderMarketReferenceSource>(),
+                instrumentCoverage: sp.GetService<IOrderInstrumentCoverageSource>());
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
@@ -230,6 +224,7 @@ public static class BrokerageServiceRegistration
                 sp.GetRequiredService<ILogger<LedgerPostingConsumer>>(),
                 sp.GetRequiredService<ITradeFillPostingStore>(),
                 postingContext,
+                requireCurrentAccountingEvidence: true,
                 projectionLedger: projectionLedgerFactory?.Invoke(sp),
                 channelCapacity: options.ChannelCapacity,
                 securityValidationGate: securityGate,

@@ -20,6 +20,107 @@ public sealed class ReportingGovernanceCanonicalValidationTests
         new(2026, 7, 15, 20, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public async Task CapitalCallNotice_IndependentReviewAndReleaseAcceptOperationalSnapshotWithRestrictedInvestorAudience()
+    {
+        var scenario = NewScenario(finality: ReportingFinalityDto.Draft, outputFormat: ReportingOutputFormatDto.ClientPackage);
+        var json = System.Text.Json.Nodes.JsonNode.Parse(scenario.Request.Snapshot.ParametersCanonicalJson!)!;
+        json["scope"]!["entityScopeKind"] = "Investor";
+        json["scope"]!["investorId"] = "investor-a";
+        json["consolidationLevel"] = "Investor";
+        json["includeEvidenceAppendix"] = true;
+        json["templateParameters"] = new System.Text.Json.Nodes.JsonObject
+        {
+            ["operationalNoticeTemplateId"] = "capital-call-notice",
+            ["capitalCallId"] = "call-a",
+            ["commitmentId"] = "commitment-a",
+            ["commitmentRevision"] = "1",
+            ["capitalAccountId"] = "capital-a",
+            ["installmentId"] = "installment-a",
+            ["issuanceJournalEntryId"] = "20000000-0000-0000-0000-000000000001",
+            ["planHash"] = new string('a', 64),
+            ["callAmount"] = "100",
+            ["recipientPrincipalId"] = "lp-user-a",
+            ["reviewGroupPrincipalId"] = "capital-reviewers"
+        };
+        var canonical = json.ToJsonString();
+        scenario = scenario with
+        {
+            Request = scenario.Request with
+            {
+                TemplateId = "capital-call-notice",
+                Snapshot = scenario.Request.Snapshot with
+                {
+                    ParametersCanonicalJson = canonical,
+                    ParametersHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant()
+                },
+                Access = scenario.Request.Access with
+                {
+                    Mode = ReportingGovernanceAccessMode.Restricted,
+                    OwnerPrincipalId = "creator",
+                    AllowOwnerAccess = true,
+                    Principals = [new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.User, "lp-user-a"),
+                        new ReportingAccessPrincipalScope(ReportingAccessPrincipalKind.Group, "capital-reviewers")]
+                }
+            },
+            Approver = scenario.Approver with { PrincipalIds = ["capital-reviewers"] },
+            Releaser = scenario.Releaser with { PrincipalIds = ["capital-reviewers"] }
+        };
+        var run = await CreateValidatedRunAsync(scenario);
+        run = await scenario.Service.SubmitAsync(run.RunId, run.Version, scenario.Creator);
+        var selfApprove = async () => await scenario.Service.ApproveAsync(run.RunId, run.Version, "self approval", scenario.Creator);
+        await selfApprove.Should().ThrowAsync<ReportingGovernanceException>();
+        run = await scenario.Service.ApproveAsync(run.RunId, run.Version, "Independent notice review", scenario.Approver);
+        run = await scenario.Service.ReleaseAsync(run.RunId, run.Version,
+            new ReportingReleaseEvidence("manifest-notice", new string('4', 64),
+                [new ReportingArtifactReference($"{run.RunId}.pdf", new string('3', 64), 128),
+                 new ReportingArtifactReference($"{run.RunId}.xlsx", new string('5', 64), 256)],
+                ["posted-capital-call:20000000-0000-0000-0000-000000000001"]), scenario.Releaser);
+
+        run.GovernanceState.Should().Be(GovernedReportingState.Released);
+        ReportingGovernanceCanonicalValidation.ValidateGovernedRun(run);
+        run.Access.Principals.Should().NotContain(principal => principal.PrincipalId == "lp-user-b");
+    }
+
+    [Fact]
+    public async Task Release_RefusesAShadowLedgerBook_BeforeAnyReleaseStateIsEvaluated()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var shadow = new RecordingBookOfRecordGuard(isBookOfRecord: false);
+        var scenario = NewScenario(bookId: ledgerBookId.ToString("D"), bookOfRecordGuard: shadow);
+        var run = await scenario.Service.CreateRunAsync(scenario.Request, scenario.Creator);
+
+        Func<Task> release = async () => await scenario.Service.ReleaseAsync(run.RunId, run.Version, ShadowReleaseEvidence(), scenario.Releaser);
+
+        (await release.Should().ThrowAsync<ReportingGovernanceException>())
+            .WithMessage("*cannot be released as the book of record*")
+            .WithInnerException<ShadowBookNotBookOfRecordException>();
+        shadow.Requests.Should().Equal([("tenant-a", (string?)"company-a", ledgerBookId)]);
+
+        var authoritative = new RecordingBookOfRecordGuard(isBookOfRecord: true);
+        var bookOfRecord = NewScenario(bookId: ledgerBookId.ToString("D"), bookOfRecordGuard: authoritative);
+        var other = await bookOfRecord.Service.CreateRunAsync(bookOfRecord.Request, bookOfRecord.Creator);
+        Func<Task> notApproved = async () => await bookOfRecord.Service.ReleaseAsync(other.RunId, other.Version, ShadowReleaseEvidence(), bookOfRecord.Releaser);
+        (await notApproved.Should().ThrowAsync<ReportingGovernanceException>())
+            .Which.Message.Should().NotContain("book of record", "an authoritative book reaches the ordinary release-state checks");
+        authoritative.Requests.Should().ContainSingle();
+    }
+
+    private static ReportingReleaseEvidence ShadowReleaseEvidence() => new(
+        "manifest-shadow", new string('4', 64), [new ReportingArtifactReference("artifact-shadow", new string('3', 64), 128)], ["evidence-shadow"]);
+
+    private sealed class RecordingBookOfRecordGuard(bool isBookOfRecord) : IBookOfRecordGuard
+    {
+        public List<(string Tenant, string? Company, Guid Book)> Requests { get; } = [];
+
+        public Task<BookOfRecordStatusDto> GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default)
+        {
+            Requests.Add((tenantId, companyId, ledgerBookId));
+            return Task.FromResult(new BookOfRecordStatusDto(ledgerBookId, isBookOfRecord, null, null,
+                isBookOfRecord ? "Authoritative." : "The ledger book is a shadow book in parallel run."));
+        }
+    }
+
+    [Fact]
     public async Task GovernedLifecycle_AllowsReadinessEvaluationBeforeLaterCertifiedSnapshotCapture()
     {
         var scenario = NewScenario(snapshotCapturedAtUtc: Now.AddMinutes(-1));
@@ -1008,14 +1109,16 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     private static Scenario NewScenario(
         DateTimeOffset? snapshotCapturedAtUtc = null,
         ReportingFinalityDto finality = ReportingFinalityDto.Final,
-        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf)
+        ReportingOutputFormatDto outputFormat = ReportingOutputFormatDto.Pdf,
+        string bookId = "book-a",
+        IBookOfRecordGuard? bookOfRecordGuard = null)
     {
         var scope = new ReportingOperationalScope(
             "tenant-a",
             "organization-a",
             "company-a",
             "fund-a",
-            "book-a",
+            bookId,
             "period-a");
         var parametersJson = CanonicalParametersJson(scope, finality, outputFormat);
         var parametersHash = Convert.ToHexString(SHA256.HashData(
@@ -1060,7 +1163,8 @@ public sealed class ReportingGovernanceCanonicalValidationTests
                 "restatement" => "restatement-1",
                 "report-audit" => $"audit-{Guid.NewGuid():N}",
                 _ => $"{prefix}-{Guid.NewGuid():N}"
-            });
+            },
+            bookOfRecordGuard);
         return new Scenario(
             request,
             service,

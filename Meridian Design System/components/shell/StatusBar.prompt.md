@@ -1,4 +1,4 @@
-Near-black footer status bar (`#1F1D1A`) mirroring the desktop StatusBar — a row of mono telemetry fields divided by hairlines. Always-on operational state at the bottom of the workstation.
+Near-black footer status bar (`#2E2E2E`) mirroring the desktop StatusBar — a row of mono telemetry fields divided by hairlines. Always-on operational state at the bottom of the workstation.
 
 ```jsx
 <StatusBar items={[

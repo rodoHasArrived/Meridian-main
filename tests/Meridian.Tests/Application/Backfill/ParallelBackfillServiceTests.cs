@@ -677,7 +677,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
 
             // Pre-populate checkpoint: SPY is already fully covered through the requested To date
             var toDate = new DateOnly(2024, 1, 31);
-            await checkpointStore.WriteSymbolCheckpointAsync("SPY", toDate);
+            await SeedCoverageAsync(checkpointStore, "test", "SPY", new DateOnly(2024, 1, 1), toDate);
 
             var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
             var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" },
@@ -714,7 +714,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             var checkpointStore = new BackfillStatusStore(testRoot);
 
             // SPY has checkpoint through Jan 15 but request covers until Jan 31 — partial coverage
-            await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 1, 15));
+            await SeedCoverageAsync(checkpointStore, "test", "SPY", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 15));
 
             var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
             var request = new AppBackfillRequest("test", new[] { "SPY" },
@@ -756,7 +756,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             });
 
             var checkpointStore = new BackfillStatusStore(testRoot);
-            await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 2, 15), barsWritten: 31);
+            await SeedCoverageAsync(checkpointStore, "yahoo", "SPY", new DateOnly(2024, 1, 1), new DateOnly(2024, 2, 15), bars: 31);
 
             var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
             var request = new AppBackfillRequest(
@@ -812,6 +812,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             var checkpointStore = new BackfillStatusStore(testRoot);
             var toDate = new DateOnly(2024, 1, 31);
             await checkpointStore.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, toDate, barsWritten: 390);
+            await SeedCoverageAsync(checkpointStore, "test", "SPY", new DateOnly(2024, 1, 1), toDate, bars: 390, granularity: DataGranularity.Minute1);
 
             var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
             var request = new AppBackfillRequest(
@@ -1034,7 +1035,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             var checkpointStore = new BackfillStatusStore(testRoot);
             var toDate = new DateOnly(2024, 1, 31);
             // Write SPY checkpoint WITH bar count so the sidecar is populated
-            await checkpointStore.WriteSymbolCheckpointAsync("SPY", toDate, barsWritten: 10);
+            await SeedCoverageAsync(checkpointStore, "test", "SPY", new DateOnly(2024, 1, 1), toDate, bars: 10);
 
             var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
             var request = new AppBackfillRequest("test", new[] { "SPY", "AAPL" },
@@ -1082,7 +1083,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
 
             var checkpointStore = new BackfillStatusStore(testRoot);
             var toDate = new DateOnly(2024, 1, 31);
-            await checkpointStore.WriteSymbolCheckpointAsync("SPY", toDate);
+            await SeedCoverageAsync(checkpointStore, "test", "SPY", new DateOnly(2024, 1, 1), toDate);
 
             var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
             var request = new AppBackfillRequest("test", ["SPY"], From: new DateOnly(2024, 1, 1), To: toDate, ResumeFromCheckpoint: true);
@@ -1124,7 +1125,7 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
 
             var checkpointStore = new BackfillStatusStore(testRoot);
             // Previous run ended Jan 15 with 10 bars
-            await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 1, 15), barsWritten: 10);
+            await SeedCoverageAsync(checkpointStore, "test", "SPY", new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 15), bars: 10);
 
             var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
             var request = new AppBackfillRequest("test", new[] { "SPY" },
@@ -1270,6 +1271,60 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     /// delegates to a caller-supplied function, giving tests full control over timing and failures.
     /// Supports two delegate signatures: with or without explicit <c>from</c>/<c>to</c> parameters.
     /// </summary>
+    [Fact]
+    public async Task RunAsync_AfterRateLimit_RunsAtMostTheReducedConcurrency()
+    {
+        // The reduced concurrency after a rate limit used to be logged but never enforced: the
+        // semaphore still admitted maxConcurrent workers, so the throttled provider kept getting
+        // the full parallel load.
+        const int concurrency = 3;
+        int inFlight = 0;
+        int maxInFlight = 0;
+        var provider = new ControllableProvider("test", async (symbol, ct) =>
+        {
+            if (symbol == "RL")
+                throw new RateLimitException("Rate limited: RL");
+
+            var now = Interlocked.Increment(ref inFlight);
+            int observed;
+            do
+            {
+                observed = Volatile.Read(ref maxInFlight);
+                if (now <= observed)
+                    break;
+            }
+            while (Interlocked.CompareExchange(ref maxInFlight, now, observed) != observed);
+
+            await Task.Delay(200, ct);
+            Interlocked.Decrement(ref inFlight);
+            return new[] { MakeBar(symbol) };
+        });
+
+        var svc = new HistoricalBackfillService([provider]);
+        var request = new AppBackfillRequest("test", ["RL", "A", "B", "C", "D"], MaxConcurrentSymbols: concurrency);
+
+        var result = await svc.RunAsync(request, _pipeline, CancellationToken.None);
+
+        result.BarsWritten.Should().Be(4);
+        maxInFlight.Should().BeLessThanOrEqualTo(concurrency - 1,
+            "one rate limit lowers the concurrency from 3 to 2, and later symbols must respect it");
+    }
+
+    /// <summary>Records verified coverage the way a completed, flushed run would.</summary>
+    private static Task SeedCoverageAsync(
+        BackfillStatusStore store,
+        string provider,
+        string symbol,
+        DateOnly from,
+        DateOnly to,
+        long bars = 0,
+        DataGranularity granularity = DataGranularity.Daily)
+        => store.WriteSymbolCoverageAsync(
+            granularity,
+            provider,
+            "default",
+            [new BackfillCoverageUpdate(symbol, [new BackfillCoverageRange(from, to, bars)], [provider])]);
+
     private sealed class ControllableProvider : IHistoricalDataProvider
     {
         private readonly Func<string, DateOnly?, DateOnly?, CancellationToken, Task<IReadOnlyList<HistoricalBar>>> _fetch;

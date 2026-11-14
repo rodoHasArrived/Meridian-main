@@ -1,281 +1,389 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
+import type {
+  AppShellAttentionState,
+  AppShellTrustStripState,
+  AppShellWorkflowContinuityViewModel
+} from "@/app-shell.view-model";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { PanelSurface } from "@/components/ui/panel-surface";
-import { ScreenLayout } from "@/components/ui/screen-layout";
-import { KeyValueGrid } from "@/components/data/concrete";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
-import { SeverityBadge, WorkspaceSection } from "@/components/operations";
-import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
-import { appendOperatingScopeToRoute } from "@/app-shell.operating-scope";
+import { SectionDescription } from "@/components/ui/section-description";
+import { DetailRail } from "@/components/meridian/detail-rail";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
+import { StatusRow } from "@/components/meridian/status-row";
+import type { OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import {
-  badgeVariantToSeverityStatus,
-  readinessToneToSeverityStatus
-} from "@/lib/shared-tone-mappings";
+  OperatorTriageActionDialog, OperatorTriageDetailRail, OperatorTriageInboxActions, OperatorTriageInboxError,
+  OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAge, TriageAssignCheckbox,
+  triageDateLabel, TriageSeverityStatus, triageStateExportValue, triageStateLabel
+} from "@/components/meridian/operator-triage-queue";
+import { useOperatorTriageInbox } from "@/components/meridian/use-operator-triage-inbox";
+import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
+import { SeverityBadge } from "@/components/operations";
+import {
+  buildDailyControlTowerModel, buildTodayQueueRows, todayQueueRowKey, type TodayQueueRow
+} from "@/lib/daily-control-tower";
+import { routeForTriageItem } from "@/lib/operator-inbox-triage";
+import { eyebrowClassName } from "@/design-system/label-case";
+import { formatTimestamp, pluralizeCount } from "@/lib/format";
+import { toSeverity } from "@/design-system/status-styles";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+
+/** Which source the one Today queue shows (UX consolidation P1). */
+export type TodayQueueSource = "all" | "workspace" | "inbox";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
   trustStrip: AppShellTrustStripState;
+  /** The shell attention state the masthead pill shows; Today lists every signal behind it. */
+  attention: AppShellAttentionState;
   onEditOperatingScope?: () => void;
   onRefresh?: () => void;
   refreshing?: boolean;
 }
 
+type QueueSelection = { source: "workspace"; id: string } | { source: "inbox" } | null;
+
+const EVIDENCE_PANEL_ID = "daily-control-tower-evidence-detail";
+const TRIAGE_PANEL_ID = "daily-control-tower-triage-detail";
+
 export function DailyControlTowerScreen({
   viewModel,
   trustStrip,
+  attention,
   onEditOperatingScope,
   onRefresh,
   refreshing = false
 }: DailyControlTowerScreenProps) {
   const model = buildDailyControlTowerModel(viewModel, trustStrip);
-  // Triage-in-place: the operator can inspect any queue row's evidence without
-  // leaving the tower. Falls back to the top-ranked row until one is chosen
-  // (or when the chosen row leaves the queue on refresh).
-  const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
-  const [reviewAllScopes, setReviewAllScopes] = useState(false);
-  const selectedQueueRow =
-    model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.queueRows[0] ?? null;
-  const freshnessEvidence = selectedQueueRow?.proofPassportItems.find((item) => item.id === "freshness");
-  const freshness = buildTowerFreshness(
-    selectedQueueRow?.proof?.timestampIso,
-    freshnessEvidence?.detail
-  );
-  const providerTrust = trustStrip.items.find((item) => item.id === "providers") ?? null;
-  const evidencePanelId = "daily-control-tower-evidence-detail";
-  const queueVisible = viewModel.operatingScope.hasScope || reviewAllScopes;
-  const trustTone: OperationalTrustTone = model.statusTone === "ready"
-    ? "ready"
-    : model.statusTone === "blocked"
-      ? "blocked"
-      : model.statusTone === "review"
-        ? "review"
-      : "unknown";
+  const fundAccountId = viewModel.operatingScope.fundAccountId;
+  // The shared inbox's read, filters and in-flight / unconfirmed command live here, above the
+  // Source filter, so filtering inbox rows out of the grid never drops a pending command.
+  const triage = useOperatorTriageInbox({ fundAccountId, refreshKey: refreshing });
+  const [queueSource, setQueueSource] = useState<TodayQueueSource>("all");
+  // Triage-in-place: the operator inspects any row without leaving Today. A workspace signal
+  // shows its evidence; an inbox item shows its triage actions. Falls back to the leading
+  // decision's row (or the first visible row) until one is chosen or when it leaves the grid.
+  const [selection, setSelection] = useState<QueueSelection>(null);
 
-  useEffect(() => {
-    if (selectedQueueItemId && !model.queueRows.some((row) => row.item.id === selectedQueueItemId)) {
-      setSelectedQueueItemId(null);
+  const search = triage.search.trim().toLowerCase();
+  const workspaceRows = search
+    ? model.queueRows.filter((row) => `${row.item.label} ${row.item.detail} ${row.item.workspaceLabel}`.toLowerCase().includes(search))
+    : model.queueRows;
+  const queueRows = buildTodayQueueRows(workspaceRows, triage.rows)
+    .filter((row) => queueSource === "all" || row.source === queueSource);
+  const selectedKey = selection?.source === "workspace"
+    ? todayQueueRowKey("workspace", selection.id)
+    : selection?.source === "inbox" && triage.selectedId ? todayQueueRowKey("inbox", triage.selectedId) : null;
+  const leadingKey = model.leadingRow ? todayQueueRowKey("workspace", model.leadingRow.item.id) : null;
+  const selectedRow = queueRows.find((row) => row.key === selectedKey)
+    ?? queueRows.find((row) => row.key === leadingKey)
+    ?? queueRows[0]
+    ?? null;
+  const selectedInboxItem = selectedRow?.source === "inbox" ? selectedRow.item : null;
+  const freshness = selectedRow?.source === "inbox"
+    ? buildTowerFreshness(selectedRow.item.createdAt, "Observed time of the selected shared inbox item.")
+    : buildTowerFreshness(selectedRow?.focus.proof?.timestampIso,
+      selectedRow?.focus.proofPassportItems.find((item) => item.id === "freshness")?.detail);
+
+  const selectRow = (row: TodayQueueRow) => {
+    if (row.source === "inbox") {
+      triage.setSelectedId(row.id);
+      triage.closeAction();
+      setSelection({ source: "inbox" });
+    } else {
+      setSelection({ source: "workspace", id: row.id });
     }
-  }, [model.queueRows, selectedQueueItemId]);
+  };
 
-  const queueColumns: DenseDataTableColumn<(typeof model.queueRows)[number]>[] = [
+  const workspaceCount = model.queueRows.length;
+  const inboxCount = triage.inbox ? triage.inbox.items.length : null;
+  const inboxState = triage.inbox ? "ready" : triage.error ? "unavailable" : "loading";
+  const showsInbox = queueSource !== "workspace";
+
+  const queueColumns: TableWorkbenchColumn<TodayQueueRow>[] = [
+    {
+      id: "select",
+      label: "",
+      srLabel: "Select inbox item for assignment",
+      render: (row) => row.source === "inbox" ? <TriageAssignCheckbox triage={triage} item={row.item} /> : null
+    },
     {
       id: "item",
-      label: "Blocked item",
+      label: "Item",
       className: "min-w-[18rem]",
+      exportValue: (row) => row.label,
       render: (row) => (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-medium text-foreground">{row.item.label}</span>
-            <SeverityBadge status={badgeVariantToSeverityStatus(row.badgeVariant)} label={row.statusLabel} />
+            <span className="font-medium text-foreground">{row.label}</span>
+            {row.source === "workspace"
+              ? <SeverityBadge status={toSeverity(row.focus.badgeVariant)} label={row.focus.statusLabel} />
+              : <TriageSeverityStatus item={row.item} />}
           </div>
-          <p className="text-xs leading-5 text-muted-foreground">{row.item.detail}</p>
+          <p className="text-xs leading-5 text-muted-foreground">{row.detail}</p>
         </div>
       )
     },
-    { id: "owner", label: "Owner", render: (row) => row.item.workspaceLabel },
-    { id: "output", label: "Affected output", render: (row) => row.outputLabel },
+    { id: "source", label: "Source", exportValue: (row) => row.sourceLabel, render: (row) => row.sourceLabel },
+    { id: "workspace", label: "Workspace", exportValue: (row) => row.workspaceLabel, render: (row) => row.workspaceLabel },
+    {
+      id: "owner",
+      label: "Owner",
+      exportValue: (row) => row.source === "inbox" ? row.item.ownerId : null,
+      render: (row) => row.source === "inbox" ? row.item.ownerId ?? "Unassigned" : "Not tracked"
+    },
+    {
+      id: "age",
+      label: "Age",
+      className: "whitespace-nowrap tabular-nums",
+      exportValue: (row) => row.observedAt,
+      render: (row) => <TriageAge value={row.observedAt} />
+    },
+    {
+      id: "due",
+      label: "Due · UTC",
+      className: "whitespace-nowrap tabular-nums",
+      exportValue: (row) => row.source === "inbox" ? row.item.dueAt : null,
+      render: (row) => row.source === "inbox" && row.item.dueAt ? triageDateLabel(row.item.dueAt) : "No due time"
+    },
+    {
+      id: "state",
+      label: "Triage",
+      exportValue: (row) => row.source === "inbox" ? triageStateExportValue(row.item) : "Signal only",
+      render: (row) => row.source === "inbox" ? triageStateLabel(row.item) : "Signal only"
+    },
     {
       id: "action",
       label: "Next action",
-      render: (row) => (
-        <Link
-          to={row.item.route}
-          className="inline-flex items-center gap-1 font-medium text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
-          aria-label={row.item.ariaLabel}
-        >
-          <span>{row.item.actionLabel}</span>
-          <ArrowRight className="h-3 w-3" aria-hidden="true" />
-        </Link>
-      )
+      render: (row) => <QueueRowAction row={row} />
+    },
+    {
+      id: "output",
+      label: "Affected output",
+      hideable: true,
+      defaultHidden: true,
+      exportValue: (row) => row.source === "workspace" ? row.focus.outputLabel : null,
+      render: (row) => row.source === "workspace" ? row.focus.outputLabel : "See source workspace"
     },
     {
       id: "evidence",
       label: "Evidence",
-      render: (row) => row.proof?.label ?? "Evidence not linked"
+      hideable: true,
+      defaultHidden: true,
+      exportValue: (row) => row.source === "workspace" ? row.focus.proof?.label ?? null : null,
+      render: (row) => row.source === "workspace" ? row.focus.proof?.label ?? "Evidence not linked" : "Triage activity in detail"
     }
   ];
 
+  const queueKeyboard = useQueueKeyboard({
+    rows: queueRows,
+    selectedId: selectedRow?.key ?? null,
+    getId: (row: TodayQueueRow) => row.key,
+    onSelect: selectRow,
+    actions: [{
+      key: "a",
+      label: "Assign",
+      enabled: triage.capability(selectedInboxItem, "canAssign"),
+      run: () => triage.openAction("Assign", selectedInboxItem)
+    }]
+  });
+
+  const emptyText = queueSource === "workspace"
+    ? search ? "No workspace signals match this search." : model.emptyQueueText
+    : queueSource === "inbox"
+      ? triage.inbox
+        ? triage.mineOnly ? "No shared inbox items are assigned to you in these filters." : "No shared inbox items match these filters."
+        : triage.error ? "The shared inbox is unavailable." : "The shared inbox is loading."
+      : search || triage.mineOnly || triage.visibility !== "active"
+        ? "No queue items match these filters."
+        : `${model.emptyQueueText} The shared inbox has no active items.`;
+
   return (
-    <ScreenLayout
-      title="What needs an operator decision now"
-      descriptionKey="today:overview"
-      description="One priority, followed by a ranked finance queue with evidence available in place."
-      className="gap-2"
-      workClassName="space-y-2"
-      scope={(
-        <OperationalTrustSummary
-          label="Daily control tower confidence"
-          disclosure
-          source={{
-            label: "Connectivity",
-            value: providerTrust?.value ?? "Provider posture unavailable",
-            detail: providerTrust?.detail ?? "Provider connectivity evidence has not loaded.",
-            tone: providerTrust ? operationalTrustToneFromStrip(providerTrust.tone) : "unknown",
-            action: providerTrust?.href && providerTrust.actionLabel ? (
+    <div className="space-y-2">
+      <h2 className="sr-only">What needs an operator decision now</h2>
+      <section aria-label="Priority decision">
+        {/* The masthead and Today share one attention object; retain every signal and its
+            recovery path while showing only open issues in the collapsed row. */}
+        <StatusRow
+          label="Workstation status"
+          clearText="All clear: no open issues"
+          facts={attention.signals.map((signal) => buildAttentionSignalFact(signal, viewModel.operatingScope))}
+          action={
+            <>
               <Button asChild variant="outline" size="sm">
-                <Link to={appendOperatingScopeToRoute(providerTrust.href, viewModel.operatingScope)}>
-                  {providerTrust.actionLabel}
+                <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
+                  {model.nextActionLabel}<ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </Button>
-            ) : null
-          }}
-          scope={{
-            value: viewModel.operatingScope.summary,
-            detail: viewModel.operatingScope.hasScope
-              ? "Applied to compatible workstation routes."
-              : "Choose a fund, account, run, provider, symbol, or date window.",
-            tone: viewModel.operatingScope.hasScope ? "ready" : "review",
-            action: onEditOperatingScope ? (
-              <Button type="button" variant="outline" size="sm" onClick={onEditOperatingScope}>
-                {viewModel.operatingScope.hasScope ? "Change scope" : "Set operating scope"}
-              </Button>
-            ) : null
-          }}
-          freshness={{
-            value: freshness.value,
-            detail: freshness.detail,
-            tone: freshness.tone,
-            action: onRefresh ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={refreshing}
-                aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
-                onClick={onRefresh}
-              >
-                {refreshing ? "Refreshing" : "Refresh evidence"}
-              </Button>
-            ) : null
-          }}
-          completeness={{
-            value: `${model.queueRows.length} ranked items · ${model.evidenceTimelineItems.length} evidence events`,
-            detail: "Finance queue and retained evidence coverage",
-            tone: model.queueRows.length > 0 && model.evidenceTimelineItems.length > 0 ? "ready" : "review"
-          }}
-          blocker={model.statusTone !== "ready" ? {
-            value: model.statusLabel,
-            detail: model.decision.reason,
-            tone: trustTone
-          } : undefined}
+              {onRefresh ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={refreshing}
+                  aria-label={refreshing ? "Refreshing: control tower evidence" : "Refresh evidence: control tower"}
+                  onClick={onRefresh}
+                >
+                  {refreshing ? "Refreshing" : "Refresh evidence"}
+                </Button>
+              ) : null}
+            </>
+          }
         />
-      )}
-    >
-      <section aria-label="Priority decision" className="flex flex-wrap items-center gap-x-3 gap-y-2 border-l-2 border-primary bg-card px-3 py-1.5">
-        <SeverityBadge status={readinessToneToSeverityStatus(model.statusTone)} label={model.statusLabel} />
-        <h3 className="min-w-0 flex-1 text-sm font-semibold text-foreground">{model.decision.title}</h3>
-        <Button asChild variant="outline" size="sm">
-          <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
-            <span>{model.nextActionLabel}</span>
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-          </Link>
-        </Button>
       </section>
 
-      <WorkspaceSection
-        title="Finance queue"
-        descriptionKey="today:finance-queue"
-        summary="Each row carries the evidence needed to move from source issue to downstream output."
-      >
-        {!queueVisible ? (
-          <PanelSurface flat role="region" aria-label="Choose Control Tower scope" className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Choose the scope for today’s queue</h3>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Select a fund, account, provider, symbol, run, or date window to rank the most relevant decisions. You can still review the combined queue when cross-scope triage is required.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {onEditOperatingScope ? (
-                <Button type="button" size="sm" onClick={onEditOperatingScope}>Set operating scope</Button>
-              ) : null}
-              <Button type="button" size="sm" variant="outline" onClick={() => setReviewAllScopes(true)}>
-                Review all scopes
-              </Button>
-            </div>
-          </PanelSurface>
-        ) : model.queueRows.length > 0 ? (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
-            <DenseDataTable
-              tableId="daily-control-tower-queue"
-              columns={queueColumns}
-              rows={model.queueRows}
-              getRowId={(row) => row.item.id}
-              getRowAriaLabel={(row) => `${row.item.label}. ${row.statusLabel}. ${row.item.detail}`}
-              getRowSelectAriaLabel={(row) => row.item.label}
-              getRowAriaControls={() => evidencePanelId}
-              getRowAriaExpanded={(row) => row.item.id === selectedQueueRow?.item.id}
-              getRowClassName={() => "align-top"}
-              onRowSelect={(row) => setSelectedQueueItemId(row.item.id)}
-              selectedRowId={selectedQueueRow?.item.id ?? null}
-              emptyText={model.emptyQueueText}
-              ariaLabel="Daily control tower finance queue"
-              maxVisibleRows={null}
-            />
-            {selectedQueueRow ? (
-              <DenseRowDetailPanel
-                id={evidencePanelId}
-                ariaLabel={`${selectedQueueRow.item.label} evidence summary`}
-                selectedSourceLabel={selectedQueueRow.item.label}
-                className="space-y-3 border-l border-border bg-background/50 p-4"
-              >
-                <div>
-                  <p className="eyebrow-label">Selected queue evidence</p>
-                  <h3 className="text-sm font-semibold text-foreground">{selectedQueueRow.item.label}</h3>
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
-                </div>
-                <dl className="grid gap-2">
-                  {selectedQueueRow.proofPassportItems.slice(0, 4).map((passportItem) => (
-                    <div key={passportItem.id} className="rounded border border-border bg-card p-2">
-                      <dt className="eyebrow-label">{passportItem.label}</dt>
-                      <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
-                      <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {selectedQueueRow.proofPassportItems.length > 4 ? (
-                  <TechnicalDetails
-                    label="More evidence"
-                    description="Downstream usage, blockers, evidence packets, and audit trail for the selected queue item."
-                  >
-                    <dl className="grid gap-2">
-                      {selectedQueueRow.proofPassportItems.slice(4).map((passportItem) => (
-                        <div key={passportItem.id} className="rounded border border-border bg-card p-2">
-                          <dt className="eyebrow-label">{passportItem.label}</dt>
-                          <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
-                          <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </TechnicalDetails>
-                ) : null}
-              </DenseRowDetailPanel>
+      <section aria-label="Daily control tower confidence" className="space-y-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+          <span title={viewModel.operatingScope.summary}><span className="text-muted-foreground">Scope </span>{viewModel.operatingScope.hasScope ? viewModel.operatingScope.summary : "All authorized scopes"}</span>
+          <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
+          <span>
+            {pluralizeCount(workspaceCount, "workspace signal")} in the queue
+            {" · "}
+            {inboxCount !== null ? pluralizeCount(inboxCount, "shared inbox item") : triage.error ? "Shared inbox unavailable" : "Shared inbox loading"}
+          </span>
+          {onEditOperatingScope ? (
+            <Button type="button" variant="ghost" size="sm" onClick={onEditOperatingScope}>
+              {viewModel.operatingScope.hasScope ? "Change scope filter" : "Set operating scope"}
+            </Button>
+          ) : null}
+        </div>
+      </section>
+
+      {/* One queue grid, two sources (UX consolidation P1). Workspace signals are exactly what the
+          sidebar Today badge and the masthead count; the shared inbox is the host's triage
+          population, which is not a subset of them and keeps its assignment and snooze. The
+          Source filter filters rows of this one grid. */}
+      <section aria-labelledby="today-queue-heading" className="space-y-2" data-today-inbox-state={inboxState}>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <h3 id="today-queue-heading" className="text-sm font-semibold">Queue</h3>
+            <SectionDescription descriptionKey="today:queue" label="About the Today queue">
+              Workspace signals are what the sidebar badges count. Shared inbox items can be assigned, snoozed and acknowledged here.
+            </SectionDescription>
+          </div>
+          <SegmentedControl
+            aria-label="Queue source"
+            size="sm"
+            value={queueSource}
+            onChange={(value) => setQueueSource(value as TodayQueueSource)}
+            options={[
+              { value: "all", label: "All sources", count: inboxCount !== null ? workspaceCount + inboxCount : undefined },
+              { value: "workspace", label: "Workspace signals", count: workspaceCount },
+              { value: "inbox", label: "Shared inbox", count: inboxCount ?? undefined }
+            ]}
+          />
+        </div>
+
+        {showsInbox ? (
+          <div className="space-y-2" aria-busy={triage.loading || triage.busy}>
+            {triage.loading ? <p role="status" className="text-xs text-muted-foreground">Refreshing authorized inbox…</p> : null}
+            {triage.error ? <OperatorTriageInboxError triage={triage} unaffectedText="Workspace signals in this queue are unaffected" /> : null}
+            {triage.inbox ? (
+              <div className="flex flex-wrap items-center justify-between gap-2" role="group" aria-label="Inbox filters">
+                <p className="text-xs text-muted-foreground">
+                  {triage.rows.length} of {pluralizeCount(triage.inbox.items.length, "inbox item")} · {fundAccountId ? "Account filter applied" : "All authorized accounts"}
+                </p>
+                <OperatorTriageInboxActions triage={triage} />
+              </div>
             ) : null}
           </div>
-        ) : (
-          <PanelSurface flat role="status" className="p-4 text-sm text-muted-foreground">
-            {model.emptyQueueText}
-          </PanelSurface>
-        )}
-      </WorkspaceSection>
-      <TechnicalDetails label="Priority decision evidence" description={model.decision.summary}>
-        <KeyValueGrid
-          columns={2}
-          items={[
-            { label: model.decision.reasonLabel, value: model.decision.reason },
-            { label: "Owner", value: model.ownerLabel },
-            { label: "Output", value: model.outputLabel },
-            { label: "Evidence", value: model.evidenceLabel }
-          ]}
-        />
-      </TechnicalDetails>
-    </ScreenLayout>
+        ) : null}
+        {/* Command outcome and unconfirmed-command recovery stay visible under every Source filter. */}
+        <OperatorTriageNotices triage={triage} showPersistence={showsInbox} />
+
+        <div onKeyDownCapture={queueKeyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <TableWorkbench
+            workbenchId="operator-inbox"
+            sourceKey={`${triage.inbox?.actorId ?? "pending"}:${fundAccountId ?? "all"}`}
+            completePopulation={Boolean(triage.inbox && !triage.loading && !triage.error)}
+            sourceDescription={`Today queue: ${pluralizeCount(workspaceCount, "workspace signal")} from the workstation read models and ${triage.inbox ? `${pluralizeCount(triage.inbox.items.length, "shared inbox item")} as of ${triage.inbox.asOf}` : "no loaded shared inbox"}; inbox filters apply to inbox rows only.`}
+            searchText={triage.search}
+            onSearchTextChange={triage.setSearch}
+            filterState={{ source: queueSource, visibility: triage.visibility, mineOnly: String(triage.mineOnly) }}
+            onRestoreFilters={(filters) => {
+              restoreTriageFilters(triage, filters);
+              setQueueSource(filters.source === "workspace" || filters.source === "inbox" ? filters.source : "all");
+            }}
+            filters={showsInbox && triage.inbox
+              ? <OperatorTriageInboxFilters triage={triage} visibilityLabel="Inbox visibility" mineLabel="My inbox items" />
+              : null}
+            tableId="daily-control-tower-queue"
+            columns={queueColumns}
+            rows={queueRows}
+            getRowId={(row) => row.key}
+            getRowAriaLabel={(row) => `${row.label}. ${row.sourceLabel}. ${row.source === "workspace" ? row.focus.statusLabel : row.item.tone}. ${row.detail}`}
+            getRowSelectAriaLabel={(row) => row.label}
+            getRowAriaControls={(row) => row.source === "workspace" ? EVIDENCE_PANEL_ID : TRIAGE_PANEL_ID}
+            getRowAriaExpanded={(row) => row.key === selectedRow?.key}
+            getRowClassName={() => "align-top"}
+            onRowSelect={selectRow}
+            selectedRowId={selectedRow?.key ?? null}
+            emptyText={emptyText}
+            ariaLabel="Today queue"
+            maxVisibleRows={null}
+          />
+          {selectedRow?.source === "inbox" ? (
+            <OperatorTriageDetailRail id={TRIAGE_PANEL_ID} triage={triage} item={selectedRow.item} />
+          ) : selectedRow?.source === "workspace" ? (
+            <WorkspaceEvidenceRail row={selectedRow} />
+          ) : null}
+        </div>
+        <OperatorTriageActionDialog triage={triage} />
+      </section>
+    </div>
+  );
+}
+
+function QueueRowAction({ row }: { row: TodayQueueRow }) {
+  const linkClassName = "inline-flex items-center gap-1 font-medium text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40";
+  if (row.source === "workspace") {
+    return (
+      <Link to={row.focus.item.route} className={linkClassName} aria-label={row.focus.item.ariaLabel}>
+        <span>{row.focus.item.actionLabel}</span>
+        <ArrowRight className="h-3 w-3" aria-hidden="true" />
+      </Link>
+    );
+  }
+  const route = routeForTriageItem(row.item);
+  return route ? (
+    <Link to={route} className={linkClassName} aria-label={`Open ${row.label} in its workspace`}>
+      <span>Open in workspace</span>
+      <ArrowRight className="h-3 w-3" aria-hidden="true" />
+    </Link>
+  ) : <span className="text-xs text-muted-foreground">Route unavailable</span>;
+}
+
+function WorkspaceEvidenceRail({ row }: { row: Extract<TodayQueueRow, { source: "workspace" }> }) {
+  const { focus } = row;
+  return (
+    <DetailRail
+      id={EVIDENCE_PANEL_ID}
+      ariaLabel={`${focus.item.label} evidence summary`}
+      title={focus.item.label}
+      fields={focus.proofPassportItems.slice(0, 4).map((passportItem) => ({ label: passportItem.label,
+        value: <><span>{passportItem.value}</span><p className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</p></> }))}
+    >
+      <p className="my-3 text-sm leading-6 text-muted-foreground">{focus.proofPassportSummary}</p>
+      {focus.proofPassportItems.length > 4 ? (
+        <TechnicalDetails
+          label="More evidence"
+          description="Downstream usage, blockers, evidence packets, and audit trail for the selected queue item."
+        >
+          <dl className="grid gap-2">
+            {focus.proofPassportItems.slice(4).map((passportItem) => (
+              <div key={passportItem.id} className="rounded border border-border bg-card p-2">
+                <dt className={eyebrowClassName(passportItem.label)}>{passportItem.label}</dt>
+                <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
+                <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
+              </div>
+            ))}
+          </dl>
+        </TechnicalDetails>
+      ) : null}
+    </DetailRail>
   );
 }
 
@@ -296,16 +404,7 @@ function buildTowerFreshness(
   }
 
   const observedAt = new Date(observedAtMs);
-  const timestampLabel = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(observedAt).replace("24:", "00:");
+  const timestampLabel = formatTimestamp(observedAt);
   const stale = nowMs - observedAtMs > TOWER_FRESHNESS_WINDOW_MS;
 
   return {
@@ -313,19 +412,4 @@ function buildTowerFreshness(
     detail: detail ?? "Latest evidence for the leading decision.",
     tone: stale ? "review" : "ready"
   };
-}
-
-function operationalTrustToneFromStrip(
-  tone: AppShellTrustStripState["items"][number]["tone"]
-): OperationalTrustTone {
-  switch (tone) {
-    case "ready":
-      return "ready";
-    case "review":
-      return "review";
-    case "blocked":
-      return "blocked";
-    case "pending":
-      return "unknown";
-  }
 }

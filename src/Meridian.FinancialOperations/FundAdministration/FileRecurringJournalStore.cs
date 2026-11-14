@@ -240,7 +240,9 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore
                 ?? throw new InvalidOperationException("The requested schedule version is not retained.");
             var template = _document.Templates.SingleOrDefault(item => Same(item.TemplateId, schedule.Schedule.TemplateId) && item.Version == templateVersion)
                 ?? throw new InvalidOperationException("The requested template version is not retained.");
-            _ = RecurringJournalPlanner.Plan(schedule.Schedule.ToSchedule(), template.Template, 1);
+            // A calculated template has no fixed lines to plan; its terms are checked when it runs.
+            if (template.Template.Calculation is null)
+                _ = RecurringJournalPlanner.Plan(schedule.Schedule.ToSchedule(), template.Template, 1);
             await CommitAsync(_document with
             {
                 Activations = [.. _document.Activations,
@@ -356,7 +358,10 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore
                 throw new InvalidOperationException("The recurring schedule references a different template.");
             if (template.Scope is not null && template.Scope != scope)
                 throw new InvalidOperationException("The recurring template belongs to a different accounting scope.");
-            _ = RecurringJournalPlanner.Plan(schedule, template.Template, 1);
+            // A fixed-line template must resolve to a balanced journal from the schedule's terms.
+            // A calculated template has no lines to resolve; its terms are checked when it runs.
+            if (template.Template.Calculation is null)
+                _ = RecurringJournalPlanner.Plan(schedule, template.Template, 1);
             var version = _document.Schedules.Where(item => Same(item.ScheduleId, schedule.ScheduleId))
                 .Select(item => item.Version).DefaultIfEmpty().Max();
             var original = _document.Schedules.FirstOrDefault(item => Same(item.ScheduleId, schedule.ScheduleId));
@@ -421,12 +426,32 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore
             return Copy(record, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
         }
 
+        public async Task<RecurringOccurrenceRecord> PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default)
+        {
+            RequireUsable();
+            if (!Sha256Digest.IsCanonical(digest))
+                throw new InvalidOperationException("Calculated recurring evidence requires an exact canonical digest.");
+            var existing = _document.Occurrences.SingleOrDefault(item => item.OccurrenceKey == key)
+                ?? throw new InvalidOperationException("The recurring occurrence has not been claimed.");
+            if (existing.DraftEvidenceDigest is { } pinned)
+            {
+                if (!Sha256Digest.FixedEquals(pinned, digest))
+                    throw new InvalidOperationException("Calculated recurring evidence differs from its independently retained claim pin.");
+                return Copy(existing, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
+            }
+            if (existing.State == RecurringOccurrenceState.DefinitionChanged || existing.History.Any(item => item.State == RecurringOccurrenceState.Drafted))
+                throw new InvalidOperationException("An existing recurring draft cannot acquire a new calculated evidence pin; restore its trusted intake provenance.");
+            var next = existing with { DraftEvidenceDigest = digest };
+            await CommitAsync(_document with { Occurrences = _document.Occurrences.Select(item => item.OccurrenceKey == key ? next : item).ToArray() }, ct).ConfigureAwait(false);
+            return Copy(next, RecurringJournalJsonContext.Default.RecurringOccurrenceRecord);
+        }
+
         public async Task<RecurringOccurrenceRecord> SetOutcomeAsync(string key, RecurringOccurrenceState state,
             string? reason, string? periodId, string? lockOwner, string? reopenPath, DateTimeOffset now, CancellationToken ct = default)
         {
             RequireUsable();
-            if (state is not (RecurringOccurrenceState.Drafted or RecurringOccurrenceState.Blocked))
-                throw new InvalidOperationException("Only a drafted or blocked result can complete recurring intake.");
+            if (state is not (RecurringOccurrenceState.Drafted or RecurringOccurrenceState.Blocked or RecurringOccurrenceState.NoDraftRequired))
+                throw new InvalidOperationException("Only a drafted, blocked or no-draft-required result can complete recurring intake.");
             var existing = _document.Occurrences.SingleOrDefault(item => item.OccurrenceKey == key)
                 ?? throw new InvalidOperationException("The recurring occurrence has not been claimed.");
             if (existing.State == RecurringOccurrenceState.DefinitionChanged)

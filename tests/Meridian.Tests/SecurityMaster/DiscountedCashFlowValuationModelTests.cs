@@ -71,7 +71,8 @@ public sealed class DiscountedCashFlowValuationModelTests
         // PV is the undiscounted 50,000 + 50,000 + 1,000,000.
         var calendar = new HolidayBusinessDayCalendar("ZZTEST", 1, coverage: new CalendarCoverage(null, new DateOnly(2027, 6, 30)));
         var calendars = new StaticBusinessDayCalendarSource([calendar]);
-        var bond = DeclaredBond("""{"businessDayConvention":"ModifiedFollowing","accrualAdjusted":false,"paymentCalendars":["ZZTEST"]}""");
+        // D3 (decided 2026-11-05): the block declares the Percent the golden 5 coupon was written in.
+        var bond = DeclaredBond("""{"businessDayConvention":"ModifiedFollowing","accrualAdjusted":false,"paymentCalendars":["ZZTEST"],"couponRateUnit":"Percent"}""");
         var definition = ValuationTestSecurities.DiscountDefinition();
         var version = ValuationTestSecurities.Version(definition, AsOfDate, (AsOfDate, 1.00m), (new DateOnly(2029, 1, 1), 1.00m));
         var model = Build(bond, Curves(definition, version), calendars: calendars);
@@ -94,15 +95,13 @@ public sealed class DiscountedCashFlowValuationModelTests
             "CalendarCoverageGap: calendar 'ZZTEST' was asked about 2028-01-01 to 2028-01-03, outside its declared coverage; a holiday on those dates may be missing from the calendar data the schedule used.",
             DirtyValueDiagnostic);
 
-        // The same bond declaring nothing projects on the legacy path and names no schedule evidence.
+        // The same bond declaring nothing takes the legacy path. D3 (decided 2026-11-05): its undeclared
+        // 5 coupon blocks there (before D3 it valued at 1,100,000 with no schedule evidence).
         var undeclared = DeclaredBond(block: null);
         var undeclaredResult = await Build(undeclared, Curves(definition, version), calendars: calendars)
             .ValueAsync(new SecurityValuationRequest(undeclared.SecurityId, AsOf, Quantity: 500_000m), undeclared, CancellationToken.None);
 
-        undeclaredResult.IsBlocked.Should().BeFalse(string.Join("; ", undeclaredResult.Blockers.Select(static b => b.Reason)));
-        undeclaredResult.PresentValue.Should().Be(1_100_000.00m);
-        undeclaredResult.Inputs.Select(static input => input.Kind).Should().Equal("DiscountCurveVersion", "SecurityTerms", "CashFlowSource", "CalculationModel");
-        undeclaredResult.Diagnostics.Should().Equal(DirtyValueDiagnostic);
+        Blocked(undeclaredResult, "ProjectionBlocked").Reason.Should().Contain("Rate couponRate = 5 on Bond" + UndeclaredUnitTail);
     }
 
     [Fact]
@@ -208,8 +207,13 @@ public sealed class DiscountedCashFlowValuationModelTests
     }
 
     [Fact]
-    public async Task Swap_NetsTheLegsAndDiscounts_ToTheGoldenValue()
+    public async Task Swap_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, and a Security Master swap leg can
+        // declare its unit only in a per-leg conventions block the engine refuses
+        // (LegConventionsNotFollowed). Blocked until per-leg units are declarable. Pinned before D3:
+        // NPV -162.50 (-8,043.75 + 9,187.50 - 10,306.25 + 9,000.00), price -0.0001625 per unit of
+        // notional, ObservableInputs, and the 2025-12-01 forward curve named as an input.
         var swap = ValuationTestSecurities.FloatingSwap();
         var definition = ValuationTestSecurities.DiscountDefinition();
         var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.SwapDiscountPoints);
@@ -217,17 +221,7 @@ public sealed class DiscountedCashFlowValuationModelTests
 
         var result = await model.ValueAsync(new SecurityValuationRequest(swap.SecurityId, AsOf, Quantity: 1_000_000m), swap, CancellationToken.None);
 
-        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Blockers.Select(static b => b.Reason)));
-        result.PresentValue.Should().Be(-162.50m, "-8,043.75 + 9,187.50 - 10,306.25 + 9,000.00");
-        result.Price.Should().Be(-0.0001625m, "per unit of the 1,000,000 notional");
-        result.PriceUnit.Should().Be(SecurityPriceUnit.CurrencyPerUnit);
-        result.MarketValue.Should().Be(-162.50m);
-        result.Observability.Should().Be(SecurityValuationObservability.ObservableInputs);
-        var forwardInput = result.Inputs.Should().ContainSingle(static input => input.Kind == "ForwardCurve").Subject;
-        forwardInput.Reference.Should().Be("forwardCurve:SOFR@2025-12-01 (test-curve)");
-        forwardInput.AsOf.Should().Be(new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero));
-        result.ObservedAsOf.Should().Be(new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero), "the forward curve dated 2025-12-01 is older than the 2026-01-01 discount curve");
-        result.Diagnostics.Should().NotContain(static d => d.StartsWith("FloatingForecastFlatAtCurrentIndexRate", StringComparison.Ordinal));
+        Blocked(result, "ProjectionBlocked").Reason.Should().Contain(UndeclaredSwapFixedLegReason);
     }
 
     [Fact]
@@ -253,8 +247,12 @@ public sealed class DiscountedCashFlowValuationModelTests
     }
 
     [Fact]
-    public async Task Swap_UndiscountedNetsToZero_WithTheForwardCurve()
+    public async Task Swap_Undiscounted_WithTheForwardCurve_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, and a Security Master swap leg can
+        // declare its unit only in a per-leg conventions block the engine refuses
+        // (LegConventionsNotFollowed). Blocked until per-leg units are declarable. Pinned before D3:
+        // 0.00 undiscounted (-8,125 + 9,375 - 10,625 + 9,375).
         var swap = ValuationTestSecurities.FloatingSwap();
         var definition = ValuationTestSecurities.DiscountDefinition();
         var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.UnitDiscountPoints);
@@ -262,13 +260,17 @@ public sealed class DiscountedCashFlowValuationModelTests
 
         var result = await model.ValueAsync(new SecurityValuationRequest(swap.SecurityId, AsOf), swap, CancellationToken.None);
 
-        result.IsBlocked.Should().BeFalse();
-        result.PresentValue.Should().Be(0.00m, "-8,125 + 9,375 - 10,625 + 9,375");
+        Blocked(result, "ProjectionBlocked").Reason.Should().Contain(UndeclaredSwapFixedLegReason);
     }
 
     [Fact]
-    public async Task Swap_WithoutAForwardCurve_ProjectsFlatForward_AndSaysSo()
+    public async Task Swap_WithoutAForwardCurve_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, and a Security Master swap leg can
+        // declare its unit only in a per-leg conventions block the engine refuses
+        // (LegConventionsNotFollowed). Blocked until per-leg units are declarable. Pinned before D3:
+        // 7,500 flat forward (fixed 40,000 against floating 4 x 8,125), UnobservableInputs, and a
+        // FloatingForecastFlatAtCurrentIndexRate diagnostic naming pay-floating and SOFR.
         var swap = ValuationTestSecurities.FloatingSwap();
         var definition = ValuationTestSecurities.DiscountDefinition();
         var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.UnitDiscountPoints);
@@ -276,12 +278,7 @@ public sealed class DiscountedCashFlowValuationModelTests
 
         var result = await model.ValueAsync(new SecurityValuationRequest(swap.SecurityId, AsOf), swap, CancellationToken.None);
 
-        result.IsBlocked.Should().BeFalse();
-        result.PresentValue.Should().Be(7_500.00m, "fixed 40,000 against floating 4 x 8,125");
-        result.Observability.Should().Be(SecurityValuationObservability.UnobservableInputs);
-        result.Diagnostics.Should().ContainSingle(static d => d.StartsWith("FloatingForecastFlatAtCurrentIndexRate", StringComparison.Ordinal))
-            .Which.Should().Contain("pay-floating").And.Contain("SOFR");
-        result.Inputs.Should().NotContain(static input => input.Kind == "ForwardCurve");
+        Blocked(result, "ProjectionBlocked").Reason.Should().Contain(UndeclaredSwapFixedLegReason);
     }
 
     [Fact]
@@ -400,13 +397,16 @@ public sealed class DiscountedCashFlowValuationModelTests
     [Fact]
     public async Task ABlockedProjection_PassesItsReasonThrough()
     {
+        // D3 (decided 2026-11-05): the swap's undeclared fixed rate now blocks before the missing index
+        // fixing is reached (before D3 the reason passed through was "index fixing"); the reason the
+        // model passes through is the projection's, unchanged.
         var swap = ValuationTestSecurities.FloatingSwap(currentIndexRate: null);
         var definition = ValuationTestSecurities.DiscountDefinition();
         var model = Build(swap, Curves(definition, ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.SwapDiscountPoints)), new InMemorySecurityForwardCurveProvider());
 
         var result = await model.ValueAsync(new SecurityValuationRequest(swap.SecurityId, AsOf), swap, CancellationToken.None);
 
-        Blocked(result, "ProjectionBlocked").Reason.Should().Contain("index fixing");
+        Blocked(result, "ProjectionBlocked").Reason.Should().Contain(UndeclaredSwapFixedLegReason);
     }
 
     [Fact]
@@ -421,6 +421,12 @@ public sealed class DiscountedCashFlowValuationModelTests
 
         Blocked(result, "UnsupportedInput").Reason.Should().Contain("Forward");
     }
+
+    private const string UndeclaredUnitTail =
+        " has no declared unit (Fraction, Percent or BasisPoints). A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.";
+
+    // D3 (decided 2026-11-05): the golden swap's receive-fixed 0.04 has no declared unit.
+    private const string UndeclaredSwapFixedLegReason = "Rate legs.fixedRate = 0.04 on Swap" + UndeclaredUnitTail;
 
     private const string DirtyValueDiagnostic =
         "DirtyValue: the present value includes the full next coupon; clean price and accrued interest are not separated.";

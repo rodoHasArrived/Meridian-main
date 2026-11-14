@@ -6,10 +6,43 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-08-03
+last_reviewed: 2026-11-13
 ---
 
 # src/Meridian.Strategies
+
+Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
+posted journals with the exact retained run identity. The source authorizes the financial account
+and book independently; terminal metrics are not required. Backtests retain their recorded books.
+
+Run ledger read models support inclusive economic-time cuts without mutating retained journals.
+Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting
+exports. Historical journal rows, account balances and posting counts are rebuilt from the same
+validated posting population.
+
+Retained sweep reads expose each point's parameters and separate comparison groups by experiment fingerprint, strategy, mode, engine, dataset, feed and objective. Rankings honor supported named objectives and leave unsupported objectives unranked. Legacy comparability and bounded-history/expected-grid gaps remain explicit; sensitivity thresholds do not grant promotion authority.
+
+Reconciliation casework rejects reserved preparer-attestation references as ordinary approval.
+The optional scoped receipt classifier also recognizes retained legacy receipt IDs; client command
+and assertion IDs never become approval denials. Single and bulk commands validate this boundary
+before mutation, retain existing maker-checker rules, and fail closed if configured receipt history
+cannot be read. No attestation grants waiver, supersession, material-break suppression or sign-off.
+
+`LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
+
+Live/paper finalization records financing as `Unavailable` until an explicit complete allocation
+ties account charges to the run. The context's private ledger and an account's expense balance do
+not establish that allocation. `BacktestEngineMetadata.FinancingCoverageStatus` and nullable
+`RunAttributedMarginInterest` survive durable history and the execution, portfolio and comparison
+read models; `Available` with `0` differs from `Unavailable` with `null`. Existing decimal
+`TotalMarginInterest` remains a compatibility placeholder when coverage is unavailable, and gross
+P&L financing decomposition is provisional. Continuity and comparison reads expose a financing
+review warning/incomplete cash-flow coverage. No shared account charge is assigned to every run.
+Legacy and backtest results with no coverage declaration retain an unassessed null status.
+
+Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
+OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
+face-value fills keep their par scaling.
 
 SLA calculation anchors to OccurrenceFirstObservedAt, resolves named business and holiday calendars, retains fractional hours and resolves timezone boundaries separately for each date. Unknown names, missing coverage and ambiguous/nonexistent shift boundaries are refused. Source clearing leaves casework SLA and approval obligations intact.
 
@@ -29,6 +62,18 @@ Security Master consumers import the shared Contracts interfaces. Strategies doe
 an Application dependency through Execution.
 
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
+
+## Security Master accounting rate units and disposition
+
+`SecurityMasterAccountingEventService` reads a fixed coupon through the shared
+`RateUnitNormalizer` (review D10, slice 4, 2026-11-04): the record's declared
+`scheduleConventions.couponRateUnit`, carried on `SecurityFixedIncomeTerms.CouponRateUnit` by
+`SecurityMasterAccountingEventSourceAdapter`, then the coupon field's default for
+`SecurityFixedIncomeTerms.TermsAssetClass`. An undeclared rate raises a High
+`SM_COUPON_RATE_UNIT_UNDECLARED` issue (`SM_COUPON_RATE_OUT_OF_RANGE` outside the declared range or
+sign policy) and no accrual or coupon receipt is generated; the retired `> 1 means percent` guess is
+gone. Accounting-slice membership comes from the catalog's explicit disposition, so StructuredNote,
+which is outside the slice, cannot reach bond posting through its `FixedIncome` taxonomy.
 
 ## Reconciliation source lineage
 
@@ -69,6 +114,10 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 
 ## Important workflows
 
+### Shared SMA reference and retained comparison
+
+The existing `moving-average-crossover` catalog factory wraps the SDK's shared SMA decision implementation. Explicit `inputMode=bars` and `strategyVersion=sma-crossover-v1` support controlled replay/paper comparisons; omitted mode retains legacy trade input and existing 10/30/10 defaults. Partial and terminal order outcomes maintain one pending intent per symbol. The strategy registry advertises the reference parameters. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
 Live-engine shutdown calls `IOrderManagementLifecycle.StopAsync` while its fill subscriptions
 remain active, so admitted orders and accounting handoffs drain before strategy consumers stop.
@@ -108,6 +157,18 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
+`DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal
+count; an exact run-detail read verifies the archive and replays the ledger invariants before
+hydrating it. The final portfolio/account snapshot, including open and disposed lot evidence,
+travels with the journal. Research summaries retain counts rather than unbounded journal/lot
+collections; full retained histories keep their existing snapshot coverage. Invalid lifecycle
+candidates can leave unreferenced immutable files but cannot reserve a run identity or replace
+its selected content. Missing or altered selected evidence fails the detail read. The archive
+grants no governed-book posting authority and does not replace PostgreSQL journals, period locks,
+or reversal/rebook. Focused proof: `StrategyRunLedgerArchiveTests` (restart, retry, tamper,
+concurrent writers, rejected candidates and research lot retention).
 
 `LiveStrategyBase` applies the shared F# lifecycle policy and serializes complete asynchronous
 operations. Queued commands are evaluated after the prior operation finishes. Warmup must complete
@@ -174,7 +235,10 @@ on read. The exact legacy XIRR string `"NaN"` remains readable; infinite XIRR va
 Profit factor and Sortino preserve their defined positive-infinity outcomes through their scoped
 SDK attributes, while unrelated nonfinite metrics remain invalid. General SDK and comparison API
 JSON serialization retain the named XIRR marker contract; the null override applies only to durable
-strategy snapshots.
+strategy snapshots. Durable append APIs report a caller snapshot rejected by a JSON converter as
+an invalid `entry` argument before retaining history; the original converter exception is preserved.
+Live summary fills remain in `BacktestResult.Fills`; they do not establish completed outcomes for
+`TotalTrades`, win rate, or profit factor.
 
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
@@ -201,6 +265,10 @@ allowing paper-to-live promotion to evaluate the newly retained out-of-sample ev
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
 ledger drill-throughs stay aligned with accounting dimensions instead of a strategy-only scope
 vocabulary.
+`StrategyRunReadService.GetLedgerSnapshotAsync` applies that run's tenant/company visibility before
+replaying an isolated journal snapshot, optionally bounded by an as-of timestamp. The full journal,
+account and running-balance endpoints consume that same retained accounting source; a missing
+ledger remains unavailable instead of becoming an empty success.
 Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
 metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
 continues to classify terminal lifecycle states independently of eligibility.
@@ -262,6 +330,11 @@ snapshot, audit-chain, and close-scope integrity checks. A failed probe clears t
 again, so repeated checks remain fail-closed until the durable snapshot is actually repaired; it
 does not silently accept the last in-memory state.
 
+`SecurityMasterAccountingEventSourceAdapter` accepts an optional
+`ISecurityActualCashActivitySource`. When one is supplied, its rows become the request's
+`ActualActivity`, so expected coupons and paydowns are compared with reported cash; without one
+the request carries no actual activity and every expected cash event reads as missing, as before.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
@@ -271,6 +344,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-STRATEGIES -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `W3-CONT-001` | Research to paper continuity |
 | `W6-BTSTUDIO-001` | Backtesting studio evidence loop |

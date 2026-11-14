@@ -496,7 +496,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         bool allowIncomplete,
         CancellationToken ct,
         bool periodIsLocked = false,
-        bool allowHardClosedCloseLock = false)
+        bool allowHardClosedCloseLock = false,
+        ManualJournalEntryDraftDto? prospectiveOpeningCorrectionParent = null)
     {
         ArgumentNullException.ThrowIfNull(draft);
         EnsureAssetAccountingDraftMatchesSource(draft);
@@ -504,6 +505,41 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var configuration = await _configurationService.GetWorkspaceAsync(fundProfileId, draft.LedgerBookId, ct, draft.TenantId, draft.CompanyId).ConfigureAwait(false);
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
+        var priorPeriodReason = await ValidatePriorPeriodAdjustmentAsync(draft, ct, allowHardClosedCloseLock).ConfigureAwait(false);
+        if (priorPeriodReason is not null)
+            issues.Add(Issue("manual-je.prior-period-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
+                priorPeriodReason, "priorPeriodAdjustmentSource", "Prepare a fresh source-linked correction in an explicitly selected open period."));
+        var openingCorrectionReason = await ValidateOpeningCorrectionAsync(draft, chartByPath, ct,
+            prospectiveOpeningCorrectionParent, allowHardClosedCloseLock).ConfigureAwait(false);
+        if (openingCorrectionReason is not null)
+            issues.Add(Issue("manual-je.opening-correction-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
+                openingCorrectionReason, "openingCorrectionSource", "Create a source-linked correction from the retained posted opening lifecycle."));
+        if (draft.PrivateCapitalAuthorityJson is not null ||
+            PrivateCapitalPostingAuthority.IsCapitalCall(draft.TreasuryContext?.IdempotencyKey, draft.TreasuryContext?.FundEventType))
+        {
+            var capitalReason = PrivateCapitalPostingAuthority.ValidateDraft(draft);
+            if (capitalReason is null)
+                capitalReason = await ValidateCurrentCapitalAuthorityAsync(draft, ct).ConfigureAwait(false);
+            if (capitalReason is null && draft.PrivateCapitalAuthorityJson is { } authorityJson)
+            {
+                var authority = PrivateCapitalPostingAuthority.Deserialize(authorityJson);
+                if (authority.Kind == "Funding")
+                {
+                    if (_bankTransactionSource is null || !Guid.TryParse(authority.Scope.EntityId, out var entityId))
+                        capitalReason = "Retained bank evidence is unavailable for funding review.";
+                    else
+                    {
+                        var matches = (await _bankTransactionSource.GetBankTransactionsAsync(entityId, ct).ConfigureAwait(false))
+                            .Where(source => source.BankTransactionId.ToString("D") == authority.BankLineId).ToArray();
+                        if (matches.Length != 1 || !PrivateCapitalPostingAuthority.MatchesBankTransaction(authority, matches[0]))
+                            capitalReason = "Retained bank evidence changed or was voided; recreate the funding draft.";
+                    }
+                }
+            }
+            if (capitalReason is not null)
+                issues.Add(Issue("manual-je.capital-authority-required", AccountingConfigurationValidationSeverityDto.Critical,
+                    capitalReason, "privateCapitalAuthority", "Recreate the draft from an approved commitment and retained call plan."));
+        }
         if (draft.AssetAccountingDraft is not null)
             issues.Add(Issue("manual-je.asset-approval-workflow-required", AccountingConfigurationValidationSeverityDto.Warning,
                 "Asset candidate source and financial lines are immutable; approval and posting require fresh server capabilities.",
@@ -555,6 +591,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
             entityId: draft.EntityId,
             investorId: treasuryContext?.InvestorId,
             capitalAccountId: treasuryContext?.CapitalAccountId);
+        if (headerDimensions?.IntercompanyAgreementId.HasValue == true ||
+            headerDimensions?.IntercompanyAgreementVersion.HasValue == true ||
+            headerDimensions?.AccountingArrangementId is not null || headerDimensions?.AccountingArrangementRevisionId is not null ||
+            headerDimensions?.ChartAccountNodeId is not null || headerDimensions?.AccountBindingRevisionId is not null ||
+            headerDimensions?.IntercompanyTransactionId is not null)
+            issues.Add(Issue("manual-je.agreement-line-reference-required", AccountingConfigurationValidationSeverityDto.Critical,
+                "Agreement provenance must identify each journal line rather than the journal header.",
+                "dimensions", "Move the agreement ID and approved version onto the applicable lines."));
 
         if (!Enum.IsDefined(draft.EntryType))
         {
@@ -719,6 +763,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
         }
 
         ValidateTreasuryContext(treasuryContext, entryType, allowIncomplete, issues);
+        await ValidateAgreementDraftAsync(draft, lines, chartByPath, issues, ct).ConfigureAwait(false);
 
         var totalDebits = lines.Where(line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(line => line.Amount);
         var totalCredits = lines.Where(line => line.Side == AccountingTemplateLineSideDto.Credit).Sum(line => line.Amount);
@@ -992,7 +1037,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
             VendorId: NormalizeOptional(dimensions?.VendorId),
             ProjectId: NormalizeOptional(dimensions?.ProjectId))
         {
-            PositionId = dimensions?.PositionId
+            PositionId = dimensions?.PositionId,
+            AccountingArrangementId = NormalizeOptional(dimensions?.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions?.AccountingArrangementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions?.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions?.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions?.IntercompanyTransactionId),
+            IntercompanyAgreementId = dimensions?.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions?.IntercompanyAgreementVersion
         };
 
         return LedgerDimensionTags.HasAnyDimension(normalized) ? normalized : null;

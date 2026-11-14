@@ -4,7 +4,7 @@
 import React from "react";
 const { useState } = React;
 import { AmountCell } from "./AmountCell";
-import { toNumber } from "./money";
+import { optionalSide, sumKnown, displayAmount } from "./knownAmounts.js";
 import { Input } from "../core/Input";
 import { Select } from "../core/Select";
 import { Button } from "../core/Button";
@@ -15,35 +15,39 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.jnl{border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-card,2px);
-  background:var(--bg-light,#FBFAF8);box-shadow:var(--shadow-card,none);overflow:hidden;}
+.jnl{border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-card,2px);
+  background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-card,none);overflow:hidden;}
 .jnl__hd{display:grid;grid-template-columns:140px 160px 1fr;gap:12px;padding:14px;
-  border-bottom:1px solid var(--border,#E4E3DE);background:var(--bg-medium,#EDEAE4);}
+  border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);}
 .jnl__grid{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data);font-size:12px;}
 .jnl__grid th{padding:8px 12px;text-align:left;font-family:var(--font-body);font-size:10px;
-  font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border,#E4E3DE);}
+  font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);
+  border-bottom:1px solid var(--border,#D2CDC3);}
 .jnl__grid th.jnl--r{text-align:right;}
 .jnl__grid th.jnl--x{width:36px;}
-.jnl__grid td{padding:5px 12px;border-top:1px solid var(--border,#E4E3DE);vertical-align:middle;}
+.jnl__grid td{padding:5px 12px;border-top:1px solid var(--border,#D2CDC3);vertical-align:middle;}
 .jnl__grid tbody tr:first-child td{border-top:none;}
 .jnl__grid td.jnl--r{text-align:right;}
 .jnl__del{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
   border:1px solid transparent;border-radius:var(--radius-button,2px);background:transparent;cursor:pointer;
-  color:var(--text-muted,#5E666F);font-size:14px;line-height:1;transition:all .12s ease;}
-.jnl__del:hover{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
-.jnl__grid tfoot td{padding:8px 12px;border-top:2px solid var(--border-strong,#AFABA1);
-  background:var(--bg-medium,#EDEAE4);font-weight:600;}
+  color:var(--text-muted,#606870);font-size:14px;line-height:1;transition:color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1);}
+.jnl__del:hover{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
+.jnl__grid tfoot td{padding:8px 12px;border-top:2px solid var(--border-strong,#AAA49A);
+  background:var(--bg-medium,#EBE8E1);font-weight:600;}
 .jnl__grid tfoot td.jnl--r{text-align:right;}
-.jnl__foot-lbl{font-family:var(--font-body);font-size:11px;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#4E5258);}
-.jnl__bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--border,#E4E3DE);}
+.jnl__foot-lbl{font-family:var(--font-body);font-size:11px;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
+.jnl__bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--border,#D2CDC3);}
 .jnl__actions{display:flex;gap:8px;}
 .jnl__status{display:inline-flex;align-items:center;gap:7px;
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
   border:1px solid;border-radius:var(--radius-chip,2px);padding:5px 10px;}
-.jnl__status--bal{background:var(--green-a10,rgba(58,122,86,.10));border-color:var(--green,#3A7A56);color:var(--green-dim,#2C5C40);}
-.jnl__status--out{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
+.jnl__status--bal{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.jnl__status--out{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .jnl__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
+.jnl__block{display:grid;gap:2px;padding:9px 14px;border-top:1px solid var(--border,#D2CDC3);
+  background:var(--red-a10,rgba(181,75,66,.10));font-family:var(--font-body);font-size:11px;line-height:1.5;color:var(--text-primary,#20252B);}
+.jnl__block b{font-weight:600;}
+.jnl__block small{font-family:var(--font-data);font-size:10px;color:var(--text-secondary,#535C65);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "journal");
@@ -59,10 +63,17 @@ export function JournalEntryForm({
   accounts,                // optional string[] → datalist autocomplete
   currency = "USD",
   tolerance = 0.005,
+  // Reasons this entry may not post even when it balances — a changed reviewed snapshot, a closed
+  // period, a withdrawn approval. Arithmetic is a precondition for posting, not the whole of it.
+  blockers,
   onChange,
   onPost,
 }) {
   inject();
+  const uid = React.useId();
+  const dateId = `${uid}-date`;
+  const refId = `${uid}-ref`;
+  const memoId = `${uid}-memo`;
   const [header, setHeader] = useState(() => ({ date: "", ref: "", memo: "", ...initialHeader }));
   const [lines, setLines] = useState(() =>
     initialLines && initialLines.length ? initialLines.map((l) => ({ ...blankLine(), ...l })) : [blankLine(), blankLine()]
@@ -80,28 +91,33 @@ export function JournalEntryForm({
     setLines(l); emit(header, l);
   };
 
-  const totalD = lines.reduce((a, r) => a + (toNumber(r.debit) || 0), 0);
-  const totalC = lines.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
-  const diff = totalD - totalC;
-  const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
-  const dlId = accounts && accounts.length ? "jnl-accts" : undefined;
+  const sides = lines.map(row => ({ debit: optionalSide(row.debit), credit: optionalSide(row.credit) }));
+  const totalD = sumKnown(sides.map(row => row.debit));
+  const totalC = sumKnown(sides.map(row => row.credit));
+  const amountsKnown = totalD !== null && totalC !== null;
+  const validSides = sides.every(row => row.debit !== null && row.credit !== null && row.debit >= 0 && row.credit >= 0 && !(row.debit > 0 && row.credit > 0));
+  const diff = amountsKnown ? totalD - totalC : null;
+  const balanced = amountsKnown && validSides && Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
+  const blocks = (blockers || []).filter(Boolean).map((b) => (typeof b === "string" ? { label: b } : b));
+  const postable = balanced && blocks.length === 0;
+  const dlId = accounts && accounts.length ? `${uid}-accts` : undefined;
 
   return (
     <div className="jnl" role="group" aria-label="Journal entry">
       <div className="jnl__hd">
         <div className="jnl__field">
-          <label className="jnl__lbl">Date</label>
-          <Input type="date" value={header.date}
+          <label className="jnl__lbl" htmlFor={dateId}>Date</label>
+          <Input id={dateId} type="date" value={header.date}
             onChange={(e) => setH("date", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Reference</label>
-          <Input placeholder="JE-0001" value={header.ref}
+          <label className="jnl__lbl" htmlFor={refId}>Reference</label>
+          <Input id={refId} placeholder="JE-0001" value={header.ref}
             onChange={(e) => setH("ref", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Memo</label>
-          <Input placeholder="Description" value={header.memo}
+          <label className="jnl__lbl" htmlFor={memoId}>Memo</label>
+          <Input id={memoId} placeholder="Description" value={header.memo}
             onChange={(e) => setH("memo", e.target.value)} />
         </div>
       </div>
@@ -115,25 +131,25 @@ export function JournalEntryForm({
       <table className="jnl__grid">
         <thead>
           <tr>
-            <th>Account</th>
-            <th className="jnl--r">Debit</th>
-            <th className="jnl--r">Credit</th>
-            <th className="jnl--x" aria-label="Remove" />
+            <th scope="col">Account</th>
+            <th className="jnl--r" scope="col">Debit</th>
+            <th className="jnl--r" scope="col">Credit</th>
+            <th className="jnl--x" scope="col" aria-label="Remove" />
           </tr>
         </thead>
         <tbody>
           {lines.map((row, i) => (
             <tr key={i}>
               <td>
-                <Input placeholder="Account" value={row.account}
+                <Input aria-label={`Account line ${i + 1}`} placeholder="Account" value={row.account}
                   onChange={(e) => setL(i, "account", e.target.value)} list={dlId} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" value={row.debit}
+                <Input aria-label={`Debit line ${i + 1}`} type="number" placeholder="0.00" value={row.debit}
                   onChange={(e) => setL(i, "debit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" value={row.credit}
+                <Input aria-label={`Credit line ${i + 1}`} type="number" placeholder="0.00" value={row.credit}
                   onChange={(e) => setL(i, "credit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">
@@ -146,26 +162,35 @@ export function JournalEntryForm({
         <tfoot>
           <tr>
             <td className="jnl__foot-lbl">Totals</td>
-            <td className="jnl--r"><AmountCell value={totalD} currency={currency} strong /></td>
-            <td className="jnl--r"><AmountCell value={totalC} currency={currency} strong /></td>
+            <td className="jnl--r"><AmountCell value={displayAmount(totalD)} currency={currency} strong /></td>
+            <td className="jnl--r"><AmountCell value={displayAmount(totalC)} currency={currency} strong /></td>
             <td />
           </tr>
         </tfoot>
       </table>
+
+      {blocks.length ? (
+        <div className="jnl__block" role="status">
+          <span><b>Cannot post.</b> {blocks.length === 1 ? "One condition" : `${blocks.length} conditions`} outside the arithmetic {blocks.length === 1 ? "is" : "are"} unsatisfied.</span>
+          {blocks.map((b, i) => (
+            <span key={b.id || b.label || i}>· {b.label}{b.detail ? <small> — {b.detail}</small> : null}</span>
+          ))}
+        </div>
+      ) : null}
 
       <div className="jnl__bar">
         <div className="jnl__actions">
           <Button variant="ghost" onClick={addLine}>+ Add line</Button>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span className={`jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`}>
+          <span className={`jnl__status ${balanced ? "jnl__status--bal" : "jnl__status--out"}`} role="status">
             <span className="jnl__dot" aria-hidden="true" />
-            {balanced
+            {!amountsKnown ? "Input amount unavailable" : !validSides ? "Invalid debit/credit lines" : balanced
               ? "Balanced"
               : <>Out by <AmountCell value={Math.abs(diff)} currency={currency} strong style={{ color: "inherit" }} /></>}
           </span>
           {onPost && (
-            <Button variant="primary" disabled={!balanced}
+            <Button variant="primary" disabled={!postable}
               onClick={() => onPost({ header, lines })}>Post entry</Button>
           )}
         </div>

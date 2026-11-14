@@ -13,8 +13,15 @@ public sealed class AppConfigDto
     [JsonPropertyName("dataRoot")]
     public string DataRoot { get; set; } = "data";
 
+    private bool? _compressionOverride;
+
+    /// <summary>Common UI toggle; an untouched null host override remains unspecified on disk.</summary>
+    [JsonIgnore]
+    public bool Compress { get => _compressionOverride ?? false; set => _compressionOverride = value; }
+
     [JsonPropertyName("compress")]
-    public bool Compress { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? CompressionOverride { get => _compressionOverride; set => _compressionOverride = value; }
 
     [JsonPropertyName("dataSource")]
     public string DataSource { get; set; } = "IB";
@@ -67,6 +74,10 @@ public sealed class AppConfigDto
 /// </summary>
 public sealed class AlpacaOptionsDto
 {
+    /// <summary>Retains host feed settings this common settings view does not model.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+
     [JsonPropertyName("keyId")]
     public string? KeyId { get; set; }
 
@@ -176,6 +187,10 @@ public class SymbolConfigDto
 /// </summary>
 public sealed class BackfillConfigDto
 {
+    /// <summary>Retains host-owned fields this settings view does not model during load/save.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+
     [JsonPropertyName("enabled")]
     public bool Enabled { get; set; }
 
@@ -237,6 +252,10 @@ public sealed class AutoGapRemediationConfigDto
 /// </summary>
 public sealed class BackfillProvidersConfigDto
 {
+    /// <summary>Retains host-owned fields this settings view does not model during load/save.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+
     [JsonPropertyName("alpaca")]
     public BackfillProviderOptionsDto? Alpaca { get; set; }
 
@@ -258,8 +277,24 @@ public sealed class BackfillProvidersConfigDto
     [JsonPropertyName("alphaVantage")]
     public BackfillProviderOptionsDto? AlphaVantage { get; set; }
 
-    [JsonPropertyName("nasdaqDataLink")]
+    [JsonPropertyName("nasdaq")]
     public BackfillProviderOptionsDto? NasdaqDataLink { get; set; }
+
+    /// <summary>Reads older DTO documents; all new writes use the host's canonical nasdaq key.</summary>
+    [JsonPropertyName("nasdaqDataLink")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BackfillProviderOptionsDto? LegacyNasdaqDataLink
+    {
+        get => null;
+        set => NasdaqDataLink ??= value;
+    }
+
+    [JsonPropertyName("twelveData")]
+    public BackfillProviderOptionsDto? TwelveData { get; set; }
+
+    [JsonPropertyName("openFigi")]
+    public BackfillProviderOptionsDto? OpenFigi { get; set; }
+
 }
 
 /// <summary>
@@ -267,6 +302,13 @@ public sealed class BackfillProvidersConfigDto
 /// </summary>
 public sealed class BackfillProviderOptionsDto
 {
+    /// <summary>Retains host-owned fields this settings view does not model during load/save.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+
+    [JsonPropertyName("tierId")]
+    public string TierId { get; set; } = "free";
+
     [JsonPropertyName("enabled")]
     public bool Enabled { get; set; } = true;
 
@@ -293,6 +335,9 @@ public sealed class BackfillProviderOptionsDto
 /// </summary>
 public sealed class BackfillProviderMetadataDto
 {
+    [JsonPropertyName("tiers")]
+    public BackfillVendorTierDto[] Tiers { get; set; } = [];
+
     [JsonPropertyName("providerId")]
     public string ProviderId { get; set; } = string.Empty;
 
@@ -332,6 +377,8 @@ public sealed class BackfillProviderMetadataDto
     [JsonPropertyName("featureFlags")]
     public Dictionary<string, bool>? FeatureFlags { get; set; }
 }
+
+public sealed record BackfillVendorTierDto(string Id, string Label, int? RateLimitPerMinute, int? RateLimitPerHour);
 
 /// <summary>
 /// Combined view of provider configuration with runtime health status for the desktop UI.
@@ -425,6 +472,10 @@ public sealed class ProviderConfigAuditEntryDto
 /// </summary>
 public sealed class DataSourcesConfigDto
 {
+    /// <summary>Retains host-owned fields this settings view does not model during load/save.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+
     [JsonPropertyName("sources")]
     public DataSourceConfigDto[]? Sources { get; set; }
 
@@ -450,6 +501,10 @@ public sealed class DataSourcesConfigDto
 /// </summary>
 public sealed class SymbolMappingsConfigDto
 {
+    /// <summary>Retains host-owned fields this settings view does not model during load/save.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+
     [JsonPropertyName("persistencePath")]
     public string? PersistencePath { get; set; }
 
@@ -458,6 +513,9 @@ public sealed class SymbolMappingsConfigDto
 
     [JsonPropertyName("reportMismatches")]
     public bool ReportMismatches { get; set; } = true;
+
+    [JsonPropertyName("providerResolutionModes")]
+    public Dictionary<string, SymbolResolutionMode>? ProviderResolutionModes { get; set; }
 }
 
 /// <summary>
@@ -465,6 +523,10 @@ public sealed class SymbolMappingsConfigDto
 /// </summary>
 public sealed class DataSourceConfigDto
 {
+    /// <summary>Retains host-owned fields this settings view does not model during load/save.</summary>
+    [JsonExtensionData]
+    public Dictionary<string, JsonElement>? AdditionalProperties { get; set; }
+
     [JsonPropertyName("id")]
     public string Id { get; set; } = string.Empty;
 

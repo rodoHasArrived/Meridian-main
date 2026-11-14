@@ -88,6 +88,40 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
     }
 
     [AssetOperationsDatabaseFact]
+    public async Task PreparedAccountingLineage_RemainsReadableBesideOlderEconomicStateAndRespectsHistoricalCutoff()
+    {
+        await new AssetOperationsMigrationRunner(_options).EnsureMigratedAsync();
+        var store = new PostgresAssetOperationsProjectionStore(_options);
+        var projection = InstrumentPositionProjectionFixture.Create();
+        await store.UpsertAsync(projection, InstrumentPositionProjectionFixture.Approval);
+        var original = projection.BookPositions.Single();
+        var source = original.ProjectionLineage!;
+        var date = source.ProjectionAsOfDate.AddDays(10);
+        var preparedEvent = source.TriggerEvent with { EventId = Guid.NewGuid(), EffectiveDate = date };
+        var preparedLineage = source with
+        {
+            ProjectionRunId = Guid.NewGuid(),
+            ProjectionAsOfDate = date,
+            GeneratedAtUtc = source.GeneratedAtUtc.AddDays(10),
+            TriggerEvent = preparedEvent
+        };
+        await store.UpsertAsync(projection.InstrumentRoles.Single(), original with
+        {
+            Version = original.Version + 1,
+            CurrentEconomicState = null,
+            ProjectionLineage = preparedLineage
+        }, null, original.Version, InstrumentPositionProjectionFixture.Approval);
+
+        var retained = await store.GetSecurityAsync(original.SecurityId);
+        retained.ProjectionLineages.Should().Contain(item => item.ProjectionRunId == preparedLineage.ProjectionRunId);
+        retained.PositionEconomicStates.Should().BeEquivalentTo(projection.PositionEconomicStates);
+        retained.BookPositions.Single().OriginEvent.Should().BeEquivalentTo(original.OriginEvent);
+        var historical = await store.GetAsOfAsync(original.SecurityId, original.BookContext.LedgerBookId, date.AddDays(-1));
+        historical.ProjectionLineages.Should().NotContain(item => item.ProjectionRunId == preparedLineage.ProjectionRunId,
+            "a later reviewed occurrence cannot leak through an earlier economic cutoff");
+    }
+
+    [AssetOperationsDatabaseFact]
     public async Task UpsertAsync_AppendsAnAppendOnlyWriteEventPerReplacement()
     {
         await new AssetOperationsMigrationRunner(_options).EnsureMigratedAsync();

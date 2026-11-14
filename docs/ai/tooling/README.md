@@ -33,7 +33,7 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Assemble hash-bound task context and check freshness | `build/scripts/ai/task-context.py` | See [task context and throughput pilot](throughput-pilot.md) |
 | Describe a task by observable outcomes and explicit ownership | `build/scripts/ai/task-context.py --brief-file <json>` | See [task briefs](throughput-pilot.md#describe-the-observable-outcome) |
 | Recommend focused checks from changed files and project dependencies | `build/python/cli/buildctl.py recommend-validation` | See [focused validation](throughput-pilot.md#recommend-focused-validation) |
-| Synchronize shared project guidance, preserving host-specific sections | `build/scripts/ai/generate-guidance.py` | `python build/scripts/ai/generate-guidance.py --check --summary` |
+| Synchronize shared project guidance (preserving host-specific sections) and the `.agents/skills/` mirror | `build/scripts/ai/generate-guidance.py` | `python build/scripts/ai/generate-guidance.py --check --summary` |
 | Diagnose browser launcher prerequisites and port conflicts without starting services | `scripts/dev/web-dev.mjs --doctor` | `npm run dev:doctor` or `npm run dev:fixtures -- --doctor` |
 | Record task events and compare matched pilot trials | `build/scripts/ai/throughput-metrics.py` | See [metric definitions and pilot procedure](throughput-pilot.md) |
 | Generate read-only Promptfoo eval artifacts | `build/scripts/ai/promptfoo-adapter.py` | `python build/scripts/ai/promptfoo-adapter.py --eval-id 1 --summary` |

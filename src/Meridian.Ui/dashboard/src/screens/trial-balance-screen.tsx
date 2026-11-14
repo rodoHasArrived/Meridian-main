@@ -8,6 +8,7 @@ import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
+import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import { ScreenLayout, type FocusSignal } from "@/components/ui/screen-layout";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { withoutOpaqueIdentifiers } from "@/lib/identifiers";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
@@ -27,6 +29,7 @@ import {
 } from "@/screens/accounting-screen.posted-ledger.view-model";
 import { buildTrialBalanceAccountTreeNodes, trialBalanceAccountTreeCode } from "@/screens/trial-balance-screen.view-model";
 import type { AccountingLedgerJournalEvidenceViewState } from "@/screens/accounting-screen.view-model";
+import { formatMoney } from "@/lib/format";
 
 type TrialBalanceViewMode = "table" | "hierarchy";
 
@@ -184,15 +187,15 @@ export function TrialBalanceScreen() {
   // Posted balances are in the book's own base currency. The simulation screen this was adapted
   // from assumed USD; a EUR book's imbalance must not be labelled with a dollar sign.
   const postedCurrency = postedLedger.view.baseCurrency;
-  const formatPostedAmount = (value: number) =>
-    postedCurrency
-      ? new Intl.NumberFormat("en-US", { style: "currency", currency: postedCurrency }).format(value)
-      : new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value);
+  // Accounting convention: the currency's minor units, negatives in parentheses.
+  const formatPostedAmount = (value: number) => formatMoney(value, { context: "accounting", currency: postedCurrency || null });
 
   // The selected book names the fund-structure node it belongs to. Hard-coding "All entities"
   // presented an entity-scoped governed balance as an all-entity one.
   const entityScope = postedLedger.view.bookScopeLabel ?? "All entities";
-  const trialBalanceScope = `${entityScope} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
+  // The heading names the scope in words. A structure node known only by its identifier is named
+  // by its kind there; the exact node stays in the read-only scope field below.
+  const trialBalanceScope = `${withoutOpaqueIdentifiers(entityScope)} · ${postedLedger.view.selectedBookLabel ?? ledgerBook} · ${selectedPeriodLabel ?? "No period selected"}`;
 
   // Retained on the closed-period summary. Claiming none was kept asserted an evidence gap that
   // is not there, and left freshness permanently "needs review" on a perfectly good period.
@@ -241,8 +244,8 @@ export function TrialBalanceScreen() {
       contextScrollLabel="Scroll account detail for ledger lines and supporting documents"
       onContextClose={() => postedLedger.selectTrialBalanceRow(null)}
     >
+      <AccountingPeriodComparison bookId={postedLedger.selectedBook?.ledgerBookId} periodId={selectedPeriodId} expectedBasis={postedLedger.view.trialBalance.selectedBasis} enabled={postedLedger.periodsSettled} periodOptions={periodOptions} />
       <OperationalTrustSummary
-        disclosure
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
         freshness={freshness}

@@ -20,10 +20,13 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// REST endpoints for the paper-trading cockpit and execution dashboard.
 /// Exposes positions, orders, portfolio state, and gateway controls.
 /// </summary>
-public static class ExecutionEndpoints
+public static partial class ExecutionEndpoints
 {
+    private const string ExecutionPreDispatchUnavailableProblemType = "https://meridian.io/errors/execution-pre-dispatch-unavailable";
+
     public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapExecutionWorkflowEndpoints(app, jsonOptions);
         var group = app.MapGroup("/api/execution").WithTags("Execution");
         group.AddEndpointFilter(async (invocation, next) =>
         {
@@ -156,7 +159,7 @@ public static class ExecutionEndpoints
 
             var oms = context.RequestServices.GetService<IOrderManager>();
             if (oms is null)
-                return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
+                return ExecutionPreDispatchUnavailable("Order management system is not active.");
 
             var activeGatewayId = context.RequestServices.GetService<IExecutionGateway>()?.GatewayId;
             var gateDecision = BrokerageOrderPlacementGate.Evaluate(
@@ -198,18 +201,33 @@ public static class ExecutionEndpoints
                     ("correlationId", string.IsNullOrWhiteSpace(correlationId) ? GenerateActionId() : correlationId))
             };
 
-            var result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
-
-            // A parked order is not a rejection: nothing routed, but a live queue entry can
-            // still execute it once an operator approves. 202 keeps that distinguishable
-            // from the 400 a refusal returns, so a client cannot show "submission failed"
-            // for an order that is on its way to the desk.
-            return (result.Success, result.RequiresApproval) switch
+            OrderResult result;
+            try
             {
-                (true, _) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created),
-                (false, true) => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status202Accepted),
-                _ => Results.Json(result, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
+                result = await oms.PlaceOrderAsync(normalizedRequest, context.RequestAborted).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex) when (OrderSubmissionRefusal.IsBeforeDispatch(ex))
+            {
+                return ExecutionPreDispatchUnavailable("The order management system is not accepting order submissions.");
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !context.RequestAborted.IsCancellationRequested)
+            {
+                // The general exception handler can map exceptions to a request refusal. After
+                // entering the OMS, an exception alone cannot establish whether the broker acted.
+                GetLogger(context.RequestServices).LogError(ex, "Order submission returned without a confirmed outcome.");
+                return Results.Problem("The order manager could not confirm the submission outcome.",
+                    statusCode: StatusCodes.Status502BadGateway);
+            }
+
+            // Keep a definitive refusal distinct from orders that may still execute.
+            var statusCode = (result.Success, result.RequiresApproval, result.RequiresOrderReconciliation) switch
+            {
+                (_, _, true) => StatusCodes.Status502BadGateway,
+                (true, _, _) => StatusCodes.Status201Created,
+                (_, true, _) => StatusCodes.Status202Accepted,
+                _ => StatusCodes.Status400BadRequest
             };
+            return Results.Json(result, jsonOptions, statusCode: statusCode);
         })
         .WithName("SubmitOrder").RequirePermission(UserPermission.ManageOrders)
         .Produces<OrderResult>(201)
@@ -218,6 +236,8 @@ public static class ExecutionEndpoints
         .Produces<OrderResult>(403)
         .Produces(429)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces<OrderResult>(502)
+        .ProducesProblem(502)
         .Produces(503);
 
         group.MapPost("/orders/{orderId}/cancel", async (string orderId, HttpContext context) =>
@@ -254,11 +274,11 @@ public static class ExecutionEndpoints
 
             if (result.Success)
             {
-                logger.LogInformation("Trading action {ActionId}: cancel order {OrderId} — succeeded", actionId, orderId);
+                logger.LogInformation("Trading action {ActionId}: cancel order — succeeded", actionId);
             }
             else
             {
-                logger.LogWarning("Trading action {ActionId}: cancel order {OrderId} — rejected: {Reason}", actionId, orderId, result.ErrorMessage);
+                logger.LogWarning("Trading action {ActionId}: cancel order — rejected", actionId);
             }
 
             var actionResult = new TradingActionResult(
@@ -359,70 +379,7 @@ public static class ExecutionEndpoints
         .Produces<OrderGatewayCapabilities>(200)
         .Produces(503);
 
-        group.MapGet("/audit", async (int? take, HttpContext context) =>
-        {
-            var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
-            if (auditTrail is null)
-            {
-                return Results.Json(Array.Empty<ExecutionAuditEntry>(), jsonOptions);
-            }
-
-            var entries = await auditTrail
-                .GetRecentAsync(take ?? 100, context.RequestAborted)
-                .ConfigureAwait(false);
-            return Results.Json(entries, jsonOptions);
-        })
-        .WithName("GetExecutionAudit").RequirePermission(UserPermission.ViewTrades)
-        .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
-
-        group.MapGet("/audit/search", async (
-            string? searchText,
-            string? runId,
-            string? category,
-            string? action,
-            string? outcome,
-            string? actor,
-            string? symbol,
-            string? correlationId,
-            string? objectKind,
-            string? objectId,
-            string? relatedObjectId,
-            DateTimeOffset? fromUtc,
-            DateTimeOffset? toUtc,
-            int? limit,
-            HttpContext context) =>
-        {
-            var explorer = context.RequestServices.GetService<AuditTrailExplorerService>();
-            if (explorer is null)
-            {
-                var auditTrail = context.RequestServices.GetService<ExecutionAuditTrailService>();
-                explorer = auditTrail is null
-                    ? new AuditTrailExplorerService()
-                    : new AuditTrailExplorerService(auditTrail);
-            }
-
-            var result = await explorer.SearchAsync(
-                new AuditTrailExplorerQueryDto(
-                    SearchText: searchText,
-                    RunId: runId,
-                    Category: category,
-                    Action: action,
-                    Outcome: outcome,
-                    Actor: actor,
-                    Symbol: symbol,
-                    CorrelationId: correlationId,
-                    ObjectKind: objectKind,
-                    ObjectId: objectId,
-                    RelatedObjectId: relatedObjectId,
-                    FromUtc: fromUtc,
-                    ToUtc: toUtc,
-                    Limit: limit ?? 100),
-                context.RequestAborted).ConfigureAwait(false);
-
-            return Results.Json(result, jsonOptions);
-        })
-        .WithName("SearchExecutionAuditTrail").RequirePermission(UserPermission.ViewTrades)
-        .Produces<AuditTrailExplorerResultDto>(200);
+        MapExecutionAuditEndpoints(group, jsonOptions);
 
         group.MapGet("/controls", (HttpContext context) =>
         {
@@ -706,249 +663,7 @@ public static class ExecutionEndpoints
 
         // --- Session management ---
 
-        group.MapGet("/sessions", async (HttpContext context) =>
-        {
-            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
-            if (persistence is null)
-                return Results.Json(Array.Empty<PaperSessionSummaryDto>(), jsonOptions);
-
-            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
-            var sessions = persistence.GetSessions();
-            return Results.Json(sessions, jsonOptions);
-        })
-        .WithName("GetExecutionSessions").RequirePermission(UserPermission.ViewTrades)
-        .Produces<IReadOnlyList<PaperSessionSummaryDto>>(200);
-
-        group.MapGet("/sessions/{sessionId}", async (string sessionId, HttpContext context) =>
-        {
-            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
-            if (persistence is null)
-                return Results.NotFound();
-
-            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
-            var session = persistence.GetSession(sessionId);
-            return session is null ? Results.NotFound() : Results.Json(session, jsonOptions);
-        })
-        .WithName("GetExecutionSessionById").RequirePermission(UserPermission.ViewTrades)
-        .Produces<PaperSessionDetailDto>(200)
-        .Produces(404);
-
-        group.MapGet("/sessions/{sessionId}/tca", async (string sessionId, HttpContext context) =>
-        {
-            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
-            if (persistence is null)
-                return Results.NotFound();
-
-            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
-            var session = persistence.GetSession(sessionId);
-            if (session is null)
-                return Results.NotFound();
-
-            var report = SessionTcaReporter.Generate(
-                sessionId,
-                session.Summary.StrategyId,
-                session.FillHistory ?? Array.Empty<ExecutionReport>(),
-                session.OrderHistory);
-            return Results.Json(report, jsonOptions);
-        })
-        .WithName("GetExecutionSessionTcaReport").RequirePermission(UserPermission.ViewTrades)
-        .Produces<SessionTcaReport>(200)
-        .Produces(404);
-
-        group.MapPost("/sessions/create", async (CreatePaperSessionRequest request, HttpContext context) =>
-        {
-            if (!HasExecutionTradingPermission(context, UserPermission.ExecuteTrades))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveActor(context, out _))
-            {
-                return Results.Unauthorized();
-            }
-
-            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
-            if (persistence is null)
-                return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            var actionId = GenerateActionId();
-            var dto = new Meridian.Execution.Services.CreatePaperSessionDto(
-                request.StrategyId,
-                request.StrategyName,
-                request.InitialCash,
-                request.Symbols);
-            PaperSessionSummaryDto session;
-            try
-            {
-                session = await persistence.CreateSessionAsync(dto, context.RequestAborted).ConfigureAwait(false);
-            }
-            catch (ArgumentException ex)
-            {
-                return Results.BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.Json(
-                    new TradingActionResult(
-                        ActionId: actionId,
-                        Status: "Rejected",
-                        Message: ex.Message,
-                        OccurredAt: DateTimeOffset.UtcNow),
-                    jsonOptions,
-                    statusCode: StatusCodes.Status429TooManyRequests);
-            }
-
-            await RecordOperatorAuditAsync(
-                context,
-                actionId,
-                action: "CreatePaperSession",
-                outcome: "Completed",
-                message: $"Paper session {session.SessionId} created for strategy {session.StrategyId}.",
-                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["sessionId"] = session.SessionId,
-                    ["strategyId"] = session.StrategyId,
-                    ["initialCash"] = session.InitialCash.ToString("G29"),
-                    ["symbolCount"] = (request.Symbols?.Count ?? 0).ToString(),
-                    ["symbols"] = request.Symbols is { Count: > 0 }
-                        ? string.Join(",", request.Symbols)
-                        : string.Empty
-                }).ConfigureAwait(false);
-
-            return Results.Json(session, jsonOptions, statusCode: StatusCodes.Status201Created);
-        })
-        .WithName("CreateExecutionSession").RequirePermission(UserPermission.ExecuteTrades)
-        .Produces<PaperSessionSummaryDto>(201)
-        .Produces(400)
-        .Produces(429)
-        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-        .Produces(503);
-
-        group.MapPost("/sessions/{sessionId}/close", async (string sessionId, HttpContext context) =>
-        {
-            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveActor(context, out _))
-            {
-                return Results.Unauthorized();
-            }
-
-            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
-            if (persistence is null)
-                return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
-            var actionId = GenerateActionId();
-            var existingSession = persistence.GetSession(sessionId);
-            var closed = await persistence.CloseSessionAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
-
-            var auditEntry = await RecordOperatorAuditAsync(
-                context,
-                actionId,
-                action: "ClosePaperSession",
-                outcome: closed ? "Completed" : "Rejected",
-                message: closed
-                    ? $"Paper session {sessionId} closed."
-                    : $"Paper session {sessionId} was not found.",
-                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["sessionId"] = sessionId,
-                    ["strategyId"] = existingSession?.Summary.StrategyId ?? string.Empty,
-                    ["symbolCount"] = existingSession?.Symbols.Count.ToString() ?? "0"
-                }).ConfigureAwait(false);
-
-            if (!closed)
-            {
-                return Results.NotFound();
-            }
-
-            return Results.Json(
-                new TradingActionResult(
-                    ActionId: actionId,
-                    Status: "Completed",
-                    Message: $"Paper session {sessionId} closed.",
-                    OccurredAt: DateTimeOffset.UtcNow,
-                    AuditId: auditEntry?.AuditId),
-                jsonOptions);
-        })
-        .WithName("CloseExecutionSession").RequirePermission(UserPermission.ManageOrders)
-        .Produces<TradingActionResult>(200)
-        .Produces(404)
-        .Produces(503);
-
-        group.MapGet("/sessions/{sessionId}/replay", async (string sessionId, HttpContext context) =>
-        {
-            if (!HasExecutionTradingPermission(context, UserPermission.ManageOrders))
-            {
-                return EndpointHelpers.Forbidden();
-            }
-
-            if (!TryResolveActor(context, out _))
-            {
-                return Results.Unauthorized();
-            }
-
-            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
-            if (persistence is null)
-                return Results.Problem("Paper session management is not available.", statusCode: StatusCodes.Status503ServiceUnavailable);
-
-            await persistence.InitialiseAsync(context.RequestAborted).ConfigureAwait(false);
-            var actionId = GenerateActionId();
-            var verification = await persistence.VerifyReplayAsync(sessionId, context.RequestAborted).ConfigureAwait(false);
-            if (verification is null)
-            {
-                await RecordOperatorAuditAsync(
-                    context,
-                    actionId,
-                    action: "ReplayPaperSession",
-                    outcome: "Rejected",
-                    message: $"Paper session {sessionId} was not found for replay verification.",
-                    metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["sessionId"] = sessionId
-                    }).ConfigureAwait(false);
-
-                return Results.NotFound();
-            }
-
-            var primaryMismatchReason = verification.MismatchReasons.FirstOrDefault();
-            var auditEntry = await RecordOperatorAuditAsync(
-                context,
-                actionId,
-                action: "ReplayPaperSession",
-                outcome: verification.IsConsistent ? "Completed" : "AttentionRequired",
-                message: verification.IsConsistent
-                    ? $"Replay matched current state for paper session {sessionId}."
-                    : $"Replay mismatch detected for paper session {sessionId}: {primaryMismatchReason ?? "see mismatch count"}.",
-                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["sessionId"] = sessionId,
-                    ["strategyId"] = verification.Summary.StrategyId,
-                    ["isConsistent"] = verification.IsConsistent.ToString(),
-                    ["replaySource"] = verification.ReplaySource,
-                    ["mismatchCount"] = verification.MismatchReasons.Count.ToString(),
-                    ["comparedFillCount"] = verification.ComparedFillCount.ToString(),
-                    ["comparedOrderCount"] = verification.ComparedOrderCount.ToString(),
-                    ["comparedLedgerEntryCount"] = verification.ComparedLedgerEntryCount.ToString(),
-                    ["lastPersistedFillAt"] = verification.LastPersistedFillAt?.ToString("O") ?? string.Empty,
-                    ["lastPersistedOrderUpdateAt"] = verification.LastPersistedOrderUpdateAt?.ToString("O") ?? string.Empty,
-                    ["primaryMismatchReason"] = primaryMismatchReason ?? string.Empty
-                }).ConfigureAwait(false);
-
-            return Results.Json(
-                verification with
-                {
-                    VerificationAuditId = auditEntry?.AuditId
-                },
-                jsonOptions);
-        })
-        .WithName("ReplayExecutionSession").RequirePermission(UserPermission.ManageOrders)
-        .Produces<PaperSessionReplayVerificationDto>(200)
-        .Produces(404)
-        .Produces(503);
+        MapPaperSessionEndpoints(group, jsonOptions);
 
         // --- Multi-account endpoints ---
 
@@ -1063,6 +778,16 @@ public static class ExecutionEndpoints
                     Message: $"Position {request.PositionKey} was not found.",
                     OccurredAt: DateTimeOffset.UtcNow);
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (DescribeUnsupportedLotSelection(request.LotSelection, snapshot, context.RequestServices) is { } lotSelectionRefusal)
+            {
+                var unsupported = new TradingActionResult(
+                    ActionId: GenerateActionId(),
+                    Status: "Rejected",
+                    Message: lotSelectionRefusal,
+                    OccurredAt: DateTimeOffset.UtcNow);
+                return Results.Json(unsupported, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
             if (await RequireScopedFundAccountOrderAccessAsync(
@@ -1217,313 +942,6 @@ public static class ExecutionEndpoints
     // Private helpers                                                     //
     // ------------------------------------------------------------------ //
 
-    private static async Task<ExecutionBlotterSnapshotResponse?> BuildBlotterSnapshotAsync(
-        IServiceProvider services,
-        CancellationToken ct)
-    {
-        var executionGateway = services.GetService<IExecutionGateway>();
-        var orderGateway = services.GetService<IOrderGateway>();
-
-        if (executionGateway is IBrokerageGateway brokerageGateway)
-        {
-            var positions = await brokerageGateway.GetPositionsAsync(ct).ConfigureAwait(false);
-            var details = positions
-                .Select(MapBrokerPositionToDetail)
-                .ToArray();
-
-            var source = string.IsNullOrWhiteSpace(brokerageGateway.BrokerDisplayName)
-                ? brokerageGateway.GatewayId
-                : brokerageGateway.BrokerDisplayName;
-
-            var statusMessage = details.Length == 0
-                ? $"No live positions returned by {source}."
-                : $"Showing {details.Length} live position(s) from {source}.";
-
-            return new ExecutionBlotterSnapshotResponse(
-                Positions: details,
-                IsBrokerBacked: true,
-                IsLive: orderGateway?.Mode == Meridian.Execution.Models.ExecutionMode.Live || executionGateway.IsConnected,
-                Source: source,
-                StatusMessage: statusMessage,
-                AsOf: DateTimeOffset.UtcNow);
-        }
-
-        var portfolio = services.GetService<IPortfolioState>();
-        if (portfolio is null)
-            return null;
-
-        var paperPortfolio = portfolio as PaperTradingPortfolio;
-        var paperPositions = portfolio.Positions.Values
-            .Select(position => MapPortfolioPositionToDetail(
-                position,
-                paperPortfolio?.GetPositionLots(position.Symbol)))
-            .ToArray();
-
-        var paperStatus = paperPositions.Length == 0
-            ? "No paper positions are open."
-            : $"Showing {paperPositions.Length} paper position(s).";
-
-        return new ExecutionBlotterSnapshotResponse(
-            Positions: paperPositions,
-            IsBrokerBacked: false,
-            IsLive: false,
-            Source: "Paper Trading",
-            StatusMessage: paperStatus,
-            AsOf: DateTimeOffset.UtcNow);
-    }
-
-    private static async Task<IResult> SubmitPositionActionAsync(
-        ExecutionPositionDetailResponse position,
-        string positionSource,
-        string actionName,
-        OrderSide side,
-        decimal quantity,
-        string? positionEffect,
-        Guid? fundAccountId,
-        string successVerb,
-        JsonSerializerOptions jsonOptions,
-        HttpContext context)
-    {
-        if (quantity <= 0m)
-        {
-            var invalid = new TradingActionResult(
-                ActionId: GenerateActionId(),
-                Status: "Rejected",
-                Message: $"A positive quantity is required to {successVerb.ToLowerInvariant()} {position.ProductDescription}.",
-                OccurredAt: DateTimeOffset.UtcNow);
-            return Results.Json(invalid, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
-        }
-
-        var oms = context.RequestServices.GetService<IOrderManager>();
-        if (oms is null)
-        {
-            return Results.Problem("Order management system is not active.", statusCode: StatusCodes.Status503ServiceUnavailable);
-        }
-
-        var activeGatewayId = context.RequestServices.GetService<IExecutionGateway>()?.GatewayId;
-        var blockedGateDecision = BrokerageOrderPlacementGate.Evaluate(
-            context.RequestServices.GetService<BrokerageConfiguration>(),
-            activeGatewayId);
-        if (!blockedGateDecision.IsAllowed)
-        {
-            var blockedActionId = GenerateActionId();
-            var message = blockedGateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.";
-            var blockedAuditEntry = await RecordOperatorAuditAsync(
-                context,
-                blockedActionId,
-                action: actionName,
-                outcome: "Rejected",
-                message: message,
-                symbol: position.Symbol,
-                metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["positionKey"] = position.PositionKey,
-                    ["reason"] = "GateBlocked",
-                    ["source"] = positionSource
-                }).ConfigureAwait(false);
-
-            var blocked = new TradingActionResult(
-                ActionId: blockedActionId,
-                Status: "Rejected",
-                Message: message,
-                OccurredAt: DateTimeOffset.UtcNow,
-                AuditId: blockedAuditEntry?.AuditId);
-            return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
-        }
-
-        var logger = GetLogger(context.RequestServices);
-        var actionId = GenerateActionId();
-        if (!TryResolveActor(context, out var actor))
-        {
-            return Results.Unauthorized();
-        }
-
-        var gateDecision = BrokerageOrderPlacementGate.Evaluate(
-            context.RequestServices.GetService<BrokerageConfiguration>(),
-            activeGatewayId);
-        if (!gateDecision.IsAllowed)
-        {
-            var blocked = new TradingActionResult(
-                ActionId: actionId,
-                Status: "Rejected",
-                Message: gateDecision.RejectReason ?? "Broker order routing is disabled by validation gates.",
-                OccurredAt: DateTimeOffset.UtcNow);
-            return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
-        }
-
-        if (fundAccountId is { } requestedFundAccountId
-            && await RequireExecutionFundAccountAccessAsync(
-                requestedFundAccountId,
-                UserPermission.ExecuteTrades,
-                context,
-                jsonOptions).ConfigureAwait(false) is { } accountScopeFailure)
-        {
-            return accountScopeFailure;
-        }
-
-        var metadata = MergeMetadata(
-            RemoveServerOwnedExecutionMetadata(position.Metadata),
-            ("actor", actor),
-            ("correlationId", actionId),
-            ("positionKey", position.PositionKey),
-            ("positionSource", positionSource),
-            ("asset_class", position.AssetClass));
-
-        if (!string.IsNullOrWhiteSpace(positionEffect))
-        {
-            metadata = MergeMetadata(metadata, ("position_effect", positionEffect));
-        }
-
-        var orderRequest = new OrderRequest
-        {
-            Symbol = position.Symbol,
-            Side = side,
-            Type = OrderType.Market,
-            Quantity = quantity,
-            ClientOrderId = $"{actionName.ToLowerInvariant()}-{position.Symbol}-{Guid.NewGuid():N}",
-            FundAccountId = fundAccountId,
-            Metadata = metadata
-        };
-
-        var result = await oms.PlaceOrderAsync(orderRequest, context.RequestAborted).ConfigureAwait(false);
-
-        // A parked order is not a rejection here either. Reporting one as Rejected invites
-        // the operator to retry, and every retry mints a fresh ClientOrderId — so a single
-        // close can become several parked close orders that all release on approval and
-        // take the position past flat, or reverse it.
-        var parked = !result.Success && result.RequiresApproval;
-
-        if (result.Success)
-        {
-            logger.LogInformation(
-                "Trading action {ActionId}: {Action} {PositionKey} qty {Quantity} — order {OrderId} submitted",
-                actionId,
-                actionName,
-                position.PositionKey,
-                quantity,
-                result.OrderId);
-        }
-        else if (parked)
-        {
-            logger.LogInformation(
-                "Trading action {ActionId}: {Action} {PositionKey} qty {Quantity} — order parked for governed approval",
-                actionId,
-                actionName,
-                position.PositionKey,
-                quantity);
-        }
-        else
-        {
-            logger.LogWarning(
-                "Trading action {ActionId}: {Action} {PositionKey} — order rejected: {Reason}",
-                actionId,
-                actionName,
-                position.PositionKey,
-                result.ErrorMessage);
-        }
-
-        var auditEntry = await RecordOperatorAuditAsync(
-            context,
-            actionId,
-            action: actionName,
-            outcome: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
-            message: result.Success
-                ? $"{successVerb} order for {position.ProductDescription} submitted."
-                : parked
-                    ? $"{successVerb} order for {position.ProductDescription} parked for governed approval."
-                    : (result.ErrorMessage ?? $"{successVerb} order rejected for {position.ProductDescription}."),
-            orderId: result.OrderId,
-            symbol: position.Symbol,
-            metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["positionKey"] = position.PositionKey,
-                ["quantity"] = quantity.ToString("G29"),
-                ["side"] = side.ToString(),
-                ["assetClass"] = position.AssetClass,
-                ["source"] = positionSource
-            }).ConfigureAwait(false);
-
-        var actionResult = new TradingActionResult(
-            ActionId: actionId,
-            Status: result.Success ? "Accepted" : parked ? "PendingApproval" : "Rejected",
-            Message: result.Success
-                ? $"{successVerb} order for {position.ProductDescription} submitted (order {result.OrderId})."
-                : parked
-                    ? $"{successVerb} order for {position.ProductDescription} is parked for governed approval; "
-                        + "an approver must release it. Do not resubmit."
-                    : (result.ErrorMessage ?? $"{successVerb} order rejected."),
-            OccurredAt: DateTimeOffset.UtcNow,
-            AuditId: auditEntry?.AuditId);
-
-        // 202 for a park, matching /orders/submit: the request was accepted but not routed.
-        // 400 would read as "this failed, try again", and each retry mints a new
-        // ClientOrderId, so the retries all park and can all release.
-        return (result.Success, parked) switch
-        {
-            (true, _) => Results.Json(actionResult, jsonOptions),
-            (false, true) => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status202Accepted),
-            _ => Results.Json(actionResult, jsonOptions, statusCode: StatusCodes.Status400BadRequest)
-        };
-    }
-
-    private static ExecutionPositionDetailResponse MapBrokerPositionToDetail(BrokerPosition position)
-    {
-        var quantity = position.Quantity;
-        return new ExecutionPositionDetailResponse(
-            PositionKey: position.PositionId ?? position.Symbol,
-            Symbol: position.Symbol,
-            UnderlyingSymbol: position.UnderlyingSymbol ?? position.Symbol,
-            ProductDescription: string.IsNullOrWhiteSpace(position.Description) ? position.Symbol : position.Description,
-            TradeId: ExtractTradeId(position.PositionId),
-            Quantity: quantity,
-            AverageCostBasis: position.AverageEntryPrice,
-            MarketPrice: position.MarketPrice,
-            MarketValue: position.MarketValue,
-            UnrealisedPnl: position.UnrealizedPnl,
-            RealisedPnl: 0m,
-            AssetClass: position.AssetClass,
-            Side: quantity < 0m ? "Sell" : "Buy",
-            Expiration: position.Expiration,
-            Strike: position.Strike,
-            Right: position.Right,
-            SupportsClose: quantity != 0m,
-            SupportsUpsize: quantity != 0m,
-            Metadata: position.Metadata);
-    }
-
-    private static ExecutionPositionDetailResponse MapPortfolioPositionToDetail(
-        IPosition position,
-        IReadOnlyList<PositionLotEntry>? lots = null)
-    {
-        return new ExecutionPositionDetailResponse(
-            PositionKey: position.Symbol,
-            Symbol: position.Symbol,
-            UnderlyingSymbol: position.Symbol,
-            ProductDescription: position.Symbol,
-            TradeId: position.Symbol,
-            Quantity: position.Quantity,
-            AverageCostBasis: position.AverageCostBasis,
-            MarketPrice: 0m,
-            MarketValue: 0m,
-            UnrealisedPnl: position.UnrealizedPnl,
-            RealisedPnl: position.RealizedPnl,
-            AssetClass: "equity",
-            Side: position.Quantity < 0 ? "Sell" : "Buy",
-            Lots: lots);
-    }
-
-    private static string? ExtractTradeId(string? positionId)
-    {
-        if (string.IsNullOrWhiteSpace(positionId))
-            return null;
-
-        var trimmed = positionId.TrimEnd('/');
-        var slashIndex = trimmed.LastIndexOf('/');
-        return slashIndex >= 0 && slashIndex < trimmed.Length - 1
-            ? trimmed[(slashIndex + 1)..]
-            : trimmed;
-    }
-
     private static string GenerateActionId() => $"act-{Guid.NewGuid():N}";
 
     private static IResult? TryRejectOrderRoutingForPhaseGate(IServiceProvider services)
@@ -1601,9 +1019,7 @@ public static class ExecutionEndpoints
         var scopedAuthorization = context.RequestServices.GetService<IScopedAuthorizationService>();
         if (scopedAuthorization is null)
         {
-            return Results.Problem(
-                "Fund account scope authorization is not active.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
+            return ExecutionPreDispatchUnavailable("Fund account scope authorization is not active.");
         }
 
         if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance)
@@ -1620,14 +1036,16 @@ public static class ExecutionEndpoints
         var queryService = ResolveAccountQueryService(context);
         if (queryService is null)
         {
-            return Results.Problem(
-                "Fund account scope validation is not active.",
-                statusCode: StatusCodes.Status503ServiceUnavailable);
+            return ExecutionPreDispatchUnavailable("Fund account scope validation is not active.");
         }
 
         var account = await queryService.GetAccountAsync(fundAccountId, context.RequestAborted).ConfigureAwait(false);
         return account is null ? ExecutionFundAccountForbidden(jsonOptions) : null;
     }
+
+    private static IResult ExecutionPreDispatchUnavailable(string detail)
+        => Results.Problem(detail, statusCode: StatusCodes.Status503ServiceUnavailable,
+            type: ExecutionPreDispatchUnavailableProblemType);
 
     private static IResult ExecutionFundAccountForbidden(JsonSerializerOptions jsonOptions)
     {
@@ -1670,83 +1088,6 @@ public static class ExecutionEndpoints
             .ConfigureAwait(false);
 
         return decision.IsAllowed ? null : EndpointHelpers.Forbidden();
-    }
-
-    private static IResult? TryRejectClientControlledExecutionMetadata(
-        OrderRequest request,
-        JsonSerializerOptions jsonOptions)
-    {
-        if (!ContainsServerOwnedExecutionMetadata(request.Metadata))
-        {
-            return null;
-        }
-
-        var blocked = new OrderResult
-        {
-            Success = false,
-            OrderId = request.ClientOrderId ?? "blocked",
-            ErrorMessage = "Broker account routing and execution-control metadata must be resolved server-side; server-owned execution metadata is not accepted from client order requests."
-        };
-        return Results.Json(blocked, jsonOptions, statusCode: StatusCodes.Status403Forbidden);
-    }
-
-    private static bool ContainsServerOwnedExecutionMetadata(IReadOnlyDictionary<string, string>? metadata)
-    {
-        if (metadata is null)
-        {
-            return false;
-        }
-
-        return ExecutionOrderMetadataPolicy.ContainsClientRejectedServerOwnedKey(metadata);
-    }
-
-    private static IReadOnlyDictionary<string, string>? RemoveServerOwnedExecutionMetadata(
-        IReadOnlyDictionary<string, string>? metadata)
-    {
-        if (metadata is null)
-        {
-            return null;
-        }
-
-        return ExecutionOrderMetadataPolicy.RemoveClientRejectedServerOwnedKeys(metadata);
-    }
-
-    private static bool ContainsRestrictedBrokerRoutingMetadata(IReadOnlyDictionary<string, string>? metadata)
-    {
-        if (metadata is null || metadata.Count == 0)
-        {
-            return false;
-        }
-
-        return metadata.Keys.Any(static key => key.Equals("asset_class", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("assetClass", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("alpaca:asset_class", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("broker_account_id", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("brokerAccountId", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("account_id", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("accountId", StringComparison.OrdinalIgnoreCase)
-            || key.Equals("alpaca:broker_account_id", StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static Dictionary<string, string> MergeMetadata(
-        IReadOnlyDictionary<string, string>? metadata,
-        params (string Key, string? Value)[] additions)
-    {
-        var merged = metadata is null
-            ? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            : new Dictionary<string, string>(metadata, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var (key, value) in additions)
-        {
-            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
-            {
-                continue;
-            }
-
-            merged[key] = value;
-        }
-
-        return merged;
     }
 
     private static async Task<ExecutionAuditEntry?> RecordOperatorAuditAsync(
@@ -1803,140 +1144,3 @@ public static class ExecutionEndpoints
             AsOf: DateTimeOffset.UtcNow);
     }
 }
-
-// --- DTOs for execution endpoints ---
-
-/// <summary>Account-level snapshot returned by the execution cockpit.</summary>
-public sealed record ExecutionAccountSnapshot(
-    decimal Cash,
-    decimal PortfolioValue,
-    decimal UnrealisedPnl,
-    decimal RealisedPnl,
-    int PositionCount,
-    DateTimeOffset AsOf);
-
-/// <summary>Full portfolio snapshot including all positions.</summary>
-public sealed record ExecutionPortfolioSnapshot(
-    decimal Cash,
-    decimal PortfolioValue,
-    decimal UnrealisedPnl,
-    decimal RealisedPnl,
-    IReadOnlyList<ExecutionPosition> Positions,
-    DateTimeOffset AsOf);
-
-/// <summary>Gateway health summary.</summary>
-public sealed record ExecutionGatewayHealth(
-    string BrokerName,
-    string Mode,
-    bool IsAvailable,
-    DateTimeOffset AsOf,
-    string? SelectedGatewayId = null);
-
-/// <summary>Request to create a new paper trading session.</summary>
-public sealed record CreatePaperSessionRequest(
-    string StrategyId,
-    string? StrategyName,
-    decimal InitialCash = 100_000m,
-    IReadOnlyList<string>? Symbols = null);
-
-/// <summary>
-/// Structured result returned by every Trading write action (cancel, close, pause, etc.).
-/// Carries a correlation ID so UI and backend audit logs can be cross-referenced.
-/// </summary>
-/// <summary>
-/// Circuit-breaker activation result: the control state, plus what the coupled kill-switch sweep
-/// achieved. The two travel together so opening the breaker cannot report success over a book that
-/// still has working orders.
-/// <para>
-/// The snapshot's members are repeated at the top level rather than nested under a wrapper
-/// property, so every existing consumer of this route — the browser workstation and the WPF halt
-/// client among them — keeps deserializing the shape it already expects and simply ignores the
-/// added sweep. Nesting them would have reported "Stop did not take effect" on a breaker the server
-/// had just opened.
-/// </para>
-/// </summary>
-public sealed record ExecutionCircuitBreakerActivationResponse(
-    ExecutionCircuitBreakerState CircuitBreaker,
-    decimal? DefaultMaxPositionSize,
-    IReadOnlyDictionary<string, decimal> SymbolPositionLimits,
-    IReadOnlyList<ExecutionManualOverride> ManualOverrides,
-    DateTimeOffset AsOf,
-    long Version,
-    KillSwitchSweepResult Sweep)
-{
-    public static ExecutionCircuitBreakerActivationResponse From(
-        ExecutionControlSnapshot snapshot,
-        KillSwitchSweepResult sweep) => new(
-            snapshot.CircuitBreaker,
-            snapshot.DefaultMaxPositionSize,
-            snapshot.SymbolPositionLimits,
-            snapshot.ManualOverrides,
-            snapshot.AsOf,
-            snapshot.Version,
-            sweep);
-}
-
-public sealed record TradingActionResult(
-    string ActionId,
-    string Status,
-    string Message,
-    DateTimeOffset OccurredAt,
-    string? AuditId = null,
-    /// <summary>
-    /// Orders a kill-switch sweep could not cancel, in full. The rendered <paramref name="Message"/>
-    /// names only the first few, so this is what a caller uses to finish the job by hand.
-    /// </summary>
-    IReadOnlyList<KillSwitchSweepFailure>? StillWorking = null,
-    /// <summary>
-    /// True when the kill-switch sweep could not enumerate the broker's own open-order book and
-    /// covered only the in-memory view — the broker may hold working orders the sweep never saw,
-    /// so the broker book must be verified by hand even when <c>Status</c> reads Completed.
-    /// Null on actions that carry no sweep, and omitted when the broker view was established.
-    /// </summary>
-    bool? BrokerViewUnavailable = null);
-
-/// <summary>Request to update the global execution circuit breaker.</summary>
-public sealed record UpdateExecutionCircuitBreakerRequest(
-    bool IsOpen,
-    string? Reason = null,
-    string? CorrelationId = null);
-
-/// <summary>Request to update the default execution position limit.</summary>
-public sealed record UpdateExecutionDefaultPositionLimitRequest(
-    decimal? MaxPositionSize,
-    string? Reason = null);
-
-/// <summary>Request to update or clear a symbol-specific execution position limit.</summary>
-public sealed record UpdateExecutionSymbolPositionLimitRequest(
-    decimal? MaxPositionSize,
-    string? Reason = null);
-
-/// <summary>Request to create an execution manual override.</summary>
-public sealed record CreateExecutionManualOverrideRequest(
-    string Kind,
-    string Reason,
-    string? Symbol = null,
-    string? StrategyId = null,
-    string? RunId = null,
-    DateTimeOffset? ExpiresAt = null,
-    string? CorrelationId = null);
-
-/// <summary>Request to clear an existing execution manual override.</summary>
-public sealed record ClearExecutionManualOverrideRequest(
-    string? Reason = null,
-    string? CorrelationId = null);
-
-/// <summary>Legacy request alias preserved for older callers.</summary>
-public sealed record CreateManualOverrideCommandRequest(
-    string Kind,
-    string Reason,
-    string? Symbol = null,
-    string? StrategyId = null,
-    string? RunId = null,
-    DateTimeOffset? ExpiresAt = null,
-    string? CorrelationId = null);
-
-/// <summary>Legacy request alias preserved for older callers.</summary>
-public sealed record ClearManualOverrideCommandRequest(
-    string? Reason = null,
-    string? CorrelationId = null);

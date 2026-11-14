@@ -1,15 +1,40 @@
-import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { presentMarkFreshness, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screens/trading-screen.blotter-details";
 import {
-  buildOrderRequirementText,
-  buildOrderTicketAcknowledgementState,
-  buildOrderTicketStatusAnnouncement,
-  buildOrderTicketSubmitDisabledReason
-} from "./trading-screen.order-ticket-text";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+  buildOrderSubmitRequest,
+  buildOrderTicketState,
+  emptyOrderTicketForm,
+  normalizeOrderSymbol,
+  updateOrderTicketForm,
+  validateOrderTicketForm,
+  type OrderTicketField,
+  type OrderTicketPhase
+} from "./trading-screen.order-ticket-state";
+export {
+  buildOrderSubmitRequest,
+  buildOrderTicketState,
+  emptyOrderTicketForm,
+  updateOrderTicketForm,
+  validateOrderTicketForm
+} from "./trading-screen.order-ticket-state";
+export type {
+  OrderTicketField,
+  OrderTicketPhase,
+  OrderTicketFieldControl,
+  OrderTicketSelectControl,
+  OrderTicketControls,
+  OrderTicketAcknowledgementState,
+  OrderTicketState,
+  BuildOrderTicketStateOptions
+} from "./trading-screen.order-ticket-state";
+import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
+import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDecimal, formatMoney as formatMoneyValue, formatPercent, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
+import { buildExecutionAuditRow, type ExecutionAuditRow, type ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -20,7 +45,7 @@ import {
 import {
   buildTradingReadinessSummaryRows,
   formatReadinessStatusValue,
-  formatTradingUtcDateTime as formatUtcDateTime,
+  formatTradingDateTime,
   type AcceptanceLevel,
   type TradingReadinessSummaryRow
 } from "@/screens/trading-screen.readiness-summary";
@@ -49,6 +74,33 @@ import type {
   TradingWorkspaceResponse
 } from "@/types";
 
+import {
+  buildPromotionApprovalChecklist,
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  isPromotionEvaluationForRun,
+  selectPromotionEvaluationForRun,
+  trimPromotionGateForm,
+  validatePromotionApproval,
+  validatePromotionRejection,
+  type PromotionApprovalChecklistItem,
+  type PromotionGateField,
+  type PromotionGateForm
+} from "./trading-screen.promotion-evidence";
+
+export {
+  buildPromotionApprovalChecklist,
+  buildPromotionApprovalRequest,
+  buildPromotionRejectionRequest,
+  emptyPromotionGateForm,
+  livePromotionApprovalChecklist,
+  paperPromotionApprovalChecklist,
+  validatePromotionApproval,
+  validatePromotionRejection
+} from "./trading-screen.promotion-evidence";
+export type { PromotionApprovalChecklistItem, PromotionGateField, PromotionGateForm } from "./trading-screen.promotion-evidence";
+
 export {
   formatReadinessStatusValue,
   mapBrokerageSyncLevel,
@@ -58,6 +110,7 @@ export type {
   AcceptanceLevel,
   TradingReadinessSummaryRow
 } from "@/screens/trading-screen.readiness-summary";
+export type { ExecutionAuditRow, ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 
 export type TradingDataTone = "default" | "success" | "warning" | "danger" | "muted";
 export type TradingRouteWorkstream = "orders" | "positions" | "risk";
@@ -181,6 +234,20 @@ export function useTradingScreenShellViewModel({
   );
 }
 
+/** The broker link in operator words; an unknown state says the status is unavailable. */
+export function describeBrokerConnection(connection: TradingWorkspaceResponse["brokerage"]["connection"] | undefined): string {
+  switch (connection) {
+    case "Connected":
+      return "Online";
+    case "Degraded":
+      return "Degraded";
+    case "Disconnected":
+      return "Offline";
+    default:
+      return "Status unavailable";
+  }
+}
+
 export function buildTradingScreenShellViewModel({
   pathname,
   data,
@@ -201,8 +268,7 @@ export function buildTradingScreenShellViewModel({
   const positionCount = data?.positions.length ?? 0;
   const openOrderCount = data?.openOrders.length ?? 0;
   const fillCount = data?.fills.length ?? 0;
-  const connection = data?.brokerage.connection ?? "Unavailable";
-  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : "None";
+  const activeLabel = activeWorkflowPanel ? workflowPanelLabel(activeWorkflowPanel) : null;
 
   return {
     route: {
@@ -226,10 +292,12 @@ export function buildTradingScreenShellViewModel({
       statusText: activeWorkflowPanel
         ? `${activeLabel} panel open. Press Escape or the close button to return to the trading cockpit.`
         : "No workflow panel open.",
+      // Plain-language posture: the broker link reads as a sentence, and the open panel is only
+      // named while one is open (an always-on "Panel: None" reads like debug output).
       chips: [
         { label: "Positions", value: String(positionCount) },
-        { label: "Connection", value: connection },
-        { label: "Panel", value: activeLabel }
+        { label: "Broker", value: describeBrokerConnection(data?.brokerage.connection) },
+        ...(activeLabel ? [{ label: "Open panel", value: activeLabel }] : [])
       ],
       commands: [
         buildWorkflowCommand("strategy", activeWorkflowPanel),
@@ -404,8 +472,13 @@ export interface TradingFillRow {
   ariaLabel: string;
 }
 
+/** Which execution table the shared order/fill detail pane is showing. */
+export type TradingExecutionDetailKind = "order" | "fill";
+
 export interface TradingBlotterDetail {
   id: string;
+  /** What kind of thing is selected, shown first in the pane heading. */
+  objectType: "Position" | "Order" | "Fill";
   title: string;
   subtitle: string;
   statusLabel: string;
@@ -413,6 +486,8 @@ export interface TradingBlotterDetail {
   ariaLabel: string;
   detail: string;
   fields: TradingBlotterField[];
+  /** Field labels the selected table row always shows; the pane does not repeat them. */
+  shownInRow: string[];
 }
 
 export interface TradingBlotterViewModel {
@@ -422,6 +497,14 @@ export interface TradingBlotterViewModel {
   selectedPosition: TradingBlotterDetail | null;
   selectedOrder: TradingBlotterDetail | null;
   selectedFill: TradingBlotterDetail | null;
+  /**
+   * Orders and fills share one detail pane keyed to the table selected last; this is the detail
+   * it shows and which table it came from.
+   */
+  selectedExecution: TradingBlotterDetail | null;
+  selectedExecutionKind: TradingExecutionDetailKind;
+  executionDetailId: string;
+  executionEmptyText: string;
   selectedPositionRowId: string | null;
   selectedOrderRowId: string | null;
   selectedFillRowId: string | null;
@@ -556,13 +639,24 @@ const idleExecutionEvidenceStatus: RequestLifecycleStatus = {
 const visibleWorkItemLimit = 4;
 const visibleWarningLimit = 3;
 const tradingPositionDetailId = "trading-position-detail";
-const tradingOrderDetailId = "trading-order-detail";
-const tradingFillDetailId = "trading-fill-detail";
+// Orders and fills share one pane, so both tables control the same element.
+const tradingExecutionDetailId = "trading-execution-detail";
+const tradingOrderDetailId = tradingExecutionDetailId;
+const tradingFillDetailId = tradingExecutionDetailId;
 
 export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedFillId, setSelectedFillId] = useState<string | null>(null);
+  const [lastExecutionKind, setLastExecutionKind] = useState<TradingExecutionDetailKind | null>(null);
+  const selectOrder = useCallback((id: string) => {
+    setSelectedOrderId(id);
+    setLastExecutionKind("order");
+  }, []);
+  const selectFill = useCallback((id: string) => {
+    setSelectedFillId(id);
+    setLastExecutionKind("fill");
+  }, []);
 
   return useMemo(
     () => buildTradingBlotterViewModel({
@@ -570,11 +664,12 @@ export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null
       selectedPositionId,
       selectedOrderId,
       selectedFillId,
+      lastExecutionKind,
       selectPosition: setSelectedPositionId,
-      selectOrder: setSelectedOrderId,
-      selectFill: setSelectedFillId
+      selectOrder,
+      selectFill
     }),
-    [data, selectedFillId, selectedOrderId, selectedPositionId]
+    [data, lastExecutionKind, selectFill, selectOrder, selectedFillId, selectedOrderId, selectedPositionId]
   );
 }
 
@@ -583,6 +678,7 @@ export function buildTradingBlotterViewModel({
   selectedPositionId = null,
   selectedOrderId = null,
   selectedFillId = null,
+  lastExecutionKind = null,
   selectPosition = () => {},
   selectOrder = () => {},
   selectFill = () => {}
@@ -591,6 +687,8 @@ export function buildTradingBlotterViewModel({
   selectedPositionId?: string | null;
   selectedOrderId?: string | null;
   selectedFillId?: string | null;
+  /** The execution table selected last; defaults to orders when there are any, else fills. */
+  lastExecutionKind?: TradingExecutionDetailKind | null;
   selectPosition?: (id: string) => void;
   selectOrder?: (id: string) => void;
   selectFill?: (id: string) => void;
@@ -602,20 +700,42 @@ export function buildTradingBlotterViewModel({
   const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
   const effectiveFillId = resolveSelectedId(fills, selectedFillId, fillRowId);
 
+  // The shared pane shows the table selected last; with no selection yet it shows an open order
+  // when there is one (orders are what an operator acts on), otherwise the latest fill.
+  const selectedExecutionKind: TradingExecutionDetailKind =
+    lastExecutionKind === "fill" && fills.length > 0
+      ? "fill"
+      : lastExecutionKind === "order" && orders.length > 0
+        ? "order"
+        : orders.length > 0 || fills.length === 0 ? "order" : "fill";
+
   const positionRows = positions.map((position, index) => buildPositionRow(position, index, effectivePositionId));
-  const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId));
-  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId));
+  const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId, selectedExecutionKind === "order"));
+  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId, selectedExecutionKind === "fill"));
   const selectedPositionRow = positionRows.find((row) => row.id === effectivePositionId) ?? null;
   const selectedOrderRow = orderRows.find((row) => row.id === effectiveOrderId) ?? null;
   const selectedFillRow = fillRows.find((row) => row.id === effectiveFillId) ?? null;
+
+  const selectedOrder = selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null;
+  const selectedFill = selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null;
+  const orderEmptyText = data ? "No open orders require operator action." : "Trading workspace data unavailable.";
+  const fillEmptyText = data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.";
 
   return {
     positionRows,
     orderRows,
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
-    selectedOrder: selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null,
-    selectedFill: selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null,
+    selectedOrder,
+    selectedFill,
+    selectedExecution: selectedExecutionKind === "fill" ? selectedFill : selectedOrder,
+    selectedExecutionKind,
+    executionDetailId: tradingExecutionDetailId,
+    executionEmptyText: !data
+      ? "Trading workspace data unavailable."
+      : orders.length === 0 && fills.length === 0
+        ? "No open orders or recent fills in this session."
+        : selectedExecutionKind === "fill" ? fillEmptyText : orderEmptyText,
     selectedPositionRowId: effectivePositionId,
     selectedOrderRowId: effectiveOrderId,
     selectedFillRowId: effectiveFillId,
@@ -629,11 +749,11 @@ export function buildTradingBlotterViewModel({
     orderDetailId: tradingOrderDetailId,
     fillDetailId: tradingFillDetailId,
     positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
-    orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
-    fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
+    orderEmptyText,
+    fillEmptyText,
     cancelAllDisabled: orderRows.length === 0,
     cancelAllDisabledReason: orderRows.length === 0 ? "No open orders require cancellation." : null,
-    cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${orderRows.length} open orders`,
+    cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${pluralizeCount(orderRows.length, "open order")}`,
     selectPosition,
     selectOrder,
     selectFill
@@ -943,7 +1063,7 @@ function buildTradingReadinessAnnouncement({
   }
 
   if (readiness) {
-    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatUtcDateTime(readiness.asOf)}.`;
+    return `Trading readiness ${formatReadinessStatusValue(readiness.overallStatus).toLowerCase()} as of ${formatTradingDateTime(readiness.asOf)}.`;
   }
 
   return "";
@@ -997,7 +1117,8 @@ function buildPositionRow(
 function buildOrderRow(
   order: TradingOrder,
   index: number,
-  selectedId: string | null
+  selectedId: string | null,
+  paneShowsOrders = true
 ): TradingOrderRow {
   const id = orderRowId(order, index);
 
@@ -1014,7 +1135,8 @@ function buildOrderRow(
     statusTone: orderStatusTone(order.status),
     isSelected: id === selectedId,
     detailPanelId: tradingOrderDetailId,
-    ariaExpanded: id === selectedId,
+    // Expanded only while the shared pane is showing this table's selection.
+    ariaExpanded: id === selectedId && paneShowsOrders,
     selectAriaLabel: `Inspect order ${order.orderId}`,
     cancelActionLabel: "Cancel",
     cancelTitleLabel: "Cancel order",
@@ -1026,7 +1148,8 @@ function buildOrderRow(
 function buildFillRow(
   fill: TradingFill,
   index: number,
-  selectedId: string | null
+  selectedId: string | null,
+  paneShowsFills = true
 ): TradingFillRow {
   const id = fillRowId(fill, index);
   const isSelected = id === selectedId;
@@ -1053,83 +1176,9 @@ function buildFillRow(
     ],
     isSelected,
     detailPanelId: tradingFillDetailId,
-    ariaExpanded: isSelected,
+    ariaExpanded: isSelected && paneShowsFills,
     selectAriaLabel: `Inspect fill ${fill.fillId}`,
     ariaLabel: `${fill.fillId}, ${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
-  };
-}
-
-function buildPositionDetail(
-  row: TradingPositionRow,
-  risk: TradingRiskState | null
-): TradingBlotterDetail {
-  const guardrailCount = risk?.activeGuardrails.length ?? 0;
-  const riskText = risk ? `${risk.state}: ${risk.summary}` : "Risk context unavailable.";
-
-  return {
-    id: "selected-position",
-    title: row.symbol,
-    subtitle: `${row.side} · ${row.quantity} shares`,
-    statusLabel: row.markFreshness.reviewRequired ? "Review required" : risk?.state ?? "Position",
-    statusTone: row.markFreshness.reviewRequired ? "warning" : riskStateTone(risk?.state, row.unrealizedPnlTone),
-    ariaLabel: `Position detail for ${row.symbol}`,
-    detail: `${row.markFreshness.reason} Recorded exposure ${row.exposure}, unrealized P&L ${row.unrealizedPnl}. ${riskText}`,
-    fields: [
-      { label: "Side", value: row.side, tone: "default" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Average price", value: row.averagePrice, tone: "muted" },
-      { label: "Recorded mark price", value: row.markPrice, tone: "muted" },
-      ...markFreshnessFields(row.markFreshness),
-      { label: "Day P&L", value: row.dayPnl, tone: row.dayPnlTone },
-      { label: "Unrealized P&L", value: row.unrealizedPnl, tone: row.unrealizedPnlTone },
-      { label: "Exposure", value: row.exposure, tone: "default" },
-      { label: "Risk", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
-      { label: "Guardrails", value: guardrailCount > 0 ? `${guardrailCount} active` : "None active", tone: guardrailCount > 0 ? "warning" : "success" }
-    ]
-  };
-}
-
-function buildOrderDetail(row: TradingOrderRow, provider: string | null): TradingBlotterDetail {
-  return {
-    id: "selected-order",
-    title: row.orderId,
-    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
-    statusLabel: row.status,
-    statusTone: row.statusTone,
-    ariaLabel: `Order detail for ${row.orderId}`,
-    detail: `${row.type} order submitted ${row.submittedAt}. ${provider ? `${provider} is the active execution adapter.` : "Execution adapter context unavailable."}`,
-    fields: [
-      { label: "Symbol", value: row.symbol, tone: "default" },
-      { label: "Side", value: row.side, tone: "default" },
-      { label: "Type", value: row.type, tone: "default" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Limit", value: row.limitPrice || "Market", tone: "muted" },
-      { label: "Status", value: row.status, tone: row.statusTone },
-      { label: "Submitted", value: row.submittedAt, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
-    ]
-  };
-}
-
-function buildFillDetail(row: TradingFillRow, provider: string | null): TradingBlotterDetail {
-  return {
-    id: "selected-fill",
-    title: row.fillId,
-    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
-    statusLabel: "Fill evidence",
-    statusTone: "success",
-    ariaLabel: `Fill detail for ${row.fillId}`,
-    detail: `${row.symbol} fill posted at ${row.price} on ${row.venue}. ${provider ? `${provider} supplied the execution adapter context.` : "Execution adapter context unavailable."}`,
-    fields: [
-      { label: "Order", value: row.orderId, tone: "muted" },
-      { label: "Symbol", value: row.symbol, tone: "default" },
-      { label: "Side", value: row.side, tone: row.side === "Buy" ? "success" : "warning" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Price", value: row.price, tone: "default" },
-      { label: "Venue", value: row.venue, tone: "muted" },
-      { label: "Timestamp", value: row.timestamp, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
-    ]
   };
 }
 
@@ -1157,40 +1206,10 @@ function orderStatusTone(status: TradingOrder["status"]): TradingDataTone {
   return "muted";
 }
 
-function riskFieldTone(state: TradingRiskState["state"] | undefined): TradingDataTone {
-  if (state === "Healthy") return "success";
-  if (state === "Observe") return "warning";
-  if (state === "Constrained") return "danger";
-  return "muted";
-}
-
-function riskStateTone(
-  state: TradingRiskState["state"] | undefined,
-  fallback: TradingDataTone
-): TradingDataTone {
-  if (state === "Constrained") return "danger";
-  if (state === "Observe") return "warning";
-  if (state === "Healthy") return "success";
-  return fallback;
-}
-
-export type ExecutionEvidenceTone = "success" | "warning" | "danger";
-
 export interface ExecutionEvidenceFieldRow {
   id: string;
   label: string;
   value: string;
-}
-
-export interface ExecutionAuditRow {
-  id: string;
-  action: string;
-  outcome: string;
-  outcomeTone: ExecutionEvidenceTone;
-  message: string;
-  metadataText: string;
-  technicalMetadataText: string | null;
-  ariaLabel: string;
 }
 
 export interface ExecutionControlsPanel {
@@ -1366,81 +1385,6 @@ export function buildExecutionEvidenceState({
     statusAnnouncement: buildExecutionEvidenceAnnouncement({ auditRows, controlsPanel, loading, errorText }),
     requestStatus: requestStatus ?? idleExecutionEvidenceStatus
   };
-}
-
-function buildExecutionAuditRow(entry: ExecutionAuditEntry): ExecutionAuditRow {
-  const metadataText = formatExecutionAuditMetadata(entry);
-  const technicalMetadataText = formatExecutionAuditTechnicalMetadata(entry);
-  const message = entry.message?.trim() || "No operator message recorded.";
-  const action = formatExecutionAuditAction(entry.action);
-
-  return {
-    id: entry.auditId,
-    action,
-    outcome: entry.outcome,
-    outcomeTone: mapExecutionOutcomeTone(entry.outcome),
-    message,
-    metadataText,
-    technicalMetadataText,
-    ariaLabel: `${action} ${entry.outcome}. ${message} ${metadataText}`.trim()
-  };
-}
-
-function formatExecutionAuditMetadata(entry: ExecutionAuditEntry): string {
-  const occurredAt = new Date(entry.occurredAt);
-  if (Number.isNaN(occurredAt.getTime())) {
-    return "Recorded time unavailable";
-  }
-
-  return `Recorded ${new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "UTC",
-    timeZoneName: "short"
-  }).format(occurredAt).replace("24:", "00:")}`;
-}
-
-function formatExecutionAuditTechnicalMetadata(entry: ExecutionAuditEntry): string | null {
-  const parts = [
-    entry.occurredAt,
-    entry.metadata?.sessionId ? `session ${entry.metadata.sessionId}` : null,
-    entry.orderId ? `order ${entry.orderId}` : null,
-    entry.symbol ? `symbol ${entry.symbol}` : null,
-    entry.runId ? `run ${entry.runId}` : null
-  ].filter(Boolean);
-
-  return parts.length > 0 ? parts.join(" · ") : null;
-}
-
-function formatExecutionAuditAction(action: string): string {
-  const normalized = action.trim();
-  if (normalized === "ReplayPaperSession") {
-    return "Paper session replay";
-  }
-
-  const words = normalized
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/[._-]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return words ? `${words.charAt(0).toUpperCase()}${words.slice(1)}` : "Execution activity";
-}
-
-function mapExecutionOutcomeTone(outcome: string): ExecutionEvidenceTone {
-  const normalized = outcome.toLowerCase();
-  if (normalized.includes("fail") || normalized.includes("reject") || normalized.includes("error")) {
-    return "danger";
-  }
-
-  if (normalized.includes("complete") || normalized.includes("accept") || normalized.includes("success")) {
-    return "success";
-  }
-
-  return "warning";
 }
 
 function buildExecutionEvidenceAnnouncement({
@@ -1939,11 +1883,11 @@ function buildPaperSessionRows({
     return {
       sessionId: session.sessionId,
       strategyId: session.strategyId,
-      initialCashText: formatUsdValue(session.initialCash),
+      initialCashText: formatCurrency(session.initialCash),
       statusLabel,
       isActive: session.isActive,
       isSelected: selectedSessionId === session.sessionId,
-      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatUsdValue(session.initialCash)} initial cash`,
+      ariaLabel: `${session.sessionId}, ${session.strategyId}, ${statusLabel}, ${formatCurrency(session.initialCash)} initial cash`,
       restoreButtonLabel: rowBusy && busyCommand?.kind === "restoring" ? "Restoring…" : "Restore",
       verifyButtonLabel: rowBusy && busyCommand?.kind === "verifying" ? "Verifying…" : "Verify replay",
       closeButtonLabel: rowBusy && busyCommand?.kind === "closing" ? "Closing…" : "Close",
@@ -2000,14 +1944,14 @@ function buildPaperSessionDetailPanel(
     ariaLabel: `Paper session detail for ${detail.summary.sessionId}`,
     infoRows: [
       { label: "Strategy", value: detail.summary.strategyId },
-      { label: "Initial cash", value: formatUsdValue(detail.summary.initialCash) },
+      { label: "Initial cash", value: formatCurrency(detail.summary.initialCash) },
       { label: "Tracked symbols", value: detail.symbols.length > 0 ? detail.symbols.join(", ") : "None" },
       { label: "Orders retained", value: String(detail.orderHistory?.length ?? 0) }
     ],
     metricRows: detail.portfolio
       ? [
-          { label: "Cash", value: formatUsdValue(detail.portfolio.cash) },
-          { label: "Portfolio value", value: formatUsdValue(detail.portfolio.portfolioValue) },
+          { label: "Cash", value: formatCurrency(detail.portfolio.cash) },
+          { label: "Portfolio value", value: formatCurrency(detail.portfolio.portfolioValue) },
           { label: "Open positions", value: String(detail.portfolio.positions.length) }
         ]
       : [],
@@ -2086,10 +2030,6 @@ function parsePaperSessionCash(value: string): number | null {
 
 function getPaperSessionStatus(session: PaperSessionSummary): string {
   return session.isActive ? "Active" : "Closed";
-}
-
-function formatUsdValue(value: number): string {
-  return formatCurrency(value);
 }
 
 export type SessionReplayCommandKind =
@@ -2776,6 +2716,8 @@ export interface TradingConfirmState {
   result: TradingActionResult | null;
   error: string | null;
   acknowledged: boolean;
+  cancelAllPreview?: CancelAllPreview | null;
+  previewLoading?: boolean;
 }
 
 export interface TradingConfirmResultPanel {
@@ -2823,6 +2765,7 @@ export interface TradingConfirmDialogState {
 }
 
 export interface TradingConfirmServices {
+  getCancelAllPreview?: () => Promise<CancelAllPreview>;
   cancelOrder: (orderId: string) => Promise<TradingActionResult>;
   cancelAllOrders: () => Promise<TradingActionResult>;
   closePosition: (positionKey: string, fundAccountId?: string | null) => Promise<TradingActionResult>;
@@ -2842,6 +2785,7 @@ export interface TradingConfirmViewModel extends TradingConfirmDialogState {
 }
 
 const defaultTradingConfirmServices: TradingConfirmServices = {
+  getCancelAllPreview: readCancelAllPreview,
   cancelOrder: (orderId) => workstationApi.cancelOrder(orderId),
   cancelAllOrders: () => workstationApi.cancelAllOrders(),
   closePosition: (positionKey, fundAccountId) => workstationApi.closePosition(positionKey, fundAccountId),
@@ -2861,12 +2805,27 @@ export function useTradingConfirmViewModel({
 } = {}): TradingConfirmViewModel {
   const [state, setState] = useState<TradingConfirmState>(() => createTradingConfirmState());
   const executingRef = useRef(false);
+  const previewRevisionRef = useRef(0);
 
   const openConfirm = useCallback((action: TradingConfirmAction) => {
+    if (executingRef.current) return;
+    const revision = ++previewRevisionRef.current;
     setState((current) => current.busy ? current : createTradingConfirmState(action));
-  }, []);
+    if (action.kind === "cancel-all") {
+      setState((current) => ({ ...current, previewLoading: true }));
+      (services.getCancelAllPreview ? services.getCancelAllPreview() : Promise.reject(new Error("OMS preview service is unavailable."))).then((preview) => {
+        if (revision !== previewRevisionRef.current) return;
+        setState((current) => current.action?.kind === "cancel-all" ? { ...current, cancelAllPreview: preview, previewLoading: false } : current);
+      }).catch((failure: unknown) => {
+        if (revision !== previewRevisionRef.current) return;
+        setState((current) => ({ ...current, previewLoading: false, error: failure instanceof Error ? failure.message : "The OMS open-order population could not be verified." }));
+      });
+    }
+  }, [services]);
 
   const closeConfirm = useCallback(() => {
+    if (executingRef.current) return;
+    previewRevisionRef.current += 1;
     setState((current) => current.busy ? current : createTradingConfirmState());
   }, []);
 
@@ -2882,7 +2841,7 @@ export function useTradingConfirmViewModel({
 
   const executeConfirm = useCallback(async () => {
     const action = state.action;
-    if (!action || !state.acknowledged || state.busy || state.result || executingRef.current) {
+    if (!action || !state.acknowledged || state.busy || state.result || executingRef.current || (action.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading))) {
       return;
     }
 
@@ -2928,14 +2887,16 @@ export function createTradingConfirmState(action: TradingConfirmAction | null = 
 
 export function buildTradingConfirmDialogState(state: TradingConfirmState): TradingConfirmDialogState {
   const title = state.action ? tradingConfirmActionLabel(state.action) : "";
-  const description = state.action ? tradingConfirmActionDescription(state.action) : "";
+  const description = state.action?.kind === "cancel-all"
+    ? `${tradingConfirmActionDescription(state.action)} ${state.cancelAllPreview ? `OMS snapshot: ${state.cancelAllPreview.orderIds.length} open order(s), received in the browser at ${state.cancelAllPreview.observedAt}. The open book can change before execution; the result reports surviving orders.` : "The current OMS population must be verified before confirmation."}`
+    : state.action ? tradingConfirmActionDescription(state.action) : "";
   const isCompleted = state.result !== null;
   const actionId = state.action ? sanitizeDomId(tradingConfirmActionDomKey(state.action)) : "none";
   const resultPanel = state.result ? buildTradingConfirmResultPanel(state.result) : null;
   const errorPanel = state.error ? { text: state.error, ariaLabel: `Confirmation action failed: ${state.error}` } : null;
   const confirmDisabledReason = buildTradingConfirmDisabledReason(state, isCompleted);
   const acknowledgementDisabledReason = buildTradingConfirmAcknowledgementDisabledReason(state, isCompleted);
-  const canConfirm = Boolean(state.action) && !state.busy && !isCompleted && state.acknowledged;
+  const canConfirm = Boolean(state.action) && !state.busy && !isCompleted && state.acknowledged && !(state.action?.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading));
 
   return {
     open: state.action !== null,
@@ -2982,6 +2943,10 @@ function buildTradingConfirmDisabledReason(state: TradingConfirmState, isComplet
 
   if (state.busy) {
     return "Wait for this trading action to finish.";
+  }
+
+  if (state.action.kind === "cancel-all" && (!state.cancelAllPreview || state.previewLoading)) {
+    return state.previewLoading ? "Loading the current OMS open-order population." : "Verify the current OMS open-order population before confirming.";
   }
 
   if (isCompleted) {
@@ -3081,7 +3046,7 @@ function tradingConfirmActionDescription(action: TradingConfirmAction): string {
     case "cancel-order":
       return "This will request cancellation of the selected order. Partial fills that already occurred are not reversed.";
     case "cancel-all":
-      return "This will request cancellation of every open order in the current session. Partial fills that already occurred are not reversed.";
+      return "This requests cancellation across the entire active OMS open book, including other accounts and strategies. The selected account and table filters do not limit this action. Partial fills that already occurred are not reversed.";
     case "close-position":
       return "A market order will be submitted to flatten the full position at the next available price. You will remain responsible for the resulting fill.";
     case "pause-strategy":
@@ -3100,7 +3065,7 @@ function tradingConfirmAcknowledgementDescription(action: TradingConfirmAction):
     case "cancel-order":
       return `Cancel order ${action.orderId} after reviewing partial-fill risk.`;
     case "cancel-all":
-      return "Cancel every open order in the current session after reviewing partial-fill risk.";
+      return "Cancel the entire OMS open book across accounts and strategies after reviewing the affected identities and partial-fill risk.";
     case "close-position":
       return `Flatten ${action.symbol} with a market order after reviewing fill risk.`;
     case "pause-strategy":
@@ -3167,101 +3132,15 @@ function capitalizeWord(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export type OrderTicketField = "symbol" | "side" | "type" | "quantity" | "limitPrice";
-export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | "error";
-
 export interface OrderTicketServices {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+  previewOrder?: (request: OrderSubmitRequest, signal?: AbortSignal) => Promise<ServerOrderPreview>;
 }
 
-export interface OrderTicketFieldControl {
-  field: OrderTicketField;
-  id: string;
-  label: string;
-  value: string;
-  describedBy: string;
-  ariaLabel: string;
-  invalid: boolean;
-  required: boolean;
-}
-
-export interface OrderTicketSelectControl extends OrderTicketFieldControl {
-  options: Array<{ value: string; label: string }>;
-}
-
-export interface OrderTicketControls {
-  symbol: OrderTicketFieldControl;
-  side: OrderTicketSelectControl;
-  type: OrderTicketSelectControl;
-  quantity: OrderTicketFieldControl;
-  limitPrice: OrderTicketFieldControl | null;
-}
-
-export interface OrderTicketAcknowledgementState {
-  id: string;
-  label: string;
-  description: string;
-  checked: boolean;
-  disabled: boolean;
-  disabledReason: string | null;
-}
-
-export interface OrderTicketState {
-  form: OrderSubmitRequest;
-  open: boolean;
-  phase: OrderTicketPhase;
-  orderId: string | null;
-  /** Governed-approval queue entry holding a parked order, when phase is "parked". */
-  escalationId: string | null;
-  /** Non-blocking risk warnings the rails raised for the last submitted order. */
-  riskWarnings: string[];
-  /** Operator-facing text for a parked order; null in every other phase. */
-  parkedText: string | null;
-  errorText: string | null;
-  validationError: string | null;
-  invalidField: OrderTicketField | null;
-  canSubmit: boolean;
-  canClose: boolean;
-  requiresLimitPrice: boolean;
-  priceLabel: string;
-  formId: string;
-  requirementId: string;
-  controls: OrderTicketControls;
-  openButtonLabel: string;
-  submitButtonLabel: string;
-  submitAriaLabel: string;
-  submitDisabledReason: string | null;
-  submitBusy: boolean;
-  submitBusyLabel: string | null;
-  closeButtonLabel: string;
-  closeAriaLabel: string;
-  closeDisabledReason: string | null;
-  acknowledgement: OrderTicketAcknowledgementState;
-  requirementText: string;
-  successText: string | null;
-  statusAnnouncement: string;
-}
-
-export interface BuildOrderTicketStateOptions {
-  form: OrderSubmitRequest;
-  open: boolean;
-  phase: OrderTicketPhase;
-  orderId: string | null;
-  errorText: string | null;
-  escalationId?: string | null;
-  riskWarnings?: string[];
-  acknowledged?: boolean;
-}
-
-export const emptyOrderTicketForm: OrderSubmitRequest = {
-  symbol: "",
-  side: "Buy",
-  type: "Market",
-  quantity: 0,
-  limitPrice: null
-};
+type OrderSubmissionIdentity = { account: string; id: string };
 
 const defaultOrderTicketServices: OrderTicketServices = {
+  previewOrder: previewExecutionOrder,
   submitOrder: (request) => workstationApi.submitOrder(request)
 };
 
@@ -3285,8 +3164,72 @@ export function useOrderTicketViewModel({
   const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
-  const [acknowledged, setAcknowledged] = useState(false);
+  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const [editor, setEditor] = useState<{
+    scope: string | null;
+    values: Partial<Record<"quantity" | "limitPrice", string>>;
+    acknowledged: boolean;
+  }>(() => ({ scope: normalizedAccountScope, values: {}, acknowledged: false }));
+  const editorMatchesScope = editor.scope === normalizedAccountScope;
+  const acknowledged = editorMatchesScope && editor.acknowledged;
+  const editorValues = editorMatchesScope ? editor.values : {};
+  // Scope-bound derivation withholds the old text and acknowledgement in the first render.
+  // Discard the stored session too, so returning to that account cannot revive its review.
+  if (!editorMatchesScope) {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }
   const submittingRef = useRef(false);
+  const unconfirmedSubmissionRef = useRef<OrderSubmissionIdentity | null>(null);
+  const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<OrderSubmissionIdentity | null>(null);
+  const [serverPreview, setServerPreview] = useState<ServerOrderPreview | null>(null);
+  const [serverPreviewError, setServerPreviewError] = useState<string | null>(null);
+  const [serverPreviewLoading, setServerPreviewLoading] = useState(false);
+  const [sessionIntent, setSessionIntent] = useState<SessionIntent>("RegularOnly");
+  const [previewRevision, setPreviewRevision] = useState(0);
+  const [previewNow, setPreviewNow] = useState(Date.now());
+  const draftClientId = useRef<string | null>(null);
+  const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
+  const serverPreviewBlocked = unconfirmedSubmission !== null
+    || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
+  useEffect(() => {
+    setServerPreview(null); setServerPreviewError(null);
+    if (services.previewOrder) setAcknowledged(false);
+    draftClientId.current = null;
+  }, [form, fundAccountId, sessionIntent, services.previewOrder]);
+  useEffect(() => {
+    if (!open || !services.previewOrder || validateOrderTicketForm(form) || !normalizeFundAccountGuid(fundAccountId)) return;
+    const controller = new AbortController();
+    setServerPreviewLoading(true); setServerPreviewError(null);
+    const timer = window.setTimeout(() => {
+      draftClientId.current ??= `meridian-${crypto.randomUUID()}`;
+      void services.previewOrder!({ ...buildOrderSubmitRequest(form, fundAccountId), sessionIntent, clientOrderId: draftClientId.current }, controller.signal)
+        .then((result) => { if (!controller.signal.aborted) { setServerPreview(result); setAcknowledged(false); setPreviewNow(Date.now()); } })
+        .catch((error: unknown) => { if (!controller.signal.aborted) { setServerPreview(null); setServerPreviewError(toErrorMessage(error, "Authoritative preview is unavailable.")); } })
+        .finally(() => { if (!controller.signal.aborted) setServerPreviewLoading(false); });
+    }, 250);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [form, fundAccountId, open, services, sessionIntent, previewRevision]);
+  useEffect(() => {
+    if (!open || !services.previewOrder) return;
+    const timer = window.setInterval(() => setPreviewNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [open, services.previewOrder]);
+
+  const resetEditor = useCallback(() => {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }, [normalizedAccountScope]);
+
+  const setAcknowledged = useCallback((next: SetStateAction<boolean>) => {
+    setEditor((current) => {
+      const sameScope = current.scope === normalizedAccountScope;
+      const previous = sameScope && current.acknowledged;
+      return {
+        scope: normalizedAccountScope,
+        values: sameScope ? current.values : {},
+        acknowledged: typeof next === "function" ? next(previous) : next
+      };
+    });
+  }, [normalizedAccountScope]);
 
   const state = useMemo(
     () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, riskWarnings, acknowledged }),
@@ -3318,8 +3261,8 @@ export function useOrderTicketViewModel({
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, [phase]);
+    resetEditor();
+  }, [phase, resetEditor]);
 
   const toggleTicket = useCallback(() => {
     if (open) {
@@ -3332,11 +3275,22 @@ export function useOrderTicketViewModel({
 
   const updateField = useCallback((field: OrderTicketField, value: string) => {
     setForm((current) => updateOrderTicketForm(current, field, value));
+    // Keep local editor text such as "188.0" while the existing model parses it as 188.
+    // Rendering String(188) after that keystroke would make the next "5" become 1885.
+    setEditor((current) => {
+      const values = current.scope === normalizedAccountScope ? current.values : {};
+      return {
+        scope: normalizedAccountScope,
+        values: field === "quantity" || field === "limitPrice"
+          ? { ...values, [field]: value }
+          : field === "symbol" || field === "type" ? {} : values,
+        acknowledged: false
+      };
+    });
     setPhase((current) => current === "submitted" ? "idle" : current);
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, []);
+  }, [normalizedAccountScope]);
 
   const normalizeSymbol = useCallback(() => {
     setForm((current) => ({
@@ -3360,7 +3314,7 @@ export function useOrderTicketViewModel({
   }, [onOrderAccepted]);
 
   const submitOrderTicket = useCallback(async () => {
-    if (phase === "submitting" || submittingRef.current) {
+    if (phase === "submitting" || submittingRef.current || unconfirmedSubmissionRef.current) {
       return;
     }
 
@@ -3379,6 +3333,14 @@ export function useOrderTicketViewModel({
       return;
     }
 
+    const request = buildOrderSubmitRequest(form, fundAccountId);
+    const clientOrderId = services.previewOrder ? draftClientId.current : null;
+    const submission = clientOrderId && request.fundAccountId ? { account: request.fundAccountId, id: clientOrderId } : null;
+    if (services.previewOrder && (!submission || serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
+      setErrorText("Refresh and review the authoritative order checks before submitting.");
+      setAcknowledged(false);
+      return;
+    }
     submittingRef.current = true;
     setPhase("submitting");
     setOrderId(null);
@@ -3386,8 +3348,15 @@ export function useOrderTicketViewModel({
     setRiskWarnings([]);
     setErrorText(null);
 
+    let refusal: string;
     try {
-      const result = await services.submitOrder(buildOrderSubmitRequest(form, fundAccountId));
+      const result = await services.submitOrder(submission ? { ...request, sessionIntent, clientOrderId: submission.id } : request);
+      if (typeof result?.success !== "boolean") {
+        throw new Error("Meridian did not confirm the order submission outcome.");
+      }
+      if (result.requiresOrderReconciliation) {
+        throw new Error(result.errorMessage ?? "Order submission requires reconciliation.");
+      }
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
@@ -3397,7 +3366,7 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
@@ -3413,25 +3382,66 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
       }
 
-      setPhase("error");
-      setErrorText(result.errorMessage ?? result.reason ?? "Order failed.");
+      refusal = result.errorMessage ?? result.reason ?? "Order failed.";
     } catch (err) {
-      setPhase("error");
-      setErrorText(toErrorMessage(err, "Order submission failed."));
+      const confirmedRefusal = workstationApi.readOrderSubmissionRefusal(err);
+      if (submission && confirmedRefusal === null) {
+        unconfirmedSubmissionRef.current = submission;
+        setUnconfirmedSubmission(submission);
+        setPhase("error");
+        setErrorText(`Submission outcome is unconfirmed for ${submission.id}. Inspect the journal and use Refresh checks before another submission.`);
+        return;
+      }
+      refusal = confirmedRefusal ?? toErrorMessage(err, "Order submission failed.");
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services]);
+
+    if (submission && draftClientId.current === submission.id) {
+      // Retire the refused identity so its journal evidence cannot settle a later attempt.
+      draftClientId.current = null;
+      setServerPreview(null);
+      setAcknowledged(false);
+      setPreviewRevision((value) => value + 1);
+    }
+    setPhase("error");
+    setErrorText(refusal);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
     ...state,
+    controls: {
+      ...state.controls,
+      quantity: { ...state.controls.quantity, value: editorValues.quantity ?? state.controls.quantity.value },
+      limitPrice: state.controls.limitPrice
+        ? { ...state.controls.limitPrice, value: editorValues.limitPrice ?? state.controls.limitPrice.value }
+        : null
+    },
     preview,
+    serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Refresh checks to inspect its retained outcome; do not resubmit.` : serverPreviewError,
+    serverPreviewLoading, serverPreviewExpired, sessionIntent,
+    setSessionIntent,
+    refreshServerPreview: () => {
+      const submission = unconfirmedSubmissionRef.current;
+      if (!submission) { setPreviewRevision((value) => value + 1); return; }
+      void getJournalOrder(submission.account, submission.id).then((order) => {
+        if (unconfirmedSubmissionRef.current !== submission || order.orderId !== submission.id
+          || !["Filled", "Cancelled", "Rejected", "Expired"].includes(order.status)) return;
+        unconfirmedSubmissionRef.current = null;
+        setUnconfirmedSubmission(null); setForm(emptyOrderTicketForm); setAcknowledged(false);
+        setOrderId(order.orderId); setPhase(order.status === "Filled" ? "submitted" : "error");
+        setErrorText(`Retained outcome for ${order.orderId}: ${order.status}. Review its journal before creating a new order.`);
+        void refreshAfterSettledOutcome();
+      }).catch(() => { /* Absence is not proof that nothing reached the broker. */ });
+    },
+    canSubmit: state.canSubmit && !serverPreviewBlocked,
+    submitDisabledReason: serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason,
     openTicket,
     closeTicket,
     toggleTicket,
@@ -3440,229 +3450,6 @@ export function useOrderTicketViewModel({
     setAcknowledged,
     submitOrder: submitOrderTicket
   };
-}
-
-export function buildOrderTicketState({
-  form,
-  open,
-  phase,
-  orderId,
-  errorText,
-  escalationId = null,
-  riskWarnings = [],
-  acknowledged = false
-}: BuildOrderTicketStateOptions): OrderTicketState {
-  const validationError = validateOrderTicketForm(form);
-  const requiresLimitPrice = orderTypeRequiresPrice(form.type);
-  const successText = phase === "submitted"
-    ? `Order submitted${orderId ? ` - ${orderId}` : ""}.`
-    : null;
-  const parkedText = phase === "parked"
-    ? `Order parked for governed risk approval${escalationId ? ` - escalation ${escalationId}` : ""}. `
-      + "It routes only once the risk desk approves it."
-    : null;
-  const invalidField = getOrderTicketInvalidField(form);
-  const requirementId = "order-ticket-requirements";
-  const acknowledgement = buildOrderTicketAcknowledgementState(acknowledged, phase, validationError);
-  const submitDisabledReason = buildOrderTicketSubmitDisabledReason(phase, validationError, acknowledgement);
-  const closeDisabledReason = phase === "submitting" ? "Order submission is in progress." : null;
-
-  return {
-    form,
-    open,
-    phase,
-    orderId,
-    escalationId,
-    riskWarnings,
-    parkedText,
-    errorText,
-    validationError,
-    invalidField,
-    canSubmit: submitDisabledReason === null,
-    canClose: phase !== "submitting",
-    requiresLimitPrice,
-    priceLabel: `${form.type} price`,
-    formId: "trading-order-ticket",
-    requirementId,
-    controls: buildOrderTicketControls(form, invalidField, requirementId),
-    openButtonLabel: open ? "Close order ticket" : "New order",
-    submitButtonLabel: phase === "submitting" ? "Submitting…" : "Submit order",
-    submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
-    submitDisabledReason,
-    submitBusy: phase === "submitting",
-    submitBusyLabel: phase === "submitting" ? "Submitting…" : null,
-    closeButtonLabel: "Cancel",
-    closeAriaLabel: closeDisabledReason ?? "Close order ticket without submitting",
-    closeDisabledReason,
-    acknowledgement,
-    requirementText: buildOrderRequirementText(form, phase, validationError),
-    successText,
-    statusAnnouncement: buildOrderTicketStatusAnnouncement({ phase, errorText, orderId, escalationId, riskWarnings })
-  };
-}
-
-function buildOrderTicketControls(
-  form: OrderSubmitRequest,
-  invalidField: OrderTicketField | null,
-  requirementId: string
-): OrderTicketControls {
-  return {
-    symbol: {
-      field: "symbol",
-      id: "order-ticket-symbol",
-      label: "Symbol",
-      value: form.symbol,
-      describedBy: requirementId,
-      ariaLabel: "Order symbol",
-      invalid: invalidField === "symbol",
-      required: true
-    },
-    side: {
-      field: "side",
-      id: "order-ticket-side",
-      label: "Side",
-      value: form.side,
-      describedBy: requirementId,
-      ariaLabel: "Order side",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Buy", label: "Buy" },
-        { value: "Sell", label: "Sell" }
-      ]
-    },
-    type: {
-      field: "type",
-      id: "order-ticket-type",
-      label: "Type",
-      value: form.type,
-      describedBy: requirementId,
-      ariaLabel: "Order type",
-      invalid: false,
-      required: true,
-      options: [
-        { value: "Market", label: "Market" },
-        { value: "Limit", label: "Limit" },
-        { value: "Stop", label: "Stop" }
-      ]
-    },
-    quantity: {
-      field: "quantity",
-      id: "order-ticket-quantity",
-      label: "Quantity",
-      value: form.quantity ? String(form.quantity) : "",
-      describedBy: requirementId,
-      ariaLabel: "Order quantity",
-      invalid: invalidField === "quantity",
-      required: true
-    },
-    limitPrice: orderTypeRequiresPrice(form.type)
-      ? {
-          field: "limitPrice",
-          id: "order-ticket-limit-price",
-          label: `${form.type} price`,
-          value: form.limitPrice ? String(form.limitPrice) : "",
-          describedBy: requirementId,
-          ariaLabel: `${form.type} order price`,
-          invalid: invalidField === "limitPrice",
-          required: true
-        }
-      : null
-  };
-}
-
-export function updateOrderTicketForm(
-  current: OrderSubmitRequest,
-  field: OrderTicketField,
-  value: string
-): OrderSubmitRequest {
-  if (field === "symbol") {
-    return { ...current, symbol: value };
-  }
-
-  if (field === "side") {
-    return { ...current, side: value === "Sell" ? "Sell" : "Buy" };
-  }
-
-  if (field === "type") {
-    const type = value === "Limit" || value === "Stop" ? value : "Market";
-    return {
-      ...current,
-      type,
-      limitPrice: orderTypeRequiresPrice(type) ? current.limitPrice : null
-    };
-  }
-
-  if (field === "quantity") {
-    return { ...current, quantity: parsePositiveNumber(value) ?? 0 };
-  }
-
-  return { ...current, limitPrice: parsePositiveNumber(value) };
-}
-
-export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
-  const request: OrderSubmitRequest = {
-    symbol: normalizeOrderSymbol(form.symbol),
-    side: form.side,
-    type: form.type,
-    quantity: form.quantity
-  };
-  const normalizedFundAccountId = normalizeFundAccountGuid(fundAccountId ?? form.fundAccountId);
-
-  if (orderTypeRequiresPrice(form.type)) {
-    request.limitPrice = form.limitPrice;
-  }
-
-  if (normalizedFundAccountId) {
-    request.fundAccountId = normalizedFundAccountId;
-  }
-
-  return request;
-}
-
-export function validateOrderTicketForm(form: OrderSubmitRequest): string | null {
-  if (!normalizeOrderSymbol(form.symbol)) {
-    return "Enter a symbol before submitting an order.";
-  }
-
-  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
-    return "Enter an order quantity greater than zero.";
-  }
-
-  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
-    return `Enter a ${form.type.toLowerCase()} price greater than zero.`;
-  }
-
-  return null;
-}
-
-function getOrderTicketInvalidField(form: OrderSubmitRequest): OrderTicketField | null {
-  if (!normalizeOrderSymbol(form.symbol)) {
-    return "symbol";
-  }
-
-  if (!Number.isFinite(form.quantity) || form.quantity <= 0) {
-    return "quantity";
-  }
-
-  if (orderTypeRequiresPrice(form.type) && (!Number.isFinite(form.limitPrice) || (form.limitPrice ?? 0) <= 0)) {
-    return "limitPrice";
-  }
-
-  return null;
-}
-
-function normalizeOrderSymbol(symbol: string): string {
-  return symbol.trim().toUpperCase();
-}
-
-function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
-  return type === "Limit" || type === "Stop";
-}
-
-function parsePositiveNumber(value: string): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 export type OrderPreviewLevel = "info" | "warning" | "danger";
@@ -3748,7 +3535,7 @@ export function buildOrderPreview({ form, positions, risk }: BuildOrderPreviewOp
 
   const riskNote = buildOrderPreviewRiskNote(risk);
   const referencePriceLabel = referencePrice === null ? "—" : formatPrice(referencePrice);
-  const notionalLabel = notional === null ? "—" : formatMoney(notional);
+  const notionalLabel = notional === null ? "—" : formatMoneyValue(notional, { context: "trading", decimals: 2 });
   const resultingPositionLabel = available
     ? describeResultingPosition(resultingSignedQuantity, symbol)
     : "—";
@@ -4017,7 +3804,7 @@ function buildOrderPreviewSummary({
 }): string {
   const qtyText = formatQuantity(quantity);
   const priceText = referencePrice !== null
-    ? ` ≈ ${formatMoney(referencePrice * quantity)} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
+    ? ` ≈ ${formatMoneyValue(referencePrice * quantity, { context: "trading", decimals: 2 })} @ ${formatPrice(referencePrice)}${priceSource === "limit" || priceSource === "stop" ? "" : " (" + describePriceSourceLabel(priceSource).toLowerCase() + ")"}`
     : "";
   return `${side} ${qtyText} ${symbol} ${type.toLowerCase()}${priceText}`;
 }
@@ -4035,40 +3822,14 @@ function parseLooseNumber(value: string | null | undefined): number | null {
 }
 
 function formatPrice(value: number): string {
-  return value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function formatMoney(value: number): string {
-  const sign = value < 0 ? "-" : "";
-  const absolute = Math.abs(value);
-  return `${sign}$${absolute.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatQuantityValue(value, { minDecimals: 2, maxDecimals: 2 });
 }
 
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) {
     return "0";
   }
-  return Math.abs(value).toLocaleString("en-US", { maximumFractionDigits: 4 });
-}
-
-export type PromotionGateField =
-  | "runId"
-  | "approvedBy"
-  | "approvalReason"
-  | "rejectionReason"
-  | "reviewNotes"
-  | "manualOverrideId"
-  | "evidenceReferences";
-
-export interface PromotionGateForm {
-  runId: string;
-  approvedBy: string;
-  approvalReason: string;
-  rejectionReason: string;
-  reviewNotes: string;
-  manualOverrideId: string;
-  evidenceReferences: string;
-  approvalChecklist: string[];
+  return formatQuantityValue(Math.abs(value), { maxDecimals: 4 });
 }
 
 export type PromotionGatePhase = "idle" | "evaluating" | "approving" | "rejecting";
@@ -4171,38 +3932,6 @@ export interface BuildPromotionGateStateOptions {
   evaluation: PromotionEvaluationResult | null;
   history: PromotionRecord[];
 }
-
-export const emptyPromotionGateForm: PromotionGateForm = {
-  runId: "",
-  approvedBy: "",
-  approvalReason: "",
-  rejectionReason: "",
-  reviewNotes: "",
-  manualOverrideId: "",
-  evidenceReferences: "",
-  approvalChecklist: []
-};
-
-export const paperPromotionApprovalChecklist: string[] = [
-  "DK1_TRUST_PACKET_REVIEWED",
-  "RUN_LINEAGE_REVIEWED",
-  "PORTFOLIO_LEDGER_CONTINUITY_REVIEWED",
-  "RISK_CONTROLS_REVIEWED"
-];
-
-export const livePromotionApprovalChecklist: string[] = [
-  ...paperPromotionApprovalChecklist,
-  "PAPER_VALIDATION_REVIEWED",
-  "RECONCILIATION_EVIDENCE_REVIEWED",
-  "BROKER_EXECUTION_RECONCILIATION_REVIEWED",
-  "ACCOUNTING_RECORDS_REVIEWED",
-  "GOVERNED_REPORTING_REVIEWED",
-  "GOVERNANCE_SIGNOFF_REVIEWED",
-  "EXCEPTION_HANDLING_REVIEWED",
-  "ROLLBACK_KILL_SWITCH_REVIEWED",
-  "AUDIT_RETENTION_REVIEWED",
-  "LIVE_OVERRIDE_REVIEWED"
-];
 
 const defaultPromotionServices: PromotionGateServices = {
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
@@ -4745,9 +4474,9 @@ function buildPromotionEvaluationPanel(
     eligibleLabel: evaluation.isEligible ? "Eligible: Yes" : "Eligible: No",
     eligibleTone: evaluation.isEligible ? "success" : "warning",
     metrics: [
-      { id: "sharpe", label: "Sharpe", value: evaluation.sharpeRatio.toFixed(2) },
-      { id: "max-drawdown", label: "Max DD", value: `${evaluation.maxDrawdownPercent.toFixed(1)}%` },
-      { id: "total-return", label: "Return", value: `${evaluation.totalReturn.toFixed(1)}%` }
+      { id: "sharpe", label: "Sharpe", value: formatDecimal(evaluation.sharpeRatio, 2) },
+      { id: "max-drawdown", label: "Max DD", value: formatPercent(evaluation.maxDrawdownPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) },
+      { id: "total-return", label: "Return", value: formatPercent(evaluation.totalReturn, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) }
     ],
     reason: evaluation.reason?.trim() ? evaluation.reason : null,
     warnings,
@@ -4781,132 +4510,6 @@ function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistory
       ariaLabel: `Promotion ${record.promotionId}: ${label}`
     };
   });
-}
-
-export function validatePromotionApproval(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null
-): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  if (!evaluation) {
-    return "Evaluate gate checks before confirming promotion.";
-  }
-
-  if (!isPromotionEvaluationForRun(evaluation, trimmedForm.runId)) {
-    return `Evaluate gate checks for ${trimmedForm.runId} before confirming promotion.`;
-  }
-
-  if (!evaluation.isEligible) {
-    return evaluation.blockingReasons?.[0] ?? evaluation.reason ?? "Promotion gate is blocked.";
-  }
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.approvalReason) {
-    return "Run id, operator, and approval reason are required.";
-  }
-
-  const liveTarget = isLivePromotionTarget(evaluation);
-  const requiredChecklist = liveTarget
-    ? livePromotionApprovalChecklist
-    : paperPromotionApprovalChecklist;
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-
-  if (liveTarget) {
-    if (!trimmedForm.manualOverrideId) {
-      return "Live promotion approval requires an active AllowLivePromotion override id.";
-    }
-  }
-
-  const missingEvidence = getMissingPromotionEvidenceReferences(requiredChecklist, evidenceReferences);
-  if (missingEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are incomplete: ${missingEvidence.join(", ")}.`;
-  }
-
-  const invalidEvidence = getInvalidPromotionEvidenceReferences(
-    requiredChecklist,
-    evidenceReferences,
-    trimmedForm.manualOverrideId);
-  if (invalidEvidence.length > 0) {
-    return `${liveTarget ? "Live" : "Paper"} promotion evidence references are invalid: ${invalidEvidence.join(", ")}.`;
-  }
-
-  return null;
-}
-
-export function validatePromotionRejection(form: PromotionGateForm): string | null {
-  const trimmedForm = trimPromotionGateForm(form);
-
-  if (!trimmedForm.runId || !trimmedForm.approvedBy || !trimmedForm.rejectionReason) {
-    return "Run id, operator, and rejection reason are required.";
-  }
-
-  return null;
-}
-
-export function buildPromotionApprovalRequest(
-  form: PromotionGateForm,
-  evaluation: PromotionEvaluationResult | null = null
-): ApprovePromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  const evidenceReferences = parsePromotionEvidenceReferences(trimmedForm.evidenceReferences);
-  const approvalChecklist = evaluation
-    ? buildPromotionApprovalChecklistTokens(evaluation)
-    : trimmedForm.approvalChecklist;
-  return {
-    runId: trimmedForm.runId,
-    approvedBy: trimmedForm.approvedBy,
-    approvalReason: trimmedForm.approvalReason,
-    approvalChecklist: approvalChecklist.length > 0 ? approvalChecklist : undefined,
-    evidenceReferences: evidenceReferences.length > 0 ? evidenceReferences : undefined,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-export function buildPromotionRejectionRequest(form: PromotionGateForm): RejectPromotionRequest {
-  const trimmedForm = trimPromotionGateForm(form);
-  return {
-    runId: trimmedForm.runId,
-    reason: trimmedForm.rejectionReason,
-    rejectedBy: trimmedForm.approvedBy,
-    reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
-  };
-}
-
-function trimPromotionGateForm(form: PromotionGateForm): PromotionGateForm {
-  return {
-    runId: form.runId.trim(),
-    approvedBy: form.approvedBy.trim(),
-    approvalReason: form.approvalReason.trim(),
-    rejectionReason: form.rejectionReason.trim(),
-    reviewNotes: form.reviewNotes.trim(),
-    manualOverrideId: form.manualOverrideId.trim(),
-    evidenceReferences: form.evidenceReferences.trim(),
-    approvalChecklist: form.approvalChecklist
-  };
-}
-
-function selectPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult | null,
-  runId: string
-): PromotionEvaluationResult | null {
-  if (!evaluation || !isPromotionEvaluationForRun(evaluation, runId)) {
-    return null;
-  }
-
-  return evaluation;
-}
-
-function isPromotionEvaluationForRun(
-  evaluation: PromotionEvaluationResult,
-  runId: string
-): boolean {
-  return Boolean(runId) && evaluation.runId === runId;
 }
 
 function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome {
@@ -5047,200 +4650,10 @@ function buildPromotionStatusAnnouncement({
   return "";
 }
 
-export interface PromotionApprovalChecklistItem {
-  id: string;
-  label: string;
-  status: "ready" | "review" | "blocked";
-  description: string | null;
-  ariaLabel: string;
-}
-
 export interface PromotionHistoryRow {
   id: string;
   label: string;
   ariaLabel: string;
-}
-
-export function buildPromotionApprovalChecklist(
-  evaluation: PromotionEvaluationResult | null,
-  evidenceReferenceText = ""
-): PromotionApprovalChecklistItem[] {
-  const evidenceReferences = parsePromotionEvidenceReferences(evidenceReferenceText);
-  const evidenceStatus = (checklistId: string): PromotionApprovalChecklistItem["status"] => {
-    const reference = evidenceReferences.find((item) => getPromotionEvidenceReferenceKey(item) === checklistId);
-    return reference && getPromotionEvidenceReferenceValue(reference) ? "ready" : "review";
-  };
-  const items: Array<Omit<PromotionApprovalChecklistItem, "ariaLabel">> = [
-    {
-      id: "dk1-data-trust",
-      label: "DK1 data trust",
-      status: evidenceStatus("DK1_TRUST_PACKET_REVIEWED"),
-      description: "Requires operator-entered keyed evidence for the reviewed DK1 trust packet"
-    },
-    {
-      id: "run-lineage",
-      label: "Run lineage",
-      status: evidenceStatus("RUN_LINEAGE_REVIEWED"),
-      description: evaluation?.found
-        ? `Run found for ${evaluation.strategyName ?? evaluation.strategyId}; operator-entered lineage evidence is still required`
-        : "Run must be found and its retained lineage evidence reviewed"
-    },
-    {
-      id: "risk-metrics",
-      label: "Risk metrics",
-      status: evaluation && !evaluation.isEligible ? "blocked" : evidenceStatus("RISK_CONTROLS_REVIEWED"),
-      description: evaluation
-        ? `Eligibility metrics: Sharpe ${evaluation.sharpeRatio.toFixed(2)} · Max DD ${evaluation.maxDrawdownPercent.toFixed(1)}% · Return ${evaluation.totalReturn.toFixed(1)}%; keyed review evidence remains authoritative`
-        : "Metrics and retained risk-control evidence require review"
-    },
-    {
-      id: "portfolio-ledger-continuity",
-      label: "Portfolio/Ledger continuity",
-      status: evidenceStatus("PORTFOLIO_LEDGER_CONTINUITY_REVIEWED"),
-      description: evaluation?.ready
-        ? "Run state is eligible; operator-entered continuity evidence is still required"
-        : "Awaiting run state and retained continuity evidence review"
-    }
-  ];
-
-  if (isLivePromotionTarget(evaluation)) {
-    items.push(
-      {
-        id: "paper-validation",
-        label: "Paper validation",
-        status: evidenceStatus("PAPER_VALIDATION_REVIEWED"),
-        description: "Retained paper-run validation evidence reviewed"
-      },
-      {
-        id: "reconciliation-evidence",
-        label: "Reconciliation evidence",
-        status: evidenceStatus("RECONCILIATION_EVIDENCE_REVIEWED"),
-        description: "Portfolio, ledger, and operations reconciliation evidence reviewed"
-      },
-      {
-        id: "broker-execution-reconciliation",
-        label: "Broker order parity",
-        status: evidenceStatus("BROKER_EXECUTION_RECONCILIATION_REVIEWED"),
-        description: "Broker and OMS open-order reconciliation evidence reviewed"
-      },
-      {
-        id: "accounting-records",
-        label: "Accounting records",
-        status: evidenceStatus("ACCOUNTING_RECORDS_REVIEWED"),
-        description: "Accounting-record evidence is retained for the live readiness scope"
-      },
-      {
-        id: "governed-reporting",
-        label: "Governed reporting",
-        status: evidenceStatus("GOVERNED_REPORTING_REVIEWED"),
-        description: "Governed report-pack evidence supports the live readiness decision"
-      },
-      {
-        id: "governance-signoff",
-        label: "Governance sign-off",
-        status: evidenceStatus("GOVERNANCE_SIGNOFF_REVIEWED"),
-        description: "Required governance sign-off is retained"
-      },
-      {
-        id: "exception-handling",
-        label: "Exception handling",
-        status: evidenceStatus("EXCEPTION_HANDLING_REVIEWED"),
-        description: "Open exceptions and escalation posture have been reviewed"
-      },
-      {
-        id: "rollback-kill-switch",
-        label: "Rollback/kill-switch",
-        status: evidenceStatus("ROLLBACK_KILL_SWITCH_REVIEWED"),
-        description: "Rollback and kill-switch posture are ready before live operation"
-      },
-      {
-        id: "audit-retention",
-        label: "Audit retention",
-        status: evidenceStatus("AUDIT_RETENTION_REVIEWED"),
-        description: "Audit-retention evidence is retained for the approval"
-      },
-      {
-        id: "live-override",
-        label: "Live override",
-        status: evidenceStatus("LIVE_OVERRIDE_REVIEWED"),
-        description: "Active AllowLivePromotion override evidence is attached"
-      }
-    );
-  }
-
-  return items.map((item) => ({
-    ...item,
-    ariaLabel: `${item.label}: ${item.status}${item.description ? `. ${item.description}` : ""}`
-  }));
-}
-
-function buildPromotionApprovalChecklistTokens(evaluation: PromotionEvaluationResult | null): string[] {
-  return isLivePromotionTarget(evaluation)
-    ? livePromotionApprovalChecklist
-    : paperPromotionApprovalChecklist;
-}
-
-function parsePromotionEvidenceReferences(value: string): string[] {
-  return value
-    .split(/[\n,;]+/u)
-    .map((item) => item.trim())
-    .filter((item) => item.length > 0)
-    .filter((item, index, items) => items.findIndex((candidate) => candidate.toLowerCase() === item.toLowerCase()) === index);
-}
-
-function getMissingPromotionEvidenceReferences(requiredTokens: string[], evidenceReferences: string[]): string[] {
-  const evidenceKeys = new Set(evidenceReferences.map((reference) => getPromotionEvidenceReferenceKey(reference)));
-  return requiredTokens.filter((token) => !evidenceKeys.has(token));
-}
-
-function getInvalidPromotionEvidenceReferences(
-  requiredTokens: string[],
-  evidenceReferences: string[],
-  manualOverrideId: string
-): string[] {
-  return requiredTokens.flatMap((token) => {
-    const reference = evidenceReferences.find((item) => getPromotionEvidenceReferenceKey(item) === token);
-    if (!reference) {
-      return [];
-    }
-
-    const retainedReference = getPromotionEvidenceReferenceValue(reference);
-    if (!retainedReference) {
-      return [`${token} must include retained evidence after ':'`];
-    }
-
-    if (token === "LIVE_OVERRIDE_REVIEWED" && manualOverrideId && !containsPromotionEvidenceReferenceToken(retainedReference, manualOverrideId)) {
-      return [`${token} must reference active manual override ${manualOverrideId}`];
-    }
-
-    return [];
-  });
-}
-
-function getPromotionEvidenceReferenceKey(reference: string): string {
-  const [key] = reference.split(":", 1);
-  return key.trim().replace(/[ -]/gu, "_").toUpperCase();
-}
-
-function getPromotionEvidenceReferenceValue(reference: string): string {
-  const separatorIndex = reference.indexOf(":");
-  return separatorIndex < 0 ? "" : reference.slice(separatorIndex + 1).trim();
-}
-
-function containsPromotionEvidenceReferenceToken(referenceValue: string, token: string): boolean {
-  if (referenceValue.toLowerCase() === token.toLowerCase()) {
-    return true;
-  }
-
-  return referenceValue
-    .split(/[/\\#?&=,;\s]+/u)
-    .filter((segment) => segment.length > 0)
-    .some((segment) => segment.toLowerCase() === token.toLowerCase());
-}
-
-function isLivePromotionTarget(evaluation: PromotionEvaluationResult | null): boolean {
-  return typeof evaluation?.targetMode === "string" &&
-    evaluation.targetMode.trim().toLowerCase() === "live";
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {

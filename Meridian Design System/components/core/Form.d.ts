@@ -5,3 +5,5 @@ export interface FormGridProps { cols?: 1|2|3; children: React.ReactNode; }
 export function FormGrid(props: FormGridProps): React.ReactElement;
 export function FormDivider(): React.ReactElement;
 export function FormSectionLabel(props: { children: React.ReactNode }): React.ReactElement;
+
+export const Form: typeof FormGrid;

@@ -21,7 +21,7 @@ SPEC.loader.exec_module(guidance)
 
 class GuidanceTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         self.shared = b"<!-- shared-context:begin canonical -->\nShared instructions.\n<!-- shared-context:end -->"
@@ -113,6 +113,46 @@ class GuidanceTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(guidance.generate(self.root), [])
+
+
+class SkillMirrorTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.source = self.root / guidance.SKILL_SOURCE
+        self.mirror = self.root / guidance.SKILL_MIRROR
+
+    def put(self, base: Path, rel: str, data: bytes) -> None:
+        path = base / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+
+    def test_missing_mirror_root_is_not_drift(self) -> None:
+        self.put(self.source, "skill-a/SKILL.md", b"a")
+        self.assertEqual(guidance.skill_mirror_drift(self.root), [])
+
+    def test_reports_changed_missing_and_extra_files_then_repairs(self) -> None:
+        self.put(self.source, "skill-a/SKILL.md", b"canonical")
+        self.put(self.source, "skill-b/references/map.md", b"new")
+        self.put(self.mirror, "skill-a/SKILL.md", b"stale")
+        self.put(self.mirror, "skill-c/SKILL.md", b"orphan")
+        expected = [f"{guidance.SKILL_MIRROR}/{rel}" for rel in
+                    ("skill-a/SKILL.md", "skill-b/references/map.md", "skill-c/SKILL.md")]
+        self.assertEqual(guidance.skill_mirror_drift(self.root), expected)
+        self.assertEqual((self.mirror / "skill-a/SKILL.md").read_bytes(), b"stale")
+        self.assertEqual(guidance.skill_mirror_drift(self.root, write=True), expected)
+        self.assertEqual((self.mirror / "skill-a/SKILL.md").read_bytes(), b"canonical")
+        self.assertEqual((self.mirror / "skill-b/references/map.md").read_bytes(), b"new")
+        self.assertFalse((self.mirror / "skill-c/SKILL.md").exists())
+        self.assertEqual(guidance.skill_mirror_drift(self.root), [])
+
+    def test_excluded_and_cache_files_are_ignored(self) -> None:
+        for rel in guidance.SKILL_MIRROR_EXCLUDES:
+            self.put(self.source, rel, b"canonical-only")
+        self.put(self.mirror, "_shared/project-context.md", b"host-specific")
+        self.put(self.source, "skill-a/scripts/__pycache__/x.cpython-312.pyc", b"cache")
+        self.assertEqual(guidance.skill_mirror_drift(self.root), [])
 
 
 if __name__ == "__main__":

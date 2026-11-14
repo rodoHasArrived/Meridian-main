@@ -31,9 +31,9 @@ export function AccountingWorkbenchContext({
       className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"
     >
       <h2 className="font-display text-sm font-semibold leading-tight text-foreground">
-        {taskMode.label}
+        {taskMode.title}
       </h2>
-      <SectionDescription descriptionKey={`accounting:${taskMode.id}`} label={`About ${taskMode.label}`}>
+      <SectionDescription descriptionKey={`accounting:${taskMode.id}`} label={`About ${taskMode.title}`}>
         {taskMode.description}
       </SectionDescription>
     </section>

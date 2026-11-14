@@ -55,6 +55,32 @@ public sealed class BacktestTrustworthinessTests : IDisposable
             "an order signalled on the Jan 2 bar must not fill until the Jan 3 bar under next-bar timing");
     }
 
+    [Theory]
+    [InlineData(TimeInForce.ImmediateOrCancel, 0)]
+    [InlineData(TimeInForce.FillOrKill, 0)]
+    [InlineData(TimeInForce.GoodTilCancelled, 1)]
+    public async Task ImmediateOrder_NotFillableOnItsFirstExecutableBar_DoesNotFillOnALaterBar(
+        TimeInForce timeInForce, int expectedFills)
+    {
+        // Jan 2: the signal bar. Jan 3: trades 95-105, so a buy limit at 90 cannot fill.
+        // Jan 4: trades 80-90, where the same limit would fill if the order were still working.
+        WriteBars("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 3), basePrice: 100m);
+        WriteBars("AAPL", new DateOnly(2024, 1, 4), new DateOnly(2024, 1, 4), basePrice: 85m);
+
+        var strategy = new LimitBuyOnFirstBarStrategy("AAPL", quantity: 10, limitPrice: 90m, timeInForce);
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 4),
+            DataRoot: _dataRoot);
+
+        var result = await _engine.RunAsync(request, strategy);
+
+        result.Fills.Should().HaveCount(expectedFills,
+            timeInForce == TimeInForce.GoodTilCancelled
+                ? "a resting order keeps working until its limit is reached"
+                : "an immediate order that cannot fill on its first executable bar is cancelled");
+    }
+
     [Fact]
     public async Task NextBarTiming_SingleBar_OrderNeverFills()
     {
@@ -161,6 +187,30 @@ public sealed class BacktestTrustworthinessTests : IDisposable
 
         var liquidation = result.Fills.Should().ContainSingle(fill => fill.OrderId == Guid.Empty).Subject;
         liquidation.FillPrice.Should().Be(75m, "a 25% haircut against a long position reduces the 100 last price to 75");
+    }
+
+    [Fact]
+    public async Task DelistedSymbol_FullHaircut_WritesOffTheRetainedBasisWithoutCashProceeds()
+    {
+        WriteBars("GONE", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 5), basePrice: 100m);
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 20),
+            DataRoot: _dataRoot,
+            SlippageBasisPoints: 0m,
+            DelistingHaircutPercent: 1m);
+
+        var result = await _engine.RunAsync(request, new BuyOnFirstBarStrategy("GONE", quantity: 10));
+
+        result.Fills.Should().ContainSingle(fill => fill.OrderId == Guid.Empty && fill.FillPrice == 0m);
+        result.Snapshots.Last().Positions.Should().NotContainKey("GONE");
+        result.Ledger.GetBalance(LedgerAccounts.Securities("GONE", BacktestDefaults.DefaultBrokerageAccountId))
+            .Should().Be(0m);
+        result.Ledger.GetBalance(LedgerAccounts.RealizedLossFor(BacktestDefaults.DefaultBrokerageAccountId))
+            .Should().Be(1_000m);
+        var liquidation = result.Ledger.GetJournalEntries(new LedgerQuery(OrderId: Guid.Empty)).Should().ContainSingle().Subject;
+        liquidation.IsBalanced.Should().BeTrue();
+        liquidation.Lines.Should().OnlyContain(line => line.Account.Name != "Cash");
     }
 
     [Fact]
@@ -413,6 +463,30 @@ file sealed class BuyOnFirstBarStrategy(string symbol, long quantity) : IBacktes
         {
             ctx.PlaceOrder(new OrderRequest(symbol, quantity, OrderType.Market, TimeInForce: TimeInForce.GoodTilCancelled));
             _bought = true;
+        }
+    }
+
+    public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx) { }
+    public void OnOrderFill(FillEvent fill, IBacktestContext ctx) { }
+    public void OnDayEnd(DateOnly date, IBacktestContext ctx) { }
+    public void OnFinished(IBacktestContext ctx) { }
+}
+
+file sealed class LimitBuyOnFirstBarStrategy(string symbol, long quantity, decimal limitPrice, TimeInForce timeInForce) : IBacktestStrategy
+{
+    private bool _placed;
+
+    public string Name => "LimitBuyOnFirstBar";
+    public void Initialize(IBacktestContext ctx) { }
+    public void OnTrade(Trade trade, IBacktestContext ctx) { }
+    public void OnQuote(BboQuotePayload quote, IBacktestContext ctx) { }
+
+    public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+    {
+        if (!_placed && bar.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+        {
+            ctx.PlaceOrder(new OrderRequest(symbol, quantity, OrderType.Limit, LimitPrice: limitPrice, TimeInForce: timeInForce));
+            _placed = true;
         }
     }
 

@@ -221,4 +221,16 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
     [FundAccountDatabaseFact]
     public Task Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory()
         => Reconciliation_BatchedReadsKeepExactAccountScopeAndRetainedHistory_Core();
+
+    [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_AcceptedFullRevisionDoesNotUnionRetainedHoldings()
+        => ReconcileAccountAsync_AcceptedFullRevisionDoesNotUnionRetainedHoldings_Core();
+
+    [FundAccountDatabaseFact]
+    public Task GetCustodianPositionsAsync_CurrentRevisionPreservesExactDateAccountAndRetryScope()
+        => GetCustodianPositionsAsync_CurrentRevisionPreservesExactDateAccountAndRetryScope_Core();
+
+    [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_InvalidCanonicalFullStateCannotFallbackToLegacyHoldings()
+        => ReconcileAccountAsync_InvalidCanonicalFullStateCannotFallbackToLegacyHoldings_Core();
 }

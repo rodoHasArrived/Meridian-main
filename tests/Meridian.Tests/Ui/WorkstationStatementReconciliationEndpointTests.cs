@@ -14,7 +14,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Evidence;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;

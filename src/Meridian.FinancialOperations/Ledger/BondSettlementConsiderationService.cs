@@ -19,9 +19,14 @@ public sealed class BondSettlementConsiderationService(IBondAnalyticsService ana
         if (securityInput is null)
             return [new("SettlementInputsUnavailable", "Exactly one retained Security Master input is required.")];
         var request = new BondAnalyticsRequest(settlement.SecurityId,
-            settlement.Context with { SecurityVersion = securityInput.Version }, settlement.CleanPricePer100,
+            settlement.Context with { SecurityVersion = securityInput.Version },
+            CleanPrice: settlement.SelectionReceiptId.HasValue ? null : settlement.CleanPricePer100,
             YieldConvention: settlement.YieldConvention)
-        { CalculationVersion = settlement.ModelVersion };
+        {
+            CalculationVersion = settlement.ModelVersion,
+            SelectionReceiptId = settlement.SelectionReceiptId,
+            PriceAccountId = settlement.PriceAccountId
+        };
         var result = await analytics.CalculateAsync(request, ct).ConfigureAwait(false);
         if (result is null || result.IsBlocked)
             return result?.Blockers ?? [new("SettlementInputsUnavailable", "Retained analytics inputs cannot be resolved.")];
@@ -56,7 +61,11 @@ public sealed class BondSettlementConsiderationService(IBondAnalyticsService ana
                 result.Context, yieldConvention, request.OriginalFace, request.BookedFactor, cleanPrice, accruedPrice,
                 clean, accrued, request.Fees, clean + accrued + request.Fees, request.ObservedDirtyCash,
                 request.SourceEvidenceId, request.CashAccountId, request.AccruedInterestAccountId, request.FeesAccountId,
-                result.Inputs.ToArray());
+                result.Inputs.ToArray(), request.FunctionalCurrency?.Trim().ToUpperInvariant(), request.SettlementFxRateToFunctional)
+            {
+                SelectionReceiptId = request.Analytics.SelectionReceiptId,
+                PriceAccountId = request.Analytics.SelectionReceiptId.HasValue ? request.Analytics.PriceAccountId : null
+            };
             var issues = BondSettlementConsideration.Validate(receipt);
             return issues.Count == 0 ? new(receipt, [])
                 : new(null, issues.Select(issue => new BondAnalyticsBlocker("SettlementNotReconciled", issue)).ToArray());

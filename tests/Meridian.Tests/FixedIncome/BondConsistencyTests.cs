@@ -142,7 +142,17 @@ public sealed class BondConsistencyTests
         var ladder = PortfolioCashLadderEngine.Build(Inputs(security, projection), PortfolioCashLadderEngine.RatesDownScenarioId);
         ladder.IsDecisionReady.Should().Be(supported);
         if (!supported)
-        { ladder.BlockingReasons.Should().Contain(reason => reason.Contains("Negative floating")); ladder.Buckets.Should().BeEmpty(); }
+        {
+            ladder.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+            ladder.BlockingReasons.Should().Contain(SecurityInterestSupport.NegativeInterestReason);
+            ladder.Buckets.Should().BeEmpty();
+            ladder.Contributions.Should().BeEmpty();
+        }
+        else
+        {
+            ladder.Blocker.Should().BeNull();
+            ladder.BlockingReasons.Should().BeEmpty();
+        }
     }
 
     [Theory]
@@ -330,8 +340,11 @@ public sealed class BondConsistencyTests
         settlement.Settlement.PurchasedAccruedInterest.Should().Be(0.19m);
     }
 
-    [Fact]
-    public async Task BothReceiptVersions_ReplayTheirOriginalStubArithmetic()
+    [Theory]
+    [InlineData("bond-cash-flow-context-v1", 0.4247)]
+    [InlineData("bond-cash-flow-context-v2", 0.4212)]
+    [InlineData("bond-cash-flow-context-v3", 0.4212)]
+    public async Task BothReceiptVersions_ReplayTheirOriginalStubArithmetic(string historicalModel, double historicalFirstCoupon)
     {
         var date = new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero);
         var security = Bond(new()
@@ -349,26 +362,41 @@ public sealed class BondConsistencyTests
             .Returns(call => Task.FromResult(retained.GetValueOrDefault(call.Arg<string>())));
         var service = CashFlows(security, receipts: receipts);
         var current = (await service.CaptureProjectionAsync(security.SecurityId, StructuredCashFlowScenario.Base, new(date)))!;
-        current.ModelVersion.Should().Be("bond-cash-flow-context-v2");
+        current.ModelVersion.Should().Be("bond-cash-flow-context-v5");
+        current.Projection.BlockedReason.Should().BeNull();
+        current.Projection.Schedule.Should().NotBeEmpty();
+        current.Projection.Schedule.Should().OnlyContain(row => row.RowVersion == 2);
         current.Projection.Schedule[0].InterestAmount.Should().Be(0.4212m);
-        var legacyMethod = typeof(SecurityMasterCashFlowService).GetMethod("BuildCalculatedProjection",
-            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
-        var legacyProjection = (StructuredCashFlowProjectionDto)legacyMethod.Invoke(null,
-            [security, current.Source.SourceKind, StructuredCashFlowScenario.Base, current.Projection.Staleness,
-             current.Source.LastUpdatedUtc, date, null, null, null])!;
+        var legacyProjection = current.Projection;
+        if (historicalModel == SecurityMasterCashFlowService.LegacyContextCalculationVersion)
+        {
+            var legacyMethod = typeof(SecurityMasterCashFlowService).GetMethod("BuildCalculatedProjection",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+            legacyProjection = (StructuredCashFlowProjectionDto)legacyMethod.Invoke(null,
+                [security, current.Source.SourceKind, StructuredCashFlowScenario.Base, current.Projection.Staleness,
+                 current.Source.LastUpdatedUtc, date, null, null, null])!;
+        }
         // Frozen v1 uses 100 * .05 * 31/365 for this stub rather than Level reference units.
-        legacyProjection.Schedule[0].InterestAmount.Should().Be(0.4247m);
-        legacyProjection = legacyProjection with
+        // V2/v3 share the reference-unit economics of v4, retaining the frozen v0 row contract.
+        legacyProjection = SecurityCashFlowScheduleRowCodec.Legacy(legacyProjection) with
         {
             InputManifest = current.Projection.InputManifest!
-            .Where(input => input.Kind != "ContractualEconomics")
-            .Select(input => input.Kind == "CalculationModel" ? input with { Key = "bond-cash-flow-context-v1" } : input).ToArray()
+            .Where(input => historicalModel != SecurityMasterCashFlowService.LegacyContextCalculationVersion || input.Kind != "ContractualEconomics")
+            .Select(input => input.Kind == "CalculationModel" ? input with { Key = historicalModel } : input).ToArray()
         };
-        var old = current with { ModelVersion = "bond-cash-flow-context-v1", Projection = legacyProjection, ContentSha256 = string.Empty };
+        legacyProjection.Schedule[0].InterestAmount.Should().Be((decimal)historicalFirstCoupon);
+        legacyProjection.Schedule.Should().OnlyContain(row => row.RowVersion == 0);
+        var old = current with { ModelVersion = historicalModel, Projection = legacyProjection, ContentSha256 = string.Empty };
         old = old with { ContentSha256 = SecurityMasterCashFlowService.ReceiptHash(old) };
         retained.Add(old.ContentSha256, old);
-        (await service.ReplayProjectionAsync(old.ContentSha256))!.Schedule.Should().Equal(legacyProjection.Schedule);
-        (await service.ReplayProjectionAsync(current.ContentSha256))!.Schedule.Should().Equal(current.Projection.Schedule);
+        var replayedOld = (await service.ReplayProjectionAsync(old.ContentSha256))!;
+        replayedOld.BlockedReason.Should().BeNull();
+        replayedOld.Schedule.Should().Equal(legacyProjection.Schedule);
+        replayedOld.Schedule[0].InterestAmount.Should().Be((decimal)historicalFirstCoupon);
+        var replayedCurrent = (await service.ReplayProjectionAsync(current.ContentSha256))!;
+        replayedCurrent.BlockedReason.Should().BeNull();
+        replayedCurrent.Schedule.Should().Equal(current.Projection.Schedule);
+        replayedCurrent.Schedule[0].InterestAmount.Should().Be(0.4212m);
     }
 
     [Theory]

@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Audit-chain integrity check for Accounting → Configuration.
  *
@@ -113,29 +114,14 @@ export function AuditChainIntegrityPanel() {
               title={view.title}
               detail={view.verdict}
             />
-            <table className="w-full text-xs" aria-label="Audit chain verification results">
-              <thead>
-                <tr className="text-left text-muted-foreground">
-                  <th scope="col" className="py-1 pr-3 font-medium">Chain</th>
-                  <th scope="col" className="py-1 pr-3 font-medium">Status</th>
-                  <th scope="col" className="py-1 font-medium">Coverage</th>
-                </tr>
-              </thead>
-              <tbody>
-                {view.rows.map((row) => (
-                  <tr key={row.chain} className="border-t border-border/60 align-top">
-                    <th scope="row" className="py-1 pr-3 text-left font-normal text-foreground">{row.label}</th>
-                    <td className="py-1 pr-3">
+            <TableWorkbench<(typeof view.rows)[number]> workbenchId="accounting-audit-integrity" sourceKey={JSON.stringify(view.rows)} rows={view.rows} columns={[{id:"field-0",label:"Chain",rowHeader:true,exportValue:row=>row.label,render:row=><>{row.label}</>},
+{id:"field-1",label:"Status",exportValue:row=>row.statusLabel,render:row=><>
                       <Badge variant={badgeVariant(row.tone)}>{row.statusLabel}</Badge>
-                    </td>
-                    <td className="py-1 text-muted-foreground">
+                    </>},
+{id:"field-2",label:"Coverage",exportValue:row=>[row.coverage,row.failure].filter(Boolean).join("; "),render:row=><>
                       <div>{row.coverage}</div>
                       {row.failure ? <div className="font-mono text-danger">{row.failure}</div> : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </>}]} getRowId={row=>row.chain} getSearchText={row=>[row.label,row.statusLabel,[row.coverage,row.failure].filter(Boolean).join("; ")].join(" ")} completePopulation sourceDescription="Server-computed chain verification snapshot; coverage and failures are retained verbatim." ariaLabel="Audit chain verification results" emptyText="No source records returned." />
             <p className="text-xs text-muted-foreground">Verification ran {formatDateTimeLabel(view.verifiedAtUtc)}.</p>
           </>
         ) : null}

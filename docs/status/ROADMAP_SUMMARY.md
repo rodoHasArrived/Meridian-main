@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-10-30
+Snapshot date: 2026-11-12
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -68,13 +68,18 @@ Snapshot date: 2026-10-30
 | W11-PASSPORT-001 | Number Passport contract across amount surfaces | planned | green | high | Workstation Shell and UX |
 | W11-COVER-001 | Verified Coverage measurement and operator surface | planned | green | high | Accounting and Ledger |
 | W11-STAKE-001 | Governed stakeholder verification access on delivered packages | planned | green | medium | Platform Security and Governance |
-| W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | planned | green | medium | Data Confidence and Validation |
+| W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | in_progress | green | medium | Data Confidence and Validation |
 | W11-PACK-001 | Governed contract-pack lifecycle on the Security Master asset-class registry | planned | green | medium | Accounting and Ledger |
 | W11-EXEC-001 | Trading and Execution bounded-context ownership | planned | green | low | Execution and Fund Accounts |
 | W12-BOOK-001 | Accounting book, basis, and FX control workbench | planned | green | medium | Accounting and Ledger |
-| W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | planned | green | medium | Accounting and Ledger |
+| W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | in_progress | green | medium | Accounting and Ledger |
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
+| W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | in_progress | green | high | Accounting and Ledger |
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
+| W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | in_progress | green | high | Accounting and Ledger |
+| W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | in_progress | green | medium | Accounting and Ledger |
+| W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | in_progress | green | high | Accounting and Ledger |
 | W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |
 | W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
 | W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |
+| W14-ATTEST-001 | Single-principal attestation for governed approvals in the single-operator envelope | in_progress | yellow | medium | Platform Security and Governance |

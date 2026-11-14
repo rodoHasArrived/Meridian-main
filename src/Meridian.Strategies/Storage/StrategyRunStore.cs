@@ -39,6 +39,7 @@ public sealed class StrategyRunStore : IStrategyRepository
     private readonly Dictionary<string, VerifiedOperationOutcome> _retainedTerminalOutcomes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, RetainedCaseVersion> _retainedVersionsByRunId = new(StringComparer.Ordinal);
     private readonly IOperationalCaseHistoryStore? _historyStore;
+    private readonly IStrategyRunLedgerArchive? _ledgerArchive;
     private readonly SemaphoreSlim _persistenceGate = new(1, 1);
     private readonly Lock _lock = new();
     private long _lastReplayedSequence;
@@ -49,9 +50,15 @@ public sealed class StrategyRunStore : IStrategyRepository
     }
 
     /// <summary>Creates a durable store backed by the shared operational case-history port.</summary>
-    public StrategyRunStore(IOperationalCaseHistoryStore historyStore)
+    public StrategyRunStore(IOperationalCaseHistoryStore historyStore) : this(historyStore, null)
+    {
+    }
+
+    /// <summary>Creates a durable store with complete journals retained outside bounded snapshots.</summary>
+    public StrategyRunStore(IOperationalCaseHistoryStore historyStore, IStrategyRunLedgerArchive? ledgerArchive)
     {
         _historyStore = historyStore ?? throw new ArgumentNullException(nameof(historyStore));
+        _ledgerArchive = ledgerArchive;
     }
 
     /// <inheritdoc/>
@@ -92,7 +99,8 @@ public sealed class StrategyRunStore : IStrategyRepository
             return;
         }
 
-        var normalized = NormalizeOperationalMetadata(SnapshotEntry(entry));
+        var normalized = NormalizeOperationalMetadata(SnapshotEntry(
+            await ArchiveLedgerAsync(entry, ct).ConfigureAwait(false)));
         var snapshotJson = JsonSerializer.Serialize(normalized, StrategyRunPersistenceJson.Options);
         if (snapshotJson.Length > OperationalCaseHistoryHashing.MaxDataValueLength)
         {
@@ -161,7 +169,8 @@ public sealed class StrategyRunStore : IStrategyRepository
 
         // Capture converter-normalized inputs once, including case-insensitive metric sets,
         // so the receipt lookup identifies exactly what RecordRunAsync snapshots and retains.
-        var captured = SnapshotEntry(entry with { LastLifecycleEvent = eventType });
+        var captured = SnapshotEntry(await ArchiveLedgerAsync(
+            entry with { LastLifecycleEvent = eventType }, ct).ConfigureAwait(false));
         await RecordRunAsync(captured, ct).ConfigureAwait(false);
         if (!RequiresTerminalOutcome(eventType))
         {
@@ -232,10 +241,63 @@ public sealed class StrategyRunStore : IStrategyRepository
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         await RefreshFromHistoryAsync(ct).ConfigureAwait(false);
+        StrategyRunEntry? entry;
         lock (_lock)
         {
-            return _runsById.GetValueOrDefault(runId);
+            entry = _runsById.GetValueOrDefault(runId);
         }
+        if (entry?.Metrics is null ||
+            !entry.OutputMetadata.TryGetValue(StrategyRunLedgerReference.HashMetadataKey, out var hash))
+            return entry;
+        if (_ledgerArchive is null)
+            throw new InvalidOperationException("The retained run requires its configured ledger archive.");
+        if (!entry.OutputMetadata.TryGetValue(StrategyRunLedgerReference.CountMetadataKey, out var countText) ||
+            !int.TryParse(countText, System.Globalization.NumberStyles.None,
+                System.Globalization.CultureInfo.InvariantCulture, out var count) || count < 0)
+            throw new InvalidDataException("The retained run has invalid ledger archive metadata.");
+        var snapshot = await _ledgerArchive.LoadSnapshotAsync(new StrategyRunLedgerReference(entry.RunId, count, hash), ct)
+            .ConfigureAwait(false);
+        return entry with
+        {
+            Metrics = entry.Metrics with
+            {
+                Ledger = snapshot.Ledger,
+                Snapshots = entry.Metrics.Snapshots.Count > 0 || snapshot.FinalSnapshot is null
+                ? entry.Metrics.Snapshots : [snapshot.FinalSnapshot]
+            }
+        };
+    }
+
+    private async Task<StrategyRunEntry> ArchiveLedgerAsync(StrategyRunEntry entry, CancellationToken ct)
+    {
+        if (_ledgerArchive is null || entry.EndedAt is null || entry.Metrics?.Ledger is not { JournalEntryCount: > 0 } ledger)
+            return entry;
+        // Output metadata is completion evidence. Failed/cancelled diagnostic metrics keep the
+        // existing retention path; do not turn their cleanup event into an invalid completion.
+        if (InferEventType(entry) != StrategyRunLifecycleEventType.Completed &&
+            !entry.OutputMetadata.ContainsKey(StrategyRunLedgerReference.HashMetadataKey))
+            return entry;
+
+        var finalSnapshot = entry.Metrics.Snapshots.MaxBy(static snapshot => snapshot.Timestamp);
+        var reference = await _ledgerArchive.SaveAsync(entry.RunId, ledger, finalSnapshot, ct).ConfigureAwait(false);
+        if (entry.OutputMetadata.TryGetValue(StrategyRunLedgerReference.HashMetadataKey, out var existingHash) &&
+            !string.Equals(existingHash, reference.Sha256, StringComparison.Ordinal))
+            throw new InvalidDataException("The retained run's ledger reference cannot be changed.");
+        var metadata = new Dictionary<string, string>(entry.OutputMetadata, StringComparer.Ordinal)
+        {
+            [StrategyRunLedgerReference.HashMetadataKey] = reference.Sha256,
+            [StrategyRunLedgerReference.CountMetadataKey] = reference.JournalEntryCount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            [StrategyRunEntry.RetainedJournalEntryCountMetadataKey] = reference.JournalEntryCount.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
+        return entry with
+        {
+            Metrics = entry.Metrics with
+            {
+                Ledger = new Meridian.Ledger.Ledger(),
+                Snapshots = entry.OutputMetadata.GetValueOrDefault("retainedDetail") == "summary" ? [] : entry.Metrics.Snapshots
+            },
+            OutputMetadata = metadata
+        };
     }
 
     /// <inheritdoc/>
@@ -877,9 +939,16 @@ public sealed class StrategyRunStore : IStrategyRepository
 
     private static StrategyRunEntry SnapshotEntry(StrategyRunEntry entry)
     {
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(entry, StrategyRunPersistenceJson.Options);
-        return JsonSerializer.Deserialize<StrategyRunEntry>(bytes, StrategyRunPersistenceJson.Options)
-               ?? throw new ArgumentException("The strategy run could not be snapshotted.", nameof(entry));
+        try
+        {
+            var bytes = JsonSerializer.SerializeToUtf8Bytes(entry, StrategyRunPersistenceJson.Options);
+            return JsonSerializer.Deserialize<StrategyRunEntry>(bytes, StrategyRunPersistenceJson.Options)
+                   ?? throw new ArgumentException("The strategy run could not be snapshotted.", nameof(entry));
+        }
+        catch (JsonException exception)
+        {
+            throw new ArgumentException("The strategy run could not be snapshotted.", nameof(entry), exception);
+        }
     }
 
     private static void ValidateRetainedPredecessor(

@@ -17,6 +17,26 @@ tooling remain visible, so running schema validation does not change the publish
 
 ## Core Scripts
 
+### Source-backed reference documentation
+
+These renderers maintain the public C# declaration catalog, the marked HTTP declaration block in
+`docs/reference/api-reference.md`, and the sample configuration reference. They extract source
+shapes and provenance rather than inferring runtime behavior or readiness.
+
+```bash
+python3 build/scripts/docs/render-public-type-reference.py
+python3 build/scripts/docs/render-endpoint-reference.py
+python3 build/scripts/docs/generate-configuration-reference.py
+python3 build/scripts/docs/generate-coverage.py --summary
+```
+
+Each renderer supports `--check`, which reports missing or stale output without writing files.
+The documentation automation `quick`, `core`, and `full` profiles run these drift checks.
+`build/scripts/run-maintained-generation.py --docs-only` runs all three producers before the
+core profile, so generated references and the coverage report converge together. Source API pages
+are generator-owned; the HTTP renderer may change only its marked block. Handwritten API guidance
+and the nightly test-coverage suffix retain their existing protection.
+
 ### validate-docs-structure.py
 
 Checks top-level folder ownership, folder indexes, and lifecycle metadata. Run from the
@@ -151,6 +171,13 @@ hash manifest records source-tree hashes plus README hashes for each registered 
 changes can intentionally fail the check until documentation has been reviewed and the manifest is
 refreshed. Use `--write-module` when only specific stale modules have been reviewed; reserve the
 broad `--write` refresh for a full accepted-baseline review.
+
+Dependency-only bumps (for example Dependabot) do not drift the source hash: `package-lock.json` is
+excluded, and `package.json` is fingerprinted with registry version ranges masked in
+`dependencies`, `devDependencies`, `optionalDependencies`, and `overrides`. Package names,
+`file:`/git/URL/workspace specifiers, npm alias targets, `peerDependencies`, scripts, engines, and
+every other field still participate. Malformed or duplicate-key `package.json` falls back to the raw
+content hash.
 
 ```bash
 python3 build/scripts/docs/validate-doc-hashes.py --summary
@@ -451,8 +478,16 @@ Generates documentation health metrics with scoring.
 ```bash
 python3 generate-health-dashboard.py \
   --output docs/status/doc-health-dashboard.md \
-  --json-output health.json
+  --json-output health.json \
+  --volatile-json-output artifacts/docs/doc-health-line-metrics.json
 ```
+
+`--json-output` writes the tracked, merge-stable payload: file, orphan, heading, staleness and
+marker counts plus a `signal_digest` of them. Line counts (`total_lines`, `average_lines`, per-file
+`line_count`) change on every Markdown edit, so they are written only to the optional untracked
+`--volatile-json-output` path. Independent Markdown edits therefore do not conflict on the
+dashboard. Concurrent signal changes, such as two branches that each add a file, conflict on the
+digest line instead of merging into a wrong count.
 
 ### repair-links.py
 

@@ -1,0 +1,45 @@
+<!-- @dsCard group="Shell" viewport="700x380" name="Workstation Shell" subtitle="Slot-based frame — chrome slots + crash-isolated main & right rail" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WorkstationShell</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body { margin: 0; background: var(--bg); }</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { WorkstationShell, WorkstationTopbar, NavRail, StatusBar, MetricCard, PanelSurface, Eyebrow } = window.MeridianDesignSystem_205d17;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <WorkstationShell
+    height={366}
+    padded
+    topbar={<WorkstationTopbar moduleLabel="Trading Desk" environment="PAPER" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark.svg" />}
+    nav={<NavRail activeId="trading" sections={[{ label: "Operate", items: [
+      { id: "dashboard", label: "Dashboard", icon: "../../assets/icons/dashboard.svg", shortcut: "G D" },
+      { id: "trading", label: "Trading Desk", icon: "../../assets/icons/trading.svg", shortcut: "G T" },
+    ]}]} />}
+    statusBar={<StatusBar items={[
+      { status: "ok", label: "Connected", value: "IBKR · Polygon" },
+      { label: "Rows", value: "412,008" },
+      { status: "ok", label: "Latency", value: "12ms", push: true },
+    ]} />}
+    aside={<div style={{ padding: 14 }}><Eyebrow>Inspector</Eyebrow><div style={{ fontFamily: "var(--font-data)", fontSize: 12, color: "var(--text-secondary)", marginTop: 8 }}>AAPL · NASDAQ · equity<br />Last 189.4400 · 20:00:00Z</div></div>}
+    asideWidth={220}
+  >
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <MetricCard label="Net liquidation" value="$1,284,067.10" delta="+0.42%" trend="up" />
+      <MetricCard label="Open orders" value="7" />
+    </div>
+    <div style={{ marginTop: 12, fontFamily: "var(--font-body)", fontSize: 12.5, color: "var(--text-muted)" }}>
+      Main workspace — scrolls independently; a crash here renders an evidence strip, never a blank shell.
+    </div>
+  </WorkstationShell>
+);
+</script>
+</body>
+</html>

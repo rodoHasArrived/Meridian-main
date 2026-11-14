@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { readinessToneToBadgeVariant, readinessToneToPanelClass } from "@/lib/shared-tone-mappings";
 import {
   buildReopenWorkflowFormDisabledReason,
   formatApprovalDecisionCommandError,
@@ -52,6 +51,8 @@ import {
   type OperationsContinuityWorkflowApprovalRow,
   type OperationsContinuityWorkflowRow
 } from "@/screens/operations-continuity-screen.view-model";
+import { eyebrowClassName } from "@/design-system/label-case";
+import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
 
 const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] = [
   {
@@ -67,7 +68,7 @@ const workflowColumns: DenseDataTableColumn<OperationsContinuityWorkflowRow>[] =
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "gates",
@@ -100,7 +101,7 @@ const gateColumns: DenseDataTableColumn<OperationsContinuityGateRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "required",
@@ -143,7 +144,7 @@ const blockerColumns: DenseDataTableColumn<OperationsContinuityBlockerRow>[] = [
   {
     id: "severity",
     label: "Severity",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.severityTone)}>{row.severityLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.severityTone)}>{row.severityLabel}</Badge>
   },
   {
     id: "evidence",
@@ -168,7 +169,7 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block font-mono tabular-nums text-foreground">{row.valueLabel}</span>
       </span>
     )
@@ -212,7 +213,7 @@ const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalend
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.dueLabel}</span>
       </span>
     )
@@ -222,7 +223,7 @@ const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalend
     label: "Readiness",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.ownerLabel}</span>
       </span>
     )
@@ -278,7 +279,7 @@ function buildFinancialOperationsCommandSpineColumns({
       label: "Command",
       render: (row) => (
         <span className="block text-xs leading-5">
-          <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
           <span className="mt-1 block text-foreground">{row.commandLabel}</span>
           <span className="block font-mono text-muted-foreground">{row.postureLabel}</span>
         </span>
@@ -359,7 +360,7 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
     label: "Work item",
     render: (row) => (
       <div className="min-w-0">
-        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
         {row.technicalCode ? (
@@ -373,7 +374,7 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "owner",
@@ -424,7 +425,7 @@ function buildWorkflowApprovalHistoryColumns({
       label: "Status",
       render: (row) => (
         <span className="block text-xs leading-5">
-          <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
           <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
         </span>
       )
@@ -512,7 +513,7 @@ const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewed
     label: "Output",
     render: (row) => (
       <span className="block min-w-0">
-        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className={eyebrowClassName(row.kindLabel)}>{row.kindLabel}</span>
         <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
         <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.sourceSummary}</span>
       </span>
@@ -523,7 +524,7 @@ const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewed
     label: "Review",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.reviewLabel}</span>
         <span className="block font-mono text-muted-foreground">{row.confidenceLabel}</span>
       </span>
@@ -567,7 +568,7 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.readinessLabel}</span>
       </span>
     )
@@ -635,7 +636,7 @@ function buildBreakCaseColumns({
       label: "Status",
       render: (row) => (
         <span className="block text-xs leading-5">
-          <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
           <span className="mt-1 block text-muted-foreground">{row.severityLabel}</span>
           <span className="block text-muted-foreground">{row.materialityLabel}</span>
         </span>
@@ -766,7 +767,7 @@ function buildChecklistColumns({
     {
       id: "status",
       label: "Status",
-      render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+      render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
     },
     {
       id: "owner",
@@ -855,7 +856,7 @@ const reconciliationLaneColumns: DenseDataTableColumn<OperationsContinuityReconc
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.breakCountLabel}</span>
       </span>
     )
@@ -908,7 +909,7 @@ const closeCockpitLaneColumns: DenseDataTableColumn<OperationsContinuityCloseCoc
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "evidence",
@@ -955,7 +956,7 @@ const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityClos
     label: "Readiness",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.statusLabel}</span>
       </span>
     )
@@ -999,7 +1000,7 @@ const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityClos
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
       </span>
     )
@@ -1055,7 +1056,7 @@ const navSupportPackageColumns: DenseDataTableColumn<OperationsContinuityNavSupp
     label: "Status",
     render: (row) => (
       <span className="block text-xs leading-5">
-        <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
         <span className="mt-1 block text-muted-foreground">{row.componentSummaryLabel}</span>
       </span>
     )
@@ -1102,7 +1103,7 @@ const accountingRecordColumns: DenseDataTableColumn<OperationsAccountingRecordEv
   {
     id: "status",
     label: "Status",
-    render: (row) => <Badge variant={readinessToneToBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+    render: (row) => <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
   },
   {
     id: "evidence",
@@ -1627,7 +1628,7 @@ export function OperationsContinuityScreen() {
         </Card>
 
         <Card
-          className={cn("border", readinessToneToPanelClass(vm.nextAction.statusTone))}
+          className={cn("border", statusPanelClass(vm.nextAction.statusTone))}
           role="region"
           aria-label="Recommended next action"
         >
@@ -1640,7 +1641,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.nextAction.detail}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.nextAction.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.nextAction.statusTone)}>
                 {vm.nextAction.statusLabel}
               </Badge>
             </div>
@@ -1670,7 +1671,7 @@ export function OperationsContinuityScreen() {
 
       {vm.selectedDetail ? (
         <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className={cn("rounded-lg border", readinessToneToPanelClass(vm.selectedDetail.statusTone))}>
+          <div className={cn("rounded-lg border", statusPanelClass(vm.selectedDetail.statusTone))}>
             <EntitySummary
               id={vm.selectedDetail.id}
               eyebrow="Selected workflow"
@@ -1678,7 +1679,7 @@ export function OperationsContinuityScreen() {
               subtitle={vm.selectedDetail.subtitle}
               description={vm.selectedDetail.description}
               ariaLabel={vm.selectedDetail.ariaLabel}
-              status={<Badge variant={readinessToneToBadgeVariant(vm.selectedDetail.statusTone)}>{vm.selectedDetail.statusLabel}</Badge>}
+              status={<Badge variant={statusBadgeVariant(vm.selectedDetail.statusTone)}>{vm.selectedDetail.statusLabel}</Badge>}
               fields={selectedWorkflowOperationalMetadata}
             />
             <div className="px-4 pb-4">
@@ -1693,7 +1694,7 @@ export function OperationsContinuityScreen() {
                   <dl className="grid gap-3 text-xs leading-5 sm:grid-cols-2">
                     {selectedWorkflowTechnicalMetadata.map((field) => (
                       <div key={field.label}>
-                        <dt className="eyebrow-label">{field.label}</dt>
+                        <dt className={eyebrowClassName(field.label)}>{field.label}</dt>
                         <dd className="break-words font-mono text-foreground">{field.value}</dd>
                       </div>
                     ))}
@@ -1726,7 +1727,7 @@ export function OperationsContinuityScreen() {
       ) : null}
 
       <section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.dashboard.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.dashboard.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1736,7 +1737,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.dashboard.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.dashboard.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.dashboard.statusTone)}>
                 {vm.dashboard.statusLabel}
               </Badge>
             </div>
@@ -1762,7 +1763,7 @@ export function OperationsContinuityScreen() {
             />
           </CardContent>
         </Card>
-        <Card className={cn("border", readinessToneToPanelClass(vm.closeCalendar.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.closeCalendar.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1772,7 +1773,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.closeCalendar.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closeCalendar.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.closeCalendar.statusTone)}>
                 {vm.closeCalendar.statusLabel}
               </Badge>
             </div>
@@ -1807,7 +1808,7 @@ export function OperationsContinuityScreen() {
             />
           </CardContent>
         </Card>
-        <Card className={cn("border", readinessToneToPanelClass(vm.commandSpine.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.commandSpine.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1817,7 +1818,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.commandSpine.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.commandSpine.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.commandSpine.statusTone)}>
                 {vm.commandSpine.statusLabel}
               </Badge>
             </div>
@@ -1885,7 +1886,7 @@ export function OperationsContinuityScreen() {
       </section>
 
       <section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.reviewedAutomation.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.reviewedAutomation.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1895,7 +1896,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.reviewedAutomation.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.reviewedAutomation.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.reviewedAutomation.statusTone)}>
                 {vm.reviewedAutomation.statusLabel}
               </Badge>
             </div>
@@ -1926,7 +1927,7 @@ export function OperationsContinuityScreen() {
       </section>
 
       <section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.financialOperationsQueue.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.financialOperationsQueue.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1936,7 +1937,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.financialOperationsQueue.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.financialOperationsQueue.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.financialOperationsQueue.statusTone)}>
                 {vm.financialOperationsQueue.statusLabel}
               </Badge>
             </div>
@@ -1977,7 +1978,7 @@ export function OperationsContinuityScreen() {
       </section>
 
       <section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.closeCockpit.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.closeCockpit.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -1987,7 +1988,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.closeCockpit.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closeCockpit.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.closeCockpit.statusTone)}>
                 {vm.closeCockpit.statusLabel}
               </Badge>
             </div>
@@ -2179,7 +2180,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>Shared close-control tasks required before approval and close transitions.</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.checklistSummary.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.checklistSummary.statusTone)}>
                 {vm.checklistSummary.taskCountLabel}
               </Badge>
             </div>
@@ -2220,7 +2221,7 @@ export function OperationsContinuityScreen() {
       </section>
 
       <section className="grid gap-4">
-        <Card className={cn("border", readinessToneToPanelClass(vm.accountingRecordSummary.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.accountingRecordSummary.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2230,7 +2231,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.accountingRecordSummary.summaryLabel}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.accountingRecordSummary.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.accountingRecordSummary.statusTone)}>
                 {vm.accountingRecordSummary.statusLabel}
               </Badge>
             </div>
@@ -2257,7 +2258,7 @@ export function OperationsContinuityScreen() {
           </CardContent>
         </Card>
 
-        <Card className={cn("border", readinessToneToPanelClass(vm.closeGovernance.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.closeGovernance.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -2267,7 +2268,7 @@ export function OperationsContinuityScreen() {
                 </CardTitle>
                 <CardDescription>{vm.closeGovernance.lockDetail}</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closeGovernance.statusTone)}>
+              <Badge variant={statusBadgeVariant(vm.closeGovernance.statusTone)}>
                 {vm.closeGovernance.statusLabel}
               </Badge>
             </div>
@@ -2380,14 +2381,14 @@ export function OperationsContinuityScreen() {
           </CardContent>
         </Card>
 
-        <Card className={cn("border", readinessToneToPanelClass(vm.closePackage.statusTone))}>
+        <Card className={cn("border", statusPanelClass(vm.closePackage.statusTone))}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <CardTitle>{vm.closePackage.title}</CardTitle>
                 <CardDescription>Governed close publication from the shared operations-continuity workflow.</CardDescription>
               </div>
-              <Badge variant={readinessToneToBadgeVariant(vm.closePackage.statusTone)}>{vm.closePackage.statusLabel}</Badge>
+              <Badge variant={statusBadgeVariant(vm.closePackage.statusTone)}>{vm.closePackage.statusLabel}</Badge>
             </div>
           </CardHeader>
           <CardContent>

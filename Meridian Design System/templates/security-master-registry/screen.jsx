@@ -3,11 +3,11 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, SeverityBadge,
-  DenseDataTable, KeyValueGrid, Breadcrumb, Tabs, TabPanel, Checkbox, Toggle, Callout,
+  DataGrid, KeyValueGrid, Breadcrumb, Tabs, TabPanel, Checkbox, Toggle, Callout,
   ValidationIssueList, FormSectionLabel, FormDivider, Input, TextArea, SegmentedControl,
   EmptyState, Tooltip, FilterBuilder, SelectionToolbar, ColumnManager, Pagination, SkeletonTable,
   EditableCell, EntitySummary, HotkeysProvider, Select, ToastProvider, Kbd, TableHooks,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useEffect, useMemo, useRef, useCallback } = React;
 const { useTableColumns } = TableHooks;
 
@@ -106,7 +106,7 @@ function flagsCell(r) {
 }
 
 const BASE_COLUMNS = [
-  { key: "name", label: "Security Name", align: "left", width: 240, pinned: true, render: (r) => (
+  { key: "name", label: "Security Name", align: "left", width: 240, pinned: true, cell: (r) => (
     <div>
       <div style={{ fontWeight: 600, color: "var(--text-primary)", fontFamily: "var(--font-body)" }}>{r.name}</div>
       <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{r.shortCode}</div>
@@ -114,15 +114,15 @@ const BASE_COLUMNS = [
   ) },
   { key: "cusip", label: "CUSIP", width: 112 },
   { key: "issuer", label: "Issuer", width: 190 },
-  { key: "assetClass", label: "Asset Class", width: 138, render: (r) => assetClassBadge(r.assetClass) },
+  { key: "assetClass", label: "Asset Class", width: 138, cell: (r) => assetClassBadge(r.assetClass) },
   { key: "currency", label: "Currency", width: 96 },
   { key: "rating", label: "Rating", width: 86 },
   { key: "sector", label: "Sector", width: 150 },
   { key: "fairValueLevel", label: "Val. Level", width: 104 },
   { key: "issueDate", label: "Issue Date", width: 118 },
   { key: "maturityDate", label: "Maturity Date", width: 124 },
-  { key: "complianceStatus", label: "Compliance", width: 124, render: (r) => <SeverityBadge status={r.complianceStatus} /> },
-  { key: "flags", label: "Flags", width: 80, render: flagsCell },
+  { key: "complianceStatus", label: "Compliance", width: 124, cell: (r) => <SeverityBadge status={r.complianceStatus} /> },
+  { key: "flags", label: "Flags", width: 80, cell: flagsCell },
 ];
 
 const SORT_OPTIONS = [
@@ -204,12 +204,12 @@ function OverviewSection({ sec, i, editMode, overrides, onStage }) {
         <FormSectionLabel>{sec.title}</FormSectionLabel>
         {sec.rows && sec.rows.length ? (
           <PanelSurface flat style={{ overflow: "hidden" }}>
-            <DenseDataTable
+            <DataGrid
               columns={[
                 { key: "eventType", label: "Event Type" }, { key: "paymentDate", label: "Payment Date" },
                 { key: "index", label: "Index" }, { key: "spread", label: "Spread" },
                 { key: "expected", label: "Expected", align: "right" }, { key: "actual", label: "Actual", align: "right" },
-                { key: "posted", label: "Posted", render: (r) => <Badge variant={r.posted ? "success" : "neutral"} dot>{r.posted ? "Posted" : "Scheduled"}</Badge> },
+                { key: "posted", label: "Posted", cell: (r) => <Badge variant={r.posted ? "success" : "neutral"} dot>{r.posted ? "Posted" : "Scheduled"}</Badge> },
               ]}
               rows={sec.rows}
             />
@@ -303,7 +303,7 @@ function AuditTab({ auditRows }) {
   return (
     <div style={{ padding: "18px 2px" }}>
       <PanelSurface flat style={{ overflow: "hidden" }}>
-        <DenseDataTable
+        <DataGrid
           columns={[
             { key: "ts", label: "Timestamp" }, { key: "user", label: "User" }, { key: "field", label: "Field" },
             { key: "oldValue", label: "Old Value" }, { key: "newValue", label: "New Value" },
@@ -434,7 +434,7 @@ function ListView(props) {
     page, totalPages, setPage, loading,
   } = props;
 
-  const selectedRowsIdx = pageRows.map((r, i) => selectedIds.has(r.id) ? i : -1).filter(i => i >= 0);
+  const selectedPageIds = pageRows.filter(r => selectedIds.has(r.id)).map(r => r.id);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -481,13 +481,18 @@ function ListView(props) {
         {loading ? (
           <SkeletonTable rows={PAGE_SIZE} columns={cols.visibleColumns.length + 1} />
         ) : pageRows.length ? (
-          <DenseDataTable
-            columns={cols.visibleColumns} pinnedKeys={cols.pinnedKeys}
+          <DataGrid
+            columns={cols.visibleColumns} rowKey="id"
             onColumnResize={cols.resize} onColumnReorder={cols.reorder} onColumnPin={cols.togglePin}
             sortKey={sortKey} sortDir={sortDir} onSort={onSort}
-            selectable selectedRows={selectedRowsIdx}
-            onSelectRow={(r) => onToggleRow(r.id)} onSelectAll={onSelectAllPage}
-            selectedIndex={cursorIndex}
+            select selected={selectedPageIds}
+            onSelectedChange={(keys) => {
+              // DataGrid reports the page's whole selection — map it back onto the row / page handlers
+              const changed = pageRows.filter(r => keys.includes(r.id) !== selectedIds.has(r.id));
+              if (changed.length === 1) onToggleRow(changed[0].id);
+              else if (changed.length) onSelectAllPage(keys.length > 0);
+            }}
+            activeKey={(pageRows[cursorIndex] || {}).id}
             onRowClick={(r) => onOpen(r.id)}
             rows={pageRows}
           />

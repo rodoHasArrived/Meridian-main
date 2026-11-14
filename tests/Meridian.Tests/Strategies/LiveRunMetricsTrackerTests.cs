@@ -1,7 +1,9 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Strategies.Live;
 using Meridian.Strategies.Promotions;
+using Meridian.Strategies.Serialization;
 using MeridianLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Tests.Strategies;
@@ -20,6 +22,84 @@ namespace Meridian.Tests.Strategies;
 public sealed class LiveRunMetricsTrackerTests
 {
     private static readonly DateTimeOffset StartedAt = new(2024, 1, 2, 0, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void Build_ExplicitRunAttributedFinancing_AdjustsGrossProfitAndInterestMetric()
+    {
+        var ledger = new MeridianLedger();
+        ledger.PostLines(StartedAt.AddHours(2), "Assessed financing",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor("account-1"), 12.50m, 0m),
+            (Meridian.Ledger.LedgerAccounts.CashAccount("account-1"), 0m, 12.50m)
+        ]);
+        ledger.PostLines(StartedAt.AddDays(-1), "Earlier period",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpense, 100m, 0m),
+            (Meridian.Ledger.LedgerAccounts.Cash, 0m, 100m)
+        ]);
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 987.50m, ledger, StartedAt.AddDays(1), runAttributedMarginInterest: 12.50m);
+        result.Metrics.TotalMarginInterest.Should().Be(12.50m);
+        result.Metrics.NetPnl.Should().Be(-12.50m);
+        result.Metrics.GrossPnl.Should().Be(0m);
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().Be(12.50m);
+    }
+
+    [Fact]
+    public void Build_AccountExpenseLedgerWithoutRunAllocation_RemainsUnavailable()
+    {
+        var accountLedger = new MeridianLedger();
+        accountLedger.PostLines(StartedAt.AddHours(1), "Account financing",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpense, 12.50m, 0m),
+            (Meridian.Ledger.LedgerAccounts.Cash, 0m, 12.50m)
+        ]);
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 987.50m, accountLedger, StartedAt.AddDays(1));
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Unavailable);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().BeNull();
+        result.EngineMetadata.CoverageWarnings.Should().Contain(LiveRunMetricsTracker.FinancingUnavailableWarning);
+        result.Metrics.TotalMarginInterest.Should().Be(0m, "the legacy decimal is only a compatibility placeholder");
+        result.Metrics.GrossPnl.Should().Be(-12.50m, "unknown account costs cannot be allocated to a run by inspecting its ledger");
+    }
+
+    [Fact]
+    public void Build_ExplicitMeasuredZero_IsAvailableAndDistinctFromUnavailable()
+    {
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 1_000m, new MeridianLedger(), StartedAt.AddDays(1), runAttributedMarginInterest: 0m);
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().Be(0m);
+        result.EngineMetadata.CoverageWarnings.Should().NotContain(LiveRunMetricsTracker.FinancingUnavailableWarning);
+    }
+
+    [Fact]
+    public void Build_WithoutClosedTradeAccounting_ReportsOutcomeMetricsAsUnavailable()
+    {
+        var tracker = new LiveRunMetricsTracker(1_000m, StartedAt);
+        tracker.RecordFill(CreateFill("SPY", 1, 100m), StartedAt);
+        var result = tracker.Build("BrokerPaper", new HashSet<string>(), 1_000m,
+            new MeridianLedger(), StartedAt.AddDays(1));
+
+        double.IsNaN(result.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(result.Metrics.ProfitFactor).Should().BeTrue();
+        result.Metrics.TotalTrades.Should().Be(0, "fills do not establish completed trade outcomes");
+        result.EngineMetadata!.CoverageWarnings.Should().NotBeEmpty();
+        var json = JsonSerializer.SerializeToElement(result.Metrics);
+        json.GetProperty(nameof(BacktestMetrics.WinRate)).ValueKind.Should().Be(JsonValueKind.Null);
+        json.GetProperty(nameof(BacktestMetrics.ProfitFactor)).ValueKind.Should().Be(JsonValueKind.Null);
+        var restored = json.Deserialize<BacktestMetrics>()!;
+        double.IsNaN(restored.WinRate).Should().BeTrue();
+        double.IsNaN(restored.ProfitFactor).Should().BeTrue();
+
+        var retained = JsonSerializer.SerializeToElement(result, StrategyRunPersistenceJson.Options);
+        retained.GetProperty("metrics").GetProperty("winRate").ValueKind.Should().Be(JsonValueKind.Null);
+        retained.GetProperty("metrics").GetProperty("profitFactor").ValueKind.Should().Be(JsonValueKind.Null);
+        var restoredRun = retained.Deserialize<BacktestResult>(StrategyRunPersistenceJson.Options)!;
+        double.IsNaN(restoredRun.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(restoredRun.Metrics.ProfitFactor).Should().BeTrue();
+    }
 
     [Fact]
     public void Build_LargerLaterCurrencyLoss_PreservesWorstPercentageAndBlocksPromotion()
@@ -75,6 +155,38 @@ public sealed class LiveRunMetricsTrackerTests
             "Calmar must be derived from the same drawdown fraction the tracker reports");
     }
 
+    /// <summary>
+    /// Live and backtest runs emit the same <see cref="BacktestMetrics"/> record, so the tracker uses
+    /// the BacktestMetricsEngine formulas: geometric annualisation over calendar days, sample standard
+    /// deviation for Sharpe, and downside deviation over losing days only for Sortino.
+    /// </summary>
+    [Fact]
+    public void Build_RatioFormulas_MatchTheBacktestMetricsEngine()
+    {
+        var metrics = BuildMetricsFor([1_100m, 950m, 1_050m], initialEquity: 1_000m, finalEquity: 1_050m);
+
+        double[] returns = [0.1, (950.0 - 1_100.0) / 1_100.0, (1_050.0 - 950.0) / 950.0];
+        var mean = returns.Average();
+        var sampleStd = Math.Sqrt(returns.Sum(r => (r - mean) * (r - mean)) / (returns.Length - 1));
+        var downside = returns.Where(r => r < 0).ToArray();
+        var downsideDev = Math.Sqrt(downside.Average(r => r * r));
+        var years = 3.0 / 365.0; // session start to end: the first snapshot already carries a day
+
+        metrics.SharpeRatio.Should().BeApproximately(mean / sampleStd * Math.Sqrt(252.0), 1e-9);
+        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(252.0), 1e-9);
+        ((double)metrics.AnnualizedReturn).Should().BeApproximately(Math.Pow(1.05, 1.0 / years) - 1.0, 1e-6);
+    }
+
+    [Fact]
+    public void Build_TotalLoss_ReportsMinusOneAnnualisedReturnAndFiniteRatios()
+    {
+        var metrics = BuildMetricsFor([500m, 0m], initialEquity: 1_000m, finalEquity: 0m);
+
+        metrics.AnnualizedReturn.Should().Be(-1m);
+        double.IsFinite(metrics.SharpeRatio).Should().BeTrue();
+        double.IsFinite(metrics.SortinoRatio).Should().BeTrue();
+    }
+
     [Fact]
     public void Build_WhenEquityOnlyRises_ReportsZeroDrawdownAndZeroCalmar()
     {
@@ -121,6 +233,23 @@ public sealed class LiveRunMetricsTrackerTests
 
         BuildCashFlows(tracker).Should().ContainSingle()
             .Which.Amount.Should().Be(99_500m, "selling 100,000 face at 99.50 percent of par raises $99,500");
+    }
+
+    [Fact]
+    public void RecordFill_MultipliedContract_BooksTheSameCashTheBookMoved()
+    {
+        // The paper portfolio debits 1 contract × $2.50 × 100 = $250; the run's retained cash-flow
+        // history must reconcile with it rather than record a $2.50 outflow.
+        var tracker = new LiveRunMetricsTracker(initialEquity: 10_000m, StartedAt);
+
+        tracker.RecordFill(
+            CreateFill(symbol: "AAPL261218C00250000", quantity: 1, price: 2.50m),
+            StartedAt,
+            usesFaceValuePercentageOfPar: false,
+            contractMultiplier: 100m);
+
+        BuildCashFlows(tracker).Should().ContainSingle()
+            .Which.Amount.Should().Be(-250m);
     }
 
     [Fact]

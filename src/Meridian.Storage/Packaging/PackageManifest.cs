@@ -9,6 +9,15 @@ namespace Meridian.Storage.Packaging;
 /// </summary>
 public sealed class PackageManifest
 {
+    [JsonPropertyName("ledgerSnapshotPath")]
+    public string? LedgerSnapshotPath { get; set; }
+
+    [JsonPropertyName("ledgerSnapshotSha256")]
+    public string? LedgerSnapshotSha256 { get; set; }
+
+    [JsonPropertyName("ledgerBalanceChecksumSha256")]
+    public string? LedgerBalanceChecksumSha256 { get; set; }
+
     /// <summary>
     /// Package manifest version.
     /// </summary>
@@ -72,12 +81,17 @@ public sealed class PackageManifest
     /// <summary>
     /// SHA256 checksum of the entire package file.
     /// </summary>
+    /// <remarks>
+    /// Set on the manifest returned with a <see cref="PackageResult"/>. The copy embedded in
+    /// the package leaves it empty, because a file cannot contain its own checksum.
+    /// </remarks>
     [JsonPropertyName("packageChecksum")]
     public string? PackageChecksum { get; set; }
 
     /// <summary>
     /// Total size of the package file in bytes.
     /// </summary>
+    /// <remarks>Like <see cref="PackageChecksum"/>, set on the returned manifest only.</remarks>
     [JsonPropertyName("packageSizeBytes")]
     public long PackageSizeBytes { get; set; }
 

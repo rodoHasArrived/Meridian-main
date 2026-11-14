@@ -6,6 +6,10 @@ import { BondMigrationPreviewPanel } from "./bond-migration-preview-panel";
 const SECURITY_ID = "11111111-1111-1111-1111-111111111111";
 
 describe("bond migration preview", () => {
+  it("opens the operator form for an explicit migration action", () => {
+    render(<BondMigrationPreviewPanel securityId={SECURITY_ID} expectedVersion={7} initiallyOpen />);
+    expect(screen.getByRole("form", { name: "Bond migration preview inputs" })).toBeVisible();
+  });
   it("requires the current terms version and an explicit coupon unit", async () => {
     const preview = vi.fn();
     const { rerender } = render(
@@ -91,7 +95,9 @@ describe("bond migration preview", () => {
     });
     fireEvent.submit(screen.getByRole("form", { name: "Stage reviewed bond migration" }));
     expect(await screen.findByText("Governed revision created")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Governed bond migration result" })).toHaveFocus();
+    // Focus moves in an effect after the result renders, so wait for it rather than racing it.
+    await waitFor(() =>
+      expect(screen.getByRole("region", { name: "Governed bond migration result" })).toHaveFocus());
     expect(stage).toHaveBeenCalledTimes(1);
     expect(stage.mock.calls[0][0]).toMatchObject({
       previewSha256: "preview-hash",

@@ -17,6 +17,9 @@ describe("FinancialRecordExplorerShell", () => {
     renderExplorer();
 
     expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
+    const inspect = screen.getByRole("link", { name: "Inspect record — selected record" });
+    expect(inspect).toHaveTextContent("Inspect record");
+    expect(inspect).toHaveAttribute("href", expect.stringMatching(/^\/accounting\/ledger/));
     expect(screen.getByLabelText("Explorer summary")).toHaveTextContent("$1,000.00");
     expect(screen.getByRole("cell", { name: "Cash" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -42,7 +45,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(within(detail).getByText("Impacts")).toBeInTheDocument();
     expect(within(detail).getByRole("link", { name: "Full record" })).toHaveAttribute("href", "/api/workstation/runs/run-1/ledger/trial-balance");
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: view Controller review; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: view Controller review; record Revenue"
     })).toHaveAttribute(
       "href",
       "/?frexExplorer=ledger&frexView=system-ledger-default&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -74,6 +77,42 @@ describe("FinancialRecordExplorerShell", () => {
     renderExplorer(undefined, createSecurityInstrumentExplorerDto(), onSelectRecord);
 
     await waitFor(() => expect(onSelectRecord).toHaveBeenCalledWith("security:11111111-1111-1111-1111-111111111111"));
+  });
+
+  it("keeps a linked record authoritative until an explicit row selection and controlled update", async () => {
+    const user = userEvent.setup();
+    const explorer = createExplorerDto();
+    const onSelectRecord = vi.fn();
+    const controlledExplorer = (activeRecordId: string) => <FinancialRecordExplorerShell
+      explorerLabel="Accounting" title="Ledger Explorer" description="Linked record"
+      scopeItems={[]} savedViews={[]} summaryItems={[]} appliedFilters={[]}
+      explorer={explorer} activeRecordId={activeRecordId} onSelectRecord={onSelectRecord}
+    ><div>Fallback static content</div></FinancialRecordExplorerShell>;
+    const { rerender } = render(controlledExplorer("ledger:linked-outside-rows"));
+
+    const cash = screen.getByRole("row", { name: /cash assets/i });
+    const revenue = screen.getByRole("row", { name: /revenue income aapl/i });
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(revenue).toHaveAttribute("aria-selected", "false");
+    expect(onSelectRecord).not.toHaveBeenCalled();
+
+    // The source's default row must still be explicitly selectable while a linked record is absent.
+    await user.click(cash);
+    expect(onSelectRecord).toHaveBeenCalledExactlyOnceWith("ledger:run-1:cash");
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    rerender(controlledExplorer("ledger:run-1:cash"));
+    expect(cash).toHaveAttribute("aria-selected", "true");
+    expect(revenue).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("dialog", { name: "Cash proof detail" })).toBeInTheDocument();
+    expect(onSelectRecord).toHaveBeenCalledTimes(1);
+
+    rerender(controlledExplorer("ledger:run-1:revenue"));
+    expect(cash).toHaveAttribute("aria-selected", "false");
+    expect(revenue).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
+    expect(onSelectRecord).toHaveBeenCalledTimes(1);
   });
 
   it("opens row proof detail via keyboard activation", async () => {
@@ -429,7 +468,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: view Income symbols; search aapl; filter Account Type equals Income; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: view Income symbols; search aapl; filter Account Type equals Income; record Revenue"
     })).toHaveAttribute(
       "href",
       "/accounting?frexExplorer=ledger&frexView=operator-income-symbols&frexSearch=aapl&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -449,7 +488,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: filter Type equals Income; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: filter Type equals Income; record Revenue"
     })).toHaveAttribute(
       "href",
       "/accounting?frexExplorer=ledger&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -498,7 +537,7 @@ describe("FinancialRecordExplorerShell", () => {
 
     expect(window.location.pathname).toBe("/accounting");
     expect(window.location.search).toBe("?period=2026-06");
-    expect(screen.getByRole("link", { name: /share ledger explorer evidence state/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /share state.*ledger explorer evidence state/i })).toHaveAttribute(
       "href",
       "/accounting?period=2026-06&frexExplorer=ledger&frexView=system-ledger-default&frexSearch=aapl&frexRecord=ledger%3Arun-1%3Arevenue"
     );

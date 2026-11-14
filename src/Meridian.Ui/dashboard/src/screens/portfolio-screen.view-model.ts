@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { isBondAssetClass } from "@/lib/fixed-income-navigation";
+import { measureDisplayedPositionAmounts, type PositionValueMeasurement } from "@/lib/position-value-graphic";
 import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
@@ -8,16 +10,14 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
+import { formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
   comparisonToneForPnl,
   formatCountLabel,
-  formatCurrency,
-  formatCurrencyPrecise,
   formatDateTime,
   formatNumber,
   formatRatioAsPercent,
-  formatSignedCurrency,
   pnlFieldTone,
   pnlTone,
   riskFieldTone,
@@ -45,6 +45,7 @@ import type {
   StrategyRunContinuityWarningSeverity,
   TradingWorkspaceResponse
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 type PortfolioRiskState = TradingWorkspaceResponse["risk"];
 type PortfolioBrokerageStatus = TradingWorkspaceResponse["brokerage"];
@@ -64,6 +65,12 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  marketValue: string;
+  currency: string | null;
+  weight: string;
+  weightBasis: string | null;
+  exposureGraphic: PositionValueMeasurement | null;
+  pnlGraphic: PositionValueMeasurement | null;
   markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
@@ -311,6 +318,8 @@ export interface PortfolioPositionDetail {
   title: string;
   subtitle: string;
   ariaLabel: string;
+  /** The one status shown beside the holding's name; null when there is nothing to flag. */
+  statusLabel: string | null;
   statusTitle: string;
   statusDetail: string;
   statusTone: "default" | "success" | "warning" | "danger";
@@ -390,6 +399,7 @@ export interface PortfolioRunTradeEvidenceRow {
 
 export interface PortfolioBrokeragePositionDetail {
   id: string;
+  bondSecurityId: string | null;
   title: string;
   subtitle: string;
   ariaLabel: string;
@@ -658,6 +668,9 @@ export function buildPortfolioScreenViewModel({
         ? runs[0].id
         : null;
 
+  const positionCurrencies = positions.map((position) => position.currency);
+  const exposureGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.exposure), positionCurrencies);
+  const pnlGraphics = measureDisplayedPositionAmounts(positions.map((position) => position.unrealizedPnl), positionCurrencies);
   const positionRows: PortfolioPositionRow[] = positions.map((p, index) => {
     const id = positionId(p.symbol, p.side, index);
     const tone = pnlTone(p.unrealizedPnl);
@@ -669,11 +682,17 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
+      marketValue: p.marketValue && p.currency ? `${p.marketValue} ${p.currency}` : "Unavailable · currency or value not supplied",
+      currency: p.currency ?? null,
+      weight: p.weight && p.weightBasis ? p.weight : "Unavailable",
+      weightBasis: p.weightBasis ?? null,
       markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,
       unrealizedPnl: p.unrealizedPnl,
       exposure: p.exposure,
+      exposureGraphic: exposureGraphics[index],
+      pnlGraphic: pnlGraphics[index],
       pnlTone: tone,
       isSelected,
       expanded: isSelected,
@@ -747,7 +766,7 @@ export function buildPortfolioScreenViewModel({
     totalExposure,
     totalUnrealizedPnl
   });
-  const cashVarianceLabel = cashFlow !== null ? formatCurrency(cashFlow.netVariance) : null;
+  const cashVarianceLabel = cashFlow !== null ? formatPrefixedCurrency(cashFlow.netVariance, { maximumFractionDigits: 0 }) : null;
 
   return {
     metricsFromTrading: portfolio == null && trading !== null,
@@ -875,7 +894,7 @@ export function buildPortfolioFallbackMetrics({
     {
       id: "portfolio-total-exposure",
       label: "Total exposure",
-      value: hasPositions ? formatCurrency(totalExposure) : "—",
+      value: hasPositions ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—",
       delta: hasPositions ? "From open positions" : "No holdings",
       tone: "default"
     },
@@ -883,7 +902,7 @@ export function buildPortfolioFallbackMetrics({
       id: "portfolio-unrealized-pnl",
       label: "Unrealized P&L",
       value: hasPositions
-        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
+        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
         : "—",
       delta: hasPositions ? "Open position mark" : "No holdings",
       tone: hasPositions ? numericPnlTone(totalUnrealizedPnl) : "default"
@@ -988,7 +1007,7 @@ function buildBrokerageTrustSnapshot({
     title: `${providerLabel} household snapshot`,
     statusLabel,
     statusTone,
-    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatCurrency(portfolio.totalEquity)} equity, ${formatCurrency(portfolio.totalCash)} cash, and ${formatCurrency(portfolio.totalBuyingPower)} buying power.`,
+    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 })} equity, ${formatPrefixedCurrency(portfolio.totalCash, { maximumFractionDigits: 0 })} cash, and ${formatPrefixedCurrency(portfolio.totalBuyingPower, { maximumFractionDigits: 0 })} buying power.`,
     chips: [
       { label: "Accounts", value: formatCountLabel(portfolio.accounts.length, "account") },
       { label: "Positions", value: formatCountLabel(portfolio.positions.length, "position") },
@@ -997,9 +1016,9 @@ function buildBrokerageTrustSnapshot({
     ],
     fields: [
       { label: "As of", value: formatDateTime(portfolio.asOf), tone: "muted" },
-      { label: "Total equity", value: formatCurrency(portfolio.totalEquity), tone: "default" },
-      { label: "Cash", value: formatCurrency(portfolio.totalCash), tone: "default" },
-      { label: "Buying power", value: formatCurrency(portfolio.totalBuyingPower), tone: "default" },
+      { label: "Total equity", value: formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Cash", value: formatPrefixedCurrency(portfolio.totalCash, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Buying power", value: formatPrefixedCurrency(portfolio.totalBuyingPower, { maximumFractionDigits: 0 }), tone: "default" },
       { label: "Account health", value: accountHealthLabel, tone: unhealthyCount > 0 ? "warning" : "success" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" }
     ]
@@ -1138,9 +1157,9 @@ export function buildPortfolioRunDrillInSummary(
       {
         id: "attribution",
         label: "Attribution",
-        value: attribution ? formatSignedCurrency(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl) : "—",
+        value: attribution ? formatSignedCurrency(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 }) : "—",
         detail: attribution
-          ? `Realized ${formatSignedCurrency(attribution.totalRealizedPnl)}; unrealized ${formatSignedCurrency(attribution.totalUnrealizedPnl)}; ${formatCountLabel(attribution.bySymbol.length, "symbol")}.`
+          ? `Realized ${formatSignedCurrency(attribution.totalRealizedPnl, { maximumFractionDigits: 0 })}; unrealized ${formatSignedCurrency(attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 })}; ${formatCountLabel(attribution.bySymbol.length, "symbol")}.`
           : "Run attribution has not been loaded.",
         tone: attribution ? numericPnlTone(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl) : "warning"
       },
@@ -1149,25 +1168,25 @@ export function buildPortfolioRunDrillInSummary(
         label: "Drawdown",
         value: drawdown ? formatRatioAsPercent(drawdown.maxDrawdownPercent) : "—",
         detail: drawdown
-          ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatCurrency(drawdown.finalEquity)}.`
+          ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatPrefixedCurrency(drawdown.finalEquity, { maximumFractionDigits: 0 })}.`
           : "Equity curve and drawdown profile have not been loaded.",
         tone: drawdown ? drawdown.maxDrawdownPercent > 0.1 ? "danger" : drawdown.maxDrawdownPercent > 0.03 ? "warning" : "success" : "warning"
       },
       {
         id: "cash-flow",
         label: "Cash-flow",
-        value: cashFlow ? formatSignedCurrency(cashFlow.netCashFlow) : "—",
+        value: cashFlow ? formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }) : "—",
         detail: cashFlow
-          ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatCurrency(cashFlow.totalInflows)}; outflows ${formatCurrency(cashFlow.totalOutflows)}.`
+          ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatPrefixedCurrency(cashFlow.totalInflows, { maximumFractionDigits: 0 })}; outflows ${formatPrefixedCurrency(cashFlow.totalOutflows, { maximumFractionDigits: 0 })}.`
           : "Cash-flow projection has not been loaded.",
         tone: cashFlow ? numericPnlTone(cashFlow.netCashFlow) : "warning"
       },
       {
         id: "trades",
         label: "Trades",
-        value: trades ? trades.totalFills.toLocaleString() : "—",
+        value: trades ? formatCount(trades.totalFills) : "—",
         detail: trades
-          ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatCurrency(trades.totalCommissions)} commissions.`
+          ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatPrefixedCurrency(trades.totalCommissions, { maximumFractionDigits: 0 })} commissions.`
           : "Trade-level fill evidence has not been loaded.",
         tone: trades ? trades.totalFills > 0 ? "success" : "warning" : "warning"
       }
@@ -1194,25 +1213,25 @@ function buildPortfolioRunBridgeRows(
     rows.push({
       id: "realized-pnl",
       label: "Realized bridge",
-      value: formatSignedCurrency(attribution.totalRealizedPnl),
+      value: formatSignedCurrency(attribution.totalRealizedPnl, { maximumFractionDigits: 0 }),
       detail: topSymbol
-        ? `${topSymbol.symbol} contributes ${formatSignedCurrency(topSymbol.realizedPnl)} realized P&L across ${formatCountLabel(topSymbol.tradeCount, "trade")}.`
+        ? `${topSymbol.symbol} contributes ${formatSignedCurrency(topSymbol.realizedPnl, { maximumFractionDigits: 0 })} realized P&L across ${formatCountLabel(topSymbol.tradeCount, "trade")}.`
         : "No per-symbol realized attribution rows were returned.",
       tone: numericPnlTone(attribution.totalRealizedPnl)
     });
     rows.push({
       id: "unrealized-pnl",
       label: "Unrealized bridge",
-      value: formatSignedCurrency(attribution.totalUnrealizedPnl),
+      value: formatSignedCurrency(attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 }),
       detail: topSymbol
-        ? `${topSymbol.symbol} carries ${formatSignedCurrency(topSymbol.unrealizedPnl)} unrealized P&L into the selected portfolio view.`
+        ? `${topSymbol.symbol} carries ${formatSignedCurrency(topSymbol.unrealizedPnl, { maximumFractionDigits: 0 })} unrealized P&L into the selected portfolio view.`
         : "No per-symbol unrealized attribution rows were returned.",
       tone: numericPnlTone(attribution.totalUnrealizedPnl)
     });
     rows.push({
       id: "commission-drag",
       label: "Commission drag",
-      value: formatCurrency(attribution.totalCommissions),
+      value: formatPrefixedCurrency(attribution.totalCommissions, { maximumFractionDigits: 0 }),
       detail: `${formatCountLabel(attribution.bySymbol.length, "symbol")} contributes to attribution after commissions and margin-interest allocation.`,
       tone: attribution.totalCommissions > 0 ? "warning" : "success"
     });
@@ -1222,8 +1241,8 @@ function buildPortfolioRunBridgeRows(
     rows.push({
       id: "cash-flow-bridge",
       label: "Cash-flow bridge",
-      value: formatSignedCurrency(cashFlow.netCashFlow),
-      detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatCurrency(cashFlow.totalInflows)} to outflows ${formatCurrency(cashFlow.totalOutflows)}.`,
+      value: formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }),
+      detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatPrefixedCurrency(cashFlow.totalInflows, { maximumFractionDigits: 0 })} to outflows ${formatPrefixedCurrency(cashFlow.totalOutflows, { maximumFractionDigits: 0 })}.`,
       tone: numericPnlTone(cashFlow.netCashFlow)
     });
   }
@@ -1253,12 +1272,12 @@ function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): Port
     .map((fill) => ({
       id: fill.fillId,
       symbol: fill.symbol,
-      quantity: fill.filledQuantity.toLocaleString(),
-      price: formatCurrencyPrecise(fill.fillPrice),
-      commission: formatCurrencyPrecise(fill.commission),
+      quantity: formatCount(fill.filledQuantity),
+      price: formatPrefixedCurrency(fill.fillPrice, { minimumFractionDigits: 2 }),
+      commission: formatPrefixedCurrency(fill.commission, { minimumFractionDigits: 2 }),
       filledAt: formatDateTime(fill.filledAt),
       accountId: fill.accountId ?? "No account",
-      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${fill.filledQuantity.toLocaleString()} at ${formatCurrencyPrecise(fill.fillPrice)} on ${formatDateTime(fill.filledAt)}`
+      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${formatCount(fill.filledQuantity)} at ${formatPrefixedCurrency(fill.fillPrice, { minimumFractionDigits: 2 })} on ${formatDateTime(fill.filledAt)}`
     }));
 }
 
@@ -1280,14 +1299,14 @@ function buildPortfolioHeaderChips({
   providerLabel: string;
 }): PortfolioHeaderChip[] {
   const chips: PortfolioHeaderChip[] = [
-    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatCurrency(brokeragePortfolio.totalEquity) : "—" },
-    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatCurrency(brokeragePortfolio.totalCash) : "—" },
+    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalEquity, { maximumFractionDigits: 0 }) : "—" },
+    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalCash, { maximumFractionDigits: 0 }) : "—" },
     { label: "Open positions", value: String(openPositionCount) },
-    { label: "Exposure", value: hasPositions ? formatCurrency(totalExposure) : "—" },
+    { label: "Exposure", value: hasPositions ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—" },
     {
       label: "Unrealized P&L",
       value: hasPositions
-        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
+        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
         : "—"
     }
   ];
@@ -1550,9 +1569,9 @@ function toBrokerageAccountRow(
     kind,
     health: account.health,
     healthBadgeVariant: brokerageAccountHealthBadgeVariant(account.health),
-    equity: formatCurrency(account.equity),
-    cash: formatCurrency(account.cash),
-    buyingPower: formatCurrency(account.buyingPower),
+    equity: formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 }),
+    cash: formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 }),
+    buyingPower: formatPrefixedCurrency(account.buyingPower, { maximumFractionDigits: 0 }),
     syncedAt: formatDateTime(account.syncedAt),
     positionCount: formatCountLabel(account.positionCount, "position"),
     warningCount: formatCountLabel(warningCount, "warning"),
@@ -1563,7 +1582,7 @@ function toBrokerageAccountRow(
     expanded: isSelected,
     detailPanelId: "portfolio-brokerage-account-detail",
     selectAriaLabel: `Filter brokerage positions to ${kind} account`,
-    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatCurrency(account.equity)}, cash ${formatCurrency(account.cash)}, ${formatCountLabel(warningCount, "warning")}`
+    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 })}, cash ${formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 })}, ${formatCountLabel(warningCount, "warning")}`
   };
 }
 
@@ -1623,9 +1642,9 @@ function buildSelectedBrokerageAccountDetail(
     fields: [
       { label: "Fund account", value: account.fundAccountId, tone: "muted" },
       { label: "External account", value: account.externalAccountId, tone: "muted" },
-      { label: "Equity", value: formatCurrency(account.equity), tone: "default" },
-      { label: "Cash", value: formatCurrency(account.cash), tone: "default" },
-      { label: "Buying power", value: formatCurrency(account.buyingPower), tone: "default" },
+      { label: "Equity", value: formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Cash", value: formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Buying power", value: formatPrefixedCurrency(account.buyingPower, { maximumFractionDigits: 0 }), tone: "default" },
       { label: "Positions", value: formatCountLabel(account.positionCount, "position"), tone: "muted" },
       { label: "Cash activity", value: formatCountLabel(account.cashTransactionCount, "cash transaction"), tone: "muted" },
       { label: "Synced", value: formatDateTime(account.syncedAt), tone: "muted" }
@@ -1662,9 +1681,9 @@ function buildAllBrokerageAccountsDetail(
     statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
     fields: [
       { label: "Accounts", value: formatCountLabel(accounts.length, "account"), tone: hasAccounts ? "default" : "warning" },
-      { label: "Equity", value: formatCurrency(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity")), tone: "default" },
-      { label: "Cash", value: formatCurrency(portfolio?.totalCash ?? sumAccountValue(accounts, "cash")), tone: "default" },
-      { label: "Buying power", value: formatCurrency(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower")), tone: "default" },
+      { label: "Equity", value: formatPrefixedCurrency(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity"), { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Cash", value: formatPrefixedCurrency(portfolio?.totalCash ?? sumAccountValue(accounts, "cash"), { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Buying power", value: formatPrefixedCurrency(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower"), { maximumFractionDigits: 0 }), tone: "default" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" },
       { label: "Latest sync", value: latestSync, tone: latestSync === "—" ? "warning" : "muted" }
     ]
@@ -1699,7 +1718,7 @@ function toBrokeragePositionRow(
   selectedId: string | null
 ): PortfolioBrokeragePositionRow {
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
-  const pnl = formatSignedCurrency(position.unrealizedPnl);
+  const pnl = formatSignedCurrency(position.unrealizedPnl, { maximumFractionDigits: 0 });
   const id = brokeragePositionId(position);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
@@ -1709,10 +1728,10 @@ function toBrokeragePositionRow(
     accountKind,
     symbol: position.symbol,
     quantity: formatNumber(position.quantity),
-    averagePrice: formatCurrencyPrecise(position.averageEntryPrice),
-    markPrice: formatCurrencyPrecise(position.marketPrice),
+    averagePrice: formatPrefixedCurrency(position.averageEntryPrice, { minimumFractionDigits: 2 }),
+    markPrice: formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }),
     markFreshness: presentMarkFreshness(position.markFreshness),
-    marketValue: formatCurrency(position.marketValue),
+    marketValue: formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 }),
     unrealizedPnl: pnl,
     pnlTone: pnlTone(pnl),
     assetClass: position.assetClass,
@@ -1722,7 +1741,7 @@ function toBrokeragePositionRow(
     detailPanelId: "portfolio-brokerage-position-detail",
     expanded: id === selectedId,
     selectAriaLabel: `Inspect ${position.symbol} ${accountKind} live position`,
-    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${formatNumber(position.quantity)} shares, market value ${formatCurrency(position.marketValue)}, unrealized P&L ${pnl}`
+    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${formatNumber(position.quantity)} shares, market value ${formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 })}, unrealized P&L ${pnl}`
   };
 }
 
@@ -1739,7 +1758,7 @@ function buildSelectedBrokeragePositionDetail(
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
-  const pnl = formatSignedCurrency(position.unrealizedPnl);
+  const pnl = formatSignedCurrency(position.unrealizedPnl, { maximumFractionDigits: 0 });
   const pnlStatusTone = numericPnlTone(position.unrealizedPnl);
   const coverageTone: PortfolioBrokeragePositionDetail["statusTone"] = position.security ? "success" : "warning";
   const statusTone = position.security ? pnlStatusTone : "warning";
@@ -1748,11 +1767,12 @@ function buildSelectedBrokeragePositionDetail(
 
   return {
     id: brokeragePositionId(position),
+    bondSecurityId: position.security && isBondAssetClass(position.security.assetClass) ? position.security.securityId : null,
     title: position.symbol,
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,
     statusTitle: "Brokerage position inspector",
-    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
+    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 })} market value and ${pnl} unrealized P&L.`,
     statusTone,
     statusBadgeLabel: coverageLabel,
     statusBadgeVariant,
@@ -1760,10 +1780,10 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Account", value: accountLabel, tone: "default" },
       { label: "Account kind", value: accountKind, tone: "muted" },
       { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
-      { label: "Average entry", value: formatCurrencyPrecise(position.averageEntryPrice), tone: "muted" },
-      { label: "Recorded mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      { label: "Average entry", value: formatPrefixedCurrency(position.averageEntryPrice, { minimumFractionDigits: 2 }), tone: "muted" },
+      { label: "Recorded mark price", value: formatPrefixedCurrency(position.marketPrice, { minimumFractionDigits: 2 }), tone: "muted" },
       ...markFreshnessFields(mark),
-      { label: "Market value", value: formatCurrency(position.marketValue), tone: "default" },
+      { label: "Market value", value: formatPrefixedCurrency(position.marketValue, { maximumFractionDigits: 0 }), tone: "default" },
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
       { label: "Currency", value: position.currency ?? "Unavailable", tone: "muted" }
@@ -1860,7 +1880,7 @@ function brokerageConnectionDetail(
   providerLabel: string
 ): string {
   if (connection?.isConnected && portfolio) {
-    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatCurrency(portfolio.totalEquity)} total equity.`;
+    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 })} total equity.`;
   }
 
   if (connection?.authorizationUrl) {
@@ -1985,11 +2005,11 @@ function buildWorkflowTaskPanel({
       { label: "Provider", value: providerLabel },
       { label: "Account", value: accountLabel },
       { label: "Positions", value: String(openPositionCount) },
-      { label: "Exposure", value: openPositionCount > 0 ? formatCurrency(totalExposure) : "—" },
+      { label: "Exposure", value: openPositionCount > 0 ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—" },
       {
         label: "Unrealized P&L",
         value: openPositionCount > 0
-          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
+          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
           : "—"
       }
     ],
@@ -2089,11 +2109,11 @@ function buildPortfolioReadinessTaskPanel({
       { label: "Provider", value: providerLabel },
       { label: "Account", value: accountLabel },
       { label: "Positions", value: String(openPositionCount) },
-      { label: "Exposure", value: openPositionCount > 0 ? formatCurrency(totalExposure) : "—" },
+      { label: "Exposure", value: openPositionCount > 0 ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—" },
       {
         label: "Unrealized P&L",
         value: openPositionCount > 0
-          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrency(totalUnrealizedPnl)
+          ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
           : "—"
       }
     ],
@@ -2313,6 +2333,7 @@ function buildSelectedPositionDetail(
     title: position.symbol,
     subtitle: `${position.side} · ${position.quantity} shares`,
     ariaLabel: `${position.symbol} holding detail`,
+    statusLabel: position.markFreshness.reviewRequired ? "Review required" : risk?.state ?? null,
     statusTitle: position.markFreshness.reviewRequired ? `${position.symbol} · Review required` : `${position.symbol} selected`,
     statusDetail: `${position.markFreshness.reason} Recorded: ${position.exposure} exposure with ${position.unrealizedPnl} unrealized P&L. ${risk?.summary ?? "Risk context unavailable."}`,
     statusTone,

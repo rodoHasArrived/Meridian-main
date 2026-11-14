@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.RateLimiting;
 using Meridian.Application.Composition;
 using Meridian.Application.Monitoring;
@@ -7,6 +8,9 @@ using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Serialization;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RateLimiting;
@@ -92,7 +96,19 @@ public static class UiEndpoints
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = writeIndented,
-            TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()
+            TypeInfoResolver = JsonTypeInfoResolver.Combine(
+                IntercompanyOperationsJsonContext.Default,
+                IntercompanyAccountingArrangementsJsonContext.Default,
+                FundStructureContractsJsonContext.Default,
+                EntityTimelineJsonContext.Default,
+                IntercompanyAccountContractsJsonContext.Default,
+                LegacyIntercompanyAttributionJsonContext.Default,
+                IntercompanyProposalJsonContext.Default,
+                IntercompanyBalanceScheduleJsonContext.Default,
+                ConsolidationFxJsonContext.Default,
+                ConsolidationTransitionJsonContext.Default,
+                Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext.Default,
+                new DefaultJsonTypeInfoResolver())
         };
 
     /// <summary>
@@ -142,6 +158,7 @@ public static class UiEndpoints
         app.MapPlaidEndpoints(jsonOptions);
         app.MapAccountingSystemEndpoints(jsonOptions);
         app.MapOnboardingEndpoints(jsonOptions);
+        app.MapPortfolioImportEndpoints();
 
         app.MapStorageEndpoints(jsonOptions);
         app.MapStorageQualityEndpoints(jsonOptions);
@@ -181,9 +198,12 @@ public static class UiEndpoints
 
         // Checkpoint and ingestion job endpoints (P0)
         app.MapCheckpointEndpoints(jsonOptions);
+        app.MapIngestionJobEndpoints(jsonOptions);
 
         // Options / Derivatives endpoints
         app.MapOptionsEndpoints(jsonOptions);
+        app.MapOptionVisualizationEndpoints(jsonOptions);
+        app.MapPrivateCapitalRecordEndpoints(jsonOptions);
 
         // Direct lending endpoints
         app.MapDirectLendingEndpoints(jsonOptions);
@@ -192,11 +212,17 @@ public static class UiEndpoints
         app.MapFundAccountEndpoints(jsonOptions);
         app.MapLedgerEndpoints(jsonOptions);
 
+        // Banking payment approval workflow and bank transaction records
+        app.MapBankingEndpoints(jsonOptions);
+
         // Portfolio-wide cash ladder and liquidity scenarios
         app.MapPortfolioCashLadderEndpoints(jsonOptions);
 
         // Organization-rooted governance structure endpoints
         app.MapFundStructureEndpoints(jsonOptions);
+        app.MapIntercompanyAgreementEndpoints(jsonOptions);
+        app.MapIntercompanyAccountingArrangementEndpoints();
+        app.MapIntercompanyOperationsEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
         app.MapReportingIncomeComparisonEndpoints(jsonOptions);
         app.MapSecureReportingDistributionEndpoints();
@@ -207,6 +233,7 @@ public static class UiEndpoints
         app.MapBondReferenceEndpoints(jsonOptions);
         app.MapBondReferencePagingEndpoints(jsonOptions);
         app.MapBondAnalyticsEndpoints(jsonOptions);
+        app.MapBondWorkflowEndpoints();
         app.MapBondMigrationEndpoints(jsonOptions);
         app.MapOptionReferenceEndpoints(jsonOptions);
         app.MapOptionChainEndpoints(jsonOptions);
@@ -218,6 +245,7 @@ public static class UiEndpoints
         app.MapCryptoReferenceEndpoints(jsonOptions);
         app.MapDepositReferenceEndpoints(jsonOptions);
         app.MapMoneyMarketFundReferenceEndpoints(jsonOptions);
+        app.MapMoneyMarketFundEndpoints(jsonOptions);
         app.MapCertificateOfDepositReferenceEndpoints(jsonOptions);
         app.MapEdgarReferenceDataEndpoints(jsonOptions);
 

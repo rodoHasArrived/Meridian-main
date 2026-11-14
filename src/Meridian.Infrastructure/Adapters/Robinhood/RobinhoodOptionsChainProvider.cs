@@ -43,7 +43,7 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
 [ImplementsAdr("ADR-014", "JSON serialization uses source generators")]
-public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
+public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider, IDisposable
 {
     private const string BaseUrl = "https://api.robinhood.com";
     private const string EnvAccessToken = "ROBINHOOD_ACCESS_TOKEN";
@@ -51,6 +51,8 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<RobinhoodOptionsChainProvider> _logger;
     private readonly string? _accessToken;
+    private readonly RateLimiter _rateLimiter;
+    private readonly bool _ownsRateLimiter;
 
     /// <summary>
     /// Initializes a new instance of <see cref="RobinhoodOptionsChainProvider"/>.
@@ -63,11 +65,14 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
     public RobinhoodOptionsChainProvider(
         IHttpClientFactory httpClientFactory,
         ILogger<RobinhoodOptionsChainProvider> logger,
-        string? accessToken = null)
+        string? accessToken = null,
+        RateLimiter? rateLimiter = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _accessToken = accessToken ?? Environment.GetEnvironmentVariable(EnvAccessToken);
+        _ownsRateLimiter = rateLimiter is null;
+        _rateLimiter = rateLimiter ?? new RateLimiter(60, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(1));
 
         if (string.IsNullOrWhiteSpace(_accessToken))
             _logger.LogWarning(
@@ -142,7 +147,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         }
 
         using var client = CreateHttpClient();
-        var response = await client.GetAsync(
+        using var response = await SendAsync(client,
             $"{BaseUrl}/options/chains/{chainId}/", ct).ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
@@ -363,7 +368,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
 
         using var client = CreateHttpClient();
         var encodedUrl = Uri.EscapeDataString(matched.Url);
-        var mdResponse = await client.GetAsync(
+        using var mdResponse = await SendAsync(client,
             $"{BaseUrl}/marketdata/options/?instruments={encodedUrl}", ct).ConfigureAwait(false);
 
         if (!mdResponse.IsSuccessStatusCode)
@@ -405,6 +410,31 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
 
     // ── Private helpers ────────────────────────────────────────────────────
 
+    private static Uri GetTrustedUri(string url)
+    {
+        var origin = new Uri(BaseUrl);
+        if (!Uri.TryCreate(origin, url, out var uri)
+            || uri.Scheme != Uri.UriSchemeHttps
+            || !string.Equals(uri.Host, origin.Host, StringComparison.OrdinalIgnoreCase)
+            || uri.Port != origin.Port || !string.IsNullOrEmpty(uri.UserInfo)
+            || !string.IsNullOrEmpty(uri.Fragment))
+            throw new InvalidOperationException("Robinhood returned an invalid pagination URL.");
+        return uri;
+    }
+
+    private async Task<HttpResponseMessage> SendAsync(HttpClient client, string url, CancellationToken ct)
+    {
+        var uri = GetTrustedUri(url);
+        await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+        return await client.GetAsync(uri, ct).ConfigureAwait(false);
+    }
+
+    public void Dispose()
+    {
+        if (_ownsRateLimiter)
+            _rateLimiter.Dispose();
+    }
+
     private HttpClient CreateHttpClient()
     {
         var client = _httpClientFactory.CreateClient(HttpClientNames.RobinhoodBrokerage);
@@ -422,7 +452,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         using var client = CreateHttpClient();
 
         // Step 1: resolve the instrument ID for the underlying.
-        var instrResponse = await client.GetAsync(
+        using var instrResponse = await SendAsync(client,
             $"{BaseUrl}/instruments/?symbol={Uri.EscapeDataString(underlyingSymbol.ToUpperInvariant())}",
             ct).ConfigureAwait(false);
 
@@ -438,7 +468,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
             return null;
 
         // Step 2: get the chain associated with this instrument.
-        var chainResponse = await client.GetAsync(
+        using var chainResponse = await SendAsync(client,
             $"{BaseUrl}/options/chains/?equity_instrument_ids={Uri.EscapeDataString(instrumentId)}",
             ct).ConfigureAwait(false);
 
@@ -467,18 +497,23 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         var results = new List<RobinhoodOptionInstrument>();
         string? nextUrl = $"{BaseUrl}/options/instruments/?chain_id={Uri.EscapeDataString(chainId)}&expiration_date={dateStr}&state=active&tradability=tradable";
 
+        var pagination = new PaginationCursorGuard("Robinhood options");
         while (!string.IsNullOrEmpty(nextUrl))
         {
             ct.ThrowIfCancellationRequested();
-            var response = await client.GetAsync(nextUrl, ct).ConfigureAwait(false);
+            pagination.Visit(GetTrustedUri(nextUrl).AbsoluteUri);
+            using var response = await SendAsync(client, nextUrl, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
-                break;
+                throw new HttpRequestException("Robinhood option contract pagination failed.", null, response.StatusCode);
 
             var page = await response.Content.ReadFromJsonAsync(
                 RobinhoodOptionsSerializerContext.Default.RobinhoodOptionInstrumentListResponse,
                 ct).ConfigureAwait(false);
 
-            if (page?.Results is { Length: > 0 })
+            if (page?.Results is null)
+                throw new InvalidOperationException("Robinhood returned an invalid option contract page.");
+
+            if (page.Results is { Length: > 0 })
                 results.AddRange(page.Results);
 
             nextUrl = page?.Next;
@@ -519,18 +554,18 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
 
             var joinedUrls = string.Join(',', batchUrls);
             var encoded = Uri.EscapeDataString(joinedUrls);
-            var response = await client.GetAsync(
+            using var response = await SendAsync(client,
                 $"{BaseUrl}/marketdata/options/?instruments={encoded}", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
-                continue;
+                throw new HttpRequestException("Robinhood option market data batch failed.", null, response.StatusCode);
 
             var mdList = await response.Content.ReadFromJsonAsync(
                 RobinhoodOptionsSerializerContext.Default.RobinhoodOptionMarketDataListResponse,
                 ct).ConfigureAwait(false);
 
             if (mdList?.Results is null)
-                continue;
+                throw new InvalidOperationException("Robinhood returned an invalid option market data batch.");
 
             foreach (var md in mdList.Results)
             {
@@ -551,7 +586,7 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
         try
         {
             using var client = CreateHttpClient();
-            var response = await client.GetAsync(
+            using var response = await SendAsync(client,
                 $"{BaseUrl}/quotes/{Uri.EscapeDataString(symbol.ToUpperInvariant())}/",
                 ct).ConfigureAwait(false);
 
@@ -563,6 +598,10 @@ public sealed class RobinhoodOptionsChainProvider : IOptionsChainProvider
                 ct).ConfigureAwait(false);
 
             return ParseDecimal(quote?.LastTradePrice ?? quote?.LastExtendedHoursTradePrice);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

@@ -100,7 +100,7 @@ class SkipRegisterFixture:
 
 class DiscoverSkipsTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = SkipRegisterFixture(Path(self._tmp.name))
 
@@ -448,7 +448,7 @@ class DiscoverSkipsTests(unittest.TestCase):
 
 class NullMetadataTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = SkipRegisterFixture(Path(self._tmp.name))
 
@@ -466,7 +466,7 @@ class NullMetadataTests(unittest.TestCase):
 
 class EvaluateTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = SkipRegisterFixture(Path(self._tmp.name))
 
@@ -603,6 +603,83 @@ class EvaluateTests(unittest.TestCase):
 
         self.assertEqual(evidence["by_category"]["unregistered"], 1)
 
+    def test_quarantined_reason_filed_as_environment_gated_fails(self):
+        self.fixture.write_register(
+            [
+                entry(
+                    SkipRegisterFixture.QUARANTINE_PATH,
+                    SkipRegisterFixture.QUARANTINE_REASON,
+                    category="environment-gated",
+                )
+            ]
+        )
+
+        problems = self.fixture.problems()
+
+        self.assertTrue(any("register it as 'quarantined'" in p for p in problems), msg=problems)
+
+
+class TrackingResolutionTests(unittest.TestCase):
+    """A quarantine's tracking must point at something that exists, not just be non-empty."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self._tmp.cleanup)
+        self.root = Path(self._tmp.name)
+        self.fixture = SkipRegisterFixture(self.root)
+        roadmap = self.root / "docs" / "roadmap" / "data" / "roadmap-items.yml"
+        roadmap.parent.mkdir(parents=True)
+        roadmap.write_text("items:\n  - id: W9-ASSET-010\n  - id: W9-ASSET-0100\n", encoding="utf-8")
+        (self.root / "docs" / "testing").mkdir(parents=True)
+        (self.root / "docs" / "testing" / "quarantine.md").write_text("# Q\n", encoding="utf-8")
+        self.resolver = MODULE.build_tracking_resolver(self.root)
+
+    def problems_for(self, tracking: str) -> list[str]:
+        self.fixture.write_register(
+            [entry(SkipRegisterFixture.QUARANTINE_PATH, SkipRegisterFixture.QUARANTINE_REASON, tracking=tracking)]
+        )
+        entries = MODULE.load_register(self.fixture.register_path)
+        return MODULE.evaluate(self.fixture.sites(), entries, TODAY, self.resolver)
+
+    def test_known_roadmap_id_resolves(self):
+        self.assertEqual(self.problems_for("W9-ASSET-010"), [])
+
+    def test_github_reference_resolves(self):
+        self.assertEqual(self.problems_for("#3241"), [])
+
+    def test_existing_repository_path_resolves(self):
+        self.assertEqual(self.problems_for("docs/testing/quarantine.md#tenant-admin"), [])
+
+    def test_existing_repository_root_file_resolves(self):
+        (self.root / "QUARANTINE.md").write_text("# Quarantine\n", encoding="utf-8")
+
+        self.assertEqual(self.problems_for("QUARANTINE.md#tenant-admin"), [])
+
+    def test_missing_repository_root_file_fails(self):
+        problems = self.problems_for("MISSING.md")
+
+        self.assertTrue(any("is not a roadmap/backlog ID" in p for p in problems), msg=problems)
+
+    def test_untracked_placeholder_fails(self):
+        problems = self.problems_for("TBD")
+
+        self.assertTrue(any("is not a roadmap/backlog ID" in p for p in problems), msg=problems)
+
+    def test_unknown_id_fails_even_when_it_prefixes_a_real_one(self):
+        problems = self.problems_for("W9-ASSET-01")
+
+        self.assertTrue(any("does not appear in any tracking source" in p for p in problems), msg=problems)
+
+    def test_missing_path_fails(self):
+        problems = self.problems_for("docs/testing/missing.md")
+
+        self.assertTrue(any("does not exist in the repository" in p for p in problems), msg=problems)
+
+    def test_parent_traversal_is_not_a_repository_path(self):
+        problems = self.problems_for("../outside.md")
+
+        self.assertTrue(any("is not a roadmap/backlog ID" in p for p in problems), msg=problems)
+
 
 class RepositoryRegisterTests(unittest.TestCase):
     """The real repository's skips must all be owned, not just the synthetic fixture's."""
@@ -613,7 +690,9 @@ class RepositoryRegisterTests(unittest.TestCase):
 
         # Use each entry's own review window rather than the wall clock so this suite does not
         # start failing on a date change; expiry itself is covered by EvaluateTests.
-        problems = MODULE.evaluate(sites, entries, dt.date(1970, 1, 1))
+        problems = MODULE.evaluate(
+            sites, entries, dt.date(1970, 1, 1), MODULE.build_tracking_resolver(REPO_ROOT)
+        )
 
         self.assertEqual(problems, [])
         self.assertGreater(len(sites), 0)
@@ -760,14 +839,14 @@ class VerbatimAndRawLiteralTests(unittest.TestCase):
 
 class UndecodableSourceTests(unittest.TestCase):
     def test_a_utf16_source_is_decoded_rather_than_skipped(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = Path(tmp) / "Utf16Tests.cs"
             path.write_bytes('[Fact(Skip = "held")]\npublic void T() { }\n'.encode("utf-16"))
 
             self.assertIn("Skip", MODULE.read_source(path))
 
     def test_an_undecodable_source_fails_the_gate_instead_of_being_ignored(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             tests_dir = Path(tmp) / "tests"
             tests_dir.mkdir()
             # Invalid UTF-8 with no BOM: previously the whole file was dropped, so any skip in it

@@ -22,7 +22,8 @@ public enum AccountingPostingApprovalStateDto
     NotRequired = 0,
     Pending = 1,
     Approved = 2,
-    Rejected = 3
+    Rejected = 3,
+    PreparerAttested = 4
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<AccountingPostingEvidenceKindDto>))]
@@ -79,6 +80,8 @@ public sealed record AccountingPostingCommandDto(
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator,
     Guid? LedgerBookId = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
     /// <summary>
     /// The actual posting actor, supplied by the validated command boundary. Null retains an
     /// explicitly unattributed legacy command; it never means that an approver posted it.
@@ -86,10 +89,19 @@ public sealed record AccountingPostingCommandDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Actor { get; init; }
 
+    /// <summary>Exact approved transaction-date FX authority reviewed with intercompany amounts.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ConsolidationFxAmountDto? IntercompanyFx { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetAccountingPreparerAttestationDto? CashDividendAttestation { get; init; }
+
     public IReadOnlyList<AccountingPostingEvidenceReferenceDto> Evidence { get; init; } =
         Evidence ?? [];
 
     public AccountingBookContextDto? BookContext { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? ControlledCloseAuthorizationId { get; init; }
 
     public Guid? BookPositionId { get; init; }
 

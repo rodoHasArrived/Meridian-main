@@ -242,6 +242,17 @@ describe("validateQuickTicket", () => {
     expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: "10", limitPrice: "0" })).toMatch(/limit/i);
   });
 
+  it("rejects exponent, hex, and signed numeric text instead of coercing it", () => {
+    for (const malformed of ["1e3", "0x10", "+5", "1,000", "Infinity"]) {
+      expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: malformed, limitPrice: "10" })).toBe(
+        "Enter a quantity greater than zero."
+      );
+      expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: "10", limitPrice: malformed })).toBe(
+        "Enter a limit price greater than zero."
+      );
+    }
+  });
+
   it("does not require limit price for market orders", () => {
     expect(validateQuickTicket({ side: "Buy", type: "Market", quantity: "10", limitPrice: "" })).toBeNull();
   });
@@ -663,7 +674,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
     expect(formatMarketPrice(null)).toBe(LIVE_QUOTES_EMPTY_VALUE);
     expect(formatMarketSize(undefined)).toBe(LIVE_QUOTES_EMPTY_VALUE);
     expect(formatMarketTime("not-a-date")).toBe(LIVE_QUOTES_EMPTY_VALUE);
-    expect(formatMarketTime("2026-05-08T15:00:00.123Z")).toBe("15:00:00.123 UTC");
+    expect(formatMarketTime("2026-05-08T15:00:00.123Z")).toBe("May 8, 2026, 15:00:00.123 UTC");
 
     const vm = buildLiveQuotesMarketViewModel({
       activeSymbol: "AAPL",
@@ -711,7 +722,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       changeLabel: "+1.06 (+0.57%)",
       changeAriaLabel: "Day change +1.06 (+0.57%)",
       changeTone: "positive",
-      description: "Session 2026-05-08 quote evidence from 13:30:00.000 UTC to 14:59:59.000 UTC."
+      description: "Session 2026-05-08 quote evidence from May 8, 2026, 13:30:00.000 UTC to May 8, 2026, 14:59:59.000 UTC."
     });
     expect(sessionStats?.stats.map((stat) => [stat.label, stat.value])).toEqual([
       ["Open", "187.00"],
@@ -787,7 +798,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       venueLabel: "NASDAQ"
     });
     expect(vm.venueLabel).toBe("NASDAQ");
-    expect(vm.lastUpdateLabel).toBe("15:00:00.000 UTC");
+    expect(vm.lastUpdateLabel).toBe("May 8, 2026, 15:00:00.000 UTC");
   });
 
   it("keeps recent-trade row selection and detail state in the view model", () => {
@@ -832,7 +843,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
       "Timestamp"
     ]);
     expect(vm.selectedTradeDetail?.fields.find((field) => field.label === "Timestamp")?.value)
-      .toBe("15:00:01.000 UTC");
+      .toBe("May 8, 2026, 15:00:01.000 UTC");
   });
 
   it("derives BBO, depth, quote metrics, and chart labels for the view", () => {
@@ -895,13 +906,13 @@ describe("buildLiveQuotesMarketViewModel", () => {
       fields: expect.arrayContaining([
         { label: "Venue", value: "NASDAQ" },
         { label: "Sequence", value: "42" },
-        { label: "Timestamp", value: "15:00:00.000 UTC" }
+        { label: "Timestamp", value: "May 8, 2026, 15:00:00.000 UTC" }
       ])
     });
     expect(vm.tradeDisplayRows[0]).toMatchObject({
       aggressorLabel: "Sell",
       aggressorTone: "negative",
-      timeLabel: "15:00:00.000 UTC"
+      timeLabel: "May 8, 2026, 15:00:00.000 UTC"
     });
     expect(vm.priceChart).toMatchObject({
       title: "AAPL prints over 1s",
@@ -1311,10 +1322,12 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a symbol before loading live market data.");
     expect(screen.getByText("Enter a symbol to load live BBO, recent trades, and L2 depth.")).toBeInTheDocument();
+    // One explanation and one next step: no "No symbols" repeated across the strip, matrix and table.
     expect(screen.getByText("Start a quote list")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add starter symbols" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Add starter symbols" })).toHaveLength(1);
     expect(screen.getByRole("link", { name: "Import symbols from watchlist" })).toHaveAttribute("href", "/data/quotes?view=watchlist");
-    expect(screen.getByRole("button", { name: "Search symbol" })).toBeInTheDocument();
+    expect(screen.queryByText(/No symbols/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Live quote matrix" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Selected symbol detail" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Open replay workflow" })).not.toBeInTheDocument();
     expect(api.getLiveQuote).not.toHaveBeenCalled();
@@ -1426,6 +1439,17 @@ describe("LiveQuotesScreen quick trade", () => {
     const askLevel = await screen.findByRole("button", {
       name: "Inspect AAPL ask level 1 at 188.07; Buy AAPL at 188.07"
     });
+
+    // The depth chart carries its own name and description: a single image (no wrapping
+    // role="img" around it), described by what it plots and where the levels are listed.
+    const depthCharts = screen.getAllByRole("img", { name: /depth profile/ });
+    expect(depthCharts).toHaveLength(1);
+    expect(depthCharts[0]).toHaveAccessibleName("Order-book depth profile for AAPL");
+    expect(depthCharts[0].tagName.toLowerCase()).toBe("svg");
+    expect(depthCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
+    expect(depthCharts[0]).toHaveAccessibleDescription(
+      "Cumulative bid and ask size. The quantity coverage table identifies fully and partly used displayed levels."
+    );
 
     expect(bidLevel).toHaveAttribute("aria-controls", "live-quotes-depth-level-detail");
     expect(bidLevel).toHaveAttribute("aria-expanded", "true");

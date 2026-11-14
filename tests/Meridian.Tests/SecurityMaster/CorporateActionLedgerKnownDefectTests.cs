@@ -11,9 +11,9 @@ using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityM
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Characterization tests pinning the ledger-side entries of the known-defect registry
+/// Historical characterization tests pinning the retired poster's ledger-side entries of the known-defect registry
 /// (tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md). Each test asserts TODAY'S
-/// defective behavior so CI stays green and any accidental behavior change — fix or
+/// retired poster's defective behavior and any accidental fixture change — fix or
 /// regression — fails loudly. When the fixing lane lands, flip the assertion to the TARGET
 /// and update the registry in the same PR.
 /// </summary>
@@ -67,8 +67,9 @@ public sealed class CorporateActionLedgerKnownDefectTests
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         queryService.GetCorporateActionsAsync(scenario.SecurityId, Arg.Any<CancellationToken>())
             .Returns(scenario.Actions);
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService);
 
-        var bridge = new SecurityMasterLedgerBridge(queryService, NullLogger<SecurityMasterLedgerBridge>.Instance);
+        var bridge = new HistoricalCorporateActionLedgerFixture(queryService, NullLogger<HistoricalCorporateActionLedgerFixture>.Instance);
         var ledger = new DomainLedger();
         await bridge.PostCorporateActionsAsync(
             scenario.SecurityId,

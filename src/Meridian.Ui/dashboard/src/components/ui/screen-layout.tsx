@@ -8,6 +8,7 @@ import {
 } from "react";
 import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 /**
  * `ScreenLayout` — the canonical skeleton for secondary and detail routes.
@@ -263,16 +264,16 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           {hasFocus ? (
             <section
               aria-label={focusLabel}
-              className="rounded-[2px] border border-border bg-card text-card-foreground"
+              className="rounded-[var(--radius-card)] border border-border bg-card text-card-foreground"
             >
               <div className="flex items-center justify-between gap-2 px-4 py-2">
-                <span className="eyebrow-label text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <span className={cn(eyebrowClassName(focusLabel), "text-xs font-medium text-muted-foreground", usesTrackedCaps(focusLabel) && "uppercase tracking-wide")}>
                   {focusLabel}
                 </span>
                 {focusCollapsible ? (
                   <button
                     type="button"
-                    className="inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="inline-flex items-center gap-1 rounded-[var(--radius-button)] px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
                     aria-expanded={!focusCollapsed}
                     aria-controls={focusRegionId}
                     onClick={() => setFocusCollapsed((collapsed) => !collapsed)}
@@ -301,7 +302,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           <aside
             role="complementary"
             aria-label={contextLabel}
-            className="flex w-full shrink-0 flex-col overflow-hidden rounded-[2px] border border-border bg-card text-card-foreground xl:sticky xl:top-3 xl:max-h-[calc(100dvh-9rem)] xl:w-[360px]"
+            className="flex w-full shrink-0 flex-col overflow-hidden rounded-[var(--radius-card)] border border-border bg-card text-card-foreground xl:sticky xl:top-3 xl:max-h-[calc(100dvh-9rem)] xl:w-[360px]"
           >
             <div className="flex items-center justify-between gap-2 border-b border-border/70 px-4 py-2">
               <span className="eyebrow-label text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -310,7 +311,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
               {onContextClose ? (
                 <button
                   type="button"
-                  className="inline-flex h-6 w-6 items-center justify-center rounded-[2px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded-[var(--radius-button)] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
                   aria-label={`Close ${contextLabel}`}
                   onClick={onContextClose}
                 >

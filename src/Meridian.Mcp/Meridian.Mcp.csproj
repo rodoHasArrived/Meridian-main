@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="ModelContextProtocol" />
   </ItemGroup>
 
@@ -22,5 +23,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Meridian.Tests" />
+    <InternalsVisibleTo Include="Meridian.Storage.Tests" />
+    <InternalsVisibleTo Include="Meridian.Execution.Tests" />
   </ItemGroup>
 </Project>

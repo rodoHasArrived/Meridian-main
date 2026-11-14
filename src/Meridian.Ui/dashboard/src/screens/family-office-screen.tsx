@@ -1,12 +1,13 @@
-import type { KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Boxes, GitBranch, Landmark, Network, TableProperties, WalletCards } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/data/empty-state";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { FamilyOwnershipGraph } from "@/screens/family-ownership-graph";
+import { PrivateCapitalLifecyclePanel } from "@/components/meridian/private-capital-lifecycle-panel";
 import {
   MetricCard,
   KeyValueGrid
@@ -15,16 +16,15 @@ import { ScreenLayout } from "@/components/ui/screen-layout";
 import { SeverityBadge } from "@/components/operations";
 import { getFamilyOfficeOverview } from "@/lib/api/family-office.api";
 import { mapFamilyOfficeOverview } from "@/screens/family-office-screen.mapper";
-import { cn } from "@/lib/utils";
-import { readinessToneToSeverityStatus, semanticToneToMetricCardTone } from "@/lib/shared-tone-mappings";
 import {
   buildFamilyOfficeScreenViewModel,
-  selectAdjacentFamilyOfficeNode,
   type FamilyOfficeEntityStructure,
-  type FamilyOfficeOwnershipNode,
   type FamilyOfficePanelViewModel,
-  type FamilyOfficeTone
 } from "@/screens/family-office-screen.view-model";
+import { eyebrowClassName } from "@/design-system/label-case";
+import { pluralizeCount } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
+import { statusMetricTone, toSeverity } from "@/design-system/status-styles";
 
 const panelIconMap: Record<string, typeof Landmark> = {
   "total-family-net-worth": Landmark,
@@ -36,48 +36,6 @@ const panelIconMap: Record<string, typeof Landmark> = {
   "unresolved-reconciliation-breaks": AlertTriangle,
   "stale-valuation-warnings": AlertTriangle
 };
-
-const graphNodeClassName: Record<FamilyOfficeTone, string> = {
-  default: "border-border bg-secondary/80 text-foreground",
-  success: "border-success/50 bg-success/10 text-success",
-  warning: "border-warning/50 bg-warning/10 text-warning",
-  danger: "border-danger/50 bg-danger/10 text-danger"
-};
-
-const ownershipColumns: DenseDataTableColumn<FamilyOfficeOwnershipNode>[] = [
-  {
-    id: "label",
-    label: "Node",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="block text-xs text-muted-foreground">{row.type}</span>
-      </span>
-    )
-  },
-  {
-    id: "value",
-    label: "Value",
-    align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.value}</span>
-  },
-  {
-    id: "percentage",
-    label: "Ownership",
-    align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.percentage}</span>
-  },
-  {
-    id: "parent",
-    label: "Parent",
-    render: (row) => <span className="font-mono text-xs text-muted-foreground">{row.parentId ?? "Root"}</span>
-  },
-  {
-    id: "detail",
-    label: "Detail",
-    render: (row) => <span className="text-muted-foreground">{row.detail}</span>
-  }
-];
 
 type FamilyOfficeLoadState = "idle" | "loading" | "ready" | "error";
 
@@ -119,27 +77,60 @@ function emptyStateCopy(loadState: FamilyOfficeLoadState): { title: string; deta
  * not-connected state without issuing a request.
  */
 export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: FamilyOfficeEntityStructure | null } = {}) {
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [showTableFallback, setShowTableFallback] = useState(false);
+  const [query, setQuery] = useSearchParams();
+  const location = useLocation();
+  // Router search-param callbacks do not queue updates. Preserve the latest pending
+  // query when adjacent controls are used before the next location render.
+  const queryRef = useRef(query);
+  const renderedQuery = useRef(query.toString());
+  // An unrelated state render can precede the pending router navigation. It must
+  // not replace the synchronously retained query with the previous location.
+  if (renderedQuery.current !== query.toString()) {
+    renderedQuery.current = query.toString();
+    queryRef.current = query;
+  }
+  const updateQuery = (update: (current: URLSearchParams) => URLSearchParams) => {
+    // Browser history is updated before concurrent router renders. Read its latest
+    // query for this route; MemoryRouter/test hosts retain the in-memory writer.
+    const browserRoute = typeof window !== "undefined" && location.pathname !== "/"
+      && window.location.pathname.endsWith(location.pathname);
+    const next = update(new URLSearchParams(browserRoute ? window.location.search : queryRef.current));
+    queryRef.current = next;
+    setQuery(next);
+  };
+  const familyOfficeId = query.get("familyOfficeId") ?? "";
+  const appliedStructureDate = query.get("structureAsOf") ?? "";
+  const [structureDate, setStructureDate] = useState(appliedStructureDate);
+  const readScopeKey = JSON.stringify([familyOfficeId, appliedStructureDate]);
+  const selectedNodeId = query.get("ownershipNode");
+  const showTableFallback = query.get("ownershipView") === "table";
+  const [availableClients, setAvailableClients] = useState<Array<{ clientId: string; displayName: string }>>([]);
+  const [loadedReadScope, setLoadedReadScope] = useState("");
   const [loadedStructure, setLoadedStructure] = useState<FamilyOfficeEntityStructure | null>(null);
   const [loadState, setLoadState] = useState<FamilyOfficeLoadState>(
     entityStructure === undefined ? "loading" : "idle"
   );
   const [reloadToken, setReloadToken] = useState(0);
 
+  useEffect(() => { setStructureDate(appliedStructureDate); }, [appliedStructureDate]);
+
   useEffect(() => {
     if (entityStructure !== undefined) {
       return;
     }
 
+    const controller = new AbortController();
     let active = true;
     setLoadState("loading");
-    getFamilyOfficeOverview()
+    setLoadedStructure(null);
+    getFamilyOfficeOverview({ signal: controller.signal }, familyOfficeId || undefined, appliedStructureDate || undefined)
       .then((overview) => {
         if (!active) {
           return;
         }
 
+        setAvailableClients(overview.availableClients ?? []);
+        setLoadedReadScope(readScopeKey);
         setLoadedStructure(mapFamilyOfficeOverview(overview));
         setLoadState("ready");
       })
@@ -151,58 +142,16 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
 
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [entityStructure, reloadToken]);
+  }, [entityStructure, reloadToken, familyOfficeId, appliedStructureDate, readScopeKey]);
 
-  const resolvedStructure = entityStructure ?? loadedStructure;
+  const resolvedStructure = entityStructure === undefined
+    ? loadedReadScope === readScopeKey ? loadedStructure : null
+    : entityStructure;
   const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, resolvedStructure);
-  const graphNodeRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const shouldFocusGraphNode = useRef(false);
-
-  useEffect(() => {
-    if (!shouldFocusGraphNode.current || !vm.ownershipGraph.selectedNodeId) {
-      return;
-    }
-
-    shouldFocusGraphNode.current = false;
-    graphNodeRefs.current[vm.ownershipGraph.selectedNodeId]?.focus();
-  }, [vm.ownershipGraph.selectedNodeId]);
-
   const selectNode = (nodeId: string) => {
-    setSelectedNodeId(nodeId);
-  };
-
-  const moveGraphSelection = (direction: "next" | "previous" | "first" | "last") => {
-    const nextNodeId = selectAdjacentFamilyOfficeNode(vm.ownershipGraph.selectedNodeId, direction, resolvedStructure);
-    if (nextNodeId) {
-      shouldFocusGraphNode.current = true;
-      setSelectedNodeId(nextNodeId);
-    }
-  };
-
-  const handleGraphNodeKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    switch (event.key) {
-      case "ArrowRight":
-      case "ArrowDown":
-        event.preventDefault();
-        moveGraphSelection("next");
-        break;
-      case "ArrowLeft":
-      case "ArrowUp":
-        event.preventDefault();
-        moveGraphSelection("previous");
-        break;
-      case "Home":
-        event.preventDefault();
-        moveGraphSelection("first");
-        break;
-      case "End":
-        event.preventDefault();
-        moveGraphSelection("last");
-        break;
-      default:
-        break;
-    }
+    updateQuery((current) => { const next = new URLSearchParams(current); next.set("ownershipNode", nodeId); return next; });
   };
 
   return (
@@ -211,6 +160,28 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
       scope={`${vm.route.workspaceLabel} / ${vm.route.label}`}
       description={vm.route.description}
     >
+      {entityStructure === undefined && availableClients.length > 0 ? <label className="block text-sm">Family office
+        <select className="ml-3 rounded border border-border bg-background p-2" value={familyOfficeId || (availableClients.length === 1 ? availableClients[0].clientId : "")} onChange={(event) => {
+          updateQuery((current) => { const next = new URLSearchParams(current); next.set("familyOfficeId", event.target.value); next.delete("ownershipNode"); return next; });
+        }}><option value="">Select a family office</option>{availableClients.map((client) => <option key={client.clientId} value={client.clientId}>{client.displayName}</option>)}</select>
+      </label> : null}
+      {entityStructure === undefined ? <form className="flex flex-wrap items-end gap-3 rounded-sm border border-border p-3" onSubmit={(event) => {
+        event.preventDefault();
+        updateQuery((current) => {
+          const next = new URLSearchParams(current);
+          if (structureDate) next.set("structureAsOf", structureDate); else next.delete("structureAsOf");
+          next.delete("ownershipNode");
+          return next;
+        });
+      }}>
+        <label className="text-sm">Ownership structure on<Input type="date" max={utcToday()} className="mt-1" value={structureDate} onChange={(event) => setStructureDate(event.target.value)} /></label>
+        <Button type="submit" variant="outline" size="sm" disabled={loadState === "loading"} disabledReason="Wait for the selected ownership structure to finish loading.">Apply structure date</Button>
+        <Button type="button" variant="outline" size="sm" disabled={loadState === "loading"} disabledReason="Wait for the selected ownership structure to finish loading." onClick={() => {
+          setStructureDate("");
+          updateQuery((current) => { const next = new URLSearchParams(current); next.delete("structureAsOf"); next.delete("ownershipNode"); return next; });
+        }}>Current structure</Button>
+        <p className="w-full text-xs text-muted-foreground">Date selection changes ownership structure only. Financial balances and valuations retain their own source dates.</p>
+      </form> : null}
       <OperationalTrustSummary
         label="Family office data confidence"
         source={{
@@ -219,7 +190,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
           tone: resolvedStructure ? "ready" : "blocked"
         }}
         scope={{
-          value: resolvedStructure ? `${resolvedStructure.entities.length} entities` : "No family entities",
+          value: resolvedStructure ? pluralizeCount(resolvedStructure.entities.length, "entity", { plural: "entities" }) : "No family entities",
           detail: resolvedStructure ? `${resolvedStructure.baseCurrency} consolidated scope` : "Complete entity setup to establish scope",
           tone: resolvedStructure?.entities.length ? "ready" : "blocked"
         }}
@@ -230,10 +201,10 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         }}
         completeness={{
           value: resolvedStructure
-            ? `${resolvedStructure.privateAssets.length} private assets · ${resolvedStructure.commitments.length} commitments`
+            ? `${pluralizeCount(resolvedStructure.privateAssets.length, "private asset")} · ${pluralizeCount(resolvedStructure.commitments.length, "commitment")}`
             : "No records loaded",
           detail: "Private-asset and commitment coverage",
-          tone: resolvedStructure ? "ready" : "blocked"
+          tone: resolvedStructure ? resolvedStructure.warnings?.length ? "review" : "ready" : "blocked"
         }}
         blocker={vm.notConnected ? {
           value: "Entity setup required",
@@ -247,8 +218,8 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         <CardContent className="space-y-4">
           <EmptyState
             icon="inbox"
-            title={emptyStateCopy(loadState).title}
-            detail={emptyStateCopy(loadState).detail ?? vm.route.emptyState}
+            title={loadState === "ready" && availableClients.length > 1 && !familyOfficeId ? "Select a family office" : emptyStateCopy(loadState).title}
+            detail={loadState === "ready" && availableClients.length > 1 && !familyOfficeId ? "Choose an authorized client to read its current ownership and balances." : emptyStateCopy(loadState).detail ?? vm.route.emptyState}
           />
           {loadState === "loading" ? null : (
           <div className="flex justify-center">
@@ -292,7 +263,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setShowTableFallback((current) => !current)}
+              onClick={() => updateQuery((current) => { const next = new URLSearchParams(current); if (showTableFallback) next.delete("ownershipView"); else next.set("ownershipView", "table"); return next; })}
               aria-pressed={showTableFallback}
               aria-label={showTableFallback ? vm.ownershipGraph.graphToggleLabel : vm.ownershipGraph.tableToggleLabel}
             >
@@ -306,65 +277,9 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
             {vm.ownershipGraph.keyboardInstructions}
           </p>
 
-          {showTableFallback ? (
-            <DenseDataTable
-              columns={ownershipColumns}
-              rows={vm.ownershipGraph.nodes}
-              getRowId={(row) => row.id}
-              getRowAriaLabel={(row) => row.ariaLabel}
-              getRowAriaControls={(row) => row.detailPanelId}
-              getRowAriaExpanded={(row) => row.expanded}
-              getRowClassName={(row) => row.rowClassName}
-              getRowSelectAriaLabel={(row) => row.selectAriaLabel}
-              onRowSelect={(row) => selectNode(row.id)}
-              selectedRowId={vm.ownershipGraph.selectedNodeId}
-              emptyText={vm.ownershipGraph.emptyState}
-              ariaLabel={vm.ownershipGraph.tableFallbackLabel}
-              tableId="family-office-ownership-table"
-              caption={vm.ownershipGraph.keyboardInstructions}
-            />
-          ) : (
-            <div
-              className="rounded-xl border border-border/70 bg-secondary/10 p-4"
-              role="group"
-              aria-label={vm.ownershipGraph.ariaLabel}
-              aria-describedby="family-office-graph-keyboard-instructions"
-            >
-              <div className="sr-only" aria-live="polite" aria-atomic="true">
-                {vm.ownershipGraph.selectedNode ? `Selected ${vm.ownershipGraph.selectedNode.label}.` : vm.ownershipGraph.emptyState}
-              </div>
-              <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-                <OwnershipNodeButton
-                  node={vm.ownershipGraph.nodes[0]}
-                  refCallback={(node) => {
-                    graphNodeRefs.current[vm.ownershipGraph.nodes[0]?.id ?? ""] = node;
-                  }}
-                  onSelect={selectNode}
-                  onKeyDown={handleGraphNodeKeyDown}
-                />
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {vm.ownershipGraph.nodes.slice(1).map((node) => (
-                    <OwnershipNodeButton
-                      key={node.id}
-                      node={node}
-                      refCallback={(element) => {
-                        graphNodeRefs.current[node.id] = element;
-                      }}
-                      onSelect={selectNode}
-                      onKeyDown={handleGraphNodeKeyDown}
-                    />
-                  ))}
-                </div>
-              </div>
-              <ul className="mt-4 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2" aria-label="Ownership graph edges">
-                {vm.ownershipGraph.edges.map((edge) => (
-                  <li key={edge.id} className="rounded-md border border-border/60 bg-background/30 px-3 py-2">
-                    {edge.label}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {resolvedStructure?.warnings?.map((warning) => <p key={warning} role="status" className="text-xs text-warning">{warning}</p>)}
+          {selectedNodeId && !vm.ownershipGraph.nodes.some((node) => node.id === selectedNodeId) ? <p role="status">The selected ownership node is unavailable in this scope.</p> : null}
+          <FamilyOwnershipGraph graph={vm.ownershipGraph} table={showTableFallback} onSelect={selectNode} />
 
           <section
             id="family-office-ownership-detail"
@@ -377,9 +292,9 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <div className="eyebrow-label">{vm.ownershipGraph.selectedNode.type}</div>
+                    <div className={eyebrowClassName(vm.ownershipGraph.selectedNode.type)}>{vm.ownershipGraph.selectedNode.type}</div>
                     {vm.ownershipGraph.selectedNode.tone !== "default" ? (
-                      <SeverityBadge status={readinessToneToSeverityStatus(vm.ownershipGraph.selectedNode.tone)} />
+                      <SeverityBadge status={toSeverity(vm.ownershipGraph.selectedNode.tone)} />
                     ) : null}
                   </div>
                   <h2 className="mt-2 text-lg font-semibold text-foreground">{vm.ownershipGraph.selectedNode.label}</h2>
@@ -392,8 +307,8 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
                     columns={3}
                     items={[
                       { label: "Value", value: vm.ownershipGraph.selectedNode.value },
-                      { label: "Ownership", value: vm.ownershipGraph.selectedNode.percentage },
-                      { label: "Parent", value: vm.ownershipGraph.selectedNode.parentId ?? "Root" }
+                      { label: "Relationship percentages", value: "Inspect individual relationships" },
+                      { label: "Legal title", value: vm.ownershipGraph.selectedNode.type === "asset" ? "Not established by association" : "See retained Owns relationships" }
                     ]}
                   />
                 </div>
@@ -405,6 +320,10 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
         </CardContent>
       </Card>
       ) : null}
+      {resolvedStructure ? <PrivateCapitalLifecyclePanel holderEntityIds={resolvedStructure.entities.map((entity) => entity.entityId)} scopeKey={JSON.stringify([resolvedStructure.familyOfficeId, appliedStructureDate])} asOfDate={resolvedStructure.asOfDate} onViewStateChange={(patch) => updateQuery((current) => {
+        for (const [key, value] of Object.entries(patch)) { if (value === null) current.delete(key); else current.set(key, value); }
+        return current;
+      })} /> : null}
     </ScreenLayout>
   );
 }
@@ -414,49 +333,11 @@ function FamilyOfficePanel({ panel }: { panel: FamilyOfficePanelViewModel }) {
 
   return (
     <div className="grid gap-2" aria-label={panel.ariaLabel} role="group">
-      <MetricCard label={panel.label} value={panel.value} tone={semanticToneToMetricCardTone(panel.tone)} />
+      <MetricCard label={panel.label} value={panel.value} tone={statusMetricTone(panel.tone)} />
       <p className="flex items-start gap-2 px-1 text-xs leading-5 text-muted-foreground">
         <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
         <span>{panel.detail}</span>
       </p>
     </div>
-  );
-}
-
-function OwnershipNodeButton({
-  node,
-  refCallback,
-  onSelect,
-  onKeyDown
-}: {
-  node: FamilyOfficeOwnershipNode;
-  refCallback: (node: HTMLButtonElement | null) => void;
-  onSelect: (nodeId: string) => void;
-  onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void;
-}) {
-  return (
-    <button
-      ref={refCallback}
-      type="button"
-      className={cn(
-        "min-h-28 rounded-sm border px-4 py-3 text-left transition-colors focus:outline-hidden focus:ring-2 focus:ring-primary/60",
-        graphNodeClassName[node.tone],
-        node.isSelected ? "ring-2 ring-primary/70" : "hover:border-primary/50"
-      )}
-      aria-label={node.selectAriaLabel}
-      aria-pressed={node.isSelected}
-      aria-controls={node.detailPanelId}
-      aria-expanded={node.expanded}
-      tabIndex={node.isSelected ? 0 : -1}
-      onClick={() => onSelect(node.id)}
-      onKeyDown={onKeyDown}
-    >
-      <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] opacity-80">{node.type}</span>
-      <span className="mt-2 block text-sm font-semibold text-foreground">{node.label}</span>
-      <span className="mt-3 flex items-center justify-between gap-3 font-mono text-xs tabular-nums">
-        <span>{node.value}</span>
-        <span>{node.percentage}</span>
-      </span>
-    </button>
   );
 }

@@ -11,3 +11,5 @@ Two chart-toolbar time controls.
 ```
 
 `AsOfControl` emits `{ mode, asOf }` — `asOf` is `null` while live, a Date when frozen. Wire it to your data layer so the whole surface reprices against the frozen instant. Put both in the toolbar of any charting or coverage view; don't leave the time basis implicit — an operator must always know whether they're looking at live or as-of data.
+
+When asOf is supplied it is authoritative for the displayed instant. Freeze/edit proposes a next value; rejected controlled changes preserve the supplied instant until the parent accepts it.

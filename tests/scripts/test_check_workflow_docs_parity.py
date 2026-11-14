@@ -75,14 +75,14 @@ class ExtractExamplesTests(unittest.TestCase):
     """End-to-end: ParityChecker.extract_examples must find commands inside code fences."""
 
     def _make_checker(self) -> object:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             (root / "Makefile").write_text("build:\n\tdotnet build\n", encoding="utf-8")
             return module.ParityChecker(root)
 
     def test_extracts_command_from_bash_fence(self) -> None:
         checker = self._make_checker()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             doc_path = Path(tmp) / "test.md"
             doc_path.write_text("Some docs\n\n```bash\nmake build\n```\n", encoding="utf-8")
             examples = checker.extract_examples(doc_path)
@@ -90,7 +90,7 @@ class ExtractExamplesTests(unittest.TestCase):
 
     def test_extracts_command_from_plain_fence(self) -> None:
         checker = self._make_checker()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             doc_path = Path(tmp) / "test.md"
             doc_path.write_text("Some docs\n\n```\ndotnet restore\n```\n", encoding="utf-8")
             examples = checker.extract_examples(doc_path)
@@ -98,7 +98,7 @@ class ExtractExamplesTests(unittest.TestCase):
 
     def test_ignores_commands_outside_fence(self) -> None:
         checker = self._make_checker()
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             doc_path = Path(tmp) / "test.md"
             doc_path.write_text("Run `make build` to compile.\n", encoding="utf-8")
             examples = checker.extract_examples(doc_path)
@@ -109,7 +109,7 @@ class ClassifyFindingTests(unittest.TestCase):
     """ParityChecker.classify must downgrade to warning when context contains special keywords."""
 
     def _make_checker(self) -> object:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             (root / "Makefile").write_text("build:\n\tdotnet build\n", encoding="utf-8")
             return module.ParityChecker(root)

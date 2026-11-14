@@ -82,4 +82,12 @@ describe("dev fixtures", () => {
     });
     expect(robinhood).not.toEqual(alpaca);
   });
+
+  it("serves an empty saved-views list for any table so captures show the normal state", () => {
+    expect(resolveDevFixture("/api/workstation/tables/operator-triage-queue/views")).toEqual([]);
+    expect(resolveDevFixture(`/api/workstation/tables/${encodeURIComponent("data providers/trust")}/views`)).toEqual([]);
+    // Only the views collection itself: a single view and sibling table routes are not fixtures.
+    expect(resolveDevFixture("/api/workstation/tables/x/views/y")).toBeUndefined();
+    expect(resolveDevFixture("/api/workstation/tables/x/export")).toBeUndefined();
+  });
 });

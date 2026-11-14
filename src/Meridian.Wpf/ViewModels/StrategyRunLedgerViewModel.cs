@@ -5,6 +5,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -32,6 +33,23 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
             }
         }
     }
+
+    private DateTime? _selectedAsOfDate;
+    /// <summary>Inclusive economic date in UTC; empty selects the complete retained run.</summary>
+    public DateTime? SelectedAsOfDate
+    {
+        get => _selectedAsOfDate;
+        set
+        {
+            if (SetProperty(ref _selectedAsOfDate, value))
+            {
+                CurrentLoadTask = LoadFromParameterAsync(_runId);
+                _ = CurrentLoadTask;
+            }
+        }
+    }
+
+    private long _loadVersion;
 
     internal Task CurrentLoadTask { get; private set; } = Task.CompletedTask;
 
@@ -239,6 +257,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
     {
+        var loadVersion = ++_loadVersion;
         var runId = parameter as string;
         if (string.IsNullOrWhiteSpace(runId))
         {
@@ -247,7 +266,14 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         }
 
         _runId = runId;
-        var ledger = await _runService.GetLedgerAsync(runId, ct);
+        var asOf = SelectedAsOfDate.HasValue
+            ? new DateTimeOffset(DateTime.SpecifyKind(SelectedAsOfDate.Value.Date.AddTicks(TimeSpan.TicksPerDay - 1), DateTimeKind.Utc))
+            : (DateTimeOffset?)null;
+        var ledger = asOf.HasValue
+            ? await _runService.GetLedgerAsync(runId, asOf.Value, ct)
+            : await _runService.GetLedgerAsync(runId, ct);
+        if (loadVersion != _loadVersion)
+            return;
         if (ledger is null)
         {
             ApplyLedgerUnavailableState(runId);
@@ -258,7 +284,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         StatusText = ledger.SecurityMissingCount > 0
             ? $"{ledger.JournalEntryCount} journal entries and {ledger.TrialBalance.Count} trial-balance lines loaded. {ledger.SecurityMissingCount} symbol(s) still need Security Master mapping."
             : $"{ledger.JournalEntryCount} journal entries and {ledger.TrialBalance.Count} trial-balance lines loaded.";
-        AsOfText = ledger.AsOf.LocalDateTime.ToString("g");
+        AsOfText = UtcFormat.FormatUtcTimestamp(ledger.AsOf);
         JournalEntriesText = ledger.JournalEntryCount.ToString("N0");
         LedgerEntriesText = ledger.LedgerEntryCount.ToString("N0");
         AssetBalanceText = ledger.AssetBalance.ToString("C2");

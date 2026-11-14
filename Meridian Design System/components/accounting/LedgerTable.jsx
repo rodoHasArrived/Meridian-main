@@ -5,58 +5,80 @@
 // `onSort` delegate is given), click-to-inspect rows with selection. Light institutional grid.
 import React from "react";
 const { useState } = React;
-import { AmountCell } from "./AmountCell";
-import { toNumber } from "./money";
+import { AmountCell, splitEnvelopeValue } from "./AmountCell";
+import { toNumber } from "../core/format.js";
+import { knownAmount, sumKnown, displayAmount, optionalSide } from "./knownAmounts.js";
+
+// A debit/credit may arrive as a bare number or as an envelope-shaped object
+// ({ value, condition, authority, … }) — arithmetic reads the figure, AmountCell reads the rest.
+const amt = value => knownAmount(value);
+const fig = (v) => splitEnvelopeValue(v).value;
+
+// Row-level envelope facets apply to that row's amount cells; a side-level envelope-shaped
+// value wins over the row's. `label` names the figure when the row hasn't.
+function sideEnvelope(r, side) {
+  const v = r[side];
+  if (v === "" || v == null) return undefined;   // the blank side states nothing
+  const own = splitEnvelopeValue(v).envelope;
+  const base = r.envelope;
+  if (!own && !base) return undefined;
+  const merged = { ...base, ...own };
+  if (!merged.label) merged.label = `${r.ref || r.date} · ${r.account || r.memo || side}`;
+  return merged;
+}
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.ldg-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
+.ldg-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
+.ldg-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .ldg{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .ldg thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
-  background:var(--bg-medium,#EDEAE4);z-index:1;cursor:pointer;user-select:none;
+  background:var(--bg-medium,#EBE8E1);z-index:1;cursor:pointer;user-select:none;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
-.ldg thead th:hover{color:var(--text-primary,#22252A);}
-.ldg thead th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#22252A);}
+  letter-spacing:.03em;color:var(--text-muted,#606870);
+  border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
+.ldg thead th:hover{color:var(--text-primary,#20252B);}
+.ldg thead th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#20252B);}
 .ldg thead th:last-child{border-right:none;}
 .ldg th.ldg--r{text-align:right;}
-.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
-  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
+.ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#20252B);
+  border-top:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);
   vertical-align:baseline;height:40px;}
 .ldg td:last-child{border-right:none;}
 .ldg tbody tr:first-child td{border-top:none;}
 .ldg td.ldg--r{text-align:right;}
-.ldg tbody tr:hover{background:var(--bg-hover,#F0EEE9);}
+.ldg tbody tr:hover{background:var(--bg-hover,#EDEFF0);}
 .ldg tbody tr.ldg__row--click{cursor:pointer;}
-.ldg tbody tr.ldg__row--on td{background:var(--bg-active,#F2E3DB);}
-.ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
-.ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(138,92,18,.07));}
-.ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#94999F);text-decoration:line-through;}
-.ldg tbody tr.ldg__row--void td span{color:var(--text-disabled,#94999F) !important;}
-.ldg__date{color:var(--text-secondary,#4E5258);}
-.ldg__ref{color:var(--accent,#A85436);}
+.ldg tbody tr.ldg__row--on td{background:var(--bg-active,#E7EDF2);}
+.ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
+.ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(152,103,23,.07));}
+.ldg tbody tr.ldg__row--void td{color:var(--text-secondary,#535C65);text-decoration:line-through;}
+.ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-secondary,#535C65);}
+.ldg tbody tr.ldg__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
+.ldg__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
+.ldg__date{color:var(--text-secondary,#535C65);}
+.ldg__ref{color:var(--link,#2A5F96);}
 .ldg__chip{display:inline-block;margin-left:7px;font-family:var(--font-body);font-size:9px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid;
   border-radius:var(--radius-chip,2px);padding:0 5px;line-height:1.5;vertical-align:1px;}
-.ldg__chip--pending{background:var(--orange-a10,rgba(138,92,18,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#68450E);}
-.ldg__chip--void{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
-.ldg__memo{font-family:var(--font-body);color:var(--text-secondary,#4E5258);
+.ldg__chip--pending{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
+.ldg__chip--void{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
+.ldg__memo{font-family:var(--font-body);color:var(--text-secondary,#535C65);
   white-space:normal;min-width:160px;}
-.ldg__acct{color:var(--text-primary,#22252A);}
-.ldg__open td{background:var(--bg-medium,#EDEAE4);color:var(--text-muted,#5E666F);}
+.ldg__acct{color:var(--text-primary,#20252B);}
+.ldg__open td{background:var(--bg-medium,#EBE8E1);color:var(--text-muted,#606870);}
 .ldg__open .ldg__memo{font-style:italic;}
-.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
-  border-top:2px solid var(--border-strong,#AFABA1);color:var(--text-primary,#22252A);}
+.ldg tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
+  border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .ldg tfoot td.ldg--r{text-align:right;}
 .ldg__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4E5258);}
-.ldg__foot-note{font-weight:400;color:var(--text-muted,#5E666F);margin-left:8px;}
+  font-size:11px;color:var(--text-secondary,#535C65);}
+.ldg__foot-note{font-weight:400;color:var(--text-muted,#606870);margin-left:8px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ledger");
@@ -65,15 +87,26 @@ function inject() {
 }
 
 function compareRows(a, b, key) {
-  if (key === "debit" || key === "credit") return (toNumber(a[key]) || 0) - (toNumber(b[key]) || 0);
+  if (key === "debit" || key === "credit") return (amt(a[key]) || 0) - (amt(b[key]) || 0);
   if (key === "balance") return (a._bal ?? 0) - (b._bal ?? 0);
   const av = (a[key] ?? "").toString();
   const bv = (b[key] ?? "").toString();
   return av.localeCompare(bv, undefined, { numeric: true });
 }
 
+// Module-scope so the <th> keeps its identity (and keyboard focus) across re-renders and sorts.
+function Head({ k, children, right, sortKey, sortDir, onSort }) {
+  return (
+    <th className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => onSort(k)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSort(k); } }}
+      aria-sort={sortKey === k ? (sortDir === 1 ? "ascending" : "descending") : "none"}>
+      {children} {sortKey === k && (sortDir === 1 ? "\u2191" : "\u2193")}
+    </th>
+  );
+}
+
 export function LedgerTable({
-  rows,
+  rows = [],
   currency = "USD",
   opening,
   openingBalance,          // alias of `opening`
@@ -87,6 +120,8 @@ export function LedgerTable({
   inject();
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState(1);
+  const [focusedRow, setFocusedRow] = useState(null);
+  const rowRefs = React.useRef(new Map());
   const open = opening != null ? opening : openingBalance;
 
   const handleSort = (key) => {
@@ -96,21 +131,24 @@ export function LedgerTable({
     onSort?.(key, dir);
   };
 
-  // Running balance is chronological (source order); void rows contribute nothing.
-  let bal = isFinite(toNumber(open)) ? toNumber(open) : 0;
-  let hasRunning = isFinite(toNumber(open));
-  const computed = rows.map((r, i) => {
-    const isVoid = r.status === "void";
-    const d = isVoid ? 0 : toNumber(r.debit) || 0;
-    const c = isVoid ? 0 : toNumber(r.credit) || 0;
-    const delta = normalSide === "credit" ? c - d : d - c;
-    if (!isVoid && r.balance != null && isFinite(toNumber(r.balance))) {
-      bal = toNumber(r.balance);
-      hasRunning = true;
-    } else {
-      bal += delta;
+  // Running balance is chronological (source order); void rows contribute nothing. It is only
+  // known from the opening balance or the first explicit row balance onward — earlier rows show a dash.
+  let bal=knownAmount(open);
+  const rowSide=(row,key)=>{
+    if(row[key]===undefined||(typeof row[key]==="string"&&row[key].trim()===""))return 0;
+    return knownAmount({...sideEnvelope(row,key),value:fig(row[key])});
+  };
+  const computed=rows.map((row,index)=>{
+    const isVoid=row.status==="void";
+    const hasSides=row.debit!==undefined||row.credit!==undefined;
+    const debit=isVoid?0:hasSides?rowSide(row,"debit"):null;
+    const credit=isVoid?0:hasSides?rowSide(row,"credit"):null;
+    if(!isVoid){
+      if(row.balance!==undefined)bal=knownAmount(row.balance);
+      else if(bal===null||debit===null||credit===null)bal=null;
+      else bal+=normalSide==="credit"?credit-debit:debit-credit;
     }
-    return { ...r, _bal: bal, _void: isVoid, _i: i };
+    return{...row,_bal:bal,_balanceKnown:bal!==null,_debit:debit,_credit:credit,_void:isVoid,_i:index};
   });
 
   let display = computed;
@@ -118,35 +156,48 @@ export function LedgerTable({
     display = [...computed].sort((a, b) => sortDir * compareRows(a, b, sortKey));
   }
 
-  const live = computed.filter((r) => !r._void);
-  const totalD = live.reduce((a, r) => a + (toNumber(r.debit) || 0), 0);
-  const totalC = live.reduce((a, r) => a + (toNumber(r.credit) || 0), 0);
-  const voided = computed.length - live.length;
+  const tabStop = display.some((row) => row._i === focusedRow) ? focusedRow
+    : display.some((row) => row._i === selectedIndex) ? selectedIndex : display[0]?._i;
+  const onRowKeyDown = (event, originalIndex) => {
+    // Descendant links and controls retain their own activation and navigation.
+    if (event.target !== event.currentTarget || !onRowClick) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault(); onRowClick(rows[originalIndex], originalIndex); return;
+    }
+    const index = display.findIndex((row) => row._i === originalIndex);
+    let next;
+    if (event.key === "ArrowDown") next = Math.min(display.length - 1, index + 1);
+    else if (event.key === "ArrowUp") next = Math.max(0, index - 1);
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = display.length - 1;
+    else return;
+    event.preventDefault(); rowRefs.current.get(display[next]?._i)?.focus();
+  };
 
-  const Head = ({ k, children, right }) => (
-    <th className={right ? "ldg--r" : undefined} scope="col" tabIndex={0} onClick={() => handleSort(k)}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleSort(k); } }}
-      aria-sort={sortKey === k ? (sortDir === 1 ? "ascending" : "descending") : "none"}>
-      {children} {sortKey === k && (sortDir === 1 ? "\u2191" : "\u2193")}
-    </th>
-  );
+  const live = computed.filter((r) => !r._void);
+  const totalD = sumKnown(live.map(row=>row._debit));
+  const totalC = sumKnown(live.map(row=>row._credit));
+  const voided = computed.length - live.length;
+  const net=totalD===null||totalC===null?null:totalD-totalC;
+
+  const hp = { sortKey, sortDir, onSort: handleSort };
 
   return (
-    <div className="ldg-wrap" role="region" aria-label={caption || "General ledger"}>
+    <div className="ldg-wrap" tabIndex={0} role="region" aria-label={caption || "General ledger"}>
       <table className="ldg">
         <thead>
           <tr>
-            <Head k="date">Date</Head>
-            <Head k="ref">Ref</Head>
-            {showAccount && <Head k="account">Account</Head>}
-            <Head k="memo">Description</Head>
-            <Head k="debit" right>Debit</Head>
-            <Head k="credit" right>Credit</Head>
-            <Head k="balance" right>Balance</Head>
+            <Head k="date" {...hp}>Date</Head>
+            <Head k="ref" {...hp}>Ref</Head>
+            {showAccount && <Head k="account" {...hp}>Account</Head>}
+            <Head k="memo" {...hp}>Description</Head>
+            <Head k="debit" right {...hp}>Debit</Head>
+            <Head k="credit" right {...hp}>Credit</Head>
+            <Head k="balance" right {...hp}>Balance</Head>
           </tr>
         </thead>
         <tbody>
-          {isFinite(toNumber(open)) && (
+          {knownAmount(open)!==null && (
             <tr className="ldg__open">
               <td className="ldg__date" />
               <td />
@@ -155,9 +206,12 @@ export function LedgerTable({
               <td className="ldg--r" />
               <td className="ldg--r" />
               <td className="ldg--r">
-                <AmountCell value={toNumber(open)} currency={currency} mode="muted" />
+                <AmountCell value={displayAmount(open)} currency={currency} mode="muted" />
               </td>
             </tr>
+          )}
+          {display.length === 0 && (
+            <tr><td className="ldg__empty" colSpan={showAccount ? 7 : 6}>No journal entries</td></tr>
           )}
           {display.map((r) => {
             const status = r.status && r.status !== "posted" ? r.status : null;
@@ -168,7 +222,15 @@ export function LedgerTable({
             ].filter(Boolean).join(" ") || undefined;
             return (
               <tr key={r._i} className={cls}
-                onClick={onRowClick ? () => onRowClick(rows[r._i], r._i) : undefined}>
+                tabIndex={onRowClick ? (tabStop === r._i ? 0 : -1) : undefined}
+                aria-selected={selectedIndex == null ? undefined : selectedIndex === r._i}
+                ref={(element) => { if (element) rowRefs.current.set(r._i, element); else rowRefs.current.delete(r._i); }}
+                onFocus={onRowClick ? (event) => { if (event.target === event.currentTarget) setFocusedRow(r._i); } : undefined}
+                onKeyDown={onRowClick ? (event) => onRowKeyDown(event, r._i) : undefined}
+                onClick={onRowClick ? (event) => {
+                  if (event.defaultPrevented || event.target.closest?.("a,button,input,select,textarea,[role='button']")) return;
+                  onRowClick(rows[r._i], r._i);
+                } : undefined}>
                 <td className="ldg__date">{r.date}</td>
                 <td>
                   <span className="ldg__ref">{r.ref}</span>
@@ -177,15 +239,17 @@ export function LedgerTable({
                 {showAccount && <td className="ldg__acct">{r.account}</td>}
                 <td className="ldg__memo">{r.memo}</td>
                 <td className="ldg--r">
-                  <AmountCell value={r.debit} currency={currency} zeroDash />
+                  <AmountCell value={r.debit===undefined?0:displayAmount(r.debit)} currency={currency} zeroDash
+                    mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "debit")} />
                 </td>
                 <td className="ldg--r">
-                  <AmountCell value={r.credit} currency={currency} zeroDash />
+                  <AmountCell value={r.credit===undefined?0:displayAmount(r.credit)} currency={currency} zeroDash
+                    mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "credit")} />
                 </td>
                 <td className="ldg--r">
-                  {r._void || !hasRunning
-                    ? <span style={{ color: "var(--text-disabled,#94999F)" }}>&mdash;</span>
-                    : <AmountCell value={r._bal} currency={currency} parens />}
+                  {r._void
+                    ? <span style={{ color: "var(--text-disabled,#A4ABB2)" }}>&mdash;</span>
+                    : <AmountCell value={displayAmount(r._bal)} currency={currency} parens />}
                 </td>
               </tr>
             );
@@ -201,13 +265,13 @@ export function LedgerTable({
                 </span>
               )}
             </td>
-            <td className="ldg--r"><AmountCell value={totalD} currency={currency} strong /></td>
-            <td className="ldg--r"><AmountCell value={totalC} currency={currency} strong /></td>
+            <td className="ldg--r"><AmountCell value={displayAmount(totalD)} currency={currency} strong /></td>
+            <td className="ldg--r"><AmountCell value={displayAmount(totalC)} currency={currency} strong /></td>
             <td className="ldg--r">
               <AmountCell
-                value={totalD - totalC}
+                value={displayAmount(net)}
                 currency={currency}
-                mode={Math.abs(totalD - totalC) < 0.005 ? "muted" : "pnl"}
+                mode={net!==null&&Math.abs(net)<0.005?"muted":"pnl"}
                 parens
                 strong
               />

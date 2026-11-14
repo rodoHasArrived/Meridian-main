@@ -10,6 +10,10 @@ namespace Meridian.Application.Composition;
 
 internal static class FundStructureStartup
 {
+    // Retain the established migration sequence across every host.
+    internal static DatabaseStartupStep StartupStep { get; } =
+        new("fund-structure", ["fund-accounts"], EnsureDatabaseReadyAsync);
+
     private const int MaxLegacySnapshotBytes = 64 * 1024 * 1024;
 
     internal const string ConnectionStringVariable = "MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING";

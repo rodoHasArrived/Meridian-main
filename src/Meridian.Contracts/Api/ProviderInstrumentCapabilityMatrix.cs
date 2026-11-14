@@ -9,6 +9,9 @@ namespace Meridian.Contracts.Api;
 public interface IProviderInstrumentCapabilityMatrixService
 {
     ProviderInstrumentCapabilityMatrixDto GetMatrix();
+
+    /// <summary>Includes connection evidence only for the authenticated tenant.</summary>
+    ProviderInstrumentCapabilityMatrixDto GetMatrixForTenant(string tenantId) => GetMatrix();
 }
 
 /// <summary>
@@ -28,7 +31,39 @@ public sealed record ProviderInstrumentCapabilityRowDto(
     string ProviderId,
     IReadOnlyList<string> DeclaredInstrumentTypes,
     ProviderCapabilitySurfaceDto Surfaces,
-    IReadOnlyList<ProviderInstrumentCapabilityCellDto> Cells);
+    IReadOnlyList<ProviderInstrumentCapabilityCellDto> Cells,
+    IReadOnlyList<ProviderFixedIncomeTaskCapabilityDto>? FixedIncomeTasks = null);
+
+/// <summary>
+/// An input task is distinct from broad bond coverage. Adapter declarations describe potential
+/// supply; configured connections and retained task evidence determine operational availability.
+/// </summary>
+public sealed record ProviderFixedIncomeTaskCapabilityDto(
+    string Task,
+    string AdapterSupport,
+    string Detail,
+    IReadOnlyList<ProviderFixedIncomeConnectionEvidenceDto> Connections);
+
+/// <summary>
+/// Secret-free, tenant-scoped evidence. General connection certification is displayed as such;
+/// it cannot establish a bond's entitlement, an observation's freshness, or task verification.
+/// </summary>
+public sealed record ProviderFixedIncomeConnectionEvidenceDto(
+    string ConnectionId,
+    string DisplayName,
+    bool Enabled,
+    string ConfigurationState,
+    string EntitlementState,
+    string FreshnessState,
+    string VerificationState,
+    DateTimeOffset? ObservationAsOf,
+    DateTimeOffset? VerifiedAt,
+    IReadOnlyList<ProviderFixedIncomeEvidenceDto> Evidence);
+
+public sealed record ProviderFixedIncomeEvidenceDto(
+    string Kind,
+    string Detail,
+    DateTimeOffset? ObservedAt = null);
 
 /// <summary>
 /// Capability surfaces implemented by a provider's adapters, independent of instrument type.

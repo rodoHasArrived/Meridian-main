@@ -114,7 +114,7 @@ internal sealed class PackageCommands : ICliCommand
             };
         }
 
-        var packager = new PortableDataPackager(_cfg.DataRoot);
+        var packager = PortableLedgerPackaging.CreatePackager(_cfg.DataRoot);
         packager.ProgressChanged += (_, progress) =>
         {
             var percent = progress.TotalFiles > 0
@@ -178,7 +178,7 @@ internal sealed class PackageCommands : ICliCommand
         var validateChecksums = !CliArguments.HasFlag(args, "--skip-validation");
         var mergeWithExisting = CliArguments.HasFlag(args, "--merge");
 
-        var packager = new PortableDataPackager(_cfg.DataRoot);
+        var packager = PortableLedgerPackaging.CreatePackager(_cfg.DataRoot);
         packager.ProgressChanged += (_, progress) =>
         {
             var percent = progress.TotalFiles > 0
@@ -223,7 +223,7 @@ internal sealed class PackageCommands : ICliCommand
     {
         _log.Information("Listing package contents: {PackagePath}", packagePath);
 
-        var packager = new PortableDataPackager(".");
+        var packager = PortableLedgerPackaging.CreatePackager(".");
 
         try
         {
@@ -264,7 +264,7 @@ internal sealed class PackageCommands : ICliCommand
     {
         _log.Information("Validating package: {PackagePath}", packagePath);
 
-        var packager = new PortableDataPackager(".");
+        var packager = PortableLedgerPackaging.CreatePackager(".");
         var result = await packager.ValidatePackageAsync(packagePath, ct);
 
         if (result.IsValid)

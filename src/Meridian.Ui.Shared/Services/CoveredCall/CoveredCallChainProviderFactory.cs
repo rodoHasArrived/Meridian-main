@@ -181,6 +181,8 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
 
         var opts = _options.CurrentValue;
         var allCandidates = new List<OptionCandidateInfo>();
+        var loadedExpiries = new List<DateOnly>();
+        var snapshotTimes = new List<DateTimeOffset>();
         decimal underlyingPrice = 0m;
 
         foreach (var expiry in nextExpiries)
@@ -201,6 +203,11 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
                 continue;
             }
 
+            if (snapshot is not null)
+            {
+                loadedExpiries.Add(expiry);
+                snapshotTimes.Add(snapshot.Timestamp);
+            }
             if (snapshot is null || snapshot.Calls.Count == 0)
             {
                 continue;
@@ -214,7 +221,14 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
             allCandidates.AddRange(ConvertCalls(snapshot, asOf));
         }
 
-        return new CoveredCallChainPreviewResult(underlyingPrice, allCandidates);
+        return new CoveredCallChainPreviewResult(underlyingPrice, allCandidates)
+        {
+            CoverageKnown = true,
+            RequestedExpirations = nextExpiries,
+            LoadedExpirations = loadedExpiries,
+            SnapshotTimes = snapshotTimes,
+            MaxStrikesPerExpiration = opts.MaxStrikesPerExpiration
+        };
     }
 
     /// <summary>
@@ -230,9 +244,8 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
             var contract = call.Contract;
             var dte = Math.Max(0, contract.Expiration.DayNumber - scanDate.DayNumber);
 
-            // The strategy's filters reject zero-bid contracts and require a usable delta.
-            // If the provider didn't supply delta, default to 0.0 (which fails the strategy's
-            // MaxDelta guard unless the operator allows it).
+            // Keep the numeric compatibility field, but reject unknown delta through its
+            // availability flag instead of treating this placeholder as a measured zero.
             var delta = (double)(call.Delta ?? 0m);
             var iv = call.ImpliedVolatility.HasValue ? (double?)call.ImpliedVolatility.Value : null;
             var vega = call.Vega.HasValue ? (double?)call.Vega.Value : null;
@@ -253,7 +266,12 @@ public sealed class CoveredCallChainProviderFactory : ICoveredCallChainProviderF
                 Vega: vega,
                 IvPercentile: null,
                 DaysToNextExDiv: null,
-                NextDividendAmount: null));
+                NextDividendAmount: null)
+            {
+                DeltaAvailable = call.Delta.HasValue,
+                OpenInterestAvailable = call.OpenInterest.HasValue,
+                VolumeAvailable = call.Volume.HasValue
+            });
         }
 
         return result;

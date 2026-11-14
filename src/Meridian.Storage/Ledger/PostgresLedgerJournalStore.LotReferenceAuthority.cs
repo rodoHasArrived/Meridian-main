@@ -58,5 +58,38 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Acquisition/disposal reference authority must match the complete authoritative ledger-book and period scope.");
         if (command.AcquisitionLot?.Acquisition is { } acquisition && security.Currency != acquisition.AcquisitionCurrency)
             throw new LedgerValidationException("Acquisition reference authority currency must match the retained acquisition currency.");
+        if (command.AcquisitionLot?.Acquisition?.BondIncome is { } adoptedIncome)
+        {
+            try
+            {
+                foreach (var line in command.Journal.Entry.Lines)
+                {
+                    BondIncomeBookedPrecision.RequireRepresentable(line.Debit);
+                    BondIncomeBookedPrecision.RequireRepresentable(line.Credit);
+                    if (line.Currency is not { } currency)
+                        continue;
+                    BondIncomeBookedPrecision.RequireRepresentable(currency.TransactionDebit);
+                    BondIncomeBookedPrecision.RequireRepresentable(currency.TransactionCredit);
+                }
+            }
+            catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
+            var lot = command.AcquisitionLot;
+            Guid owner;
+            try
+            { owner = BondIncomeAcquisitionOwnership.ResolveAccount(book.FundStructureNodeId, book.FundStructureNodeKind, position); }
+            catch (ArgumentException exception) { throw new LedgerValidationException(exception.Message); }
+            var ownerId = owner.ToString("D");
+            if (lot.Account.FinancialAccountId != ownerId || lot.TaxLotRecordId == Guid.Empty || string.IsNullOrWhiteSpace(lot.LotId)
+                || command.Journal.Entry.Lines.Any(line => line.Account.FinancialAccountId != ownerId
+                    || line.Account.Symbol is not null && line.Account != lot.Account
+                    || line.Dimensions?.AccountId != ownerId || line.Dimensions.BookId != book.LedgerBookId.ToString("D")
+                    || line.Dimensions.InstrumentId != security.SecurityId || line.Dimensions.PositionId != position.PositionId
+                    || line.Dimensions.TaxLotId != lot.LotId))
+                throw new LedgerValidationException("Adopted acquisition birth journal requires exact locked financial-account, book, security, position and actual lot ownership.");
+            var authority = _bondIncomeAuthority?.Invoke()
+                ?? throw new LedgerValidationException("Adopted bond acquisition requires authoritative income policy verification.");
+            await authority.RequireAcquisitionPolicyAsync(book.LedgerBookId, command.AcquisitionLot.AcquiredDate,
+                adoptedIncome, command.AcquisitionLot.Acquisition.TransactionCostBasis, ct).ConfigureAwait(false);
+        }
     }
 }

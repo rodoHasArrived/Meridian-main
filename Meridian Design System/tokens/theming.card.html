@@ -1,10 +1,12 @@
 <!-- @dsCard group="Theming" viewport="1200x800" name="Theming & White-Label" subtitle="Brand color variants, density scales, font customization" -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<title>Meridian — Theming &amp; White-Label</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { background: var(--bg); font-family: var(--font-body); color: var(--text-primary); padding: 24px; }
   .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
@@ -17,19 +19,19 @@
   .btn-demo { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; }
   h2 { font-size: 16px; font-weight: 600; margin: 16px 0 12px; }
   h3 { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 12px 0 8px; }
-  code { background: var(--bg-active); padding: 2px 6px; font-size: 11px; font-family: var(--font-data); }
+  code { color: var(--text-primary); background: var(--bg-active); padding: 2px 6px; font-size: 11px; font-family: var(--font-data); }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
 <h1 style="margin: 0 0 24px; font-size: 24px;">Meridian Theming System</h1>
 
 <h2>Brand Color Variants</h2>
 <p style="color: var(--text-secondary); margin: 0 0 16px; font-size: 12px;">Use <code>data-brand="name"</code> to apply white-label accent colors.</p>
 <div class="demo-grid">
   <div class="brand-swatch">
-    <h3>Default (Teal)</h3>
-    <div class="swatch-color" style="background: #A85436;"></div>
-    <div class="swatch-code">#A85436 · data-brand="meridian"</div>
+    <h3>Meridian (default)</h3>
+    <div class="swatch-color" style="background: #C56343;"></div>
+    <div class="swatch-code">#C56343 · no data-brand</div>
   </div>
 
   <div class="brand-swatch">
@@ -40,8 +42,8 @@
 
   <div class="brand-swatch">
     <h3>Emerald</h3>
-    <div class="swatch-color" style="background: #10B981;"></div>
-    <div class="swatch-code">#10B981 · data-brand="emerald"</div>
+    <div class="swatch-color" style="background: #0B7A55;"></div>
+    <div class="swatch-code">#0B7A55 · data-brand="emerald"</div>
   </div>
 
   <div class="brand-swatch">
@@ -58,14 +60,14 @@
 
   <div class="brand-swatch">
     <h3>Cyan</h3>
-    <div class="swatch-color" style="background: #06B6D4;"></div>
-    <div class="swatch-code">#06B6D4 · data-brand="cyan"</div>
+    <div class="swatch-color" style="background: #0C6A85;"></div>
+    <div class="swatch-code">#0C6A85 · data-brand="cyan"</div>
   </div>
 
   <div class="brand-swatch">
     <h3>Amber</h3>
-    <div class="swatch-color" style="background: #D97706;"></div>
-    <div class="swatch-code">#D97706 · data-brand="amber"</div>
+    <div class="swatch-color" style="background: #A34A08;"></div>
+    <div class="swatch-code">#A34A08 · data-brand="amber"</div>
   </div>
 </div>
 
@@ -76,34 +78,34 @@
   <div class="density-row" style="background: var(--bg-medium); border-bottom: 2px solid var(--border);">
     <div class="density-label">Terminal</div>
     <div class="density-demo">
-      <button class="btn-demo" style="padding: 4px 9px; font-size: 10px;">Button</button>
+      <button type="button" class="btn-demo" style="padding: 4px 9px; font-size: 10px;">Button</button>
       <div style="padding: 4px 9px; border: 1px solid var(--border); font-size: 10px;">Input row height: 26px</div>
     </div>
     <code style="font-size: 10px;">data-theme-density="terminal"</code>
   </div>
   <div class="density-row">
-    <div class="density-label">Compact</div>
+    <div class="density-label">Compact (dense)</div>
     <div class="density-demo">
-      <button class="btn-demo" style="padding: 6px 12px; font-size: 11px;">Button</button>
-      <div style="padding: 6px 12px; border: 1px solid var(--border); font-size: 11px;">Input row height: 32px</div>
+      <button type="button" class="btn-demo" style="padding: 6px 12px; font-size: 11px;">Button</button>
+      <div style="padding: 6px 12px; border: 1px solid var(--border); font-size: 11px;">Input row height: 28px</div>
     </div>
     <code style="font-size: 10px;">data-theme-density="compact"</code>
   </div>
 
   <div class="density-row">
-    <div class="density-label">Cozy (default)</div>
+    <div class="density-label">Standard (default)</div>
     <div class="density-demo">
-      <button class="btn-demo">Button</button>
-      <div style="padding: 8px 12px; border: 1px solid var(--border); font-size: 13px;">Input row height: 40px</div>
+      <button type="button" class="btn-demo">Button</button>
+      <div style="padding: 8px 12px; border: 1px solid var(--border); font-size: 13px;">Input row height: 36px</div>
     </div>
-    <code style="font-size: 10px;">data-theme-density="cozy" (default)</code>
+    <code style="font-size: 10px;">no data-theme-density (default)</code>
   </div>
 
   <div class="density-row">
-    <div class="density-label">Spacious</div>
+    <div class="density-label">Spacious (review)</div>
     <div class="density-demo">
-      <button class="btn-demo" style="padding: 12px 20px; font-size: 14px;">Button</button>
-      <div style="padding: 12px 18px; border: 1px solid var(--border); font-size: 14px;">Input row height: 48px</div>
+      <button type="button" class="btn-demo" style="padding: 12px 20px; font-size: 14px;">Button</button>
+      <div style="padding: 12px 18px; border: 1px solid var(--border); font-size: 14px;">Input row height: 44px</div>
     </div>
     <code style="font-size: 10px;">data-theme-density="spacious"</code>
   </div>
@@ -129,12 +131,12 @@ document.body.setAttribute('data-theme-density', 'spacious');</pre>
 <h2 style="margin-top: 32px;">CSS Custom Properties</h2>
 <p style="color: var(--text-secondary); margin: 0 0 12px; font-size: 12px;">All theme variables available at <code>--theme-*</code>; automatically mapped to component tokens.</p>
 <div style="background: var(--bg-active); padding: 12px; border: 1px solid var(--border); font-family: var(--font-data); font-size: 11px;">
-<div>--theme-accent: <code style="background: transparent;">#A85436</code></div>
-<div>--theme-accent-dim: <code style="background: transparent;">#8C4429</code></div>
-<div>--theme-primary-text: <code style="background: transparent;">#22252A</code></div>
-<div>--theme-bg-canvas: <code style="background: transparent;">#F2F0EC</code></div>
-<div>--theme-border: <code style="background: transparent;">#E4E3DE</code></div>
-<div style="color: var(--text-muted); margin-top: 8px;">…and 20+ more. See <code>tokens/theme.css</code> for complete list.</div>
+<div>--theme-accent: <code style="background: transparent;">#C56343</code></div>
+<div>--theme-accent-dim: <code style="background: transparent;">#CB6E4E</code></div>
+<div>--theme-primary-text: <code style="background: transparent;">#20252B</code></div>
+<div>--theme-bg-canvas: <code style="background: transparent;">#F2F0EB</code></div>
+<div>--theme-border: <code style="background: transparent;">#D2CDC3</code></div>
+<div style="color: var(--text-primary); margin-top: 8px;">…and 20+ more. See <code>tokens/theme.css</code> for complete list.</div>
 </div>
 </body>
 </html>

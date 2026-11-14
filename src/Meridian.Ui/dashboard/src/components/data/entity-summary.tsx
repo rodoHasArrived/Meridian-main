@@ -13,7 +13,8 @@ export interface EntitySummaryItem {
 }
 
 export interface EntitySummaryProps {
-  items: EntitySummaryItem[];
+  /** A missing list renders an empty grid. */
+  items?: EntitySummaryItem[];
   /** @default 3 */
   columns?: number;
 }
@@ -24,7 +25,7 @@ const labelStyle: CSSProperties = {
   fontWeight: 600,
   fontVariant: "all-small-caps",
   letterSpacing: "0.03em",
-  color: "var(--text-muted, #5E666F)",
+  color: "var(--text-muted, #606870)",
   marginBottom: 3,
 };
 
@@ -47,7 +48,7 @@ export function EntitySummary({ items, columns = 3 }: EntitySummaryProps) {
         gap: "14px 20px",
       }}
     >
-      {items.map((it, i) => (
+      {(items ?? []).map((it, i) => (
         <div key={i} style={{ minWidth: 0 }}>
           <div style={labelStyle}>{it.label}</div>
           <div
@@ -55,7 +56,7 @@ export function EntitySummary({ items, columns = 3 }: EntitySummaryProps) {
               fontSize: 13,
               fontFamily: it.mono === false ? "var(--font-body)" : "var(--font-data, monospace)",
               fontVariantNumeric: "tabular-nums",
-              color: it.color || "var(--text-primary, #22252A)",
+              color: it.color || "var(--text-primary, #20252B)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",

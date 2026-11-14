@@ -2,6 +2,7 @@
 // raw `values` (auto-binned) or precomputed `bins`. When `signed`, bars left of zero tint red and
 // right of zero green so a returns distribution reads instantly; an optional dashed mean rule
 // overlays. Flat, token-driven, explicit-height svg.
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 
 export interface HistogramBin {
   x0: number;
@@ -9,7 +10,7 @@ export interface HistogramBin {
   count: number;
 }
 
-export interface HistogramProps {
+export interface HistogramProps extends ChartA11yProps {
   /** Raw sample — auto-binned. Provide this OR `bins`. */
   values?: number[] | null;
   /** Precomputed bins. Provide this OR `values`. */
@@ -30,14 +31,14 @@ export interface HistogramProps {
   xTicks?: number;
 }
 
-const PLOT = "var(--chart-plot, #FBFAF8)";
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
-const UP = "var(--chart-equity, #3A7A56)";
-const DOWN = "var(--chart-drawdown, #A8443C)";
-const PRIMARY = "var(--chart-primary, #A85436)";
+const PLOT = "var(--chart-plot, #F8F7F3)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const CROSSHAIR = "var(--chart-crosshair, #C56343)";
+const UP = "var(--chart-equity, #2E7655)";
+const DOWN = "var(--chart-drawdown, #B54B42)";
+const PRIMARY = "var(--chart-primary, #29323A)";
 
 function buildBins(values: number[], binCount: number): HistogramBin[] {
   const min = Math.min(...values);
@@ -67,7 +68,10 @@ export function Histogram({
   mean: meanProp = null,
   valueFmt = (v) => v.toFixed(1),
   countFmt = (c) => String(c),
-  xTicks = 7
+  xTicks = 7,
+  ariaLabel = "Distribution histogram",
+  ariaDescription,
+  accessibleData
 }: HistogramProps) {
   const bins = presetBins || (values && values.length ? buildBins(values, binCount) : []);
   const W = 960;
@@ -98,12 +102,12 @@ export function Histogram({
   const tStep = Math.max(1, Math.round((n || 1) / xTicks));
 
   return (
-    <svg
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Distribution histogram"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {[...new Set(cTicks)].map((c, k) => (
@@ -154,7 +158,7 @@ export function Histogram({
 
       <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
       <line x1={plotL} x2={plotL} y1={plotT} y2={plotB} stroke={BORDER} strokeWidth="1" opacity="0.5" />
-    </svg>
+    </ChartSvg>
   );
 }
 

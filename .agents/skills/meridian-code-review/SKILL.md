@@ -346,7 +346,7 @@ See `../_shared/project-context.md` § "Naming & Coding Conventions" for the ful
 
 To test or improve this skill using the bundled eval set:
 
-**1. Run a test case manually** (Codex.ai — no subagents):
+**1. Run a test case manually** (Claude.ai — no subagents):
 Read `evals/evals.json`, pick a prompt, follow this skill's instructions to produce the review output, save to a workspace dir.
 
 **2. Grade the output**:

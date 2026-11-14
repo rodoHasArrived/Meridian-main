@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.StorageOptimizationPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -294,7 +295,7 @@
                     <TextBlock Text="{Binding AnalysisResultText}"
                                TextWrapping="Wrap"
                                Margin="0,12,0,0"
-                               FontFamily="Consolas"
+                               FontFamily="{DynamicResource MeridianDataFontFamily}"
                                FontSize="11"
                                Visibility="{Binding HasAnalysisResult, Converter={StaticResource BoolToVisibilityConverter}}"
                                AutomationProperties.AutomationId="StorageOptimizationAnalysisResultText">

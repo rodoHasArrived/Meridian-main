@@ -174,6 +174,8 @@ erDiagram
         integer line_count
         timestamp_with_time_zone ingested_at
         text loaded_by
+        jsonb authority
+        text content_sha256
     }
     fund_accounts_fund_account_legacy_import_receipt {
         text source_hash PK
@@ -184,6 +186,14 @@ erDiagram
         text filename PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    fund_accounts_private_capital_record {
+        text tenant_id PK
+        text company_id PK
+        text record_kind PK
+        uuid record_id PK
+        jsonb payload
+        timestamp_with_time_zone retained_at
     }
     fund_accounts_account_definition ||--o{ fund_accounts_account_balance_snapshot : "account_balance_snapshot_account_id_fkey"
     fund_accounts_account_definition ||--o{ fund_accounts_account_margin_snapshot : "account_margin_snapshot_account_id_fkey"

@@ -27,10 +27,10 @@ export function ReportingWorkbenchContext({ taskMode, actions, compact = false, 
       <div className="min-w-0 flex-1">
         <div className={cn("flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1", compact && "sr-only")}>
           <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-            {taskMode.label}
+            {taskMode.title}
           </h2>
           {!compact ? (
-            <SectionDescription descriptionKey={`reporting-${taskMode.id}`} label={`About ${taskMode.label}`}>
+            <SectionDescription descriptionKey={`reporting-${taskMode.id}`} label={`About ${taskMode.title}`}>
               {taskMode.description}
             </SectionDescription>
           ) : null}

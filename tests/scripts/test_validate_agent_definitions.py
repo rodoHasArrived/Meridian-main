@@ -299,7 +299,7 @@ class FrontmatterParsingTests(unittest.TestCase):
 
 class ValidateAgentTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.directory = Path(self._tmp.name)
 
@@ -1724,7 +1724,7 @@ class ValidateAgentTests(unittest.TestCase):
 
 class DiscoveryTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.directory = Path(self._tmp.name)
         self._original_root = module.AGENTS_ROOT

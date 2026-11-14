@@ -17,6 +17,16 @@ This guide covers the scripted desktop workflows that launch `Meridian.Desktop`,
 
 The workflows default to fixture mode so they stay deterministic and do not require a live backend to reproduce UI states. In the desktop shell this is presented as neutral demo data, not as an operational warning.
 
+Fixture startup temporarily seeds `%LOCALAPPDATA%/Meridian/appsettings.json` from
+`scripts/dev/desktop-workflow-fixture-config.json`: the supported `Synthetic` provider, empty symbol
+lists, and disabled backfill keep captures offline. Each run uses its own fixture data directory.
+Existing desktop configuration and its last-known-good copy are backed up outside uploaded
+bundles and restored when the runner closes the app, alongside the operating-context state.
+Successful restoration removes the private configuration backups. Fixture workflows require a
+newly owned process and reject `-KeepAppOpen`, `-ReuseExistingApp`, or an already running desktop
+before changing files. To retain or reuse an app, select a profile that permits `-NoFixture`.
+The ordinary desktop first-run defaults and configuration validation are unchanged.
+
 ## Quick Commands
 
 ```powershell
@@ -75,6 +85,12 @@ capture entries before the workflow is considered complete. Strategy Designer is
 evidence lane through `/workstation/strategy/designer`; keep its screenshot route paired with
 `scripts/dev/web-screenshot-fixtures.json` and the dashboard no-host fixtures for the designer
 template, field-catalog, and draft GET endpoints.
+
+The `screenshot-catalog` profile also writes its run bundles under `artifacts/desktop-workflows/`
+when invoked directly or through `Desktop Workflow Runner`, so the generic runner's artifact
+includes manifests, logs, and original captures. Catalog publication remains
+`docs/screenshots/desktop/`; the dedicated capture wrapper still explicitly chooses its screenshot
+directory and fresh artifact root.
 
 ## Runner Behavior
 

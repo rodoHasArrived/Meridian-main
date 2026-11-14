@@ -12,17 +12,19 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { useNotificationCenter } from "@/hooks/use-notification-center";
+import { useToast } from "@/components/ui/toast";
 import { formatRelativeAge } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { NotificationEnvelope, NotificationSeverity } from "@/lib/notification-center/types";
 import type { SystemOverviewResponse } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 const SEVERITY_ORDER: NotificationSeverity[] = ["critical", "warning", "info", "success"];
 const SEVERITY_LABELS: Record<NotificationSeverity, string> = {
   critical: "Critical",
   warning: "Warning",
   info: "Info",
-  success: "Resolved"
+  success: "Success"
 };
 const SEVERITY_DOT: Record<NotificationSeverity, string> = {
   critical: "bg-danger",
@@ -31,6 +33,7 @@ const SEVERITY_DOT: Record<NotificationSeverity, string> = {
   success: "bg-success"
 };
 const SOURCE_LABELS: Record<NotificationEnvelope["source"], string> = {
+  execution: "Execution",
   inbox: "Operator inbox",
   system: "System",
   "price-alert": "Price alert"
@@ -51,9 +54,40 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
   const center = useNotificationCenter({ overview, fundAccountId });
   const { notifications, unreadCount } = center;
 
-  const bellLabel = unreadCount > 0
+  const toast = useToast();
+
+  // Price-alert acknowledgements are durable in their own store, so only inbox and
+  // system items offer undo.
+  const undoable = (entry: NotificationEnvelope) => entry.source !== "price-alert";
+  const handleMarkRead = (entry: NotificationEnvelope) => {
+    center.markRead(entry.id);
+    if (undoable(entry) && !entry.read) {
+      toast.show({
+        title: "Marked as read",
+        detail: entry.title,
+        tone: "info",
+        action: { label: "Undo", onAction: () => center.restoreStatus(entry.id, { read: entry.read }) }
+      });
+    }
+  };
+  const handleDismiss = (entry: NotificationEnvelope) => {
+    center.dismiss(entry.id);
+    if (undoable(entry) && entry.dismissible) {
+      toast.show({
+        title: "Dismissed",
+        detail: entry.title,
+        tone: "info",
+        action: { label: "Undo", onAction: () => center.restoreStatus(entry.id, { read: entry.read }) }
+      });
+    }
+  };
+
+  const unreadLabel = unreadCount > 0
     ? `Notifications — ${unreadCount} unread`
     : "Notifications — none unread";
+  const bellLabel = center.inboxStatus === "ready"
+    ? unreadLabel
+    : `${unreadLabel}; operator inbox ${center.inboxStatus}`;
 
   return (
     <>
@@ -82,7 +116,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
               <div className="min-w-0">
                 <SheetTitle id="notification-center-title">Notifications</SheetTitle>
                 <SheetDescription id="notification-center-summary">
-                  {notifications.length === 0
+                  {notifications.length === 0 && center.inboxStatus === "ready"
                     ? "You're all caught up."
                     : `${unreadCount} unread of ${notifications.length}.`}
                 </SheetDescription>
@@ -99,8 +133,24 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
             </div>
           </SheetHeader>
           <SheetBody>
+            {center.inboxStatus !== "ready" ? (
+              <div className="space-y-2 rounded-md border border-border p-3">
+                <p role="status" className="text-sm text-muted-foreground">
+                  {center.inboxStatus === "loading"
+                    ? "Loading the operator inbox for the current account scope. Counts include loaded feeds only."
+                    : "Operator inbox unavailable for the current account scope. Counts include loaded feeds only."}
+                </p>
+                {center.inboxStatus === "unavailable" ? (
+                  <Button size="sm" variant="outline" type="button" onClick={center.retryInbox}>Retry inbox</Button>
+                ) : null}
+              </div>
+            ) : null}
             {notifications.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No operator, system, or price-alert notifications right now.</p>
+              <p className="text-sm text-muted-foreground">
+                {center.inboxStatus === "ready"
+                  ? "No operator, system, or price-alert notifications right now."
+                  : "No notifications from the loaded feeds."}
+              </p>
             ) : (
               SEVERITY_ORDER.map((severity) => {
                 const rows = notifications.filter((entry) => entry.severity === severity);
@@ -109,14 +159,14 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
                 }
                 return (
                   <section key={severity} aria-label={`${SEVERITY_LABELS[severity]} notifications`} className="space-y-2">
-                    <div className="eyebrow-label">{SEVERITY_LABELS[severity]}</div>
+                    <div className={eyebrowClassName(SEVERITY_LABELS[severity])}>{SEVERITY_LABELS[severity]}</div>
                     <ul className="space-y-2">
                       {rows.map((entry) => (
                         <NotificationRow
                           key={entry.id}
                           entry={entry}
-                          onMarkRead={() => center.markRead(entry.id)}
-                          onDismiss={() => center.dismiss(entry.id)}
+                          onMarkRead={() => handleMarkRead(entry)}
+                          onDismiss={() => handleDismiss(entry)}
                           onOpenRoute={() => {
                             center.markRead(entry.id);
                             setOpen(false);

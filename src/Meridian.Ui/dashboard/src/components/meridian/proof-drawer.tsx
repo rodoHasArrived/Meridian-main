@@ -7,12 +7,15 @@ import { NumberPassport } from "@/components/meridian/number-passport";
 import { hasExactRetainedSource, isCurrentRetainedEvidence } from "@/components/meridian/ledger-amount-proof-validation";
 import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
 import { cn } from "@/lib/utils";
+import { normalizeFinancialLabel } from "@/lib/format";
 import type { LedgerAmountProof, LedgerAmountSelection } from "@/types/ledger-amount-proof";
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSelectedRecordDto,
-  FinancialRecordExplorerTone
+  FinancialRecordExplorerTone,
+  PreparerAttestationEvidenceProjection
 } from "@/types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Browser presentation of the same subject-addressed payload consumed by WPF. */
 export function LedgerAmountProofDrawer({ selection, onClose }: {
@@ -28,7 +31,8 @@ export function LedgerAmountProofDrawer({ selection, onClose }: {
 
 function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelection }) {
   const selectionKey = JSON.stringify(selection);
-  const [result, setResult] = useState<{ key: string; proof: LedgerAmountProof | null; error: string | null } | null>(null);
+  const [result, setResult] = useState<{ key: string; proof: LedgerAmountProof | null; error: string | null;
+    preparerAttestations?: PreparerAttestationEvidenceProjection | null } | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -62,7 +66,7 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
       } else if (proof.evidence.some((item) => item.kind !== "ledger-record" && isCurrentRetainedEvidence(item) && !hasExactRetainedSource(packet, proof, item))) {
         setResult({ key: selectionKey, proof: null, error: "Blocked: supporting evidence does not identify this exact retained amount, scope and content digest." });
       } else {
-        setResult({ key: selectionKey, proof, error: null });
+        setResult({ key: selectionKey, proof, error: null, preparerAttestations: packet.preparerAttestations });
       }
     }).catch(() => {
       if (current) setResult({ key: selectionKey, proof: null, error: "Blocked: retained evidence for this amount is unavailable. Review the selected book and period." });
@@ -102,7 +106,8 @@ function LedgerAmountProofContent({ selection }: { selection: LedgerAmountSelect
           </article>
         ))}
       </section>
-      <NumberPassport proof={{ ...proof, status: blocked ? "Blocked" : ready ? "Ready" : "ReviewRequired" }} title={selection.label} />
+      <NumberPassport proof={{ ...proof, status: blocked ? "Blocked" : ready ? "Ready" : "ReviewRequired" }} title={selection.label}
+        preparerAttestations={result.preparerAttestations} sourceJournalEntryIds={selection.journalEntryIds} />
     </div>
   );
 }
@@ -184,10 +189,10 @@ function FactList({ title, items }: { title: string; items: FinancialRecordExplo
 
   return (
     <section className="grid gap-2" aria-label={title}>
-      <h4 className="text-xs font-semibold uppercase text-muted-foreground">{title}</h4>
+      <h4 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "uppercase")}>{title}</h4>
       {items.map((item) => (
         <dl key={`${item.label}-${item.value}`} className="rounded-md border border-border/60 px-3 py-2">
-          <dt className="text-[11px] text-muted-foreground">{item.label}</dt>
+          <dt className="text-[11px] text-muted-foreground">{normalizeFinancialLabel(item.label)}</dt>
           <dd className={cn("mt-1 font-mono text-sm", toneTextClass(item.tone))}>
             {item.value}
             {item.detail ? <span className="mt-1 block font-sans text-xs text-muted-foreground">{item.detail}</span> : null}
@@ -211,7 +216,7 @@ function RelationshipList({
 
   return (
     <section>
-      <h4 className="text-xs font-semibold uppercase text-muted-foreground">{title}</h4>
+      <h4 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(title) && "uppercase")}>{title}</h4>
       <div className="mt-2 space-y-2">
         {items.map((item) => (
           <div key={item.relationshipId} className="rounded-md border border-border/60 px-3 py-2">

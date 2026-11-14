@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Meridian.Ui.Services;
 
 /// <summary>
@@ -75,6 +77,61 @@ public static class FormatHelpers
             _ => number.ToString("N0")
         };
     }
+
+    /// <summary>
+    /// Format of a UTC timestamp label, e.g. "2026-07-05 12:00 UTC". Workstation screens show
+    /// times in UTC, not on the operator's local clock.
+    /// </summary>
+    public const string UtcTimestampFormat = "yyyy-MM-dd HH:mm 'UTC'";
+
+    /// <summary>
+    /// Formats a timestamp in UTC, e.g. "2026-07-05 12:00 UTC", whatever offset it carries.
+    /// </summary>
+    public static string FormatUtcTimestamp(DateTimeOffset value)
+        => value.UtcDateTime.ToString(UtcTimestampFormat, CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Formats a timestamp in UTC, e.g. "2026-07-05 12:00 UTC". See <see cref="AsUtc"/> for how
+    /// the value's <see cref="DateTime.Kind"/> is read.
+    /// </summary>
+    public static string FormatUtcTimestamp(DateTime value)
+        => AsUtc(value).ToString(UtcTimestampFormat, CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Formats an optional timestamp in UTC, or returns <paramref name="fallback"/> when it is absent.
+    /// </summary>
+    public static string FormatUtcTimestamp(DateTimeOffset? value, string fallback)
+        => value is { } timestamp ? FormatUtcTimestamp(timestamp) : fallback;
+
+    /// <summary>
+    /// Formats an optional timestamp in UTC, or returns <paramref name="fallback"/> when it is absent.
+    /// </summary>
+    public static string FormatUtcTimestamp(DateTime? value, string fallback)
+        => value is { } timestamp ? FormatUtcTimestamp(timestamp) : fallback;
+
+    /// <summary>
+    /// Reads back a label written by <see cref="FormatUtcTimestamp(DateTimeOffset)"/>, e.g.
+    /// "2026-07-05 12:00 UTC", to minute precision. Returns false for any other text.
+    /// </summary>
+    public static bool TryParseUtcTimestamp(string? text, out DateTimeOffset value)
+        => DateTimeOffset.TryParseExact(
+            text,
+            UtcTimestampFormat,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+            out value);
+
+    /// <summary>
+    /// The UTC instant of a <see cref="DateTime"/>. A local value is converted. A value with no
+    /// kind is read as UTC, because the API's timestamps are UTC and a JSON value without an
+    /// offset carries no local meaning.
+    /// </summary>
+    public static DateTime AsUtc(DateTime value) => value.Kind switch
+    {
+        DateTimeKind.Utc => value,
+        DateTimeKind.Local => value.ToUniversalTime(),
+        _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+    };
 }
 
 /// <summary>

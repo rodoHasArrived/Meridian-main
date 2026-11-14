@@ -6,14 +6,73 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Instruments
 
-Bond analytics v2 consumes the shared Contracts economics and exercise calculators. Explicit `bond-analytics-v1` dispatch preserves retained settlement verification by replaying through the same kernels in `BondEconomicsCompatibility.AnalyticsV1` mode; the two versions share one code path and are pinned by the `bond-analytics-versions` golden fixture. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay, selected only by the exact `portfolio-cash-ladder-v1` engine version on the shared cash-ladder query and never by fallback; both engines are pinned by the `portfolio-cash-ladder-versions` golden fixture. Undeclared records keep their compatibility behavior.
+Bond analytics identifies contractual maturity and every exactly tied governing issuer-call or
+maturity yield scenario; holder puts remain separate elections and do not determine yield to
+worst. General option-screen validation preserves resolved contract identities, signed delta,
+criteria reasons and exact decimal evidence. Basket/assessment fingerprints bind full option or
+equity legs and account/order context; imported broker evidence is dated and is not a local
+options margin model or permission to execute.
 
-Both analytics versions return a blocked result when shared economic-schedule validation fails,
+`OptionsChainService.DiscoverExpirationsAsync` preserves whether provider failover supplied
+expiration coverage before DTE filtering. Screening treats unavailable discovery as an error;
+successfully discovered dates outside the requested DTE range produce a valid empty screen.
+The existing list-only expiration read keeps its compatibility behavior.
+
+`BondMarketDataService` imports and reads typed source revisions within an explicit authenticated
+tenant, retaining the first identity on exact retry and refusing conflicting revisions atomically.
+Exact-date queries never substitute a prior fixing, and future observed values require forecast
+curves. `BondMarketWorkflowObservationSource` supplies eligible retained inputs and exact quote
+identities to the workflow model; fixing and inflation roles remain distinct even when a series name
+matches, and conflicting source values require explicit review. Performance attribution first
+reconciles model settlement cash and index ratios to the accepted mark.
+
+`BondWorkflowService` prices the explicit signed fixed/floating/overnight/indexed model and preserves
+legacy dispatch. Account planning, collection monitoring, risk and sequential performance consume
+accepted holdings and retained inputs; accounting amortization is excluded from market attribution.
+New workflow v2 requests explicitly pin their model; old null-selector v1 receipts replay v1.
+Resolved curve/version pins retain definitions admitted at the knowledge cutoff. Planning and
+capture combine same-identity principal installments before native rounding while retaining coupon
+rights separately. Monitoring v2 and native forecast v3 age residuals from evidenced revised dates;
+historical monitoring v1 and native forecast v2 retain their original replay rules.
+Risk scenarios reuse the selected baseline request/version, and monitoring verifies each retained
+obligation's exact model evidence. Screening drops expired verified European/Bermudan exercises;
+continuous, ambiguous and unresolved calendar-adjusted rights remain conservative or unverified.
+See [bond operations and limits](../../docs/operators/bond-workflows.md).
+
+New analytical requests default to workflow v3, replacing only the natural balloon in final-payment
+exercise scenarios. Retained v1/v2 keep their original arithmetic. Monitoring v3 adds invariant watch
+text and date identities; older localized receipts require exact complete-snapshot replay.
+
+Fixed/zero-coupon analytics also return authoritative maturity/exercise alternatives and all governing yield-to-worst ties for the browser horizon. Issuer calls and maturity govern YTW; holder puts remain distinct. Interest and principal retain per-100-face units and maturity projection semantics. Floating v3 keeps its separate observed/forecast evidence and does not gain unsupported callable analytics.
+
+Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing
+already-reset periods. Security/version, index, currency, exact reset date and economic/knowledge
+eligibility must agree. Existing declared fixings remain authoritative; duplicate source selections
+block. Receipt IDs and hashes are retained in the input manifest and coupon source. Forward curves
+remain exclusive to future resets; absent receipt selections leave earlier v3 requests unchanged,
+and v1/v2 replay receives no new inputs.
+
+Canonical call/put redemption is an explicit principal-only long-lot disposal mode. It binds every
+selected lot's complete quantity and basis, retains the reviewed instruction with selections ordered
+by their retained ordinal before drafting, and routes the candidate through the existing atomic
+lot/journal writer. Governed fractional unit successors may retain their derived twelve-decimal
+quote while their exact allocated basis remains authoritative.
+Accrued-interest, make-whole, short and mixed mutation cases refuse this bounded path. Historical
+corporate-action projections retain their original behavior unless this mode is selected.
+
+Floating analytics v3 returns each projected coupon's resolved fixing evidence without repricing
+in either workstation. Observed fixings and forecasts retain their distinct source and reset date;
+the effective coupon reflects contractual caps/floors. Fixed/zero v1/v2 remain explicitly selectable
+and keep their golden outputs. See the [bond capability plan](../../docs/engineering/plans/bond-capability-expansion.md#workstation-floating-analytics).
+
+Bond analytics v2 consumes the shared Contracts economics and exercise calculators. Explicit `bond-analytics-v1` dispatch preserves retained settlement verification by replaying through the same kernels in `BondEconomicsCompatibility.AnalyticsV1` mode; the two versions share one code path and are pinned by the `bond-analytics-versions` golden fixture. The cash ladder v2 uses projection-bound terms for declared call/put proceeds and per-reset evidence for floating shocks. Already-observed resets remain fixed; future index rates are shifted before contractual spread and cap/floor application. Missing evidence and unsupported signed coupon cash block the scenario. `LegacyPortfolioCashLadderEngine` retains v1 behavior for explicit historical replay, selected only by the exact `portfolio-cash-ladder-v1` engine version on the shared cash-ladder query and never by fallback; both engines are pinned by the `portfolio-cash-ladder-versions` golden fixture. Current undeclared rate scenarios block unsupported negative interest with a typed blocker; explicit v1 ladder replay keeps its original arithmetic. The workstation notice-date watch (`BondExerciseNoticeWatch` in Contracts) uses the same scenario resolution, so its exercise and notice dates match analytics and the cash ladder.
+
+All supported analytics versions return a blocked result when shared economic-schedule validation fails,
 retaining its source and row diagnostics and exposing no partial metrics. Unrelated query or storage
 failures remain errors.
 
@@ -47,6 +106,14 @@ transfers; other split/merger projections keep their existing mapping behavior. 
 instructions retain their exact reviewed payload on the Projected event.
 
 Bond calculations use explicit economic/settlement/recorded cutoffs. Declared Asset Operations projections consume the shared cash-flow service and stable period identities. Bond analytics exposes per-100 clean/dirty prices, accrued interest, yield and risk with typed capability blockers; principal factors remain separate from inflation indexation. Bond migration previews stage normal Security Master drafts; the persisted full-inventory cutover gate blocks undeclared live calculations without rewriting historical journals. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+
+Bond analytics can consume an immutable Security Master observation-selection receipt instead of a
+manually entered price or yield. The service replays the exact security/account-scoped receipt and
+checks economic/knowledge cutoffs, freshness, explicit per-100 quotation, clean/dirty basis and
+settlement agreement. Dirty quotes normalize using the calculated contractual accrual at settlement;
+the result retains the receipt identity and internal serialization hash in input provenance. Missing
+or incompatible evidence returns an actionable blocker. New optional request fields are omitted
+when absent so retained manual-input calculations and legacy model replay keep their serialization.
 
 ## Purpose
 
@@ -85,7 +152,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AssetOperations/AssetObligationProjectionService.cs` - retained-term projection service for
   Security Master-keyed assets that emits V1 expected cash flows, non-cash obligations, formula
   traces, ledger-support references, and timeline variances without writing ledger facts, including
-  contractual bond principal schedules mapped into sinking-fund repayment projections.
+  contractual bond principal schedules mapped into sinking-fund repayment projections. A coupon
+  field that declares a default unit in `SecurityRateFieldUnits` (Deposit `interestRate`: Fraction)
+  is read through `RateUnitNormalizer`; a value outside its declared range (a legacy 4.5 written in
+  percentage points) yields no accrual convention instead of being reinterpreted by magnitude
+  (review D10, slice 4). Bond-family coupons keep this reader's percentage-point convention.
 - `AssetOperations/FactorPaydownProjectionService.cs` - deterministic MBS factor-paydown projector
   that validates retained evidence, held face, factor bounds, currency rounding, and optimistic
   position version before producing typed event, economic-state, and projection-lineage records.
@@ -113,6 +184,29 @@ the shared Security Master-keyed operational view. The terms/obligations timelin
 from retained Security Master terms, projected cash-flow runs, generated non-cash obligations,
 actual activity, reconciliation results, lifecycle events, variances, and ledger references so
 browser and WPF clients render a shared event rail without owning projection logic.
+A Bond whose row decodes a declared call or put schedule (terms version 3 or later) gets
+`IssuerCallExercise` / `HolderPutExercise` events and `IssuerCallNoticeDeadline` /
+`HolderPutNoticeDeadline` events from `BondExerciseNoticeWatch.EvaluateToMaturity`, the dates bond
+analytics and the cash ladder use. The declared schedule replaces the scalar `CallPutReview` probe
+for that bond; a schedule that cannot be resolved is a blocked outcome in the timeline's extension
+payload and warnings, never a scalar fallback. Such a timeline is stamped
+`asset-terms-obligations-timeline-declared-v1`; all others keep `asset-terms-obligations-timeline-v1`.
+Published projections keep the timeline derived from their published terms.
+The gates and the row layout of that outcome are shared, not copied:
+`AssetObligationProjectionService.ResolveDeclaredExercise` / `ResolveDeclaredExerciseAsync` (terms
+effective, cutover policy, then the watch) and `DeclaredExerciseRows` (an exercise row per window and
+a notice-deadline row where bounds are stated). The Security Master workbench schedule book in
+`Meridian.Ui.Shared` reads through the same two members, so one outcome gives both the same dates
+(ADR-025 lists where a published projection, a blocked run or a fault makes them differ).
+Since ADR-025 increment 8f the declaring classes are the ones whose terms schema declares the arrays:
+a CertificateOfDeposit or StructuredCredit row that declares a schedule its stamp decodes gets the
+same events. Those classes have no coupon schedule, so their exercise dates are the declared dates
+under Bond's entry and notice rules; a populated `scheduleConventions` block, business-day notice or
+an unsupported entry is a blocked outcome. Rows of either class that declare no schedule keep the
+scalar probe.
+`AssetOperationsEngineVersions` names the stamps: the legacy bond loop writes
+`fixed-income-cash-flow-projection-v2` (stored `-v1` runs are read as they are), and declared runs
+and flows keep `asset-obligation-declared-v3` / `-v2`.
 Application composition wires these services to Security Master, Asset Operations, and money-market
 projection stores, while UI Shared adapts them to shared browser/WPF routes without owning the
 instrument logic.

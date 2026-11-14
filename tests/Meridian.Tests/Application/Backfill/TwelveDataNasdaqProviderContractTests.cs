@@ -1,6 +1,8 @@
+using Meridian.Tests.TestHelpers;
 using System.Net;
 using System.Text;
 using FluentAssertions;
+using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Moq;
@@ -25,9 +27,9 @@ public sealed class TwelveDataNasdaqProviderContractTests
     public async Task TwelveData_ParsesValidResponse_ReturnsCorrectBars()
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ValidAaplResponse);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
         bars.Should().HaveCount(3);
         bars.Should().AllSatisfy(bar =>
@@ -45,7 +47,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     public async Task TwelveData_StatusNotOk_ReturnsEmptyList()
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ErrorStatusResponse);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
 
@@ -56,7 +58,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     public async Task TwelveData_EmptyValues_ReturnsEmptyList()
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.EmptyValuesResponse);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("UNKNOWN", null, null);
 
@@ -64,28 +66,26 @@ public sealed class TwelveDataNasdaqProviderContractTests
     }
 
     [Fact]
-    public async Task TwelveData_InvalidJson_ReturnsEmptyList()
+    public async Task TwelveData_InvalidJson_ThrowsProviderException()
     {
         var httpClient = CreateMockHttpClient("{ not valid json }}}");
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        // TwelveData catches JSON exceptions and returns empty, per implementation
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var request = () => provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
-        bars.Should().BeEmpty();
+        await request.Should().ThrowAsync<DataProviderException>();
     }
 
     [Fact]
-    public async Task TwelveData_SkipsRowsWithInvalidOhlc_WhereHighLessThanLow()
+    public async Task TwelveData_MixedInvalidOhlc_ThrowsInsteadOfReturningPartialBars()
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ResponseWithInvalidOhlcRow);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var request = () => provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
-        // Only the valid row should be returned
-        bars.Should().HaveCount(1);
-        bars[0].SessionDate.Should().Be(new DateOnly(2024, 1, 2));
+        await request.Should().ThrowAsync<DataProviderException>(
+            "a malformed row cannot be omitted while the valid remainder is reported as complete history");
     }
 
     #endregion
@@ -98,7 +98,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     public async Task TwelveData_WithEmptySymbol_ThrowsArgumentException(string symbol)
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ValidAaplResponse);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         await Assert.ThrowsAsync<ArgumentException>(() => provider.GetDailyBarsAsync(symbol, null, null));
     }
@@ -108,7 +108,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     {
         // Without an API key the provider logs a warning and returns empty rather than throwing.
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ValidAaplResponse);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: null, httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: null, httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
 
@@ -123,9 +123,9 @@ public sealed class TwelveDataNasdaqProviderContractTests
     public async Task TwelveData_BarsAreSortedByDateAscending()
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.UnsortedResponse);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null);
+        var bars = await provider.GetDailyBarsAsync("AAPL", new DateOnly(2024, 1, 2), new DateOnly(2024, 1, 4));
 
         bars.Should().BeInAscendingOrder(b => b.SessionDate,
             "provider must return bars ordered oldest-first regardless of API response order");
@@ -135,7 +135,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     public async Task TwelveData_RespectsDateRange_ExcludesOutOfRangeBars()
     {
         var httpClient = CreateMockHttpClient(TwelveDataResponses.ValidAaplResponse);
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", httpClient: httpClient, rateLimiterRegistry: TwelveDataTestBudget.Create());
         var from = new DateOnly(2024, 1, 3);
         var to = new DateOnly(2024, 1, 3);
 
@@ -152,7 +152,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     [Fact]
     public void TwelveData_HasCorrectMetadata()
     {
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key");
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         provider.Name.Should().Be("twelvedata");
         provider.DisplayName.Should().Contain("Twelve Data");
@@ -164,7 +164,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     [Fact]
     public async Task TwelveData_IsAvailableAsync_ReturnsFalseWithoutApiKey()
     {
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: null);
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: null, rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var available = await provider.IsAvailableAsync();
 
@@ -174,7 +174,7 @@ public sealed class TwelveDataNasdaqProviderContractTests
     [Fact]
     public async Task TwelveData_IsAvailableAsync_ReturnsTrueWithApiKey()
     {
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key");
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "test-key", rateLimiterRegistry: TwelveDataTestBudget.Create());
 
         var available = await provider.IsAvailableAsync();
 

@@ -1,3 +1,5 @@
+import type { LedgerDimensionQueryOptions, LedgerJournalQueryOptions, LedgerTrialBalanceQueryOptions } from "./ledger-query-options";
+export type { LedgerDimensionQueryOptions, LedgerJournalQueryOptions, LedgerTrialBalanceQueryOptions } from "./ledger-query-options";
 import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 export const WORKSTATION_API_ENDPOINTS = {
@@ -13,6 +15,8 @@ export const WORKSTATION_API_ENDPOINTS = {
   tradingReadiness: UI_API_ROUTES.WorkstationTradingReadiness,
   tradingBrokerageRecovery: UI_API_ROUTES.WorkstationTradingBrokerageRecovery,
   operatorInbox: UI_API_ROUTES.WorkstationOperatorInbox,
+  crossScreenCounts: UI_API_ROUTES.WorkstationCrossScreenCounts,
+  scopeOptions: UI_API_ROUTES.WorkstationScopeOptions,
   portfolio: UI_API_ROUTES.WorkstationPortfolio,
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
@@ -179,6 +183,8 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
   reportingScheduleResume: UI_API_ROUTES.ReportingScheduleResume,
+  reportingScheduleDisable: UI_API_ROUTES.ReportingScheduleDisable,
+  reportingScheduleDelete: UI_API_ROUTES.ReportingScheduleDelete,
   reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
 } as const;
 
@@ -1116,31 +1122,6 @@ export function workstationOperationsPrivateCapitalCloseCockpitEndpoint(options:
   return `${WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit}${queryString(options)}`;
 }
 
-export interface LedgerDimensionQueryOptions {
-  fundId?: string;
-  entityId?: string;
-  sleeveId?: string;
-  strategyId?: string;
-  portfolioId?: string;
-  accountId?: string;
-  investorId?: string;
-  capitalAccountId?: string;
-  instrumentId?: string;
-  taxLotId?: string;
-  costCenterId?: string;
-  counterpartyId?: string;
-  externalGlDimensions?: Record<string, string | null | undefined>;
-}
-
-export interface LedgerJournalQueryOptions extends LedgerDimensionQueryOptions {
-  from?: string;
-  to?: string;
-}
-
-export interface LedgerTrialBalanceQueryOptions extends LedgerDimensionQueryOptions {
-  accountType?: string;
-}
-
 function ledgerDimensionQueryParams(options: LedgerDimensionQueryOptions): Record<string, string | undefined> {
   const params: Record<string, string | undefined> = {
     fundId: options.fundId,
@@ -1172,10 +1153,15 @@ export function workstationRunLedgerEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.RunsLedger, "runId", runId);
 }
 
+export function workstationRunLedgerExportEndpoint(runId: string, format: string = "Csv", asOf?: string): string {
+  return `${routeWithParam(UI_API_ROUTES.RunsLedgerExport, "runId", runId)}${queryString({ format, asOf })}`;
+}
+
 export function workstationRunLedgerJournalEndpoint(runId: string, options: LedgerJournalQueryOptions = {}): string {
   return `${workstationRunLedgerEndpoint(runId)}/journal${queryString({
     from: options.from,
     to: options.to,
+    asOf: options.asOf,
     ...ledgerDimensionQueryParams(options)
   })}`;
 }
@@ -1363,18 +1349,6 @@ export function reportingRunReportWriterGridEndpoint(
   return format && format !== "json" ? `${route}${queryString({ format })}` : route;
 }
 
-export function reportingSchedulePauseEndpoint(scheduleId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedulePause, "scheduleId", scheduleId);
-}
-
-export function reportingScheduleResumeEndpoint(scheduleId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleResume, "scheduleId", scheduleId);
-}
-
-export function reportingScheduleRunNowEndpoint(scheduleId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunNow, "scheduleId", scheduleId);
-}
-
 export function reportingStarterKitProvisionEndpoint(kitId: string): string {
   return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingStarterKitProvision, "kitId", kitId);
 }
@@ -1436,6 +1410,7 @@ export function workstationRunLedgerTrialBalanceEndpoint(
     typeof accountTypeOrOptions === "string" ? { accountType: accountTypeOrOptions } : accountTypeOrOptions ?? {};
   return `${routeWithParam(UI_API_ROUTES.RunsLedgerTrialBalance, "runId", runId)}${queryString({
     accountType: options.accountType,
+    asOf: options.asOf,
     ...ledgerDimensionQueryParams(options)
   })}`;
 }
@@ -1952,7 +1927,7 @@ function pathSegment(value: string, name: string): string {
   return encodeURIComponent(trimmed);
 }
 
-function routeWithParam(route: string, paramName: string, value: string): string {
+export function routeWithParam(route: string, paramName: string, value: string): string {
   const encodedValue = pathSegment(value, paramName);
   const simplePlaceholder = `{${paramName}}`;
   if (route.includes(simplePlaceholder)) {

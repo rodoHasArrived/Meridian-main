@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AssetAccountingWorkflowViewModel } from "./accounting-screen.asset-workflow";
+import { TextArea } from "@/components/ui/text-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function AssetAccountingWorkflowPanel({ view }: { view: AssetAccountingWorkflowViewModel }) {
   const id = useId();
@@ -25,7 +27,7 @@ export function AssetAccountingWorkflowPanel({ view }: { view: AssetAccountingWo
     {approval ? <div className="space-y-2 rounded border border-border p-3" aria-label="Retained asset approval receipt"><h5 className="text-sm font-semibold">Retained approval</h5>
       <dl className="grid gap-2 text-xs sm:grid-cols-2"><div><dt>Approval identity</dt><dd className="break-all font-mono">{approval.approvalId}</dd></div><div><dt>Authenticated approver</dt><dd>{approval.approver}</dd></div><div><dt>Approved at</dt><dd>{approval.approvedAtUtc}</dd></div><div><dt>Evidence subject</dt><dd className="break-all font-mono">{approval.subjectId}</dd></div><div className="sm:col-span-2"><dt>Fund / book / period</dt><dd className="break-all font-mono">{view.capability?.fundProfileId} / {view.capability?.ledgerBookId} / {view.capability?.periodId}</dd></div><div className="sm:col-span-2"><dt>Approval rationale</dt><dd>{view.capability?.approvalDecision?.notes || "No rationale retained."}</dd></div><div className="sm:col-span-2"><dt>Receipt SHA-256</dt><dd className="break-all font-mono">{approval.contentHashSha256}</dd></div></dl>
       <details className="text-xs"><summary className="cursor-pointer font-semibold">Inspect retained receipt bytes</summary>
-        <div className="mt-2 space-y-2"><textarea aria-label="Exact retained approval receipt JSON" className="min-h-24 w-full rounded border border-border bg-background p-2 font-mono" readOnly value={rawReceipt} />
+        <div className="mt-2 space-y-2"><TextArea rows={2} aria-label="Exact retained approval receipt JSON" className="min-h-24 w-full font-mono" readOnly value={rawReceipt} />
           <div className="flex flex-wrap items-center gap-3"><Button type="button" size="sm" variant="outline" onClick={() => void copyReceipt()}>Copy exact receipt</Button>
           <a className="text-foreground underline" href={`data:application/json;base64,${approval.canonicalContentBase64}`} download={`approval-${approval.approvalId.replace(/[^a-zA-Z0-9-]/g, "_")}.json`}>Download retained approval receipt</a></div>
           {copyStatus?.hash === approval.contentHashSha256 ? <p role="status">{copyStatus.text}</p> : null}</div>
@@ -35,7 +37,7 @@ export function AssetAccountingWorkflowPanel({ view }: { view: AssetAccountingWo
     {view.hasPendingPost && !view.pendingCommandId ? <p role="status" className="text-sm">Posting recovery is pending. Its original command is available only to the authorized approver.</p> : null}
     {!posted ? <fieldset className="space-y-2" disabled={!view.sessionReady || !view.capability || !!view.busyAction || (!view.capability.canApprove && !view.capability.canPost)}>
       <label htmlFor={`${id}-note`} className="block text-xs font-semibold">Review rationale</label><Input id={`${id}-note`} value={view.reviewNote} readOnly={!!view.pendingAction} onChange={event => view.setReviewNote(event.target.value)} />
-      <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={view.confirmed} onChange={event => view.setConfirmed(event.target.checked)} />I reviewed this retained candidate and the approval evidence for the available decision.</label>
+      <Checkbox className="flex items-start gap-2 text-sm" checked={view.confirmed} onChange={event => view.setConfirmed(event.target.checked)} label={<>I reviewed this retained candidate and the approval evidence for the available decision.</>} />
     </fieldset> : null}
     {view.errorText ? <p role="alert" className="text-sm text-danger">{view.errorText}</p> : null}
     {view.statusText ? <p role="status" className="text-sm">{view.statusText}</p> : null}

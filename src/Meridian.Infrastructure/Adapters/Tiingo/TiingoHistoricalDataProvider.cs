@@ -43,10 +43,12 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
 
 
 
-    public override int Priority => 15;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(1.5); // 50 requests/hour = ~72 seconds between requests
-    public override int MaxRequestsPerWindow => 50;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.TiingoPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromSeconds(1.5); // 50 requests/hour = ~72 seconds between requests
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.TiingoPerHour;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromHours(1);
 
     /// <summary>
     /// Tiingo supports adjusted bars with corporate actions for multiple markets.
@@ -55,8 +57,8 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "DE", "CA", "AU");
 
 
-    public TiingoHistoricalDataProvider(string? apiToken = null, HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public TiingoHistoricalDataProvider(string? apiToken = null, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, runtimeOptions: runtimeOptions)
     {
         _apiToken = apiToken ?? Environment.GetEnvironmentVariable("TIINGO_API_TOKEN");
 
@@ -89,7 +91,7 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         {
             // Quick health check with metadata endpoint
             var url = $"{BaseUrl}/AAPL?token={_apiToken}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
         catch
@@ -120,8 +122,6 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiToken))
             throw new InvalidOperationException("Tiingo API token is required. Set TIINGO_API_TOKEN environment variable.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
 
         // Build URL with date range
@@ -134,7 +134,7 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -145,7 +145,6 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
                 if ((int)response.StatusCode == 429)
                 {
                     var retryAfter = HttpResponseHandler.ExtractRetryAfter(response) ?? TimeSpan.FromMinutes(1);
-                    RecordRateLimitHit(retryAfter);
                     throw new RateLimitException(
                         $"Tiingo rate limit exceeded (429) for {symbol}",
                         provider: Name,

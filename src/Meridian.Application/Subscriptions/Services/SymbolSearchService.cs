@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Text.Json;
+using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
@@ -127,7 +129,20 @@ public sealed class SymbolSearchService : IDisposable
     /// <param name="request">Search request parameters.</param>
     /// <param name="ct">Cancellation token.</param>
     /// <returns>Aggregated search results from all available providers.</returns>
-    public async Task<SymbolSearchResponse> SearchAsync(SymbolSearchRequest request, CancellationToken ct = default)
+    public Task<SymbolSearchResponse> SearchAsync(SymbolSearchRequest request, CancellationToken ct = default)
+        => SearchCoreAsync(request, failOnProviderError: false, ct);
+
+    /// <summary>
+    /// Explicit provider lookup that distinguishes provider failure from a successful empty search.
+    /// Intended for candidate-review workflows where a swallowed failure would misstate availability.
+    /// </summary>
+    public Task<SymbolSearchResponse> SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Provider);
+        return SearchCoreAsync(request, failOnProviderError: true, ct);
+    }
+
+    private async Task<SymbolSearchResponse> SearchCoreAsync(SymbolSearchRequest request, bool failOnProviderError, CancellationToken ct)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ct.ThrowIfCancellationRequested();
@@ -156,7 +171,7 @@ public sealed class SymbolSearchService : IDisposable
 
         // Check cache
         var cacheKey = BuildCacheKey(request);
-        if (_searchCache.TryGetValue(cacheKey, out var cached))
+        if (!failOnProviderError && _searchCache.TryGetValue(cacheKey, out var cached))
         {
             _log.Debug("Returning cached search results for {Query}", request.Query);
             return cached;
@@ -172,6 +187,8 @@ public sealed class SymbolSearchService : IDisposable
             : _providers.Where(p => p.Name.Equals(request.Provider, StringComparison.OrdinalIgnoreCase)))
             .OrderBy(p => p.Priority)
             .ToList();
+        if (failOnProviderError && providers.Count == 0)
+            throw new ProviderSearchException(ProviderSearchFailure.Unavailable, "The requested search provider is not configured.");
         var providerPriorities = providers
             .GroupBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.Min(p => p.Priority), StringComparer.OrdinalIgnoreCase);
@@ -181,13 +198,30 @@ public sealed class SymbolSearchService : IDisposable
         {
             try
             {
-                var available = await p.IsAvailableAsync(ct).ConfigureAwait(false);
+                if (failOnProviderError && p is not BaseSymbolSearchProvider)
+                    throw new ProviderSearchException(ProviderSearchFailure.Unavailable,
+                        "The requested provider does not support authoritative response decoding.");
+
+                // The authoritative request itself checks credentials and establishes availability.
+                // A best-effort AAPL probe cannot prove an explicit lookup completed (or that an
+                // otherwise valid, empty provider population is unavailable).
+                var available = failOnProviderError && p is BaseSymbolSearchProvider
+                    || await p.IsAvailableAsync(ct).ConfigureAwait(false);
                 if (!available)
+                {
+                    if (failOnProviderError)
+                        throw new ProviderSearchException(ProviderSearchFailure.Unavailable, "The requested provider is unavailable.");
                     return (Provider: p.Name, Results: Array.Empty<SymbolSearchResult>());
+                }
 
                 IReadOnlyList<SymbolSearchResult> results;
 
-                if (p is IFilterableSymbolSearchProvider filterable &&
+                if (failOnProviderError && p is BaseSymbolSearchProvider authoritative)
+                {
+                    results = await authoritative.SearchAuthoritativeAsync(request.Query, request.Limit * 2,
+                        request.AssetType, request.Exchange, ct).ConfigureAwait(false);
+                }
+                else if (p is IFilterableSymbolSearchProvider filterable &&
                     (!string.IsNullOrEmpty(request.AssetType) || !string.IsNullOrEmpty(request.Exchange)))
                 {
                     results = await filterable.SearchAsync(
@@ -207,6 +241,25 @@ public sealed class SymbolSearchService : IDisposable
             catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
             {
                 _log.Warning(ex, "Symbol search failed for provider {Provider}", p.Name);
+                if (failOnProviderError)
+                {
+                    if (ex is ProviderSearchException)
+                        throw;
+                    throw new ProviderSearchException(ex switch
+                    {
+                        JsonException => ProviderSearchFailure.MalformedPayload,
+                        HttpRequestException { StatusCode: System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden }
+                            => ProviderSearchFailure.CredentialsUnavailable,
+                        HttpRequestException { HttpRequestError: HttpRequestError.ResponseEnded } => ProviderSearchFailure.IncompleteResponse,
+                        HttpRequestException { InnerException: HttpIOException { HttpRequestError: HttpRequestError.ResponseEnded } }
+                            => ProviderSearchFailure.IncompleteResponse,
+                        HttpIOException { HttpRequestError: HttpRequestError.ResponseEnded } => ProviderSearchFailure.IncompleteResponse,
+                        HttpRequestException => ProviderSearchFailure.TransportError,
+                        OperationCanceledException => ProviderSearchFailure.TransportError,
+                        RateLimitException => ProviderSearchFailure.Throttled,
+                        _ => ProviderSearchFailure.Unavailable
+                    }, "The requested provider search could not be completed.", ex);
+                }
                 return (Provider: p.Name, Results: Array.Empty<SymbolSearchResult>());
             }
         }).ToList();
@@ -273,7 +326,8 @@ public sealed class SymbolSearchService : IDisposable
 
         // Cache the response
         ct.ThrowIfCancellationRequested();
-        _searchCache.Set(cacheKey, response);
+        if (!failOnProviderError)
+            _searchCache.Set(cacheKey, response);
 
         _log.Information("Symbol search for {Query} returned {Count} results from {Sources} in {ElapsedMs}ms",
             request.Query, deduped.Count, string.Join(", ", sources), sw.ElapsedMilliseconds);

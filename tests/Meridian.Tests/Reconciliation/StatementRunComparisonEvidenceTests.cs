@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Reconciliation;
