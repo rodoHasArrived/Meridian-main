@@ -942,11 +942,14 @@ export function useOperationsContinuityScreenViewModel(
     closeScope.fundAccountId, closeScope.entityId, closeScope.periodId]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
       return;
     }
 
-    if (narrowedToNoWorkflow) {
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
       closeCalendarRevisionRef.current += 1;
       closeCalendarAbortRef.current?.abort();
       closeCalendarAbortRef.current = null;
@@ -993,11 +996,14 @@ export function useOperationsContinuityScreenViewModel(
   }, [workflows, closeCockpitScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
       return;
     }
 
-    if (narrowedToNoWorkflow) {
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
       closeCockpitRevisionRef.current += 1;
       closeCockpitAbortRef.current?.abort();
       closeCockpitAbortRef.current = null;

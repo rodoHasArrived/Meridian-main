@@ -2192,6 +2192,29 @@ describe("OperationsContinuityScreen fund narrowing", () => {
     expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
   });
 
+  it("clears close panels loaded for a requested workflow once a fund change puts it out of scope", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund]);
+    const entry = `/accounting/operations-continuity?workflowId=${workflowId}`;
+    const tree = (value: FundScopeNarrowingContextValue) => (
+      <MemoryRouter initialEntries={[entry]}>
+        <FundScopeNarrowingProvider value={value}>
+          <Routes>
+            <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+          </Routes>
+        </FundScopeNarrowingProvider>
+      </MemoryRouter>
+    );
+    const { rerender } = render(tree({ structure, loading: false, entityId: null, fundId: null, names: {} }));
+
+    const calendar = await screen.findByRole("table", { name: "Operations continuity close calendar" });
+    await waitFor(() => expect(within(calendar).getByText(`2026-05 / ${fundAccountId}`)).toBeInTheDocument());
+
+    rerender(tree({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(`Workflow ${workflowId} is outside the chosen fund or entity.`);
+    await waitFor(() => expect(screen.queryByText(`2026-05 / ${fundAccountId}`)).not.toBeInTheDocument());
+  });
+
   it("lists every workflow, with an honest note, when the organization graph is unavailable", async () => {
     vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
     renderWithFundScope({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });
