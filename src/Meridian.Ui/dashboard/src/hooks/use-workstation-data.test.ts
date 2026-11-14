@@ -406,6 +406,17 @@ describe("useWorkstationData", () => {
     expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
   });
 
+  it.each(["trading", "settings", "portfolio"] as const)(
+    "loads the owning holdings read model in the initial %s batch",
+    async (activeWorkspace) => {
+      renderHook(() => useWorkstationData({ activeWorkspace }));
+      await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+      // Today uses Trading's shell key too. Headline counts must never wait for
+      // deferred pages or substitute the aggregate system-status count.
+      expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
+    }
+  );
+
   it("refreshes both canonical brokerage status entries after Settings mutations", async () => {
     const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "settings" }));
 
@@ -1161,6 +1172,7 @@ describe("useWorkstationData", () => {
       rejectRequest("session", 1, new Error("Session failed."));
       rejectRequest("overview", 1, new Error("Overview failed."));
       rejectRequest("trading", 1, new Error("Trading failed."));
+      rejectRequest("portfolio", 1, new Error("Portfolio failed."));
       rejectRequest("workflowLibrary", 1, new Error("Workflow library failed."));
       rejectRequest("workflowPresets", 1, new Error("Workflow presets failed."));
       await failedRefresh;

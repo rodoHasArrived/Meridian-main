@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meridian.roadmap-items.v2",
+  "type": "object",
+  "required": [
+    "schema",
+    "registry",
+    "items"
+  ],
+  "properties": {
+    "schema": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "minimum_renderer_version"
+      ],
+      "properties": {
+        "id": {
+          "const": "meridian.roadmap-items"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^2\\.\\d+\\.\\d+$"
+        },
+        "minimum_renderer_version": {
+          "type": "string",
+          "const": "3.0.0"
+        }
+      },
+      "additionalProperties": false
+    },
+    "registry": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "owner",
+        "snapshot_date"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 180
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 160
+        },
+        "snapshot_date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "wave",
+          "status",
+          "health",
+          "priority",
+          "owner_lane",
+          "evidence_posture",
+          "exit_criteria",
+          "source_modules",
+          "last_reviewed",
+          "status_note",
+          "decision_ids",
+          "pr_references"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "wave": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Explicit rank within the wave for generated views. Optional; when absent, rank falls back to the identifier's trailing number."
+          },
+          "stage_gates": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "workspace": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "owner_lane": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "status": {
+            "enum": [
+              "planned",
+              "in_progress",
+              "ready_for_acceptance",
+              "accepted",
+              "done"
+            ]
+          },
+          "health": {
+            "enum": [
+              "green",
+              "yellow",
+              "red",
+              "on_track",
+              "watch",
+              "at_risk",
+              "blocked"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "evidence_posture": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "exit_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "source_modules": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "diagrams": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "path"
+              ],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 512
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "last_reviewed": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "status_note": {
+            "type": "string",
+            "maxLength": 320
+          },
+          "decision_ids": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^DEC-[A-Z0-9-]+$"
+            }
+          },
+          "pr_references": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "status_detail": {
+            "type": "string",
+            "maxLength": 240,
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -27,10 +27,10 @@ import type {
 
 const data: DataWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
-    { id: "m2", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
-    { id: "m3", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
-    { id: "m4", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
+    { id: "providers", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
+    { id: "backfills", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
+    { id: "exports", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
+    { id: "review", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
   ],
   providers: [
     {

@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 DOCS_SCRIPTS = ROOT / "build" / "scripts" / "docs"
 CANONICAL_NAMES = {
     "decision-log.yml", "document-index.yml", "program-state.yml",
-    "risk-register.yml", "roadmap-items.yml", "stage-gates.yml",
+    "risk-register.yml", "roadmap-items.yml", "stage-gates.yml", "production-readiness.yml",
 }
 MALFORMED = "schema:\n  id: meridian.roadmap-items\nitems:\n  - current_summary: Review: pending\n"
 
@@ -94,8 +94,10 @@ class CanonicalRoadmapYamlTests(unittest.TestCase):
     def test_existing_ingest_summary_retains_literal_pr_number_and_suffix(self) -> None:
         data = common.load_data(ROOT / "docs" / "roadmap" / "data" / "roadmap-items.yml")
         item = next(item for item in data["items"] if item["id"] == "W9-INGEST-009")
-        self.assertIn("#2948. This remains shared-service/file-store evidence", item["current_summary"])
-        self.assertTrue(item["current_summary"].endswith("does not move the row to done or certify a release."))
+        snapshot = (ROOT / item["status_detail"]).read_text(encoding="utf-8")
+        self.assertIn("#2948. This remains shared-service/file-store evidence", snapshot)
+        self.assertIn("does not move the row to done or certify a release.", snapshot)
+        self.assertIn(2948, item["pr_references"])
 
     def test_missing_yaml_parser_does_not_use_legacy_recovery(self) -> None:
         path = ROOT / "docs" / "roadmap" / "data" / "roadmap-items.yml"

@@ -10,8 +10,6 @@ on:
       integration-receipt-sha256:
         value: ${{ jobs.integration-gate.outputs.receipt-sha256 }}
   pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
@@ -34,8 +32,44 @@ env:
   MERIDIAN_DISABLE_DOCKER_TESTS: "true"
 
 jobs:
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      dotnet: ${{ steps.detect.outputs.dotnet }}
+    steps:
+      - name: Check out complete PR history
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          # Inspect the complete diff locally, including deletions and both sides
+          # of renames. No PR-files API limit can silently omit changed code.
+          fetch-depth: 0
+
+      - name: Detect .NET changes
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            python3 build/scripts/ci/detect-dotnet-changes.py \
+              --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$GITHUB_OUTPUT"
+          else
+            # Main, merge queues, manual and reusable release gates always run .NET.
+            echo "dotnet=true" >> "$GITHUB_OUTPUT"
+          fi
+
   verify-dotnet:
     name: verify-dotnet
+    needs: changes
+    if: needs.changes.outputs.dotnet == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -147,7 +181,7 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -259,6 +293,7 @@ jobs:
     name: quality-gate
     runs-on: ubuntu-latest
     needs:
+      - changes
       - verify-dotnet
       - verify-browser
       - verify-docs
@@ -268,26 +303,41 @@ jobs:
 
     steps:
       - name: Evaluate Meridian CI lanes
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          DOTNET_REQUIRED: ${{ needs.changes.outputs.dotnet }}
+          DOTNET_RESULT: ${{ needs.verify-dotnet.result }}
+          BROWSER_RESULT: ${{ needs.verify-browser.result }}
+          DOCS_RESULT: ${{ needs.verify-docs.result }}
+          WORKFLOWS_RESULT: ${{ needs.verify-workflows.result }}
         shell: bash
         run: |
           set -euo pipefail
           declare -A results=(
-            ["verify-dotnet"]="${{ needs.verify-dotnet.result }}"
-            ["verify-browser"]="${{ needs.verify-browser.result }}"
-            ["verify-docs"]="${{ needs.verify-docs.result }}"
-            ["verify-workflows"]="${{ needs.verify-workflows.result }}"
+            ["changes"]="$CHANGES_RESULT"
+            ["verify-dotnet"]="$DOTNET_RESULT"
+            ["verify-browser"]="$BROWSER_RESULT"
+            ["verify-docs"]="$DOCS_RESULT"
+            ["verify-workflows"]="$WORKFLOWS_RESULT"
           )
 
           failed=0
+          if [[ "$DOTNET_REQUIRED" != "true" && "$DOTNET_REQUIRED" != "false" ]]; then
+            echo "Change detection did not produce a valid .NET decision." >&2
+            failed=1
+          fi
           {
             echo "### Meridian CI quality gate"
             echo ""
             echo "| Lane | Result |"
             echo "| --- | --- |"
-            for lane in verify-dotnet verify-browser verify-docs verify-workflows; do
+            for lane in changes verify-dotnet verify-browser verify-docs verify-workflows; do
               result="${results[$lane]}"
               echo "| \`$lane\` | \`$result\` |"
-              if [[ "$result" != "success" ]]; then
+              if [[ "$lane" == "verify-dotnet" && "$result" == "skipped" &&
+                    "$CHANGES_RESULT" == "success" && "$DOTNET_REQUIRED" == "false" ]]; then
+                echo "Docs-only PR: .NET lane intentionally skipped." >> "$GITHUB_STEP_SUMMARY"
+              elif [[ "$result" != "success" ]]; then
                 failed=1
               fi
             done
@@ -298,7 +348,7 @@ jobs:
             exit 1
           fi
 
-          echo "All Meridian CI lanes passed."
+          echo "All required Meridian CI lanes passed."
 
   service-backed-integrations:
     name: service-backed-integrations

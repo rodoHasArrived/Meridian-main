@@ -94,7 +94,7 @@ compatibility/security pins when updating the central manifest.
 | Package | Purpose |
 | --- | --- |
 | System.Text.Json | JSON serialization |
-| Newtonsoft.Json | JSON compatibility |
+| Newtonsoft.Json | Runtime transitive JSON dependency via Sharpino and FsPickler.Json; centrally pinned |
 | System.IO.Compression | Gzip compression |
 | Apache.Arrow | Columnar data structures |
 | Npgsql | PostgreSQL access |
@@ -180,6 +180,10 @@ the owning test project determines which packages and runner it uses.
 | FsUnit.xUnit | F# assertion helpers |
 | TngTech.ArchUnitNET | Architecture tests |
 | TngTech.ArchUnitNET.xUnit | xUnit adapter for architecture tests |
+
+FluentAssertions 8.x package metadata describes open-source and non-commercial use as free, and
+commercial use as requiring a paid license. The [publisher's licensing page](https://xceed.com/products/unit-testing/fluent-assertions/)
+and the restored package's `LICENSE` contain the applicable conditions.
 
 ## Browser and documentation tooling
 

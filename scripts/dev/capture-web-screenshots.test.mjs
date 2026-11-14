@@ -8,6 +8,8 @@ import { test } from "node:test";
 import {
   CAPTURE_CONTENT_ISSUE_KINDS,
   captureRouteWithRetries,
+  checkKpiConsistency,
+  collectKpiSnapshots,
   collectAllowedContentIssueKinds,
   createCaptureApiTracker,
   describeCaptureContentIssues,
@@ -456,6 +458,7 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
     async waitForSelector() {},
     async waitForFunction() {},
     async evaluate() { return 100; },
+    locator() { return { async evaluateAll() { return []; } }; },
     url() { return "http://localhost/workstation/accounting"; },
     async screenshot({ path: file }) {
       const image = Buffer.alloc(bytes);
@@ -532,6 +535,7 @@ test("a ready shell cannot capture before its configured loaded-data text appear
       };
     },
     async evaluate() { return 100; },
+    locator() { return { async evaluateAll() { return []; } }; },
     url() { return "http://localhost/workstation/accounting"; },
     async screenshot({ path: file }) {
       captured = true;
@@ -619,6 +623,126 @@ test("readiness reports spawn errors and removes its child listeners", async (t)
   await assert.rejects(waitForServer(url, 100, child, []), /Dev server could not start: spawn npm ENOENT/);
   assert.equal(child.listenerCount("exit"), 0);
   assert.equal(child.listenerCount("error"), 0);
+});
+
+function kpiCapture(route, value, { scope = '{"accountId":"paper","source":"live"}', display = value, scenario, revision = null } = {}) {
+  return {
+    name: route.slice(1), route, status: "passed", scenario,
+    kpis: [{ id: "portfolio.open-positions", scope, value, display, revision }]
+  };
+}
+
+test("KPI consistency detects cross-route raw and displayed value differences", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    kpiCapture("/settings", "5"),
+    kpiCapture("/trading", "2", { display: "2 positions" })
+  ]);
+  assert.equal(result.observationCount, 3);
+  assert.equal(result.comparisonCount, 2);
+  assert.equal(result.conflicts.length, 2);
+  assert.equal(result.conflicts[0].previous.route, "/portfolio");
+  assert.equal(result.conflicts[0].current.route, "/settings");
+  assert.equal(result.conflicts[1].current.display, "2 positions");
+});
+
+test("KPI consistency canonicalizes scope keys and accepts matching values", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    kpiCapture("/settings", "2", { scope: '{"source":"live","accountId":"paper"}' })
+  ]);
+  assert.equal(result.comparisonCount, 1);
+  assert.deepEqual(result.conflicts, []);
+});
+
+test("KPI consistency keeps accounts, sources, runs, currencies, datasets and read revisions separate", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    ...[
+      { scope: '{"accountId":"other","source":"live"}' },
+      { scope: '{"accountId":"paper","source":"retained","runId":42}' },
+      { scope: '{"accountId":"paper","source":"retained","runId":43}' },
+      { scope: '{"accountId":"paper","source":"live","currency":"EUR"}' },
+      { scenario: "portfolio.degraded" },
+      { revision: "snapshot-2" }
+    ].map((options, index) => kpiCapture(`/route-${index}`, "5", options)),
+    { ...kpiCapture("/failed", "9"), status: "failed" }
+  ]);
+  assert.equal(result.observationCount, 7);
+  assert.equal(result.comparisonCount, 0);
+  assert.deepEqual(result.conflicts, []);
+});
+
+test("KPI collection rejects missing and invalid scope contracts", async () => {
+  const page = (snapshot) => ({ locator: () => ({ evaluateAll: async () => [snapshot] }) });
+  const valid = { ...kpiCapture("/portfolio", "2").kpis[0], renderedDisplay: "2" };
+  assert.deepEqual(await collectKpiSnapshots(page(valid)), [valid]);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, display: null })), /Incomplete KPI/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, scope: "live" })), /invalid scope JSON/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, scope: "[]" })), /must be a JSON object/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, renderedDisplay: null })), /missing \[data-kpi-rendered-value\]/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, renderedDisplay: "5" })), /does not match its rendered value '5'/);
+});
+
+test("KPI collection reads the rendered value independently of its metadata", async (t) => {
+  const previousGetComputedStyle = globalThis.getComputedStyle;
+  globalThis.getComputedStyle = () => ({ visibility: "visible" });
+  t.after(() => {
+    if (previousGetComputedStyle) globalThis.getComputedStyle = previousGetComputedStyle;
+    else delete globalThis.getComputedStyle;
+  });
+  const attributes = {
+    "data-kpi-id": "portfolio.open-positions",
+    "data-kpi-scope": "{}",
+    "data-kpi-value": "2",
+    "data-kpi-display": "2"
+  };
+  let renderedText = "  2  ";
+  const element = {
+    getClientRects: () => [{}],
+    getAttribute: (key) => attributes[key] ?? null,
+    querySelector(selector) {
+      assert.equal(selector, "[data-kpi-rendered-value]");
+      return { textContent: renderedText };
+    }
+  };
+  const page = { locator: () => ({ evaluateAll: async (callback) => callback([element]) }) };
+  assert.equal((await collectKpiSnapshots(page))[0].renderedDisplay, "2");
+  renderedText = "5";
+  await assert.rejects(collectKpiSnapshots(page), /does not match its rendered value '5'/);
+});
+
+test("KPI collection excludes closed disclosure contents even when Chromium retains layout boxes", async (t) => {
+  const previousGetComputedStyle = globalThis.getComputedStyle;
+  globalThis.getComputedStyle = () => ({ visibility: "visible" });
+  t.after(() => {
+    if (previousGetComputedStyle) globalThis.getComputedStyle = previousGetComputedStyle;
+    else delete globalThis.getComputedStyle;
+  });
+  let open = false;
+  let inSummary = false;
+  const details = {
+    tagName: "DETAILS", parentElement: null,
+    hasAttribute: () => open,
+    querySelector: () => ({ contains: () => inSummary })
+  };
+  const attributes = {
+    "data-kpi-id": "portfolio.open-positions", "data-kpi-scope": "{}",
+    "data-kpi-value": "2", "data-kpi-display": "2"
+  };
+  const element = {
+    parentElement: details,
+    getClientRects: () => [{}],
+    getAttribute: (key) => attributes[key] ?? null,
+    querySelector: () => ({ textContent: "2" })
+  };
+  const page = { locator: () => ({ evaluateAll: async (callback) => callback([element]) }) };
+  assert.deepEqual(await collectKpiSnapshots(page), []);
+  open = true;
+  assert.equal((await collectKpiSnapshots(page)).length, 1);
+  open = false;
+  inSummary = true;
+  assert.equal((await collectKpiSnapshots(page)).length, 1);
 });
 
 test("rendered identifiers are reported once each, whatever their case", () => {

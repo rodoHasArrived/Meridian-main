@@ -676,7 +676,7 @@ Declared public members:
 | <code>public void RunSelectedProviderDiagnostics();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L424) |  |
 | <code>public void OpenAddProviderWizard() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:451](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L451) |  |
 | <code>public void OpenProviderSettings() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:454](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L454) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:1660](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L1660) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs:1661](../../../../src/Meridian.Wpf/ViewModels/ProviderHealthViewModel.cs#L1661) |  |
 
 ## ProviderRateLimitPresentation
 

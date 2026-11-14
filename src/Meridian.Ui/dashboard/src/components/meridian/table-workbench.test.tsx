@@ -1,4 +1,4 @@
-import { render, screen, within, waitFor } from "@testing-library/react";
+import { act, render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
@@ -16,6 +16,40 @@ const columns: TableWorkbenchColumn<Row>[] = [
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(getJson).mockResolvedValue([]); });
 
 describe("TableWorkbench", () => {
+  it("keeps compact queries visible while table options retain columns, export, density and saving", async () => {
+    const user = userEvent.setup();
+    vi.mocked(postJson).mockResolvedValue({ viewId: "personal", label: "Review", searchText: "a", columnIds: ["id"], density: "comfortable" });
+    const { container } = render(<TableWorkbench workbenchId="compact-review" compactToolbar columns={columns}
+      rows={[{ id: "a", amount: 1 }, { id: "b", amount: 2 }]} getRowId={row => row.id} getSearchText={row => row.id}
+      filters={<label>Status<select aria-label="Status filter" defaultValue="open"><option value="open">Open</option></select></label>}
+      filterState={{ status: "open" }} completePopulation sourceDescription="Complete authorized snapshot"
+      emptyText="No matches" ariaLabel="Records" />);
+    await act(async () => { await Promise.resolve(); });
+    expect(screen.getByRole("searchbox")).toBeVisible();
+    expect(screen.getByRole("combobox", { name: "Status filter" })).toBeVisible();
+    expect(screen.getByText("2 matches", { exact: true })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Export CSV" })).not.toBeVisible();
+    await user.type(screen.getByRole("searchbox"), "a");
+    expect(screen.getByText("1 match", { exact: true })).toBeVisible();
+    const summary = container.querySelector("summary")!;
+    await user.click(summary);
+    expect(screen.getByRole("button", { name: "Export CSV" })).toBeVisible();
+    await user.selectOptions(screen.getByRole("combobox", { name: "Records density" }), "comfortable");
+    await user.click(screen.getByRole("checkbox", { name: "Amount" }));
+    expect(screen.queryByRole("columnheader", { name: "Amount" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Export CSV" }));
+    expect(downloadCsv).toHaveBeenCalledWith(expect.any(String), expect.stringMatching(/^Record,Context/));
+    await user.type(screen.getByLabelText("View name"), "Review");
+    await user.click(screen.getByRole("button", { name: "Save to my account" }));
+    await waitFor(() => expect(postJson).toHaveBeenCalledWith("/api/workstation/tables/compact-review/views", expect.objectContaining({
+      searchText: "a", columnIds: ["id"], density: "comfortable", filters: { status: "open" }
+    }), expect.any(Object)));
+    await user.keyboard("{Escape}");
+    expect(summary.parentElement).not.toHaveAttribute("open");
+    expect(summary).toHaveFocus();
+    expect(screen.getByRole("searchbox")).toHaveValue("a");
+  });
+
   it("uses singular and plural result counts in the toolbar and complete export copy", async () => {
     const user = userEvent.setup();
     const props = { workbenchId: "counts", columns, getRowId: (row: Row) => row.id,

@@ -194,16 +194,15 @@ export function AccountingSystemReconciliationPanel({
 
   return (
     <Card id="external-gl-reconciliation" className="panel-surface scroll-mt-6" role="region" aria-label="External GL reconciliation">
-      <CardHeader>
+      <CardHeader className="px-3 py-1">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <div className="eyebrow-label eyebrow-label--sentence">External GL reconciliation</div>
-            <CardTitle className="mt-2 flex items-center gap-2 text-base">
+            <CardTitle className="flex items-center gap-2 text-base">
               <BookCheck className="h-4 w-4 text-primary" aria-hidden="true" />
               {activeProvider ? presentExternalGlProviderEvidenceLabel(activeProvider.displayName) : "External GL evidence"}
             </CardTitle>
-            <CardDescription className="mt-2">
-              External accounting-system records are imported as read-only evidence against Meridian-owned ledger truth; posting back to the external GL remains disabled.
+            <CardDescription className="mt-1">
+              Read-only external GL evidence · Meridian ledger is authoritative · External posting disabled.
             </CardDescription>
             {selectedCompanyLabel ? (
               <div className="mt-2 text-xs text-muted-foreground">
@@ -221,7 +220,7 @@ export function AccountingSystemReconciliationPanel({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 p-3">
         {error ? (
           <StatusBanner tone="danger" role="alert" title={error} />
         ) : null}
