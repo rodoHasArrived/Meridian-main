@@ -28,7 +28,7 @@ describe("Operating scope and workflow context route modes", () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole("button", { name: "Operating scope: Account All authorized, Period All authorized" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Operating scope: Entity All authorized, Fund All authorized, Account All authorized, Period All periods" })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Settings task workflow steps" })).toBeNull();
 
     await user.click(screen.getByText("Workflow context"));
