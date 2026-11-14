@@ -463,7 +463,9 @@ with no scope in its link or local storage.
 calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible
 entities and each account's fund and entity. Field names match the summaries in
 `OrganizationStructureGraphDto`, so one client parser reads both. A relationship that would name a
-fund or entity the caller may not see is null, and every list may be empty. Its source-generated
+fund or entity the caller may not see is null, and every list may be empty. On an account,
+`FundWithheld`/`EntityWithheld` (appended last, default false) are true when that null hides a
+fund or entity that exists but is not visible to the caller; they never carry its id or name. Its source-generated
 `WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser

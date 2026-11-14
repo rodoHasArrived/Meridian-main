@@ -1175,7 +1175,10 @@ but the payload carries only nodes the caller could already read on an existing 
   (brokerage household and portfolio aggregation); `ViewLedgerReports` / `ManageLedgerReports` →
   entities (entity timeline).
 - A fund's entity ids and an account's fund and entity ids are dropped when they point outside the
-  visible set. A caller holding none of those permissions gets empty lists without the structure
+  visible set. When an account's fund or entity is dropped, the account's `fundWithheld` /
+  `entityWithheld` flag is set instead (additive, default false), so a client can say "not visible
+  to you" rather than "none recorded". The flag discloses only that the account has an active fund
+  or entity; never its id or name. It is always false for `AdminMaintenance`. A caller holding none of those permissions gets empty lists without the structure
   being read. A host without `IFundStructureService` answers 503.
 
 ## Operator surface visits

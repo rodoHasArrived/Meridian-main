@@ -5520,7 +5520,7 @@
       ]
     }
   ],
-  "fingerprint": "57e071f27228cec176853beb926f862125992847379273063af9dd75667affab",
+  "fingerprint": "5d192c18edb7af7a1b9ca3165d2e3795ba9c0f5cee3ae9eeb1e02d3d9068bc33",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -8852,7 +8852,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "25641d22bac475495708f31a5fd32c7de2b4dd9835e4853894eb27fecc0384aa",
+      "fingerprint": "9331f33d42238275cdb6a940cd035718bd5592d5f72ce704d753a9880b015a4e",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -506263,7 +506263,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "2e9bf18d3a6f84f8c817ad595203ef7e822ae68bd6cbfe761c6ca34cd676d655",
+      "fingerprint": "c881e488afb52a8f2a281248721442db4c896296f746fa1a99b1cfb6a1f7582f",
       "full_name": "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
       "id": "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
       "kind": "record",
@@ -506280,7 +506280,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 42,
+          "source_line": 57,
           "type": "Guid"
         },
         {
@@ -506294,7 +506294,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 43,
+          "source_line": 58,
           "type": "string"
         },
         {
@@ -506308,8 +506308,23 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 45,
+          "source_line": 60,
           "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntityWithheld",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 62,
+          "type": "bool"
         },
         {
           "collection": false,
@@ -506322,8 +506337,23 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 44,
+          "source_line": 59,
           "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundWithheld",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 61,
+          "type": "bool"
         }
       ],
       "name": "WorkstationScopeAccountOptionDto",
@@ -506332,12 +506362,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.WorkstationScopeAccountOptionDto",
       "references": [],
       "source": {
-        "line": 41,
+        "line": 56,
         "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
       },
       "sources": [
         {
-          "line": 41,
+          "line": 56,
           "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
         }
       ],
@@ -506573,7 +506603,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "357c0a727801a8e9591df69d391f1d5dbb803a5a94c4c726d377642c922a8f3a",
+      "fingerprint": "01d08cf33d1e47fe5e6ccad413613a3e8852384a5f753561f70edbba48c6f693",
       "full_name": "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
       "id": "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
       "kind": "class",
@@ -506585,12 +506615,12 @@
       "qualified_name": "Meridian.Contracts.Workstation.WorkstationScopeOptionsJsonContext",
       "references": [],
       "source": {
-        "line": 58,
+        "line": 75,
         "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
       },
       "sources": [
         {
-          "line": 58,
+          "line": 75,
           "path": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs"
         }
       ],
