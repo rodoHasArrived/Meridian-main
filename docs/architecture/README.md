@@ -65,7 +65,7 @@ This index's review covers navigation and document scope. Dated reviews retain t
 | [Provider Management](provider-management.md) | Provider abstraction and failover |
 | [Provider Integration Manifest Runtime](provider-integration-manifest-runtime.md) | No-code provider integration manifests, generic connector runtime, raw payload retention, mapping, validation, quarantine, and certified trading boundary |
 | [Market-Data Runtime Contracts](domains.md) | Collector event envelopes, payloads, and source attribution; use the Domain Dictionary for business concepts |
-| [Security Master Extensibility Review](security-master-extensibility-review.md) | Dated cross-asset assessment and source-evidence addenda; recheck each finding against current source before acting |
+| [Security Master Extensibility Review (archived)](../../archive/docs/architecture/security-master-extensibility-review.md) | Dated cross-asset assessment and source-evidence addenda; recheck each finding against current source before acting |
 | [Security Master Identifier Conflict Detection](security-master-identifier-conflict-detection.md) | Canonical identifier equality, validity-window overlap, complete claimant-pair detection, and indexed rebuild behavior |
 | [Security-Identified Open-Lot Convergence Blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md) | Target contract and staged migration for SecurityId-keyed unit/face lots, acquisition FX, relief, amortization, and corporate-action continuity |
 | [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |

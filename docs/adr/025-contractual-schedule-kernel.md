@@ -40,7 +40,7 @@ Between them:
 - Asset-operations flow ids are minted with `Guid.NewGuid()` on every read, so nothing can key a
   period stably.
 
-The [extensibility review](../architecture/security-master-extensibility-review.md) recorded this
+The [extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md) recorded this
 as G5 on 2026-10-21 and set priority 5: one schedule engine with calendars and call/put schedules,
 folding in the direct-lending logic, plus a per-class upgrade hook.
 
@@ -409,7 +409,7 @@ This command verifies referenced files and directories exist; it does not valida
 - [Contractual Schedule](../domain/contractual-schedule.md) and
   [Business-Day Calendar](../domain/business-day-calendar.md) domain pages
 - [Contractual-schedule known-defect registry](../../tests/fixtures/schedules/KNOWN-DEFECTS.md)
-- [Security Master extensibility review](../architecture/security-master-extensibility-review.md)
+- [Security Master extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md)
   (G5, and the resolution passes from 2026-10-23 on)
 - [Business-day calendar files](../operators/business-day-calendar-files.md) and
   [Security Master terms contract rollout](../operators/security-master-terms-contract-rollout.md)
@@ -554,7 +554,7 @@ This command verifies referenced files and directories exist; it does not valida
   `ScheduleSpecFactory.DeclaredMappingVersion` aliases and which the startup capability line and
   every declared schedule's evidence report. The owner confirmed these rules on 2026-10-28
   (decisions 5 to 9, 12 to 14 and 16 of the increment-5 plan, recorded in the
-  [extensibility review](../architecture/security-master-extensibility-review.md)). Any change to
+  [extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md)). Any change to
   how a declared block maps to a schedule ships under a new mapping version.
   - **Who declares.** A record declares conventions when the shared reader
     (`SecurityVersionedTerms.ReadDeclaredScheduleConventions`) decodes a non-empty root block, the
@@ -1110,7 +1110,7 @@ entry records the rules `ScheduleTermsWriteRules` gained afterwards
 version, write version, stamp floor or declared mapping version changes, so
 `security-master-declared-schedule-v1` and [ADR-024](024-terms-payload-format-and-version-policy.md)
 are unchanged. The owner's disposition is recorded in the
-[extensibility review](../architecture/security-master-extensibility-review.md) (resolution pass of
+[extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md) (resolution pass of
 2026-11-02).
 
 - **Safety rule: a new or tightened rule judges only what a write introduces or changes.** Main

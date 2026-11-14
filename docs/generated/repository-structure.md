@@ -1140,6 +1140,7 @@ Meridian-main
 │       │   ├── check-apiclient-callers.py
 │       │   ├── check-contract-type-parity.py
 │       │   ├── check-dashboard-type-barrel.py
+│       │   ├── check-doc-health-delta.py
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
 │       │   ├── check-file-size.py
@@ -1158,6 +1159,7 @@ Meridian-main
 │       │   ├── ci-metrics.py
 │       │   ├── collect-actions.py
 │       │   ├── dependency-locks.py
+│       │   ├── detect-dotnet-changes.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
@@ -1821,18 +1823,9 @@ Meridian-main
 │   │   │   ├── web-workstation-ux-review-plan-2026-11.md
 │   │   │   ├── workstation-ux-consolidation-plan-2026-11.md
 │   │   │   └── wpf-web-ui-alignment-plan.md
-│   │   ├── actions-local-benchmarks-2026-10-05.json
 │   │   ├── actions-rollout-measurement-2026-10-05.md
-│   │   ├── actions-rollout-policy-2026-10-05.json
-│   │   ├── actions-rollout-report-2026-10-05.json.gz
-│   │   ├── actions-rollout-source-2026-10-05.json.gz
-│   │   ├── actions-storage-audit-2026-10-05.json
 │   │   ├── actions-storage-audit-2026-10-05.md
-│   │   ├── actions-workflow-audit-2026-10-15.json
 │   │   ├── actions-workflow-followup-2026-10-15.md
-│   │   ├── actions-workflow-policy-2026-10-15.json
-│   │   ├── actions-workflow-report-2026-10-15.json.gz
-│   │   ├── actions-workflow-source-2026-10-15.json.gz
 │   │   ├── archive-compression-replay-safety.md
 │   │   ├── ci-cd-optimization.md
 │   │   ├── contract-type-parity.md
@@ -3099,241 +3092,240 @@ Meridian-main
 │   │   │   │   ├── candidate-binding.json
 │   │   │   │   ├── manifest.json
 │   │   │   │   └── README.md
-│   │   │   ├── wal-checksum-2026-10-07
-│   │   │   │   ├── ci
-│   │   │   │   │   ├── canonical-evidence-packaging-failure
-│   │   │   │   │   │   ├── archive-manifest.json
-│   │   │   │   │   │   ├── command.log.gz
-│   │   │   │   │   │   ├── dotnet-test-summary.json.gz
-│   │   │   │   │   │   ├── dotnet-test-summary.md
-│   │   │   │   │   │   ├── final-tree-binding.json
-│   │   │   │   │   │   ├── launch.json
-│   │   │   │   │   │   ├── quality-gate-steps.tsv
-│   │   │   │   │   │   ├── quality-gate-summary.md
-│   │   │   │   │   │   └── receipt.json
-│   │   │   │   │   ├── initial-failure
-│   │   │   │   │   │   └── archive-sha256.json
-│   │   │   │   │   ├── provider-documentation-drift
-│   │   │   │   │   │   ├── ai-handoff-docs-automation-summary.json
-│   │   │   │   │   │   ├── ai-handoff-docs-automation-summary.md
-│   │   │   │   │   │   ├── archive-manifest.json
-│   │   │   │   │   │   ├── browser-test-summary.json.gz
-│   │   │   │   │   │   ├── browser-test-summary.md
-│   │   │   │   │   │   ├── command.log.gz
-│   │   │   │   │   │   ├── dotnet-test-summary.json.gz
-│   │   │   │   │   │   ├── dotnet-test-summary.md
-│   │   │   │   │   │   ├── launch.json
-│   │   │   │   │   │   ├── quality-gate-steps.tsv
-│   │   │   │   │   │   ├── quality-gate-summary.md
-│   │   │   │   │   │   ├── receipt.json
-│   │   │   │   │   │   └── source-freeze-receipt.json
-│   │   │   │   │   ├── tool-process-subreaper-results
-│   │   │   │   │   │   └── tool-process-subreaper.trx.gz
-│   │   │   │   │   ├── linux-subreaper.py
-│   │   │   │   │   ├── README.md
-│   │   │   │   │   ├── tool-process-subreaper-receipt.json
-│   │   │   │   │   └── tool-process-subreaper.log.gz
-│   │   │   │   ├── component-profiles
-│   │   │   │   │   └── dedup
-│   │   │   │   │       ├── BaselineDedupLedger.cs
-│   │   │   │   │       ├── BaselineDedupLedger.original.cs
-│   │   │   │   │       ├── HexDedupLedger.cs
-│   │   │   │   │       ├── HexDedupLedger.original.cs
-│   │   │   │   │       ├── measurements.csv
-│   │   │   │   │       ├── Profile.csproj.gz
-│   │   │   │   │       ├── Program.cs
-│   │   │   │   │       ├── README.md
-│   │   │   │   │       ├── ReuseDedupLedger.cs
-│   │   │   │   │       ├── ReuseDedupLedger.original.cs
-│   │   │   │   │       ├── run-environment.json
-│   │   │   │   │       └── summary.csv
-│   │   │   │   ├── components
-│   │   │   │   │   ├── before
-│   │   │   │   │   │   ├── Profile.csproj.gz
-│   │   │   │   │   │   └── Program.cs
-│   │   │   │   │   ├── candidates
-│   │   │   │   │   │   ├── managed
-│   │   │   │   │   │   │   └── Profile.csproj.gz
-│   │   │   │   │   │   ├── native
-│   │   │   │   │   │   │   └── Profile.csproj.gz
-│   │   │   │   │   │   ├── LLxx.cs
-│   │   │   │   │   │   ├── LZ4Codec.cs
-│   │   │   │   │   │   ├── managed-measurements.csv
-│   │   │   │   │   │   ├── native-measurements.csv
-│   │   │   │   │   │   ├── Program.cs
-│   │   │   │   │   │   ├── README.md
-│   │   │   │   │   │   ├── RESULTS.md
-│   │   │   │   │   │   ├── run-environment.json
-│   │   │   │   │   │   └── summary.csv
-│   │   │   │   │   ├── compression
-│   │   │   │   │   │   ├── measurements.csv
-│   │   │   │   │   │   ├── Profile.csproj.gz
-│   │   │   │   │   │   ├── Program.cs
-│   │   │   │   │   │   ├── README.md
-│   │   │   │   │   │   └── summary.csv
-│   │   │   │   │   ├── native
-│   │   │   │   │   │   ├── blake3-1.8.2-test-vectors.json
-│   │   │   │   │   │   ├── doc_benchmarks.md
-│   │   │   │   │   │   ├── lib_blake3_dotnet_Cargo.toml
-│   │   │   │   │   │   ├── lib_blake3_dotnet_src_lib.rs
-│   │   │   │   │   │   ├── native-sha256-measurements.csv
-│   │   │   │   │   │   ├── native_sha256.c
-│   │   │   │   │   │   ├── README.md
-│   │   │   │   │   │   ├── src_Blake3.Native_Blake3.Native.csproj.gz
-│   │   │   │   │   │   ├── src_Blake3.Native_Hasher.cs
-│   │   │   │   │   │   ├── src_Blake3_Hasher.cs
-│   │   │   │   │   │   └── summary.csv
-│   │   │   │   │   └── packbits
-│   │   │   │   │       ├── measurements.csv
-│   │   │   │   │       ├── Profile.csproj.gz
-│   │   │   │   │       ├── Program.cs
-│   │   │   │   │       ├── README.md
-│   │   │   │   │       ├── run-environment.json
-│   │   │   │   │       ├── summary.csv
-│   │   │   │   │       └── WalChecksum.cs
-│   │   │   │   ├── integrity
-│   │   │   │   │   ├── dedup-provider
-│   │   │   │   │   │   ├── test-results
-│   │   │   │   │   │   │   └── dedup-provider-focused.trx.gz
-│   │   │   │   │   │   ├── final-validation-receipt.json
-│   │   │   │   │   │   ├── focused-test-receipt.json
-│   │   │   │   │   │   ├── focused-tests.log.gz
-│   │   │   │   │   │   ├── source-review-receipt.json
-│   │   │   │   │   │   └── validated-commit.patch
-│   │   │   │   │   ├── commands.json
-│   │   │   │   │   ├── integrity-tests.log.gz
-│   │   │   │   │   ├── local-time-tests.log.gz
-│   │   │   │   │   ├── scalar-tests.log.gz
-│   │   │   │   │   ├── wal-checksum-integrity.trx.gz
-│   │   │   │   │   ├── wal-checksum-local-time.trx.gz
-│   │   │   │   │   └── wal-checksum-scalar.trx.gz
-│   │   │   │   ├── receipts
-│   │   │   │   │   ├── current-main-integration.json
-│   │   │   │   │   ├── current-main-provider-integration.json
-│   │   │   │   │   ├── diagnostic-project-packaging.json
-│   │   │   │   │   ├── initial-committed-packet-verification.json
-│   │   │   │   │   ├── native-upstream-project-packaging.json
-│   │   │   │   │   ├── optimized-interrupted-budget-evidence.json
-│   │   │   │   │   ├── optimized-interrupted-receipt.json
-│   │   │   │   │   ├── provider-artifact-verification.json
-│   │   │   │   │   ├── provider-source-binding.json
-│   │   │   │   │   ├── provider-tested-merge-metadata.json
-│   │   │   │   │   └── schema-manifest-refresh.json
-│   │   │   │   ├── runs
-│   │   │   │   │   ├── hosted-final-head-failure-37673101515
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   ├── hosted-final-pass
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   ├── hosted-first-optimized
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   ├── hosted-main-current
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   ├── hosted-main-prior
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   ├── hosted-pr-3109
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   ├── hosted-provider-pass-37678970064
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   ├── local-baseline
-│   │   │   │   │   │   ├── bdn
-│   │   │   │   │   │   │   ├── results
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │   │   │   └── perf-budgets.json
-│   │   │   │   │   │   ├── budget-evidence.json
-│   │   │   │   │   │   ├── profile.json
-│   │   │   │   │   │   └── run.json
-│   │   │   │   │   └── local-first-optimized-interrupted
-│   │   │   │   │       ├── bdn
-│   │   │   │   │       │   ├── results
-│   │   │   │   │       │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
-│   │   │   │   │       │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
-│   │   │   │   │       │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
-│   │   │   │   │       │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
-│   │   │   │   │       │   └── perf-budgets.json
-│   │   │   │   │       ├── profile.json
-│   │   │   │   │       └── run.json
-│   │   │   │   ├── third-party-notices
-│   │   │   │   │   ├── K4os.Compression.LZ4-1.3.8-LICENSE.txt
-│   │   │   │   │   ├── K4os.Compression.LZ4-1.3.8.nuspec
-│   │   │   │   │   ├── LZ4-library-LICENSE.txt
-│   │   │   │   │   ├── LZ4-license-scope.txt
-│   │   │   │   │   ├── provenance.json
-│   │   │   │   │   └── README.md
-│   │   │   │   ├── .gitattributes
-│   │   │   │   ├── Directory.Build.props
-│   │   │   │   ├── Directory.Packages.props
-│   │   │   │   ├── manifest.json
-│   │   │   │   ├── manifest.sha256
-│   │   │   │   ├── README.md
-│   │   │   │   ├── report.md
-│   │   │   │   └── verify-evidence.py
-│   │   │   └── endpoint-fixture-concurrency.json
+│   │   │   └── wal-checksum-2026-10-07
+│   │   │       ├── ci
+│   │   │       │   ├── canonical-evidence-packaging-failure
+│   │   │       │   │   ├── archive-manifest.json
+│   │   │       │   │   ├── command.log.gz
+│   │   │       │   │   ├── dotnet-test-summary.json.gz
+│   │   │       │   │   ├── dotnet-test-summary.md
+│   │   │       │   │   ├── final-tree-binding.json
+│   │   │       │   │   ├── launch.json
+│   │   │       │   │   ├── quality-gate-steps.tsv
+│   │   │       │   │   ├── quality-gate-summary.md
+│   │   │       │   │   └── receipt.json
+│   │   │       │   ├── initial-failure
+│   │   │       │   │   └── archive-sha256.json
+│   │   │       │   ├── provider-documentation-drift
+│   │   │       │   │   ├── ai-handoff-docs-automation-summary.json
+│   │   │       │   │   ├── ai-handoff-docs-automation-summary.md
+│   │   │       │   │   ├── archive-manifest.json
+│   │   │       │   │   ├── browser-test-summary.json.gz
+│   │   │       │   │   ├── browser-test-summary.md
+│   │   │       │   │   ├── command.log.gz
+│   │   │       │   │   ├── dotnet-test-summary.json.gz
+│   │   │       │   │   ├── dotnet-test-summary.md
+│   │   │       │   │   ├── launch.json
+│   │   │       │   │   ├── quality-gate-steps.tsv
+│   │   │       │   │   ├── quality-gate-summary.md
+│   │   │       │   │   ├── receipt.json
+│   │   │       │   │   └── source-freeze-receipt.json
+│   │   │       │   ├── tool-process-subreaper-results
+│   │   │       │   │   └── tool-process-subreaper.trx.gz
+│   │   │       │   ├── linux-subreaper.py
+│   │   │       │   ├── README.md
+│   │   │       │   ├── tool-process-subreaper-receipt.json
+│   │   │       │   └── tool-process-subreaper.log.gz
+│   │   │       ├── component-profiles
+│   │   │       │   └── dedup
+│   │   │       │       ├── BaselineDedupLedger.cs
+│   │   │       │       ├── BaselineDedupLedger.original.cs
+│   │   │       │       ├── HexDedupLedger.cs
+│   │   │       │       ├── HexDedupLedger.original.cs
+│   │   │       │       ├── measurements.csv
+│   │   │       │       ├── Profile.csproj.gz
+│   │   │       │       ├── Program.cs
+│   │   │       │       ├── README.md
+│   │   │       │       ├── ReuseDedupLedger.cs
+│   │   │       │       ├── ReuseDedupLedger.original.cs
+│   │   │       │       ├── run-environment.json
+│   │   │       │       └── summary.csv
+│   │   │       ├── components
+│   │   │       │   ├── before
+│   │   │       │   │   ├── Profile.csproj.gz
+│   │   │       │   │   └── Program.cs
+│   │   │       │   ├── candidates
+│   │   │       │   │   ├── managed
+│   │   │       │   │   │   └── Profile.csproj.gz
+│   │   │       │   │   ├── native
+│   │   │       │   │   │   └── Profile.csproj.gz
+│   │   │       │   │   ├── LLxx.cs
+│   │   │       │   │   ├── LZ4Codec.cs
+│   │   │       │   │   ├── managed-measurements.csv
+│   │   │       │   │   ├── native-measurements.csv
+│   │   │       │   │   ├── Program.cs
+│   │   │       │   │   ├── README.md
+│   │   │       │   │   ├── RESULTS.md
+│   │   │       │   │   ├── run-environment.json
+│   │   │       │   │   └── summary.csv
+│   │   │       │   ├── compression
+│   │   │       │   │   ├── measurements.csv
+│   │   │       │   │   ├── Profile.csproj.gz
+│   │   │       │   │   ├── Program.cs
+│   │   │       │   │   ├── README.md
+│   │   │       │   │   └── summary.csv
+│   │   │       │   ├── native
+│   │   │       │   │   ├── blake3-1.8.2-test-vectors.json
+│   │   │       │   │   ├── doc_benchmarks.md
+│   │   │       │   │   ├── lib_blake3_dotnet_Cargo.toml
+│   │   │       │   │   ├── lib_blake3_dotnet_src_lib.rs
+│   │   │       │   │   ├── native-sha256-measurements.csv
+│   │   │       │   │   ├── native_sha256.c
+│   │   │       │   │   ├── README.md
+│   │   │       │   │   ├── src_Blake3.Native_Blake3.Native.csproj.gz
+│   │   │       │   │   ├── src_Blake3.Native_Hasher.cs
+│   │   │       │   │   ├── src_Blake3_Hasher.cs
+│   │   │       │   │   └── summary.csv
+│   │   │       │   └── packbits
+│   │   │       │       ├── measurements.csv
+│   │   │       │       ├── Profile.csproj.gz
+│   │   │       │       ├── Program.cs
+│   │   │       │       ├── README.md
+│   │   │       │       ├── run-environment.json
+│   │   │       │       ├── summary.csv
+│   │   │       │       └── WalChecksum.cs
+│   │   │       ├── integrity
+│   │   │       │   ├── dedup-provider
+│   │   │       │   │   ├── test-results
+│   │   │       │   │   │   └── dedup-provider-focused.trx.gz
+│   │   │       │   │   ├── final-validation-receipt.json
+│   │   │       │   │   ├── focused-test-receipt.json
+│   │   │       │   │   ├── focused-tests.log.gz
+│   │   │       │   │   ├── source-review-receipt.json
+│   │   │       │   │   └── validated-commit.patch
+│   │   │       │   ├── commands.json
+│   │   │       │   ├── integrity-tests.log.gz
+│   │   │       │   ├── local-time-tests.log.gz
+│   │   │       │   ├── scalar-tests.log.gz
+│   │   │       │   ├── wal-checksum-integrity.trx.gz
+│   │   │       │   ├── wal-checksum-local-time.trx.gz
+│   │   │       │   └── wal-checksum-scalar.trx.gz
+│   │   │       ├── receipts
+│   │   │       │   ├── current-main-integration.json
+│   │   │       │   ├── current-main-provider-integration.json
+│   │   │       │   ├── diagnostic-project-packaging.json
+│   │   │       │   ├── initial-committed-packet-verification.json
+│   │   │       │   ├── native-upstream-project-packaging.json
+│   │   │       │   ├── optimized-interrupted-budget-evidence.json
+│   │   │       │   ├── optimized-interrupted-receipt.json
+│   │   │       │   ├── provider-artifact-verification.json
+│   │   │       │   ├── provider-source-binding.json
+│   │   │       │   ├── provider-tested-merge-metadata.json
+│   │   │       │   └── schema-manifest-refresh.json
+│   │   │       ├── runs
+│   │   │       │   ├── hosted-final-head-failure-37673101515
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   ├── hosted-final-pass
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   ├── hosted-first-optimized
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   ├── hosted-main-current
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   ├── hosted-main-prior
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   ├── hosted-pr-3109
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   ├── hosted-provider-pass-37678970064
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   ├── local-baseline
+│   │   │       │   │   ├── bdn
+│   │   │       │   │   │   ├── results
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │   │   │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │   │   │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │   │   │   └── perf-budgets.json
+│   │   │       │   │   ├── budget-evidence.json
+│   │   │       │   │   ├── profile.json
+│   │   │       │   │   └── run.json
+│   │   │       │   └── local-first-optimized-interrupted
+│   │   │       │       ├── bdn
+│   │   │       │       │   ├── results
+│   │   │       │       │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json
+│   │   │       │       │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md
+│   │   │       │       │   │   ├── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv
+│   │   │       │       │   │   └── Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html
+│   │   │       │       │   └── perf-budgets.json
+│   │   │       │       ├── profile.json
+│   │   │       │       └── run.json
+│   │   │       ├── third-party-notices
+│   │   │       │   ├── K4os.Compression.LZ4-1.3.8-LICENSE.txt
+│   │   │       │   ├── K4os.Compression.LZ4-1.3.8.nuspec
+│   │   │       │   ├── LZ4-library-LICENSE.txt
+│   │   │       │   ├── LZ4-license-scope.txt
+│   │   │       │   ├── provenance.json
+│   │   │       │   └── README.md
+│   │   │       ├── .gitattributes
+│   │   │       ├── Directory.Build.props
+│   │   │       ├── Directory.Packages.props
+│   │   │       ├── manifest.json
+│   │   │       ├── manifest.sha256
+│   │   │       ├── README.md
+│   │   │       ├── report.md
+│   │   │       └── verify-evidence.py
 │   │   ├── accounting-trust-corrections.md
 │   │   ├── alpaca-paper-portfolio-sandbox.md
 │   │   ├── endpoint-fixture-isolation.md
@@ -15220,6 +15212,7 @@ Meridian-main
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_desktop_workflow_fixture.py
+│   │   ├── test_detect_dotnet_changes.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_health_dashboard_merge.py
 │   │   ├── test_doc_render_determinism.py

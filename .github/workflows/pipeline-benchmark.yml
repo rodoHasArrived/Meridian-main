@@ -58,12 +58,29 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
+      - name: Derive exact benchmark SDK configuration
+        id: benchmark-sdk
+        shell: python
+        run: |
+          import json
+          import os
+          from pathlib import Path
+
+          # Keep the repository version as the source of truth, but retain the fixed
+          # benchmark profile: setup-dotnet v6 honors latestMinor roll-forward.
+          config = json.loads(Path('global.json').read_text(encoding='utf-8'))
+          config['sdk']['rollForward'] = 'disable'
+          destination = Path(os.environ['RUNNER_TEMP']) / 'pipeline-global.json'
+          destination.write_text(json.dumps(config, indent=2) + '\n', encoding='utf-8')
+          with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as output:
+              output.write(f'global-json-file={destination}\n')
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         env:
-          # global.json permits SDK roll-forward; isolate this lane from preinstalled SDKs.
+          # Isolate the exact SDK/runtime from preinstalled SDKs on the runner.
           DOTNET_INSTALL_DIR: ${{ runner.temp }}/pipeline-dotnet
         with:
-          dotnet-version: '10.0.100'
+          global-json-file: ${{ steps.benchmark-sdk.outputs.global-json-file }}
+          skip-lts-prepass: true
       - name: Install validator test dependency
         run: python -m pip install pytest==8.4.2
       - name: Prove harness and validator failure propagation
