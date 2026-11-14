@@ -442,7 +442,14 @@ public static class ProviderExtendedEndpoints
                 UsageRatio: snapshot?.StateAvailable == true ? snapshot.UsageRatio : null,
                 IsRateLimited: snapshot?.StateAvailable == true && snapshot.IsRateLimited,
                 ResetAt: snapshot?.StateAvailable == true ? snapshot.ResetAt : null,
-                Reason: snapshot?.Reason ?? "runtime-diagnostics-unavailable"));
+                Reason: snapshot?.Reason ?? "runtime-diagnostics-unavailable")
+            {
+                QuotaUnit = snapshot?.QuotaUnit ?? "requests",
+                DailyUnitsUsed = snapshot?.DailyUnitsUsed,
+                DailyMaximum = snapshot?.DailyMaximum,
+                DailyResetsAt = snapshot?.DailyResetsAt,
+                DailyResetPolicy = snapshot?.DailyResetPolicy
+            });
         }
 
         foreach (var provider in registry?.GetStreamingProviders().OfType<IProviderRateLimitDiagnosticsSource>()
@@ -469,7 +476,14 @@ public static class ProviderExtendedEndpoints
                 UsageRatio: snapshot.StateAvailable ? snapshot.UsageRatio : null,
                 IsRateLimited: snapshot.StateAvailable && snapshot.IsRateLimited,
                 ResetAt: snapshot.StateAvailable ? snapshot.ResetAt : null,
-                Reason: snapshot.Reason));
+                Reason: snapshot.Reason)
+            {
+                QuotaUnit = snapshot.QuotaUnit,
+                DailyUnitsUsed = snapshot.DailyUnitsUsed,
+                DailyMaximum = snapshot.DailyMaximum,
+                DailyResetsAt = snapshot.DailyResetsAt,
+                DailyResetPolicy = snapshot.DailyResetPolicy
+            });
         }
 
         foreach (var source in dataSources.OfType<IProviderRateLimitDiagnosticsSource>())
@@ -495,7 +509,14 @@ public static class ProviderExtendedEndpoints
                 UsageRatio: snapshot.StateAvailable ? snapshot.UsageRatio : null,
                 IsRateLimited: snapshot.StateAvailable && snapshot.IsRateLimited,
                 ResetAt: snapshot.StateAvailable ? snapshot.ResetAt : null,
-                Reason: snapshot.Reason));
+                Reason: snapshot.Reason)
+            {
+                QuotaUnit = snapshot.QuotaUnit,
+                DailyUnitsUsed = snapshot.DailyUnitsUsed,
+                DailyMaximum = snapshot.DailyMaximum,
+                DailyResetsAt = snapshot.DailyResetsAt,
+                DailyResetPolicy = snapshot.DailyResetPolicy
+            });
         }
 
         return new ProviderRateLimitsResponse(

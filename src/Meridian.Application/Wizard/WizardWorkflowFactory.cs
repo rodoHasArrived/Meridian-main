@@ -1,4 +1,5 @@
 using Meridian.Application.Services;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Wizard.Core;
 using Meridian.Application.Wizard.Steps;
 
@@ -17,7 +18,8 @@ public static class WizardWorkflowFactory
     public static WizardCoordinator CreateInteractive(
         AutoConfigurationService autoConfig,
         TextWriter output,
-        TextReader input)
+        TextReader input,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
     {
         var coordinator = new WizardCoordinator();
 
@@ -28,12 +30,12 @@ public static class WizardWorkflowFactory
             .AddStep(new CredentialGuidanceStep(output, input))
             .AddStep(new SelectUseCaseStep(output, input))
             .AddStep(new ConfigureDataSourceStep(output, input))
-            .AddStep(new ValidateCredentialsStep(output, input))
+            .AddStep(new ValidateCredentialsStep(output, input, ownershipPolicy))
             .AddStep(new ConfigureSymbolsStep(output, input))
             .AddStep(new ConfigureStorageStep(output, input))
             .AddStep(new ConfigureBackfillStep(output, input))
-            .AddStep(new ReviewConfigurationStep(output, input))
-            .AddStep(new SaveConfigurationStep(output, input));
+            .AddStep(new ReviewConfigurationStep(output, input, ownershipPolicy))
+            .AddStep(new SaveConfigurationStep(output, input, ownershipPolicy));
 
         // ── Declare transitions (linear flow) ────────────────────────────────
 

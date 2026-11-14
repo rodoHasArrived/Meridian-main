@@ -20,11 +20,12 @@ public static class ApiResponseExtensions
 
         if (response.StatusCode != 404)
         {
-            var detail = string.IsNullOrWhiteSpace(response.ErrorMessage)
-                ? string.Empty
-                : $": {response.ErrorMessage}";
             LoggingService.Instance.LogWarning(
-                $"{operation} failed with {(response.IsConnectionError ? "a connection error" : $"HTTP {response.StatusCode}")}{detail}; returning null.");
+                "{Operation} failed with {Failure}{Detail}; returning null.",
+                null,
+                ("Operation", operation),
+                ("Failure", response.IsConnectionError ? "a connection error" : "HTTP " + response.StatusCode),
+                ("Detail", string.IsNullOrWhiteSpace(response.ErrorMessage) ? string.Empty : ": " + response.ErrorMessage));
         }
 
         return null;

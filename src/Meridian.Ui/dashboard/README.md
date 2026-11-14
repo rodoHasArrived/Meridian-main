@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Ui/dashboard
 
+Native intercompany agreement editors capture structured terms without calculating charges.
+Externally reviewed attestations retain the operator and external reviewer separately. The entity
+workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or
+revocations; close advisories stay outside blockers. See [intercompany controls](../../../docs/operators/intercompany-entity-controls.md).
+
 The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
 preview, validation profiles and bounded quota history. Tier defaults and ceilings come from the
 server catalog; choosing a paid tier declares the operator's subscription and does not verify it.
@@ -81,6 +86,11 @@ These limits and pending complete-workflow browser acceptance remain in the
 Focused validation includes the changed screen/component tests, `fixed-income-capabilities.test.ts`,
 and `node scripts/dev/verify-fixed-income-access.mjs` from the repository root against a running Vite
 server. Browser evidence uses deterministic synthetic API responses, not live provider certification.
+
+The Data provider-accounting table labels quota usage and remaining capacity with the runtime's
+actual unit (weighted credits or requests), and shows declared daily limits and reset policy.
+Legacy responses without daily evidence remain unavailable. Capacity does not imply entitlement
+to a paid endpoint, and current quota state does not claim retained history.
 
 ## Fixed-income and accounting journeys
 
@@ -471,8 +481,8 @@ read models; unavailable owners stay unavailable rather than borrowing a differe
 workspace's summary. Feature-local, non-headline presentation uses `MetricTile` or
 `SnapshotMetricTile`; these are not substitutes for registry-owned workspace KPIs.
 
-`portfolio.open-positions` counts the Portfolio projection's positions on Portfolio,
-Settings and Today. Live total exposure sums the same holdings' supplied exposure
+`portfolio.open-positions` counts the Portfolio projection's positions on Portfolio
+and Today. Live total exposure sums the same holdings' supplied exposure
 amounts. Missing or mixed denominations withhold the aggregate; no FX rate, market
 value, or missing component is invented. The current Portfolio read model is an
 all-holdings projection: retained account/run/symbol URL scope is not claimed as an
@@ -617,14 +627,18 @@ their fund-account rows by entity and fund. Elsewhere a set fund shows as retain
 `use-scope-structure.ts` when the picker first opens or the scope names an entity or fund). That
 read is open to every authenticated operator and lists only the entities, funds and accounts the
 caller's own scoped grants let it read (see the Ui.Shared README, "Operating-scope options"); a
-fund or entity the caller may not see is withheld as a null relationship. A host without that route
+fund or entity the caller may not see is withheld as a null relationship, with the account's
+`fundWithheld`/`entityWithheld` flag set (read defensively; the graph fallback sends none, so they
+read as false). A host without that route
 answers 404 and the picker reads the organization graph `GET /api/fund-structure/graph?activeOnly=true`
 instead (same field names, gated to fund-structure permissions). Either way it lists entities, funds
 with the entities they hold, and accounts with their fund and entity; household brokerage accounts
 the payload does not list are added without a relationship. Choosing an entity narrows the funds to
 those holding it and the accounts to those booked to it; choosing a fund narrows the accounts to its
-own; an account with no recorded (or no visible) fund or entity is left out of a narrowed list and
-counted, and a fund or account known to sit outside a new entity or fund is cleared with a status
+own; an account with no recorded fund or entity is left out of a narrowed list and counted, and an
+account whose fund or entity exists but is withheld from the caller is left out too but counted
+separately ("2 whose fund is not visible to you not shown"), never as having none and never as a
+conflict; and a fund or account known to sit outside a new entity or fund is cleared with a status
 note. A permission-limited operator (for example trading-only) gets its accounts and empty entity
 and fund lists; those fields then take typed ids and the picker says "No entities or funds are
 visible to you". When the read fails, the entity and fund fields take typed ids, nothing is
@@ -635,13 +649,24 @@ Screens that narrow by fund apply the same rule to rows keyed by fund account
 `lib/operating-scope/fund-scope-context.tsx`). A row is kept when the graph places its account under
 the chosen fund (or, with only an entity chosen, under that entity). A row whose account the graph
 does not place is left out and counted in a status note ("Narrowed to fund Growth Fund I: showing 3
-of 5 brokerage accounts. 1 with no recorded fund not shown."), never hidden silently. Without the
+of 5 brokerage accounts. 1 with no recorded fund not shown."), never hidden silently. A row whose
+account's fund (or entity) is withheld from the caller is counted on its own ("… 2 whose fund is
+not visible to you not shown."). Without the
 structure read (loading, or the read failed) nothing is narrowed and the note says why. Server
 payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCOPE_NARROWED_ROUTES`):
 
 - Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): household accounts and positions, with
   household totals re-summed over the accounts kept. Other Portfolio routes keep the whole household.
 - Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue and its counts.
+- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list and
+  its count, keyed by each workflow's fund account. The selected workflow, its detail and its close
+  reads follow the kept workflows. The route also applies `entityId` to its close-readiness read,
+  as before; with the graph loaded, Fund is applied alongside it.
+- Accounting > Statement import (`/accounting/statement-import`): the saved statement fetch
+  schedules on the Scheduled tab, keyed by each schedule's fund account.
+
+The reporting delivery history is not narrowed: its delivery attempts carry a report, distribution
+and run id but no fund account, fund or entity, so there is no reliable key to place them by.
 
 On those routes, and only once the graph has loaded, `operatingScopeDimensionsForRoute(route,
 { fundStructureReady })` counts Entity and Fund as in effect, so the bar shows them applied and the
@@ -649,8 +674,13 @@ figures-strip scope names them. Everywhere else a set fund stays retained (muted
 
 The inline account picker (`components/meridian/inline-fund-account-picker.tsx`, used on Trading's
 brokerage-recovery step) narrows its suggestions exactly as the scope picker narrows its account
-list, prints the same "Showing N accounts under the chosen fund" help, and flags a typed or scoped
-account the graph places outside the chosen fund or entity. The operator can still use it.
+list, prints the same "Showing N accounts under the chosen fund" help, and flags a retained scoped
+account the graph places outside the chosen fund or entity. The operator can still use that explicit
+selection. The shared searchable `Combobox` offers account names and also searches IDs; typing a
+query never applies an account. Confirm a listed choice, then use **Use account**. The current
+account is preselected, or the last-used account is offered as a draft if it fits the chosen scope.
+The shell retains applied scope across routes and reloads. Empty lists keep **All scope options**
+available for recovery; arbitrary references remain an advanced option in that scope dialog.
 
 The picker's Period control sets the window: `All periods`, `Today`, `MTD`, `QTD`, `YTD`,
 `Last month` (computed on the operator's calendar day through `LocalDate`,
@@ -674,8 +704,19 @@ not narrow those figures, so they do not borrow it), then the scope the shell ap
 (`OperatingScopeLabelProvider`). Figures that state their own scope keep it. Screens that need one
 fund account use `InlineFundAccountPicker`, which sets only the fund-account dimension through the
 shell (`FundAccountScopeSelectionProvider`); Trading uses it in place of its "Choose a fund
-account" empty state in a non-live environment, on the overview and in the one-line row on Orders
-and the other Trading routes. Live, unknown and failed brokerage states keep blocking.
+account" empty state on the overview and in the one-line row on Orders and the other Trading
+routes. Live, unknown and failed brokerage states keep blocking while offering the account choice.
+Trading account setup precedes headline results. Orders puts its supporting Trade journal after
+the blotter; with no account it collapses to “Select an account to see its journal”.
+
+Required scope controls precede the results they govern. `FinancialRecordExplorerShell.scopeControls`
+provides that position before summaries and record grids. Run Ledger uses it for the searchable
+strategy run and UTC as-of date; unselected or superseded run evidence stays hidden. The date
+continues to scope trial balance, journal and exports. Trial Balance offers searchable ledger-book
+and period choices in the header, including loading/empty/error recovery, instead of duplicate
+readonly scope fields. Reconciliation run selection uses the same combobox before run details.
+Comboboxes support Arrow keys, Enter, Escape, Tab, linked labels, active-option announcements, and
+optional required, validation and help semantics. Choosing a scope never grants trading authority.
 
 Focused regression coverage includes `app.test.tsx`, `workspace-header.test.tsx`,
 `workspace-views-menu.test.tsx`, `workflow-context-disclosure.test.tsx`, `scope-picker.test.tsx`,
@@ -1244,7 +1285,8 @@ searchable when remote command or entity search is unavailable; unwired routes s
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence. Its shadow-mode section
 (`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
-opening-balance upload and report, per-period agreement, difference explanations, the parallel-run
+opening-balance upload and the combined multi-source report (per-line source, uncovered kinds),
+per-period agreement, explanations for both opening breaks and period differences, the parallel-run
 certificate and promotion; tables use the shared `DenseDataTable`.
 From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
 session environment and adds the data qualifier only when the data is not confirmed real
@@ -3039,6 +3081,11 @@ specimen document is not a conformance verdict: some specimens retain their Desi
 external-runtime requirements. Package conformance and browser regression harnesses remain separate.
 
 ## Validation
+
+TypeScript is pinned to 5.9.3 in the package manifest and lockfile. This stays within the
+`typescript-eslint` supported compiler range while updating the previous 5.7 baseline.
+After compiler updates, run `npx tsc --noEmit` from this directory and the focused Vite
+configuration tests before rebuilding the workstation assets.
 
 Launcher/process ownership coverage runs from the repository root with
 `node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationValidationRequest
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementReconciliationValidationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs:11](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationContextContracts.cs#L11).
+
+```csharp
+public sealed record StatementReconciliationValidationRequest(string SourceKind, string SourcePath, string? MappingProfileId);
+```
+
 ## StatementRunCreateRequest
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.StatementRunCreateRequest</code>. Kind: `record`.

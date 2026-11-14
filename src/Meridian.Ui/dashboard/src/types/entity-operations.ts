@@ -1,5 +1,5 @@
 import type { LedgerBook } from "@/types";
-import type { AgreementDetail, AgreementEvidence, AgreementRevision } from "./intercompany-agreements";
+import type { AgreementDetail, AgreementEvidence, AgreementRevision, AgreementExternalReviewAttestation } from "./intercompany-agreements";
 
 export interface EntityOperationCapabilities {
   canManageAgreements: boolean;
@@ -54,7 +54,7 @@ export interface EntityLifecycleState {
 }
 export interface EntityLifecycleRevision {
   entityId: string; revision: number; recordedBy: string; recordedAtUtc: string; reason: string;
-  evidenceReference: string; contentHash: string; timeline: EntityLifecycleState[]; legacySnapshot: boolean;
+  evidenceReference: string; contentHash: string; timeline: EntityLifecycleState[]; legacySnapshot: boolean; externalReview?: AgreementExternalReviewAttestation | null;
 }
 export interface BookControlProfile {
   ledgerBookId: string; mode: "LegacyWarning" | "Enforced"; version: number; policyVersion: string;
@@ -101,6 +101,7 @@ export interface ConsolidationFxConfiguration {
     openingTranslatedSignedAmount: string | number | null; evidenceReference: string }[] | null;
 }
 export interface EntityTimeline {
+  canAttestExternalLifecycleReview?: boolean;
   organizationId: string;
   entity: { entityId: string; name: string; baseCurrency: string; lifecycleStatus: string };
   asOf: string; lifecycleRevisions: EntityLifecycleRevision[];

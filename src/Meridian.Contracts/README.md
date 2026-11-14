@@ -11,6 +11,22 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+`Api/ProviderRateLimits.cs` retains the existing counters and adds their explicit `quotaUnit`,
+daily usage/cap and vendor reset policy. Compatibility request-named counters can contain credits;
+clients display their unit rather than assume each HTTP request costs one. Missing daily evidence
+remains unavailable, while an explicit null daily cap means this runtime models no daily cap.
+
+Native intercompany agreement terms add an optional null-omitted `StructuredTerms` companion for
+declared rates, schedules, allocations and guarantee disclosure. New decimals serialize as exact
+strings; omitted companions preserve retained legal command/review hashes. Separate external-review
+attestations retain reviewer and operator identities, while obligation-monitor DTOs carry advisory
+source/freshness evidence outside blocking close contributors. See
+[the native legal contract](../../docs/domain/intercompany-agreements.md).
+
+Optional legacy-attribution revocation records a reviewed exact-pin successor, preserving native
+legal hashes. Exact decimal strings are a transport convention of the new obligation-monitor
+endpoint; canonical balance-schedule serialization and evidence hashes remain unchanged.
+
 Backfill provider metadata includes vendor-tier presets and the selected tier ID without credentials.
 Shared settings responses expose saved-change impacts independently of active runtime confirmation.
 Nested backfill, provider, source and symbol-mapping DTO extension data retains host-owned validation
@@ -394,6 +410,9 @@ classified difference explanations, per-period agreement summaries, the hashed p
 certificate, the promotion decision and a hash-chained shadow audit entry. `IBookOfRecordGuard`
 answers whether a ledger book may act as the book of record; a shadow or withdrawn-trial book may
 not. New fields on `OnboardingDtos.cs` are omitted from JSON when unset so retained hashes still verify.
+`OnboardingComparisonDto.OpeningKinds` scopes an opening import to the kinds it supplies, and the opening
+report carries per-source summaries (`OnboardingOpeningSourceSummaryDto`), each line's source, and the
+required kinds still uncovered.
 
 `Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
 calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
@@ -449,7 +468,9 @@ with no scope in its link or local storage.
 calling operator may scope to (`GET /api/workstation/scope-options`), with each fund's visible
 entities and each account's fund and entity. Field names match the summaries in
 `OrganizationStructureGraphDto`, so one client parser reads both. A relationship that would name a
-fund or entity the caller may not see is null, and every list may be empty. Its source-generated
+fund or entity the caller may not see is null, and every list may be empty. On an account,
+`FundWithheld`/`EntityWithheld` (appended last, default false) are true when that null hides a
+fund or entity that exists but is not visible to the caller; they never carry its id or name. Its source-generated
 `WorkstationScopeOptionsJsonContext` is registered in the Ui.Shared endpoint JSON options.
 
 `Workstation/RecurringJournalDtos.cs` publishes one exact-scope occurrence projection for browser

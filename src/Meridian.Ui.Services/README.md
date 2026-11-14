@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Services
 
+The existing accounting agreement workspace/client carries optional structured legal declarations,
+dates-only schedule previews and explicit external-review attestations through the native host API.
+It keeps exact decimal strings, submitted hashes and reviewer/operator roles distinct. Obligation
+monitoring uses the canonical posted schedule and remains advisory rather than a local calculation
+or approval. See [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
+
 The default shared configuration service re-reads existing JSON under the common host write lease
 and applies the same whole-document save guard as desktop settings before atomic publication.
 Missing files allow validated first-run creation; malformed or empty existing files are never
@@ -145,6 +151,12 @@ contracts aligned with shared UI models and compatibility gates.
 
 ## Important workflows
 
+UI logging accepts named message placeholders with the existing string tuple properties, for
+example `LogError("Failed to load {Symbol}", exception, ("Symbol", symbol))`. The shared formatter
+retains property fields and renders the message for desktop Activity Log consumers. Unknown
+placeholders remain visible, property values are not parsed as templates, and messages without
+properties retain their literal text. `LoggingServiceBaseTests` covers rendering and exception retention.
+
 Reporting status projections translate application report manifests into operator read models with template family, approval status, retry attempt, artifact, audit, and section lineage counts. Keep these projections aligned with browser and WPF Reporting surfaces so both shells show the same generated-run state.
 Preview and estimate services must fail closed when the API cannot return source-backed numbers.
 Analysis export projections also fail closed when an artifact omits its physical format or when the
@@ -216,6 +228,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~LoggingServiceBaseTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~WorkstationAccountingCloseApiClientTests" --logger "console;verbosity=normal"
 ```

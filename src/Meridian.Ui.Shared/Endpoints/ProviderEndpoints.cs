@@ -78,6 +78,7 @@ public static class ProviderEndpoints
     public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Providers");
+        group.AddEndpointFilter(new ProviderConfigurationCredentialFilter());
         group.RequireWorkstationTenantScope();
 
         // Get all data sources
@@ -318,6 +319,10 @@ public static class ProviderEndpoints
                 try
                 {
                     result = await setupService.ConfigureForConnectionAsync(req, connectionIds[0]!, tenant.TenantId!, actor, context.RequestAborted).ConfigureAwait(false);
+                }
+                catch (ProviderRuntimeCredentialQuiescenceException error)
+                {
+                    return Results.Conflict(new { code = "ProviderCredentialMaintenanceRequired", error = error.Message });
                 }
                 catch (UnauthorizedAccessException)
                 {

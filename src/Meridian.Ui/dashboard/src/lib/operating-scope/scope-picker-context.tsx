@@ -26,6 +26,8 @@ export function useOpenScopePicker(): (() => void) | null {
 export interface FundAccountScopeSelection {
   options: ScopeFundAccountOption[];
   select: (fundAccountId: string) => void;
+  /** Most recent account, offered as a draft only when it fits the current scope. */
+  lastUsedAccountId?: string | null;
   /**
    * The organization graph, so the inline picker narrows `options` by the chosen entity and fund
    * exactly as the scope picker does. Omitted or unavailable: nothing is narrowed.

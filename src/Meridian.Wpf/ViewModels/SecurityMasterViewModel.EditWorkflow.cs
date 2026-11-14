@@ -75,7 +75,7 @@ public sealed partial class SecurityMasterViewModel
         }
         catch (Exception ex)
         {
-            _loggingService.LogError($"Failed to load security {id} for edit", ex);
+            _loggingService.LogError("Failed to load security {SecurityId} for edit", ex, ("SecurityId", id.ToString()));
             StatusText = "Failed to load security for editing.";
             _notificationService.ShowNotification("Security Master", "Failed to load security.", NotificationType.Error);
         }

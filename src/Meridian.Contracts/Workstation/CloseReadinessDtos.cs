@@ -50,4 +50,15 @@ public sealed record CloseReadinessProjectionDto(
     bool IsComplete,
     bool IsReadyToClose,
     IReadOnlyList<CloseReadinessContributionDto> Contributors,
-    IReadOnlyList<CloseReadinessBlockerDto> Blockers);
+    IReadOnlyList<CloseReadinessBlockerDto> Blockers)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto? IntercompanyAdvisories { get; init; }
+}
+
+/// <summary>Optional context that never participates in the authoritative close decision.</summary>
+public interface IIntercompanyCloseAdvisorySource
+{
+    Task<Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto> GetAsync(CloseReadinessScopeDto scope,
+        string? tenantId, string? companyId, CancellationToken ct = default);
+}

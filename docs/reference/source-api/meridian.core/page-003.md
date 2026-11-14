@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolMappingsConfig
+
+Qualified name: <code>Meridian.Core.Config.SymbolMappingsConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/DataSourceConfig.cs:301](../../../../src/Meridian.Core/Config/DataSourceConfig.cs#L301).
+
+Configuration for symbol mappings.
+
+```csharp
+public sealed record SymbolMappingsConfig(string? PersistencePath = null, SymbolMappingConfig[]? Mappings = null, SymbolResolutionMode ResolutionMode = SymbolResolutionMode.Compare, bool ReportMismatches = true, IReadOnlyDictionary<string, SymbolResolutionMode>? ProviderResolutionModes = null);
+```
+
+## SyntheticMarketDataConfig
+
+Qualified name: <code>Meridian.Core.Config.SyntheticMarketDataConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/SyntheticMarketDataConfig.cs:7](../../../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs#L7).
+
+Configuration for the built-in synthetic market data provider used for local development, offline integration testing, and historical replay without live credentials.
+
+```csharp
+public sealed record SyntheticMarketDataConfig(bool Enabled = false, int Seed = 1729, int Priority = 1, int EventsPerSecond = 8, int HistoricalTradeDensityPerDay = 120, int HistoricalQuoteDensityPerDay = 180, int DefaultDepthLevels = 10, bool IncludeCorporateActions = true, bool IncludeReferenceData = true, string[]? UniverseSymbols = null, DateOnly? DefaultHistoryStart = null, DateOnly? DefaultHistoryEnd = null, SyntheticScenarioConfig? Scenario = null);
+```
+
 ## SyntheticScenarioConfig
 
 Qualified name: <code>Meridian.Core.Config.SyntheticScenarioConfig</code>. Kind: `record`.
@@ -67,6 +91,18 @@ Twelve Data options; credentials are resolved separately from the provider setti
 public sealed record TwelveDataConfig(bool Enabled = true, int Priority = BackfillProviderCatalog.TwelveDataPriority, int RateLimitPerMinute = BackfillProviderCatalog.TwelveDataPerMinute, string TierId = "free");
 ```
 
+## TwelveDataQuotaConfig
+
+Qualified name: <code>Meridian.Core.Config.TwelveDataQuotaConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:13](../../../../src/Meridian.Core/Config/ProviderQuotasConfig.cs#L13).
+
+Twelve Data Basic defaults. Daily credits reset at midnight UTC. A paid account must explicitly declare its limits and fundamentals entitlement; numeric capacity alone grants none. NoDailyLimit explicitly declares an account without a daily credit cap.
+
+```csharp
+public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = 8, int DailyCredits = 800, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
+```
+
 ## ValidatedConfig
 
 Qualified name: <code>Meridian.Core.Config.ValidatedConfig</code>. Kind: `record`.
@@ -102,7 +138,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.ValidationPipelineConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/AppConfig.cs:196](../../../../src/Meridian.Core/Config/AppConfig.cs#L196).
+Source: [src/Meridian.Core/Config/AppConfig.cs:200](../../../../src/Meridian.Core/Config/AppConfig.cs#L200).
 
 Configuration for the F# validation pipeline stage. When enabled, every incoming Meridian.Domain.Events.MarketEvent is validated against the F# Railway-Oriented validators before it is persisted. Events that fail validation are written to the dead-letter sink instead of primary storage.
 
@@ -925,78 +961,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>void RecordAttempt(string provider, bool success);</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:18](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L18) | Records a provider reconnection attempt with its outcome. |
-
-## MigrationDiagnostics
-
-Qualified name: <code>Meridian.Core.Monitoring.MigrationDiagnostics</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:22](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L22).
-
-Temporary observability counters for the provider-registry migration. Tracks factory hit counts, reconnect attempts, and resubscription outcomes so that behavioral parity can be verified during migration phases. Part of Phase 0 — Baseline &amp; Safety Rails (refactor-map Step 0.2). These counters are intentionally additive: they do not alter runtime behavior and can be removed once the migration is complete (Phase 7). NOTE: This class lives in the Core project (not Application) so that Infrastructure can reference it without creating a circular dependency. The namespace is Core-owned because these counters are shared runtime primitives, not Application orchestration services.
-
-```csharp
-public static class MigrationDiagnostics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static long StreamingFactoryHits =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:37](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L37) |  |
-| <code>public static long BackfillFactoryHits =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:38](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L38) |  |
-| <code>public static long SymbolSearchFactoryHits =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:39](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L39) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncStreamingFactoryHit(string dataSourceKind);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:42](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L42) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncBackfillFactoryHit() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:49](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L49) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncSymbolSearchFactoryHit() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:52](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L52) |  |
-| <code>public static long GetStreamingFactoryHitsByKind(string dataSourceKind);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:57](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L57) | Gets the streaming factory hit count for a specific data source kind. |
-| <code>public static long ReconnectAttempts =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:79](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L79) |  |
-| <code>public static long ReconnectSuccesses =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:80](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L80) |  |
-| <code>public static long ReconnectFailures =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:81](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L81) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncReconnectAttempt(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:84](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L84) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncReconnectSuccess(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:91](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L91) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncReconnectFailure(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:98](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L98) |  |
-| <code>public static long GetReconnectAttemptsByProvider(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:106](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L106) | Gets the reconnect attempt count for a specific provider. |
-| <code>public static long GetReconnectSuccessesByProvider(string provider);</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:114](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L114) | Gets the reconnect success count for a specific provider. |
-| <code>public static long ResubscribeAttempts =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:130](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L130) |  |
-| <code>public static long ResubscribeSuccesses =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:131](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L131) |  |
-| <code>public static long ResubscribeFailures =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:132](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L132) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncResubscribeAttempt() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:135](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L135) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncResubscribeSuccess() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:138](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L138) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncResubscribeFailure() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:141](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L141) |  |
-| <code>public static long ProvidersRegistered =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:151](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L151) |  |
-| <code>public static long StreamingFactoriesRegistered =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:152](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L152) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncProviderRegistered() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:155](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L155) |  |
-| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public static void IncStreamingFactoryRegistered() =&gt; …;</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:158](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L158) |  |
-| <code>public static MigrationDiagnosticsSnapshot GetSnapshot();</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:165](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L165) | Gets a point-in-time snapshot of all migration diagnostics counters. |
-| <code>public static void Reset();</code> | [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:189](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L189) | Resets all counters to zero. Intended for test isolation only. |
-
-## MigrationDiagnosticsSnapshot
-
-Qualified name: <code>Meridian.Core.Monitoring.MigrationDiagnosticsSnapshot</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Core/Monitoring/MigrationDiagnostics.cs:215](../../../../src/Meridian.Core/Monitoring/MigrationDiagnostics.cs#L215).
-
-Immutable snapshot of migration diagnostics counters at a point in time.
-
-```csharp
-public readonly record struct MigrationDiagnosticsSnapshot(long StreamingFactoryHits, long BackfillFactoryHits, long SymbolSearchFactoryHits, IReadOnlyDictionary<string, long> StreamingFactoryHitsByKind, long ReconnectAttempts, long ReconnectSuccesses, long ReconnectFailures, IReadOnlyDictionary<string, long> ReconnectAttemptsByProvider, IReadOnlyDictionary<string, long> ReconnectSuccessesByProvider, long ResubscribeAttempts, long ResubscribeSuccesses, long ResubscribeFailures, long ProvidersRegistered, long StreamingFactoriesRegistered, DateTimeOffset Timestamp);
-```
-
-## NullReconnectionMetrics
-
-Qualified name: <code>Meridian.Core.Monitoring.NullReconnectionMetrics</code>. Kind: `class`.
-
-Source: [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:24](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L24).
-
-No-op implementation used when no metrics sink is configured.
-
-```csharp
-public sealed class NullReconnectionMetrics : IReconnectionMetrics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly NullReconnectionMetrics Instance = new ();</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:26](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L26) |  |
-| <code>public void RecordAttempt(string provider, bool success);</code> | [src/Meridian.Core/Monitoring/IReconnectionMetrics.cs:28](../../../../src/Meridian.Core/Monitoring/IReconnectionMetrics.cs#L28) |  |

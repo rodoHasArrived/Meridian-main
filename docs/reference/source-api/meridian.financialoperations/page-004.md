@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowSlaState
+
+Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaState</code>. Kind: `enum`.
+
+Source: [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:7](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L7).
+
+Lifecycle state of a WorkflowSlaTimer at a point in time.
+
+```csharp
+public enum WorkflowSlaState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>OnTrack</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:10](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L10) | Within the on-track window (before the warning threshold). |
+| <code>Warning</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:13](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L13) | Past the warning threshold but not yet due. |
+| <code>Breached</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:16](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L16) | Past the due time without being stopped. |
+| <code>Stopped</code> | [src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs:19](../../../../src/Meridian.FinancialOperations/MiddleOffice/MiddleOfficeModels.cs#L19) | Stopped (the tracked work completed) before breaching. |
+
 ## WorkflowSlaTimer
 
 Qualified name: <code>Meridian.FinancialOperations.MiddleOffice.WorkflowSlaTimer</code>. Kind: `record`.
@@ -164,14 +185,14 @@ Declared public members:
 | <code>public const string OpeningProviderPrefix = &quot;opening:&quot;;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:17](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L17) |  |
 | <code>public async Task&lt;OnboardingWorkspaceDto&gt; DesignateShadowAsync(string tenantId, string companyId, string workspaceId, DesignateShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:19](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L19) |  |
 | <code>public async Task&lt;OnboardingWorkspaceDto&gt; ImportOpeningBalancesAsync(string tenantId, string companyId, string workspaceId, ImportOnboardingOpeningBalancesRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:41](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L41) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; ExplainDifferenceAsync(string tenantId, string companyId, string workspaceId, string differenceKey, ExplainOnboardingDifferenceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:136](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L136) |  |
-| <code>public async Task&lt;OnboardingParallelRunCertificateDto&gt; IssueCertificateAsync(string tenantId, string companyId, string workspaceId, IssueParallelRunCertificateRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:173](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L173) |  |
-| <code>public async Task&lt;OnboardingParallelRunCertificateDto?&gt; GetCertificateAsync(string tenantId, string companyId, string workspaceId, string certificateId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:215](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L215) |  |
-| <code>public async Task&lt;OnboardingOpeningBalanceReportDto?&gt; GetOpeningReportAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:225](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L225) |  |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; PromoteAsync(string tenantId, string companyId, string workspaceId, PromoteShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:237](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L237) | The cutover decision. An independent designated reviewer promotes the shadow book only by attaching a certificate that still verifies against unchanged workspace data. |
-| <code>public async Task&lt;OnboardingWorkspaceDto&gt; WithdrawShadowAsync(string tenantId, string companyId, string workspaceId, WithdrawShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:277](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L277) |  |
-| <code>public static string HashCertificateContent(OnboardingParallelRunCertificateContentDto content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:301](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L301) |  |
-| <code>public static bool VerifyShadowAudit(IReadOnlyList&lt;OnboardingShadowAuditEntryDto&gt;? entries);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:303](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L303) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; ExplainDifferenceAsync(string tenantId, string companyId, string workspaceId, string differenceKey, ExplainOnboardingDifferenceRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:144](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L144) |  |
+| <code>public async Task&lt;OnboardingParallelRunCertificateDto&gt; IssueCertificateAsync(string tenantId, string companyId, string workspaceId, IssueParallelRunCertificateRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:181](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L181) |  |
+| <code>public async Task&lt;OnboardingParallelRunCertificateDto?&gt; GetCertificateAsync(string tenantId, string companyId, string workspaceId, string certificateId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:223](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L223) |  |
+| <code>public async Task&lt;OnboardingOpeningBalanceReportDto?&gt; GetOpeningReportAsync(string tenantId, string companyId, string workspaceId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:233](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L233) |  |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; PromoteAsync(string tenantId, string companyId, string workspaceId, PromoteShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:245](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L245) | The cutover decision. An independent designated reviewer promotes the shadow book only by attaching a certificate that still verifies against unchanged workspace data. |
+| <code>public async Task&lt;OnboardingWorkspaceDto&gt; WithdrawShadowAsync(string tenantId, string companyId, string workspaceId, WithdrawShadowBookRequestDto request, string actorId, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:285](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L285) |  |
+| <code>public static string HashCertificateContent(OnboardingParallelRunCertificateContentDto content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:309](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L309) |  |
+| <code>public static bool VerifyShadowAudit(IReadOnlyList&lt;OnboardingShadowAuditEntryDto&gt;? entries);</code> | [src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs:311](../../../../src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.Shadow.cs#L311) |  |
 
 ## AdministratorOpeningPackParser
 
@@ -334,8 +355,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:31](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L31) |  |
-| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:47](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L47) |  |
+| <code>public FinancialOperationsCommandCenterReadService(IOperationsContinuityWorkflowService workflowService, IOperationsCloseCalendarService? closeCalendarService = null, IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null, ILedgerBookService? ledgerBookService = null, IAccountingCloseManagementService? closeManagementService = null, ICloseReadinessSubjectSource? closeSubjectSource = null, IIntercompanyCloseAdvisorySource? intercompanyAdvisories = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:32](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L32) |  |
+| <code>public async Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs:50](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.cs#L50) |  |
 
 Source: [src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs:5](../../../../src/Meridian.FinancialOperations/OperationsContinuity/FinancialOperationsCommandCenterReadService.OutputEvidence.cs#L5).
 
@@ -1121,58 +1142,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; Build(string fundProfileId, Guid? ledgerBookId, DateTimeOffset projectedAtUtc, IReadOnlyList&lt;PrivateCapitalCapitalAccountActivityDto&gt; capitalAccounts, IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; fundEventRecords, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; projectionValidationIssues) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L10) |  |
-
-## PrivateCapitalCloseCockpitService
-
-Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCloseCockpitService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.AllocationEvidence.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ApprovalHistory.cs#L8).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.CloseRequirements.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:14](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L14).
-
-Assembles private-capital close readiness, approvals, and evidence for the close cockpit.
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PrivateCapitalCloseCockpitService(IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService, IOperationsContinuityWorkflowService? operationsContinuityWorkflowService, IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null, IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null, IRecurringJournalQueueSource? recurringJournalQueueSource = null, IIntercompanyBalanceScheduleSource? intercompanyBalances = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:52](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L52) |  |
-| <code>public async Task&lt;PrivateCapitalCloseCockpitDto&gt; GetCockpitAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs:68](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs#L68) |  |
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs:5](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.EvidenceScope.cs#L5).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs:7](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.ManagementCompany.cs#L7).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```
-
-Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.Routes.cs#L8).
-
-```csharp
-public sealed partial class PrivateCapitalCloseCockpitService
-```

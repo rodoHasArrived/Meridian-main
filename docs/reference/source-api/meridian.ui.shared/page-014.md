@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LoanAccountingSourceReader
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LoanAccountingSourceReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:219](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L219).
+
+Uses retained loan history and the same impact kernel as originating loan posting.
+
+```csharp
+public sealed class LoanAccountingSourceReader(IDirectLendingStateStore store, ILedgerJournalStore journals) : ILedgerAccountingSourceReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:221](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L221) |  |
+| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:223](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L223) |  |
+
 ## ManagementFeeAccrualCalculation
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ManagementFeeAccrualCalculation</code>. Kind: `class`.
@@ -478,7 +497,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:676](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L676).
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:683](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L683).
 
 Identity of a retained connection one tenant owns; carries no credential material.
 
@@ -991,21 +1010,3 @@ Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:25](../../
 ```csharp
 public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
 ```
-
-## PromotionTrustEvidenceServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PromotionTrustEvidenceServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L10).
-
-Registers promotion trust evidence services in the dependency injection container.
-
-```csharp
-public static class PromotionTrustEvidenceServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPromotionTrustEvidenceServices(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:13](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L13) | Registers the same source-backed promotion trust provider for browser and desktop hosts. |

@@ -137,6 +137,103 @@ public sealed class LoggingServiceBaseTests
     }
 
     [Fact]
+    public void LogError_RendersContextAndRetainsStructuredPropertiesAndException()
+    {
+        LogEntryEventArgs? received = null;
+        _sut.LogWritten += (_, e) => received = e;
+        var exception = new InvalidOperationException("backend unavailable");
+
+        _sut.LogError("Failed to load {Symbol} in {Workspace}", exception,
+            ("Symbol", "AAPL"), ("Workspace", "Trading"));
+
+        received.Should().NotBeNull();
+        received!.Message.Should().Be("Failed to load AAPL in Trading");
+        received.Exception.Should().BeSameAs(exception);
+        received.Properties.Should().Equal(("Symbol", "AAPL"), ("Workspace", "Trading"));
+        _sut.WrittenMessages.Should().ContainSingle();
+        _sut.WrittenMessages[0].Should().Contain(received.Message)
+            .And.Contain("Symbol=AAPL").And.Contain("Workspace=Trading")
+            .And.Contain("backend unavailable");
+    }
+
+    [Theory]
+    [InlineData(LogLevel.Info)]
+    [InlineData(LogLevel.Warning)]
+    [InlineData(LogLevel.Debug)]
+    public void Log_RendersTemplatesForEachPropertyBasedLevel(LogLevel level)
+    {
+        LogEntryEventArgs? received = null;
+        _sut.LogWritten += (_, e) => received = e;
+
+        switch (level)
+        {
+            case LogLevel.Info:
+                _sut.LogInfo("Selected {Symbol}", ("Symbol", "AAPL"));
+                break;
+            case LogLevel.Warning:
+                _sut.LogWarning("Selected {Symbol}", ("Symbol", "AAPL"));
+                break;
+            case LogLevel.Debug:
+                _sut.LogDebug("Selected {Symbol}", ("Symbol", "AAPL"));
+                break;
+        }
+
+        received.Should().NotBeNull();
+        received!.Level.Should().Be(level);
+        received.Message.Should().Be("Selected AAPL");
+        received.Properties.Should().Equal(("Symbol", "AAPL"));
+    }
+
+    [Theory]
+    [InlineData("{Symbol}/{Symbol}", "AAPL", "AAPL/AAPL")]
+    [InlineData("{Symbol} {Missing}", "AAPL", "AAPL {Missing}")]
+    [InlineData("{{Symbol}} {Symbol}", "AAPL", "{Symbol} AAPL")]
+    [InlineData("{Symbol} {Other}", "{Other}", "{Other} value")]
+    [InlineData("{Symbol} {unfinished", "AAPL", "AAPL {unfinished")]
+    [InlineData("{Symbol}", "", "")]
+    public void LogWritten_TemplateRenderingPreservesLiteralValuesAndUnknownTokens(
+        string template, string symbol, string expected)
+    {
+        LogEntryEventArgs? received = null;
+        _sut.LogWritten += (_, e) => received = e;
+
+        _sut.LogInfo(template, ("Symbol", symbol), ("Other", "value"));
+
+        received.Should().NotBeNull();
+        received!.Message.Should().Be(expected);
+        received.Properties.Should().Contain(("Symbol", symbol));
+        _sut.WrittenMessages[0].Should().Contain("] [INFO ] " + expected + " {Symbol=");
+    }
+
+    [Fact]
+    public void LogWritten_WithoutPropertiesPreservesLegacyLiteralBraces()
+    {
+        LogEntryEventArgs? received = null;
+        _sut.LogWritten += (_, e) => received = e;
+
+        _sut.LogError("Literal {Symbol} and {{braces}}");
+
+        received.Should().NotBeNull();
+        received!.Message.Should().Be("Literal {Symbol} and {{braces}}");
+    }
+
+    [Fact]
+    public void LogError_ThroughInterfaceRendersPropertiesAndRetainsException()
+    {
+        LogEntryEventArgs? received = null;
+        _sut.LogWritten += (_, e) => received = e;
+        var exception = new InvalidOperationException("backend unavailable");
+        Meridian.Ui.Services.Contracts.ILoggingService service = _sut;
+
+        service.LogError("Failed to load {Symbol}", exception, ("Symbol", "AAPL"));
+
+        received.Should().NotBeNull();
+        received!.Message.Should().Be("Failed to load AAPL");
+        received.Exception.Should().BeSameAs(exception);
+        received.Properties.Should().Equal(("Symbol", "AAPL"));
+    }
+
+    [Fact]
     public void LogWritten_NotRaisedWhenFiltered()
     {
         _sut.MinimumLevel = LogLevel.Error;

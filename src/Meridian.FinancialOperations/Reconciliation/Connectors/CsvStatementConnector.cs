@@ -152,25 +152,33 @@ public sealed class CsvStatementConnector(
 
         string[] detectedColumns;
         var dataStartIndex = 0;
-        if (hasHeader)
+        try
         {
-            var headerIndex = 0;
-            while (string.IsNullOrWhiteSpace(lines[headerIndex]))
+            if (hasHeader)
             {
-                headerIndex++;
-            }
+                var headerIndex = 0;
+                while (string.IsNullOrWhiteSpace(lines[headerIndex]))
+                {
+                    headerIndex++;
+                }
 
-            detectedColumns = CsvLineSplitter.Split(lines[headerIndex], delimiter, quote)
-                .Select(static column => column.Trim())
-                .ToArray();
-            dataStartIndex = headerIndex + 1;
+                detectedColumns = CsvLineSplitter.Split(lines[headerIndex], delimiter, quote)
+                    .Select(static column => column.Trim())
+                    .ToArray();
+                dataStartIndex = headerIndex + 1;
+            }
+            else
+            {
+                // Headerless files expose synthesized positional names so profiles can map
+                // "column1", "column2", ... explicitly.
+                var width = CsvLineSplitter.Split(firstContentLine, delimiter, quote).Count;
+                detectedColumns = Enumerable.Range(1, width).Select(static index => $"column{index}").ToArray();
+            }
         }
-        else
+        catch (FormatException)
         {
-            // Headerless files expose synthesized positional names so profiles can map
-            // "column1", "column2", ... explicitly.
-            var width = CsvLineSplitter.Split(firstContentLine, delimiter, quote).Count;
-            detectedColumns = Enumerable.Range(1, width).Select(static index => $"column{index}").ToArray();
+            return EmptyResult(profileId,
+                [StatementParseIssue.Error("CSV_INVALID_SYNTAX", "The CSV header or first record contains malformed quoting or a null character.")], []);
         }
 
         var columnMappings = StatementColumnConfidenceScorer.MapColumns(detectedColumns, profile);
@@ -220,13 +228,24 @@ public sealed class CsvStatementConnector(
                 }
 
                 var rowNumber = lineIndex + 1;
-                var values = CsvLineSplitter.Split(line, delimiter, quote);
+                IReadOnlyList<string> values;
+                try
+                {
+                    values = CsvLineSplitter.Split(line, delimiter, quote);
+                }
+                catch (FormatException)
+                {
+                    issues.Add(StatementParseIssue.Error(
+                        "CSV_INVALID_SYNTAX", "The CSV row contains malformed quoting or a null character.", rowNumber));
+                    break;
+                }
                 if (values.Count != detectedColumns.Length)
                 {
-                    issues.Add(StatementParseIssue.Warning(
+                    issues.Add(StatementParseIssue.Error(
                         "COLUMN_COUNT_MISMATCH",
                         $"Row has {values.Count} values for {detectedColumns.Length} detected columns.",
                         rowNumber));
+                    break;
                 }
 
                 var mappedValues = new Dictionary<StatementCanonicalField, string>();

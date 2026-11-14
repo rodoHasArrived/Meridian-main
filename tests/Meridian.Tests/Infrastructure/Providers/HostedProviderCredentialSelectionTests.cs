@@ -3,6 +3,9 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Services;
+using Meridian.Application.ProviderRouting;
+using Meridian.Application.Subscriptions.Services;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.UI;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.SecurityMaster;
@@ -71,6 +74,68 @@ public sealed class HostedProviderCredentialSelectionTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => client.LookupByTickerAsync("TSLA"));
         (await resolver.ResolveAsync("TSLA")).Should().BeNull();
         factory.Keys.Should().HaveCount(4, "neither legacy, configured, nor another owner's key can replace a deleted selected credential");
+    }
+
+    [Fact]
+    public async Task HostedSymbolSearch_UsesOnlyFactorySelectedOwnerAndCannotReconstructFromAmbientKeysAfterRemoval()
+    {
+        Directory.CreateDirectory(_root);
+        var config = new ConfigStore(Path.Combine(_root, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: _root, Alpaca: new AlpacaOptions(
+            KeyId: "config-other-owner", SecretKey: "config-other-secret")));
+        var first = new ProviderCredentialScope("tenant-a", "selected", "account-a", "paper");
+        var other = new ProviderCredentialScope("tenant-b", "other", "account-b", "paper");
+        var store = new FileProviderCredentialStore(_root, name => name switch
+        {
+            "MDC_PROVIDER_ALLOW_ENV_FALLBACK" => "true",
+            "ALPACA_KEY_ID" => "environment-other-owner",
+            "ALPACA_SECRET_KEY" => "environment-other-secret",
+            _ => null
+        });
+        foreach (var scope in new[] { first, other })
+        {
+            await new ProviderConnectionService(config).UpsertForTenantAsync(new(scope.ConnectionId, "alpaca", "Synthetic owner",
+                ExternalAccountId: scope.ExternalAccountId), scope.TenantId, scope.Environment);
+            await store.SaveScopedAsync(new("alpaca", new Dictionary<string, string?>
+            {
+                ["KeyId"] = scope.ExternalAccountId,
+                ["SecretKey"] = scope.ExternalAccountId + "-secret"
+            }, scope.Environment), scope);
+        }
+        await store.SaveAsync(new("alpaca", new Dictionary<string, string?>
+        {
+            ["KeyId"] = "legacy-other-owner",
+            ["SecretKey"] = "legacy-other-secret"
+        }, "paper"));
+        await new ProviderRuntimeCredentialService(config, store).BindAsync("alpaca", first.ConnectionId, first.TenantId);
+        var resolver = new StoredProviderCredentialResolver(store, new EnvironmentCredentialResolver(), config, new(true));
+        var factory = new ProviderFactory(config.LoadRequired(), resolver);
+        var httpFactory = new RecordingFactory("[]");
+        var services = new ServiceCollection();
+        services.AddSingleton(config);
+        services.AddSingleton<IProviderCredentialResolver>(resolver);
+        services.AddSingleton<IHttpClientFactory>(httpFactory);
+        var registry = new ProviderRegistry();
+        services.AddSingleton(registry);
+        new SymbolManagementFeatureRegistration().Register(services, CompositionOptions.Minimal);
+        using var provider = services.BuildServiceProvider();
+        HttpClientFactoryProvider.Initialize(provider);
+        var search = factory.CreateAlpacaSearchProvider(null);
+        search.Should().NotBeNull();
+        registry.RegisterSymbolSearch("alpaca", search!);
+        await provider.GetRequiredService<SymbolSearchService>().SearchAsync(new("BOND", Provider: "alpaca", IncludeFigi: false));
+        httpFactory.Keys.Should().NotBeEmpty().And.OnlyContain(key => key == "account-a");
+        var dispatched = httpFactory.Keys.Count;
+
+        // Model stopped-instance reconstruction after vault maintenance. Missing selected data is
+        // authoritative despite retained legacy, config, environment and the other tenant's keys.
+        await store.DeleteScopedAsync("alpaca", first);
+        factory.CreateAlpacaSearchProvider(null).Should().BeNull();
+        await new ProviderConnectionService(config).DeleteForTenantAsync(first.ConnectionId, first.TenantId);
+        Action reconstruct = () => factory.CreateAlpacaSearchProvider(null);
+        reconstruct.Should().Throw<UnauthorizedAccessException>();
+        httpFactory.Keys.Should().HaveCount(dispatched);
+        (await store.ReadScopedAsync("alpaca", other))!.Get("KeyId").Should().Be("account-b");
     }
 
     [Fact]
@@ -155,6 +220,7 @@ public sealed class HostedProviderCredentialSelectionTests : IDisposable
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
             {
                 var key = request.Headers.TryGetValues("X-OPENFIGI-APIKEY", out var values) ? values.Single()
+                    : request.Headers.TryGetValues("APCA-API-KEY-ID", out var alpacaKeys) ? alpacaKeys.Single()
                     : Uri.UnescapeDataString(request.RequestUri!.Query.Split('&').Single(part => part.TrimStart('?').StartsWith("apiKey=", StringComparison.Ordinal)).Split('=')[1]);
                 factory.Keys.Add(key);
                 factory.RetryOwnership.Add(request.Options.TryGetValue(SharedResiliencePolicies.ProviderOwnsRetries, out var owned) && owned);

@@ -60,12 +60,16 @@ public sealed class ProviderIntegrationHttpClientTransportTests
         handler.Requests.Should().ContainSingle();
     }
 
-    [Fact]
-    public async Task SendAsync_UnknownLengthBodyExceedsLimit_RejectsWhileReading()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SendAsync_UnknownLengthOrChunkedBodyExceedsLimit_RejectsWhileReading(bool chunked)
     {
         var content = new StreamContent(new NonSeekableMemoryStream(new byte[(8 * 1024 * 1024) + 1]));
         content.Headers.ContentLength.Should().BeNull();
-        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        var response = new HttpResponseMessage(HttpStatusCode.OK) { Content = content };
+        response.Headers.TransferEncodingChunked = chunked;
+        var handler = new RecordingHandler(response);
         using var client = new HttpClient(handler);
         var transport = new ProviderIntegrationHttpClientTransport(client,
             hostResolver: new StaticHostResolver(IPAddress.Parse("203.0.113.10")));
@@ -76,6 +80,41 @@ public sealed class ProviderIntegrationHttpClientTransportTests
     private sealed class NonSeekableMemoryStream(byte[] buffer) : MemoryStream(buffer)
     {
         public override bool CanSeek => false;
+    }
+
+    [Fact]
+    public async Task SendAsync_TruncatedDeclaredBody_RefusesPartialSuccessAndAllowsFreshRetry()
+    {
+        var content = new StreamContent(new NonSeekableMemoryStream("{\"data\":[]}"u8.ToArray()));
+        content.Headers.ContentLength = 100;
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK) { Content = content });
+        using var client = new HttpClient(handler);
+        var transport = new ProviderIntegrationHttpClientTransport(client,
+            hostResolver: new StaticHostResolver(IPAddress.Parse("203.0.113.10")));
+
+        await FluentActions.Awaiting(() => transport.SendAsync(CreateRequest("/v1/data")))
+            .Should().ThrowAsync<HttpRequestException>().WithMessage("*declared number of bytes*");
+
+        using var retryClient = new HttpClient(new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{\"data\":[]}")
+        }));
+        var retry = new ProviderIntegrationHttpClientTransport(retryClient,
+            hostResolver: new StaticHostResolver(IPAddress.Parse("203.0.113.10")));
+        (await retry.SendAsync(CreateRequest("/v1/data"))).Body.Should().Be("{\"data\":[]}");
+    }
+
+    [Fact]
+    public async Task SendAsync_MixedPublicAndPrivateDnsAnswers_RefusesBeforeDispatch()
+    {
+        var handler = new RecordingHandler(new HttpResponseMessage(HttpStatusCode.OK));
+        using var client = new HttpClient(handler);
+        var transport = new ProviderIntegrationHttpClientTransport(client,
+            hostResolver: new StaticHostResolver(IPAddress.Parse("203.0.113.10"), IPAddress.Parse("10.0.0.1")));
+
+        await FluentActions.Awaiting(() => transport.SendAsync(CreateRequest("/v1/data")))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*non-public address*");
+        handler.Requests.Should().BeEmpty();
     }
 
     [Fact]

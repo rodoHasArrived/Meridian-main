@@ -6,6 +6,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TwelveDataQuotaConfig = Meridian.Core.Config.TwelveDataQuotaConfig;
 using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
@@ -22,7 +23,7 @@ namespace Meridian.Infrastructure.Adapters.TwelveData;
 /// <summary>
 /// Historical data provider using the Twelve Data API (https://api.twelvedata.com).
 /// Provides OHLCV bars for US equities, ETFs, international stocks, forex, and crypto.
-/// Free tier: 800 requests/day, 8 requests/minute.
+/// Basic profile: 800 credits/day, 8 credits/minute; daily history costs one credit per request.
 /// Extends BaseHistoricalDataProvider for common functionality.
 /// </summary>
 [DataSource("twelvedata", "Twelve Data", DataSourceType.Historical, DataSourceCategory.Premium,
@@ -42,10 +43,11 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
     private readonly string? _apiKey;
     private readonly RateLimiterRegistry _rateLimiterRegistry;
     private readonly TimeProvider _timeProvider;
+    private readonly RequestBudgetConfiguration? _quotaBudget;
 
     protected override RateLimiter RequestRateLimiter => string.IsNullOrWhiteSpace(_apiKey)
         ? RateLimiter
-        : _rateLimiterRegistry.GetOrCreate(Name, _apiKey, "api-requests", MaxRequestsPerWindow, RateLimitWindow, RateLimitDelay);
+        : _rateLimiterRegistry.GetOrCreate(Name, _apiKey, "api-requests", _quotaBudget!);
 
 
 
@@ -57,23 +59,23 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
 
 
     public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.TwelveDataPriority;
-    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
-        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
-        : TimeSpan.FromMinutes(1) / Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", "free").RateLimitPerMinute!.Value; // 8 req/min
-    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", "free").RateLimitPerMinute!.Value;
-    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromMinutes(1);
+    public override TimeSpan RateLimitDelay => _quotaBudget?.MinimumDelay ?? TimeSpan.FromMilliseconds(7500);
+    public override int MaxRequestsPerWindow => _quotaBudget?.Maximum ?? 8;
+    public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
 
     public override HistoricalDataCapabilities Capabilities { get; } =
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "EU", "CA", "AU");
 
 
     public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null,
+        TwelveDataQuotaConfig? quotaConfig = null,
         BackfillProviderRuntimeOptions? runtimeOptions = null)
         : base(httpClient, log, timeProvider: rateLimiterRegistry?.TimeProvider, runtimeOptions: runtimeOptions)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("TWELVEDATA_API_KEY");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _timeProvider = _rateLimiterRegistry.TimeProvider;
+        _quotaBudget = ProviderQuotaBudgets.TwelveData(quotaConfig, runtimeOptions);
     }
 
     public override Task<bool> IsAvailableAsync(CancellationToken ct = default)

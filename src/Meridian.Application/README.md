@@ -6,10 +6,21 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Application
+
+Native intercompany legal rules validate structured declarations without turning them into accrual
+or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
+dates only. An explicit evidence-bound external-review attestation lets the preparing operator
+record external legal review while ordinary independent review remains available; legal lifecycle
+revisions retain the same separate audit facts. See
+[terms and review boundaries](../../docs/domain/intercompany-agreements.md).
+
+Structured decimal normalization preserves representable declarations when canonical formatting
+uses an exponent. Retrying an externally reviewed lifecycle append repairs an interrupted local
+profile projection from the latest retained revision while holding the history read lease.
 
 Shared `ConfigStore` saves retain a host-lifetime activation record containing only field names,
 impact classes and timestamps. Symbol changes are `Live`, streaming provider selection/options
@@ -33,6 +44,40 @@ uses Alpaca's fixed-income filter and stages identity evidence for review withou
 The authoritative request establishes availability directly, without an unrelated tolerant symbol
 health probe. Typed failures preserve missing/rejected credentials, transport, malformed payload,
 incomplete response and throttling distinctions. Unsupported strict decoders fail closed.
+
+Runtime credential selection pins the retained tenant, connection, external account and environment.
+Reusing a removed connection ID cannot retarget a host binding; historical selections without those
+pins require explicit rebinding. Asynchronous runtime application publishes success only while the
+exact selection and owner still match, including intervening selection changes back to the same account.
+Production selection changes, operator credential edits/removal and bound connection deletion/disable
+serialize with runtime application and require `StopAndDrainAsync` authority before mutation. The
+default host has no such authority and refuses these changes with a maintenance conflict. A capable
+host must stop new dispatches, drain in-flight work and dispose captured-key instances. Refusal
+without a drain preserves prior application status; a completed drain or uncertain failure/cancellation
+leaves application pending. Connection IDs are normalized before maintenance admission and persistence.
+Provider-owned conditional OAuth rotation retains its
+scope/generation CAS path so an in-flight refresh can finish while an operator's change drains.
+
+The final production ownership policy also guards every supported configuration writer. Browser,
+CLI and desktop setup refuse literal provider credentials before persistence or backup; interactive
+setup refuses provider-wide validation and raw credential previews. Legacy documents remain readable
+for explicit migration and purge. A secret-free write can proceed after all retained generations are
+reviewed and purged, without deleting owned vault credentials or assigning them to another account.
+
+Provider integration HTTP transport checks streamed response length against a declared
+`Content-Length` after enforcing its byte cap. Truncated bodies fail instead of becoming successful
+partial provider evidence. Synthetic transport tests cover connection-time DNS rebinding, redirects,
+mixed public/private DNS answers, declared and unknown-length oversize bodies and truncated-body retry.
+REST dry runs retain partial HTTP response evidence but refuse mapping or staging for HTTP 206 or
+Content-Range responses. Replay checks retained HTTP completeness across the entire source history,
+so a later format marker or newer mapping cannot promote a known partial capture.
+Reaching the page cap with a continuation cursor also leaves incomplete evidence. Review, identity
+preview and selected-row handoff verify complete retained source capture, exact manifests, conserved
+accepted and quarantined populations, and the full cursor-page chain, including empty terminal pages.
+Selected rows still require their own validation and review. Complete source capture may retain
+quarantined rows outside that selection; whole-run activation still requires every row to validate.
+Missing or unfinished source evidence remains reviewable and blocks promotion; replay refuses partial
+captures before publishing a new run.
 
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
@@ -223,13 +268,18 @@ ineligible for preparer draft checks; no ledger, approval or posting authority i
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
 commands. Host composition supplies the current `ConfigStore` to `StoredProviderCredentialResolver`;
 it revalidates one retained tenant/connection/account/environment under the configuration lease before
-reading the scoped vault. Owned, ambiguous or dangling selections never fall back. Entirely legacy
-families retain their prior policy. Host selection requires provider reconstruction; credential editing
+reading the scoped vault. Owned, ambiguous or dangling selections never fall back.
+`ProviderCredentialOwnershipPolicy` requires explicit ownership in production and packaged/customer
+workstation compositions, including posture declarations added after feature registration. Entirely
+legacy families retain their prior policy only in unflagged development compositions. The generic background
+OAuth helper also refuses activation without an explicit owned scope in these protected compositions;
+its unassigned token vault is not a separate execution fallback. Host selection requires provider reconstruction; credential editing
 does not hot-activate a running collector. See [credential operations](../../docs/operators/provider-credentials.md#explicit-connection-ownership-and-host-selection).
 Legacy setup refuses a retained runtime binding even when its connection or ownership marker is
 missing. `LegacyProviderRuntimeCredentialStore` guards runtimes that do not yet carry trusted
 tenant/connection identity: every vault read and mutation requires readable configuration and an
-entirely legacy provider family under the configuration lease. Owned families remain unavailable to
+entirely legacy provider family under the configuration lease. Production and distributed workstations
+refuse these unowned execution paths even before a family has retained an owner. Owned families remain unavailable to
 these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
 Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
 mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;

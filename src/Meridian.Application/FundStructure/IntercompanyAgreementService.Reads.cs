@@ -94,8 +94,9 @@ public sealed partial class IntercompanyAgreementService
             !historical && open is not null && (IntercompanyAgreementRules.SameActor(open.Submitter, context.Actor)
                 || open.Authors.Any(a => IntercompanyAgreementRules.SameActor(a, context.Actor))),
             canChange, canChange && !terminated,
-            historical ? "Historical knowledge is read-only." : submitted && !independent ? "Independent reviewer required." : null)
-        { CanCreateProposal = !historical && open is null };
+            historical ? "Historical knowledge is read-only." : submitted && !independent
+                ? "Use an independent reviewer or attest retained external review of the submitted terms." : null)
+        { CanCreateProposal = !historical && open is null, CanAttestExternalReview = !historical && submitted };
         var aggregateVersion = historical ? history.Max(h => h.AggregateVersion) : state.AggregateVersion;
         return new(state.AgreementId, aggregateVersion, identity.Code, identity.Name, identity.PartyOneId, identity.PartyOneRole,
             identity.PartyTwoId, identity.PartyTwoRole, identity.AgreementType, identity.Currency, asOf, timeline.Status,

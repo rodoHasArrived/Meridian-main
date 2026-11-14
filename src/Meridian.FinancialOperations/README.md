@@ -6,10 +6,27 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.FinancialOperations
+
+Mapped statement CSV rejects malformed quotes, null characters and rows whose field count differs
+from the reviewed header. Validation and preview report blocking diagnostics, and commit refuses the
+whole document before retaining evidence. Valid quoted delimiters and escaped quotes retain their
+exact financial meaning. `StatementImportServiceTests.CsvMalformedTail_BlocksWholeImportThenAllowsCorrectedReplay`
+proves a valid prefix cannot make a malformed tail complete and that a corrected retry retains exact
+source bytes and remains idempotent after service restart.
+
+The intercompany obligation monitor enriches the existing posted balance schedule with canonical
+legal expiry, coverage, lifecycle and guarantee observations. Its default expiry horizon is 30
+calendar days; retained source versions distinguish current, stale and unavailable evidence. The
+close companion remains advisory and does not change existing schedule blockers, journal controls
+or exact consolidation rule versions. See
+[monitoring boundaries](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#obligation-monitoring-and-structured-legal-terms).
+
+Expiry warnings follow continuous approved legal coverage across effective-date boundaries, retaining
+gaps and termination instead of reporting superseded raw end dates.
 
 `BondIncomeService` resolves actual account/book/lot and adopted US GAAP policy before previewing or
 preparing `bond-income-us-gaap-v1` instructions. Eligible direct costs, purchased accrued interest,
@@ -260,7 +277,9 @@ The `OnboardingWorkspaceService.Shadow` partial adds shadow-mode onboarding (W11
 designates the workspace's ledger book as a shadow book. Incumbent opening balances are imported
 through `OpeningBalances/OnboardingOpeningSources.cs` (camt.053 OPBD / BAI2 010 via
 `StatementBalanceRole.Opening`, an administrator opening-pack CSV, or a retained GL trial balance)
-into a separate opening comparison lineage. Explanations clear a difference only for its exact
+into a separate opening comparison lineage. Each import records `OpeningKinds`, the required kinds it
+supplies, and compares only those; complementary sources combine, using the latest import per source
+kind, and readiness lists any required kind no source covers. Explanations clear a difference only for its exact
 amounts; `MeridianError` never clears and `Timing` lapses after its reversal date. A parallel-run
 certificate requires reconciled opening balances, every required period clean and independent
 review. Only an independent designated reviewer can promote, with a certificate that still matches

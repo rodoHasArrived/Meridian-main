@@ -30,6 +30,8 @@ import type {
   PrivateCapitalCloseCockpit
 } from "@/types";
 import { requirePresent } from "@/test/fixtures";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
+import { collectScopeStructureOptions, UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
 
 vi.mock("@/lib/api", () => ({
@@ -2125,6 +2127,106 @@ describe("OperationsContinuityScreen", () => {
 
     expect(screen.getByText("Loading operations continuity workflows...")).toBeInTheDocument();
     expect(screen.queryByText("No operations continuity workflows are available for this workstation context.")).not.toBeInTheDocument();
+  });
+});
+
+describe("OperationsContinuityScreen fund narrowing", () => {
+  const structure = collectScopeStructureOptions({
+    entities: [{ entityId: "E-A", name: "Entity A" }],
+    funds: [{ fundId: "F-1", name: "Fund One", entityIds: ["E-A"] }, { fundId: "F-2", name: "Fund Two", entityIds: ["E-A"] }],
+    accounts: [
+      { accountId: fundAccountId, displayName: "Fund one brokerage", fundId: "F-1", entityId: "E-A" },
+      { accountId: "acct-2", displayName: "Fund two brokerage", fundId: "F-2", entityId: "E-A" }
+    ]
+  });
+  const otherFund = { ...summary, workflowId: "wf-fund-two", fundAccountId: "acct-2", periodId: "2026-04", updatedAtUtc: "2026-05-08T13:00:00Z" };
+  const unfiled = { ...summary, workflowId: "wf-unfiled", fundAccountId: "acct-unfiled", periodId: "2026-03", updatedAtUtc: "2026-05-08T12:00:00Z" };
+  const renderWithFundScope = (value: FundScopeNarrowingContextValue, entry = "/accounting/operations-continuity") => render(
+    <MemoryRouter initialEntries={[entry]}>
+      <FundScopeNarrowingProvider value={value}>
+        <Routes>
+          <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+        </Routes>
+      </FundScopeNarrowingProvider>
+    </MemoryRouter>
+  );
+
+  it("lists only the chosen fund's workflows, recounts them and counts the ones with no recorded fund", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
+    renderWithFundScope({ structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Fund One" } });
+
+    const note = await screen.findByRole("status", { name: "Operations continuity fund scope" });
+    expect(note).toHaveTextContent("Narrowed to fund Fund One: showing 1 of 3 close workflows. 1 with no recorded fund not shown.");
+    expect(note).toHaveAttribute("data-narrowing", "applied");
+    const table = screen.getByRole("treegrid", { name: "Operations continuity workflows" });
+    expect(within(table).getByRole("row", { name: /2026-05 operations continuity workflow/i })).toBeInTheDocument();
+    expect(within(table).queryByRole("row", { name: /2026-04 operations continuity workflow/i })).not.toBeInTheDocument();
+    expect(within(table).queryByRole("row", { name: /2026-03 operations continuity workflow/i })).not.toBeInTheDocument();
+    expect(screen.getByText("1 workflow")).toBeInTheDocument();
+    await waitFor(() => expect(getOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.anything()));
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalledWith(otherFund.workflowId, expect.anything());
+  });
+
+  it("reports a requested workflow the fund scope narrowed out instead of opening another", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
+    renderWithFundScope(
+      { structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Fund One" } },
+      `/accounting/operations-continuity?workflowId=${otherFund.workflowId}`
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(`Workflow ${otherFund.workflowId} is outside the chosen fund or entity.`);
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(screen.queryByText("2026-05 close workflow")).not.toBeInTheDocument();
+  });
+
+  it("makes no unscoped close-calendar or cockpit read when the chosen fund keeps no workflow", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, unfiled]);
+    renderWithFundScope({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } });
+
+    const note = await screen.findByRole("status", { name: "Operations continuity fund scope" });
+    expect(note).toHaveTextContent("Narrowed to fund Fund Two: showing 0 of 2 close workflows.");
+    await waitFor(() => expect(screen.getByText("0 workflows")).toBeInTheDocument());
+    expect(getOperationsCloseCalendar).not.toHaveBeenCalled();
+    expect(getPrivateCapitalCloseCockpit).not.toHaveBeenCalled();
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+  });
+
+  it("clears close panels loaded for a requested workflow once a fund change puts it out of scope", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund]);
+    const entry = `/accounting/operations-continuity?workflowId=${workflowId}`;
+    const tree = (value: FundScopeNarrowingContextValue) => (
+      <MemoryRouter initialEntries={[entry]}>
+        <FundScopeNarrowingProvider value={value}>
+          <Routes>
+            <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+          </Routes>
+        </FundScopeNarrowingProvider>
+      </MemoryRouter>
+    );
+    const { rerender } = render(tree({ structure, loading: false, entityId: null, fundId: null, names: {} }));
+
+    const calendar = await screen.findByRole("table", { name: "Operations continuity close calendar" });
+    await waitFor(() => expect(within(calendar).getByText(`2026-05 / ${fundAccountId}`)).toBeInTheDocument());
+
+    rerender(tree({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(`Workflow ${workflowId} is outside the chosen fund or entity.`);
+    await waitFor(() => expect(screen.queryByText(`2026-05 / ${fundAccountId}`)).not.toBeInTheDocument());
+  });
+
+  it("lists every workflow, with an honest note, when the organization graph is unavailable", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
+    renderWithFundScope({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });
+
+    const note = await screen.findByRole("status", { name: "Operations continuity fund scope" });
+    expect(note).toHaveTextContent(
+      "Not narrowed by entity or fund: the organization structure could not be loaded, so all authorized close workflows are shown."
+    );
+    const table = screen.getByRole("treegrid", { name: "Operations continuity workflows" });
+    expect(within(table).getByRole("row", { name: /2026-03 operations continuity workflow/i })).toBeInTheDocument();
+    expect(within(table).getByRole("row", { name: /2026-04 operations continuity workflow/i })).toBeInTheDocument();
+    expect(screen.getByText("3 workflows")).toBeInTheDocument();
   });
 });
 

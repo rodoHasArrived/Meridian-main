@@ -14,8 +14,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Weighted score | 100.0% |
 | Endpoint coverage | 100.0% |
 | Workstation contract coverage | 100.0% |
-| Endpoints documented | 828 / 828 |
-| Workstation contracts documented | 1050 / 1050 |
+| Endpoints documented | 830 / 830 |
+| Workstation contracts documented | 1051 / 1051 |
 
 ## Endpoint Coverage
 
@@ -164,21 +164,21 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/compliance/approval-requests/{approvalRequestId}/decisions` | Documented | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:29` |
 | `GET` | `/api/compliance/audit/extract` | Documented | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:69` |
 | `GET` | `/api/compliance/controls/attestation` | Documented | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:73` |
-| `GET` | `/api/config` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:50` |
-| `POST` | `/api/config/alpaca` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:149` |
-| `GET` | `/api/config/changes` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:44` |
-| `GET` | `/api/config/data-sources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:684` |
-| `POST` | `/api/config/data-sources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:702` |
-| `POST` | `/api/config/datasource` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:134` |
-| `GET` | `/api/config/datasources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:84` |
-| `POST` | `/api/config/datasources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:103` |
-| `POST` | `/api/config/datasources/defaults` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:235` |
-| `POST` | `/api/config/datasources/failover` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:269` |
-| `GET` | `/api/config/derivatives` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:229` |
-| `POST` | `/api/config/derivatives` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:238` |
-| `GET` | `/api/config/effective` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:77` |
-| `POST` | `/api/config/storage` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:161` |
-| `POST` | `/api/config/symbols` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:188` |
+| `GET` | `/api/config` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:51` |
+| `POST` | `/api/config/alpaca` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:150` |
+| `GET` | `/api/config/changes` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:45` |
+| `GET` | `/api/config/data-sources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:689` |
+| `POST` | `/api/config/data-sources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:707` |
+| `POST` | `/api/config/datasource` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:135` |
+| `GET` | `/api/config/datasources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:85` |
+| `POST` | `/api/config/datasources` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:104` |
+| `POST` | `/api/config/datasources/defaults` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:236` |
+| `POST` | `/api/config/datasources/failover` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:270` |
+| `GET` | `/api/config/derivatives` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:230` |
+| `POST` | `/api/config/derivatives` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:239` |
+| `GET` | `/api/config/effective` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:78` |
+| `POST` | `/api/config/storage` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:162` |
+| `POST` | `/api/config/symbols` | Documented | `src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:189` |
 | `GET` | `/api/connections` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:185` |
 | `GET` | `/api/data/bbo/{symbol}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:270` |
 | `GET` | `/api/data/health` | Documented | `src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:351` |
@@ -237,6 +237,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/reconciliation/latest` | Documented | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:436` |
 | `GET` | `/api/fund-accounts/{accountId:guid}/brokerage-sync/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:297` |
 | `GET` | `/api/fund-structure/entities/{entityId:guid}/timeline` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:34` |
+| `GET` | `/api/fund-structure/intercompany-agreements/{id:guid}/schedule` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:56` |
 | `GET` | `/api/funds/{fundId:guid}/accounts` | Documented | `src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs:137` |
 | `GET` | `/api/health` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:48` |
 | `GET` | `/api/health/detailed` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:223` |
@@ -288,12 +289,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/accounting-configuration/posting-rules/tests` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:588` |
 | `POST` | `/api/ledger/accounting-configuration/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:203` |
 | `POST` | `/api/ledger/accounting-configuration/templates` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountingConfiguration.cs:74` |
-| `GET` | `/api/ledger/aggregates/{aggregateId:guid}/journal-entries` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:337` |
+| `GET` | `/api/ledger/aggregates/{aggregateId:guid}/journal-entries` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:338` |
 | `GET` | `/api/ledger/audit-integrity` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:34` |
-| `GET` | `/api/ledger/books` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:42` |
-| `POST` | `/api/ledger/books` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:94` |
-| `POST` | `/api/ledger/books/rollout-assessment` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:125` |
-| `GET` | `/api/ledger/books/{ledgerBookId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:71` |
+| `GET` | `/api/ledger/books` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:43` |
+| `POST` | `/api/ledger/books` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:95` |
+| `POST` | `/api/ledger/books/rollout-assessment` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:126` |
+| `GET` | `/api/ledger/books/{ledgerBookId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:72` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:208` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/coupon-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:198` |
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/bond-accounting/prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.BondWorkflows.cs:182` |
@@ -335,16 +336,16 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/ledger/books/{ledgerBookId:guid}/open-lots/backfill/survey` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.OpenLotBackfill.cs:34` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/periods/{periodId:guid}/comparison` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PeriodComparison.cs:19` |
 | `GET` | `/api/ledger/books/{ledgerBookId:guid}/periods/{periodId:guid}/completeness` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Completeness.cs:20` |
-| `POST` | `/api/ledger/close-management/evidence-review` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:870` |
-| `POST` | `/api/ledger/close-management/late-adjustments` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:675` |
-| `POST` | `/api/ledger/close-management/late-adjustments/review` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:737` |
-| `POST` | `/api/ledger/close-management/period-lock` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:932` |
-| `POST` | `/api/ledger/close-management/period-plan/configuration` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:613` |
-| `GET` | `/api/ledger/close-management/period-plan/{workflowId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:582` |
-| `POST` | `/api/ledger/close-management/period-reopen` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:945` |
+| `POST` | `/api/ledger/close-management/evidence-review` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:871` |
+| `POST` | `/api/ledger/close-management/late-adjustments` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:676` |
+| `POST` | `/api/ledger/close-management/late-adjustments/review` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:738` |
+| `POST` | `/api/ledger/close-management/period-lock` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:933` |
+| `POST` | `/api/ledger/close-management/period-plan/configuration` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:614` |
+| `GET` | `/api/ledger/close-management/period-plan/{workflowId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:583` |
+| `POST` | `/api/ledger/close-management/period-reopen` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:946` |
 | `POST` | `/api/ledger/close-management/prepare/create` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ClosePreparation.cs:80` |
 | `POST` | `/api/ledger/close-management/prepare/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ClosePreparation.cs:61` |
-| `POST` | `/api/ledger/close-management/task-signoffs` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:808` |
+| `POST` | `/api/ledger/close-management/task-signoffs` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:809` |
 | `GET` | `/api/ledger/close-management/templates` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ClosePreparation.cs:19` |
 | `POST` | `/api/ledger/close-management/templates` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ClosePreparation.cs:42` |
 | `GET` | `/api/ledger/close-management/templates/{templateId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.ClosePreparation.cs:31` |
@@ -356,17 +357,18 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/ledger/intercompany/account-bindings` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:16` |
 | `POST` | `/api/ledger/intercompany/account-bindings` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:54` |
 | `GET` | `/api/ledger/intercompany/account-bindings/history` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.IntercompanyAccountBindings.cs:35` |
-| `GET` | `/api/ledger/intercompany/balance-schedule` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:64` |
-| `GET` | `/api/ledger/intercompany/breaks` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:122` |
+| `GET` | `/api/ledger/intercompany/balance-schedule` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:69` |
+| `GET` | `/api/ledger/intercompany/breaks` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:127` |
 | `GET` | `/api/ledger/intercompany/capabilities` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:19` |
 | `GET` | `/api/ledger/intercompany/legacy-attributions` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:16` |
 | `POST` | `/api/ledger/intercompany/legacy-attributions` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:63` |
 | `GET` | `/api/ledger/intercompany/legacy-attributions/candidates` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.LegacyIntercompanyAttributions.cs:29` |
-| `GET` | `/api/ledger/intercompany/proposals` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:52` |
-| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/link` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:158` |
-| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:100` |
-| `GET` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:82` |
-| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/retry` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:135` |
+| `GET` | `/api/ledger/intercompany/obligations` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyObligationEndpoints.cs:22` |
+| `GET` | `/api/ledger/intercompany/proposals` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:57` |
+| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/link` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:163` |
+| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:105` |
+| `GET` | `/api/ledger/intercompany/proposals/{proposalId:guid}/refresh-preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:87` |
+| `POST` | `/api/ledger/intercompany/proposals/{proposalId:guid}/retry` | Documented | `src/Meridian.Ui.Shared/Endpoints/IntercompanyOperationsEndpoints.cs:140` |
 | `GET` | `/api/ledger/journal-automation/accrual-schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:29` |
 | `POST` | `/api/ledger/journal-automation/accrual-schedules/configure` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:115` |
 | `POST` | `/api/ledger/journal-automation/accrual-schedules/preview` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccrualSchedules.cs:69` |
@@ -391,37 +393,37 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/ledger/journal-automation/recurring/occurrences` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:84` |
 | `POST` | `/api/ledger/journal-automation/recurring/restore-definitions` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:180` |
 | `POST` | `/api/ledger/journal-automation/recurring/schedules` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:127` |
-| `GET` | `/api/ledger/journal-entry-workbench` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1227` |
-| `POST` | `/api/ledger/journal-entry-workbench/drafts` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1548` |
-| `POST` | `/api/ledger/journal-entry-workbench/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1700` |
-| `POST` | `/api/ledger/journal-entry-workbench/lifecycle-action` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1744` |
-| `POST` | `/api/ledger/journal-entry-workbench/submit-approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1653` |
-| `POST` | `/api/ledger/journal-entry-workbench/validate` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1607` |
+| `GET` | `/api/ledger/journal-entry-workbench` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1228` |
+| `POST` | `/api/ledger/journal-entry-workbench/drafts` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1549` |
+| `POST` | `/api/ledger/journal-entry-workbench/evidence` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1701` |
+| `POST` | `/api/ledger/journal-entry-workbench/lifecycle-action` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1745` |
+| `POST` | `/api/ledger/journal-entry-workbench/submit-approval` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1654` |
+| `POST` | `/api/ledger/journal-entry-workbench/validate` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1608` |
 | `POST` | `/api/ledger/period-adjustments/prepare` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs:47` |
 | `POST` | `/api/ledger/period-adjustments/schedule-mark-reversal` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs:16` |
-| `GET` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:166` |
-| `POST` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:204` |
+| `GET` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:167` |
+| `POST` | `/api/ledger/periods` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:205` |
 | `GET` | `/api/ledger/periods/{periodId:guid}/accounts/running-balance` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RunningBalance.cs:21` |
-| `POST` | `/api/ledger/periods/{periodId:guid}/close` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:236` |
+| `POST` | `/api/ledger/periods/{periodId:guid}/close` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:237` |
 | `GET` | `/api/ledger/periods/{periodId:guid}/close-snapshot` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.CloseSnapshots.cs:77` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/journal-entries` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:289` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/journal-entries` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:290` |
 | `GET` | `/api/ledger/periods/{periodId:guid}/journal-entries/{journalEntryId:guid}/tax-results` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Tax.cs:17` |
 | `POST` | `/api/ledger/periods/{periodId:guid}/journal-export` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Export.cs:18` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/pnl-summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:436` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:386` |
-| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance-report` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:411` |
-| `GET` | `/api/ledger/private-capital/activity` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1253` |
-| `GET` | `/api/ledger/private-capital/capital-account-subledger` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1369` |
-| `GET` | `/api/ledger/private-capital/capital-account-workbench` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1501` |
-| `GET` | `/api/ledger/private-capital/fund-event-command-center` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1328` |
-| `GET` | `/api/ledger/private-capital/fund-event-record` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1285` |
-| `GET` | `/api/ledger/private-capital/report-output` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1430` |
-| `POST` | `/api/ledger/reports/accounting-package` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1024` |
-| `POST` | `/api/ledger/reports/accounting-package/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1075` |
-| `GET` | `/api/ledger/reports/accounting-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1134` |
-| `GET` | `/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1176` |
-| `GET` | `/api/ledger/reports/pnl-summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:520` |
-| `GET` | `/api/ledger/reports/trial-balance` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:461` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/pnl-summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:437` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:387` |
+| `GET` | `/api/ledger/periods/{periodId:guid}/trial-balance-report` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:412` |
+| `GET` | `/api/ledger/private-capital/activity` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1254` |
+| `GET` | `/api/ledger/private-capital/capital-account-subledger` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1370` |
+| `GET` | `/api/ledger/private-capital/capital-account-workbench` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1502` |
+| `GET` | `/api/ledger/private-capital/fund-event-command-center` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1329` |
+| `GET` | `/api/ledger/private-capital/fund-event-record` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1286` |
+| `GET` | `/api/ledger/private-capital/report-output` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1431` |
+| `POST` | `/api/ledger/reports/accounting-package` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1025` |
+| `POST` | `/api/ledger/reports/accounting-package/certification` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1076` |
+| `GET` | `/api/ledger/reports/accounting-packages` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1135` |
+| `GET` | `/api/ledger/reports/accounting-packages/{packageId}/exports/{artifactId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:1177` |
+| `GET` | `/api/ledger/reports/pnl-summary` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:521` |
+| `GET` | `/api/ledger/reports/trial-balance` | Documented | `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs:462` |
 | `GET` | `/api/loans/portfolio` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1334` |
 | `POST` | `/api/loans/rebuild-all` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1345` |
 | `GET` | `/api/loans/rebuild-checkpoints` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1325` |
@@ -494,11 +496,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/provider-routing/trust-snapshots` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:63` |
 | `GET` | `/api/providers/capabilities` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:145` |
 | `GET` | `/api/providers/capability-matrix` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:178` |
-| `GET` | `/api/providers/catalog` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:625` |
-| `GET` | `/api/providers/catalog/{providerId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:664` |
-| `GET` | `/api/providers/comparison` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:343` |
-| `POST` | `/api/providers/configure` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:302` |
-| `GET` | `/api/providers/connections` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:22` |
+| `GET` | `/api/providers/catalog` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:630` |
+| `GET` | `/api/providers/catalog/{providerId}` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:669` |
+| `GET` | `/api/providers/comparison` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:348` |
+| `POST` | `/api/providers/configure` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:303` |
+| `GET` | `/api/providers/connections` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:23` |
 | `GET` | `/api/providers/dashboard` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:311` |
 | `GET` | `/api/providers/data-projection` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderDataProjectionEndpoints.cs:16` |
 | `GET` | `/api/providers/failover` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:60` |
@@ -510,7 +512,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/providers/ib/limits` | Documented | `src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:114` |
 | `GET` | `/api/providers/ib/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/IBEndpoints.cs:25` |
 | `GET` | `/api/providers/latency` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:170` |
-| `GET` | `/api/providers/metrics` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:543` |
+| `GET` | `/api/providers/metrics` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:548` |
 | `GET` | `/api/providers/modules` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:24` |
 | `POST` | `/api/providers/modules` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:57` |
 | `GET` | `/api/providers/modules/catalogue` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:41` |
@@ -519,13 +521,13 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `PUT` | `/api/providers/modules/{moduleId}/enabled` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:136` |
 | `POST` | `/api/providers/modules/{moduleId}/test` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:159` |
 | `GET` | `/api/providers/rate-limits` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:115` |
-| `GET` | `/api/providers/readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:416` |
+| `GET` | `/api/providers/readiness` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:421` |
 | `POST` | `/api/providers/restart` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:197` |
-| `GET` | `/api/providers/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:428` |
+| `GET` | `/api/providers/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:433` |
 | `POST` | `/api/providers/switch` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:164` |
-| `DELETE` | `/api/providers/{providerId}/credentials` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:135` |
-| `PUT` | `/api/providers/{providerId}/credentials` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:68` |
-| `POST` | `/api/providers/{providerId}/verify` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:106` |
+| `DELETE` | `/api/providers/{providerId}/credentials` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:148` |
+| `PUT` | `/api/providers/{providerId}/credentials` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:73` |
+| `POST` | `/api/providers/{providerId}/verify` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:115` |
 | `GET` | `/api/providers/{providerName}` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:30` |
 | `GET` | `/api/providers/{providerName}/rate-limit-history` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:128` |
 | `POST` | `/api/providers/{providerName}/test` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:190` |
@@ -881,7 +883,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `BankStatementImportResultDto` | Documented | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:74` |
 | `BiasDisclosureDto` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:280` |
 | `BiasDisclosureItemDto` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:269` |
-| `BookOfRecordStatusDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:128` |
+| `BookOfRecordStatusDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140` |
 | `BooksBeforeBrokerReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:62` |
 | `BrokerageAccountKindDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:18` |
 | `BrokerageAccountLinkRequestDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:61` |
@@ -937,7 +939,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `DataUploadWorkbookPreviewResultDto` | Documented | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:111` |
 | `DataUploadWorkbookSheetPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/DataUploadDtos.cs:94` |
 | `DeltaOutlierResult` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:15` |
-| `DesignateShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:39` |
+| `DesignateShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:41` |
 | `DesktopLaunchTicketRedemptionDto` | Documented | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:94` |
 | `DiscardSecurityMasterRevisionRequest` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:91` |
 | `EquityCurvePoint` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:896` |
@@ -945,70 +947,70 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `EvidenceArtifactCaptureDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:40` |
 | `EvidenceArtifactExtractionFieldDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:49` |
 | `EvidenceArtifactRefDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:29` |
-| `EvidenceArtifactRefDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:279` |
-| `EvidenceAssuranceComponentDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:344` |
-| `EvidenceCompletenessDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:636` |
+| `EvidenceArtifactRefDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:280` |
+| `EvidenceAssuranceComponentDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:345` |
+| `EvidenceCompletenessDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:637` |
 | `EvidenceCompletenessSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:151` |
-| `EvidenceDocumentAuditEventDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:153` |
-| `EvidenceDocumentAuthorityDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:160` |
+| `EvidenceDocumentAuditEventDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:154` |
+| `EvidenceDocumentAuthorityDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:161` |
 | `EvidenceDocumentClassificationDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:62` |
-| `EvidenceDocumentConfirmedFieldDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:145` |
-| `EvidenceDocumentDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:193` |
-| `EvidenceDocumentExtractionRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:246` |
-| `EvidenceDocumentExtractionResultDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:254` |
+| `EvidenceDocumentConfirmedFieldDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:146` |
+| `EvidenceDocumentDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:194` |
+| `EvidenceDocumentExtractionRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:247` |
+| `EvidenceDocumentExtractionResultDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:255` |
 | `EvidenceDocumentIntakeChannelDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:80` |
-| `EvidenceDocumentIntakeSourceDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:272` |
-| `EvidenceDocumentIntakeSourceKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:262` |
-| `EvidenceDocumentLinkDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:129` |
+| `EvidenceDocumentIntakeSourceDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:273` |
+| `EvidenceDocumentIntakeSourceKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:263` |
+| `EvidenceDocumentLinkDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:130` |
 | `EvidenceDocumentLinkKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:104` |
-| `EvidenceDocumentReviewStateDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:136` |
-| `EvidenceDocumentReviewStatusDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:122` |
-| `EvidenceDocumentSourceRecordDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:171` |
-| `EvidenceEdgeDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:301` |
-| `EvidenceEndpointErrorDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:628` |
+| `EvidenceDocumentReviewStateDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:137` |
+| `EvidenceDocumentReviewStatusDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:123` |
+| `EvidenceDocumentSourceRecordDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:172` |
+| `EvidenceEdgeDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:302` |
+| `EvidenceEndpointErrorDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:629` |
 | `EvidenceExtractionStatusDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:93` |
 | `EvidenceFreshnessDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:24` |
-| `EvidenceGraphDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:674` |
-| `EvidenceLifecycleMetadataDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:598` |
-| `EvidenceManifestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:233` |
-| `EvidenceManifestPackageKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:223` |
-| `EvidenceNodeDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:285` |
-| `EvidenceNodeDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:296` |
-| `EvidencePacketDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:658` |
-| `EvidencePacketExportRequest` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:698` |
-| `EvidencePacketExportResponse` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:709` |
-| `EvidenceProofChainDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:385` |
-| `EvidenceProofChainLayerDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:372` |
-| `EvidenceProofChainLayerKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:359` |
-| `EvidenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:183` |
-| `EvidenceRequestListDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:463` |
-| `EvidenceRequestListKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:453` |
-| `EvidenceSlaAssessmentDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:333` |
-| `EvidenceSlaPolicyDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:324` |
+| `EvidenceGraphDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:675` |
+| `EvidenceLifecycleMetadataDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:599` |
+| `EvidenceManifestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:234` |
+| `EvidenceManifestPackageKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:224` |
+| `EvidenceNodeDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:286` |
+| `EvidenceNodeDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:297` |
+| `EvidencePacketDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:659` |
+| `EvidencePacketExportRequest` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:699` |
+| `EvidencePacketExportResponse` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:710` |
+| `EvidenceProofChainDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:386` |
+| `EvidenceProofChainLayerDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:373` |
+| `EvidenceProofChainLayerKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:360` |
+| `EvidenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:184` |
+| `EvidenceRequestListDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:464` |
+| `EvidenceRequestListKindDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:454` |
+| `EvidenceSlaAssessmentDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:334` |
+| `EvidenceSlaPolicyDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:325` |
 | `EvidenceStatusDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:6` |
 | `EvidenceSubjectDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:15` |
-| `EvidenceSubjectLinkageDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:604` |
-| `EvidenceSupportRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:439` |
-| `EvidenceTemplateDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:691` |
-| `EvidenceTemplateExportSettingsDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:686` |
-| `EvidenceValidationIssueDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:315` |
-| `EvidenceValidationSeverityDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:309` |
-| `EvidenceVaultArtifactDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:422` |
-| `EvidenceVaultDocumentEntryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:529` |
-| `EvidenceVaultDocumentQueryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:516` |
-| `EvidenceVaultDocumentReviewRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:540` |
-| `EvidenceVaultDocumentReviewResponseDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:550` |
-| `EvidenceVaultIdentityDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:402` |
-| `EvidenceVaultIntakeRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:554` |
-| `EvidenceVaultIntakeResponseDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:581` |
-| `EvidenceVaultLookupRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:614` |
-| `EvidenceVaultRequestListEntryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:493` |
-| `EvidenceVaultRequestListQueryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:479` |
+| `EvidenceSubjectLinkageDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:605` |
+| `EvidenceSupportRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:440` |
+| `EvidenceTemplateDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:692` |
+| `EvidenceTemplateExportSettingsDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:687` |
+| `EvidenceValidationIssueDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:316` |
+| `EvidenceValidationSeverityDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:310` |
+| `EvidenceVaultArtifactDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:423` |
+| `EvidenceVaultDocumentEntryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:530` |
+| `EvidenceVaultDocumentQueryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:517` |
+| `EvidenceVaultDocumentReviewRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:541` |
+| `EvidenceVaultDocumentReviewResponseDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:551` |
+| `EvidenceVaultIdentityDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:403` |
+| `EvidenceVaultIntakeRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:555` |
+| `EvidenceVaultIntakeResponseDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:582` |
+| `EvidenceVaultLookupRequestDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:615` |
+| `EvidenceVaultRequestListEntryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:494` |
+| `EvidenceVaultRequestListQueryDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:480` |
 | `ExpectedAccountingEventDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:283` |
 | `ExpectedAccountingEventKindDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:228` |
 | `ExpectedJournalPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:318` |
 | `ExpectedJournalPreviewLineDto` | Documented | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:308` |
-| `ExplainOnboardingDifferenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:72` |
+| `ExplainOnboardingDifferenceRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:84` |
 | `ExposureSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:2` |
 | `ExposureTrendPointDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:43` |
 | `FeatureCapabilitySettingsResponse` | Documented | `src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:2` |
@@ -1104,7 +1106,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GovernanceReportValidationSeverityDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:53` |
 | `HaircutRuleDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:24` |
 | `ImportBrokerData` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:19` |
-| `ImportOnboardingOpeningBalancesRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:56` |
+| `ImportOnboardingOpeningBalancesRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:58` |
 | `IngestionCheckpointDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:44` |
 | `IngestionOperationActionDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:61` |
 | `IngestionOperationActionRequestDto` | Documented | `src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:67` |
@@ -1134,7 +1136,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `InvestmentAccountingTransactionLabPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:71` |
 | `InvestmentAccountingTransactionLabRequestDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:29` |
 | `InvestmentAccountingTrialBalanceImpactDto` | Documented | `src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:47` |
-| `IssueParallelRunCertificateRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:96` |
+| `IssueParallelRunCertificateRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:108` |
 | `LedgerAmountApprovalStateDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:682` |
 | `LedgerAmountProofDto` | Documented | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:31` |
 | `LedgerAmountProofEvidenceDto` | Documented | `src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:10` |
@@ -1159,7 +1161,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `MarginPositionContributionDto` | Documented | `src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:35` |
 | `MarginRequirementDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:22` |
 | `MarkFreshnessAssessmentDto` | Documented | `src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:4` |
-| `MeridianAssuranceScoreDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:351` |
+| `MeridianAssuranceScoreDto` | Documented | `src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:352` |
 | `MetricsDiff` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:873` |
 | `MultiAssetClassCoverageDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1019` |
 | `MultiAssetCoverageSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1065` |
@@ -1171,33 +1173,34 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `NullReportingRunNotifier` | Documented | `src/Meridian.Contracts/Workstation/IReportingRunNotifier.cs:21` |
 | `NumberPassportDeclaredScopeDto` | Documented | `src/Meridian.Contracts/Workstation/NumberPassportReferenceDtos.cs:19` |
 | `NumberPassportReferenceDto` | Documented | `src/Meridian.Contracts/Workstation/NumberPassportReferenceDtos.cs:7` |
-| `OnboardingClassificationCountDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:87` |
+| `OnboardingClassificationCountDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:99` |
 | `OnboardingComparisonDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:73` |
 | `OnboardingCriteriaDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:11` |
 | `OnboardingCriteriaRevisionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:63` |
-| `OnboardingDifferenceAssignmentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:85` |
+| `OnboardingDifferenceAssignmentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:87` |
 | `OnboardingDifferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:68` |
-| `OnboardingDifferenceExplanationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:82` |
+| `OnboardingDifferenceExplanationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:94` |
 | `OnboardingMissingSourceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:54` |
 | `OnboardingObservationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:49` |
-| `OnboardingOpeningAccountMappingDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:50` |
-| `OnboardingOpeningBalanceLineDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:61` |
-| `OnboardingOpeningBalanceReportDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:68` |
-| `OnboardingPacketContentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:105` |
-| `OnboardingParallelRunCertificateContentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:98` |
-| `OnboardingParallelRunCertificateDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111` |
-| `OnboardingPeriodDifferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:93` |
-| `OnboardingPeriodSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:91` |
-| `OnboardingReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:96` |
-| `OnboardingReadinessPacketDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:119` |
-| `OnboardingReviewDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:89` |
+| `OnboardingOpeningAccountMappingDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:52` |
+| `OnboardingOpeningBalanceLineDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:63` |
+| `OnboardingOpeningBalanceReportDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:77` |
+| `OnboardingOpeningSourceSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:72` |
+| `OnboardingPacketContentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:107` |
+| `OnboardingParallelRunCertificateContentDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:110` |
+| `OnboardingParallelRunCertificateDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123` |
+| `OnboardingPeriodDifferenceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:95` |
+| `OnboardingPeriodSummaryDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:103` |
+| `OnboardingReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:98` |
+| `OnboardingReadinessPacketDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:121` |
+| `OnboardingReviewDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:91` |
 | `OnboardingScopeDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:6` |
-| `OnboardingShadowAuditEntryDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123` |
-| `OnboardingShadowDesignationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:43` |
+| `OnboardingShadowAuditEntryDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:135` |
+| `OnboardingShadowDesignationDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:45` |
 | `OnboardingSourceCaptureDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:58` |
 | `OnboardingSourceSelectionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:30` |
 | `OnboardingSourceSnapshotDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:43` |
-| `OnboardingWorkspaceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:122` |
+| `OnboardingWorkspaceDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:124` |
 | `OpenLotSummary` | Documented | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1139` |
 | `OperatingScopeValuesDto` | Documented | `src/Meridian.Contracts/Workstation/OperatorScopePreferenceDtos.cs:9` |
 | `OperationsAccountingRecordEvidenceCategoryDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1160` |
@@ -1342,7 +1345,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `PrivateCapitalNavSupportPackageDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1465` |
 | `PrivateCapitalShadowNavTieOutDto` | Documented | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1446` |
 | `ProductExposureDto` | Documented | `src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:20` |
-| `PromoteShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:114` |
+| `PromoteShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:126` |
 | `ProviderCorporateActionEvidenceCandidateDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:448` |
 | `ProviderCorporateActionLedgerEffectDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:466` |
 | `ProviderCorporateActionReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:507` |
@@ -1607,8 +1610,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SecurityMasterTrustTone` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:7` |
 | `SecurityMasterWorkstationDto` | Documented | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:43` |
 | `SettlementInstruction` | Documented | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:19` |
-| `ShadowBookNotBookOfRecordException` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:142` |
-| `ShadowBookPromotionDecisionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:117` |
+| `ShadowBookNotBookOfRecordException` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:154` |
+| `ShadowBookPromotionDecisionDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:129` |
 | `SinglePrincipalAttestationAuditEventDto` | Documented | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:102` |
 | `SinglePrincipalAttestationScopeDto` | Documented | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:16` |
 | `SinglePrincipalAttestationStateDto` | Documented | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:111` |
@@ -1785,7 +1788,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ValidateLedgerDraft` | Documented | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24` |
 | `ValuationFreshnessPreviewDto` | Documented | `src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16` |
 | `VersionedReportTemplateIdDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1427` |
-| `WithdrawShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:41` |
+| `WithdrawShadowBookRequestDto` | Documented | `src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:43` |
 | `WorkflowActionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29` |
 | `WorkflowBlockerSummary` | Documented | `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42` |
 | `WorkflowDefinitionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:14` |
@@ -1876,11 +1879,11 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `WorkstationRiskGuardrail` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:388` |
 | `WorkstationRunDigest` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115` |
 | `WorkstationRunDrillInLinks` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:34` |
-| `WorkstationScopeAccountOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41` |
+| `WorkstationScopeAccountOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:56` |
 | `WorkstationScopeEntityOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:23` |
 | `WorkstationScopeFundOptionDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:31` |
 | `WorkstationScopeOptionsDto` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:17` |
-| `WorkstationScopeOptionsJsonContext` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58` |
+| `WorkstationScopeOptionsJsonContext` | Documented | `src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:75` |
 | `WorkstationSecurityCoverageGapPayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:59` |
 | `WorkstationSecurityCoveragePayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:65` |
 | `WorkstationSecurityCoverageReferencePayload` | Documented | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:42` |

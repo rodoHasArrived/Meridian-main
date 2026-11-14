@@ -4,7 +4,7 @@
 
 **Owner:** Accounting and Ledger
 
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-13
 
 The adopted scope is P1–P5: an agreement registry, effective entity controls, stable account roles
 and N-entity consolidation, reviewed counterpart proposals, and full reporting-currency
@@ -62,3 +62,20 @@ new versus legacy book controls, effective lifecycle boundaries, controlled clos
 period/historical conventions, translation reserve and rounding, and income-rule gating. Added tests
 and source paths are inspectable; their results belong in the change's final validation record.
 No full-suite, Windows, hosted-CI or live-provider success is implied here.
+
+## Structured terms and obligation-monitor extension
+
+The subsequent monitoring/structured-terms extension reuses this foundation rather than repeating
+its original stage numbering or creating another legal registry. Optional native structured terms
+retain rates, schedules, bilateral allocation declarations and guarantee disclosure; pure date
+previews reuse the existing kernels and do not calculate charge amounts. External-review attestation
+adds a separately labeled, evidence/hash-bound sole-operator path alongside ordinary independent
+legal review. Explicit operator-reviewed legacy attribution retains exact source and authority pins.
+
+The obligation monitor consumes the actual balance schedule and canonical legal/lifecycle sources,
+with a 30-calendar-day default expiry horizon, version/freshness evidence and a nonblocking close
+advisory companion. Existing schedule blockers, posting controls, reporting transitions and exact
+`w10-v1` through `w10-v4` behavior remain intact. Typed terms persist in the existing PostgreSQL
+JSONB snapshots without schema replacement or historical hash migration. Acceptance evidence for
+this extension is separate from full W10/W12 completion; roadmap statuses are not promoted merely
+because the source exists. See the [domain extension](../../domain/intercompany-agreements-and-entity-lifecycle.md#obligation-monitoring-and-structured-legal-terms).

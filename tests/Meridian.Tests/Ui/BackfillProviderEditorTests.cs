@@ -60,12 +60,15 @@ public sealed class BackfillProviderEditorTests
         var cfg = BackfillProviderCatalog.Apply(new(), "twelvedata", new(true, 7, RateLimitPerMinute: 4));
         var options = BackfillProviderRuntimeOptions.FromConfig(cfg, "twelvedata");
         using var http = new HttpClient();
-        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "synthetic-fixture", httpClient: http, runtimeOptions: options);
-        using var search = new TwelveDataSymbolSearchProvider(apiKey: "synthetic-fixture", httpClient: http, runtimeOptions: options);
+        using var registry = new RateLimiterRegistry();
+        using var provider = new TwelveDataHistoricalDataProvider(apiKey: "synthetic-fixture", httpClient: http, rateLimiterRegistry: registry, runtimeOptions: options);
+        using var search = new TwelveDataSymbolSearchProvider(apiKey: "synthetic-fixture", httpClient: http, rateLimiterRegistry: registry, runtimeOptions: options);
         provider.Priority.Should().Be(7);
         search.Priority.Should().Be(7);
-        provider.MaxRequestsPerWindow.Should().Be(4);
+        // The editor bounds physical requests; account capacity and diagnostics retain credits.
+        provider.MaxRequestsPerWindow.Should().Be(8);
         provider.RateLimitDelay.Should().Be(TimeSpan.FromSeconds(15));
+        provider.GetRateLimitDiagnosticsSnapshot().QuotaUnit.Should().Be("credits");
     }
 
     [Fact]

@@ -61,7 +61,9 @@ public sealed class ProviderIntegrationStagingReviewService
         {
             ct.ThrowIfCancellationRequested();
             var runRecords = await scopedStore.ListStagingRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
-            records.AddRange(runRecords.Where(record => StringComparer.Ordinal.Equals(record.ConnectionId, connectionId)));
+            var completionIssue = await ProviderIntegrationRunCompleteness.GetSourceIssueAsync(scopedStore, syncRun, runRecords, ct).ConfigureAwait(false);
+            records.AddRange(runRecords.Where(record => StringComparer.Ordinal.Equals(record.ConnectionId, connectionId))
+                .Select(record => ProviderIntegrationRunCompleteness.WithIssue(record, completionIssue)));
         }
 
         var capabilitySummaries = records
