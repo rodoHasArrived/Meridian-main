@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalActivityProjectionInput
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalActivityProjectionInput</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:9](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L9).
+
+```csharp
+public sealed record PrivateCapitalActivityProjectionInput(string FundProfileId, Guid? LedgerBookId, IReadOnlyList<ManualJournalEntryDraftDto> Drafts, IReadOnlyList<AccountingActionAuditEventDto> Audit, IReadOnlyList<BankTransactionDto> BankTransactions, PostedPrivateCapitalActivityProjection? PostedProjection, IReadOnlyList<ReportPackWorkflowRecordDto>? ReportPackWorkflowRecords = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; ReportPackWorkflowRecords { get; init; } = ReportPackWorkflowRecords??[];</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs:18](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs#L18) |  |
+
+## PrivateCapitalCapitalAccountSubledgerBuilder
+
+Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCapitalAccountSubledgerBuilder</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:8](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L8).
+
+Builds investor capital-account subledger views from private-capital activity.
+
+```csharp
+public static class PrivateCapitalCapitalAccountSubledgerBuilder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerDto&gt; Build(string fundProfileId, Guid? ledgerBookId, DateTimeOffset projectedAtUtc, IReadOnlyList&lt;PrivateCapitalCapitalAccountActivityDto&gt; capitalAccounts, IReadOnlyList&lt;PrivateCapitalFundEventLedgerRecordDto&gt; fundEventRecords, IReadOnlyList&lt;PrivateCapitalCapitalAccountSubledgerEntryDto&gt; subledgerEntries, IReadOnlyList&lt;PrivateCapitalLedgerImpactDto&gt; ledgerImpacts, IReadOnlyList&lt;PrivateCapitalReportOutputDto&gt; reportOutputs, IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; projectionValidationIssues) =&gt; …;</code> | [src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs:10](../../../../src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCapitalAccountSubledgerBuilder.cs#L10) |  |
+
 ## PrivateCapitalCloseCockpitService
 
 Qualified name: <code>Meridian.FinancialOperations.PrivateCapital.PrivateCapitalCloseCockpitService</code>. Kind: `class`.
@@ -854,45 +888,3 @@ Declared public members:
 | <code>public static bool LooksLikeOfx(string content);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:47](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L47) |  |
 | <code>public static OfxDocument Parse(string content) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L55) |  |
 | <code>public static OfxDocument Parse(string content, int maxEntries, int maxDepth, int maxNodes, out OfxParseBound bound);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:73](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L73) | Parses an OFX document, refusing one that exceeds the ingress bounds instead of building it first. |
-
-## OfxParseBound
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxParseBound</code>. Kind: `enum`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:456](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L456).
-
-Which ingress bound, if any, stopped an OFX parse before the document was complete.
-
-```csharp
-public enum OfxParseBound
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>None = 0</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:459](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L459) | The document was parsed in full. |
-| <code>TooManyEntries = 1</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:462](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L462) | Entry discovery stopped the parse. |
-| <code>NestingTooDeep = 2</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:465](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L465) | Aggregate nesting exceeded the depth bound. |
-| <code>TooManyNodes = 3</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs:468](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxDocumentParser.cs#L468) | The retained node budget - aggregates plus leaves - stopped the parse. |
-
-## OfxStatementConnector
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.Ofx.OfxStatementConnector</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L12).
-
-OFX statement connector covering bank statements (cash transactions + ledger balance) and investment statements (buys/sells + positions), OFX 1.x SGML and 2.x XML alike. Entries are flattened to tag pseudo-columns and mapped through the same declarative profiles as CSV, so operators can remap or reclassify OFX activity without a release.
-
-```csharp
-public sealed class OfxStatementConnector(StatementMappingProfileCatalog catalog, StatementIngressLimits? ingressLimits = null) : IStatementConnector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ConnectorId = &quot;ofx&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:18](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L18) |  |
-| <code>public StatementConnectorDescriptor Descriptor { get; } = new (ConnectorId, &quot;OFX / QFX statement&quot;, [&quot;.ofx&quot;, &quot;.qfx&quot;], SupportsFileImport : true, SupportsRemoteFetch : false, RequiresMappingProfile : true, DefaultProfileId : StatementBuiltInProfiles.OfxBankV1ProfileId);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L20) |  |
-| <code>public bool CanHandle(StatementSourceDocument document);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:29](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L29) |  |
-| <code>public async Task&lt;StatementParseResult&gt; ParseAsync(StatementSourceDocument document, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs:40](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/Ofx/OfxStatementConnector.cs#L40) |  |

@@ -67,7 +67,8 @@ Accounting's External GL surface includes bounded onboarding backed by shared re
 services. Rebuild the dashboard to serve source selection, comparison history, review controls and
 canonical frozen packet downloads. The host exposes no onboarding posting. Shadow-mode onboarding adds
 one audited authority transition: promoting a shadow book to book of record, which needs an
-independent reviewer and a verified parallel-run certificate.
+independent reviewer and a verified parallel-run certificate. The close command center routes a
+`shadow-agreement` close-readiness blocker to the External GL onboarding workspace.
 
 The checked-in workstation bundle includes retained manual-journal amount proof and durable
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;

@@ -250,6 +250,8 @@ Storage composition registers the PostgreSQL private-capital authority alongside
 Its banking schema follows `BankingStartup.SchemaVariable`; funding requires retained banking rows
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
+With a ledger connection string, storage composition also selects `PostgresOnboardingWorkspaceStore`
+for onboarding and shadow-mode workspaces, replacing the workstation's file fallback.
 
 Bond cash-flow context receipts now use `bond-cash-flow-context-v5`, retaining fixed-rate interest-principal segments alongside existing declared/floating evidence. Replay dispatches v1–v4 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 

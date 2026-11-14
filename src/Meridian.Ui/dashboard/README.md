@@ -1287,7 +1287,8 @@ onboarding workspace and its retained comparison and readiness evidence. Its sha
 (`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
 opening-balance upload and the combined multi-source report (per-line source, uncovered kinds),
 per-period agreement, explanations for both opening breaks and period differences, the parallel-run
-certificate and promotion; tables use the shared `DenseDataTable`.
+certificate and promotion; tables use the shared `DenseDataTable`. The close command center sends a
+`shadow-agreement` close-readiness blocker to the same External GL onboarding route.
 From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
 session environment and adds the data qualifier only when the data is not confirmed real
 (`PAPER · SEEDED`; LIVE uses the alarm-red `--live-env` token and follows the resolved session, not

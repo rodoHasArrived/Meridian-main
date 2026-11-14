@@ -6,6 +6,93 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NotificationSettings
+
+Qualified name: <code>Meridian.Ui.Services.Services.NotificationSettings</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L12).
+
+Notification settings.
+
+```csharp
+public sealed class NotificationSettings
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:14](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L14) |  |
+| <code>public bool NotifyConnectionStatus { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L15) |  |
+| <code>public bool NotifyErrors { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:16](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L16) |  |
+| <code>public bool NotifyBackfillComplete { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L17) |  |
+| <code>public bool NotifyDataGaps { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:18](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L18) |  |
+| <code>public bool NotifyStorageWarnings { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L19) |  |
+| <code>public string SoundType { get; set; } = &quot;Default&quot;;</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L20) |  |
+| <code>public bool QuietHoursEnabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L21) |  |
+| <code>public TimeSpan QuietHoursStart { get; set; } = new TimeSpan(22, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:22](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L22) |  |
+| <code>public TimeSpan QuietHoursEnd { get; set; } = new TimeSpan(7, 0, 0);</code> | [src/Meridian.Ui.Services/Services/NotificationServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs#L23) |  |
+
+## OnboardingTip
+
+Qualified name: <code>Meridian.Ui.Services.Services.OnboardingTip</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/TooltipContent.cs:20](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L20).
+
+An onboarding tip to show new users. Shared across desktop platforms.
+
+```csharp
+public sealed class OnboardingTip
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:22](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L22) |  |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:23](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L23) |  |
+| <code>public string Content { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:24](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L24) |  |
+| <code>public string TargetElement { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:25](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L25) |  |
+| <code>public int Order { get; set; }</code> | [src/Meridian.Ui.Services/Services/TooltipContent.cs:26](../../../../src/Meridian.Ui.Services/Services/TooltipContent.cs#L26) |  |
+
+## PeriodicRefreshScheduler
+
+Qualified name: <code>Meridian.Ui.Services.Services.PeriodicRefreshScheduler</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:11](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L11).
+
+Cross-platform recurring refresh scheduler backed by PeriodicTimer.
+
+```csharp
+public sealed class PeriodicRefreshScheduler : IRefreshScheduler
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public void Start(TimeSpan interval, Func&lt;CancellationToken, Task&gt; callback, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:17](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L17) |  |
+| <code>public void Stop();</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:34](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L34) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs:42](../../../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs#L42) |  |
+
+## ProviderCatalogEntry
+
+Qualified name: <code>Meridian.Ui.Services.Services.ProviderCatalogEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:622](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L622).
+
+Provider catalog entry for the provider marketplace display.
+
+```csharp
+public sealed record ProviderCatalogEntry(string Id, string DisplayName, ProviderTier Tier, bool SupportsStreaming, bool SupportsHistorical, bool SupportsSymbolSearch, string Description, int RateLimitPerMinute, CredentialFieldInfo[] CredentialFields, bool SupportsOptions = false, bool SupportsBrokerage = false)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string[] RequiredEnvVars =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:635](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L635) |  |
+
 ## ProviderCredentialStatus
 
 Qualified name: <code>Meridian.Ui.Services.Services.ProviderCredentialStatus</code>. Kind: `record`.
@@ -1021,95 +1108,3 @@ Declared public members:
 | <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:31](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L31) |  |
 | <code>public int FileCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:32](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L32) |  |
 | <code>public double Percentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:33](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L33) |  |
-
-## StorageHealth
-
-Qualified name: <code>Meridian.Ui.Services.StorageHealth</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/SystemHealthService.cs:246](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L246).
-
-Summarizes storage capacity, utilization, corrupt or orphaned files, and current issues.
-
-```csharp
-public sealed class StorageHealth
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsHealthy { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:248](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L248) |  |
-| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:249](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L249) |  |
-| <code>public long UsedBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:250](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L250) |  |
-| <code>public long AvailableBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:251](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L251) |  |
-| <code>public double UsedPercent { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:252](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L252) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:253](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L253) |  |
-| <code>public int CorruptedFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:254](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L254) |  |
-| <code>public int OrphanedFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:255](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L255) |  |
-| <code>public DateTime LastChecked { get; set; }</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:256](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L256) |  |
-| <code>public List&lt;string&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/SystemHealthService.cs:257](../../../../src/Meridian.Ui.Services/Services/SystemHealthService.cs#L257) |  |
-
-## StorageHealthCheckResult
-
-Qualified name: <code>Meridian.Ui.Services.StorageHealthCheckResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:260](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L260).
-
-Response from /api/storage/health/check endpoint.
-
-```csharp
-public sealed class StorageHealthCheckResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ReportId { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:262](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L262) |  |
-| <code>public DateTime GeneratedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:263](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L263) |  |
-| <code>public long ScanDurationMs { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:264](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L264) |  |
-| <code>public HealthSummary? Summary { get; set; }</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:265](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L265) |  |
-| <code>public List&lt;HealthIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs:266](../../../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs#L266) |  |
-
-## StorageHealthReport
-
-Qualified name: <code>Meridian.Ui.Services.StorageHealthReport</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:90](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L90).
-
-Summarizes storage health, detected issues, recommendations, and the check timestamp.
-
-```csharp
-public sealed class StorageHealthReport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Status { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:92](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L92) |  |
-| <code>public double HealthScore { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:93](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L93) |  |
-| <code>public List&lt;StorageIssue&gt; Issues { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:94](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L94) |  |
-| <code>public List&lt;string&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:95](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L95) |  |
-| <code>public DateTime CheckedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:96](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L96) |  |
-
-## StorageIssue
-
-Qualified name: <code>Meridian.Ui.Services.StorageIssue</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:102](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L102).
-
-Describes a storage problem&#x27;s type, severity, explanation, and affected path.
-
-```csharp
-public sealed class StorageIssue
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Type { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:104](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L104) |  |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:105](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L105) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:106](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L106) |  |
-| <code>public string? AffectedPath { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:107](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L107) |  |

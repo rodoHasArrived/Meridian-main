@@ -285,6 +285,17 @@ certificate requires reconciled opening balances, every required period clean an
 review. Only an independent designated reviewer can promote, with a certificate that still matches
 the current revision, and every step is recorded in a hash-chained audit trail.
 `OnboardingBookOfRecordGuard` implements `IBookOfRecordGuard` over retained workspaces.
+`OnboardingWorkspaceRetention` holds the retention rules every store applies: hash chains verify on read,
+history only grows, versions advance once, and scope and final decisions are fixed.
+`PostgresOnboardingWorkspaceStore` retains workspaces in `ledger.onboarding_workspaces` (`V_ledger_069`).
+A partial unique index lets at most one workspace per tenant hold a ledger book in shadow mode or
+promote it, across processes, and retained rows cannot be deleted.
+`FinancialOperationsCommandCenterReadService` adds a `shadow-agreement` close-readiness contributor when
+a book-of-record guard is composed:
+
+- a book of record is `Ready`
+- a shadow book or withdrawn trial is `Blocked`, with clean-period and unexplained-difference figures
+- an unreadable status is `Unavailable`
 
 `AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
 retained import and explicitly selected certified mapping. Existing GL reconciliation runs against
