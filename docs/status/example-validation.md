@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 12736 |
-| Valid | 12260 |
+| Total code blocks | 12745 |
+| Valid | 12269 |
 | Invalid | 0 |
 | Skipped | 476 |
 
@@ -19,7 +19,7 @@
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 107 | 0 | 0 | 107 |
 | `bash` | 266 | 266 | 0 | 0 |
-| `csharp` | 11830 | 11830 | 0 | 0 |
+| `csharp` | 11839 | 11839 | 0 | 0 |
 | `csv` | 3 | 0 | 0 | 3 |
 | `fsharp` | 50 | 0 | 0 | 50 |
 | `json` | 72 | 72 | 0 | 0 |
@@ -354,12 +354,12 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.ui.services/page-008.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-009.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-010.md` | 50 |
-| `docs/reference/source-api/meridian.ui.services/page-011.md` | 56 |
-| `docs/reference/source-api/meridian.ui.services/page-012.md` | 52 |
+| `docs/reference/source-api/meridian.ui.services/page-011.md` | 53 |
+| `docs/reference/source-api/meridian.ui.services/page-012.md` | 57 |
 | `docs/reference/source-api/meridian.ui.services/page-013.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-014.md` | 50 |
 | `docs/reference/source-api/meridian.ui.services/page-015.md` | 50 |
-| `docs/reference/source-api/meridian.ui.services/page-016.md` | 15 |
+| `docs/reference/source-api/meridian.ui.services/page-016.md` | 21 |
 | `docs/reference/source-api/meridian.ui.shared/page-001.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-002.md` | 50 |
 | `docs/reference/source-api/meridian.ui.shared/page-003.md` | 56 |
@@ -401,7 +401,7 @@ No invalid code examples found.
 | `docs/reference/source-api/meridian.wpf/page-019.md` | 62 |
 | `docs/reference/source-api/meridian.wpf/page-020.md` | 50 |
 | `docs/reference/source-api/meridian.wpf/page-021.md` | 50 |
-| `docs/reference/source-api/meridian.wpf/page-022.md` | 6 |
+| `docs/reference/source-api/meridian.wpf/page-022.md` | 7 |
 | `docs/reference/source-api/meridian/page-001.md` | 14 |
 | `docs/roadmap/README.md` | 2 |
 | `docs/roadmap/roadmap-item-template.md` | 1 |
