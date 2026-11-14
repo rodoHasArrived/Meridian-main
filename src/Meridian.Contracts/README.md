@@ -376,6 +376,13 @@ decimal amounts, explicit currencies and nullable missing values. Scope is immut
 carry expected versions, and approvals refer to a particular data revision. These contracts convey
 read-only support evidence and never grant accounting or external posting authority.
 
+`Workstation/OnboardingShadowDtos.cs` adds shadow-mode onboarding (W11-SHADOW-001): shadow-book
+designation, incumbent opening-balance import requests and the opening reconciliation report,
+classified difference explanations, per-period agreement summaries, the hashed parallel-run
+certificate, the promotion decision and a hash-chained shadow audit entry. `IBookOfRecordGuard`
+answers whether a ledger book may act as the book of record; a shadow or withdrawn-trial book may
+not. New fields on `OnboardingDtos.cs` are omitted from JSON when unset so retained hashes still verify.
+
 `Ledger/AccountingClosePreparationDtos.cs` describes immutable close template versions, explicit
 calendar deadline rules, owner mappings, authoritative target previews, and retained creation history.
 Create requests identify a retained preview and idempotency key rather than asserting dates or book
