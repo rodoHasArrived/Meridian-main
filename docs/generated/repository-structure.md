@@ -1249,6 +1249,7 @@ Meridian-main
 │       │   ├── render-adapter-readiness.py
 │       │   ├── render-endpoint-reference.py
 │       │   ├── render-make-help.py
+│       │   ├── render-production-readiness.py
 │       │   ├── render-public-type-reference.py
 │       │   ├── render-roadmap-diagrams.py
 │       │   ├── render-roadmap-docs.py
@@ -1319,6 +1320,7 @@ Meridian-main
 │       ├── ai-repo-updater.py
 │       ├── check-execution-log-sanitization.py
 │       ├── duplication-audit.ps1
+│       ├── generate-contract-manifest.py
 │       ├── generate-ui-api-routes-ts.py
 │       ├── generate-workspace-catalog-ts.py
 │       ├── maintained-generation-outputs.json
@@ -2014,6 +2016,8 @@ Meridian-main
 │   │   ├── report-writer-auto-preview-blueprint.md
 │   │   └── research-backtest-trust-and-velocity-blueprint.md
 │   ├── product
+│   │   ├── history
+│   │   │   └── production-readiness-2026-11-14.md
 │   │   ├── plans
 │   │   │   ├── adversarial-review-2026-08-remediation-plan.md
 │   │   │   ├── certification-unblock-verification-2026-10-12.md
@@ -2371,6 +2375,7 @@ Meridian-main
 │   │   ├── data
 │   │   │   ├── decision-log.yml
 │   │   │   ├── document-index.yml
+│   │   │   ├── production-readiness.yml
 │   │   │   ├── program-state.yml
 │   │   │   ├── risk-register.yml
 │   │   │   ├── roadmap-items.yml
@@ -2383,12 +2388,79 @@ Meridian-main
 │   │   │   ├── decision-log.v1.schema.json
 │   │   │   ├── document-index.v1.schema.json
 │   │   │   ├── evidence-record.v1.schema.json
+│   │   │   ├── production-readiness.v1.schema.json
 │   │   │   ├── program-state.v1.schema.json
+│   │   │   ├── program-state.v2.schema.json
 │   │   │   ├── risk-register.v1.schema.json
 │   │   │   ├── roadmap-item.v1.schema.json
 │   │   │   ├── roadmap-items.v1.schema.json
+│   │   │   ├── roadmap-items.v2.schema.json
 │   │   │   ├── shared-enums.v1.schema.json
 │   │   │   └── stage-gates.v1.schema.json
+│   │   ├── snapshots
+│   │   │   └── status-prose-2026-11-14
+│   │   │       ├── program-active-scope.md
+│   │   │       ├── W1-DATA-001.md
+│   │   │       ├── W10-BOND-001.md
+│   │   │       ├── W10-CONSOL-001.md
+│   │   │       ├── W10-DEBT-001.md
+│   │   │       ├── W10-JRNL-001.md
+│   │   │       ├── W10-LOT-002.md
+│   │   │       ├── W10-MARK-001.md
+│   │   │       ├── W10-PERF-001.md
+│   │   │       ├── W10-PROV-001.md
+│   │   │       ├── W10-RECON-001.md
+│   │   │       ├── W10-RECON-002.md
+│   │   │       ├── W10-RECON-003.md
+│   │   │       ├── W10-RECON-004.md
+│   │   │       ├── W10-SEAM-001.md
+│   │   │       ├── W10-TAX-001.md
+│   │   │       ├── W11-COVER-001.md
+│   │   │       ├── W11-EXEC-001.md
+│   │   │       ├── W11-PACK-001.md
+│   │   │       ├── W11-PASSPORT-001.md
+│   │   │       ├── W11-SHADOW-001.md
+│   │   │       ├── W11-STAKE-001.md
+│   │   │       ├── W12-BOOK-001.md
+│   │   │       ├── W12-CAPITAL-001.md
+│   │   │       ├── W12-CREDIT-001.md
+│   │   │       ├── W12-ENTITY-001.md
+│   │   │       ├── W12-FINRPT-001.md
+│   │   │       ├── W12-ICAGREE-001.md
+│   │   │       ├── W12-ICINCOME-001.md
+│   │   │       ├── W12-ICPAIR-001.md
+│   │   │       ├── W12-YEND-001.md
+│   │   │       ├── W13-OMS-001.md
+│   │   │       ├── W13-STRAT-001.md
+│   │   │       ├── W14-ATTEST-001.md
+│   │   │       ├── W2-PROMO-001.md
+│   │   │       ├── W2-TRD-001.md
+│   │   │       ├── W3-CONT-001.md
+│   │   │       ├── W4-RECON-001.md
+│   │   │       ├── W4-RPT-001.md
+│   │   │       ├── W5-ACCT-001.md
+│   │   │       ├── W5-MASSET-001.md
+│   │   │       ├── W5X-CONNECT-001.md
+│   │   │       ├── W5X-EVIDENCE-001.md
+│   │   │       ├── W5X-FINOPS-001.md
+│   │   │       ├── W5X-FREX-001.md
+│   │   │       ├── W5X-OEG-001.md
+│   │   │       ├── W5X-STMT-ONBOARD-001.md
+│   │   │       ├── W6-BTSTUDIO-001.md
+│   │   │       ├── W7-LIVE-001.md
+│   │   │       ├── W8-UX-CONSOL-001.md
+│   │   │       ├── W8-WPF-PARITY-001.md
+│   │   │       ├── W9-ALPACA-004.md
+│   │   │       ├── W9-ASSET-010.md
+│   │   │       ├── W9-CORPACT-011.md
+│   │   │       ├── W9-DEMO-002.md
+│   │   │       ├── W9-GOV-008.md
+│   │   │       ├── W9-INGEST-009.md
+│   │   │       ├── W9-NAV-006.md
+│   │   │       ├── W9-PAPER-003.md
+│   │   │       ├── W9-REPORT-005.md
+│   │   │       ├── W9-SAFETY-007.md
+│   │   │       └── W9-TRUTH-001.md
 │   │   ├── generated-doc-policy.md
 │   │   ├── README.md
 │   │   ├── roadmap-governance.md
@@ -8880,8 +8952,10 @@ Meridian-main
 │   │   │   │   │   │   ├── fixed-income-payment-preview.tsx
 │   │   │   │   │   │   ├── key-value-grid.concrete.test.tsx
 │   │   │   │   │   │   ├── key-value-grid.tsx
-│   │   │   │   │   │   ├── metric-card.concrete.test.tsx
+│   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── metric-tile.test.tsx
+│   │   │   │   │   │   ├── metric-tile.tsx
 │   │   │   │   │   │   ├── optimistic-cell.test.tsx
 │   │   │   │   │   │   ├── optimistic-cell.tsx
 │   │   │   │   │   │   ├── optimistic-ledger.test.ts
@@ -9002,7 +9076,6 @@ Meridian-main
 │   │   │   │   │   │   ├── lifecycle-control-panel.test.tsx
 │   │   │   │   │   │   ├── lifecycle-control-panel.tsx
 │   │   │   │   │   │   ├── mark-freshness-cell.tsx
-│   │   │   │   │   │   ├── metric-card.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
 │   │   │   │   │   │   ├── metric-card.view-model.test.ts
 │   │   │   │   │   │   ├── metric-card.view-model.ts
@@ -9088,6 +9161,10 @@ Meridian-main
 │   │   │   │   │   │   ├── security-rates-ingestion-panel.tsx
 │   │   │   │   │   │   ├── single-principal-attestation-panel.test.tsx
 │   │   │   │   │   │   ├── single-principal-attestation-panel.tsx
+│   │   │   │   │   │   ├── snapshot-metric-tile.test.tsx
+│   │   │   │   │   │   ├── snapshot-metric-tile.tsx
+│   │   │   │   │   │   ├── stat-strip.presentation.test.tsx
+│   │   │   │   │   │   ├── stat-strip.presentation.tsx
 │   │   │   │   │   │   ├── stat-strip.test.tsx
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── status-row.tsx
@@ -9227,6 +9304,8 @@ Meridian-main
 │   │   │   │   │       ├── risk-control-panel.view-model.ts
 │   │   │   │   │       ├── screen-layout.test.tsx
 │   │   │   │   │       ├── screen-layout.tsx
+│   │   │   │   │       ├── section-description.test.tsx
+│   │   │   │   │       ├── section-description.tsx
 │   │   │   │   │       ├── segmented-control.test.tsx
 │   │   │   │   │       ├── segmented-control.tsx
 │   │   │   │   │       ├── select.tsx
@@ -9543,6 +9622,10 @@ Meridian-main
 │   │   │   │   │   ├── income-movement-waterfall.ts
 │   │   │   │   │   ├── keymap.test.ts
 │   │   │   │   │   ├── keymap.ts
+│   │   │   │   │   ├── kpi-context.test.tsx
+│   │   │   │   │   ├── kpi-context.tsx
+│   │   │   │   │   ├── kpi-registry.test.ts
+│   │   │   │   │   ├── kpi-registry.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.ts
 │   │   │   │   │   ├── ledger-query-options.ts
@@ -15223,6 +15306,7 @@ Meridian-main
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_fund_economics_golden_consistency.py
+│   │   ├── test_generate_contract_manifest.py
 │   │   ├── test_generate_contract_review_packet.py
 │   │   ├── test_generate_dependency_graph.py
 │   │   ├── test_generate_desktop_user_manual.py
@@ -15256,6 +15340,7 @@ Meridian-main
 │   │   ├── test_postgresql_payload.py
 │   │   ├── test_prepare_dk1_operator_signoff.py
 │   │   ├── test_production_certification_workflow.py
+│   │   ├── test_production_readiness_registry.py
 │   │   ├── test_production_recovery.py
 │   │   ├── test_project_target_framework_alignment.py
 │   │   ├── test_publish_certified_release.py
@@ -15300,6 +15385,7 @@ Meridian-main
 │   │   ├── test_service_backed_integrations_workflow.py
 │   │   ├── test_shared_build_retention.py
 │   │   ├── test_shared_checkpoint.py
+│   │   ├── test_structured_roadmap_status.py
 │   │   ├── test_summarize_desktop_workflow_bundle.py
 │   │   ├── test_summarize_web_screenshots.py
 │   │   ├── test_targeted_test_dispatcher.py

@@ -1,11 +1,16 @@
 // Small presentational helpers shared by the Settings screen and its section modules.
 import { diagnosticToneClass, itemToneClass } from "./settings-provider-integration";
+import { kpiAttributes, type ResolvedKpi } from "@/lib/kpi-registry";
 
-export function SettingsChip({ label, value }: { label: string; value: string }) {
+export function SettingsChip({ label, value, kpi }: { label: string } & (
+  | { value: string; kpi?: never }
+  | { kpi: ResolvedKpi; value?: never }
+)) {
+  const displayValue = kpi?.value ?? value;
   return (
-    <div className="toolbar-chip" aria-label={`${label} ${value}`}>
+    <div className="toolbar-chip" aria-label={`${label} ${displayValue}`} {...(kpi ? kpiAttributes(kpi) : {})}>
       <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono text-foreground">{value}</span>
+      <span className="font-mono text-foreground" data-kpi-rendered-value={kpi ? "" : undefined}>{displayValue}</span>
     </div>
   );
 }

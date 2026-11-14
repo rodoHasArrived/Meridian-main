@@ -6,6 +6,7 @@ import {
   type HTMLAttributes,
   type ReactNode
 } from "react";
+import { SectionDescription } from "@/components/ui/section-description";
 import { cn } from "@/lib/utils";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
@@ -93,6 +94,8 @@ export interface ScreenLayoutProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   scope?: ReactNode;
   /** Optional secondary description under the title. */
   description?: ReactNode;
+  /** Stable key for instructional copy that can collapse once read. Omit for state or evidence. */
+  descriptionKey?: string;
   /**
    * The 1–3 primary actions for this screen. Always rendered top-right. Keep this
    * to the screen's primary verbs — secondary controls belong in the work zone.
@@ -184,6 +187,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
     title,
     scope,
     description,
+    descriptionKey,
     actions,
     focus,
     focusLabel = "Focus",
@@ -236,11 +240,17 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
           keeps the document heading order valid (h1 → h2 → h3). */}
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
-            {title}
-          </h2>
+          <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <h2 id={titleId} className="truncate text-base font-semibold leading-snug tracking-normal text-foreground">
+              {title}
+            </h2>
+            {description ? descriptionKey ? (
+              <SectionDescription descriptionKey={descriptionKey} label={`About ${typeof title === "string" ? title : "this screen"}`}>
+                {description}
+              </SectionDescription>
+            ) : <p className="basis-full max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
+          </div>
           {scope ? <div className="mt-0.5 text-xs text-muted-foreground">{scope}</div> : null}
-          {description ? <p className="mt-1 max-w-prose text-xs leading-5 text-muted-foreground">{description}</p> : null}
         </div>
         {actions ? (
           <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">{actions}</div>
