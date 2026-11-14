@@ -11,7 +11,7 @@
 ## Context
 
 The Security Master extensibility review
-([security-master-extensibility-review.md](../architecture/security-master-extensibility-review.md),
+([security-master-extensibility-review.md](../../archive/docs/architecture/security-master-extensibility-review.md),
 finding 2) identified instruments with three or four legitimate modeling routes:
 
 - **MBS / ABS / CLO / CMBS / CDO tranches and IO/PO strips** could be modeled as `Bond` with a
@@ -145,7 +145,7 @@ three routes to coexist.
 
 ## References
 
-- [Security Master extensibility review](../architecture/security-master-extensibility-review.md)
+- [Security Master extensibility review](../../archive/docs/architecture/security-master-extensibility-review.md)
   — finding 2 and re-ranked priority 2.
 
 ---

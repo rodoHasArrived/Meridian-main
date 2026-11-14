@@ -1108,11 +1108,84 @@ class UnitAggregateCommandTests(unittest.TestCase):
         self.assertEqual(self.projects(records), self.DEFAULTS)
         self.assertTrue(all("Category!=Integration" in record for record in records))
 
-    def test_make_test_keeps_csharp_and_fsharp_coverage(self):
-        completed, records = self.run_make("test")
+    def run_ci_make(self, target, *, fail_project=None, fail_restore=False):
+        make = shutil.which("make")
+        if make is None or os.name == "nt":
+            self.skipTest("Requires GNU Make and a POSIX executable stub")
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
+            directory = Path(temporary)
+            log = directory / "commands.jsonl"
+            stub = directory / "dotnet"
+            stub.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, os, sys\n"
+                "from pathlib import Path\n"
+                "command = sys.argv[1:]\n"
+                "with Path(os.environ['MERIDIAN_AGGREGATE_TEST_LOG']).open('a') as stream:\n"
+                "    stream.write(json.dumps(command) + '\\n')\n"
+                "if command[0] == 'restore' and os.environ.get('MERIDIAN_AGGREGATE_FAIL_RESTORE'):\n"
+                "    sys.exit(8)\n"
+                "if command[0] == 'test':\n"
+                "    directory = Path(command[command.index('--results-directory') + 1])\n"
+                "    prefix = next(x.split('LogFilePrefix=')[1] for x in command if 'LogFilePrefix=' in x)\n"
+                "    directory.mkdir(parents=True, exist_ok=True)\n"
+                "    (directory / (prefix + '.trx')).write_text('<TestRun><Results><UnitTestResult testName=\"Example\" outcome=\"Passed\"/></Results></TestRun>')\n"
+                "    sys.exit(7 if command[1] == os.environ.get('MERIDIAN_AGGREGATE_FAIL_PROJECT') else 0)\n",
+                encoding="utf-8",
+            )
+            stub.chmod(0o755)
+            runner_args = shlex.join([
+                "--results-dir", str(directory / "results"),
+                "--summary-output", str(directory / "summary.md"),
+                "--json-output", str(directory / "summary.json"),
+            ])
+            environment = os.environ | {
+                "PATH": str(directory) + os.pathsep + os.environ.get("PATH", ""),
+                "MERIDIAN_AGGREGATE_TEST_LOG": str(log),
+                "MERIDIAN_CI_TEST_MAX_PARALLEL": "1",
+            }
+            if fail_project is not None:
+                environment["MERIDIAN_AGGREGATE_FAIL_PROJECT"] = fail_project
+            if fail_restore:
+                environment["MERIDIAN_AGGREGATE_FAIL_RESTORE"] = "1"
+            completed = subprocess.run(
+                [make, "--no-print-directory", target, f"DOTNET_CI_TEST_ARGS={runner_args}"],
+                cwd=self.REPO, env=environment, capture_output=True, text=True,
+            )
+            records = [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+        return completed, records
+
+    def test_make_test_and_pre_pr_run_every_ci_shard(self):
+        for target in ("test", "pre-pr"):
+            with self.subTest(target=target):
+                completed, records = self.run_ci_make(target)
+                self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+                self.assertEqual(records[0][0], "format" if target == "pre-pr" else "restore")
+                restore_index = next(i for i, record in enumerate(records) if record[0] == "restore")
+                build_index = next(i for i, record in enumerate(records) if record[0] == "build")
+                self.assertLess(restore_index, build_index)
+                tests = [record for record in records if record[0] == "test"]
+                self.assertEqual([record[1] for record in tests],
+                                 [path for _, path, _ in MODULE.DEFAULT_TEST_PROJECTS])
+                self.assertEqual([next(value.split("LogFilePrefix=")[1] for value in record
+                                       if "LogFilePrefix=" in value) for record in tests],
+                                 [name for name, _, _ in MODULE.DEFAULT_TEST_PROJECTS])
+                self.assertTrue(all("Category!=Integration&Category!=Performance" in
+                                    record[record.index("--filter") + 1] for record in tests))
+
+    def test_make_test_stops_when_restore_fails(self):
+        completed, records = self.run_ci_make("test", fail_restore=True)
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertEqual([record[0] for record in records], ["restore"])
+
+    def test_make_verify_fast_delegates_to_canonical_lane(self):
+        make = shutil.which("make")
+        if make is None:
+            self.skipTest("GNU Make is not installed")
+        completed = subprocess.run([make, "-n", "verify-fast"], cwd=self.REPO,
+                                   capture_output=True, text=True)
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
-        self.assertEqual(self.projects(records), self.DEFAULTS + [
-            "tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj"])
+        self.assertEqual(completed.stdout.strip(), "bash scripts/ci.sh --lane verify-fast")
 
     def test_make_custom_project_remains_focused(self):
         override = "tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj"
@@ -1120,10 +1193,11 @@ class UnitAggregateCommandTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
         self.assertEqual(self.projects(records), [override])
 
-    def test_make_aggregate_reports_failure_before_running_later_suites(self):
-        completed, records = self.run_make("test", fail_project=self.DEFAULTS[1])
+    def test_make_aggregate_reports_failure_after_attempting_all_ci_shards(self):
+        completed, records = self.run_ci_make("test", fail_project=self.DEFAULTS[1])
         self.assertNotEqual(completed.returncode, 0)
-        self.assertEqual(self.projects(records), self.DEFAULTS[:2])
+        self.assertEqual([record[1] for record in records if record[0] == "test"],
+                         [path for _, path, _ in MODULE.DEFAULT_TEST_PROJECTS])
 
     def run_local_quality(self, *, project=None, fail_project=None):
         powershell = shutil.which("pwsh")

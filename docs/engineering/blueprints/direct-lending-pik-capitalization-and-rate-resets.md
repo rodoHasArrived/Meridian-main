@@ -5,7 +5,7 @@
 **Reviewed:** 2026-11-05
 **Registered in:** [`docs/engineering/blueprints/README.md`](README.md)
 
-> **Source:** [Security Master extensibility review](../../architecture/security-master-extensibility-review.md)
+> **Source:** [Security Master extensibility review](../../../archive/docs/architecture/security-master-extensibility-review.md)
 > lists "automatic capitalization and reset scheduling" as missing (latest state, 2026-10-28), and both
 > sat outside [remediation slices 1–6](../plans/security-master-review-remediation-plan.md).
 > **Roadmap:** supports `W12-CREDIT-001` exit criteria (PIK kept distinct from cash interest; floating
