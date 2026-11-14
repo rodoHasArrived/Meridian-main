@@ -71,8 +71,22 @@ function notify() {
   }
 }
 
+let storageListenerAttached = false;
+
+// One window-level listener for the life of the page, attached on first use. Formatter-only
+// consumers (`formatTimestamp` on Trading, Portfolio, ...) mount no subscriber, so tying the
+// listener to subscribers would leave their cached zone stale after another tab changes it.
+function ensureStorageListener(): void {
+  if (storageListenerAttached || typeof window === "undefined") {
+    return;
+  }
+  storageListenerAttached = true;
+  window.addEventListener("storage", onStorage);
+}
+
 /** The zone timestamps render in: the stored operator preference, else "UTC". */
 export function getDisplayTimeZone(): string {
+  ensureStorageListener();
   if (currentTimeZone === null) {
     currentTimeZone = readStoredTimeZone();
   }
@@ -113,7 +127,7 @@ export function reloadDisplayTimeZone(): void {
   }
 }
 
-function onStorage(event: StorageEvent) {
+function onStorage(event: StorageEvent): void {
   if (event.key === null || event.key === DISPLAY_TIME_ZONE_STORAGE_KEY) {
     reloadDisplayTimeZone();
   }
@@ -121,14 +135,9 @@ function onStorage(event: StorageEvent) {
 
 /** Call `listener` whenever the display zone changes, including from another tab. Returns the unsubscribe. */
 export function subscribeDisplayTimeZone(listener: () => void): () => void {
+  ensureStorageListener();
   listeners.add(listener);
-  if (listeners.size === 1 && typeof window !== "undefined") {
-    window.addEventListener("storage", onStorage);
-  }
   return () => {
     listeners.delete(listener);
-    if (listeners.size === 0 && typeof window !== "undefined") {
-      window.removeEventListener("storage", onStorage);
-    }
   };
 }

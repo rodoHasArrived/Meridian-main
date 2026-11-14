@@ -98,6 +98,20 @@ describe("display time zone preference", () => {
   });
 });
 
+describe("display time zone across tabs", () => {
+  it("picks up another tab's change without any subscriber mounted", () => {
+    // A formatter-only screen (no <TimeText>, no Settings control) has read the zone once.
+    expect(formatTimestamp(new Date("2026-06-30T18:05:00Z"))).toBe("Jun 30, 2026, 18:05 UTC");
+
+    // Another tab stores a new preference; this tab only sees the storage event.
+    localStorage.setItem(DISPLAY_TIME_ZONE_STORAGE_KEY, "Asia/Tokyo");
+    window.dispatchEvent(new StorageEvent("storage", { key: DISPLAY_TIME_ZONE_STORAGE_KEY, newValue: "Asia/Tokyo" }));
+
+    expect(getDisplayTimeZone()).toBe("Asia/Tokyo");
+    expect(formatTimestamp(new Date("2026-06-30T18:05:00Z"))).toBe("Jul 1, 2026, 03:05 GMT+9");
+  });
+});
+
 describe("formatRelativeTime", () => {
   const now = Date.parse("2026-05-09T12:00:00.000Z");
 
