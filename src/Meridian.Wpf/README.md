@@ -11,6 +11,25 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Wpf
 
+Settings workspace and Preferences include a shared activation-status banner reading the host's
+`GET /api/config/changes` contract. It refreshes on entry, every 15 seconds, on demand and after
+successful desktop configuration saves. Page unload cancels reads; stale responses cannot restore
+prior status. Pending reconnect impacts require host restart while in-process recycling is
+unavailable. Desktop file saves are explicitly unverified by a host-only receipt and remain marked
+for verification/restart through this desktop session. The banner never restarts the host or enables
+execution. `ConfigurationChangeStatusViewModelTests` covers shared impact projection, local-save
+honesty, failures, cancellation and superseded responses. Native rendering still requires Windows.
+
+Ordinary desktop configuration saves strictly
+re-read the current file under the shared write lease and run the shared whole-document guard
+before atomic persistence. Empty, malformed or null documents cannot be replaced by load defaults;
+provider tiers, profiles/audits, tenancy, credentials and live-gateway changes retain the same guard
+as browser saves. Automatic configuration recovery runs at desktop initialization, not ordinary
+settings reads. First-run defaults use the supported offline `Synthetic` provider and leave the
+storage profile unset, so the initial document passes host validation and remains editable through
+the shared save guard. Unchanged legacy credentials may round-trip; new plaintext credential writes
+are refused. `UiConfigurationSaveGuardTests` covers the portable JSON validation boundary.
+
 The retained run ledger page offers an inclusive UTC date filter through the shared strategy-run read service. Clearing the picker restores the complete retained run. Delayed reads from an earlier run or date cannot overwrite the current selection. Journal, trial balance and posting counts use one economic-time cut.
 
 Intercompany accounting profiles link to the canonical legal registry through exact approved

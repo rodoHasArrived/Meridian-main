@@ -102,7 +102,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderExtendedEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L20).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22).
 
 Extension methods for registering extended provider API endpoints (failover, rate limits, capabilities, switching).
 
@@ -114,7 +114,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L22) |  |
+| <code>public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs#L24) |  |
 
 ## ProviderModuleEndpoints
 
@@ -138,7 +138,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderRoutingEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L17).
 
 Endpoint mapping for the relationship-aware provider routing layer.
 
@@ -150,7 +150,36 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L16) |  |
+| <code>public static void MapProviderRoutingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs#L19) |  |
+
+## ProviderValidationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L13).
+
+Non-secret provider-boundary validation settings and before/after change evidence.
+
+```csharp
+public static class ProviderValidationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderValidationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L15) |  |
+| <code>public static (AppConfig Config, ProviderValidationProfileAudit Result) ApplyProfile(AppConfig config, string provider, ProviderValidationProfileRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:70](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L70) |  |
+
+## ProviderValidationProfileRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderValidationProfileRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs:97](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderValidationEndpoints.cs#L97).
+
+```csharp
+public sealed record ProviderValidationProfileRequest(ProviderValidationProfile Profile, string? Reason = null);
+```
 
 ## QuantDiagnosticDto
 
@@ -766,37 +795,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapStrategyLifecycleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L24) |  |
-
-## StrategyRunComparisonService
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyRunComparisonService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:9](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L9).
-
-Shared comparison service for run compare/diff endpoint flows.
-
-```csharp
-public sealed class StrategyRunComparisonService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StrategyRunComparisonService(StrategyRunReadService readService);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L13) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L18) |  |
-| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L23) |  |
-| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:66](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L66) |  |
-| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L71) |  |
-
-## StrategyStatusDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.StrategyStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs:519](../../../../src/Meridian.Ui.Shared/Endpoints/StrategyLifecycleEndpoints.cs#L519).
-
-Snapshot of a strategy&#x27;s current lifecycle state.
-
-```csharp
-public sealed record StrategyStatusDto(string StrategyId, string Status);
-```

@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Meridian.Core.Exceptions;
+using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Core.Monitoring;
 using Meridian.Contracts.Domain;
@@ -53,6 +54,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
     private readonly TradeDataCollector _tradeCollector;
     private readonly QuoteCollector _quoteCollector;
     private readonly PolygonOptions _options;
+    private readonly ProviderValidationProfile _validationProfile;
 
     /// <summary>
     /// Creates a new Polygon market data client.
@@ -68,7 +70,8 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         TradeDataCollector tradeCollector,
         QuoteCollector quoteCollector,
         PolygonOptions? options = null,
-        IReconnectionMetrics? reconnectionMetrics = null)
+        IReconnectionMetrics? reconnectionMetrics = null,
+        ProviderValidationProfile? validationProfile = null)
         : base(
             providerName: "Polygon",
             config: WebSocketConnectionConfig.Default,
@@ -79,6 +82,9 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
         _quoteCollector = quoteCollector ?? throw new ArgumentNullException(nameof(quoteCollector));
         _options = options ?? new PolygonOptions();
+        _validationProfile = validationProfile ?? ProviderValidationProfile.Default;
+        _validationProfile.Validate();
+        Log.Information("Applying provider validation profile {Provider} {@ValidationProfile}", "polygon", _validationProfile);
 
         if (!string.IsNullOrWhiteSpace(_options.ApiKey))
         {
@@ -697,7 +703,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 // stamps the America/New_York market date into the continuity key.
                 SequenceSessionDate: ResolveUsEquitiesSessionDate(tradeTimestamp));
 
-            var issues = ProviderDataQualityValidator.ValidateTrade(ProviderId, trade);
+            var issues = ProviderDataQualityValidator.ValidateTrade(ProviderId, trade, profile: _validationProfile);
             if (HasBlockingIssues(issues))
             {
                 LogDataQualityRejection("trade", symbol, issues);
@@ -783,7 +789,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 Venue: MapExchangeCode(exchange),
                 Source: MarketDataSources.Polygon);
 
-            var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quote);
+            var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quote, profile: _validationProfile);
             if (HasBlockingIssues(issues))
             {
                 LogDataQualityRejection("quote", symbol, issues);
@@ -856,7 +862,7 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 Source: MarketDataSources.Polygon,
                 SequenceNumber: 0);
 
-            var issues = ProviderDataQualityValidator.ValidateAggregate(ProviderId, aggregateBar);
+            var issues = ProviderDataQualityValidator.ValidateAggregate(ProviderId, aggregateBar, profile: _validationProfile);
             if (HasBlockingIssues(issues))
             {
                 LogDataQualityRejection("aggregate", symbol, issues);

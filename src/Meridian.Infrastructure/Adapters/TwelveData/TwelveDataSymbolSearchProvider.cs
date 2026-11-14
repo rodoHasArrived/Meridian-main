@@ -31,7 +31,7 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
         : _rateLimiterRegistry.GetOrCreate(Name, ApiKey, "api-requests", MaxRequestsPerWindow, RateLimitWindow, MinRequestDelay);
     public override string Name => "twelvedata";
     public override string DisplayName => "Twelve Data";
-    public override int Priority => 22;
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.TwelveDataPriority;
 
     protected override string HttpClientName => HttpClientNames.TwelveDataSymbolSearch;
     protected override string BaseUrl => "https://api.twelvedata.com/symbol_search";
@@ -43,9 +43,9 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
         "MDC_TWELVEDATA_API_KEY"
     };
 
-    protected override int MaxRequestsPerWindow => 8;
-    protected override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
-    protected override TimeSpan MinRequestDelay => TimeSpan.FromMilliseconds(7500);
+    protected override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", "free").RateLimitPerMinute!.Value;
+    protected override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromMinutes(1);
+    protected override TimeSpan MinRequestDelay => TimeSpan.FromTicks(RateLimitWindow.Ticks / MaxRequestsPerWindow);
 
     public override IReadOnlyList<string> SupportedAssetTypes => new[]
     {
@@ -78,8 +78,9 @@ public sealed class TwelveDataSymbolSearchProvider : BaseSymbolSearchProvider
         string? apiKey = null,
         HttpClient? httpClient = null,
         ILogger? log = null,
-        RateLimiterRegistry? rateLimiterRegistry = null)
-        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider)
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider, runtimeOptions)
     {
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
     }

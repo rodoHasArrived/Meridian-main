@@ -43,10 +43,12 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
 
 
 
-    public override int Priority => 15;
-    public override TimeSpan RateLimitDelay => TimeSpan.FromSeconds(1.5); // 50 requests/hour = ~72 seconds between requests
-    public override int MaxRequestsPerWindow => 50;
-    public override TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+    public override int Priority => RuntimeOptions?.Priority ?? Meridian.Core.Config.BackfillProviderCatalog.TiingoPriority;
+    public override TimeSpan RateLimitDelay => RuntimeOptions?.Requests is { } requests
+        ? TimeSpan.FromTicks((RuntimeOptions.Window ?? RateLimitWindow).Ticks / requests)
+        : TimeSpan.FromSeconds(1.5); // 50 requests/hour = ~72 seconds between requests
+    public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.TiingoPerHour;
+    public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromHours(1);
 
     /// <summary>
     /// Tiingo supports adjusted bars with corporate actions for multiple markets.
@@ -55,8 +57,8 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "DE", "CA", "AU");
 
 
-    public TiingoHistoricalDataProvider(string? apiToken = null, HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public TiingoHistoricalDataProvider(string? apiToken = null, HttpClient? httpClient = null, ILogger? log = null, BackfillProviderRuntimeOptions? runtimeOptions = null)
+        : base(httpClient, log, runtimeOptions: runtimeOptions)
     {
         _apiToken = apiToken ?? Environment.GetEnvironmentVariable("TIINGO_API_TOKEN");
 

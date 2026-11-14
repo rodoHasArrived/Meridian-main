@@ -94,7 +94,7 @@ public sealed class BackfillCoordinator : IDisposable
         var openFigiConfig = cfg.Backfill?.Providers?.OpenFigi;
         if (openFigiConfig?.Enabled ?? true)
         {
-            _ownedSymbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log);
+            _ownedSymbolResolver = new OpenFigiSymbolResolver(openFigiConfig?.ApiKey, log: _log, options: openFigiConfig);
             _symbolResolver = _ownedSymbolResolver;
         }
     }
@@ -380,14 +380,14 @@ public sealed class BackfillCoordinator : IDisposable
         var stooqCfg = providersCfg?.Stooq;
         if (stooqCfg?.Enabled ?? true)
         {
-            providers.Add(new StooqHistoricalDataProvider(log: _log));
+            providers.Add(new StooqHistoricalDataProvider(log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(providersCfg, "stooq")));
         }
 
         // Yahoo Finance
         var yahooCfg = providersCfg?.Yahoo;
         if (yahooCfg?.Enabled ?? true)
         {
-            providers.Add(new YahooFinanceHistoricalDataProvider(log: _log));
+            providers.Add(new YahooFinanceHistoricalDataProvider(log: _log, runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(providersCfg, "yahoo")));
         }
 
         // Nasdaq Data Link (Quandl)
@@ -397,6 +397,7 @@ public sealed class BackfillCoordinator : IDisposable
             providers.Add(new NasdaqDataLinkHistoricalDataProvider(
                 apiKey: nasdaqCfg?.ApiKey,
                 database: nasdaqCfg?.Database ?? "WIKI",
+                runtimeOptions: BackfillProviderRuntimeOptions.FromConfig(providersCfg, "nasdaqdatalink"),
                 log: _log
             ));
         }
@@ -435,7 +436,8 @@ public sealed class BackfillCoordinator : IDisposable
                 backfillCfg?.EnableSymbolResolution ?? true ? _symbolResolver : null,
                 enableCrossValidation: false,
                 log: _log,
-                progressTracker: _progressTracker
+                progressTracker: _progressTracker,
+                validationProfiles: backfillCfg?.ValidationProfiles
             );
 
             // Combine composite (for fallback routing) with individual providers (for direct selection)
@@ -448,7 +450,8 @@ public sealed class BackfillCoordinator : IDisposable
             providers,
             _log,
             checkpointStore: checkpointStore,
-            symbolTimelineResolver: _symbolTimelineResolver);
+            symbolTimelineResolver: _symbolTimelineResolver,
+            validationProfiles: backfillCfg?.ValidationProfiles);
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)

@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BacktestDisplayItem
+
+Qualified name: <code>Meridian.Wpf.Models.BacktestDisplayItem</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Models/LeanModels.cs:6](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L6).
+
+Backtest summary row displayed in the Recent Backtests side panel.
+
+```csharp
+public sealed class BacktestDisplayItem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string AlgorithmName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:8](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L8) |  |
+| <code>public string DateText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:9](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L9) |  |
+| <code>public string ReturnText { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:10](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L10) |  |
+| <code>public Brush ReturnBrush { get; set; } = Brushes.White;</code> | [src/Meridian.Wpf/Models/LeanModels.cs:11](../../../../src/Meridian.Wpf/Models/LeanModels.cs#L11) |  |
+
 ## BlotterEntry
 
 Qualified name: <code>Meridian.Wpf.Models.BlotterEntry</code>. Kind: `class`.
@@ -860,13 +881,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>StrategyRun = 0</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:27](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L27) |  |
 | <code>AccountRun = 1</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:28](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L28) |  |
-
-## FundReconciliationWorkbenchSnapshot
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationWorkbenchSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:52](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L52).
-
-```csharp
-public sealed record FundReconciliationWorkbenchSnapshot(ReconciliationSummary Summary, ReconciliationCalibrationSummaryDto? CalibrationSummary, IReadOnlyList<FundReconciliationCalibrationProfileRow> CalibrationProfiles, IReadOnlyList<FundReconciliationBreakQueueRow> BreakQueueItems, IReadOnlyList<FundReconciliationRunRow> RunRows, DateTimeOffset RefreshedAt, int InReviewBreakCount, FundReconciliationReadAvailability ReadAvailability, int KnownRunCount, int MissingRunCount, int UnavailableRunCount, bool BreakQueueReadAvailable, bool CalibrationReadAvailable);
-```

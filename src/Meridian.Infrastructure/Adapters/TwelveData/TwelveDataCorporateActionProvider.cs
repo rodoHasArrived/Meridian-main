@@ -38,6 +38,7 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
     private readonly IConfiguration _configuration;
     private readonly ICredentialContext? _credentials;
     private readonly RateLimiterRegistry _rateLimiterRegistry;
+    private readonly BackfillProviderRuntimeOptions _runtimeOptions;
     private readonly ILogger<TwelveDataCorporateActionProvider> _logger;
 
     public TwelveDataCorporateActionProvider(
@@ -45,11 +46,18 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
         IConfiguration configuration,
         ILogger<TwelveDataCorporateActionProvider> logger,
         ICredentialContext? credentials = null,
-        RateLimiterRegistry? rateLimiterRegistry = null)
+        RateLimiterRegistry? rateLimiterRegistry = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         _credentials = credentials;
+        var tierId = configuration["Backfill:Providers:TwelveData:TierId"] ?? "free";
+        var tier = Meridian.Core.Config.BackfillProviderCatalog.GetTier("twelvedata", tierId);
+        var rate = int.TryParse(configuration["Backfill:Providers:TwelveData:RateLimitPerMinute"], out var configuredRate)
+            ? configuredRate : tier.RateLimitPerMinute!.Value;
+        _runtimeOptions = runtimeOptions ?? BackfillProviderRuntimeOptions.FromConfig(new Meridian.Core.Config.BackfillProvidersConfig(
+            TwelveData: new Meridian.Core.Config.TwelveDataConfig(RateLimitPerMinute: rate, TierId: tierId)), "twelvedata");
         _rateLimiterRegistry = rateLimiterRegistry ?? RateLimiterRegistry.Shared;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -214,7 +222,8 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
                 return null;
 
             var budget = _rateLimiterRegistry.GetOrCreate(
-                ProviderId, apiKey, "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromMilliseconds(7500));
+                ProviderId, apiKey, "api-requests", _runtimeOptions.Requests!.Value, _runtimeOptions.Window!.Value,
+                TimeSpan.FromTicks(_runtimeOptions.Window.Value.Ticks / _runtimeOptions.Requests.Value));
             await budget.WaitForSlotAsync(ct).ConfigureAwait(false);
             // The selected owner can rotate or delete its credential while waiting.
             // Never send a captured old key after pacing, or charge a different key's quota.

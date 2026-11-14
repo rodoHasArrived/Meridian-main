@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApiKeyDialog
+
+Qualified name: <code>Meridian.Wpf.Views.ApiKeyDialog</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:11](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L11).
+
+Dialog for entering or updating an API key for a provider. Replaces the former imperative ApiKeyDialog Window class that was embedded in BackfillPage.xaml.cs.
+
+```csharp
+public partial class ApiKeyDialog : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ApiKey =&gt; …;</code> | [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:14](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L14) | Gets the API key entered by the user. |
+| <code>public ApiKeyDialog(string providerName, string envVarName, bool isOptional = false);</code> | [src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ApiKeyDialog.xaml.cs#L16) |  |
+
+## ArchiveHealthPage
+
+Qualified name: <code>Meridian.Wpf.Views.ArchiveHealthPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:17](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L17).
+
+Page for archive health monitoring.
+
+```csharp
+public sealed partial class ArchiveHealthPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ArchiveHealthPage(WpfServices.ArchiveHealthService healthService, WpfServices.SchemaService schemaService);</code> | [src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/ArchiveHealthPage.xaml.cs#L25) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:30](../../../../src/Meridian.Wpf/Views/Pages.cs#L30).
+
+```csharp
+public partial class ArchiveHealthPage : Page
+```
+
 ## BackfillPage
 
 Qualified name: <code>Meridian.Wpf.Views.BackfillPage</code>. Kind: `class`.
@@ -1054,45 +1097,3 @@ Source: [src/Meridian.Wpf/Views/Pages.cs:62](../../../../src/Meridian.Wpf/Views/
 ```csharp
 public partial class MessagingHubPage : Page
 ```
-
-## NotificationCenterPage
-
-Qualified name: <code>Meridian.Wpf.Views.NotificationCenterPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs#L19).
-
-Notification Center page for viewing and managing all application notifications. Code-behind handles only: DI wiring, alert group card building (uses FindResource), playbook display, and snooze/suppress actions.
-
-```csharp
-public partial class NotificationCenterPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NotificationCenterPage(WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/NotificationCenterPage.xaml.cs#L25) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:96](../../../../src/Meridian.Wpf/Views/Pages.cs#L96).
-
-```csharp
-public partial class NotificationCenterPage : Page
-```
-
-## OperationsContinuityPage
-
-Qualified name: <code>Meridian.Wpf.Views.OperationsContinuityPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L11).
-
-Provides the desktop page to review continuity workflows, gates, close calendar, and governed approval policy.
-
-```csharp
-public partial class OperationsContinuityPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsContinuityPage(OperationsContinuityViewModel viewModel);</code> | [src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/OperationsContinuityPage.xaml.cs#L15) |  |

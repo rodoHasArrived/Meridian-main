@@ -32,6 +32,7 @@ public sealed class HistoricalBackfillService
     private readonly BackfillStatusStore? _checkpointStore;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
     private readonly TimeZoneInfo _intradaySessionTimeZone;
+    private readonly IReadOnlyDictionary<string, ProviderValidationProfile>? _validationProfiles;
 
     public HistoricalBackfillService(
         IEnumerable<IHistoricalDataProvider> providers,
@@ -40,7 +41,8 @@ public sealed class HistoricalBackfillService
         BackfillJobsConfig? jobsConfig = null,
         BackfillStatusStore? checkpointStore = null,
         Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null,
-        TimeZoneInfo? intradaySessionTimeZone = null)
+        TimeZoneInfo? intradaySessionTimeZone = null,
+        IReadOnlyDictionary<string, ProviderValidationProfile>? validationProfiles = null)
     {
         _providers = providers.ToDictionary(p => p.Name.ToLowerInvariant());
         _log = logger ?? LoggingSetup.ForContext<HistoricalBackfillService>();
@@ -48,6 +50,7 @@ public sealed class HistoricalBackfillService
         _jobsConfig = jobsConfig ?? new BackfillJobsConfig();
         _checkpointStore = checkpointStore;
         _symbolTimelineResolver = symbolTimelineResolver;
+        _validationProfiles = validationProfiles;
         // The current intraday backfill providers serve US equity sessions. Keep the
         // session zone explicit so other markets can supply their own date convention.
         _intradaySessionTimeZone = intradaySessionTimeZone ?? TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
@@ -343,13 +346,16 @@ public sealed class HistoricalBackfillService
                 var newestKnownDate = lastBarDate.HasValue && newestCoveredDate.HasValue && newestCoveredDate.Value > lastBarDate.Value
                     ? newestCoveredDate
                     : lastBarDate;
+                var toleranceDays = _validationProfiles?.FirstOrDefault(pair =>
+                    string.Equals(pair.Key, servedBy.Count == 1 ? servedBy.First() : provider.Name, StringComparison.OrdinalIgnoreCase)).Value?.StaleToleranceDays
+                    ?? BackfillBarValidation.DefaultStaleToleranceDays;
                 var staleDays = newestKnownDate.HasValue ? expectedThrough.DayNumber - newestKnownDate.Value.DayNumber : 0;
                 // Only requests that expect data through (roughly) now can be "stale"; an
                 // explicitly historical range that falls short is partial coverage, not staleness.
                 var requestExpectsFreshData = request.To is null ||
-                    request.To.Value.DayNumber >= utcToday.DayNumber - BackfillBarValidation.DefaultStaleToleranceDays;
+                    request.To.Value.DayNumber >= utcToday.DayNumber - toleranceDays;
                 var isStale = requestExpectsFreshData && symbolBars > 0 && lastBarDate.HasValue &&
-                    staleDays > BackfillBarValidation.DefaultStaleToleranceDays;
+                    staleDays > toleranceDays;
 
                 var coversRequestedRange =
                     symbolBars > 0 &&
