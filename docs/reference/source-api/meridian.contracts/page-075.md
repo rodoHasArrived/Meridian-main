@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationReportingDeliveryPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingDeliveryPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:705](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L705).
+
+Tenant-scoped projection of one durable canonical reporting delivery job.
+
+```csharp
+public sealed record WorkstationReportingDeliveryPayload(string JobId, string RunId, string PackageId, string ReleaseReceiptId, string ReleaseVersion, string ArtifactManifestHashSha256, string DistributionId, string TransportId, string Recipient, string RecipientRole, string Destination, string State, int AttemptCount, int MaxAttempts, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? NextAttemptAtUtc, string RequestedBy, string? LastErrorCode, string? LastError, string? ProviderMessageId, string? AccessGrantId, IReadOnlyList<WorkstationReportingDeliveryReceiptPayload> Receipts);
+```
+
 ## WorkstationReportingDeliveryReceiptPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingDeliveryReceiptPayload</code>. Kind: `record`.

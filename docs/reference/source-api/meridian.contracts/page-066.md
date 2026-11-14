@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationSchemaVersion
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSchemaVersion</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1046](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1046).
+
+Canonical schema version metadata for reconciliation ingress/egress payloads.
+
+```csharp
+public sealed record ReconciliationSchemaVersion(string ContractName, int Major, int Minor, int Patch, string ContentType = "application/vnd.meridian.reconciliation+json");
+```
+
 ## ReconciliationSecurityCoverageIssueDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto</code>. Kind: `record`.
@@ -631,14 +643,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1140]
 
 ```csharp
 public sealed record ReportingStarterKitDto(string KitId, string Archetype, string DisplayName, string Description, IReadOnlyList<string> TemplateIds, string DefaultLayoutId, string DefaultPeriod, IReadOnlyList<ReportingStarterSeedScheduleDto> SeedSchedules);
-```
-
-## ReportingStarterKitProvisionResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingStarterKitProvisionResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1161](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1161).
-
-```csharp
-public sealed record ReportingStarterKitProvisionResultDto(ReportingStarterKitDto Kit, ReportingStarterKitStateDto State, IReadOnlyList<ReportingScheduleRecordDto> SeededSchedules);
 ```

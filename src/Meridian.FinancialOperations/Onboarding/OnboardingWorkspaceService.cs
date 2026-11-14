@@ -201,9 +201,9 @@ public sealed partial class OnboardingWorkspaceService(
         };
         var request = new CaptureOnboardingComparisonRequestDto(0, run.AsOfDate, run.ProviderId, run.ImportId,
             run.MappingProfileId, run.MappingVersion, run.Notes);
-        var inputs = ValidateCapture(historical, request, Copy(run.Inputs));
+        var inputs = ValidateCapture(historical, request, Copy(run.Inputs), run.OpeningKinds);
         var replay = BuildComparison(historical, request, inputs, run.ActorId, run.ComparisonId, run.CapturedAtUtc, run.DataRevision,
-            run.IsOpening, run.OpeningSourceKind);
+            run.IsOpening, run.OpeningSourceKind, run.OpeningKinds);
         if (replay.ContentHash != run.ContentHash)
             throw new InvalidOperationException("The retained comparison failed reproducibility validation.");
         return Copy(replay);
@@ -252,12 +252,15 @@ public sealed partial class OnboardingWorkspaceService(
     private static OnboardingComparisonDto BuildComparison(
         OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, OnboardingSourceCaptureDto capture,
         string actorId, string comparisonId, DateTimeOffset capturedAtUtc, int dataRevision,
-        bool isOpening = false, string? openingSourceKind = null)
+        bool isOpening = false, string? openingSourceKind = null, IReadOnlyList<string>? openingKinds = null)
     {
         // A correction compares with its prior same-date result. A new period compares with the latest
         // earlier period. Append sequence and its separate hash chain never rewrite chronological history.
         // Opening-balance comparisons form their own lineage so they never mark period rows as disappeared.
-        var lineage = workspace.Comparisons.Where(item => item.IsOpening == isOpening).ToArray();
+        // Kind-scoped opening sources (OpeningKinds set) keep a lineage per source kind, so a cash-only statement
+        // never marks an administrator pack's position rows as disappeared. Legacy opening comparisons keep one lineage.
+        var lineage = workspace.Comparisons.Where(item => item.IsOpening == isOpening
+            && (!isOpening || openingKinds is null || item.OpeningSourceKind == openingSourceKind)).ToArray();
         var predecessor = lineage.LastOrDefault(item => item.AsOfDate == request.AsOfDate)
             ?? lineage.Where(item => item.AsOfDate < request.AsOfDate)
                 .OrderBy(item => item.AsOfDate).ThenBy(item => item.Sequence).LastOrDefault();
@@ -307,8 +310,8 @@ public sealed partial class OnboardingWorkspaceService(
             request.AsOfDate, dataRevision, actorId, capturedAtUtc, request.Notes,
             request.ProviderId, request.ImportId, request.MappingProfileId, request.MappingVersion,
             Copy(workspace.Criteria), capture, differences.OrderBy(row => row.DifferenceKey, StringComparer.Ordinal).ToArray(),
-            Coverage(workspace, capture), "", workspace.Comparisons.LastOrDefault()?.ContentHash, ComparisonAlgorithmVersion,
-            predecessor?.ComparisonId, isOpening, isOpening ? openingSourceKind : null);
+            Coverage(workspace, capture, openingKinds), "", workspace.Comparisons.LastOrDefault()?.ContentHash, ComparisonAlgorithmVersion,
+            predecessor?.ComparisonId, isOpening, isOpening ? openingSourceKind : null, isOpening ? openingKinds : null);
         return comparison with { ContentHash = Hash(comparison) };
     }
 
@@ -335,14 +338,14 @@ public sealed partial class OnboardingWorkspaceService(
             .ToDictionary(group => group.Key, group => group.MaxBy(run => run.Sequence)!);
         var missingDates = workspace.Criteria.RequiredDates.Where(date => !latestByDate.ContainsKey(date)).Order().ToArray();
         var requiredRuns = workspace.Criteria.RequiredDates.Where(latestByDate.ContainsKey).Select(date => latestByDate[date]).ToArray();
-        var openingRun = workspace.Comparisons.Where(run => run.IsOpening).MaxBy(run => run.Sequence);
+        var openingRuns = LatestOpeningRuns(workspace);
         var missing = requiredRuns.SelectMany(run => run.Inputs.MissingSources.Select(source => source with
         {
             Message = $"{run.AsOfDate:yyyy-MM-dd}: {source.Message}"
-        })).Concat(openingRun?.Inputs.MissingSources.Select(source => source with
+        })).Concat(openingRuns.SelectMany(run => run.Inputs.MissingSources.Select(source => source with
         {
-            Message = $"Opening {openingRun.AsOfDate:yyyy-MM-dd}: {source.Message}"
-        }) ?? []).ToArray();
+            Message = $"Opening {run.AsOfDate:yyyy-MM-dd} ({run.OpeningSourceKind}): {source.Message}"
+        }))).ToArray();
         // An explained difference (unchanged amounts, evidence attached, not a Meridian error) no longer blocks.
         var unresolved = requiredRuns.SelectMany(run => run.Differences
             .Where(row => row.Status != "Resolved" && ApplicableExplanation(workspace, run, row) is null)
@@ -368,16 +371,17 @@ public sealed partial class OnboardingWorkspaceService(
         var opening = BuildOpeningReport(workspace);
         if (workspace.ShadowDesignation?.State == OnboardingShadowStates.Shadow)
         {
-            if (opening is null || openingRun is null)
+            if (opening is null || openingRuns.Count == 0)
                 blockers.Add("Import and reconcile the incumbent opening balances for the shadow book.");
             else
             {
-                if (Hash(openingRun.Criteria) != Hash(workspace.Criteria))
+                if (openingRuns.Any(run => Hash(run.Criteria) != Hash(workspace.Criteria)))
                     blockers.Add("Reimport the incumbent opening balances against the current owner criteria.");
-                if (openingRun.Inputs.MissingSources.Count > 0)
-                    blockers.Add($"Reimport the incumbent opening balances after supplying {openingRun.Inputs.MissingSources.Count} missing opening source requirement(s).");
-                if (Coverage(workspace, openingRun.Inputs) < workspace.Criteria.MinimumCoveragePercent)
-                    blockers.Add("Reimport the incumbent opening balances with coverage of the selected accounts and required comparison kinds.");
+                var openingMissing = openingRuns.Sum(run => run.Inputs.MissingSources.Count);
+                if (openingMissing > 0)
+                    blockers.Add($"Reimport the incumbent opening balances after supplying {openingMissing} missing opening source requirement(s).");
+                if (opening.UncoveredKinds is { Count: > 0 } uncovered)
+                    blockers.Add($"Import an incumbent opening source covering {string.Join(", ", uncovered)} for every selected account.");
                 if (!opening.IsReconciled && opening.BreakCount + opening.MissingCount > 0)
                     blockers.Add($"Reconcile {opening.BreakCount + opening.MissingCount} opening-balance difference(s) with the incumbent.");
             }
@@ -400,22 +404,25 @@ public sealed partial class OnboardingWorkspaceService(
             opening, explainedCount);
     }
 
-    private static decimal Coverage(OnboardingWorkspaceDto workspace, OnboardingSourceCaptureDto capture)
+    private static decimal Coverage(
+        OnboardingWorkspaceDto workspace, OnboardingSourceCaptureDto capture, IReadOnlyList<string>? kinds = null)
     {
+        var scoped = kinds ?? workspace.Criteria.RequiredKinds;
         var complete = 0;
         foreach (var account in workspace.Scope.AccountIds)
-            foreach (var kind in workspace.Criteria.RequiredKinds)
+            foreach (var kind in scoped)
             {
                 var rows = capture.Observations.Where(row => row.AccountId == account && row.Kind == kind).ToArray();
                 if (rows.Length > 0 && rows.All(row => row.MeridianAmount.HasValue && row.ExternalAmount.HasValue
                     && string.IsNullOrWhiteSpace(row.MissingReason)))
                     complete++;
             }
-        return 100m * complete / (workspace.Scope.AccountIds.Count * workspace.Criteria.RequiredKinds.Count);
+        return 100m * complete / (workspace.Scope.AccountIds.Count * scoped.Count);
     }
 
     private static OnboardingSourceCaptureDto ValidateCapture(
-        OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, OnboardingSourceCaptureDto capture)
+        OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, OnboardingSourceCaptureDto capture,
+        IReadOnlyList<string>? coveredKinds = null)
     {
         if (capture.Snapshots is null || capture.Observations is null || capture.MissingSources is null)
             throw new OnboardingValidationException("Source capture collections must be present.");
@@ -457,8 +464,9 @@ public sealed partial class OnboardingWorkspaceService(
                 AddMissing(missing, new("MissingAmount", row.Kind, row.AccountId,
                     row.MissingReason ?? $"An amount is missing for {row.AccountId}/{row.Kind}/{row.Currency}/{row.InstrumentId}."));
         }
+        // A kind-scoped opening source only owes coverage for the kinds it claims; others come from other sources.
         foreach (var account in workspace.Scope.AccountIds)
-            foreach (var kind in workspace.Criteria.RequiredKinds)
+            foreach (var kind in coveredKinds ?? workspace.Criteria.RequiredKinds)
             {
                 if (!capture.Observations.Any(row => row.AccountId == account && row.Kind == kind))
                     AddMissing(missing, new("MissingCoverage", kind, account, $"No {kind} source covers selected account {account}."));

@@ -260,7 +260,9 @@ The `OnboardingWorkspaceService.Shadow` partial adds shadow-mode onboarding (W11
 designates the workspace's ledger book as a shadow book. Incumbent opening balances are imported
 through `OpeningBalances/OnboardingOpeningSources.cs` (camt.053 OPBD / BAI2 010 via
 `StatementBalanceRole.Opening`, an administrator opening-pack CSV, or a retained GL trial balance)
-into a separate opening comparison lineage. Explanations clear a difference only for its exact
+into a separate opening comparison lineage. Each import records `OpeningKinds`, the required kinds it
+supplies, and compares only those; complementary sources combine, using the latest import per source
+kind, and readiness lists any required kind no source covers. Explanations clear a difference only for its exact
 amounts; `MeridianError` never clears and `Timing` lapses after its reversal date. A parallel-run
 certificate requires reconciled opening balances, every required period clean and independent
 review. Only an independent designated reviewer can promote, with a certificate that still matches

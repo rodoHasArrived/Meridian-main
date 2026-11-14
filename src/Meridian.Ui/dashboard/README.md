@@ -1128,7 +1128,8 @@ searchable when remote command or entity search is unavailable; unwired routes s
 Accounting onboarding searches open the existing External GL surface, which hosts the bounded
 onboarding workspace and its retained comparison and readiness evidence. Its shadow-mode section
 (`accounting-screen.onboarding-shadow-panel.tsx`) covers shadow-book designation, incumbent
-opening-balance upload and report, per-period agreement, difference explanations, the parallel-run
+opening-balance upload and the combined multi-source report (per-line source, uncovered kinds),
+per-period agreement, explanations for both opening breaks and period differences, the parallel-run
 certificate and promotion; tables use the shared `DenseDataTable`.
 From 1200px the masthead is one 48px row: the environment badge leads with the never-shrinking
 session environment and adds the data qualifier only when the data is not confirmed real
