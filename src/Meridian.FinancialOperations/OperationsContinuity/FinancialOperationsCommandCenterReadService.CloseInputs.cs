@@ -10,9 +10,13 @@ public sealed partial class FinancialOperationsCommandCenterReadService
     {
         var evaluatedAt = DateTimeOffset.UtcNow;
         var projection = new CloseReadinessProjection(scope, evaluatedAt);
+        // Resolved lazily so composing the read service never builds onboarding storage. Hosts without
+        // onboarding (the WPF desktop) have no guard and report no shadow contributor.
+        var bookOfRecordGuard = ResolveBookOfRecordGuard();
+        string[] Pending(params string[] ids) => bookOfRecordGuard is null ? ids : [.. ids, ShadowAgreementContributor];
         if (!projection.HasCompleteScope)
         {
-            foreach (var id in new[] { "book-scope", "subject-scope", "workflow", "calendar", "close-plan", "private-capital" })
+            foreach (var id in Pending("book-scope", "subject-scope", "workflow", "calendar", "close-plan", "private-capital"))
                 projection.Contribute(id, "Controller", "ScopeRequired", null, []);
             return new(null, null, null, projection);
         }
@@ -24,7 +28,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             [scope.LedgerBookId!.Value.ToString()], "The selected book must belong to the selected fund profile.");
         if (!bound)
         {
-            foreach (var id in new[] { "subject-scope", "workflow", "calendar", "close-plan", "private-capital" })
+            foreach (var id in Pending("subject-scope", "workflow", "calendar", "close-plan", "private-capital"))
                 projection.Contribute(id, "Controller", "Unavailable", null, [], "Resolve the book/fund scope before loading close evidence.");
             return new(null, null, null, projection);
         }
@@ -37,7 +41,7 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             "The account and entity must belong to the selected ledger book's retained ownership scope.");
         if (!subjectBound)
         {
-            foreach (var id in new[] { "workflow", "calendar", "close-plan", "private-capital" })
+            foreach (var id in Pending("workflow", "calendar", "close-plan", "private-capital"))
                 projection.Contribute(id, "Controller", "Unavailable", null, [], "Resolve subject ownership before loading close evidence.");
             return new(null, null, null, projection);
         }
@@ -109,6 +113,10 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             cockpit?.ProjectedAtUtc, cockpitBound ? [workflow!.WorkflowId.ToString()] : [],
             "Fund accounting must provide current evidence for the exact fund, book, account, entity, period, and workflow.");
 
+        if (bookOfRecordGuard is not null)
+            await ContributeShadowAgreementAsync(projection, bookOfRecordGuard, scope.LedgerBookId!.Value,
+                tenantId, companyId, ct).ConfigureAwait(false);
+
         // The workflow can change while its contributors are being read. Never combine an older
         // plan/calendar with a later approval or reopening into a ready result.
         if (workflow is not null)
@@ -140,6 +148,54 @@ public sealed partial class FinancialOperationsCommandCenterReadService
             }
         }
         return new(workflow, calendar, cockpitBound ? cockpit : null, projection);
+    }
+
+    internal const string ShadowAgreementContributor = "shadow-agreement";
+
+    private IBookOfRecordGuard? ResolveBookOfRecordGuard()
+    {
+        try { return _bookOfRecordGuardFactory?.Invoke(); }
+        catch (Exception)
+        {
+            // A guard that cannot be composed must not silently drop the contributor.
+            return UnavailableBookOfRecordGuard.Instance;
+        }
+    }
+
+    /// <summary>
+    /// Reports the shadow-mode parallel-run agreement for the selected ledger book. A book of record (never
+    /// designated, or promoted) is ready. A shadow book, or a withdrawn shadow trial, blocks close with its
+    /// agreement figures: clean periods against required periods and the unexplained difference count.
+    /// </summary>
+    private static async Task ContributeShadowAgreementAsync(CloseReadinessProjection projection,
+        IBookOfRecordGuard guard, Guid ledgerBookId, string? tenantId, string? companyId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId))
+        {
+            projection.Contribute(ShadowAgreementContributor, "Onboarding", "ScopeRequired", null, [],
+                "A resolved tenant is required to establish whether the ledger book is the book of record.");
+            return;
+        }
+
+        var status = await ReadAsync(() => guard.GetStatusAsync(tenantId, companyId, ledgerBookId, ct), ct).ConfigureAwait(false);
+        if (status is null || status.LedgerBookId != ledgerBookId)
+        {
+            projection.Contribute(ShadowAgreementContributor, "Onboarding", "Unavailable", null, [],
+                "Book-of-record status for the selected ledger book is unavailable.");
+            return;
+        }
+
+        var records = string.IsNullOrWhiteSpace(status.ShadowWorkspaceId) ? [] : new[] { status.ShadowWorkspaceId };
+        projection.Contribute(ShadowAgreementContributor, "Onboarding", status.IsBookOfRecord ? "Ready" : "Blocked",
+            DateTimeOffset.UtcNow, records, status.Reason);
+    }
+
+    private sealed class UnavailableBookOfRecordGuard : IBookOfRecordGuard
+    {
+        public static readonly UnavailableBookOfRecordGuard Instance = new();
+
+        public Task<BookOfRecordStatusDto> GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId,
+            CancellationToken ct = default) => throw new InvalidOperationException("The book-of-record guard is unavailable.");
     }
 
     private static bool IsClosePlanReady(ClosePeriodPlanDto plan)
