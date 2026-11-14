@@ -116,7 +116,7 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         {
             ct.ThrowIfCancellationRequested();
             var records = await scopedStore.ListStagingRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
-            var completionIssue = await ProviderIntegrationRunCompleteness.GetIssueAsync(scopedStore, syncRun, records, ct).ConfigureAwait(false);
+            var completionIssue = await ProviderIntegrationRunCompleteness.GetSourceIssueAsync(scopedStore, syncRun, records, ct).ConfigureAwait(false);
             var decisions = await LoadIdentityDecisionSnapshotAsync(scopedStore, connectionId, syncRun.SyncRunId, ct).ConfigureAwait(false);
             foreach (var record in records.Where(record => StringComparer.Ordinal.Equals(record.ConnectionId, connectionId)))
             {

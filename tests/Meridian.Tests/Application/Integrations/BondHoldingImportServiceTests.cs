@@ -159,11 +159,64 @@ public sealed class BondHoldingImportServiceTests
                 fixture.Now.AddDays(-1), "synthetic"));
             await fixture.IngestAsync("other-account", other.ToString("D"), "invalid");
             await fixture.HandoffAsync("other-account");
+            var activation = await new ProviderIntegrationActivationReadinessService(fixture.Manifests).EvaluateAsync(
+                tenantId: CsvFixture.Tenant, manifestId: fixture.Manifest.ManifestId, connectionId: CsvFixture.Connection);
+            Assert.False(activation.IsReady);
+            Assert.Contains(activation.Issues, issue => issue.Code == "provider-manifest.dry-run-evidence-required");
             var request = fixture.Request("other-account");
             await fixture.Import.AcceptAsync(CsvFixture.Tenant, "operator", request);
             var holding = Assert.Single((await fixture.Accounts.GetCustodianSnapshotAsync(fixture.AccountId, request.AsOfDate))!.Lines);
             Assert.Equal(79.2m, holding.MarketValue);
             Assert.Single(await fixture.Store.ListQuarantinedRecordsAsync("other-account"));
+        }
+        finally { fixture.Dispose(); }
+    }
+
+    [Theory]
+    [InlineData("missing-quarantine")]
+    [InlineData("forged-conserved-counts")]
+    [InlineData("unexplained-critical-issue")]
+    [InlineData("missing-capture")]
+    public async Task ActualMixedCsv_SelectedHandoffRequiresCompleteRetainedPopulation(string corruption)
+    {
+        var fixture = await CsvFixture.CreateAsync();
+        try
+        {
+            await fixture.IngestAsync("incomplete-selected-source", Guid.NewGuid().ToString("D"), "invalid");
+            var run = (await fixture.Store.GetSyncRunAsync("incomplete-selected-source"))!;
+            var rejected = Assert.Single(await fixture.Store.ListQuarantinedRecordsAsync(run.SyncRunId));
+            if (corruption is "missing-quarantine" or "forged-conserved-counts" or "missing-capture")
+            {
+                var property = corruption == "missing-capture" ? "payloadId" : "quarantineRecordId";
+                var identity = corruption == "missing-capture" ? run.RawPayloadId : rejected.QuarantineRecordId;
+                var retainedFile = Directory.EnumerateFiles(fixture.Root, "*.json", SearchOption.AllDirectories).Single(path =>
+                {
+                    using var document = JsonDocument.Parse(File.ReadAllText(path));
+                    return document.RootElement.TryGetProperty(property, out var value) && value.GetString() == identity;
+                });
+                File.Delete(retainedFile);
+            }
+            if (corruption == "forged-conserved-counts")
+                await fixture.Store.SaveSyncRunAsync(run with
+                {
+                    Status = ProviderIntegrationProcessingStatusDto.Validated,
+                    RecordsReceived = 1,
+                    RecordsQuarantined = 0,
+                    Issues = []
+                });
+            if (corruption == "unexplained-critical-issue")
+                await fixture.Store.SaveSyncRunAsync(run with
+                {
+                    Issues = [.. run.Issues, new("source.synthetic-failure", ProviderIntegrationIssueSeverityDto.Critical,
+                        "The source did not complete.", null, null)]
+                });
+
+            var handoff = await fixture.HandoffResultAsync(run.SyncRunId);
+
+            Assert.False(handoff.Accepted);
+            Assert.Contains(handoff.Issues, issue => issue.Code == "source.run.incomplete");
+            Assert.Empty(await fixture.Store.ListReconciliationHandoffRecordsAsync(CsvFixture.Connection));
+            Assert.Null(await fixture.Accounts.GetCustodianSnapshotAsync(fixture.AccountId, fixture.Request(run.SyncRunId).AsOfDate));
         }
         finally { fixture.Dispose(); }
     }
@@ -241,7 +294,10 @@ public sealed class BondHoldingImportServiceTests
             Assert.Contains(result.Issues, issue => issue.Code == "http.status.failed");
             Assert.Equal(new[] { "https://provider.example.test/synthetic/holdings",
                 "https://provider.example.test/synthetic/holdings?cursor=second-page" }, handler.Requests);
-            await fixture.HandoffAsync("failed-page");
+            var handoff = await fixture.HandoffResultAsync("failed-page");
+            Assert.False(handoff.Accepted);
+            Assert.Contains(handoff.Issues, issue => issue.Code == "source.run.incomplete");
+            Assert.Empty(await fixture.Store.ListReconciliationHandoffRecordsAsync(CsvFixture.Connection));
             var request = fixture.Request("failed-page");
             var error = await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Import.AcceptAsync(CsvFixture.Tenant, "operator", request));
             Assert.Contains("complete source fetch", error.Message);
@@ -418,6 +474,12 @@ public sealed class BondHoldingImportServiceTests
 
         public async Task HandoffAsync(string run, int? take = null)
         {
+            var handoff = await HandoffResultAsync(run, take);
+            Assert.True(handoff.Accepted, string.Join("; ", handoff.Issues.Select(issue => issue.Message)));
+        }
+
+        public async Task<ProviderIntegrationReconciliationHandoffResultDto> HandoffResultAsync(string run, int? take = null)
+        {
             var securities = new Mock<ISecurityMasterQueryService>();
             securities.Setup(service => service.GetByIdentifierAsync(SecurityIdentifierKind.Cusip, "9128285M8", null,
                 It.IsAny<CancellationToken>())).ReturnsAsync(new SecurityDetailDto(Guid.Parse("428f4a50-9674-4a9f-8b7f-8343c32ae6df"),
@@ -426,11 +488,10 @@ public sealed class BondHoldingImportServiceTests
             var rows = await Store.ListStagingRecordsAsync(run);
             Assert.NotEmpty(rows);
             var identity = new ProviderIntegrationIdentityResolutionPreviewService(Manifests, securities.Object);
-            var handoff = await new ProviderIntegrationReconciliationHandoffService(Manifests,
+            return await new ProviderIntegrationReconciliationHandoffService(Manifests,
                 new ProviderIntegrationPromotionReadinessService(identity)).HandoffAsync(Tenant,
                     new(Connection, rows.Take(take ?? rows.Count).Select(row => row.StagingRecordId).ToArray(), "reviewer", Now.AddMinutes(1),
                         "synthetic-reviewed-" + run, "Reviewed retained complete account/security and holding economics", 10));
-            Assert.True(handoff.Accepted, string.Join("; ", handoff.Issues.Select(issue => issue.Message)));
         }
 
         public BondHoldingImportRequest Request(string run) => new(Connection, run, AccountId, Guid.NewGuid(), new(2026, 11, 12));

@@ -482,7 +482,7 @@ public sealed class ProviderIntegrationRestDryRunService
             "or an absolute token URL from the same provider origin.");
     }
 
-    private static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)
+    internal static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)
     {
         if (string.IsNullOrWhiteSpace(recordsPath) ||
             StringComparer.Ordinal.Equals(recordsPath.Trim(), "$"))

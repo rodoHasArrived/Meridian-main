@@ -119,6 +119,38 @@ public sealed class ProviderIntegrationPartialRunReadinessTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task MixedValidatedAndQuarantinedRows_RequireTheCompleteTerminalCapture(bool missingTerminal)
+    {
+        var transport = new TwoPageTransport(new ProviderIntegrationHttpResponse(200, new Dictionary<string, string>(), """{"positions":[]}"""), mixedFirstPage: true);
+        var (store, request) = await CreateSourceAsync();
+        var result = await new ProviderIntegrationRestDryRunService(store, transport).RunRestDryRunAsync(request);
+        result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Quarantined);
+        result.RecordsReceived.Should().Be(2);
+        result.RecordsAccepted.Should().Be(1);
+        result.RecordsQuarantined.Should().Be(1);
+        if (missingTerminal)
+            DeleteTerminalCapture();
+        var restarted = new FileProviderIntegrationManifestStore(testRoot);
+        var record = (await restarted.ListStagingRecordsAsync(RunId)).Should().ContainSingle().Which;
+        var identity = new ProviderIntegrationIdentityResolutionPreviewService(restarted);
+        var handoff = await new ProviderIntegrationReconciliationHandoffService(restarted,
+            new ProviderIntegrationPromotionReadinessService(identity)).HandoffAsync(CreateHandoff(record.StagingRecordId));
+
+        handoff.Accepted.Should().Be(!missingTerminal);
+        if (missingTerminal)
+        {
+            handoff.Issues.Should().Contain(issue => issue.Code == IncompleteCode);
+            (await restarted.ListReconciliationHandoffRecordsAsync(ConnectionId)).Should().BeEmpty();
+        }
+        else
+            (await restarted.ListReconciliationHandoffRecordsAsync(ConnectionId)).Should().ContainSingle();
+        (await restarted.ListQuarantinedRecordsAsync(RunId)).Should().ContainSingle();
+        (await restarted.GetSyncRunAsync(RunId))!.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Quarantined);
+    }
+
+    [Theory]
     [InlineData("nextCursor")]
     [InlineData("next_token")]
     [InlineData("accessToken")]
@@ -164,6 +196,13 @@ public sealed class ProviderIntegrationPartialRunReadinessTests : IDisposable
         result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
         var restarted = new FileProviderIntegrationManifestStore(testRoot);
         (await restarted.GetSyncRunAsync(RunId))!.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
+        DeleteTerminalCapture();
+
+        await AssertDownstreamBlockedAfterRestartAsync();
+    }
+
+    private void DeleteTerminalCapture()
+    {
         var terminalCapture = Directory.EnumerateFiles(testRoot, "*.json", SearchOption.AllDirectories)
             .Single(path =>
             {
@@ -174,8 +213,6 @@ public sealed class ProviderIntegrationPartialRunReadinessTests : IDisposable
             });
 
         File.Delete(terminalCapture);
-
-        await AssertDownstreamBlockedAfterRestartAsync();
     }
 
     private async Task AssertDownstreamBlockedAfterRestartAsync()
@@ -250,7 +287,7 @@ public sealed class ProviderIntegrationPartialRunReadinessTests : IDisposable
             Directory.Delete(testRoot, recursive: true);
     }
 
-    private sealed class TwoPageTransport(ProviderIntegrationHttpResponse? lastResponse, CancellationTokenSource? interruption = null, string cursorField = "nextCursor", string firstQuantity = "100") : IProviderIntegrationHttpTransport
+    private sealed class TwoPageTransport(ProviderIntegrationHttpResponse? lastResponse, CancellationTokenSource? interruption = null, string cursorField = "nextCursor", string firstQuantity = "100", bool mixedFirstPage = false) : IProviderIntegrationHttpTransport
     {
         public int RequestCount { get; private set; }
 
@@ -260,9 +297,11 @@ public sealed class ProviderIntegrationPartialRunReadinessTests : IDisposable
             RequestCount++;
             if (RequestCount == 1)
             {
+                var first = new { account_id = "A-100", quantity = firstQuantity, currency = "USD", as_of_date = "2026-06-16", position_id = "POS-1" };
+                var rejected = new { account_id = "B-200", quantity = "invalid", currency = "USD", as_of_date = "2026-06-16", position_id = "POS-2" };
                 var body = JsonSerializer.Serialize(new Dictionary<string, object>
                 {
-                    ["positions"] = new[] { new { account_id = "A-100", quantity = firstQuantity, currency = "USD", as_of_date = "2026-06-16", position_id = "POS-1" } },
+                    ["positions"] = mixedFirstPage ? new[] { first, rejected } : new[] { first },
                     [cursorField] = "page-2"
                 });
                 return Task.FromResult(new ProviderIntegrationHttpResponse(200, new Dictionary<string, string>(), body));

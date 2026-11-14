@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-14
 ---
 
 # src/Meridian.Application
@@ -49,10 +49,13 @@ mixed public/private DNS answers, declared and unknown-length oversize bodies an
 REST dry runs retain partial HTTP response evidence but refuse mapping or staging for HTTP 206 or
 Content-Range responses. Replay checks retained HTTP completeness across the entire source history,
 so a later format marker or newer mapping cannot promote a known partial capture.
-Reaching the page cap with a continuation cursor also leaves incomplete evidence. Activation,
-staging review, identity preview and reconciliation handoff verify the completed run, exact retained
-manifest, counts and full cursor-page chain, including empty terminal pages. Missing or unfinished
-source evidence remains reviewable and blocks promotion; replay refuses before publishing a new run.
+Reaching the page cap with a continuation cursor also leaves incomplete evidence. Review, identity
+preview and selected-row handoff verify complete retained source capture, exact manifests, conserved
+accepted and quarantined populations, and the full cursor-page chain, including empty terminal pages.
+Selected rows still require their own validation and review. Complete source capture may retain
+quarantined rows outside that selection; whole-run activation still requires every row to validate.
+Missing or unfinished source evidence remains reviewable and blocks promotion; replay refuses partial
+captures before publishing a new run.
 
 Loan portfolio reads include server-decimal maturity buckets by contractual quarter and currency;
 these summarize current principal and do not project repayments. Corporate-action calendar reads
