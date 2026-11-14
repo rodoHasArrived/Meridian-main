@@ -82,6 +82,13 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         self.assertIn("& dotnet @testArgs @props", self.workflow)
         self.assertIn("if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }", self.workflow)
 
+    def test_demo_slice_builds_required_workstation_assets_before_restore(self):
+        self.assertIn("contains(inputs.dotnet_project, 'Meridian.Demo.Tests')", self.workflow)
+        self.assertIn("if ($project -eq 'tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj')", self.workflow)
+        prepare = self.workflow.index("& python build/scripts/ensure-workstation-assets.py")
+        restore = self.workflow.index("& dotnet restore $project @props")
+        self.assertLess(prepare, restore)
+
     def test_docs_show_remote_dispatch_examples_for_project_and_filter(self) -> None:
         for path in (WORKFLOW_README_PATH, START_README_PATH, ENGINEERING_README_PATH):
             with self.subTest(path=path):

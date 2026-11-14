@@ -122,7 +122,7 @@ class QualityGateChangeDetectionTests(unittest.TestCase):
     def test_workflow_limits_skipping_to_prs_and_keeps_gate_always_reporting(self):
         self.assertEqual(self.jobs['quality-gate']['if'], 'always()')
         self.assertIn('changes', self.jobs['quality-gate']['needs'])
-        self.assertEqual(self.jobs['verify-dotnet']['needs'], 'changes')
+        self.assertEqual(self.jobs['verify-dotnet']['needs'], ['changes', 'verify-browser'])
         self.assertEqual(self.jobs['verify-dotnet']['if'], "needs.changes.outputs.dotnet == 'true'")
         checkout, detect = self.jobs['changes']['steps']
         self.assertEqual(checkout['if'], "github.event_name == 'pull_request'")

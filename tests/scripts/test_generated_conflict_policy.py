@@ -60,6 +60,8 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
                     profile = command[command.index("--profile") + 1]
                     required.update("build/scripts/docs/" + automation.SCRIPT_CONFIG[name]["script"]
                                     for name in automation.PROFILE_CONFIG[profile])
+            if command[:2] == ("npm", "run"):
+                required.add("package.json#scripts." + command[2])
             if command[:2] == ("npm", "--prefix") and command[-2:] == ("run", "build"):
                 required.add(command[2] + "/package.json#scripts.build")
         recovery = self.policy["conflict_recovery"]

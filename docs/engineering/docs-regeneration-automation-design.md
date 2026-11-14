@@ -2,7 +2,7 @@
 
 **Status:** active; hosted write activation requires human governance review
 **Owner:** core-team
-**Reviewed:** 2026-10-15
+**Reviewed:** 2026-11-14
 
 This note defines the boundaries of generated-output repair. Use the
 [recovery guide](generated-merge-recovery.md) for commands and the
@@ -15,15 +15,13 @@ That identifier belongs to the historical plan, not the roadmap registry.
 
 Combining two individually current branches can make tracked output stale. Documentation health
 counts depend on Markdown across the repository; the structure report depends on every tracked
-path. A browser source merge can require new hashed assets and deletion of old ones. Taking either
+path. A browser source merge requires a new build artifact with new hashes and removal of old ones. Taking either
 parent's output is only a seed for regeneration, not proof that the merged tree is current.
 
 The canonical `Meridian CI / verify-docs` lane already runs the maintained generation sequence
-and checks its outputs. `meridian-ci.yml` runs without path filters on pull requests, main pushes,
+and freshness-checks its reviewed outputs; mechanical outputs are CI artifacts. `meridian-ci.yml` runs without path filters on pull requests, main pushes,
 and `merge_group` events. Earlier versions of this note incorrectly described missing whole-tree
-and merge-group detection. Those gaps are closed by the canonical lane. Documentation Automation
-also has unrestricted PR/main triggers and a merge-group trigger, covering its generators' full
-input corpus. The stable `quality-gate` still requires all four canonical lanes.
+and merge-group detection. Those gaps are closed by the canonical lane. Documentation Automation provides a manual refresh using the same catalog. The stable `quality-gate` still requires all four canonical lanes.
 
 Repair prepares a candidate from pinned revisions in an isolated checkout, resolves only supported
 generated conflicts, regenerates to a fixed point, and produces reviewable evidence. Ordinary
@@ -101,8 +99,9 @@ required command, unauthorized write, malformed generated markers, or non-conver
 produce a successful repair. Optional UML rendering retains its advisory status; failure there is
 reported separately and does not become evidence of fresh required output.
 
-Reports and per-step logs go under ignored `artifacts/`. Tracked output remains at the paths used
-by the application and documentation tooling. Run the local generator with exclusive access to its
+Reports and per-step logs go under ignored `artifacts/`. Machine outputs remain available locally
+at canonical paths, but are ignored and exported as CI artifacts. Reviewed views stay tracked.
+The exact split is documented in [Generated output delivery](generated-output-delivery.md). Run the local generator with exclusive access to its
 checkout: its byte comparison protects against accidental generator writes but is not a sandbox
 for untrusted code or a way to distinguish concurrent user edits.
 
@@ -185,7 +184,8 @@ A `merge_group` commit is synthetic. There is no writable branch on which to ins
 Updating a constituent PR invalidates that group, and the replacement group must run fresh checks.
 Two individually repaired branches can still combine into stale output.
 
-The chosen behavior is to keep the canonical freshness check failing on such a group. Refresh
+The canonical check regenerates machine output for the synthetic revision without requiring a
+commit. Reviewed snapshot drift still fails on that group. Refresh
 the affected PR branches against the current base and rebuild the group. If combined groups
 repeatedly require mutually incompatible generated output, an administrator can evaluate
 one-PR merge groups under the existing governance process. No workflow changes queue settings or
@@ -212,8 +212,8 @@ the Git merge parents required to update a branch.
 
 Tests must verify outcomes at the boundary, including:
 
-1. Independent source/Markdown changes, non-Markdown tracked additions and renames, and generated
-   TODO inventory changes produce current output on the first repaired revision.
+1. Independent source/Markdown changes produce current CI inventories without a manual commit;
+   reviewed documentation changes remain freshness checked.
 2. Old browser hashes are removed, all required outputs converge, and a second run is unchanged.
 3. Independent module baseline updates merge; a same-module combined change requires review.
 4. Source conflicts, generator changes, malformed blocks, unexpected writes and unauthorized
@@ -221,7 +221,7 @@ Tests must verify outcomes at the boundary, including:
 5. Head advancement and base-only advancement discard stale evidence and follow bounded retry
    behavior; changed artifact provenance or unexpected file modes also reject publication.
 6. Fork fallback leaves usable evidence without a write attempt.
-7. A synthetic merge-group combination that is stale still fails the authoritative check; PR repair
+7. A synthetic merge-group combination with stale reviewed documentation still fails the authoritative check; PR repair
    is never used to mark that existing group successful.
 
 Local tests establish deterministic behavior, not GitHub App configuration or hosted activation.
@@ -230,6 +230,6 @@ and a merge group in Actions. Measure the proportion of first repaired revisions
 authoritative checks without manual regeneration, plus refusals, retries, non-convergence and
 runner minutes. Preserve existing test coverage and required gate identities.
 
-A local `.gitattributes` merge driver cannot provide this hosted behavior: it depends on each
-clone's Git configuration, does not configure GitHub's merge service, and cannot establish that
-either parent's generated files match the merged inputs.
+Built-in binary merge attributes prevent silent text merges of retained reviewed snapshots. The
+installed post-merge hook runs `buildctl.py regen --fix` locally; GitHub instead regenerates in CI.
+Local hooks do not configure GitHub's merge service or prove freshness.

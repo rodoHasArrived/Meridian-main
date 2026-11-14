@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Run the complete local gate with bounded, isolated .NET/browser overlap.
+"""Run the complete local gate with isolated evidence and generated assets.
 
-Only the first two lanes overlap. Generation and workflow tests run afterwards,
-because they read/write repository files. Dependency caches are never deleted.
+Build browser assets before .NET evaluates the host's static content items.
+Generation and workflow tests follow. Dependency caches are never deleted.
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ import time
 import uuid
 
 
-FULL_LANES = ("verify-dotnet", "verify-browser", "verify-docs", "verify-workflows")
+FULL_LANES = ("verify-browser", "verify-dotnet", "verify-docs", "verify-workflows")
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -220,7 +220,7 @@ def run_gate(root: Path, *, lane: str = "quality-gate", jobs: int | None = None,
         "schemaVersion": 2, "runId": run_id, "command": lane, "lane": lane,
         "project": "Meridian.sln", "configuration": "Release", "startedAt": utc_now(),
         "status": "started", "cacheState": "unspecified", "freshBuildOutputs": False,
-        "jobs": workers, "completedLanes": [], "steps": [], "outputDirectory": str(output_root),
+        "jobs": 1, "requestedJobs": workers, "completedLanes": [], "steps": [], "outputDirectory": str(output_root),
         "dependencyCaches": "retained",
     }
     started = time.monotonic()
@@ -250,10 +250,6 @@ def run_gate(root: Path, *, lane: str = "quality-gate", jobs: int | None = None,
         # A direct shell leaf does not invoke this aggregate scheduler again.
         if cold and name == "verify-dotnet":
             environment["MERIDIAN_CI_ISOLATION_KEY"] = run_id
-        if name == "verify-browser":
-            # The .NET host copies tracked assets during its build. Let browser
-            # tests overlap, then wait before Vite replaces those same assets.
-            environment["MERIDIAN_CI_BROWSER_BUILD_BARRIER"] = str(output_root / "dotnet-finished")
         log = lane_root / "lane.log"
         step_started = time.monotonic()
         print(f"[{name}] started; log: {log}", flush=True)
@@ -263,9 +259,6 @@ def run_gate(root: Path, *, lane: str = "quality-gate", jobs: int | None = None,
             log.parent.mkdir(parents=True, exist_ok=True)
             log.write_text(str(exc) + "\n", encoding="utf-8")
             code = 127
-        finally:
-            if name == "verify-dotnet":
-                (output_root / "dotnet-finished").touch()
         result = {"name": name, "exitCode": code,
                   "durationSeconds": round(time.monotonic() - step_started, 3), "log": str(log)}
         with state_lock:
@@ -286,7 +279,7 @@ def run_gate(root: Path, *, lane: str = "quality-gate", jobs: int | None = None,
         with gate_lock(root):
             execution_started = time.monotonic()
             payload["queueSeconds"] = round(execution_started - started, 3)
-            print(f"Local {lane}: {workers} lane worker(s); evidence: {output_root}", flush=True)
+            print(f"Local {lane}: browser assets before .NET; evidence: {output_root}", flush=True)
             prerequisite_code = children.run(preflight, root, dict(os.environ), output_root / "prerequisites.log")
             if prerequisite_code:
                 payload.update(status="blocked", failurePhase="prerequisites", exitCode=prerequisite_code)
@@ -299,14 +292,18 @@ def run_gate(root: Path, *, lane: str = "quality-gate", jobs: int | None = None,
                         directory.mkdir(parents=True, exist_ok=False)
                     payload.update(cacheState="cold-isolated", freshBuildOutputs=True,
                                    isolationKey=run_id, buildOutputDirectories=[str(path) for path in build_directories])
-                # Retain the writer lock until the browser bundle completes too:
-                # it replaces the tracked asset tree read by .NET host builds.
+                # The bundle is an untracked build product. Complete it before
+                # MSBuild evaluates the host's static-content glob. Retain the
+                # writer lock for both lanes and never consume an old bundle
+                # after a failed browser build.
                 with dotnet_writer_lock(root, run_id):
-                    with ThreadPoolExecutor(max_workers=workers) as pool:
-                        first = [pool.submit(run_lane, name) for name in lanes[:2]]
-                        results = [future.result() for future in first]
-                # Generation is a writer; workflow tests inspect that state. Join
-                # both parallel lanes before either sequential lane starts.
+                    # Keep subprocess waits off the signal-handling thread so
+                    # interruption can stop and reap the entire child group.
+                    with ThreadPoolExecutor(max_workers=1) as pool:
+                        results = [pool.submit(run_lane, "verify-browser").result()]
+                        if results[0]["exitCode"] == 0:
+                            results.append(pool.submit(run_lane, "verify-dotnet").result())
+                # Documentation generation and workflow tests also own writes.
                 for name in lanes[2:]:
                     results.append(run_lane(name))
                 exit_code = next((result["exitCode"] for result in results if result["exitCode"]), 0)
@@ -339,7 +336,7 @@ def run_gate(root: Path, *, lane: str = "quality-gate", jobs: int | None = None,
         if interrupted or set(payload["completedLanes"]) != set(FULL_LANES):
             payload.pop("coldFullGateSeconds", None)
         persist()
-        markdown = [f"# Local {lane}", "", f"Result: {payload['status']}; {payload['feedbackSeconds']}s; workers: {workers}",
+        markdown = [f"# Local {lane}", "", f"Result: {payload['status']}; {payload['feedbackSeconds']}s; workers: {payload['jobs']}",
                     "", "Dependency caches retained. Cold mode isolates .NET compiled outputs only.", "",
                     "| Lane | Exit | Seconds |", "| --- | ---: | ---: |",
                     *[f"| {step['name']} | {step['exitCode']} | {step['durationSeconds']} |" for step in payload["steps"]], ""]

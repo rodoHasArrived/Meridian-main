@@ -68,7 +68,7 @@ jobs:
 
   verify-dotnet:
     name: verify-dotnet
-    needs: changes
+    needs: [changes, verify-browser]
     if: needs.changes.outputs.dotnet == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -104,6 +104,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
+      # Use the producer's immutable artifact ID, including when only failed
+      # jobs are rerun and the successful browser upload belongs to an earlier
+      # attempt. No cross-run cache supplies runtime assets.
+      - name: Download same-revision workstation assets
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.verify-browser.outputs.workstation-artifact-id }}
+          path: src/Meridian.Ui/wwwroot/workstation
+
       - name: Run .NET lane
         env:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
@@ -124,6 +133,8 @@ jobs:
 
   verify-browser:
     name: verify-browser
+    outputs:
+      workstation-artifact-id: ${{ steps.workstation.outputs.artifact-id }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -155,6 +166,15 @@ jobs:
         env:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-browser
+
+      - name: Upload verified workstation assets
+        id: workstation
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: workstation-${{ github.sha }}-${{ github.run_attempt }}
+          path: src/Meridian.Ui/wwwroot/workstation/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Upload browser lane artifacts
         if: always()

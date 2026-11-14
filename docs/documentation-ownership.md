@@ -20,8 +20,8 @@ remaining compatibility-lane cleanup.
 | Roadmap truth | `docs/roadmap/data/*.yml` | Validate and render; do not hand-author competing durable roadmap truth. |
 | Production readiness | `docs/roadmap/data/production-readiness.yml` | Edit structured gate fields and evidence; render `docs/product/implementation-todo-list.md`. |
 | Source-module truth | `docs/source/data/*.yml` and registered `src/**/README.md` | Update with source behavior, ownership, validation, TODO, and diagram changes. |
-| Generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/ai/exports/`, `docs/reference/source-api/` | Update generators or inputs, not emitted files by hand. |
-| Automation-owned status output | `docs/status/` | Keep generated reports and compatibility artifacts at the paths consumed by tooling; do not create competing roadmap truth. |
+| Reviewed generated output | `docs/generated/`, `docs/roadmap/generated/`, `docs/source/generated/`, `docs/ai/generated/`, `docs/ai/exports/`, `docs/reference/source-api/` | Update generators or inputs; commit reviewable views behind freshness checks. Machine-only manifests are CI-produced. |
+| Automation-owned status output | `docs/status/` | Keep canonical paths for tools; declared mechanical reports are ignored and exported by CI. Reviewed health baselines and hybrid documents remain committed. |
 | Detailed supporting guidance | `docs/development/`, `docs/security/`, `docs/testing/`, `docs/integrations/`, and related specialist folders | Development holds active implementation, extension, testing, and tooling guides reached from Engineering. Link specialist material from its canonical owner and avoid duplicating entrypoint commands or product status. |
 | Transitional compatibility paths | `docs/operations/` and `docs/plans/` | Retain only when active code, tests, tooling, or strong links require the path; do not add new durable guidance. |
 | Historical or superseded material | `archive/docs/` | Preserve useful history with replacement links or explicit archive rationale. |
@@ -131,3 +131,7 @@ Synchronization with upstream `63e84bb978b5a8b8cffbce3820b6842aa907423f` retains
 upstream screenshots are included. All retained image bytes match the newest upstream version;
 the inventory's `upstreamSynchronization` section records their verified local LFS hashes
 without rewriting the original 338-image capture. Remote LFS upload remains a publication step.
+
+Generated delivery is defined file by file in [Generated output delivery](engineering/generated-output-delivery.md)
+and the maintained output policy. Regenerate with `python build/python/cli/buildctl.py regen --fix`;
+commit only reviewed views. The source-hash manifest is review evidence, not an actual-hash cache.

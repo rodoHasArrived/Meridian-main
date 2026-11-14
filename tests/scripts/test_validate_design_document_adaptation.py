@@ -48,6 +48,27 @@ class DesignDocumentAdaptationTests(unittest.TestCase):
     def test_current_repository_contract_passes(self) -> None:
         self.assertEqual([], [finding for finding in module.validate(ROOT) if finding.severity == "error"])
 
+    def test_source_evidence_uses_authored_generator_without_requiring_a_mirror(self) -> None:
+        self.assertEqual(
+            "build/scripts/generate-workspace-catalog-ts.py",
+            self.adaptation["source_evidence"]["dashboard_workspace_catalog"],
+        )
+        original_exists = Path.exists
+        mirror = ROOT / "src/Meridian.Ui/dashboard/src/lib/workspace-catalog.generated.ts"
+        with patch.object(Path, "exists", lambda path: path != mirror and original_exists(path)):
+            self.assertEqual([], self.errors())
+
+    def test_rejects_browser_generator_root_order_drift_and_dynamic_order(self) -> None:
+        original_read = module.read_text
+        generator = ROOT / "build/scripts/generate-workspace-catalog-ts.py"
+        original = original_read(generator)
+        swapped = original.replace('    "Trading",\n    "Portfolio",', '    "Portfolio",\n    "Trading",')
+        with patch.object(module, "read_text", side_effect=lambda path: swapped if path == generator else original_read(path)):
+            self.assertTrue(any("dashboard root workspace order drifted" in error for error in self.errors()))
+        dynamic = original.replace("WORKSPACE_NAMES = [", "UNRELATED_NAMES = [") + "\nWORKSPACE_NAMES = load_order()\n"
+        with patch.object(module, "read_text", side_effect=lambda path: dynamic if path == generator else original_read(path)):
+            self.assertTrue(any("cannot inspect dashboard root workspace order" in error for error in self.errors()))
+
     def test_rejects_blanket_research_or_trading_deferral(self) -> None:
         for name in ["Research & Analytics", "Trading & Execution"]:
             with self.subTest(context=name):

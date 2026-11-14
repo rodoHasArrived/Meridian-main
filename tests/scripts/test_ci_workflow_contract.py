@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import unittest
+
+import yaml
 from pathlib import Path
 
 from tests.scripts.workflow_assertions import assert_pinned_action
@@ -29,7 +31,7 @@ class CiWorkflowContractTests(unittest.TestCase):
         for check in ("Validate AI contract drift", "Validate provider-validation script tests",
                       "Validate AI navigation freshness", "Validate AI handoff checklist schema",
                       "Enforce mode escalation policy", "Enforce validation-floor guard",
-                      "Workstation bundle freshness gate", "Reject whole-repo generated documentation drift"):
+                      "Validate workstation bundle", "Generate maintained documentation"):
             self.assertIn(check, script)
         catalog = (REPO_ROOT / "build/scripts/run-maintained-generation.py").read_text(encoding="utf-8")
         self.assertIn("build/scripts/run-maintained-generation.py", script)
@@ -49,15 +51,53 @@ class CiWorkflowContractTests(unittest.TestCase):
         self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
         self.assertEqual(checkout.get("with", {}).get("fetch-depth"), "0")
 
+    def test_full_coverage_builds_checkout_assets_before_dotnet_evaluation(self) -> None:
+        document = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        steps = document["jobs"]["verify-full"]["steps"]
+        node = assert_pinned_action(self, self.workflow, "verify-full", "actions/setup-node")
+        python = assert_pinned_action(self, self.workflow, "verify-full", "actions/setup-python")
+        self.assertEqual(node["with"]["node-version-file"], ".nvmrc")
+        self.assertEqual(python["with"]["python-version"], "3.12")
+        prepare = next(step for step in steps
+                       if step.get("run") == "python build/scripts/ensure-workstation-assets.py")
+        restore = next(step for step in steps if "dotnet restore Meridian.sln" in step.get("run", ""))
+        tests = next(step for step in steps if "dotnet test Meridian.sln" in step.get("run", ""))
+        self.assertLess(steps.index(node), steps.index(prepare))
+        self.assertLess(steps.index(python), steps.index(prepare))
+        self.assertLess(steps.index(prepare), steps.index(restore))
+        self.assertLess(steps.index(restore), steps.index(tests))
+        self.assertNotIn("continue-on-error", prepare)
+        self.assertFalse(any(step.get("uses", "").startswith("actions/download-artifact@") for step in steps),
+                         "Coverage must build assets from its own checkout, without a cross-run bundle")
+
+    def test_dotnet_concurrency_benchmark_prepares_assets_outside_measurement(self) -> None:
+        workflow = (REPO_ROOT / ".github/workflows/ci-concurrency-benchmark.yml").read_text(encoding="utf-8")
+        steps = yaml.load(workflow, Loader=yaml.BaseLoader)["jobs"]["pairs"]["steps"]
+        node = assert_pinned_action(self, workflow, "pairs", "actions/setup-node")
+        python = assert_pinned_action(self, workflow, "pairs", "actions/setup-python")
+        self.assertNotIn("if", node, "Both measured subjects need Node after bundle untracking")
+        self.assertEqual(node["with"]["node-version"], "24")
+        self.assertEqual(python["with"]["python-version"], "3.12")
+        prepare = next(step for step in steps
+                       if step.get("run") == "python build/scripts/ensure-workstation-assets.py")
+        restore = next(step for step in steps if "dotnet restore Meridian.sln" in step.get("run", ""))
+        measure = next(step for step in steps if "benchmark-ci.py" in step.get("run", ""))
+        self.assertEqual(prepare["if"], "matrix.subject == 'dotnet'")
+        self.assertLess(steps.index(node), steps.index(prepare))
+        self.assertLess(steps.index(python), steps.index(prepare))
+        self.assertLess(steps.index(prepare), steps.index(restore))
+        self.assertLess(steps.index(restore), steps.index(measure))
+        self.assertNotIn("continue-on-error", prepare)
+
     def test_local_orchestrator_isolates_outputs_and_preserves_hosted_leaf_defaults(self) -> None:
         script = (REPO_ROOT / "scripts/ci.sh").read_text(encoding="utf-8")
         self.assertIn('MERIDIAN_CI_ARTIFACT_ROOT="${MERIDIAN_CI_ARTIFACT_ROOT:-artifacts}"', script)
         self.assertIn('exec "$python_cmd" build/scripts/ci/local_gate.py', script)
         self.assertIn('--isolation-key "$MERIDIAN_CI_ISOLATION_KEY"', script)
-        self.assertIn('--wait-for-dotnet "$MERIDIAN_CI_BROWSER_BUILD_BARRIER"', script)
+        self.assertIn("build/scripts/ensure-workstation-assets.py", script)
         browser = script.split("verify_browser() {", 1)[1].split("verify_docs() {", 1)[0]
-        self.assertLess(browser.index("Run dashboard tests"), browser.index("Wait for .NET browser-asset reads"))
-        self.assertLess(browser.index("Wait for .NET browser-asset reads"), browser.index("Build dashboard bundle"))
+        self.assertLess(browser.index("Run dashboard tests"), browser.index("Build dashboard bundle"))
+        self.assertLess(browser.index("Build dashboard bundle"), browser.index("Validate workstation bundle"))
 
 
 if __name__ == "__main__":

@@ -4,9 +4,47 @@
 **Owner:** core-team
 **Reviewed:** 2026-10-20
 
-Use this procedure when merging current `origin/main` into a feature branch leaves conflicts in
-the tracked browser bundle or generated documentation. The canonical workstation tree remains
-tracked, as required by PRD-013 and PRD-018. Rebuild it from the merged dashboard source.
+Use this procedure when merging current `origin/main` into a feature branch changes generated
+outputs or leaves conflicts in reviewed documentation. The host still serves the canonical
+`src/Meridian.Ui/wwwroot/workstation/` directory; its built contents are ignored and regenerated
+from dashboard source locally and in CI.
+
+## Output ownership and one regeneration command
+
+The `delivery` section in `build/scripts/maintained-generation-outputs.json` names each CI-produced
+file and tree. The declared outputs include the WPF trackers, operational status reports, source
+and roadmap `MANIFEST.json` files, `database/manifest/contracts.json`, browser TypeScript contract
+mirrors, and the workstation asset tree. Update their inputs or generators; leave the outputs
+untracked. CI generates them for the checked-out revision and exports available machine outputs
+under `artifacts/docs/generated/`. Its `outputs.json` records that revision and each file's digest.
+
+Reviewed generated references, diagrams, roadmap/source documentation and generated README blocks
+remain committed behind freshness checks. The coverage report's protected handwritten suffix also
+remains review-owned. The accepted `docs/source/generated/source-hash-manifest.json` baseline stays
+committed: it records a source/README alignment review. Actual current hashes are separate CI
+evidence at `artifacts/docs/source-hashes.json`; producing them never accepts a new review baseline.
+
+Install the documented generation dependencies, then refresh with the same command after edits or
+a merge:
+
+```powershell
+npm ci --no-fund --no-audit
+npm --prefix src/Meridian.Ui/dashboard ci --include=optional
+python -m pip install --requirement build/scripts/docs/requirements.txt
+python build/python/cli/buildctl.py regen --fix
+```
+
+Use `--docs-only` when the browser build is outside the task. `regen --fix` keeps the refreshed
+outputs without staging or committing them. `regen` without `--fix` also checks that reviewed
+generated material matches the commit and exports machine outputs. Both refuse an unresolved Git
+merge. Review and commit changes to retained references; ignored machine outputs need no commit.
+
+Install the tracked hooks once with `bash scripts/dev/install-git-hooks.sh`. The `post-merge` hook
+runs `regen --fix` after a completed local merge and refreshes ignored outputs along with any
+affected reviewed generated documents. It never stages or commits. If generation fails, the merge
+has already completed; inspect the report, fix the inputs or dependencies, and rerun the command.
+GitHub's merge service does not execute this local hook: hosted checks regenerate through the same
+catalog for each PR, main revision and merge group.
 
 ## Prepare a repair without changing your branch
 
@@ -47,9 +85,9 @@ stale evidence after either revision changes. Fork contributors use this same lo
 
 ## Hosted PR repair
 
-Use hosted repair as the default owner of deterministic generated chores on eligible PRs:
-commit the authored inputs, then let the bot rebuild the workstation and regenerate maintained
-documentation together in one repair commit. The shared catalog in
+Commit authored inputs and reviewed generated documents. Hosted repair can refresh retained
+generated references on eligible PRs; ignored machine outputs are delivered as CI artifacts and
+do not become bot commits. The shared catalog in
 `build/scripts/run-maintained-generation.py` also owns the source-derived contract manifest and
 its dependent documentation. It uses the retained physical database catalog; it does not inspect
 or certify a new database schema. SQL changes still require the schema-control snapshot/review path.
@@ -132,7 +170,8 @@ In particular:
   reuse parent entries that match the merged module. A module that matches neither reviewed parent
   requires the [source documentation workflow](../source/README.md); never create new review hashes
   merely to clear a merge.
-- Database manifests and diagram images need their owning schema/diagram generation lanes.
+- Retained physical database manifests and diagram images need their owning schema/diagram
+  generation lanes. The C# contract manifest is a declared CI output.
 - The handwritten suffix in `docs/status/coverage-report.md`, beginning at
   `<!-- auto-sync:coverage -->`, is merged with Git's three-way text merge. Conflicting prose or
   malformed markers remain unresolved; the generated prefix can be seeded only after that
@@ -146,8 +185,7 @@ regression coverage. Confirm `git diff --name-only --diff-filter=U` is empty.
 npm --prefix src/Meridian.Ui/dashboard ci --include=optional
 npm ci --no-fund --no-audit
 python -m pip install --requirement build/scripts/docs/requirements.txt
-python build/scripts/run-maintained-generation.py
-python build/scripts/run-maintained-generation.py --report artifacts/maintained-generation/second-run.json
+python build/python/cli/buildctl.py regen --fix
 git diff --check
 git status --short
 ```
@@ -156,8 +194,9 @@ The runner's explicit maintained command catalog generates browser contract mirr
 the workstation, then adapter readiness, roadmap/source docs, Mermaid, WPF, UML, workflow overview,
 and workflow manifest outputs. Canonical `verify-docs`, Documentation Automation, manual roadmap
 validation, and repair share this catalog. Dependency installation and CI comparison steps remain
-separate. Use `--dry-run` to inspect the required and advisory commands without changing files.
-`--docs-only` runs the documentation prerequisites and discovered documentation steps without
+separate. Use `python build/scripts/run-maintained-generation.py --dry-run` to inspect the required
+and advisory commands without changing files.
+`regen --fix --docs-only` runs the documentation prerequisites and documentation steps without
 browser contract/build work; Documentation Automation uses it to converge its own outputs.
 Use the default full mode for a browser/source merge repair.
 
@@ -177,7 +216,8 @@ Handwritten content and reviewed baselines are compared with the invocation-star
 any existing local edits. Unauthorized changes are restored and reported. Run this command with
 exclusive access to the checkout: concurrent edits cannot be distinguished from generator writes.
 This is a local guard for reviewed generators, not a sandbox for untrusted code or an automatic
-commit/push service. Ignored caches and operational artifacts are outside the comparison.
+commit/push service. Declared ignored machine outputs are included in convergence and write
+protection; dependency caches and unrelated operational artifacts are outside the comparison.
 
 The Vite build empties `src/Meridian.Ui/wwwroot/workstation/` before emitting the new bundle, so
 removed hashes appear as deleted outputs. The runner does not refresh the reviewed source hash
@@ -195,32 +235,28 @@ successful result to stage the reconciled manifest. It never invents a new revie
 combined module or conflicting manifest metadata requires review. Refresh lockfiles with their
 package manager after resolving dependency inputs; they are outside generic generated recovery.
 
-Review and stage the complete regenerated output, including removed hashed assets, then inspect
-`git diff --cached`. Run the applicable validation lanes and `bash scripts/ci.sh`, commit the merge,
+Review and stage the changed retained generated references, then inspect `git diff --cached`.
+Do not force-add ignored machine outputs or removed hashed assets. Run the applicable validation
+lanes and `bash scripts/ci.sh`, commit the merge,
 and push the feature branch. The hosted `quality-gate` and documentation drift checks must pass
 on the final head. Source README/hash changes still need their existing review and validation.
 The full diagram sequence is documented in [the documentation workflow](../../.github/workflows/documentation.yml).
 
 ## Merge queues and custom merge drivers
 
-Both Meridian CI and Documentation Automation run freshness checks for merge groups. Their
-synthetic trees cannot be patched in place. If a combination is stale, keep the check failing,
-refresh affected PR branches and rebuild the group. Repeated combined-output conflicts may warrant
+Both Meridian CI and Documentation Automation regenerate outputs for merge groups and check the
+freshness of retained reviewed material. A machine-output delta is published as an artifact;
+it does not require a source commit. If retained documentation is stale in the combined tree,
+keep the check failing, refresh affected PR branches and rebuild the group. Repeated conflicts may warrant
 an administrator's review of one-PR groups. Per-PR repair does not eliminate this limitation.
 
-A custom `.gitattributes` merge driver depends on local Git configuration and does not configure
-GitHub's merge environment. It also cannot prove that a parent's assets match the merged source.
+The retained generated snapshots declared in `.gitattributes` use Git's built-in `binary` merge
+driver. Concurrent edits remain conflicts for explicit recovery and regeneration instead of
+silently accepting one parent's output. Reviewed source hashes remain subject to parent-evidence
+reconciliation. This attribute needs no custom driver configuration; it does not establish
+freshness on its own. Unknown files and handwritten prose retain their existing review rules.
 
-The documentation health dashboard avoids that dependency by tracking only merge-stable signals.
-`docs/status/doc-health-dashboard.{json,md}` omit Markdown line counts, which every Markdown edit
-changes. Two PRs that edit different Markdown files therefore merge cleanly, and the merged
-dashboard stays current. The JSON's `signal_digest` line still conflicts when both sides change
-tracked signals differently, for example when each adds a file. Without it, both sides would write
-the same `total_files` value and Git would merge an undercount without reporting a conflict. The
-health score uses line counts only through its average-size and marker-density terms. At the repository's
-current size, those terms do not change for ordinary edits. A rare combined change that does move
-the score is still caught by the regular and merge-group freshness checks.
-The explicit command makes local conflict resolution repeatable and leaves regeneration and the
-existing freshness checks mandatory. See the
+The explicit command makes local conflict resolution repeatable and leaves generation and the
+reviewed-document freshness checks mandatory. See the
 [automation design constraints](docs-regeneration-automation-design.md) for the trust boundary and
 the remaining contributor cases.

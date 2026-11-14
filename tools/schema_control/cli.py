@@ -716,6 +716,10 @@ def _promote(root: Path, config: Mapping[str, Any], candidate_root: Path) -> Non
             stage = destination.with_name(f".{destination.name}.schema-control-stage")
             remove_path(stage)
             shutil.copytree(source, stage)
+            if source == (candidate_root / "manifest").resolve():
+                # Keep the raw code inventory in the candidate artifact; only
+                # reviewed physical manifests and documentation are promoted.
+                (stage / "contracts.json").unlink(missing_ok=True)
             staged.append((stage, destination))
 
         for stage, destination in staged:
@@ -884,7 +888,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         expected_manifest, expected_docs = _configured_output_paths(root, config)
         manifest_drift = compare_artifact_trees(
-            expected_manifest, candidate_root / "manifest"
+            expected_manifest, candidate_root / "manifest", exclude=frozenset({"contracts.json"})
         )
         docs_drift = compare_artifact_trees(expected_docs, candidate_root / "docs")
         drift = _merge_drift(manifest_drift, docs_drift)
@@ -893,6 +897,13 @@ def main(argv: Sequence[str] | None = None) -> int:
 
         base_tree = load_json_tree(expected_manifest)
         candidate_tree = load_json_tree(candidate_root / "manifest")
+        # Reconstruct the CI-produced contract baseline from pinned source;
+        # missing committed caches must not turn every contract into an addition.
+        from .contracts import build_contract_manifest_at_revision
+
+        baseline_sha = snapshot.get("revisions", {}).get("baseline_sha")
+        baseline_sha = baseline_sha or resolve_git_commit(root, args.base_ref or "HEAD")
+        base_tree["contracts.json"] = build_contract_manifest_at_revision(root, baseline_sha, args.config)
         structural_diff = build_manifest_diff(base_tree, candidate_tree)
         write_json_if_changed(reports_root / "schema-diff.json", structural_diff)
         write_text_if_changed(

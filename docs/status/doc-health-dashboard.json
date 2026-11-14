@@ -1,11 +1,11 @@
 {
-  "total_files": 1267,
+  "total_files": 1268,
   "orphaned_count": 396,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 304,
   "health_score": 85,
-  "signal_digest": "sha256:5fe7a6640a669bb8aaa77dd99420afcb46a66237dcf8d2a6261432a8f1aa2e2e",
+  "signal_digest": "sha256:09496e19861a76d52053c5e4c562904d219705a6c269c5b9d238669c17cb8fe3",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2462,7 +2462,7 @@
     {
       "path": "docs/engineering/docs-regeneration-automation-design.md",
       "has_heading": true,
-      "todo_count": 1,
+      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -2491,6 +2491,13 @@
       "path": "docs/engineering/generated-merge-recovery.md",
       "has_heading": true,
       "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/generated-output-delivery.md",
+      "has_heading": true,
+      "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },

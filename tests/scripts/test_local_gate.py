@@ -31,37 +31,20 @@ def event(kind):
           "isolationKey":os.environ.get("MERIDIAN_CI_ISOLATION_KEY")})+"\\n")
 event("start")
 (root / (name+".started")).touch()
-if scenario == "overlap" and name in ("verify-dotnet","verify-browser"):
-    peer = "verify-browser" if name == "verify-dotnet" else "verify-dotnet"
-    deadline = time.monotonic()+5
-    while not (root / (peer+".started")).exists():
-        if time.monotonic()>deadline: sys.exit(9)
-        time.sleep(.01)
+if name == "verify-dotnet":
+    assert (root / "verify-browser.finished").exists()
 if scenario == "interrupt" and name == "verify-dotnet":
     subprocess = __import__("subprocess")
     child = subprocess.Popen([sys.executable,"-c", "import time,pathlib; time.sleep(1.5); pathlib.Path('orphan-write').touch()"])
     (root / "descendant.pid").write_text(str(child.pid))
     time.sleep(30)
-if scenario == "barrier":
-    if name == "verify-dotnet":
-        deadline = time.monotonic()+5
-        while not (root / "browser-ready").exists():
-            if time.monotonic()>deadline: sys.exit(10)
-            time.sleep(.01)
-    elif name == "verify-browser":
-        event("tests-ready")
-        (root / "browser-ready").touch()
-        __import__("subprocess").run([sys.executable,os.environ["LOCAL_GATE_TEST_HELPER"],
-            "--wait-for-dotnet",os.environ["MERIDIAN_CI_BROWSER_BUILD_BARRIER"]],check=True)
-        assert (root / "verify-dotnet.finished").exists()
-        event("bundle-build")
 if name in ("verify-docs","verify-workflows"):
     assert (root / "verify-dotnet.finished").exists()
     assert (root / "verify-browser.finished").exists()
 if name == "verify-workflows": assert (root / "verify-docs.finished").exists()
 event("finish")
 (root / (name+".finished")).touch()
-sys.exit(7 if scenario == "failure" and name == "verify-dotnet" else 0)
+sys.exit(7 if (scenario == "failure" and name == "verify-dotnet") or (scenario == "browser-failure" and name == "verify-browser") else 0)
 '''
 
 
@@ -89,15 +72,13 @@ class LocalGateTests(unittest.TestCase):
     def events(self):
         return [json.loads(line) for line in (self.root / "events.jsonl").read_text().splitlines()]
 
-    def test_pair_overlaps_and_generation_waits_for_both(self):
-        self.assertEqual(0, self.run_gate(jobs=2, scenario="overlap"))
+    def test_assets_are_built_before_dotnet_for_either_worker_budget(self):
+        self.assertEqual(0, self.run_gate(jobs=2))
         events = self.events()
         intervals = {lane: {event["kind"]: event["time"] for event in events if event["lane"] == lane}
                      for lane in gate.FULL_LANES}
-        self.assertLess(intervals["verify-dotnet"]["start"], intervals["verify-browser"]["finish"])
-        self.assertLess(intervals["verify-browser"]["start"], intervals["verify-dotnet"]["finish"])
-        self.assertGreaterEqual(intervals["verify-docs"]["start"],
-                                max(intervals[lane]["finish"] for lane in gate.FULL_LANES[:2]))
+        self.assertGreaterEqual(intervals["verify-dotnet"]["start"], intervals["verify-browser"]["finish"])
+        self.assertGreaterEqual(intervals["verify-docs"]["start"], intervals["verify-dotnet"]["finish"])
         receipt = self.receipt()
         self.assertEqual(receipt["status"], "passed")
         self.assertCountEqual(receipt["completedLanes"], gate.FULL_LANES)
@@ -179,14 +160,18 @@ class LocalGateTests(unittest.TestCase):
         marker.touch()
         self.assertEqual(gate.wait_for_dotnet(marker, timeout=0), 0)
 
-    def test_browser_tests_overlap_but_bundle_write_waits_for_dotnet_readers(self):
-        with patch.dict(os.environ, {"LOCAL_GATE_TEST_HELPER": str(REPO / "build/scripts/ci/local_gate.py")}):
-            self.assertEqual(self.run_gate(jobs=2, scenario="barrier"), 0)
-        events = self.events()
-        times = {(event["lane"], event["kind"]): event["time"] for event in events}
-        self.assertLess(times[("verify-browser", "tests-ready")], times[("verify-dotnet", "finish")])
-        self.assertGreaterEqual(times[("verify-browser", "bundle-build")], times[("verify-dotnet", "finish")])
-        self.assertFalse((self.root / ".ai/locks/validation.lock").exists())
+    def test_failed_browser_build_never_launches_dotnet_on_old_assets(self):
+        # Later documentation validators may still run for independent evidence.
+        # Supply their inert commands because this fixture intentionally omits .NET.
+        commands = self.commands("browser-failure")
+        for name in ("verify-docs", "verify-workflows"):
+            commands[name] = [sys.executable, "-c", "pass"]
+        with redirect_stdout(io.StringIO()):
+            code = gate.run_gate(self.root, jobs=2, commands=commands,
+                                 prerequisite=[sys.executable, "-c", "pass"])
+        self.assertEqual(code, 7)
+        self.assertFalse((self.root / "verify-dotnet.started").exists())
+        self.assertEqual(self.receipt()["status"], "failed")
 
     @unittest.skipIf(os.name == "nt", "POSIX process-group signal contract")
     def test_interrupt_stops_descendants_and_never_launches_queued_lane(self):
@@ -211,7 +196,7 @@ class LocalGateTests(unittest.TestCase):
         receipt = self.receipt()
         self.assertEqual(receipt["status"], "interrupted")
         self.assertNotIn("coldFullGateSeconds", receipt)
-        self.assertFalse((self.root / "verify-browser.started").exists())
+        self.assertTrue((self.root / "verify-browser.finished").exists())
         self.assertFalse((self.root / ".ai/locks/validation.lock").exists())
         time.sleep(1.6)
         self.assertFalse((self.root / "orphan-write").exists())

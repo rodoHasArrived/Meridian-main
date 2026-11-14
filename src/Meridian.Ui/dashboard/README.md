@@ -3082,6 +3082,12 @@ external-runtime requirements. Package conformance and browser regression harnes
 
 ## Validation
 
+The C# route and workspace catalog mirrors in `src/lib/*.generated.ts` are local build outputs.
+`npm ci` prepares them, and the dev, lint, typecheck, build and test commands regenerate them
+before use. Python 3 must be available; set `MERIDIAN_PYTHON` to select its executable explicitly.
+After installing dependencies with lifecycle scripts disabled, run `npm run generate:contracts`
+before invoking tools directly. CI publishes generated workstation assets from the current source.
+
 TypeScript is pinned to 5.9.3 in the package manifest and lockfile. This stays within the
 `typescript-eslint` supported compiler range while updating the previous 5.7 baseline.
 After compiler updates, run `npx tsc --noEmit` from this directory and the focused Vite
