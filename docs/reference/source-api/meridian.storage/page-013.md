@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HealthStatistics
+
+Qualified name: <code>Meridian.Storage.Services.HealthStatistics</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:856](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L856).
+
+Aggregates storage file counts, sizes, corruption, compression, fragmentation, and age statistics.
+
+```csharp
+public sealed class HealthStatistics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:858](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L858) |  |
+| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:859](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L859) |  |
+| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:860](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L860) |  |
+| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:861](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L861) |  |
+| <code>public int CorruptedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:862](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L862) |  |
+| <code>public int OrphanedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
+| <code>public double CompressionRatio { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:864](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L864) |  |
+| <code>public double FragmentationPct { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:865](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L865) |  |
+| <code>public DateTime? OldestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:866](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L866) |  |
+| <code>public DateTime? NewestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:867](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L867) |  |
+
+## HealthSummary
+
+Qualified name: <code>Meridian.Storage.Services.HealthSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:844](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L844).
+
+```csharp
+public sealed record HealthSummary(int TotalFiles, long TotalBytes, int HealthyFiles, int WarningFiles, int CorruptedFiles, int OrphanedFiles);
+```
+
+## IAuditChainService
+
+Qualified name: <code>Meridian.Storage.Services.IAuditChainService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/AuditChainService.cs:45](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L45).
+
+Interface for audit chain service.
+
+```csharp
+public interface IAuditChainService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task AppendEntryAsync(string filePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/AuditChainService.cs:50](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L50) | Append a file entry to the audit chain with SHA256 hash-chaining. |
+| <code>Task&lt;AuditChainVerifyResult&gt; VerifyChainAsync(string chainLogPath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/AuditChainService.cs:55](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L55) | Verify the integrity of the audit chain. |
+
 ## IDataLineageService
 
 Qualified name: <code>Meridian.Storage.Services.IDataLineageService</code>. Kind: `interface`.
@@ -842,43 +898,4 @@ Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:960](../../../.
 
 ```csharp
 public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
-```
-
-## ParquetConversionService
-
-Qualified name: <code>Meridian.Storage.Services.ParquetConversionService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/ParquetConversionService.cs:17](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L17).
-
-Background service that detects completed trading days&#x27; JSONL files and converts them to Parquet format for optimized analytics queries. Only converts files from prior trading days (never the current day&#x27;s live data).
-
-```csharp
-public sealed class ParquetConversionService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ParquetConversionService(StorageOptions options);</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:32](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L32) |  |
-| <code>public async Task&lt;ConversionSummary&gt; ConvertCompletedDaysAsync(int maxAgeDays = 30, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:44](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L44) | Scan for JSONL files from completed trading days and convert them to Parquet. |
-
-## PlannedMigrationAction
-
-Qualified name: <code>Meridian.Storage.Services.PlannedMigrationAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:602](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L602).
-
-```csharp
-public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings);
-```
-
-## QualityAlert
-
-Qualified name: <code>Meridian.Storage.Services.QualityAlert</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/DataQualityService.cs:1230](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1230).
-
-```csharp
-public sealed record QualityAlert(string Symbol, string Issue, double CurrentScore, double Threshold, string Recommendation);
 ```

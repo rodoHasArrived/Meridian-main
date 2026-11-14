@@ -520,6 +520,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>public decimal CashBalance =&gt; …;</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.cs:1907](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.cs#L1907) | Alias for Cash using the naming used in operator-facing surfaces. |
 
+## ExecutionReportingAssetClasses
+
+Qualified name: <code>Meridian.Execution.Services.ExecutionReportingAssetClasses</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs:7](../../../../src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs#L7).
+
+Reporting asset-class tags stamped on ExecutionJournalEntry.ReportingAssetClass. The values are persisted in the execution journal, so they must never change.
+
+```csharp
+public static class ExecutionReportingAssetClasses
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string UsdUsEquity = &quot;USD_US_EQUITY&quot;;</code> | [src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs:10](../../../../src/Meridian.Execution/Services/ExecutionReportingAssetClasses.cs#L10) | A USD-denominated US equity order whose economics the journal reports. |
+
 ## FileBrokerageOrderRecoveryStore
 
 Qualified name: <code>Meridian.Execution.Services.FileBrokerageOrderRecoveryStore</code>. Kind: `class`.
@@ -823,23 +841,3 @@ Idempotent durable-fill append result.
 ```csharp
 public sealed record PaperSessionFillAppendResult(PaperSessionFillAppendStatus Status, string? ExistingCanonicalHash = null);
 ```
-
-## PaperSessionFillAppendStatus
-
-Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:230](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L230).
-
-Outcome of attempting to durably claim a paper-session FillId.
-
-```csharp
-public enum PaperSessionFillAppendStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:232](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L232) |  |
-| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:233](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L233) |  |
-| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:234](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L234) |  |

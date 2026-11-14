@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## UnderlyingLinkRemovedPayload
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.UnderlyingLinkRemovedPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:91](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L91).
+
+UnderlyingGraph / UnderlyingLinkRemoved: the removed declaration.
+
+```csharp
+public sealed record UnderlyingLinkRemovedPayload(UnderlyingLinkPayload Link) : ISecurityGovernancePayload;
+```
+
+## AdaptivePartitionPlacementPlanner
+
+Qualified name: <code>Meridian.Storage.Services.AdaptivePartitionPlacementPlanner</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs:6](../../../../src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs#L6).
+
+Recommends a storage partition strategy from observed ingestion shape.
+
+```csharp
+public sealed class AdaptivePartitionPlacementPlanner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const double HighVolumeEventsPerHourThreshold = 100_000d;</code> | [src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs:8](../../../../src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs#L8) |  |
+| <code>public const double LowVolumeEventsPerDayThreshold = 10_000d;</code> | [src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs:9](../../../../src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs#L9) |  |
+| <code>public StorageOptions ApplyRecommendation(StorageOptions baseOptions, AdaptivePartitionPlacementRecommendation recommendation, string? filePrefix = null);</code> | [src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs:11](../../../../src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs#L11) |  |
+| <code>public AdaptivePartitionPlacementRecommendation Recommend(AdaptivePartitionPlacementRequest request);</code> | [src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs:42](../../../../src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs#L42) |  |
+
+## AdaptivePartitionPlacementRecommendation
+
+Qualified name: <code>Meridian.Storage.Services.AdaptivePartitionPlacementRecommendation</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs:163](../../../../src/Meridian.Storage/Services/AdaptivePartitionPlacementPlanner.cs#L163).
+
+```csharp
+public sealed record AdaptivePartitionPlacementRecommendation(PartitionStrategy Strategy, StorageProfile RecommendedProfile, string ReasonCode, double EventsPerHour, double EventsPerDay, IReadOnlyList<string> Notes);
+```
+
 ## AdaptivePartitionPlacementRequest
 
 Qualified name: <code>Meridian.Storage.Services.AdaptivePartitionPlacementRequest</code>. Kind: `record`.
@@ -775,59 +818,3 @@ Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:835](../../../.
 ```csharp
 public sealed record HealthReport(string ReportId, DateTime GeneratedAt, long ScanDurationMs, HealthSummary Summary, IReadOnlyList<HealthIssue> Issues, HealthStatistics Statistics);
 ```
-
-## HealthStatistics
-
-Qualified name: <code>Meridian.Storage.Services.HealthStatistics</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:856](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L856).
-
-Aggregates storage file counts, sizes, corruption, compression, fragmentation, and age statistics.
-
-```csharp
-public sealed class HealthStatistics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:858](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L858) |  |
-| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:859](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L859) |  |
-| <code>public int HealthyFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:860](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L860) |  |
-| <code>public int WarningFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:861](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L861) |  |
-| <code>public int CorruptedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:862](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L862) |  |
-| <code>public int OrphanedFiles { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:863](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L863) |  |
-| <code>public double CompressionRatio { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:864](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L864) |  |
-| <code>public double FragmentationPct { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:865](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L865) |  |
-| <code>public DateTime? OldestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:866](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L866) |  |
-| <code>public DateTime? NewestFile { get; set; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:867](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L867) |  |
-
-## HealthSummary
-
-Qualified name: <code>Meridian.Storage.Services.HealthSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:844](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L844).
-
-```csharp
-public sealed record HealthSummary(int TotalFiles, long TotalBytes, int HealthyFiles, int WarningFiles, int CorruptedFiles, int OrphanedFiles);
-```
-
-## IAuditChainService
-
-Qualified name: <code>Meridian.Storage.Services.IAuditChainService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Services/AuditChainService.cs:45](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L45).
-
-Interface for audit chain service.
-
-```csharp
-public interface IAuditChainService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task AppendEntryAsync(string filePath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/AuditChainService.cs:50](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L50) | Append a file entry to the audit chain with SHA256 hash-chaining. |
-| <code>Task&lt;AuditChainVerifyResult&gt; VerifyChainAsync(string chainLogPath, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/AuditChainService.cs:55](../../../../src/Meridian.Storage/Services/AuditChainService.cs#L55) | Verify the integrity of the audit chain. |

@@ -20,6 +20,7 @@ using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -288,16 +289,13 @@ public sealed partial class FundOperationsWorkspaceReadService
         string? scopeId,
         string? financialAccountId)
     {
-        var normalizedScopeId = TrimOrNull(scopeId);
+        var normalizedScopeId = NormalizeOptional(scopeId);
         return new LedgerDimensionSetDto(
-            FundId: TrimOrNull(fundProfileId),
+            FundId: NormalizeOptional(fundProfileId),
             EntityId: scopeKind == FundLedgerScope.Entity ? normalizedScopeId : null,
             SleeveId: scopeKind == FundLedgerScope.Sleeve ? normalizedScopeId : null,
-            AccountId: TrimOrNull(financialAccountId));
+            AccountId: NormalizeOptional(financialAccountId));
     }
-
-    private static string? TrimOrNull(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static Dictionary<LedgerAccount, int> BuildEntryCounts(
         FundLedgerBook book,

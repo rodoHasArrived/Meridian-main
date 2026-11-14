@@ -25,7 +25,10 @@ public sealed class BondSettlementConsiderationService(IBondAnalyticsService ana
         {
             CalculationVersion = settlement.ModelVersion,
             SelectionReceiptId = settlement.SelectionReceiptId,
-            PriceAccountId = settlement.PriceAccountId
+            PriceAccountId = settlement.PriceAccountId,
+            // Receipts calculated before the declared-format-invariant terms hash retained the raw-text
+            // hash; it is honoured only while it is the raw-text hash of exactly the terms resolved now.
+            RetainedSecurityTermsSha256 = securityInput.ContentSha256
         };
         var result = await analytics.CalculateAsync(request, ct).ConfigureAwait(false);
         if (result is null || result.IsBlocked)

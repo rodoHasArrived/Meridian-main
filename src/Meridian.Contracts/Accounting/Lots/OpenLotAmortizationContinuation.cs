@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
@@ -63,7 +64,7 @@ public static class OpenLotAmortizationContinuation
             OpenFunctionalCostBasis = projected.FunctionalCostBasis
         }, parent), "Exchange continuation requires the unchanged immediately preceding amortization snapshot.");
         Require(exchange.ExpectedSecurityVersion == prior.Security.Version
-            && exchange.ExpectedSecurityHash == OpenLotAmortization.SecurityHash(prior.Security)
+            && OpenLotAmortization.AcceptedSecurityHashes(prior.Security).Contains(exchange.ExpectedSecurityHash)
             && prior.AsOfDate <= exchange.Projection.EconomicEvent!.EffectiveDate
             && instruction.AsOfDate >= exchange.Projection.EconomicEvent.EffectiveDate
             && instruction.AsOfDate > prior.AsOfDate,
@@ -71,11 +72,12 @@ public static class OpenLotAmortizationContinuation
         if (instruction.Reversal is null)
         {
             Require(target.ExpectedSecurityVersion == instruction.Security.Version
-                && target.ExpectedSecurityHash == OpenLotAmortization.SecurityHash(instruction.Security)
+                && OpenLotAmortization.AcceptedSecurityHashes(instruction.Security).Contains(target.ExpectedSecurityHash)
                 && prior.Security.AssetClass == instruction.Security.AssetClass
                 && prior.Security.Currency == instruction.Security.Currency
                 && JsonElement.DeepEquals(prior.Security.CommonTerms, instruction.Security.CommonTerms)
-                && JsonElement.DeepEquals(prior.Security.AssetSpecificTerms, instruction.Security.AssetSpecificTerms),
+                && JsonElement.DeepEquals(SecurityTermsEnvelope.WithoutRedundantDeclaredFormat(prior.Security.AssetSpecificTerms),
+                    SecurityTermsEnvelope.WithoutRedundantDeclaredFormat(instruction.Security.AssetSpecificTerms)),
                 "Exchange continuation requires unchanged retained predecessor and successor economic terms; reference revisions require separate schedule review.");
         }
         return prior.ExpectedLot;

@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## TierInfo
+
+Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:623](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L623).
+
+```csharp
+public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
+```
+
+## TierMigrationService
+
+Qualified name: <code>Meridian.Storage.Services.TierMigrationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:14](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L14).
+
+Service for managing data migration between storage tiers.
+
+```csharp
+public sealed class TierMigrationService : ITierMigrationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TierMigrationService(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:33](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L33) |  |
+| <code>public async Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:40](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L40) |  |
+| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:155](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L155) |  |
+| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:217](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L217) |  |
+| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:236](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L236) |  |
+
+## TierStatistics
+
+Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:618](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L618).
+
+```csharp
+public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
+```
+
 ## TradingSession
 
 Qualified name: <code>Meridian.Storage.Services.TradingSession</code>. Kind: `record`.

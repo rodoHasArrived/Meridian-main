@@ -1205,16 +1205,28 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             : null;
 
     /// <summary>
-    /// The terms-payload family written to the <c>terms_format</c> column (migration 042). A declared
-    /// <see cref="SecurityTermsEnvelope.FormatKey"/> wins; a payload that predates the tag is
-    /// classified by the same shape rule the migration backfill applied, so the column has one
-    /// definition whether the row was migrated or written. The stored payload is never mutated to add
-    /// the tag — writers own stamping. A declared format this node does not know is refused here with
-    /// a precise reason rather than by the column's check constraint.
+    /// The terms-payload family written to the <c>terms_format</c> column (migration 042): the declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/>, which migration 068's
+    /// <c>ck_securities_terms_format_declared</c> requires to equal the column. The store never infers a
+    /// family and never mutates the payload to add the tag — writers own stamping. An untagged payload
+    /// is refused here with <see cref="SecurityTermsFormatUndeclaredException"/> (ADR-024 amendment
+    /// 2026-11-13 step 5), and a declared format this node does not know with a precise reason, rather
+    /// than by the check constraints.
     /// </summary>
     internal static string ResolveStorableTermsFormat(SecurityProjectionRecord record)
     {
-        var format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        string format;
+        try
+        {
+            format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        }
+        catch (SecurityTermsFormatUndeclaredException exception)
+        {
+            throw new InvalidOperationException(
+                $"Security '{record.SecurityId}' ({record.AssetClass}) cannot be stored: {exception.Message}",
+                exception);
+        }
+
         if (!SecurityTermsFormats.IsKnown(format))
         {
             throw new InvalidOperationException(

@@ -10,42 +10,37 @@ public sealed class PostgresDepositReferenceProjectionStore : IDepositReferenceP
 {
     internal const string AssetClass = "Deposit";
 
-    private readonly PostgresReferenceProjectionReader _reader;
+    internal static readonly RegistryProjectionQuery ByInstitution = new(nameof(ByInstitution),
+        """
+        where lower(institution_name) = lower(@institution_name)
+        order by maturity_date
+        """);
+
+    internal static readonly RegistryProjectionQuery MaturingBefore = new(nameof(MaturingBefore),
+        """
+        where maturity_date is not null
+          and maturity_date < @before_date
+        order by maturity_date
+        """);
+
+    private readonly RegistryReferenceProjectionStore<DepositProjectionRow> _store;
 
     public PostgresDepositReferenceProjectionStore(SecurityMasterOptions options)
     {
-        _reader = new PostgresReferenceProjectionReader(options);
+        _store = CreateStore(options);
     }
 
+    internal static RegistryReferenceProjectionStore<DepositProjectionRow> CreateStore(SecurityMasterOptions options)
+        => new(options, AssetClass, MapRow, [ByInstitution, MaturingBefore]);
+
     public Task<DepositProjectionRow?> GetDepositAsync(Guid securityId, CancellationToken ct = default)
-        => _reader.QuerySingleAsync(
-            _reader.SelectSql(AssetClass, "where security_id = @security_id"),
-            [new NpgsqlParameter("security_id", securityId)],
-            MapRow,
-            ct);
+        => _store.GetBySecurityIdAsync(securityId, ct);
 
     public Task<IReadOnlyList<DepositProjectionRow>> GetByInstitutionAsync(string institutionName, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where lower(institution_name) = lower(@institution_name)
-                order by maturity_date
-                """),
-            [new NpgsqlParameter("institution_name", institutionName)],
-            MapRow,
-            ct);
+        => _store.ListAsync(ByInstitution, [new NpgsqlParameter("institution_name", institutionName)], ct);
 
     public Task<IReadOnlyList<DepositProjectionRow>> GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default)
-        => _reader.QueryAsync(
-            _reader.SelectSql(AssetClass,
-                """
-                where maturity_date is not null
-                  and maturity_date < @before_date
-                order by maturity_date
-                """),
-            [new NpgsqlParameter("before_date", beforeDate.ToDateTime(TimeOnly.MinValue))],
-            MapRow,
-            ct);
+        => _store.ListAsync(MaturingBefore, [new NpgsqlParameter("before_date", beforeDate.ToDateTime(TimeOnly.MinValue))], ct);
 
     internal static DepositProjectionRow MapRow(ProjectionRow row)
         => new(

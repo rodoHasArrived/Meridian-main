@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperSessionFillAppendStatus
+
+Qualified name: <code>Meridian.Execution.Services.PaperSessionFillAppendStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:230](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L230).
+
+Outcome of attempting to durably claim a paper-session FillId.
+
+```csharp
+public enum PaperSessionFillAppendStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Added = 0</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:232](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L232) |  |
+| <code>ExistingSame = 1</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:233](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L233) |  |
+| <code>Conflict = 2</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:234](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L234) |  |
+
 ## PaperSessionFillRecord
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionFillRecord</code>. Kind: `record`.

@@ -6,6 +6,45 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ParquetConversionService
+
+Qualified name: <code>Meridian.Storage.Services.ParquetConversionService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/ParquetConversionService.cs:17](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L17).
+
+Background service that detects completed trading days&#x27; JSONL files and converts them to Parquet format for optimized analytics queries. Only converts files from prior trading days (never the current day&#x27;s live data).
+
+```csharp
+public sealed class ParquetConversionService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ParquetConversionService(StorageOptions options);</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:32](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L32) |  |
+| <code>public async Task&lt;ConversionSummary&gt; ConvertCompletedDaysAsync(int maxAgeDays = 30, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/ParquetConversionService.cs:44](../../../../src/Meridian.Storage/Services/ParquetConversionService.cs#L44) | Scan for JSONL files from completed trading days and convert them to Parquet. |
+
+## PlannedMigrationAction
+
+Qualified name: <code>Meridian.Storage.Services.PlannedMigrationAction</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:602](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L602).
+
+```csharp
+public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings);
+```
+
+## QualityAlert
+
+Qualified name: <code>Meridian.Storage.Services.QualityAlert</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/DataQualityService.cs:1230](../../../../src/Meridian.Storage/Services/DataQualityService.cs#L1230).
+
+```csharp
+public sealed record QualityAlert(string Symbol, string Issue, double CurrentScore, double Threshold, string Recommendation);
+```
+
 ## QualityAssessment
 
 Qualified name: <code>Meridian.Storage.Services.QualityAssessment</code>. Kind: `record`.
@@ -787,45 +826,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;int&gt; ReconcileSecurityMasterAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, IEnumerable&lt;SymbolRegistryEntry&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs:13](../../../../src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs#L13) | Reconciles a bounded Security Master snapshot without replacing operator/provider authority. Builds and persists a private candidate before publishing any changed resolver state. |
-
-## TierInfo
-
-Qualified name: <code>Meridian.Storage.Services.TierInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:623](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L623).
-
-```csharp
-public sealed record TierInfo(int FileCount, long TotalBytes, DateTime? OldestFile, DateTime? NewestFile);
-```
-
-## TierMigrationService
-
-Qualified name: <code>Meridian.Storage.Services.TierMigrationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:14](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L14).
-
-Service for managing data migration between storage tiers.
-
-```csharp
-public sealed class TierMigrationService : ITierMigrationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TierMigrationService(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:33](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L33) |  |
-| <code>public async Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:40](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L40) |  |
-| <code>public Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:155](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L155) |  |
-| <code>public StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:217](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L217) |  |
-| <code>public Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:236](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L236) |  |
-
-## TierStatistics
-
-Qualified name: <code>Meridian.Storage.Services.TierStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:618](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L618).
-
-```csharp
-public sealed record TierStatistics(DateTimeOffset GeneratedAt, Dictionary<StorageTier, TierInfo> TierInfo);
-```

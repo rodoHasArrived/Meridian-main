@@ -70,6 +70,8 @@ public sealed class SettingsViewModelAssetProfileTests
 
             var assetTerms = request.AssetSpecificTerms;
             assetTerms.GetProperty("schemaVersion").GetInt32().Should().Be(SecurityMasterSchemaVersions.CustomAssetProfileTerms);
+            SecurityTermsEnvelope.GetDeclaredFormat(assetTerms).Should().Be(SecurityTermsFormats.CustomProfile,
+                "the workstation's profile-backed create declares the envelope family (ADR-024 amendment 2026-11-13)");
             assetTerms.GetProperty("customProfileId").GetString().Should().Be(profile.ProfileId);
             assetTerms.GetProperty("profileVersion").GetInt32().Should().Be(profile.Version);
             assetTerms.GetProperty("profileApproval").GetProperty("approvalReference").GetString()

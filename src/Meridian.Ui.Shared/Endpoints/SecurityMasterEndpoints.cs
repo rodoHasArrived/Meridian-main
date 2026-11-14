@@ -1432,6 +1432,15 @@ public static partial class SecurityMasterEndpoints
             is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
+        if (app.Services.GetService<ISecurityMasterProfilePromotionService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterProfilePromotionService))
+            MapProfilePromotionEndpoints(group, jsonOptions);
+
+        // The generic registry projection read is composed with Security Master storage; a host
+        // without it leaves the route unmapped rather than inferring the service as a body.
+        if (app.Services.GetService<IRegistryProjectionReadService>() is not null)
+            MapRegistryProjectionEndpoints(group, jsonOptions);
+
         MapOtcContractEndpoints(group, jsonOptions);
         MapOtcCollateralEndpoints(app, group, jsonOptions);
         MapCurveAndValuationEndpoints(app, group, jsonOptions);
@@ -1907,6 +1916,38 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("BuildSecurityMasterStructuredCreditReclassificationReport")
         .Produces<StructuredCreditReclassificationReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+    }
+
+    // ── CustomAsset profile promotion report (ADR-022) ──────────────────────
+
+    private static void MapProfilePromotionEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        // Report only: the scan dry-runs each CustomAsset record pinned to a reclassifying profile
+        // under the profile's target class and never writes. Promotion is an amendment that
+        // resubmits the pinned envelope.
+        group.MapPost(UiApiRoutes.SecurityMasterProfilePromotionReport, async (
+            string profileId,
+            HttpContext context,
+            [FromServices] ISecurityMasterProfilePromotionService promotionService,
+            CancellationToken ct) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+                return EndpointHelpers.Forbidden();
+
+            if (!SecurityAssetPackRegistry.ProfileAssetClasses.ContainsKey(profileId))
+            {
+                return Results.Problem(
+                    detail: $"'{profileId}' is not a reclassifying profile; only a profile a class declares in ReclassifyingProfileIds can be promoted.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            var report = await promotionService.BuildReportAsync(profileId, ct).ConfigureAwait(false);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("BuildSecurityMasterProfilePromotionReport")
+        .Produces<SecurityMasterProfilePromotionReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden);
     }
 
