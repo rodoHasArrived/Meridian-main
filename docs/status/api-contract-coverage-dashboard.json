@@ -10201,12 +10201,12 @@
     },
     {
       "name": "WorkstationScopeAccountOptionDto",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:41",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:56",
       "documented": true
     },
     {
       "name": "WorkstationScopeOptionsJsonContext",
-      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:58",
+      "source": "src/Meridian.Contracts/Workstation/WorkstationScopeOptionsDtos.cs:75",
       "documented": true
     },
     {
