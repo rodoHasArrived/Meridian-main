@@ -788,6 +788,10 @@ W8-WPF-PARITY-001: in_progress; health on_track; evidence in_progress. WPF remai
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W8-WPF-PARITY-001.md)
 - Evidence: [docs/engineering/plans/wpf-web-ui-alignment-plan.md](../../engineering/plans/wpf-web-ui-alignment-plan.md)
 - Evidence: [docs/development/wpf-implementation-notes.md](../../development/wpf-implementation-notes.md)
+- Evidence: [src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml](../../../src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml)
+- Evidence: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs](../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs)
+- Evidence: [tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs](../../../tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs)
 
 
 ### Exit Criteria
@@ -2527,26 +2531,30 @@ W12-CREDIT-001: planned; health green; evidence planned_evidence. Converge exist
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-12 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W12-ENTITY-001: in_progress; health green; evidence in_progress. New books enforce effective lifecycle controls; existing books require audited migration preflight. Winding-down close remains controlled and new commitments refused.
+W12-ENTITY-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591), including legacy-book activation after a passing preflight; operator acceptance pending.
 
 ### Status References
 
 - Decisions: none recorded
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3591](https://github.com/rodoHasArrived/Meridian-main/pull/3591)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W12-ENTITY-001.md)
 - Evidence: [docs/engineering/plans/intercompany-entity-controls.md](../../engineering/plans/intercompany-entity-controls.md)
 - Evidence: [src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs](../../../src/Meridian.Entities/FundStructure/EntityLifecyclePolicy.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/EntityTimelineService.cs](../../../src/Meridian.Ui.Shared/Services/EntityTimelineService.cs)
 - Evidence: [tests/Meridian.Tests/Storage/LedgerBookControlsPostgresTests.cs](../../../tests/Meridian.Tests/Storage/LedgerBookControlsPostgresTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/LedgerBookControlsPostgresTests.Activation.cs](../../../tests/Meridian.Tests/Storage/LedgerBookControlsPostgresTests.Activation.cs)
+- Evidence: [tests/Meridian.Tests/Ui/EntityTimelineServiceTests.cs](../../../tests/Meridian.Tests/Ui/EntityTimelineServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/FundStructure/EntityLifecyclePostgresTests.cs](../../../tests/Meridian.Tests/Storage/FundStructure/EntityLifecyclePostgresTests.cs)
+- Evidence: [tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.cs](../../../tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.cs)
 
 
 ### Exit Criteria
@@ -2621,21 +2629,21 @@ W12-FINRPT-001: planned; health green; evidence planned_evidence. Bind existing 
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-12 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W12-ICAGREE-001: in_progress; health green; evidence in_progress. Immutable accounting profiles bind exact approved legal versions; profile owner approval does not replace independent legal approval.
+W12-ICAGREE-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Profile owner approval still never replaces independent legal approval.
 
 ### Status References
 
 - Decisions: none recorded
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3591](https://github.com/rodoHasArrived/Meridian-main/pull/3591)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W12-ICAGREE-001.md)
 - Evidence: [docs/domain/intercompany-agreements-and-entity-lifecycle.md](../../domain/intercompany-agreements-and-entity-lifecycle.md)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyAccountingArrangementService.cs)
@@ -2643,6 +2651,10 @@ W12-ICAGREE-001: in_progress; health green; evidence in_progress. Immutable acco
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyBalanceScheduleService.cs)
 - Evidence: [tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceScheduleTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceScheduleTests.cs)
 - Evidence: [tests/Meridian.Tests/FinancialOperations/Consolidation/LegacyIntercompanyAttributionTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Consolidation/LegacyIntercompanyAttributionTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/LegacyIntercompanyAttributionPostgresTests.cs](../../../tests/Meridian.Tests/Storage/LegacyIntercompanyAttributionPostgresTests.cs)
+- Evidence: [tests/Meridian.FundStructure.Tests/IntercompanyAccountingArrangementTests.LegalNovation.cs](../../../tests/Meridian.FundStructure.Tests/IntercompanyAccountingArrangementTests.LegalNovation.cs)
+- Evidence: [tests/Meridian.Tests/Storage/FundStructure/IntercompanyAccountingArrangementPostgresTests.cs](../../../tests/Meridian.Tests/Storage/FundStructure/IntercompanyAccountingArrangementPostgresTests.cs)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyAgreementWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyAgreementWorkspaceTests.cs)
 
 
 ### Exit Criteria
@@ -2667,26 +2679,30 @@ W12-ICAGREE-001: in_progress; health green; evidence in_progress. Immutable acco
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-12 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W12-ICINCOME-001: in_progress; health green; evidence in_progress. Explicit income-pair scope uses versioned accounting policy and exact agreement/FX evidence; retained implementation and acceptance boundaries remain open.
+W12-ICINCOME-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality and PostgreSQL integration lanes (PR 3591); operator acceptance pending. Populations above two entities are proven for w10-v2 only; investment/equity elimination stays unsupported.
 
 ### Status References
 
 - Decisions: none recorded
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3591](https://github.com/rodoHasArrived/Meridian-main/pull/3591)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W12-ICINCOME-001.md)
 - Evidence: [docs/domain/intercompany-consolidation.md](../../domain/intercompany-consolidation.md)
 - Evidence: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Governed.cs](../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Governed.cs)
 - Evidence: [src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Matching.cs](../../../src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Matching.cs)
 - Evidence: [tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationGovernedServiceTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationGovernedServiceTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationGovernedPopulationTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationGovernedPopulationTests.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationServiceTests.GovernedRaces.cs](../../../tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationServiceTests.GovernedRaces.cs)
+- Evidence: [tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationFxTests.cs](../../../tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationFxTests.cs)
+- Evidence: [docs/engineering/plans/intercompany-entity-controls.md](../../engineering/plans/intercompany-entity-controls.md)
 
 
 ### Exit Criteria
@@ -2708,26 +2724,32 @@ W12-ICINCOME-001: in_progress; health green; evidence in_progress. Explicit inco
 | Field | Value |
 | --- | --- |
 | Wave | W12 |
-| Status | in_progress |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
-| Last reviewed | 2026-11-12 |
+| Evidence posture | complete |
+| Last reviewed | 2026-11-14 |
 
 ### Current Summary
 
-W12-ICPAIR-001: in_progress; health green; evidence in_progress. Counterpart proposal and source commit remain atomic; delivery creates a governed destination draft, with exact retry and independent-event identity.
+W12-ICPAIR-001: ready_for_acceptance; health green; evidence complete. Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Delivery never posts; repricing and break reads check tenant, not company, at the service.
 
 ### Status References
 
 - Decisions: none recorded
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3591](https://github.com/rodoHasArrived/Meridian-main/pull/3591)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W12-ICPAIR-001.md)
 - Evidence: [docs/engineering/plans/intercompany-entity-controls.md](../../engineering/plans/intercompany-entity-controls.md)
 - Evidence: [src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs](../../../src/Meridian.FinancialOperations/Intercompany/IntercompanyProposalDraftBuilder.cs)
 - Evidence: [src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs](../../../src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs)
 - Evidence: [tests/Meridian.Tests/Storage/IntercompanyProposalPostgresTests.cs](../../../tests/Meridian.Tests/Storage/IntercompanyProposalPostgresTests.cs)
+- Evidence: [tests/Meridian.Tests/Storage/IntercompanyProposalPostgresTests.Restart.cs](../../../tests/Meridian.Tests/Storage/IntercompanyProposalPostgresTests.Restart.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyProposalDeliveryRetryTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyProposalDeliveryRetryTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyProposalBreakAgingTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyProposalBreakAgingTests.cs)
+- Evidence: [tests/Meridian.Tests/Ui/IntercompanyProposalDestinationAuthorityTests.cs](../../../tests/Meridian.Tests/Ui/IntercompanyProposalDestinationAuthorityTests.cs)
+- Evidence: [tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs](../../../tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs)
+- Evidence: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs](../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs)
 
 
 ### Exit Criteria

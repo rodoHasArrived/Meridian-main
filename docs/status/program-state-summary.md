@@ -68,11 +68,11 @@ Bounded roadmap acceptance does not certify a release. Current item statuses app
 | W12-BOOK-001 | W12 | Accounting book, basis, and FX control workbench | Accounting; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
 | W12-CAPITAL-001 | W12 | Governed investor capital and allocation lifecycle | Accounting; Reporting | in_progress | green | medium | Accounting and Ledger | in_progress | 2026-11-10 |
 | W12-CREDIT-001 | W12 | DirectLoan operations and evidence reconciliation | Portfolio; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
-| W12-ENTITY-001 | W12 | Effective entity lifecycle and audited book-control migration | Accounting; Portfolio | in_progress | green | high | Accounting and Ledger | in_progress | 2026-11-12 |
+| W12-ENTITY-001 | W12 | Effective entity lifecycle and audited book-control migration | Accounting; Portfolio | ready_for_acceptance | green | high | Accounting and Ledger | complete | 2026-11-14 |
 | W12-FINRPT-001 | W12 | Ledger-backed financial statement control pack | Reporting; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
-| W12-ICAGREE-001 | W12 | Intercompany accounting profiles and legacy attribution | Accounting; Portfolio | in_progress | green | high | Accounting and Ledger | in_progress | 2026-11-12 |
-| W12-ICINCOME-001 | W12 | Policy-governed intercompany revenue and expense elimination | Accounting; Reporting | in_progress | green | medium | Accounting and Ledger | in_progress | 2026-11-12 |
-| W12-ICPAIR-001 | W12 | Durable reviewed counterpart proposals and aged intercompany breaks | Accounting; Reporting | in_progress | green | high | Accounting and Ledger | in_progress | 2026-11-12 |
+| W12-ICAGREE-001 | W12 | Intercompany accounting profiles and legacy attribution | Accounting; Portfolio | ready_for_acceptance | green | high | Accounting and Ledger | complete | 2026-11-14 |
+| W12-ICINCOME-001 | W12 | Policy-governed intercompany revenue and expense elimination | Accounting; Reporting | ready_for_acceptance | green | medium | Accounting and Ledger | complete | 2026-11-14 |
+| W12-ICPAIR-001 | W12 | Durable reviewed counterpart proposals and aged intercompany breaks | Accounting; Reporting | ready_for_acceptance | green | high | Accounting and Ledger | complete | 2026-11-14 |
 | W12-YEND-001 | W12 | Fiscal year-end close and opening-balance roll-forward | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-17 |
 | W13-OMS-001 | W13 | Governed order management and broker execution workbench | Trading; Portfolio | planned | green | medium | Execution and Fund Accounts | planned_evidence | 2026-10-30 |
 | W13-STRAT-001 | W13 | Governed strategy formulation and execution lifecycle | Strategy; Trading | planned | green | medium | Strategy Analytics | planned_evidence | 2026-10-30 |

@@ -75,11 +75,11 @@ Snapshot date: 2026-11-12
 | W12-BOOK-001 | Accounting book, basis, and FX control workbench | planned | green | medium | Accounting and Ledger |
 | W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | in_progress | green | medium | Accounting and Ledger |
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |
-| W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | in_progress | green | high | Accounting and Ledger |
+| W12-ENTITY-001 | Effective entity lifecycle and audited book-control migration | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-FINRPT-001 | Ledger-backed financial statement control pack | planned | green | medium | Accounting and Ledger |
-| W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | in_progress | green | high | Accounting and Ledger |
-| W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | in_progress | green | medium | Accounting and Ledger |
-| W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | in_progress | green | high | Accounting and Ledger |
+| W12-ICAGREE-001 | Intercompany accounting profiles and legacy attribution | ready_for_acceptance | green | high | Accounting and Ledger |
+| W12-ICINCOME-001 | Policy-governed intercompany revenue and expense elimination | ready_for_acceptance | green | medium | Accounting and Ledger |
+| W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | ready_for_acceptance | green | high | Accounting and Ledger |
 | W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | planned | green | medium | Accounting and Ledger |
 | W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
 | W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |

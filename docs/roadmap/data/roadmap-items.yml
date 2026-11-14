@@ -830,6 +830,14 @@ items:
         path: docs/engineering/plans/wpf-web-ui-alignment-plan.md
       - type: reference
         path: docs/development/wpf-implementation-notes.md
+      - type: source
+        path: src/Meridian.Wpf/Views/IntercompanyCounterpartProposalsControl.xaml
+      - type: source
+        path: src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.CounterpartProposals.cs
     last_reviewed: 2026-07-06
 
   - id: W8-UX-CONSOL-001
@@ -3144,13 +3152,14 @@ items:
       - Accounting
       - Portfolio
     owner_lane: Accounting and Ledger
-    status: in_progress
+    status: ready_for_acceptance
     health: green
     priority: high
-    evidence_posture: in_progress
-    status_note: Immutable accounting profiles bind exact approved legal versions; profile owner approval does not replace independent legal approval.
+    evidence_posture: complete
+    status_note: Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Profile owner approval still never replaces independent legal approval.
     decision_ids: []
-    pr_references: []
+    pr_references:
+    - 3591
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W12-ICAGREE-001.md
     exit_criteria:
       - Native approved agreement versions retain legal parties, terms and evidence; accounting profiles pin their exact version/hash and own only authorized books, stable account roles, templates and bounded validity.
@@ -3181,7 +3190,15 @@ items:
         path: tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceScheduleTests.cs
       - type: test
         path: tests/Meridian.Tests/FinancialOperations/Consolidation/LegacyIntercompanyAttributionTests.cs
-    last_reviewed: 2026-11-12
+      - type: test
+        path: tests/Meridian.Tests/Storage/LegacyIntercompanyAttributionPostgresTests.cs
+      - type: test
+        path: tests/Meridian.FundStructure.Tests/IntercompanyAccountingArrangementTests.LegalNovation.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/FundStructure/IntercompanyAccountingArrangementPostgresTests.cs
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/IntercompanyAgreementWorkspaceTests.cs
+    last_reviewed: 2026-11-14
 
   - id: W12-ENTITY-001
     title: Effective entity lifecycle and audited book-control migration
@@ -3192,13 +3209,14 @@ items:
       - Accounting
       - Portfolio
     owner_lane: Accounting and Ledger
-    status: in_progress
+    status: ready_for_acceptance
     health: green
     priority: high
-    evidence_posture: in_progress
-    status_note: New books enforce effective lifecycle controls; existing books require audited migration preflight. Winding-down close remains controlled and new commitments refused.
+    evidence_posture: complete
+    status_note: Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591), including legacy-book activation after a passing preflight; operator acceptance pending.
     decision_ids: []
-    pr_references: []
+    pr_references:
+    - 3591
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W12-ENTITY-001.md
     exit_criteria:
       - Effective-dated lifecycle evidence gates posting and agreements at the commit authority boundary; missing historic periods are unknown rather than inferred from today's status.
@@ -3228,7 +3246,15 @@ items:
         path: src/Meridian.Ui.Shared/Services/EntityTimelineService.cs
       - type: test
         path: tests/Meridian.Tests/Storage/LedgerBookControlsPostgresTests.cs
-    last_reviewed: 2026-11-12
+      - type: test
+        path: tests/Meridian.Tests/Storage/LedgerBookControlsPostgresTests.Activation.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/EntityTimelineServiceTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/FundStructure/EntityLifecyclePostgresTests.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/Views/IntercompanyNativeControlSmokeTests.cs
+    last_reviewed: 2026-11-14
 
   - id: W12-ICPAIR-001
     title: Durable reviewed counterpart proposals and aged intercompany breaks
@@ -3239,13 +3265,14 @@ items:
       - Accounting
       - Reporting
     owner_lane: Accounting and Ledger
-    status: in_progress
+    status: ready_for_acceptance
     health: green
     priority: high
-    evidence_posture: in_progress
-    status_note: Counterpart proposal and source commit remain atomic; delivery creates a governed destination draft, with exact retry and independent-event identity.
+    evidence_posture: complete
+    status_note: Development verification recorded 2026-11-14 on hosted quality, PostgreSQL integration and Windows lanes (PR 3591); operator acceptance pending. Delivery never posts; repricing and break reads check tenant, not company, at the service.
     decision_ids: []
-    pr_references: []
+    pr_references:
+    - 3591
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W12-ICPAIR-001.md
     exit_criteria:
       - Source commit retains durable proposal intent atomically; retry and restart cannot lose or duplicate counterpart economic work.
@@ -3271,7 +3298,19 @@ items:
         path: src/Meridian.Ui.Shared/Services/IntercompanyProposalDeliveryService.cs
       - type: test
         path: tests/Meridian.Tests/Storage/IntercompanyProposalPostgresTests.cs
-    last_reviewed: 2026-11-12
+      - type: test
+        path: tests/Meridian.Tests/Storage/IntercompanyProposalPostgresTests.Restart.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyProposalDeliveryRetryTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyProposalBreakAgingTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Ui/IntercompanyProposalDestinationAuthorityTests.cs
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/IntercompanyCounterpartQueueWorkspaceTests.cs
+      - type: source
+        path: src/Meridian.Ui.Services/Services/Accounting/IntercompanyCounterpartQueueWorkspace.cs
+    last_reviewed: 2026-11-14
 
   - id: W12-ICINCOME-001
     title: Policy-governed intercompany revenue and expense elimination
@@ -3282,13 +3321,14 @@ items:
       - Accounting
       - Reporting
     owner_lane: Accounting and Ledger
-    status: in_progress
+    status: ready_for_acceptance
     health: green
     priority: medium
-    evidence_posture: in_progress
-    status_note: Explicit income-pair scope uses versioned accounting policy and exact agreement/FX evidence; retained implementation and acceptance boundaries remain open.
+    evidence_posture: complete
+    status_note: Development verification recorded 2026-11-14 on hosted quality and PostgreSQL integration lanes (PR 3591); operator acceptance pending. Populations above two entities are proven for w10-v2 only; investment/equity elimination stays unsupported.
     decision_ids: []
-    pr_references: []
+    pr_references:
+    - 3591
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W12-ICINCOME-001.md
     exit_criteria:
       - Income elimination requires the explicit approved revenue/expense policy rule with evidence and independent approval; account-role configuration alone cannot enable it.
@@ -3312,4 +3352,12 @@ items:
         path: src/Meridian.FinancialOperations/Consolidation/ConsolidationService.Matching.cs
       - type: test
         path: tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationGovernedServiceTests.cs
-    last_reviewed: 2026-11-12
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationGovernedPopulationTests.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationServiceTests.GovernedRaces.cs
+      - type: test
+        path: tests/Meridian.Tests/FinancialOperations/Consolidation/ConsolidationFxTests.cs
+      - type: document
+        path: docs/engineering/plans/intercompany-entity-controls.md
+    last_reviewed: 2026-11-14
