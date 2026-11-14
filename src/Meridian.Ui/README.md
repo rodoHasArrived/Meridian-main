@@ -190,8 +190,9 @@ Dashboard source also carries the P4 entity, fund and period step (host bundle n
   or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
   `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
   saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
-  Portfolio > Brokerage sync (household accounts and positions) and Accounting > Close calendar
-  (close workflows) narrow their fund-account rows to the chosen fund or entity client-side, using
+  Portfolio > Brokerage sync (household accounts and positions), Accounting > Close calendar
+  (close workflows), Accounting > Operations continuity (workflow list) and Accounting > Statement
+  import (saved fetch schedules) narrow their fund-account rows to the chosen fund or entity client-side, using
   the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
   screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.
 - The Trading inline account picker narrows its suggestions by the chosen entity and fund as the
